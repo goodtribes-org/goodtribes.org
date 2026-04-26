@@ -1,0 +1,30 @@
+namespace: goodtribes
+
+frontend:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/goodtribes-org/goodtribes.org/frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    port: 80
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: http
+    acme.cert-manager.io/http01-edit-in-place: "true"
+    kubernetes.io/ingress.class: traefik
+    kubernetes.io/tls-acme: "true"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure,web
+  hosts:
+    - goodtribes.org
+    - www.goodtribes.org
+  tls:
+    - secretName: goodtribes-tls
+      hosts:
+        - goodtribes.org
+        - www.goodtribes.org
+
+imagePullSecrets: []

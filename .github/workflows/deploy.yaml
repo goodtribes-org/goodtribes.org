@@ -1,0 +1,59 @@
+name: Deploy To Production
+
+on:
+  workflow_run:
+    workflows: [Docker Publish]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check out Manifest
+        uses: actions/checkout@v4
+        with:
+          repository: goodtribes-org/deploy
+          ref: main
+          path: manifest
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Deploy
+        uses: WyriHaximus/github-action-helm3@v3
+        with:
+          exec: |
+            if [ ! -d "chart" ]; then
+              echo "::error::Chart directory not found"
+              exit 1
+            fi
+            helm template chart/ --set frontend.image.tag=${{ github.sha }} > manifest/goodtribes/goodtribes.yaml
+            cat manifest/goodtribes/goodtribes.yaml
+
+      - name: GIT commit and push all changed files
+        env:
+          CI_COMMIT_MESSAGE: Continuous Integration Build Artifacts
+          CI_COMMIT_AUTHOR: Continuous Integration
+        run: |
+          cd manifest
+          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
+          git config --global user.email "username@users.noreply.github.com"
+          git add goodtribes/goodtribes.yaml
+          git commit -a -m "${{ env.CI_COMMIT_MESSAGE }}"
+          git push
+
+      - name: Send custom JSON data to Slack workflow
+        id: slack
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {"text":"The repo ${{ github.repository }} is build and ready for cluster to deploy"}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
