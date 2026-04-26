@@ -27,4 +27,5 @@ ingress:
         - goodtribes.org
         - www.goodtribes.org
 
-imagePullSecrets: []
+imagePullSecrets:
+  - name: ghcr-pull-secret
