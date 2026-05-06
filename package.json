@@ -1,0 +1,12 @@
+{
+  "name": "goodtribes.org",
+  "private": true,
+  "workspaces": ["frontend", "backend"],
+  "scripts": {
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run develop --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "dev:services": "docker compose up -d postgres meilisearch"
+  }
+}

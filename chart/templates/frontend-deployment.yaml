@@ -3,15 +3,18 @@ kind: Deployment
 metadata:
   name: goodtribes-frontend
   namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "goodtribes.labels" . | nindent 4 }}
+    app.kubernetes.io/name: frontend
 spec:
   replicas: {{ .Values.frontend.replicaCount }}
   selector:
     matchLabels:
-      app: goodtribes-frontend
+      {{- include "goodtribes.selectorLabels" "frontend" | nindent 6 }}
   template:
     metadata:
       labels:
-        app: goodtribes-frontend
+        {{- include "goodtribes.selectorLabels" "frontend" | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -23,15 +26,23 @@ spec:
           imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.frontend.service.port }}
-          livenessProbe:
-            httpGet:
-              path: /
-              port: {{ .Values.frontend.service.port }}
-            initialDelaySeconds: 10
-            periodSeconds: 30
+          envFrom:
+            - secretRef:
+                name: goodtribes-secret
+          env:
+            {{- range $key, $value := .Values.frontend.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
           readinessProbe:
             httpGet:
               path: /
               port: {{ .Values.frontend.service.port }}
             initialDelaySeconds: 5
             periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.frontend.service.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 30

@@ -3,9 +3,11 @@ kind: Service
 metadata:
   name: goodtribes-frontend
   namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "goodtribes.labels" . | nindent 4 }}
 spec:
   selector:
-    app: goodtribes-frontend
+    {{- include "goodtribes.selectorLabels" "frontend" | nindent 4 }}
   ports:
     - port: {{ .Values.frontend.service.port }}
       targetPort: {{ .Values.frontend.service.port }}

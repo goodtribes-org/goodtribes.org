@@ -1,6 +1,6 @@
 apiVersion: v2
 name: goodtribes
-description: Helm chart for goodtribes.org
+description: Helm chart for goodtribes.org — Next.js + Strapi + PostgreSQL + Meilisearch
 type: application
 version: 0.1.0
 appVersion: "1.0.0"

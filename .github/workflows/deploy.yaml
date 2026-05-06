@@ -34,7 +34,10 @@ jobs:
               echo "::error::Chart directory not found"
               exit 1
             fi
-            helm template chart/ --set frontend.image.tag=${{ github.sha }} > manifest/goodtribes/goodtribes.yaml
+            helm template chart/ \
+              --set frontend.image.tag=${{ github.sha }} \
+              --set backend.image.tag=${{ github.sha }} \
+              > manifest/goodtribes/goodtribes.yaml
             cat manifest/goodtribes/goodtribes.yaml
 
       - name: GIT commit and push all changed files

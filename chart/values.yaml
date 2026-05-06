@@ -7,7 +7,74 @@ frontend:
     tag: latest
     pullPolicy: IfNotPresent
   service:
-    port: 80
+    port: 3000
+  env:
+    NEXT_PUBLIC_STRAPI_URL: http://goodtribes-backend:1337
+    NEXT_PUBLIC_MEILI_HOST: http://goodtribes-meilisearch:7700
+  # Sensitive vars from goodtribes-secret:
+  #   STRAPI_API_TOKEN
+  #   NEXT_PUBLIC_MEILI_SEARCH_KEY
+
+backend:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/goodtribes-org/goodtribes.org/backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    port: 1337
+  env:
+    HOST: "0.0.0.0"
+    PORT: "1337"
+    DATABASE_CLIENT: postgres
+    DATABASE_HOST: goodtribes-postgres
+    DATABASE_PORT: "5432"
+    DATABASE_NAME: goodtribes
+    DATABASE_USERNAME: goodtribes
+    DATABASE_SSL: "false"
+    MEILI_HOST: http://goodtribes-meilisearch:7700
+  # Sensitive vars from goodtribes-secret:
+  #   APP_KEYS
+  #   API_TOKEN_SALT
+  #   ADMIN_JWT_SECRET
+  #   TRANSFER_TOKEN_SALT
+  #   JWT_SECRET
+  #   ENCRYPTION_KEY
+  #   DATABASE_PASSWORD
+  #   MEILI_MASTER_KEY
+
+postgres:
+  replicaCount: 1
+  image:
+    repository: postgres
+    tag: 16-alpine
+    pullPolicy: IfNotPresent
+  service:
+    port: 5432
+  env:
+    POSTGRES_USER: goodtribes
+    POSTGRES_DB: goodtribes
+  persistence:
+    size: 5Gi
+    storageClass: ""
+  # Sensitive vars from goodtribes-secret:
+  #   POSTGRES_PASSWORD
+
+meilisearch:
+  replicaCount: 1
+  image:
+    repository: getmeili/meilisearch
+    tag: v1.6
+    pullPolicy: IfNotPresent
+  service:
+    port: 7700
+  env:
+    MEILI_ENV: production
+  persistence:
+    size: 5Gi
+    storageClass: ""
+  # Sensitive vars from goodtribes-secret:
+  #   MEILI_MASTER_KEY
 
 ingress:
   enabled: true

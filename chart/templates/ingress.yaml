@@ -4,6 +4,8 @@ kind: Ingress
 metadata:
   name: goodtribes-ingress
   namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "goodtribes.labels" . | nindent 4 }}
   annotations:
     {{- toYaml .Values.ingress.annotations | nindent 4 }}
 spec:
@@ -20,6 +22,20 @@ spec:
                 name: goodtribes-frontend
                 port:
                   number: {{ $.Values.frontend.service.port }}
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: goodtribes-backend
+                port:
+                  number: {{ $.Values.backend.service.port }}
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: goodtribes-backend
+                port:
+                  number: {{ $.Values.backend.service.port }}
     {{- end }}
   tls:
     {{- toYaml .Values.ingress.tls | nindent 4 }}

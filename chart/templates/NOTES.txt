@@ -1,0 +1,18 @@
+Before the pods can start, create the goodtribes-secret in the cluster:
+
+  kubectl create secret generic goodtribes-secret \
+    --namespace goodtribes \
+    --from-literal=POSTGRES_PASSWORD='<secret>' \
+    --from-literal=DATABASE_PASSWORD='<same as POSTGRES_PASSWORD>' \
+    --from-literal=APP_KEYS='key1,key2,key3,key4' \
+    --from-literal=API_TOKEN_SALT='<secret>' \
+    --from-literal=ADMIN_JWT_SECRET='<secret>' \
+    --from-literal=TRANSFER_TOKEN_SALT='<secret>' \
+    --from-literal=JWT_SECRET='<secret>' \
+    --from-literal=ENCRYPTION_KEY='<secret>' \
+    --from-literal=MEILI_MASTER_KEY='<secret>' \
+    --from-literal=STRAPI_API_TOKEN='' \
+    --from-literal=NEXT_PUBLIC_MEILI_SEARCH_KEY=''
+
+This secret is NOT managed by Helm or ArgoCD. It must be created once
+and will never be overwritten by automated deploys.
