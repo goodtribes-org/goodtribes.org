@@ -28,6 +28,7 @@ RUN adduser --system --uid 1001 strapi
 RUN chown strapi:strapi /app
 
 COPY --from=builder --chown=strapi:strapi /app ./
+RUN mkdir -p /app/public/uploads
 
 USER strapi
 
