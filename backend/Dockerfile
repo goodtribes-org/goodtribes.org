@@ -25,6 +25,7 @@ ENV NODE_ENV=production
 
 RUN addgroup --system --gid 1001 strapi
 RUN adduser --system --uid 1001 strapi
+RUN chown strapi:strapi /app
 
 COPY --from=builder --chown=strapi:strapi /app ./
 
