@@ -23,6 +23,9 @@ export default function RootLayout({
             <Link href="/about" className="text-gray-600 hover:text-gray-900">
               About Us
             </Link>
+            <Link href="/projects" className="text-gray-600 hover:text-gray-900">
+              Projekt
+            </Link>
           </nav>
         </header>
         <main className="max-w-4xl mx-auto px-6 py-12">{children}</main>
