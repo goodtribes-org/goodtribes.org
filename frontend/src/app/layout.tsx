@@ -24,10 +24,13 @@ export default function RootLayout({
                 GoodTribes.org
               </Link>
               <Link href="/about" className="text-gray-600 hover:text-gray-900">
-                About Us
+                Om oss
               </Link>
               <Link href="/projects" className="text-gray-600 hover:text-gray-900">
                 Projekt
+              </Link>
+              <Link href="/members" className="text-gray-600 hover:text-gray-900">
+                Medlemmar
               </Link>
               <Link href="/links" className="text-gray-600 hover:text-gray-900">
                 Länkar
