@@ -30,9 +30,9 @@ export default function HomePage() {
       </section>
 
       {/* People block */}
-      <section className="border border-gray-200 rounded-lg p-8">
+      <section className="border border-muted-teal rounded-lg p-8">
         <h2 className="text-2xl font-bold mb-3">Bidra med din kompetens</h2>
-        <p className="text-gray-600 mb-6 max-w-xl">
+        <p className="text-dark-slate/70 mb-6 max-w-xl">
           Det finns gott om människor som vill göra skillnad i världen — och
           lika många organisationer som behöver just din hjälp. Lägg till dina
           färdigheter och bli en del av ett nätverk som bygger något som
@@ -40,16 +40,16 @@ export default function HomePage() {
         </p>
         <Link
           href="/members"
-          className="inline-block bg-gray-900 text-white text-sm font-medium px-5 py-2.5 rounded-md hover:bg-gray-700 transition-colors"
+          className="inline-block bg-coral text-white text-sm font-medium px-5 py-2.5 rounded-md hover:bg-watermelon transition-colors"
         >
           Se våra medlemmar →
         </Link>
       </section>
 
       {/* Org block */}
-      <section className="border border-gray-200 rounded-lg p-8">
+      <section className="border border-muted-teal rounded-lg p-8">
         <h2 className="text-2xl font-bold mb-3">Är du en organisation?</h2>
-        <p className="text-gray-600 mb-6 max-w-xl">
+        <p className="text-dark-slate/70 mb-6 max-w-xl">
           Hundratals organisationer arbetar varje dag för att göra världen till
           en bättre plats — men de behöver fler händer. Lista din organisation
           hos oss så kopplar vi ihop dig med rätt personer som vill och kan
@@ -57,7 +57,7 @@ export default function HomePage() {
         </p>
         <Link
           href="/projects"
-          className="inline-block bg-gray-900 text-white text-sm font-medium px-5 py-2.5 rounded-md hover:bg-gray-700 transition-colors"
+          className="inline-block bg-coral text-white text-sm font-medium px-5 py-2.5 rounded-md hover:bg-watermelon transition-colors"
         >
           Se våra projekt →
         </Link>
