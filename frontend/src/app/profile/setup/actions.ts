@@ -11,12 +11,18 @@ export async function saveProfile(formData: FormData) {
   if (!session?.user?.email) redirect("/login");
 
   const name = (formData.get("name") as string).trim();
-  const country = (formData.get("country") as string).trim();
+  const bio = (formData.get("bio") as string | null)?.trim() ?? "";
+
+  const socialLinks: Record<string, string> = {};
+  for (const key of ["website", "linkedin", "github", "twitter"] as const) {
+    const val = (formData.get(key) as string | null)?.trim();
+    if (val) socialLinks[key] = val;
+  }
 
   await prisma.user.update({
     where: { email: session.user.email },
-    data: { name, country },
+    data: { name, bio: bio || null, socialLinks, onboarded: true },
   });
 
-  redirect("/");
+  redirect("/profile");
 }

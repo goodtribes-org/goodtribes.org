@@ -9,7 +9,7 @@ export default function AuthNav() {
   if (session?.user) {
     return (
       <div className="flex items-center gap-4 ml-auto">
-        <Link href="/profile/setup" className="text-dark-slate/70 hover:text-seagrass text-sm">
+        <Link href="/profile" className="text-dark-slate/70 hover:text-seagrass text-sm">
           Min profil
         </Link>
         <button
@@ -23,9 +23,15 @@ export default function AuthNav() {
   }
 
   return (
-    <div className="ml-auto">
+    <div className="flex items-center gap-3 ml-auto">
       <Link href="/login" className="text-dark-slate/70 hover:text-seagrass text-sm">
         Logga in
+      </Link>
+      <Link
+        href="/signup"
+        className="bg-coral text-white text-sm font-medium px-3 py-1.5 rounded-md hover:bg-watermelon transition-colors"
+      >
+        Skapa konto
       </Link>
     </div>
   );
