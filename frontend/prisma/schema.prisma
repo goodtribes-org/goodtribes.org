@@ -19,6 +19,37 @@ model User {
   onboarded     Boolean   @default(false)
   accounts      Account[]
   sessions      Session[]
+
+  ownedOrganisations      Organisation[]       @relation("OwnedOrganisations")
+  organisationMemberships OrganisationMember[] @relation("OrganisationMemberships")
+}
+
+model Organisation {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  imageUrl    String?
+  isPublic    Boolean  @default(true)
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner   User                 @relation("OwnedOrganisations", fields: [ownerId], references: [id], onDelete: Cascade)
+  members OrganisationMember[]
+}
+
+model OrganisationMember {
+  id             String   @id @default(cuid())
+  organisationId String
+  userId         String
+  role           String   @default("member")
+  joinedAt       DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  user         User         @relation("OrganisationMemberships", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organisationId, userId])
 }
 
 model Account {
