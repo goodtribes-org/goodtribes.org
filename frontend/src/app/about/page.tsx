@@ -1,12 +1,20 @@
 export default function AboutPage() {
   return (
     <div className="max-w-2xl">
-      <h1 className="text-4xl font-bold mb-6">Om oss</h1>
+      <h1 className="text-4xl font-bold mb-6">Vilka är Goodtribes?</h1>
 
       <p className="text-lg text-dark-slate mb-6">
-        GoodTribes.org är en plattform som kopplar samman kompetenta individer med
-        organisationer som gör meningsfull skillnad. Vi tror på kraften i att
-        samarbeta — att rätt person på rätt plats kan förändra världen lite grand.
+        Goodtribes drivs som en stiftelse med ett enda övergripande mål: att göra
+        världen bättre för oss som lever i den idag, och för generationerna efter
+        oss. Vi tror inte på att vänta på att någon annan ska lösa problemen. Vi
+        tror på att organisera oss nerifrån och upp.
+      </p>
+
+      <p className="text-dark-slate mb-8">
+        När en person har en bra idé krävs det ofta ett helt team för att
+        genomföra den. Genom att sänka trösklarna och göra det enkelt att
+        samarbeta skapar vi en folkrörelse av praktisk hållbarhet. Hos oss blir
+        ingen lämnad ensam med sin vision.
       </p>
 
       <h2 className="text-2xl font-semibold mb-4">Vad vi gör</h2>
