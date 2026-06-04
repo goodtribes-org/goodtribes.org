@@ -1,11 +1,11 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const GALLERY_IMAGES = [
-  { w: 400, h: 240, label: "Projekt+A" },
-  { w: 400, h: 240, label: "Projekt+B" },
-  { w: 400, h: 240, label: "Projekt+C" },
-  { w: 400, h: 240, label: "Projekt+D" },
-  { w: 400, h: 240, label: "Projekt+E" },
+  { src: "/img/gemenskap.png",                               alt: "Gemenskap — människor möts och samarbetar" },
+  { src: "/img/spetskompentens.png",                        alt: "Spetskompetens — volontärer med expertis" },
+  { src: "/img/jobbar_ihop.png",                            alt: "Jobbar ihop — projekt och volontärer i samarbete" },
+  { src: "/img/Gemini_Generated_Image_cvix3lcvix3lcvix.png", alt: "Goodtribes i action" },
 ];
 
 export default function HomePage() {
@@ -39,19 +39,30 @@ export default function HomePage() {
             kunskap.
           </p>
         </div>
+
+        <div className="mt-8 rounded-xl overflow-hidden">
+          <Image
+            src="/img/hero.png"
+            alt="Goodtribes — tillsammans gör vi bra idéer till verklighet"
+            width={896}
+            height={504}
+            className="w-full h-auto object-cover"
+            priority
+            sizes="(max-width: 896px) 100vw, 896px"
+          />
+        </div>
       </section>
 
       {/* Image gallery */}
       <section>
         <div className="flex gap-4 overflow-x-auto pb-2 -mx-6 px-6">
           {GALLERY_IMAGES.map((img) => (
-            <img
-              key={img.label}
-              src={`https://dummyimage.com/${img.w}x${img.h}/e5e7eb/9ca3af&text=${img.label}`}
-              alt=""
-              role="presentation"
-              width={img.w}
-              height={img.h}
+            <Image
+              key={img.src}
+              src={img.src}
+              alt={img.alt}
+              width={400}
+              height={240}
               className="rounded-lg flex-shrink-0 object-cover"
             />
           ))}
