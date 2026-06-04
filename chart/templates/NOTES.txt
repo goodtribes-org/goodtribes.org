@@ -12,7 +12,9 @@ Before the pods can start, create the goodtribes-secret in the cluster:
     --from-literal=ENCRYPTION_KEY='<secret>' \
     --from-literal=MEILI_MASTER_KEY='<secret>' \
     --from-literal=STRAPI_API_TOKEN='' \
-    --from-literal=NEXT_PUBLIC_MEILI_SEARCH_KEY=''
+    --from-literal=NEXT_PUBLIC_MEILI_SEARCH_KEY='' \
+    --from-literal=AUTH_SECRET='<random 32+ char string>' \
+    --from-literal=RESEND_API_KEY='<from resend.com>'
 
 This secret is NOT managed by Helm or ArgoCD. It must be created once
 and will never be overwritten by automated deploys.
