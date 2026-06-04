@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
 import AuthNav from "@/components/AuthNav";
@@ -39,6 +40,13 @@ export default function RootLayout({
                 Länkar
               </Link>
               <AuthNav />
+              <Image
+                src="/img/logga-icon.png"
+                alt="GoodTribes.org"
+                height={40}
+                width={53}
+                className="object-contain"
+              />
             </nav>
           </header>
           <main className="max-w-4xl mx-auto px-6 py-12">{children}</main>
