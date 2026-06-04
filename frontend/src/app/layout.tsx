@@ -29,6 +29,9 @@ export default function RootLayout({
               <Link href="/projects" className="text-dark-slate/70 hover:text-seagrass">
                 Projekt
               </Link>
+              <Link href="/org" className="text-dark-slate/70 hover:text-seagrass">
+                Organisationer
+              </Link>
               <Link href="/members" className="text-dark-slate/70 hover:text-seagrass">
                 Medlemmar
               </Link>
