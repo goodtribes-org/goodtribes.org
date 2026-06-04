@@ -1,0 +1,96 @@
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { PrismaClient } from "@prisma/client";
+import Link from "next/link";
+
+const prisma = new PrismaClient();
+
+const SOCIAL_LABELS: Record<string, string> = {
+  website: "Webbplats",
+  linkedin: "LinkedIn",
+  github: "GitHub",
+  twitter: "Twitter / X",
+};
+
+export default async function ProfilePage() {
+  const session = await auth();
+  if (!session?.user?.email) redirect("/login");
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { name: true, email: true, bio: true, socialLinks: true },
+  });
+
+  if (!user) redirect("/login");
+
+  const social = (user.socialLinks ?? {}) as Record<string, string>;
+  const initials = user.name
+    ? user.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+    : "?";
+
+  return (
+    <div className="max-w-2xl">
+      <div className="flex items-start gap-6 mb-8">
+        <div className="w-20 h-20 rounded-full bg-dry-sage flex items-center justify-center text-2xl font-semibold text-dark-slate flex-shrink-0">
+          {initials}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-3xl font-bold mb-1">{user.name ?? "Namnlös"}</h1>
+          <p className="text-dark-slate/60 text-sm">{user.email}</p>
+          <p className="text-xs text-muted-teal mt-1">
+            Profilbild — kan läggas till senare
+          </p>
+        </div>
+        <Link
+          href="/profile/setup"
+          className="flex-shrink-0 text-sm text-coral hover:text-seagrass underline underline-offset-4"
+        >
+          Redigera profil
+        </Link>
+      </div>
+
+      {user.bio && (
+        <section className="mb-8">
+          <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-2">
+            Om mig
+          </h2>
+          <p className="text-dark-slate">{user.bio}</p>
+        </section>
+      )}
+
+      {Object.keys(social).length > 0 && (
+        <section>
+          <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-3">
+            Sociala medier
+          </h2>
+          <ul className="flex flex-col gap-2">
+            {Object.entries(social).map(([key, value]) => (
+              <li key={key} className="flex items-center gap-2">
+                <span className="text-xs text-dark-slate/50 w-24 flex-shrink-0">
+                  {SOCIAL_LABELS[key] ?? key}
+                </span>
+                <a
+                  href={key === "website" ? value : `https://${value.replace(/^https?:\/\//, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-coral hover:text-seagrass underline underline-offset-4 truncate"
+                >
+                  {value}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {!user.bio && Object.keys(social).length === 0 && (
+        <p className="text-dark-slate/50 italic text-sm">
+          Du har inte fyllt i din profil än.{" "}
+          <Link href="/profile/setup" className="text-coral hover:text-seagrass underline underline-offset-4">
+            Gör det nu →
+          </Link>
+        </p>
+      )}
+    </div>
+  );
+}

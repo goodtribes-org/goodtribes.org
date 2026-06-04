@@ -18,7 +18,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     newUser: "/profile/setup",
   },
   callbacks: {
-    session({ session }) {
+    session({ session, user }) {
+      session.user.id = user.id;
+      session.user.onboarded = (user as { onboarded?: boolean }).onboarded ?? false;
       return session;
     },
   },

@@ -82,7 +82,8 @@ services:
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       RESEND_API_KEY: ${RESEND_API_KEY}
     depends_on:
-      - strapi
+      strapi:
+        condition: service_started
       postgres:
         condition: service_healthy
     networks:

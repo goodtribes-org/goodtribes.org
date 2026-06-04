@@ -16,20 +16,23 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-white text-gray-900">
+      <body className="min-h-screen bg-white text-dark-slate">
         <SessionProvider>
-          <header className="border-b border-gray-200">
+          <header className="border-b border-muted-teal">
             <nav className="max-w-4xl mx-auto px-6 py-4 flex gap-6 items-center">
-              <Link href="/" className="font-semibold text-gray-900 hover:text-gray-600">
+              <Link href="/" className="font-semibold text-dark-slate hover:text-seagrass">
                 GoodTribes.org
               </Link>
-              <Link href="/about" className="text-gray-600 hover:text-gray-900">
-                About Us
+              <Link href="/about" className="text-dark-slate/70 hover:text-seagrass">
+                Om oss
               </Link>
-              <Link href="/projects" className="text-gray-600 hover:text-gray-900">
+              <Link href="/projects" className="text-dark-slate/70 hover:text-seagrass">
                 Projekt
               </Link>
-              <Link href="/links" className="text-gray-600 hover:text-gray-900">
+              <Link href="/members" className="text-dark-slate/70 hover:text-seagrass">
+                Medlemmar
+              </Link>
+              <Link href="/links" className="text-dark-slate/70 hover:text-seagrass">
                 Länkar
               </Link>
               <AuthNav />
