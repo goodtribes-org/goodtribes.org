@@ -12,6 +12,9 @@ frontend:
     NEXT_PUBLIC_STRAPI_URL: http://goodtribes-backend:1337
     NEXT_PUBLIC_MEILI_HOST: http://goodtribes-meilisearch:7700
   # Sensitive vars from goodtribes-secret:
+  #   AUTH_SECRET
+  #   RESEND_API_KEY
+  #   DATABASE_URL          (postgresql://goodtribes:<password>@goodtribes-postgres:5432/goodtribes)
   #   STRAPI_API_TOKEN
   #   NEXT_PUBLIC_MEILI_SEARCH_KEY
 

@@ -22,6 +22,13 @@ spec:
                 name: goodtribes-frontend
                 port:
                   number: {{ $.Values.frontend.service.port }}
+          - path: /api/auth
+            pathType: Prefix
+            backend:
+              service:
+                name: goodtribes-frontend
+                port:
+                  number: {{ $.Values.frontend.service.port }}
           - path: /api
             pathType: Prefix
             backend:
