@@ -70,6 +70,32 @@ Content types are managed via the Strapi admin UI and stored under `src/api/`. R
 
 Frontend fetches CMS content from Strapi via `NEXT_PUBLIC_STRAPI_URL` using `STRAPI_API_TOKEN`. Full-text search goes directly to Meilisearch from the browser using `NEXT_PUBLIC_MEILI_SEARCH_KEY` (read-only). Auth sessions are stored in PostgreSQL via Prisma (separate from Strapi's own tables).
 
+## Post-plan validation (run after every plan is implemented)
+
+After implementing any plan, always run this checklist in order:
+
+```bash
+# 1. TypeScript — must pass with zero errors
+npx tsc --noEmit                          # run from frontend/
+
+# 2. Tests — run if any exist
+npm test --workspace=frontend --if-present
+
+# 3. Docker build — must succeed for both services
+docker compose build frontend
+docker compose build backend              # skip if backend unchanged
+
+# 4. Commit and push to main
+git add <changed files>
+git commit -m "<descriptive message>"
+git push
+
+# 5. Wait for GitHub Actions to go green
+gh run watch                              # or: gh run list --limit 5
+```
+
+Do not consider a plan "done" until all Actions workflows pass on `main`.
+
 ## Deployment
 
 CI/CD chain on push to `main`:

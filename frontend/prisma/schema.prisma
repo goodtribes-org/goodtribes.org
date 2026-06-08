@@ -17,6 +17,7 @@ model User {
   bio           String?
   socialLinks   Json?     @default("{}")
   onboarded     Boolean   @default(false)
+  showProfile   Boolean   @default(false)
   accounts      Account[]
   sessions      Session[]
 

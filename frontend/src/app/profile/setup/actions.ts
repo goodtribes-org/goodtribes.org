@@ -19,9 +19,11 @@ export async function saveProfile(formData: FormData) {
     if (val) socialLinks[key] = val;
   }
 
+  const showProfile = formData.get("showProfile") === "on";
+
   await prisma.user.update({
     where: { email: session.user.email },
-    data: { name, bio: bio || null, socialLinks, onboarded: true },
+    data: { name, bio: bio || null, socialLinks, onboarded: true, showProfile },
   });
 
   redirect("/profile");

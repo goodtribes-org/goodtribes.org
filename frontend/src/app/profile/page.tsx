@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
 import SkillManager from "@/components/SkillManager";
+import { setShowProfile } from "./actions";
 
 const prisma = new PrismaClient();
 
@@ -23,6 +24,7 @@ export default async function ProfilePage() {
       name: true,
       email: true,
       bio: true,
+      showProfile: true,
       socialLinks: true,
       skills: {
         select: {
@@ -60,6 +62,24 @@ export default async function ProfilePage() {
           Redigera profil
         </Link>
       </div>
+
+      <section className="mb-8">
+        <form action={setShowProfile}>
+          <input type="hidden" name="show" value={user.showProfile ? "false" : "true"} />
+          <button
+            type="submit"
+            className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+              user.showProfile
+                ? "border-seagrass text-seagrass hover:bg-seagrass/10"
+                : "border-muted-teal text-dark-slate/50 hover:border-coral hover:text-coral"
+            }`}
+          >
+            {user.showProfile
+              ? "✓ Profilen visas på Medlemmar — klicka för att dölja"
+              : "Profilen är dold — klicka för att visa på Medlemmar"}
+          </button>
+        </form>
+      </section>
 
       {user.bio && (
         <section className="mb-8">

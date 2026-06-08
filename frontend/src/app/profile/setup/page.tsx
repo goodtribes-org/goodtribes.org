@@ -11,7 +11,7 @@ export default async function ProfileSetupPage() {
 
   const user = await prisma.user.findUnique({
     where: { email: session.user!.email! },
-    select: { name: true, bio: true, socialLinks: true },
+    select: { name: true, bio: true, socialLinks: true, showProfile: true },
   });
 
   const social = (user?.socialLinks ?? {}) as Record<string, string>;
@@ -63,6 +63,19 @@ export default async function ProfileSetupPage() {
             placeholder="Berätta lite om dig själv, vad du kan bidra med..."
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent resize-none"
           />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <input
+            id="showProfile"
+            name="showProfile"
+            type="checkbox"
+            defaultChecked={user?.showProfile ?? false}
+            className="w-4 h-4 accent-coral"
+          />
+          <label htmlFor="showProfile" className="text-sm text-dark-slate">
+            Visa min profil på medlemssidan
+          </label>
         </div>
 
         <fieldset className="flex flex-col gap-3">
