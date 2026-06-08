@@ -1,0 +1,8 @@
+{
+  "name": "run-goodtribes-org",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "playwright": "*"
+  }
+}
