@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
+import SkillManager from "@/components/SkillManager";
 
 const prisma = new PrismaClient();
 
@@ -18,12 +19,23 @@ export default async function ProfilePage() {
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    select: { name: true, email: true, bio: true, socialLinks: true },
+    select: {
+      name: true,
+      email: true,
+      bio: true,
+      socialLinks: true,
+      skills: {
+        select: {
+          skill: { select: { id: true, name: true, tag: true, description: true, slug: true } },
+        },
+      },
+    },
   });
 
   if (!user) redirect("/login");
 
   const social = (user.socialLinks ?? {}) as Record<string, string>;
+  const skills = user.skills.map((us) => us.skill);
   const initials = user.name
     ? user.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
     : "?";
@@ -58,6 +70,8 @@ export default async function ProfilePage() {
         </section>
       )}
 
+      <SkillManager skills={skills} />
+
       {Object.keys(social).length > 0 && (
         <section>
           <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-3">
@@ -83,7 +97,7 @@ export default async function ProfilePage() {
         </section>
       )}
 
-      {!user.bio && Object.keys(social).length === 0 && (
+      {!user.bio && Object.keys(social).length === 0 && skills.length === 0 && (
         <p className="text-dark-slate/50 italic text-sm">
           Du har inte fyllt i din profil än.{" "}
           <Link href="/profile/setup" className="text-coral hover:text-seagrass underline underline-offset-4">

@@ -36,6 +36,9 @@ export default function RootLayout({
               <Link href="/members" className="text-dark-slate/70 hover:text-seagrass">
                 Medlemmar
               </Link>
+              <Link href="/skill" className="text-dark-slate/70 hover:text-seagrass">
+                Kompetenser
+              </Link>
               <Link href="/links" className="text-dark-slate/70 hover:text-seagrass">
                 Länkar
               </Link>
