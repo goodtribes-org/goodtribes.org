@@ -13,6 +13,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY frontend/ .
 ENV NODE_ENV=production
+RUN grep "bg-" src/app/layout.tsx || true
 RUN npx prisma generate
 RUN npm run build
 
