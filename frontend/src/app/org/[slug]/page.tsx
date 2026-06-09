@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { requestToJoin } from "./actions";
 
 const prisma = new PrismaClient();
 
@@ -25,6 +26,13 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
   if (!org.isPublic && org.ownerId !== userId) notFound();
 
   const isOwner = org.ownerId === userId;
+  const isMember = org.members.some((m) => m.userId === userId);
+
+  const joinRequest = userId && !isOwner && !isMember
+    ? await prisma.organisationJoinRequest.findUnique({
+        where: { organisationId_userId: { organisationId: org.id, userId } },
+      })
+    : null;
 
   return (
     <div className="max-w-2xl">
@@ -87,6 +95,19 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
           ))}
         </ul>
       </section>
+
+      {userId && !isOwner && !isMember && (
+        <form action={requestToJoin} className="mt-6">
+          <input type="hidden" name="orgId" value={org.id} />
+          <button
+            type="submit"
+            disabled={!!joinRequest}
+            className="px-4 py-2 rounded bg-coral text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {joinRequest ? "Begäran skickad" : "Begär medlemskap"}
+          </button>
+        </form>
+      )}
     </div>
   );
 }
