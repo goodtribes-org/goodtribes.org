@@ -8,3 +8,7 @@
   --color-dry-sage: #b2b09b;
   --color-watermelon: #ef3054;
 }
+
+body {
+  background-color: white;
+}
