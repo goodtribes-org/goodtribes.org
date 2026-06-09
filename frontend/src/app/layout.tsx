@@ -21,35 +21,41 @@ export default function RootLayout({
         <SessionProvider>
           <header className="border-b border-muted-teal">
             <nav className="max-w-4xl mx-auto px-6 py-4 flex gap-6 items-center">
-              <Link href="/" className="font-semibold text-dark-slate hover:text-seagrass">
-                GoodTribes.org
-              </Link>
-              <Link href="/about" className="text-dark-slate/70 hover:text-seagrass">
-                Om oss
+              <Link href="/">
+                <Image
+                  src="/img/logga-icon.png"
+                  alt="GoodTribes.org"
+                  height={40}
+                  width={53}
+                  className="object-contain"
+                />
               </Link>
               <Link href="/projects" className="text-dark-slate/70 hover:text-seagrass">
                 Projekt
               </Link>
-              <Link href="/org" className="text-dark-slate/70 hover:text-seagrass">
-                Organisationer
-              </Link>
-              <Link href="/members" className="text-dark-slate/70 hover:text-seagrass">
-                Medlemmar
-              </Link>
-              <Link href="/skill" className="text-dark-slate/70 hover:text-seagrass">
-                Kompetenser
-              </Link>
-              <Link href="/links" className="text-dark-slate/70 hover:text-seagrass">
-                Länkar
+              <div className="relative group">
+                <button className="flex items-center gap-1 text-dark-slate/70 hover:text-seagrass">
+                  Jobba Med Oss
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 mt-0.5">
+                    <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                <div className="absolute top-full left-0 mt-1 hidden group-hover:block bg-white border border-muted-teal rounded-md shadow-md py-1 min-w-40 z-50">
+                  <Link href="/members" className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-yellow-50">
+                    Medlemmar
+                  </Link>
+                  <Link href="/org" className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-yellow-50">
+                    Organisation
+                  </Link>
+                  <Link href="/skill" className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-yellow-50">
+                    Kompetens
+                  </Link>
+                </div>
+              </div>
+              <Link href="/about" className="text-dark-slate/70 hover:text-seagrass">
+                Om oss
               </Link>
               <AuthNav />
-              <Image
-                src="/img/logga-icon.png"
-                alt="GoodTribes.org"
-                height={40}
-                width={53}
-                className="object-contain"
-              />
             </nav>
           </header>
           <main className="max-w-4xl mx-auto px-6 py-12">{children}</main>
