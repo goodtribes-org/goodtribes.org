@@ -44,6 +44,9 @@ jobs:
       - name: Debug layout.tsx content
         run: grep "className.*body\|bg-yellow\|bg-white" frontend/src/app/layout.tsx || true
 
+      - name: Check for .next in build context
+        run: ls -la frontend/.next 2>&1 || echo "No .next directory"
+
       - name: Build and push Docker image
         id: build-and-push
         uses: docker/build-push-action@v4
