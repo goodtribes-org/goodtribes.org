@@ -51,6 +51,15 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
 
+      - name: Make frontend package public
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api --method PATCH \
+            /orgs/goodtribes-org/packages/container/goodtribes.org%2Ffrontend \
+            -f visibility=public || true
+
   build-backend:
     runs-on: ubuntu-latest
     permissions:
@@ -90,3 +99,12 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Make backend package public
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api --method PATCH \
+            /orgs/goodtribes-org/packages/container/goodtribes.org%2Fbackend \
+            -f visibility=public || true
