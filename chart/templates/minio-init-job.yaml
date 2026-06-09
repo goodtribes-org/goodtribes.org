@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: goodtribes-minio-init
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "goodtribes.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "5"
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: minio-init
+          image: minio/mc:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              mc alias set local http://goodtribes-minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+              mc mb --ignore-existing local/goodtribes-public
+              mc mb --ignore-existing local/goodtribes-private
+              mc anonymous set public local/goodtribes-public
+          envFrom:
+            - secretRef:
+                name: goodtribes-secret

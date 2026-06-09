@@ -27,6 +27,7 @@ model User {
   skills                  UserSkill[]
   authoredMessages        WorkspaceMessage[]        @relation("AuthoredMessages")
   createdTasks            WorkspaceTask[]            @relation("CreatedTasks")
+  files                   File[]                    @relation("OwnedFiles")
 }
 
 model Skill {
@@ -151,4 +152,16 @@ model WorkspaceTask {
 
   organisation Organisation @relation("OrgTasks", fields: [organisationId], references: [id], onDelete: Cascade)
   createdBy    User         @relation("CreatedTasks", fields: [createdById], references: [id], onDelete: Cascade)
+}
+
+model File {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  bucket    String
+  name      String
+  size      Int
+  mimeType  String
+  ownerId   String
+  owner     User     @relation("OwnedFiles", fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }

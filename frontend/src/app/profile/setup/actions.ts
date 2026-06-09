@@ -12,6 +12,7 @@ export async function saveProfile(formData: FormData) {
 
   const name = (formData.get("name") as string).trim();
   const bio = (formData.get("bio") as string | null)?.trim() ?? "";
+  const image = (formData.get("image") as string | null)?.trim() || null;
 
   const socialLinks: Record<string, string> = {};
   for (const key of ["website", "linkedin", "github", "twitter"] as const) {
@@ -23,7 +24,14 @@ export async function saveProfile(formData: FormData) {
 
   await prisma.user.update({
     where: { email: session.user.email },
-    data: { name, bio: bio || null, socialLinks, onboarded: true, showProfile },
+    data: {
+      name,
+      bio: bio || null,
+      socialLinks,
+      onboarded: true,
+      showProfile,
+      ...(image ? { image } : {}),
+    },
   });
 
   redirect("/profile");

@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goodtribes-minio
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "goodtribes.labels" . | nindent 4 }}
+    app.kubernetes.io/name: minio
+spec:
+  replicas: {{ .Values.minio.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "goodtribes.selectorLabels" "minio" | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "goodtribes.selectorLabels" "minio" | nindent 8 }}
+    spec:
+      containers:
+        - name: minio
+          image: "{{ .Values.minio.image.repository }}:{{ .Values.minio.image.tag }}"
+          imagePullPolicy: {{ .Values.minio.image.pullPolicy }}
+          command: ["minio", "server", "/data", "--console-address", ":9001"]
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+            - containerPort: 9001
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: goodtribes-secret
+          env:
+            {{- range $key, $value := .Values.minio.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          volumeMounts:
+            - name: minio-data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /minio/health/ready
+              port: 9000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /minio/health/live
+              port: 9000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+        - name: minio-data
+          persistentVolumeClaim:
+            claimName: goodtribes-minio

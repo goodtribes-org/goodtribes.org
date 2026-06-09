@@ -15,6 +15,16 @@ const nextConfig: NextConfig = {
         hostname: "*.goodtribes.org",
         pathname: "/uploads/**",
       },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "9000",
+        pathname: "/goodtribes-public/**",
+      },
+      {
+        protocol: "https",
+        hostname: "goodtribes.org",
+      },
     ],
   },
 };

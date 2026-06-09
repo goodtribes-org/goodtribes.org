@@ -11,12 +11,18 @@ frontend:
   env:
     NEXT_PUBLIC_STRAPI_URL: http://goodtribes-backend:1337
     NEXT_PUBLIC_MEILI_HOST: http://goodtribes-meilisearch:7700
+    S3_ENDPOINT: http://goodtribes-minio:9000
+    S3_PUBLIC_BUCKET: goodtribes-public
+    S3_PRIVATE_BUCKET: goodtribes-private
+    NEXT_PUBLIC_STORAGE_URL: https://goodtribes.org/storage
   # Sensitive vars from goodtribes-secret:
   #   AUTH_SECRET
   #   RESEND_API_KEY
   #   DATABASE_URL          (postgresql://goodtribes:<password>@goodtribes-postgres:5432/goodtribes)
   #   STRAPI_API_TOKEN
   #   NEXT_PUBLIC_MEILI_SEARCH_KEY
+  #   S3_ACCESS_KEY         (MinIO root user / S3 access key)
+  #   S3_SECRET_KEY         (MinIO root password / S3 secret key)
 
 backend:
   replicaCount: 1
@@ -96,6 +102,23 @@ ingress:
       hosts:
         - goodtribes.org
         - www.goodtribes.org
+
+minio:
+  replicaCount: 1
+  image:
+    repository: minio/minio
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    apiPort: 9000
+    consolePort: 9001
+  env: {}
+  persistence:
+    size: 20Gi
+    storageClass: ""
+  # Sensitive vars from goodtribes-secret:
+  #   MINIO_ROOT_USER       (same value as S3_ACCESS_KEY)
+  #   MINIO_ROOT_PASSWORD   (same value as S3_SECRET_KEY)
 
 imagePullSecrets:
   - name: ghcr-pull-secret
