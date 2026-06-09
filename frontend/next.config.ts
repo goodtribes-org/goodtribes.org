@@ -2,6 +2,16 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  async rewrites() {
+    const endpoint = process.env.S3_ENDPOINT ?? "http://localhost:9000";
+    const bucket = process.env.S3_PUBLIC_BUCKET ?? "goodtribes-public";
+    return [
+      {
+        source: "/storage/:path*",
+        destination: `${endpoint}/${bucket}/:path*`,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
