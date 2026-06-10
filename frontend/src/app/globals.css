@@ -9,6 +9,10 @@
   --color-watermelon: #ef3054;
 }
 
+:root {
+  color-scheme: light;
+}
+
 body {
   background-color: white;
 }
