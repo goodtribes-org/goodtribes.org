@@ -39,7 +39,6 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
       <div className="flex items-start gap-6 mb-8">
         <div className="w-20 h-20 rounded-lg bg-dry-sage flex-shrink-0 overflow-hidden">
           {org.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={org.imageUrl} alt="" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-3xl text-dark-slate/30">

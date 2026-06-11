@@ -47,7 +47,6 @@ export default async function WorkPage() {
             >
               <div className="w-14 h-14 rounded-lg bg-dry-sage flex-shrink-0 overflow-hidden">
                 {org.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={org.imageUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-xl text-dark-slate/30">
