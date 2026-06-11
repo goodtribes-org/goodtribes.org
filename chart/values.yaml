@@ -120,4 +120,7 @@ minio:
   #   MINIO_ROOT_USER       (same value as S3_ACCESS_KEY)
   #   MINIO_ROOT_PASSWORD   (same value as S3_SECRET_KEY)
 
-imagePullSecrets: []
+imagePullSecrets:
+  - name: ghcr-pull-secret
+
+ghcrPullSecretData: ""

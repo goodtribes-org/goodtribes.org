@@ -37,6 +37,7 @@ jobs:
             helm template chart/ \
               --set frontend.image.tag=${{ github.event.workflow_run.head_sha }} \
               --set backend.image.tag=${{ github.event.workflow_run.head_sha }} \
+              --set-string ghcrPullSecretData=${{ secrets.GHCR_PULL_SECRET }} \
               > manifest/goodtribes/goodtribes.yaml
             cat manifest/goodtribes/goodtribes.yaml
 
