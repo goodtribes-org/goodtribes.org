@@ -50,6 +50,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
+          no-cache: true
 
       - name: Make frontend package public
         if: github.event_name != 'pull_request'
