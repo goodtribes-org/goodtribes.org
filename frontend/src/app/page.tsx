@@ -14,7 +14,7 @@ export default function HomePage() {
 
       {/* Hero */}
       <section className="text-center py-8">
-        <h1 className="text-5xl font-bold mb-6">
+        <h1 className="text-4xl font-bold mb-6">
           Tillsammans gör vi bra idéer till verklighet
         </h1>
         <p className="text-lg text-dark-slate/70 max-w-2xl mx-auto mb-8">
