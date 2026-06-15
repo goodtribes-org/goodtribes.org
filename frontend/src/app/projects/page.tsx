@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Projekt — GoodTribes.org",
@@ -7,6 +8,7 @@ export const metadata: Metadata = {
 
 const projects = [
   {
+    slug: "kickfix",
     name: "Kickfix",
     description:
       "Marknadsplats för svenska frilansuppdrag. Publicera och ta emot uppdrag med inbyggd kommunikation och betalningsuppföljning.",
@@ -14,6 +16,7 @@ const projects = [
     url: "https://kickfix.se",
   },
   {
+    slug: "asylguiden-se",
     name: "Asylguiden.se",
     description:
       "Informationssajt för asylsökande och nyanlända i Sverige. Flerspråkigt innehåll med automatiska datainsamlare från myndigheter.",
@@ -31,9 +34,10 @@ export default function ProjectsPage() {
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {projects.map((project) => (
-          <div
-            key={project.name}
-            className="border border-muted-teal rounded-lg p-6 flex flex-col gap-4"
+          <Link
+            key={project.slug}
+            href={`/projects/${project.slug}`}
+            className="border border-muted-teal rounded-lg p-6 flex flex-col gap-4 hover:border-seagrass transition-colors"
           >
             <div>
               <h2 className="text-2xl font-semibold mb-2">{project.name}</h2>
@@ -49,15 +53,10 @@ export default function ProjectsPage() {
                 </span>
               ))}
             </div>
-            <a
-              href={project.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-auto text-sm font-medium text-coral hover:text-seagrass underline underline-offset-4"
-            >
-              Besök {project.name} →
-            </a>
-          </div>
+            <span className="mt-auto text-sm font-medium text-coral hover:text-seagrass underline underline-offset-4">
+              Läs mer om {project.name} →
+            </span>
+          </Link>
         ))}
       </div>
     </div>
