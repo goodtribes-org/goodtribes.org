@@ -14,5 +14,5 @@
 }
 
 body {
-  background-color: white;
+  background-color: var(--color-dry-sage);
 }
