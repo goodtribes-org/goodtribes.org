@@ -21,12 +21,12 @@ export default function RootLayout({
         <SessionProvider>
           <header className="border-b border-muted-teal">
             <nav className="max-w-4xl mx-auto px-6 py-4 flex gap-6 items-center">
-              <Link href="/">
+              <Link href="/" className="mr-auto">
                 <Image
-                  src="/img/logga-icon.png"
+                  src="/img/GoodTribes1.png"
                   alt="GoodTribes.org"
-                  height={40}
-                  width={53}
+                  height={52}
+                  width={208}
                   className="object-contain"
                 />
               </Link>
