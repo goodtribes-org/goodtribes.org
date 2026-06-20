@@ -20,7 +20,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-white text-dark-slate">
         <SessionProvider>
           <header className="border-b border-muted-teal">
-            <nav className="max-w-4xl mx-auto px-6 py-4 flex gap-6 items-center">
+            <nav className="max-w-6xl mx-auto px-6 py-4 flex gap-6 items-center">
               <Link href="/" className="mr-auto">
                 <Image
                   src="/img/GoodTribes1.png"
@@ -58,7 +58,7 @@ export default function RootLayout({
               <AuthNav />
             </nav>
           </header>
-          <main className="max-w-4xl mx-auto px-6 py-12">{children}</main>
+          <main className="max-w-6xl mx-auto px-6 py-12">{children}</main>
         </SessionProvider>
       </body>
     </html>

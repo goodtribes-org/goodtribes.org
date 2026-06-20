@@ -35,6 +35,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "goodtribes.org",
       },
+      {
+        protocol: "https",
+        hostname: "picsum.photos",
+      },
     ],
   },
 };
