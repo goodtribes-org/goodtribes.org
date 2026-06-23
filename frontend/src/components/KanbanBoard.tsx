@@ -119,7 +119,7 @@ function AddCardForm({
     const t = title;
     setTitle("");
     setOpen(false);
-    startTransition(() => createCard(projectSlug, t, column));
+    startTransition(async () => { await createCard(projectSlug, t, column); });
   }
 
   if (!open) {
@@ -275,7 +275,7 @@ export default function KanbanBoard({
       };
     });
 
-    startTransition(() => moveCard(cardId, targetCol));
+    startTransition(async () => { await moveCard(cardId, targetCol); });
   }
 
   function handleAdd(col: string, card: Card) {
@@ -292,7 +292,7 @@ export default function KanbanBoard({
       ...prev,
       [col]: (prev[col as keyof Columns] as Card[]).filter((c) => c.id !== cardId),
     }));
-    startTransition(() => deleteCard(cardId));
+    startTransition(async () => { await deleteCard(cardId); });
   }
 
   return (
