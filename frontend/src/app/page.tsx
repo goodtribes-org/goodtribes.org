@@ -27,17 +27,17 @@ const NEW_PROJECTS = [
 
 const FEATURE_CARDS = [
   {
-    image: "/img/gemenskap.png",
+    image: "/img/spetskompentens.png",
     title: "Want a change?",
     description: "Do you want to see a change and to be a part of making a better world?",
   },
   {
-    image: "/img/spetskompentens.png",
+    image: "/img/jobbar_ihop.png",
     title: "Do you have a dream?",
     description: "Do you have an idea or dream that will make the world a better place?",
   },
   {
-    image: "/img/jobbar_ihop.png",
+    image: "/img/Gemini_Generated_Image_cvix3lcvix3lcvix.png",
     title: "Want to be a winner?",
     description: "GoodTribes foundations overall goal is to make you and everybody else in the world a winner.",
   },
@@ -118,7 +118,7 @@ export default function HomePage() {
         <div className="grid md:grid-cols-2">
           <div className="relative min-h-56 md:min-h-0">
             <Image
-              src="/img/hero.png"
+              src="/img/gemenskap.png"
               alt="GoodTribes community illustration"
               fill
               className="object-cover"
