@@ -121,7 +121,8 @@ export default function HomePage() {
               src="/img/what-is-goodtribes.png"
               alt="GoodTribes community illustration"
               fill
-              className="object-cover scale-[1.06] -translate-y-[3%]"
+              className="object-cover"
+              style={{ top: '-1px' }}
               sizes="(max-width: 768px) 100vw, 50vw"
               priority
             />
@@ -155,7 +156,8 @@ export default function HomePage() {
                 src={card.image}
                 alt={card.title}
                 fill
-                className="object-cover scale-[1.06] -translate-y-[3%]"
+                className="object-cover"
+                style={{ top: '-1px' }}
                 sizes="(max-width: 768px) 100vw, 33vw"
               />
             </div>
