@@ -118,7 +118,7 @@ export default function HomePage() {
         <div className="grid md:grid-cols-2">
           <div className="relative min-h-56 md:min-h-0">
             <Image
-              src="/img/gemenskap.png"
+              src="/img/what-is-goodtribes.png"
               alt="GoodTribes community illustration"
               fill
               className="object-cover"
