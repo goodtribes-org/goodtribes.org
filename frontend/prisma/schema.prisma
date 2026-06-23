@@ -29,6 +29,8 @@ model User {
   createdTasks            WorkspaceTask[]            @relation("CreatedTasks")
   files                   File[]                    @relation("OwnedFiles")
   createdKanbanCards      KanbanCard[]              @relation("CreatedKanbanCards")
+  createdTodoLists        TodoList[]                @relation("CreatedTodoLists")
+  createdTodoItems        TodoItem[]                @relation("CreatedTodoItems")
 }
 
 model Skill {
@@ -182,4 +184,38 @@ model KanbanCard {
   createdBy User @relation("CreatedKanbanCards", fields: [createdById], references: [id], onDelete: Cascade)
 
   @@index([projectSlug, column])
+}
+
+model TodoList {
+  id          String     @id @default(cuid())
+  projectSlug String
+  name        String
+  order       Int        @default(0)
+  createdById String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  createdBy User       @relation("CreatedTodoLists", fields: [createdById], references: [id], onDelete: Cascade)
+  items     TodoItem[]
+
+  @@index([projectSlug])
+}
+
+model TodoItem {
+  id          String    @id @default(cuid())
+  listId      String
+  projectSlug String
+  title       String
+  done        Boolean   @default(false)
+  dueDate     DateTime?
+  order       Int       @default(0)
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  createdBy User     @relation("CreatedTodoItems", fields: [createdById], references: [id], onDelete: Cascade)
+  list      TodoList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@index([listId])
+  @@index([projectSlug])
 }

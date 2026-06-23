@@ -220,6 +220,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 Story
               </button>
               <Link
+                href={`/projects/${project.slug}/todos`}
+                className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate transition-colors whitespace-nowrap"
+              >
+                Todo
+              </Link>
+              <Link
                 href={`/projects/${project.slug}/kanban`}
                 className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate transition-colors whitespace-nowrap"
               >
