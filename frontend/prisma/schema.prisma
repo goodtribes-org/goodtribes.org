@@ -28,6 +28,7 @@ model User {
   authoredMessages        WorkspaceMessage[]        @relation("AuthoredMessages")
   createdTasks            WorkspaceTask[]            @relation("CreatedTasks")
   files                   File[]                    @relation("OwnedFiles")
+  createdKanbanCards      KanbanCard[]              @relation("CreatedKanbanCards")
 }
 
 model Skill {
@@ -164,4 +165,20 @@ model File {
   ownerId   String
   owner     User     @relation("OwnedFiles", fields: [ownerId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+}
+
+model KanbanCard {
+  id          String   @id @default(cuid())
+  projectSlug String
+  title       String
+  description String?
+  column      String   @default("BACKLOG")
+  order       Int      @default(0)
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User @relation("CreatedKanbanCards", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([projectSlug, column])
 }

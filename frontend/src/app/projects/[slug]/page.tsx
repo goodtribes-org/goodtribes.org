@@ -124,8 +124,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const project = PROJECTS.find((p) => p.slug === slug);
   if (!project) notFound();
 
-  const activeTab = "Berättelse";
-
   return (
     <div className="max-w-5xl">
       {/* Breadcrumb */}
@@ -216,21 +214,23 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           {/* Tabs */}
           <div className="border-b border-muted-teal/40 mb-6">
             <div className="flex gap-6">
-              {["Berättelse", "Funktioner", `Uppdateringar ${project.milestones.length}`].map((label) => {
-                const isActive = label.startsWith(activeTab) || label === activeTab;
-                return (
-                  <button
-                    key={label}
-                    className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                      isActive
-                        ? "border-coral text-coral"
-                        : "border-transparent text-dark-slate/50 hover:text-dark-slate"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
+              <button
+                className="pb-3 text-sm font-medium border-b-2 border-coral text-coral transition-colors whitespace-nowrap"
+              >
+                Berättelse
+              </button>
+              <Link
+                href={`/projects/${project.slug}/kanban`}
+                className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate transition-colors whitespace-nowrap"
+              >
+                Kanban
+              </Link>
+              <button className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate transition-colors whitespace-nowrap">
+                Funktioner
+              </button>
+              <button className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate transition-colors whitespace-nowrap">
+                Uppdateringar {project.milestones.length}
+              </button>
             </div>
           </div>
 
