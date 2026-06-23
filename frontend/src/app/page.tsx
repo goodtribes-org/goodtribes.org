@@ -141,9 +141,11 @@ export default function HomePage() {
             <p className="text-sm text-dark-slate/70 mb-4">
               The world is not changed by a single person, it changes when we work together to make good ideas come true.
             </p>
-            <Link href="/about" className="text-coral text-sm font-medium hover:underline">
-              Read more
-            </Link>
+            <div className="flex justify-end">
+              <Link href="/about" className="text-coral text-sm font-medium hover:underline">
+                Read more
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -164,9 +166,11 @@ export default function HomePage() {
             </div>
             <h3 className="font-bold text-coral mb-2">{card.title}</h3>
             <p className="text-sm text-dark-slate/70 mb-2">{card.description}</p>
-            <Link href="/about" className="text-coral text-sm font-medium hover:underline">
-              Read more
-            </Link>
+            <div className="flex justify-end">
+              <Link href="/about" className="text-coral text-sm font-medium hover:underline">
+                Read more
+              </Link>
+            </div>
           </div>
         ))}
       </section>
