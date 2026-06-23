@@ -41,8 +41,8 @@ export default async function KanbanPage({ params }: { params: Promise<{ slug: s
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="mb-6">
+    <>
+      <div className="mb-4">
         <Link
           href={`/projects/${slug}`}
           className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
@@ -51,12 +51,15 @@ export default async function KanbanPage({ params }: { params: Promise<{ slug: s
         </Link>
         <h1 className="text-2xl font-bold text-dark-slate mt-1">{project.name}</h1>
       </div>
-      <KanbanBoard
-        projectSlug={slug}
-        initialColumns={columns}
-        isLoggedIn={!!session?.user?.id}
-        currentUserId={session?.user?.id ?? null}
-      />
-    </div>
+      {/* Break out of root layout's max-w-6xl to use full viewport width */}
+      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
+        <KanbanBoard
+          projectSlug={slug}
+          initialColumns={columns}
+          isLoggedIn={!!session?.user?.id}
+          currentUserId={session?.user?.id ?? null}
+        />
+      </div>
+    </>
   );
 }

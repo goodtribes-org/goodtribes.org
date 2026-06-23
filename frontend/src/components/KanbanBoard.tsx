@@ -200,7 +200,7 @@ function DroppableColumn({
   const { setNodeRef, isOver } = useDroppable({ id: col.key });
 
   return (
-    <div className="flex flex-col w-72 shrink-0">
+    <div className="flex flex-col flex-1 min-w-52 shrink-0">
       {/* Colored top border */}
       <div className="h-1 rounded-t-lg" style={{ backgroundColor: col.color }} />
 
@@ -348,7 +348,7 @@ export default function KanbanBoard({
       )}
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="overflow-x-auto pb-4">
-          <div className="flex gap-3 min-w-max">
+          <div className="flex gap-3 w-full">
             {COLUMNS.map((col) => (
               <DroppableColumn
                 key={col.key}
