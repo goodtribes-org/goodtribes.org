@@ -30,6 +30,7 @@ const FEATURE_CARDS = [
     image: "/img/want-a-change.png",
     title: "Want a change?",
     description: "Do you want to see a change and to be a part of making a better world?",
+    objectPosition: "right center",
   },
   {
     image: "/img/do-you-have-a-dream.png",
@@ -157,7 +158,7 @@ export default function HomePage() {
                 alt={card.title}
                 fill
                 className="object-cover"
-                style={{ top: '-1px' }}
+                style={{ top: '-1px', objectPosition: card.objectPosition ?? 'center center' }}
                 sizes="(max-width: 768px) 100vw, 33vw"
               />
             </div>
