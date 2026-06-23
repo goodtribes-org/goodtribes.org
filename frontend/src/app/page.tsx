@@ -164,12 +164,14 @@ export default function HomePage() {
                 sizes="(max-width: 768px) 100vw, 33vw"
               />
             </div>
-            <h3 className="font-bold text-coral mb-2">{card.title}</h3>
-            <p className="text-sm text-dark-slate/70 mb-2">{card.description}</p>
-            <div className="flex justify-end">
-              <Link href="/about" className="text-coral text-sm font-medium hover:underline">
-                Read more
-              </Link>
+            <div className="px-3">
+              <h3 className="font-bold text-coral mb-2">{card.title}</h3>
+              <p className="text-sm text-dark-slate/70 mb-2">{card.description}</p>
+              <div className="flex justify-end">
+                <Link href="/about" className="text-coral text-sm font-medium hover:underline">
+                  Read more
+                </Link>
+              </div>
             </div>
           </div>
         ))}
