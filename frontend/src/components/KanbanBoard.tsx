@@ -51,10 +51,10 @@ const COLUMN_ORDER = COLUMNS.map((c) => c.key);
 function timeAgo(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   const diff = Math.floor((Date.now() - d.getTime()) / 1000);
-  if (diff < 60) return `${diff}s sedan`;
-  if (diff < 3600) return `${Math.floor(diff / 60)} min sedan`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} tim sedan`;
-  return `${Math.floor(diff / 86400)} d sedan`;
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} h ago`;
+  return `${Math.floor(diff / 86400)} d ago`;
 }
 
 function Avatar({ name }: { name: string | null }) {
@@ -96,7 +96,7 @@ function KanbanCardItem({
         <p className="text-xs text-gray-500 mt-1 leading-snug">{card.description}</p>
       )}
       <div className="flex items-center gap-1.5 mt-2 text-xs text-gray-400">
-        <span>av {card.createdBy?.name?.split(" ")[0] ?? "Okänd"}</span>
+        <span>by {card.createdBy?.name?.split(" ")[0] ?? "Unknown"}</span>
         <span>·</span>
         <span>{timeAgo(card.createdAt)}</span>
       </div>
@@ -105,7 +105,7 @@ function KanbanCardItem({
           className="mt-2 text-xs text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
           onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
         >
-          Ta bort
+          Delete
         </button>
       )}
     </div>
@@ -156,7 +156,7 @@ function AddCardInline({
           if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
           if (e.key === "Escape") onClose();
         }}
-        placeholder="Kortets titel..."
+        placeholder="Card title..."
         rows={2}
         className="w-full text-sm resize-none focus:outline-none text-gray-800 placeholder-gray-400"
       />
@@ -166,10 +166,10 @@ function AddCardInline({
           disabled={!title.trim()}
           className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 disabled:opacity-40 transition-colors font-medium"
         >
-          Lägg till
+          Add
         </button>
         <button onClick={onClose} className="text-xs text-gray-400 hover:text-gray-600 px-2">
-          Avbryt
+          Cancel
         </button>
       </div>
     </div>
@@ -342,7 +342,7 @@ export default function KanbanBoard({
             onClick={() => setActiveAddCol(activeAddCol ? null : "BACKLOG")}
             className="flex items-center gap-1.5 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
           >
-            <span className="text-base leading-none font-bold">+</span> Lägg till kort
+            <span className="text-base leading-none font-bold">+</span> Add card
           </button>
         </div>
       )}

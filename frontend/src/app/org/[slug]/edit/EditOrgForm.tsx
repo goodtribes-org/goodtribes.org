@@ -23,7 +23,7 @@ export default function EditOrgForm({ orgId, orgName, description, imageUrl, isP
 
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-dark-slate mb-1">
-            Namn <span className="text-watermelon">*</span>
+            Name <span className="text-watermelon">*</span>
           </label>
           <input
             id="name"
@@ -37,7 +37,7 @@ export default function EditOrgForm({ orgId, orgName, description, imageUrl, isP
 
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-dark-slate mb-1">
-            Beskrivning
+            Description
           </label>
           <textarea
             id="description"
@@ -49,7 +49,7 @@ export default function EditOrgForm({ orgId, orgName, description, imageUrl, isP
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-dark-slate mb-2">Logotyp</label>
+          <label className="block text-sm font-medium text-dark-slate mb-2">Logo</label>
           <FileUpload
             visibility="public"
             accept="image/*"
@@ -70,7 +70,7 @@ export default function EditOrgForm({ orgId, orgName, description, imageUrl, isP
             className="accent-seagrass w-4 h-4"
           />
           <label htmlFor="isPublic" className="text-sm text-dark-slate">
-            Visa organisationen publikt
+            Show organisation publicly
           </label>
         </div>
 
@@ -78,16 +78,16 @@ export default function EditOrgForm({ orgId, orgName, description, imageUrl, isP
           type="submit"
           className="w-full bg-coral text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-watermelon transition-colors mt-2"
         >
-          Spara ändringar
+          Save changes
         </button>
       </form>
 
       <div className="mt-12 border-t border-muted-teal/40 pt-8">
         <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-3">
-          Farlig zon
+          Danger zone
         </h2>
         <p className="text-sm text-dark-slate/70 mb-4">
-          Att ta bort organisationen är permanent och kan inte ångras.
+          Removing the organisation is permanent and cannot be undone.
         </p>
         <form action={deleteOrg}>
           <input type="hidden" name="orgId" value={orgId} />
@@ -95,7 +95,7 @@ export default function EditOrgForm({ orgId, orgName, description, imageUrl, isP
             type="submit"
             className="border border-watermelon text-watermelon text-sm font-medium px-4 py-2 rounded-md hover:bg-watermelon hover:text-white transition-colors"
           >
-            Ta bort organisation
+            Delete organisation
           </button>
         </form>
       </div>

@@ -10,16 +10,16 @@ export default function AuthNav() {
     return (
       <div className="flex items-center gap-4 ml-auto">
         <Link href="/profile" className="text-dark-slate/70 hover:text-seagrass text-sm">
-          Min profil
+          My profile
         </Link>
         <Link href="/work" className="text-dark-slate/70 hover:text-seagrass text-sm">
-          Arbetsrum
+          Workspace
         </Link>
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
           className="text-dark-slate/70 hover:text-seagrass text-sm"
         >
-          Logga ut
+          Log out
         </button>
       </div>
     );
@@ -28,13 +28,13 @@ export default function AuthNav() {
   return (
     <div className="flex items-center gap-3 ml-auto">
       <Link href="/login" className="text-dark-slate/70 hover:text-seagrass text-sm">
-        Logga in
+        Log in
       </Link>
       <Link
         href="/signup"
         className="bg-coral text-white text-sm font-medium px-3 py-1.5 rounded-md hover:bg-watermelon transition-colors"
       >
-        Skapa konto
+        Create account
       </Link>
     </div>
   );

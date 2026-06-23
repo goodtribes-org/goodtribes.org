@@ -3,12 +3,12 @@ import Link from "next/link";
 import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: "Projekt — GoodTribes.org",
-  description: "Projekt som byggs av GoodTribes.org",
+  title: "Projects — GoodTribes.org",
+  description: "Projects built by GoodTribes.org",
 };
 
 const DUMMY_TEXT =
-  "Detta är projekttexten som vi leker med test. Kollar om det skulle fungera med denna text. Vore snyggt om detta kunde fungera";
+  "This is the project description we are experimenting with. Checking if this would work with this text. It would be great if this could work.";
 
 const projects = [
   {

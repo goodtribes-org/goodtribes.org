@@ -6,7 +6,7 @@ import Image from "next/image";
 
 const prisma = new PrismaClient();
 
-const DUMMY_ROLE = "Full-Stack Utvecklare";
+const DUMMY_ROLE = "Full-Stack Developer";
 const DUMMY_RATING = 4.85;
 const DUMMY_WORK = [
   { company: "Prodesign Inc", role: "Front End Developer", location: "Stockholm" },
@@ -14,8 +14,8 @@ const DUMMY_WORK = [
 ];
 const DUMMY_PHONE = "+46 70 000 00 00";
 const DUMMY_ADDRESS = "Kungsgatan 1\n111 43 Stockholm";
-const DUMMY_BIRTHDAY = "1 januari 1990";
-const DUMMY_GENDER = "Inte specificerat";
+const DUMMY_BIRTHDAY = "1 January 1990";
+const DUMMY_GENDER = "Not specified";
 const DUMMY_SKILLS = ["JavaScript", "React", "Node.js", "TypeScript", "CSS", "SQL"];
 
 function SkillRing({ name }: { name: string }) {
@@ -83,7 +83,7 @@ export default async function ProfilePage() {
   const initials = user.name
     ? user.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
     : "?";
-  const location = user.country ?? "Stockholm, Sverige";
+  const location = user.country ?? "Stockholm, Sweden";
 
   return (
     <div className="max-w-5xl">
@@ -95,7 +95,7 @@ export default async function ProfilePage() {
             {user.image ? (
               <Image
                 src={user.image}
-                alt={user.name ?? "Profilbild"}
+                alt={user.name ?? "Profile picture"}
                 width={192}
                 height={192}
                 className="w-48 h-48 rounded-sm object-cover"
@@ -110,7 +110,7 @@ export default async function ProfilePage() {
           {/* Work Experiences */}
           <section>
             <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-4">
-              Arbetslivserfarenhet
+              Work Experience
             </h2>
             <div className="flex flex-col gap-4">
               {DUMMY_WORK.map((job) => (
@@ -126,7 +126,7 @@ export default async function ProfilePage() {
           {/* Skills */}
           <section>
             <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-4">
-              Kompetenser
+              Skills
             </h2>
             <div className="grid grid-cols-3 gap-3">
               {displaySkills.slice(0, 6).map((name) => (
@@ -142,7 +142,7 @@ export default async function ProfilePage() {
           <div>
             <div className="flex items-start justify-between gap-4">
               <h1 className="text-3xl font-bold text-dark-slate">
-                {user.name ?? "Namnlös användare"}
+                {user.name ?? "Unnamed user"}
               </h1>
               <span className="text-sm text-dark-slate/50 flex items-center gap-1 mt-1 flex-shrink-0">
                 📍 {location}
@@ -153,13 +153,13 @@ export default async function ProfilePage() {
 
           {/* Bio */}
           <p className="text-dark-slate/80 leading-relaxed">
-            {user.bio ?? "Lorem Ipsum har länge använts som exempeltext inom tryckerier och textdesign. Det används för att fylla ut webbsidor med text."}
+            {user.bio ?? "Lorem Ipsum has long been used as placeholder text in the printing and design industry. It is used to fill out web pages with text."}
           </p>
 
           {/* Rankings */}
           <section>
             <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-2">
-              Betyg
+              Rating
             </p>
             <StarRating rating={DUMMY_RATING} />
           </section>
@@ -167,23 +167,23 @@ export default async function ProfilePage() {
           {/* Action buttons */}
           <div className="flex flex-wrap gap-3">
             <button className="flex items-center gap-2 px-4 py-2 rounded border border-muted-teal text-dark-slate text-sm hover:border-dark-slate transition-colors">
-              💬 Privat meddelande
+              💬 Private message
             </button>
             <button className="flex items-center gap-2 px-4 py-2 rounded border border-muted-teal text-dark-slate text-sm hover:border-dark-slate transition-colors">
-              🚩 Rapportera
+              🚩 Report
             </button>
             <Link
               href="/profile/setup"
               className="flex items-center gap-2 px-4 py-2 rounded bg-coral text-white text-sm font-medium hover:bg-watermelon transition-colors"
             >
-              ✓ Redigera profil
+              ✓ Edit profile
             </Link>
           </div>
 
           {/* Tabs */}
           <div className="border-b border-muted-teal/40">
             <div className="flex gap-6">
-              {["Om mig", "Recensioner", "Projekt"].map((tab, i) => (
+              {["About me", "Reviews", "Projects"].map((tab, i) => (
                 <button
                   key={tab}
                   className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
@@ -201,14 +201,14 @@ export default async function ProfilePage() {
           {/* Contact Information */}
           <section>
             <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">
-              Kontaktinformation
+              Contact information
             </h2>
             <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-              <dt className="text-dark-slate/50">Telefon</dt>
+              <dt className="text-dark-slate/50">Phone</dt>
               <dd className="text-dark-slate">{DUMMY_PHONE}</dd>
-              <dt className="text-dark-slate/50">Hemadress</dt>
+              <dt className="text-dark-slate/50">Home address</dt>
               <dd className="text-dark-slate whitespace-pre-line">{DUMMY_ADDRESS}</dd>
-              <dt className="text-dark-slate/50">E-postadress</dt>
+              <dt className="text-dark-slate/50">Email address</dt>
               <dd>
                 <a
                   href={`mailto:${user.email}`}
@@ -223,12 +223,12 @@ export default async function ProfilePage() {
           {/* Basic Information */}
           <section>
             <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">
-              Grundläggande information
+              Basic information
             </h2>
             <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-              <dt className="text-dark-slate/50">Födelsedag</dt>
+              <dt className="text-dark-slate/50">Birthday</dt>
               <dd className="text-dark-slate">{DUMMY_BIRTHDAY}</dd>
-              <dt className="text-dark-slate/50">Kön</dt>
+              <dt className="text-dark-slate/50">Gender</dt>
               <dd className="text-dark-slate">{DUMMY_GENDER}</dd>
             </dl>
           </section>

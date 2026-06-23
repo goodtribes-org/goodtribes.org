@@ -34,7 +34,7 @@ export default function ProfileSetupForm({ name, bio, social, showProfile, image
 
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-dark-slate mb-1">
-          Namn <span className="text-watermelon">*</span>
+          Name <span className="text-watermelon">*</span>
         </label>
         <input
           id="name"
@@ -43,21 +43,21 @@ export default function ProfileSetupForm({ name, bio, social, showProfile, image
           required
           autoComplete="name"
           defaultValue={name}
-          placeholder="Ditt namn"
+          placeholder="Your name"
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
         />
       </div>
 
       <div>
         <label htmlFor="bio" className="block text-sm font-medium text-dark-slate mb-1">
-          Beskrivning
+          Description
         </label>
         <textarea
           id="bio"
           name="bio"
           rows={3}
           defaultValue={bio}
-          placeholder="Berätta lite om dig själv, vad du kan bidra med..."
+          placeholder="Tell us a little about yourself, what you can contribute..."
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent resize-none"
         />
       </div>
@@ -71,21 +71,21 @@ export default function ProfileSetupForm({ name, bio, social, showProfile, image
           className="w-4 h-4 accent-coral"
         />
         <label htmlFor="showProfile" className="text-sm text-dark-slate">
-          Visa min profil på medlemssidan
+          Show my profile on the members page
         </label>
       </div>
 
       <fieldset className="flex flex-col gap-3">
-        <legend className="text-sm font-medium text-dark-slate mb-1">Sociala medier</legend>
+        <legend className="text-sm font-medium text-dark-slate mb-1">Social media</legend>
 
         <div>
-          <label htmlFor="website" className="block text-xs text-dark-slate/60 mb-1">Webbplats</label>
+          <label htmlFor="website" className="block text-xs text-dark-slate/60 mb-1">Website</label>
           <input
             id="website"
             name="website"
             type="url"
             defaultValue={social.website ?? ""}
-            placeholder="https://dinhemsida.se"
+            placeholder="https://yourwebsite.com"
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
           />
         </div>
@@ -97,7 +97,7 @@ export default function ProfileSetupForm({ name, bio, social, showProfile, image
             name="linkedin"
             type="text"
             defaultValue={social.linkedin ?? ""}
-            placeholder="linkedin.com/in/dittnamn"
+            placeholder="linkedin.com/in/yourname"
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
           />
         </div>
@@ -109,7 +109,7 @@ export default function ProfileSetupForm({ name, bio, social, showProfile, image
             name="github"
             type="text"
             defaultValue={social.github ?? ""}
-            placeholder="github.com/dittnamn"
+            placeholder="github.com/yourname"
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
           />
         </div>
@@ -121,7 +121,7 @@ export default function ProfileSetupForm({ name, bio, social, showProfile, image
             name="twitter"
             type="text"
             defaultValue={social.twitter ?? ""}
-            placeholder="@dittnamn"
+            placeholder="@yourname"
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
           />
         </div>
@@ -131,7 +131,7 @@ export default function ProfileSetupForm({ name, bio, social, showProfile, image
         type="submit"
         className="w-full bg-coral text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-watermelon transition-colors mt-2"
       >
-        {isOnboarded ? "Spara ändringar" : "Spara och fortsätt"}
+        {isOnboarded ? "Save changes" : "Save and continue"}
       </button>
     </form>
   );

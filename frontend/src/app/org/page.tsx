@@ -3,12 +3,12 @@ import Link from "next/link";
 import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: "Organisationer — GoodTribes.org",
-  description: "Organisationer som är anslutna till GoodTribes.org",
+  title: "Organisations — GoodTribes.org",
+  description: "Organisations connected to GoodTribes.org",
 };
 
 const DUMMY_TEXT =
-  "Detta är organisationstexten som vi leker med test. Kollar om det skulle fungera med denna text. Vore snyggt om detta kunde fungera";
+  "This is the organisation description we are experimenting with. Checking if this would work with this text. It would be great if this could work.";
 
 const orgs = [
   {
@@ -175,7 +175,7 @@ export default function OrgListPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-dark-slate">
-          Organisationer{" "}
+          Organisations{" "}
           <span className="text-dark-slate/40 font-normal">
             ({orgs.length} results)
           </span>
@@ -184,7 +184,7 @@ export default function OrgListPage() {
           href="/org/new"
           className="flex-shrink-0 bg-coral text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-watermelon transition-colors"
         >
-          + Ny organisation
+          + New organisation
         </Link>
       </div>
 

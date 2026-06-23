@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 const DUMMY_TEXT =
-  "Detta är projekttexten som vi leker med test. Kollar om det skulle fungera med denna text. Vore snyggt om detta kunde fungera med denna text.";
+  "This is the project description we are experimenting with. Checking if this would work with this text. It would be great if this could work with this text.";
 
 const SELECTED_PROJECTS = [
   { slug: "kickfix",       name: "Kicklix",          author: "Niklas Gunnas", location: "Sweden", description: DUMMY_TEXT, image: "https://picsum.photos/seed/kickfix/800/600",  likes: 86, members: 17, tasks: 367, raised: 11300, stage: 3 },
@@ -78,11 +78,11 @@ function ProjectCard({ project }: { project: typeof SELECTED_PROJECTS[number] })
           </div>
           <div className="px-1">
             <p className="text-xs font-semibold text-dark-slate">{project.tasks}</p>
-            <p className="text-[10px] text-dark-slate/50 leading-tight">Följ</p>
+            <p className="text-[10px] text-dark-slate/50 leading-tight">Follow</p>
           </div>
           <div className="px-1">
             <p className="text-xs font-semibold text-dark-slate">{project.raised.toLocaleString("sv-SE")}</p>
-            <p className="text-[10px] text-dark-slate/50 leading-tight">Insamlat</p>
+            <p className="text-[10px] text-dark-slate/50 leading-tight">Raised</p>
           </div>
           <div className="px-1">
             <p className="text-xs font-semibold text-dark-slate">{project.stage}</p>

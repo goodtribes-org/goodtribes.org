@@ -27,8 +27,8 @@ export default async function EditOrgPage({ params }: { params: Promise<{ slug: 
 
   return (
     <div className="max-w-lg mx-auto mt-12">
-      <h1 className="text-2xl font-bold mb-1">Redigera organisation</h1>
-      <p className="text-dark-slate/70 mb-8">Uppdatera uppgifterna för {org.name}.</p>
+      <h1 className="text-2xl font-bold mb-1">Edit organisation</h1>
+      <p className="text-dark-slate/70 mb-8">Update the details for {org.name}.</p>
 
       <EditOrgForm
         orgId={org.id}

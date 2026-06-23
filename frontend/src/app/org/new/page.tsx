@@ -8,8 +8,8 @@ export default async function NewOrgPage() {
 
   return (
     <div className="max-w-lg mx-auto mt-12">
-      <h1 className="text-2xl font-bold mb-1">Ny organisation</h1>
-      <p className="text-dark-slate/70 mb-8">Fyll i uppgifterna för din organisation.</p>
+      <h1 className="text-2xl font-bold mb-1">New organisation</h1>
+      <p className="text-dark-slate/70 mb-8">Fill in the details for your organisation.</p>
       <NewOrgForm />
     </div>
   );

@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 const prisma = new PrismaClient();
 
 export const metadata: Metadata = {
-  title: "Medlemmar — GoodTribes.org",
-  description: "Medlemmar i GoodTribes-nätverket",
+  title: "Members — GoodTribes.org",
+  description: "Members of the GoodTribes network",
 };
 
 export default async function MembersPage() {
@@ -29,14 +29,14 @@ export default async function MembersPage() {
   return (
     <div>
       <div className="mb-10">
-        <h1 className="text-4xl font-bold mb-2">Medlemmar</h1>
+        <h1 className="text-4xl font-bold mb-2">Members</h1>
         <p className="text-lg text-dark-slate/70">
-          Personer i GoodTribes-nätverket som valt att synas.
+          People in the GoodTribes network who have chosen to be visible.
         </p>
       </div>
 
       {members.length === 0 ? (
-        <p className="text-muted-teal italic">Inga medlemmar har valt att visa sin profil ännu.</p>
+        <p className="text-muted-teal italic">No members have chosen to show their profile yet.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {members.map((member) => {

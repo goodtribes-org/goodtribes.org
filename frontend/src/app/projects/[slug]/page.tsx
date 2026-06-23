@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-const STAGES = ["Koncept", "Prototyp", "Produktion", "Leverans"];
+const STAGES = ["Concept", "Prototype", "Production", "Delivery"];
 
 const PROJECTS = [
   {
     slug: "kickfix",
     name: "Kickfix",
-    tagline: "Marknadsplats för svenska frilansuppdrag",
+    tagline: "Marketplace for Swedish freelance assignments",
     stack: ["React", "Express", "MongoDB"],
     url: "https://kickfix.se",
     stage: 2,
@@ -24,28 +24,28 @@ const PROJECTS = [
     ],
     partners: ["VINNOVA", "Tillväxtverket"],
     story: [
-      "Kickfix skapades för att lösa ett verkligt problem på den svenska frilansmarknaden: bristen på en pålitlig, lokalt anpassad plattform där uppdragsgivare och frilansare kan hitta varandra utan krångel.",
-      "Plattformen erbjuder inbyggd kommunikation, betalningsuppföljning och ett escrow-system som skyddar båda parter. Genom att integrera svensk bankinfrastruktur och BankID-verifiering bygger vi förtroende från grunden.",
-      "Vi lanserade beta i januari 2024 och har sedan dess onboardat 340 frilansare och 120 uppdragsgivare. Nästa steg är att bygga ut matchningsalgoritmen och lägga till stöd för kollektivavtalsenliga ersättningsnivåer.",
+      "Kickfix was created to solve a real problem in the Swedish freelance market: the lack of a reliable, locally adapted platform where clients and freelancers can find each other without hassle.",
+      "The platform offers built-in communication, payment tracking and an escrow system that protects both parties. By integrating Swedish banking infrastructure and BankID verification, we build trust from the ground up.",
+      "We launched beta in January 2024 and have since onboarded 340 freelancers and 120 clients. The next step is to build out the matching algorithm and add support for collective agreement compensation levels.",
     ],
     features: [
-      { title: "Publicera uppdrag", desc: "Skapa detaljerade uppdragsbeskrivningar med budget, tidslinje och kompetenskrav." },
-      { title: "Inbyggd kommunikation", desc: "Chatta direkt med kandidater utan att lämna plattformen." },
-      { title: "Betalningsuppföljning", desc: "Fakturor, betalstatus och påminnelser samlade på ett ställe." },
-      { title: "Escrow-system", desc: "Pengarna hålls säkert tills uppdragets milstolpar är godkända." },
-      { title: "Omdömen & betyg", desc: "Transparent feedbacksystem som bygger förtroende över tid." },
+      { title: "Post assignments", desc: "Create detailed assignment descriptions with budget, timeline and skill requirements." },
+      { title: "Built-in communication", desc: "Chat directly with candidates without leaving the platform." },
+      { title: "Payment tracking", desc: "Invoices, payment status and reminders all in one place." },
+      { title: "Escrow system", desc: "Money is held securely until assignment milestones are approved." },
+      { title: "Reviews & ratings", desc: "Transparent feedback system that builds trust over time." },
     ],
     milestones: [
-      { date: "Jan 2024", title: "Beta-lansering", desc: "Första versionen live med 50 inbjudna testanvändare." },
-      { date: "Mar 2024", title: "BankID-integration", desc: "Säker identitetsverifiering för alla användare." },
-      { date: "Maj 2024", title: "340 frilansare", desc: "Nådde kritisk massa för matchning i Stockholmsregionen." },
-      { date: "Sep 2024", title: "Escrow v1", desc: "Lanserade betalskydd för uppdrag över 10 000 SEK." },
+      { date: "Jan 2024", title: "Beta launch", desc: "First version live with 50 invited test users." },
+      { date: "Mar 2024", title: "BankID integration", desc: "Secure identity verification for all users." },
+      { date: "May 2024", title: "340 freelancers", desc: "Reached critical mass for matching in the Stockholm region." },
+      { date: "Sep 2024", title: "Escrow v1", desc: "Launched payment protection for assignments over SEK 10,000." },
     ],
   },
   {
     slug: "asylguiden-se",
     name: "Asylguiden.se",
-    tagline: "Informationssajt för asylsökande och nyanlända i Sverige",
+    tagline: "Information site for asylum seekers and newcomers in Sweden",
     stack: ["Next.js", "Strapi", "PostgreSQL"],
     url: "https://asylguiden.se",
     stage: 3,
@@ -59,22 +59,22 @@ const PROJECTS = [
     ],
     partners: ["FORMAS", "Migrationsverket", "Röda Korset"],
     story: [
-      "Asylguiden.se startade som ett volontärprojekt 2022 när vi insåg att nyanlända ofta hade svårt att hitta korrekt och aktuell information om asylprocessen — information som ofta var utspridd på myndighetswebbplatser på svår svenska.",
-      "Lösningen är en flerspråkig informationssajt med automatiska datainsamlare som hämtar och bearbetar innehåll från Migrationsverket, Arbetsförmedlingen och Försäkringskassan. Innehållet presenteras på 12 språk med tydlig, lättläst svenska som bas.",
-      "Sajten nås idag av över 8 000 unika besökare i månaden och har fått erkännande från UNHCR Sverige som ett föredömligt civilsamhällsprojekt. Projektet är nu i leveransfas och förvaltas löpande av ett litet team.",
+      "Asylguiden.se started as a volunteer project in 2022 when we realised that newcomers often struggled to find accurate and up-to-date information about the asylum process — information that was often scattered across government websites in complex Swedish.",
+      "The solution is a multilingual information site with automated data collectors that fetch and process content from the Swedish Migration Agency, the Employment Service and the Social Insurance Agency. Content is presented in 12 languages with clear, easy-to-read Swedish as the base.",
+      "The site is now reached by over 8,000 unique visitors per month and has received recognition from UNHCR Sweden as an exemplary civil society project. The project is now in its delivery phase and is maintained by a small team.",
     ],
     features: [
-      { title: "Flerspråkigt innehåll", desc: "Information på 12 språk inkl. arabiska, dari, somaliska och tigrinja." },
-      { title: "Automatiserad datainsamling", desc: "Spiders hämtar uppdateringar från myndigheter varje natt." },
-      { title: "Mobilanpassat", desc: "Optimerat för låg bandbredd och äldre smartphones." },
-      { title: "Offline-stöd", desc: "Viktigaste sidorna cachas lokalt via service worker." },
-      { title: "Tillgänglighet", desc: "Följer WCAG 2.1 AA och är testad med skärmläsare." },
+      { title: "Multilingual content", desc: "Information in 12 languages including Arabic, Dari, Somali and Tigrinya." },
+      { title: "Automated data collection", desc: "Spiders fetch updates from government agencies every night." },
+      { title: "Mobile optimised", desc: "Optimised for low bandwidth and older smartphones." },
+      { title: "Offline support", desc: "The most important pages are cached locally via service worker." },
+      { title: "Accessibility", desc: "Follows WCAG 2.1 AA and has been tested with screen readers." },
     ],
     milestones: [
-      { date: "Okt 2022", title: "Projektstart", desc: "Volontärteam startar med manuellt redigerat innehåll på 3 språk." },
-      { date: "Mar 2023", title: "Automatisering", desc: "Första generationen av myndighetsspiders driftsätts." },
-      { date: "Aug 2023", title: "12 språk", desc: "Fullt stöd för 12 språk med modererade översättningar." },
-      { date: "Jan 2024", title: "8 000 besökare/mån", desc: "Nådde kritisk synlighet och UNHCR-erkännande." },
+      { date: "Oct 2022", title: "Project start", desc: "Volunteer team starts with manually edited content in 3 languages." },
+      { date: "Mar 2023", title: "Automation", desc: "First generation of government agency spiders deployed." },
+      { date: "Aug 2023", title: "12 languages", desc: "Full support for 12 languages with moderated translations." },
+      { date: "Jan 2024", title: "8,000 visitors/month", desc: "Reached critical visibility and UNHCR recognition." },
     ],
   },
 ];
@@ -128,7 +128,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     <div className="max-w-5xl">
       {/* Breadcrumb */}
       <nav className="mb-6 text-sm text-dark-slate/50">
-        <Link href="/projects" className="hover:text-dark-slate transition-colors">Projekt</Link>
+        <Link href="/projects" className="hover:text-dark-slate transition-colors">Projects</Link>
         <span className="mx-2">/</span>
         <span className="text-dark-slate">{project.name}</span>
       </nav>
@@ -170,7 +170,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           {/* Finance progress */}
           <div>
             <div className="flex justify-between text-xs text-dark-slate/60 mb-1">
-              <span>Finansiering</span>
+              <span>Funding</span>
               <span>{project.finance.raised.toLocaleString("sv-SE")} / {project.finance.goal.toLocaleString("sv-SE")} SEK</span>
             </div>
             <ProgressBar value={project.finance.raised} max={project.finance.goal} color="#ff6f59" />
@@ -179,8 +179,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           {/* Task progress */}
           <div>
             <div className="flex justify-between text-xs text-dark-slate/60 mb-1">
-              <span>Arbete</span>
-              <span>{project.tasks.done} / {project.tasks.total} Uppgifter</span>
+              <span>Work</span>
+              <span>{project.tasks.done} / {project.tasks.total} Tasks</span>
             </div>
             <ProgressBar value={project.tasks.done} max={project.tasks.total} color="#43aa8b" />
           </div>
@@ -193,10 +193,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               rel="noopener noreferrer"
               className="px-5 py-2 rounded bg-coral text-white text-sm font-bold uppercase tracking-wide hover:bg-watermelon transition-colors"
             >
-              Besök projektet →
+              Visit project →
             </a>
             <button className="flex items-center gap-1.5 px-4 py-2 rounded border border-muted-teal text-dark-slate text-sm hover:border-dark-slate transition-colors">
-              👁 Följ
+              👁 Follow
             </button>
             <div className="flex gap-2 ml-auto">
               <span className="text-dark-slate/40 hover:text-dark-slate cursor-pointer text-lg">𝕏</span>
@@ -217,7 +217,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <button
                 className="pb-3 text-sm font-medium border-b-2 border-coral text-coral transition-colors whitespace-nowrap"
               >
-                Berättelse
+                Story
               </button>
               <Link
                 href={`/projects/${project.slug}/kanban`}
@@ -226,10 +226,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 Kanban
               </Link>
               <button className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate transition-colors whitespace-nowrap">
-                Funktioner
+                Features
               </button>
               <button className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate transition-colors whitespace-nowrap">
-                Uppdateringar {project.milestones.length}
+                Updates {project.milestones.length}
               </button>
             </div>
           </div>
@@ -267,9 +267,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               ))}
             </div>
             <div className="mt-4 pt-3 border-t border-muted-teal/20">
-              <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-wider mb-1">Höjdpunkter</p>
+              <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-wider mb-1">Highlights</p>
               <p className="text-xs text-dark-slate/70 flex items-center gap-1">
-                <span>👤</span> {project.contributors.length} bidragsgivare
+                <span>👤</span> {project.contributors.length} contributors
               </p>
             </div>
           </div>
@@ -286,7 +286,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         <div className="col-span-2 flex flex-col gap-8">
           {/* Contributors */}
           <section>
-            <h2 className="text-sm font-semibold text-dark-slate mb-3">Teamet</h2>
+            <h2 className="text-sm font-semibold text-dark-slate mb-3">The Team</h2>
             <div className="grid grid-cols-4 gap-3">
               {project.contributors.map((name) => (
                 <MemberAvatar key={name} name={name} />
@@ -296,7 +296,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
           {/* Features */}
           <section>
-            <h2 className="text-sm font-semibold text-dark-slate mb-3">Funktioner</h2>
+            <h2 className="text-sm font-semibold text-dark-slate mb-3">Features</h2>
             <div className="flex flex-col gap-3">
               {project.features.map((f) => (
                 <div key={f.title} className="flex items-start gap-2">
@@ -322,7 +322,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
           {/* Milestones */}
           <section>
-            <h2 className="text-sm font-semibold text-dark-slate mb-3">Milstolpar</h2>
+            <h2 className="text-sm font-semibold text-dark-slate mb-3">Milestones</h2>
             <div className="flex flex-col gap-3">
               {project.milestones.map((m) => (
                 <div key={m.title} className="flex gap-3">

@@ -12,8 +12,8 @@ export default function WorkspaceTabNav({ slug, isAdmin }: Props) {
   const pathname = usePathname();
 
   const tabs = [
-    { label: "Meddelanden", href: `/work/${slug}/messages` },
-    { label: "Uppgifter", href: `/work/${slug}/tasks` },
+    { label: "Messages", href: `/work/${slug}/messages` },
+    { label: "Tasks", href: `/work/${slug}/tasks` },
     ...(isAdmin ? [{ label: "Admin", href: `/work/${slug}/admin` }] : []),
   ];
 

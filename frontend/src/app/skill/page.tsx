@@ -6,8 +6,8 @@ import Link from "next/link";
 const prisma = new PrismaClient();
 
 export const metadata: Metadata = {
-  title: "Kompetenser — GoodTribes.org",
-  description: "Se vilka kompetenser som finns hos GoodTribes-gemenskapen.",
+  title: "Skills — GoodTribes.org",
+  description: "See what skills the GoodTribes community has to offer.",
 };
 
 export default async function SkillListPage() {
@@ -30,9 +30,9 @@ export default async function SkillListPage() {
     <div>
       <div className="flex items-center justify-between mb-10">
         <div>
-          <h1 className="text-4xl font-bold mb-2">Kompetenser</h1>
+          <h1 className="text-4xl font-bold mb-2">Skills</h1>
           <p className="text-lg text-dark-slate/70">
-            Vad kan gemenskapens medlemmar? Hitta rätt person för ditt projekt.
+            What can the community's members do? Find the right person for your project.
           </p>
         </div>
         {userId && (
@@ -40,13 +40,13 @@ export default async function SkillListPage() {
             href="/profile"
             className="flex-shrink-0 bg-coral text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-watermelon transition-colors"
           >
-            + Lägg till kompetens
+            + Add skill
           </Link>
         )}
       </div>
 
       {skills.length === 0 ? (
-        <p className="text-muted-teal italic">Inga kompetenser ännu — lägg till dina egna på din profil!</p>
+        <p className="text-muted-teal italic">No skills yet — add your own on your profile!</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {skills.map((skill) => (
@@ -63,7 +63,7 @@ export default async function SkillListPage() {
               </div>
               <p className="text-sm text-dark-slate/70 line-clamp-2 mb-3">{skill.description}</p>
               <p className="text-xs text-muted-teal">
-                {skill._count.users} {skill._count.users === 1 ? "person" : "personer"}
+                {skill._count.users} {skill._count.users === 1 ? "person" : "people"}
               </p>
             </Link>
           ))}

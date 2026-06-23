@@ -37,7 +37,7 @@ export default async function WorkspaceLayout({
   return (
     <div>
       <div className="mb-6">
-        <p className="text-sm text-dark-slate/50 mb-1">Arbetsrum</p>
+        <p className="text-sm text-dark-slate/50 mb-1">Workspace</p>
         <h1 className="text-3xl font-bold">{org.name}</h1>
       </div>
       <WorkspaceTabNav slug={slug} isAdmin={!!isAdmin} />

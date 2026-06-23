@@ -15,22 +15,22 @@ const SDG_GOALS = [
   { n: 16, color: "#00689d" }, { n: 17, color: "#19486a" },
 ];
 
-const STAGES = ["Koncept", "Prototyp", "Produktion", "Leverans"];
+const STAGES = ["Concept", "Prototype", "Production", "Delivery"];
 
 const DUMMY_FINANCE = { raised: 375670, goal: 500000 };
 const DUMMY_WORK = { done: 183, total: 432 };
 const DUMMY_OWNER_ROLE = "Full-Stack Programmers";
 const DUMMY_RATING = 4.85;
 const DUMMY_PARTNERS = ["FORMAS", "VINNOVA"];
-const DUMMY_STORY = `Vad gör projektet unikt och innovativt?
+const DUMMY_STORY = `What makes the project unique and innovative?
 
 IT IS A SCALABLE, LOCALIZED SOLUTION TO OUR GLOBAL PLASTIC CRISIS.
 
-Vår lösning kräver inga ändringar i den befintliga återvinningsinfrastrukturen. Det gör processen enklare och sparar tid och resurser, och gör plastinsamling mycket enklare.
+Our solution requires no changes to the existing recycling infrastructure. This simplifies the process and saves time and resources, making plastic collection much easier.
 
-Med vår lösning behöver plasten inte sorteras efter typ. En stor flaskhals i återvinningsprocessen är att separera plaster efter deras återvinningsgrupper, såsom #1 PET och #2 HDPE-flaskor. Alla plaster har olika smälttemperaturer för omformning, så klassificering är viktigt.
+With our solution, plastic does not need to be sorted by type. A major bottleneck in the recycling process is separating plastics by their recycling groups, such as #1 PET and #2 HDPE bottles. All plastics have different melting temperatures for reshaping, so classification is important.
 
-De nuvarande metoderna för att omforma plast till tegel och block kräver dyra maskiner och använder mycket energi. Genom att använda jordsäcksdesign och byggprinciper kan vi använda plasten när den väl omvandlats till pellets. Det innebär att all plast kan blandas och skäras ihop, vilket eliminerar den mest arbetskrävande delen av processen.`;
+Current methods for reshaping plastic into bricks and blocks require expensive machines and use a lot of energy. By using earthbag design and building principles, we can use the plastic once it has been converted into pellets. This means all plastic can be mixed and cut together, eliminating the most labour-intensive part of the process.`;
 
 function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = Math.min(100, (value / max) * 100);
@@ -119,7 +119,7 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
           <div>
             <h1 className="text-2xl font-bold text-dark-slate mb-3">{org.name}</h1>
             {!org.isPublic && (
-              <span className="text-xs bg-dry-sage text-dark-slate px-2 py-1 rounded">Privat</span>
+              <span className="text-xs bg-dry-sage text-dark-slate px-2 py-1 rounded">Private</span>
             )}
           </div>
 
@@ -146,8 +146,8 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
           {/* Finance progress */}
           <div>
             <div className="flex justify-between text-xs text-dark-slate/60 mb-1">
-              <span>Finansiering</span>
-              <span>{DUMMY_FINANCE.raised.toLocaleString("sv-SE")} / {DUMMY_FINANCE.goal.toLocaleString("sv-SE")} Sek</span>
+              <span>Funding</span>
+              <span>{DUMMY_FINANCE.raised.toLocaleString("sv-SE")} / {DUMMY_FINANCE.goal.toLocaleString("sv-SE")} SEK</span>
             </div>
             <ProgressBar value={DUMMY_FINANCE.raised} max={DUMMY_FINANCE.goal} color="#ff6f59" />
           </div>
@@ -155,8 +155,8 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
           {/* Work progress */}
           <div>
             <div className="flex justify-between text-xs text-dark-slate/60 mb-1">
-              <span>Arbete</span>
-              <span>{DUMMY_WORK.done} / {DUMMY_WORK.total} Uppgifter</span>
+              <span>Work</span>
+              <span>{DUMMY_WORK.done} / {DUMMY_WORK.total} Tasks</span>
             </div>
             <ProgressBar value={DUMMY_WORK.done} max={DUMMY_WORK.total} color="#43aa8b" />
           </div>
@@ -171,19 +171,19 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
                   disabled={!!joinRequest}
                   className="px-5 py-2 rounded bg-coral text-white text-sm font-bold uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed hover:bg-watermelon transition-colors"
                 >
-                  {joinRequest ? "Skickat" : "Stöd det"}
+                  {joinRequest ? "Sent" : "Support it"}
                 </button>
               </form>
             )}
             <button className="flex items-center gap-1.5 px-4 py-2 rounded border border-muted-teal text-dark-slate text-sm hover:border-dark-slate transition-colors">
-              👁 Följ
+              👁 Follow
             </button>
             {isOwner && (
               <Link
                 href={`/org/${slug}/edit`}
                 className="text-sm text-coral hover:text-seagrass underline underline-offset-4"
               >
-                Redigera
+                Edit
               </Link>
             )}
             <div className="flex gap-2 ml-auto">
@@ -203,11 +203,11 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
           <div className="border-b border-muted-teal/40 mb-6">
             <div className="flex gap-6">
               {[
-                { label: "Berättelse", active: true },
+                { label: "Story", active: true },
                 { label: "FAQ", active: false },
-                { label: "Uppdateringar 531", active: false },
-                { label: "Kommentarer 11", active: false },
-                { label: "Arbetsyta", active: false },
+                { label: "Updates 531", active: false },
+                { label: "Comments 11", active: false },
+                { label: "Workspace", active: false },
               ].map(({ label, active }) => (
                 <button
                   key={label}
@@ -225,10 +225,10 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
 
           {/* Concept stage card */}
           <div className="border border-muted-teal/30 rounded p-4 mb-6">
-            <p className="text-sm font-semibold text-dark-slate mb-2">Koncept</p>
+            <p className="text-sm font-semibold text-dark-slate mb-2">Concept</p>
             <p className="text-xs text-dark-slate/70 mb-4 leading-relaxed">
-              Projektteamet har ännu inte producerat en fungerande demo för sitt koncept. Deras förmåga att framgångsrikt producera en prototyp kan påverkas av produktutveckling och ekonomiska utmaningar.{" "}
-              <span className="text-coral cursor-pointer hover:underline">Läs mer</span>
+              The project team has not yet produced a working demo of their concept. Their ability to successfully produce a prototype may be affected by product development and financial challenges.{" "}
+              <span className="text-coral cursor-pointer hover:underline">Read more</span>
             </p>
 
             {/* Stage progress */}
@@ -264,9 +264,9 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
 
             {/* Highlights */}
             <div className="mt-4 pt-3 border-t border-muted-teal/20">
-              <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-wider mb-1">Höjdpunkter</p>
+              <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-wider mb-1">Highlights</p>
               <p className="text-xs text-dark-slate/70 flex items-center gap-1">
-                <span>👤</span> {org.members.length} Projekt
+                <span>👤</span> {org.members.length} Projects
               </p>
             </div>
           </div>
@@ -290,18 +290,18 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
         <div className="col-span-2 flex flex-col gap-8">
           {/* The Team */}
           <section>
-            <h2 className="text-sm font-semibold text-dark-slate mb-3">Teamet</h2>
+            <h2 className="text-sm font-semibold text-dark-slate mb-3">The Team</h2>
             <div className="grid grid-cols-4 gap-3">
               {org.members.length > 0
                 ? org.members.slice(0, 12).map((m) => (
-                    <MemberAvatar key={m.id} name={m.user.name ?? "Okänd"} />
+                    <MemberAvatar key={m.id} name={m.user.name ?? "Unknown"} />
                   ))
                 : Array.from({ length: 12 }).map((_, i) => (
                     <div key={i} className="flex flex-col items-center gap-1">
                       <div className="w-12 h-12 rounded-full bg-dry-sage flex items-center justify-center text-xs font-semibold text-dark-slate/30">
                         {String.fromCharCode(65 + i)}
                       </div>
-                      <span className="text-xs text-dark-slate/30 text-center">Medlem</span>
+                      <span className="text-xs text-dark-slate/30 text-center">Member</span>
                     </div>
                   ))}
             </div>

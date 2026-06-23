@@ -32,17 +32,17 @@ export default async function TasksPage({
       <form action={createTask} className="mb-8 border border-muted-teal rounded-xl p-6 bg-white">
         <input type="hidden" name="orgId" value={org.id} />
         <input type="hidden" name="slug" value={slug} />
-        <h2 className="text-base font-semibold mb-4">Ny uppgift</h2>
+        <h2 className="text-base font-semibold mb-4">New task</h2>
         <input
           name="title"
           required
-          placeholder="Uppgiftens titel"
+          placeholder="Task title"
           className="w-full border border-muted-teal rounded-lg px-4 py-2 text-sm bg-white focus:outline-none focus:border-seagrass mb-3"
         />
         <textarea
           name="description"
           rows={2}
-          placeholder="Beskrivning (valfritt)"
+          placeholder="Description (optional)"
           className="w-full border border-muted-teal rounded-lg px-4 py-2 text-sm bg-white focus:outline-none focus:border-seagrass resize-none mb-3"
         />
         <div className="flex justify-end">
@@ -50,13 +50,13 @@ export default async function TasksPage({
             type="submit"
             className="bg-seagrass text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-seagrass/80 transition-colors"
           >
-            Lägg till
+            Add
           </button>
         </div>
       </form>
 
       {tasks.length === 0 && (
-        <p className="text-muted-teal italic">Inga uppgifter ännu.</p>
+        <p className="text-muted-teal italic">No tasks yet.</p>
       )}
 
       {open.length > 0 && (
@@ -69,7 +69,7 @@ export default async function TasksPage({
 
       {done.length > 0 && (
         <div>
-          <p className="text-xs text-dark-slate/50 uppercase tracking-wide mb-3">Klara</p>
+          <p className="text-xs text-dark-slate/50 uppercase tracking-wide mb-3">Done</p>
           <div className="flex flex-col gap-3">
             {done.map((task) => (
               <TaskRow key={task.id} task={task} slug={slug} />
@@ -105,7 +105,7 @@ function TaskRow({
               ? "bg-seagrass border-seagrass text-white"
               : "border-muted-teal hover:border-seagrass"
           }`}
-          aria-label={task.done ? "Markera som ej klar" : "Markera som klar"}
+          aria-label={task.done ? "Mark as not done" : "Mark as done"}
         >
           {task.done && (
             <svg viewBox="0 0 12 12" className="w-3 h-3 fill-current">

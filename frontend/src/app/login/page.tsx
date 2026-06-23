@@ -24,21 +24,21 @@ export default async function LoginPage({
 
   return (
     <div className="max-w-sm mx-auto mt-16">
-      <h1 className="text-2xl font-bold mb-2">Logga in</h1>
+      <h1 className="text-2xl font-bold mb-2">Log in</h1>
       <p className="text-dark-slate/70 mb-8">
-        Ange din e-postadress så skickar vi en inloggningslänk.
+        Enter your email address and we will send you a login link.
       </p>
 
       {params.error && (
         <div className="mb-6 p-3 bg-watermelon/10 border border-watermelon/40 rounded text-sm text-watermelon">
-          Något gick fel. Försök igen.
+          Something went wrong. Please try again.
         </div>
       )}
 
       <form action={handleSignIn} className="flex flex-col gap-4">
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-dark-slate mb-1">
-            E-postadress
+            Email address
           </label>
           <input
             id="email"
@@ -46,7 +46,7 @@ export default async function LoginPage({
             type="email"
             required
             autoComplete="email"
-            placeholder="din@epost.se"
+            placeholder="you@example.com"
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
           />
         </div>
@@ -54,14 +54,14 @@ export default async function LoginPage({
           type="submit"
           className="w-full bg-coral text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-watermelon transition-colors"
         >
-          Skicka inloggningslänk
+          Send login link
         </button>
       </form>
 
       <p className="mt-6 text-sm text-dark-slate/60 text-center">
-        Nytt här?{" "}
+        New here?{" "}
         <Link href="/signup" className="text-coral hover:text-seagrass underline underline-offset-4">
-          Skapa konto →
+          Create account →
         </Link>
       </p>
     </div>

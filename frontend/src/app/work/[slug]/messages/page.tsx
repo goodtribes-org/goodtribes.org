@@ -35,7 +35,7 @@ export default async function MessagesPage({
           name="content"
           required
           rows={3}
-          placeholder="Skriv ett meddelande..."
+          placeholder="Write a message..."
           className="w-full border border-muted-teal rounded-lg px-4 py-3 text-sm bg-white focus:outline-none focus:border-seagrass resize-none"
         />
         <div className="flex justify-end mt-2">
@@ -43,13 +43,13 @@ export default async function MessagesPage({
             type="submit"
             className="bg-seagrass text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-seagrass/80 transition-colors"
           >
-            Skicka
+            Send
           </button>
         </div>
       </form>
 
       {messages.length === 0 ? (
-        <p className="text-muted-teal italic">Inga meddelanden ännu.</p>
+        <p className="text-muted-teal italic">No messages yet.</p>
       ) : (
         <div className="flex flex-col gap-4">
           {messages.map((msg) => {
@@ -60,7 +60,7 @@ export default async function MessagesPage({
                 className={`rounded-xl p-4 ${isOwn ? "bg-seagrass/10 border border-seagrass/30" : "bg-white border border-muted-teal"}`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium">{msg.author.name ?? "Okänd"}</span>
+                  <span className="text-sm font-medium">{msg.author.name ?? "Unknown"}</span>
                   <span className="text-xs text-dark-slate/50">
                     {msg.createdAt.toLocaleDateString("sv-SE")}
                   </span>
