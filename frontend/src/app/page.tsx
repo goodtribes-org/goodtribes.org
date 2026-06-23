@@ -27,17 +27,17 @@ const NEW_PROJECTS = [
 
 const FEATURE_CARDS = [
   {
-    image: "/img/spetskompentens.png",
+    image: "/img/want-a-change.png",
     title: "Want a change?",
     description: "Do you want to see a change and to be a part of making a better world?",
   },
   {
-    image: "/img/jobbar_ihop.png",
+    image: "/img/do-you-have-a-dream.png",
     title: "Do you have a dream?",
     description: "Do you have an idea or dream that will make the world a better place?",
   },
   {
-    image: "/img/Gemini_Generated_Image_cvix3lcvix3lcvix.png",
+    image: "/img/want-to-be-a-winner.png",
     title: "Want to be a winner?",
     description: "GoodTribes foundations overall goal is to make you and everybody else in the world a winner.",
   },
