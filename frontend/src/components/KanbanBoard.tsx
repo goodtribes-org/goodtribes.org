@@ -15,6 +15,8 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-
 import { CSS } from "@dnd-kit/utilities";
 import { createCard, moveCard, deleteCard } from "@/app/projects/[slug]/kanban/actions";
 
+type CardCreator = { name: string | null };
+
 type Card = {
   id: string;
   projectSlug: string;
@@ -23,8 +25,9 @@ type Card = {
   column: string;
   order: number;
   createdById: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  createdBy: CardCreator | null;
 };
 
 type Columns = {
@@ -35,17 +38,37 @@ type Columns = {
   DONE: Card[];
 };
 
-const COLUMN_LABELS: Record<string, string> = {
-  BACKLOG: "Backlog",
-  TODO: "ToDo",
-  DOING: "Doing",
-  REVIEW: "Review",
-  DONE: "Done",
-};
+const COLUMNS = [
+  { key: "BACKLOG", label: "Backlog", color: "#8b5cf6" },
+  { key: "TODO",    label: "ToDo",    color: "#f59e0b" },
+  { key: "DOING",   label: "Doing",   color: "#3b82f6" },
+  { key: "REVIEW",  label: "Review",  color: "#6b7280" },
+  { key: "DONE",    label: "Done",    color: "#10b981" },
+];
 
-const COLUMN_ORDER = ["BACKLOG", "TODO", "DOING", "REVIEW", "DONE"];
+const COLUMN_ORDER = COLUMNS.map((c) => c.key);
 
-function SortableCard({
+function timeAgo(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (diff < 60) return `${diff}s sedan`;
+  if (diff < 3600) return `${Math.floor(diff / 60)} min sedan`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} tim sedan`;
+  return `${Math.floor(diff / 86400)} d sedan`;
+}
+
+function Avatar({ name }: { name: string | null }) {
+  const initials = name
+    ? name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
+    : "?";
+  return (
+    <div className="w-7 h-7 rounded-full bg-seagrass flex items-center justify-center text-white text-xs font-bold shrink-0">
+      {initials}
+    </div>
+  );
+}
+
+function KanbanCardItem({
   card,
   currentUserId,
   onDelete,
@@ -54,33 +77,33 @@ function SortableCard({
   currentUserId: string | null;
   onDelete: (id: string) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-  };
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: card.id });
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
       {...attributes}
       {...listeners}
-      className="bg-white border border-muted-teal/30 rounded p-3 shadow-sm cursor-grab active:cursor-grabbing group"
+      className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm cursor-grab active:cursor-grabbing group hover:shadow-md hover:border-gray-300 transition-all"
     >
-      <p className="text-sm text-dark-slate leading-snug">{card.title}</p>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-medium text-gray-800 leading-snug flex-1">{card.title}</p>
+        <Avatar name={card.createdBy?.name ?? null} />
+      </div>
       {card.description && (
-        <p className="text-xs text-dark-slate/50 mt-1 leading-snug">{card.description}</p>
+        <p className="text-xs text-gray-500 mt-1 leading-snug">{card.description}</p>
       )}
+      <div className="flex items-center gap-1.5 mt-2 text-xs text-gray-400">
+        <span>av {card.createdBy?.name?.split(" ")[0] ?? "Okänd"}</span>
+        <span>·</span>
+        <span>{timeAgo(card.createdAt)}</span>
+      </div>
       {currentUserId === card.createdById && (
         <button
-          className="text-xs text-dark-slate/30 hover:text-watermelon mt-2 opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(card.id);
-          }}
+          className="mt-2 text-xs text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
         >
           Ta bort
         </button>
@@ -89,22 +112,23 @@ function SortableCard({
   );
 }
 
-function AddCardForm({
+function AddCardInline({
   projectSlug,
   column,
   onAdd,
+  onClose,
 }: {
   projectSlug: string;
   column: string;
   onAdd: (card: Card) => void;
+  onClose: () => void;
 }) {
-  const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   function submit() {
     if (!title.trim()) return;
-    const optimistic: Card = {
+    onAdd({
       id: `temp-${Date.now()}`,
       projectSlug,
       title: title.trim(),
@@ -114,54 +138,37 @@ function AddCardForm({
       createdById: "",
       createdAt: new Date(),
       updatedAt: new Date(),
-    };
-    onAdd(optimistic);
+      createdBy: null,
+    });
     const t = title;
     setTitle("");
-    setOpen(false);
+    onClose();
     startTransition(async () => { await createCard(projectSlug, t, column); });
   }
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        className="w-full text-left text-xs text-dark-slate/40 hover:text-dark-slate py-1 px-2 rounded hover:bg-muted-teal/10 transition-colors"
-      >
-        + Lägg till kort
-      </button>
-    );
-  }
-
   return (
-    <div className="space-y-2">
+    <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
       <textarea
         autoFocus
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            submit();
-          }
-          if (e.key === "Escape") setOpen(false);
+          if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
+          if (e.key === "Escape") onClose();
         }}
         placeholder="Kortets titel..."
         rows={2}
-        className="w-full text-sm border border-muted-teal/40 rounded p-2 resize-none focus:outline-none focus:border-coral"
+        className="w-full text-sm resize-none focus:outline-none text-gray-800 placeholder-gray-400"
       />
-      <div className="flex gap-2">
+      <div className="flex gap-2 mt-2">
         <button
           onClick={submit}
-          disabled={isPending || !title.trim()}
-          className="text-xs bg-coral text-white px-3 py-1 rounded hover:bg-coral/90 disabled:opacity-50 transition-colors"
+          disabled={!title.trim()}
+          className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 disabled:opacity-40 transition-colors font-medium"
         >
           Lägg till
         </button>
-        <button
-          onClick={() => setOpen(false)}
-          className="text-xs text-dark-slate/50 hover:text-dark-slate px-2 py-1"
-        >
+        <button onClick={onClose} className="text-xs text-gray-400 hover:text-gray-600 px-2">
           Avbryt
         </button>
       </div>
@@ -175,46 +182,83 @@ function DroppableColumn({
   isLoggedIn,
   projectSlug,
   currentUserId,
+  activeAddCol,
+  onSetAddCol,
   onAdd,
   onDelete,
 }: {
-  col: string;
+  col: { key: string; label: string; color: string };
   cards: Card[];
   isLoggedIn: boolean;
   projectSlug: string;
   currentUserId: string | null;
+  activeAddCol: string | null;
+  onSetAddCol: (col: string | null) => void;
   onAdd: (col: string, card: Card) => void;
   onDelete: (id: string) => void;
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: col });
+  const { setNodeRef, isOver } = useDroppable({ id: col.key });
 
   return (
-    <div className={`flex flex-col w-64 rounded-lg p-3 shrink-0 transition-colors ${isOver ? "bg-coral/10" : "bg-dry-sage/20"}`}>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-dark-slate">{COLUMN_LABELS[col]}</h3>
-        <span className="text-xs text-dark-slate/40 bg-white rounded-full px-2 py-0.5">{cards.length}</span>
+    <div className="flex flex-col w-72 shrink-0">
+      {/* Colored top border */}
+      <div className="h-1 rounded-t-lg" style={{ backgroundColor: col.color }} />
+
+      {/* Column header */}
+      <div
+        className="flex items-center justify-between px-3 py-2 border-x border-gray-200 bg-white"
+        style={{ borderTop: `1px solid ${col.color}22` }}
+      >
+        <span className="text-sm font-semibold text-gray-700">
+          {col.label}{" "}
+          <span className="font-normal text-gray-400">({cards.length})</span>
+        </span>
+        <div className="flex items-center gap-1">
+          {isLoggedIn && (
+            <button
+              onClick={() => onSetAddCol(activeAddCol === col.key ? null : col.key)}
+              className="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors text-base font-medium"
+            >
+              +
+            </button>
+          )}
+          <button className="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors tracking-widest text-xs pb-1">
+            ···
+          </button>
+        </div>
       </div>
+
+      {/* Cards area */}
       <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
-        <div ref={setNodeRef} className="flex flex-col gap-2 flex-1 min-h-[120px]">
+        <div
+          ref={setNodeRef}
+          className="flex-1 min-h-32 p-2 border-x border-b border-gray-200 rounded-b-lg flex flex-col gap-2 transition-colors"
+          style={{ backgroundColor: isOver ? `${col.color}10` : cards.length === 0 ? "#fafafa" : "white" }}
+        >
+          {cards.length === 0 && !isOver && activeAddCol !== col.key && (
+            <div
+              className="flex-1 rounded-md border-2 border-dashed min-h-16"
+              style={{ borderColor: `${col.color}33` }}
+            />
+          )}
           {cards.map((card) => (
-            <SortableCard
+            <KanbanCardItem
               key={card.id}
               card={card}
               currentUserId={currentUserId}
               onDelete={onDelete}
             />
           ))}
+          {activeAddCol === col.key && (
+            <AddCardInline
+              projectSlug={projectSlug}
+              column={col.key}
+              onAdd={(card) => onAdd(col.key, card)}
+              onClose={() => onSetAddCol(null)}
+            />
+          )}
         </div>
       </SortableContext>
-      {isLoggedIn && (
-        <div className="mt-3 pt-2 border-t border-muted-teal/20">
-          <AddCardForm
-            projectSlug={projectSlug}
-            column={col}
-            onAdd={(card) => onAdd(col, card)}
-          />
-        </div>
-      )}
     </div>
   );
 }
@@ -232,6 +276,7 @@ export default function KanbanBoard({
 }) {
   const [columns, setColumns] = useState<Columns>(initialColumns);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
+  const [activeAddCol, setActiveAddCol] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
   const sensors = useSensors(
@@ -246,10 +291,9 @@ export default function KanbanBoard({
   }
 
   function handleDragStart(event: DragStartEvent) {
-    const id = event.active.id as string;
-    const col = findCardColumn(id);
+    const col = findCardColumn(event.active.id as string);
     if (!col) return;
-    const card = (columns[col as keyof Columns] as Card[]).find((c) => c.id === id);
+    const card = (columns[col as keyof Columns] as Card[]).find((c) => c.id === event.active.id);
     if (card) setActiveCard(card);
   }
 
@@ -257,15 +301,11 @@ export default function KanbanBoard({
     setActiveCard(null);
     const { active, over } = event;
     if (!over) return;
-
     const cardId = active.id as string;
     const overId = over.id as string;
-
     const sourceCol = findCardColumn(cardId);
     const targetCol = COLUMN_ORDER.includes(overId) ? overId : findCardColumn(overId);
-
     if (!sourceCol || !targetCol || sourceCol === targetCol) return;
-
     setColumns((prev) => {
       const card = (prev[sourceCol as keyof Columns] as Card[]).find((c) => c.id === cardId)!;
       return {
@@ -274,7 +314,6 @@ export default function KanbanBoard({
         [targetCol]: [...(prev[targetCol as keyof Columns] as Card[]), { ...card, column: targetCol }],
       };
     });
-
     startTransition(async () => { await moveCard(cardId, targetCol); });
   }
 
@@ -296,30 +335,44 @@ export default function KanbanBoard({
   }
 
   return (
-    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="overflow-x-auto pb-4">
-        <div className="flex gap-4 min-w-max">
-          {COLUMN_ORDER.map((col) => (
-            <DroppableColumn
-              key={col}
-              col={col}
-              cards={columns[col as keyof Columns] as Card[]}
-              isLoggedIn={isLoggedIn}
-              projectSlug={projectSlug}
-              currentUserId={currentUserId}
-              onAdd={handleAdd}
-              onDelete={handleDelete}
-            />
-          ))}
+    <div>
+      {isLoggedIn && (
+        <div className="flex items-center gap-3 mb-6">
+          <button
+            onClick={() => setActiveAddCol(activeAddCol ? null : "BACKLOG")}
+            className="flex items-center gap-1.5 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <span className="text-base leading-none font-bold">+</span> Lägg till kort
+          </button>
         </div>
-      </div>
-      <DragOverlay>
-        {activeCard && (
-          <div className="bg-white border border-coral rounded p-3 shadow-lg rotate-2 w-64">
-            <p className="text-sm text-dark-slate">{activeCard.title}</p>
+      )}
+      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <div className="overflow-x-auto pb-4">
+          <div className="flex gap-3 min-w-max">
+            {COLUMNS.map((col) => (
+              <DroppableColumn
+                key={col.key}
+                col={col}
+                cards={columns[col.key as keyof Columns] as Card[]}
+                isLoggedIn={isLoggedIn}
+                projectSlug={projectSlug}
+                currentUserId={currentUserId}
+                activeAddCol={activeAddCol}
+                onSetAddCol={setActiveAddCol}
+                onAdd={handleAdd}
+                onDelete={handleDelete}
+              />
+            ))}
           </div>
-        )}
-      </DragOverlay>
-    </DndContext>
+        </div>
+        <DragOverlay>
+          {activeCard && (
+            <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-xl rotate-1 w-72">
+              <p className="text-sm font-medium text-gray-800">{activeCard.title}</p>
+            </div>
+          )}
+        </DragOverlay>
+      </DndContext>
+    </div>
   );
 }

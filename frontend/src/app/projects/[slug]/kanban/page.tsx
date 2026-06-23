@@ -29,23 +29,27 @@ export default async function KanbanPage({ params }: { params: Promise<{ slug: s
   const cards = await prisma.kanbanCard.findMany({
     where: { projectSlug: slug },
     orderBy: [{ column: "asc" }, { order: "asc" }],
+    include: { createdBy: { select: { name: true } } },
   });
 
   const columns = {
     BACKLOG: cards.filter((c) => c.column === "BACKLOG"),
-    TODO: cards.filter((c) => c.column === "TODO"),
-    DOING: cards.filter((c) => c.column === "DOING"),
-    REVIEW: cards.filter((c) => c.column === "REVIEW"),
-    DONE: cards.filter((c) => c.column === "DONE"),
+    TODO:    cards.filter((c) => c.column === "TODO"),
+    DOING:   cards.filter((c) => c.column === "DOING"),
+    REVIEW:  cards.filter((c) => c.column === "REVIEW"),
+    DONE:    cards.filter((c) => c.column === "DONE"),
   };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-6">
-        <Link href={`/projects/${slug}`} className="text-sm text-dark-slate/50 hover:text-dark-slate transition-colors">
+        <Link
+          href={`/projects/${slug}`}
+          className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+        >
           ← {project.name}
         </Link>
-        <h1 className="text-2xl font-bold text-dark-slate mt-2">Kanban</h1>
+        <h1 className="text-2xl font-bold text-dark-slate mt-1">{project.name}</h1>
       </div>
       <KanbanBoard
         projectSlug={slug}
