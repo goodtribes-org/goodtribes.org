@@ -116,7 +116,7 @@ export default function HomePage() {
       {/* What is GoodTribes? */}
       <section className="overflow-hidden">
         <div className="grid md:grid-cols-2">
-          <div className="relative min-h-56 md:min-h-0">
+          <div className="relative min-h-56 md:min-h-0 rounded-tl-lg rounded-bl-lg overflow-hidden">
             <Image
               src="/img/what-is-goodtribes.png"
               alt="GoodTribes community illustration"
@@ -150,7 +150,7 @@ export default function HomePage() {
       <section className="grid md:grid-cols-3 gap-6">
         {FEATURE_CARDS.map((card) => (
           <div key={card.title}>
-            <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden mb-4">
+            <div className="relative aspect-[4/3] w-full rounded-t-lg overflow-hidden mb-4">
               <Image
                 src={card.image}
                 alt={card.title}
