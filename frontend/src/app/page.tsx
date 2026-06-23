@@ -114,7 +114,7 @@ export default function HomePage() {
       <h1 className="text-4xl font-bold text-center text-dark-slate/30">How Goodtribes work</h1>
 
       {/* What is GoodTribes? */}
-      <section className="border border-muted-teal/40 rounded-lg overflow-hidden">
+      <section className="overflow-hidden">
         <div className="grid md:grid-cols-2">
           <div className="relative min-h-56 md:min-h-0">
             <Image
