@@ -6,9 +6,15 @@ import { revalidatePath } from "next/cache";
 
 const prisma = new PrismaClient();
 
-export async function createCard(projectSlug: string, title: string, column: string) {
+export async function createCard(
+  projectSlug: string,
+  title: string,
+  column: string,
+  description?: string,
+  dueDate?: string,
+) {
   const session = await auth();
-  if (!session?.user?.id) return { error: "Inte inloggad" };
+  if (!session?.user?.id) return { error: "Not logged in" };
 
   const maxOrder = await prisma.kanbanCard.aggregate({
     where: { projectSlug, column },
@@ -22,6 +28,8 @@ export async function createCard(projectSlug: string, title: string, column: str
       column,
       order: (maxOrder._max.order ?? -1) + 1,
       createdById: session.user.id,
+      description: description?.trim() || null,
+      dueDate: dueDate ? new Date(dueDate) : null,
     },
   });
 
@@ -30,10 +38,10 @@ export async function createCard(projectSlug: string, title: string, column: str
 
 export async function moveCard(cardId: string, newColumn: string) {
   const session = await auth();
-  if (!session?.user?.id) return { error: "Inte inloggad" };
+  if (!session?.user?.id) return { error: "Not logged in" };
 
   const card = await prisma.kanbanCard.findUnique({ where: { id: cardId } });
-  if (!card) return { error: "Kortet finns inte" };
+  if (!card) return { error: "Card not found" };
 
   const maxOrder = await prisma.kanbanCard.aggregate({
     where: { projectSlug: card.projectSlug, column: newColumn, NOT: { id: cardId } },
@@ -50,11 +58,11 @@ export async function moveCard(cardId: string, newColumn: string) {
 
 export async function deleteCard(cardId: string) {
   const session = await auth();
-  if (!session?.user?.id) return { error: "Inte inloggad" };
+  if (!session?.user?.id) return { error: "Not logged in" };
 
   const card = await prisma.kanbanCard.findUnique({ where: { id: cardId } });
-  if (!card) return { error: "Kortet finns inte" };
-  if (card.createdById !== session.user.id) return { error: "Behörighet saknas" };
+  if (!card) return { error: "Card not found" };
+  if (card.createdById !== session.user.id) return { error: "Not authorized" };
 
   await prisma.kanbanCard.delete({ where: { id: cardId } });
   revalidatePath(`/projects/${card.projectSlug}/kanban`);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -22,6 +22,7 @@ type Card = {
   projectSlug: string;
   title: string;
   description: string | null;
+  dueDate: Date | string | null;
   column: string;
   order: number;
   createdById: string;
@@ -57,6 +58,12 @@ function timeAgo(date: Date | string): string {
   return `${Math.floor(diff / 86400)} d ago`;
 }
 
+function formatDate(date: Date | string | null): string | null {
+  if (!date) return null;
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+}
+
 function Avatar({ name }: { name: string | null }) {
   const initials = name
     ? name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
@@ -64,6 +71,140 @@ function Avatar({ name }: { name: string | null }) {
   return (
     <div className="w-7 h-7 rounded-full bg-seagrass flex items-center justify-center text-white text-xs font-bold shrink-0">
       {initials}
+    </div>
+  );
+}
+
+function AddCardModal({
+  projectSlug,
+  column,
+  columnLabel,
+  onAdd,
+  onClose,
+}: {
+  projectSlug: string;
+  column: string;
+  columnLabel: string;
+  onAdd: (card: Card) => void;
+  onClose: () => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [, startTransition] = useTransition();
+  const titleRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    titleRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  function submit(andAnother = false) {
+    if (!title.trim()) return;
+    onAdd({
+      id: `temp-${Date.now()}`,
+      projectSlug,
+      title: title.trim(),
+      description: description.trim() || null,
+      dueDate: dueDate || null,
+      column,
+      order: 9999,
+      createdById: "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: null,
+    });
+    const [t, desc, due] = [title, description, dueDate];
+    startTransition(async () => { await createCard(projectSlug, t, column, desc, due); });
+    if (andAnother) {
+      setTitle("");
+      setDescription("");
+      setDueDate("");
+      titleRef.current?.focus();
+    } else {
+      onClose();
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl">
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4 border-b border-gray-100">
+          <h2 className="text-base font-semibold text-gray-900">
+            Add a new card to {columnLabel}
+          </h2>
+        </div>
+
+        {/* Form */}
+        <div className="px-6 py-4 space-y-4">
+          {/* Title */}
+          <div className="flex items-start gap-4">
+            <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Title</label>
+            <input
+              ref={titleRef}
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
+              placeholder="Type a card title..."
+              className="flex-1 text-sm text-gray-800 placeholder-gray-400 border-0 border-b border-gray-200 focus:border-blue-400 focus:outline-none py-1.5 transition-colors"
+            />
+          </div>
+
+          {/* Due date */}
+          <div className="flex items-start gap-4">
+            <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Due on</label>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="flex-1 text-sm text-gray-800 placeholder-gray-400 border-0 border-b border-gray-200 focus:border-blue-400 focus:outline-none py-1.5 transition-colors"
+            />
+          </div>
+
+          {/* Description */}
+          <div className="flex items-start gap-4">
+            <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe your card here..."
+              rows={5}
+              className="flex-1 text-sm text-gray-800 placeholder-gray-400 border border-gray-200 rounded-lg p-3 focus:outline-none focus:border-blue-400 resize-none transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-gray-100 flex items-center gap-3">
+          <button
+            onClick={() => submit(false)}
+            disabled={!title.trim()}
+            className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-40 transition-colors"
+          >
+            Save card
+          </button>
+          <button
+            onClick={() => submit(true)}
+            disabled={!title.trim()}
+            className="text-sm font-medium text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+          >
+            Save and add another
+          </button>
+          <button
+            onClick={onClose}
+            className="text-sm font-medium text-gray-500 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+          >
+            Never mind
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -80,6 +221,8 @@ function KanbanCardItem({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: card.id });
 
+  const due = formatDate(card.dueDate);
+
   return (
     <div
       ref={setNodeRef}
@@ -93,12 +236,18 @@ function KanbanCardItem({
         <Avatar name={card.createdBy?.name ?? null} />
       </div>
       {card.description && (
-        <p className="text-xs text-gray-500 mt-1 leading-snug">{card.description}</p>
+        <p className="text-xs text-gray-500 mt-1 leading-snug line-clamp-2">{card.description}</p>
       )}
-      <div className="flex items-center gap-1.5 mt-2 text-xs text-gray-400">
-        <span>by {card.createdBy?.name?.split(" ")[0] ?? "Unknown"}</span>
-        <span>·</span>
-        <span>{timeAgo(card.createdAt)}</span>
+      <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+        <span>by {card.createdBy?.name?.split(" ")[0] ?? "Unknown"} · {timeAgo(card.createdAt)}</span>
+        {due && (
+          <span className="ml-auto flex items-center gap-1">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            {due}
+          </span>
+        )}
       </div>
       {currentUserId === card.createdById && (
         <button
@@ -112,79 +261,13 @@ function KanbanCardItem({
   );
 }
 
-function AddCardInline({
-  projectSlug,
-  column,
-  onAdd,
-  onClose,
-}: {
-  projectSlug: string;
-  column: string;
-  onAdd: (card: Card) => void;
-  onClose: () => void;
-}) {
-  const [title, setTitle] = useState("");
-  const [, startTransition] = useTransition();
-
-  function submit() {
-    if (!title.trim()) return;
-    onAdd({
-      id: `temp-${Date.now()}`,
-      projectSlug,
-      title: title.trim(),
-      description: null,
-      column,
-      order: 9999,
-      createdById: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      createdBy: null,
-    });
-    const t = title;
-    setTitle("");
-    onClose();
-    startTransition(async () => { await createCard(projectSlug, t, column); });
-  }
-
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
-      <textarea
-        autoFocus
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
-          if (e.key === "Escape") onClose();
-        }}
-        placeholder="Card title..."
-        rows={2}
-        className="w-full text-sm resize-none focus:outline-none text-gray-800 placeholder-gray-400"
-      />
-      <div className="flex gap-2 mt-2">
-        <button
-          onClick={submit}
-          disabled={!title.trim()}
-          className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700 disabled:opacity-40 transition-colors font-medium"
-        >
-          Add
-        </button>
-        <button onClick={onClose} className="text-xs text-gray-400 hover:text-gray-600 px-2">
-          Cancel
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function DroppableColumn({
   col,
   cards,
   isLoggedIn,
   projectSlug,
   currentUserId,
-  activeAddCol,
-  onSetAddCol,
-  onAdd,
+  onOpenModal,
   onDelete,
 }: {
   col: { key: string; label: string; color: string };
@@ -192,19 +275,14 @@ function DroppableColumn({
   isLoggedIn: boolean;
   projectSlug: string;
   currentUserId: string | null;
-  activeAddCol: string | null;
-  onSetAddCol: (col: string | null) => void;
-  onAdd: (col: string, card: Card) => void;
+  onOpenModal: (colKey: string) => void;
   onDelete: (id: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: col.key });
 
   return (
     <div className="flex flex-col flex-1 min-w-52 shrink-0">
-      {/* Colored top border */}
       <div className="h-1 rounded-t-lg" style={{ backgroundColor: col.color }} />
-
-      {/* Column header */}
       <div
         className="flex items-center justify-between px-3 py-2 border-x border-gray-200 bg-white"
         style={{ borderTop: `1px solid ${col.color}22` }}
@@ -216,7 +294,7 @@ function DroppableColumn({
         <div className="flex items-center gap-1">
           {isLoggedIn && (
             <button
-              onClick={() => onSetAddCol(activeAddCol === col.key ? null : col.key)}
+              onClick={() => onOpenModal(col.key)}
               className="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors text-base font-medium"
             >
               +
@@ -227,15 +305,13 @@ function DroppableColumn({
           </button>
         </div>
       </div>
-
-      {/* Cards area */}
       <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
         <div
           ref={setNodeRef}
           className="flex-1 min-h-32 p-2 border-x border-b border-gray-200 rounded-b-lg flex flex-col gap-2 transition-colors"
           style={{ backgroundColor: isOver ? `${col.color}10` : cards.length === 0 ? "#fafafa" : "white" }}
         >
-          {cards.length === 0 && !isOver && activeAddCol !== col.key && (
+          {cards.length === 0 && !isOver && (
             <div
               className="flex-1 rounded-md border-2 border-dashed min-h-16"
               style={{ borderColor: `${col.color}33` }}
@@ -249,14 +325,6 @@ function DroppableColumn({
               onDelete={onDelete}
             />
           ))}
-          {activeAddCol === col.key && (
-            <AddCardInline
-              projectSlug={projectSlug}
-              column={col.key}
-              onAdd={(card) => onAdd(col.key, card)}
-              onClose={() => onSetAddCol(null)}
-            />
-          )}
         </div>
       </SortableContext>
     </div>
@@ -276,12 +344,14 @@ export default function KanbanBoard({
 }) {
   const [columns, setColumns] = useState<Columns>(initialColumns);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
-  const [activeAddCol, setActiveAddCol] = useState<string | null>(null);
+  const [modalCol, setModalCol] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
+
+  const activeColData = COLUMNS.find((c) => c.key === modalCol);
 
   function findCardColumn(cardId: string): string | null {
     for (const col of COLUMN_ORDER) {
@@ -317,10 +387,10 @@ export default function KanbanBoard({
     startTransition(async () => { await moveCard(cardId, targetCol); });
   }
 
-  function handleAdd(col: string, card: Card) {
+  function handleAdd(card: Card) {
     setColumns((prev) => ({
       ...prev,
-      [col]: [...(prev[col as keyof Columns] as Card[]), card],
+      [card.column]: [...(prev[card.column as keyof Columns] as Card[]), card],
     }));
   }
 
@@ -339,13 +409,14 @@ export default function KanbanBoard({
       {isLoggedIn && (
         <div className="flex items-center gap-3 mb-6">
           <button
-            onClick={() => setActiveAddCol(activeAddCol ? null : "BACKLOG")}
+            onClick={() => setModalCol("BACKLOG")}
             className="flex items-center gap-1.5 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
           >
-            <span className="text-base leading-none font-bold">+</span> Add card
+            <span className="text-base leading-none font-bold">+</span> Add a card
           </button>
         </div>
       )}
+
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="overflow-x-auto pb-4">
           <div className="flex gap-3 w-full">
@@ -357,9 +428,7 @@ export default function KanbanBoard({
                 isLoggedIn={isLoggedIn}
                 projectSlug={projectSlug}
                 currentUserId={currentUserId}
-                activeAddCol={activeAddCol}
-                onSetAddCol={setActiveAddCol}
-                onAdd={handleAdd}
+                onOpenModal={setModalCol}
                 onDelete={handleDelete}
               />
             ))}
@@ -373,6 +442,16 @@ export default function KanbanBoard({
           )}
         </DragOverlay>
       </DndContext>
+
+      {modalCol && activeColData && (
+        <AddCardModal
+          projectSlug={projectSlug}
+          column={modalCol}
+          columnLabel={activeColData.label}
+          onAdd={handleAdd}
+          onClose={() => setModalCol(null)}
+        />
+      )}
     </div>
   );
 }
