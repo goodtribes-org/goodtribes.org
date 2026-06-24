@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createNotification } from "@/lib/notify";
 import { logActivity } from "@/lib/activity";
+import { sendEmail } from "@/lib/email";
 
 const prisma = new PrismaClient();
 
@@ -77,6 +78,22 @@ export async function respondToJoinRequest(
         : `Your request to join ${req.project.title} was not approved`,
     url: decision === "approved" ? `/projects/${slug}` : "/projects",
   });
+
+  if (decision === "approved") {
+    const requester = await prisma.user.findUnique({ where: { id: req.userId }, select: { email: true, name: true } });
+    if (requester?.email) {
+      const base = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
+      await sendEmail({
+        to: requester.email,
+        subject: `You're now a member of ${req.project.title}`,
+        html: `
+          <p>Hi ${requester.name ?? "there"},</p>
+          <p>Your request to join <strong>${req.project.title}</strong> has been approved. Welcome aboard!</p>
+          <p><a href="${base}/projects/${slug}" style="background:#E85D4A;color:white;padding:10px 20px;border-radius:4px;text-decoration:none;display:inline-block;margin:16px 0;">Open project →</a></p>
+        `,
+      });
+    }
+  }
 
   revalidatePath(`/projects/${slug}`);
 }

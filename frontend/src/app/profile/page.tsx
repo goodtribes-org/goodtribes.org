@@ -6,54 +6,6 @@ import Image from "next/image";
 
 const prisma = new PrismaClient();
 
-const DUMMY_ROLE = "Full-Stack Developer";
-const DUMMY_RATING = 4.85;
-const DUMMY_WORK = [
-  { company: "Prodesign Inc", role: "Front End Developer", location: "Stockholm" },
-  { company: "Blue Tech", role: "Senior Programmer", location: "Göteborg" },
-];
-const DUMMY_PHONE = "+46 70 000 00 00";
-const DUMMY_ADDRESS = "Kungsgatan 1\n111 43 Stockholm";
-const DUMMY_BIRTHDAY = "1 January 1990";
-const DUMMY_GENDER = "Not specified";
-const DUMMY_SKILLS = ["JavaScript", "React", "Node.js", "TypeScript", "CSS", "SQL"];
-
-function SkillRing({ name }: { name: string }) {
-  return (
-    <div className="relative w-20 h-20">
-      <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-        <circle cx="18" cy="18" r="14" fill="none" stroke="#e5e7eb" strokeWidth="2.5" />
-        <circle
-          cx="18"
-          cy="18"
-          r="14"
-          fill="none"
-          stroke="#43aa8b"
-          strokeWidth="2.5"
-          strokeDasharray="70 30"
-          strokeLinecap="round"
-        />
-      </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-center text-dark-slate leading-tight px-2">
-        {name}
-      </span>
-    </div>
-  );
-}
-
-function StarRating({ rating }: { rating: number }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-3xl font-bold text-dark-slate">{rating.toFixed(2)}</span>
-      <div className="flex gap-0.5">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <span key={i} className="text-2xl text-yellow-400">★</span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default async function ProfilePage() {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
@@ -61,6 +13,7 @@ export default async function ProfilePage() {
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
     select: {
+      id: true,
       name: true,
       email: true,
       image: true,
@@ -69,9 +22,12 @@ export default async function ProfilePage() {
       showProfile: true,
       socialLinks: true,
       skills: {
-        select: {
-          skill: { select: { id: true, name: true, tag: true, description: true, slug: true } },
-        },
+        select: { skill: { select: { id: true, name: true, slug: true } } },
+      },
+      projectMemberships: {
+        include: { project: { select: { slug: true, title: true, status: true, description: true } } },
+        orderBy: { joinedAt: "desc" },
+        take: 6,
       },
     },
   });
@@ -79,25 +35,24 @@ export default async function ProfilePage() {
   if (!user) redirect("/login");
 
   const skills = user.skills.map((us) => us.skill);
-  const displaySkills = skills.length > 0 ? skills.map((s) => s.name) : DUMMY_SKILLS;
   const initials = user.name
     ? user.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
     : "?";
-  const location = user.country ?? "Stockholm, Sweden";
+
+  const socialLinks = (user.socialLinks ?? {}) as Record<string, string>;
 
   return (
     <div className="max-w-5xl">
       <div className="grid grid-cols-5 gap-8">
         {/* LEFT COLUMN */}
         <div className="col-span-2 flex flex-col gap-8">
-          {/* Profile photo */}
+          {/* Avatar */}
           <div className="flex justify-center">
             {user.image ? (
               <Image
                 src={user.image}
                 alt={user.name ?? "Profile picture"}
-                width={192}
-                height={192}
+                width={192} height={192}
                 className="w-48 h-48 rounded-sm object-cover"
               />
             ) : (
@@ -107,131 +62,116 @@ export default async function ProfilePage() {
             )}
           </div>
 
-          {/* Work Experiences */}
-          <section>
-            <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-4">
-              Work Experience
-            </h2>
-            <div className="flex flex-col gap-4">
-              {DUMMY_WORK.map((job) => (
-                <div key={job.company}>
-                  <p className="font-semibold text-dark-slate">{job.company}</p>
-                  <p className="text-coral text-sm">{job.role}</p>
-                  <p className="text-dark-slate/50 text-sm">{job.location}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
           {/* Skills */}
-          <section>
-            <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-4">
-              Skills
-            </h2>
-            <div className="grid grid-cols-3 gap-3">
-              {displaySkills.slice(0, 6).map((name) => (
-                <SkillRing key={name} name={name} />
-              ))}
-            </div>
-          </section>
+          {skills.length > 0 && (
+            <section>
+              <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-4">Skills</h2>
+              <div className="flex flex-wrap gap-2">
+                {skills.map((s) => (
+                  <Link
+                    key={s.id}
+                    href={`/skill/${s.slug}`}
+                    className="text-sm bg-dry-sage text-dark-slate px-3 py-1 rounded-full hover:bg-muted-teal/30 transition-colors"
+                  >
+                    {s.name}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Social links */}
+          {Object.keys(socialLinks).length > 0 && (
+            <section>
+              <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">Links</h2>
+              <dl className="space-y-1 text-sm">
+                {(["website", "linkedin", "github", "twitter"] as const).map((key) =>
+                  socialLinks[key] ? (
+                    <div key={key} className="flex gap-3">
+                      <dt className="text-dark-slate/50 capitalize w-16 shrink-0">{key}</dt>
+                      <dd>
+                        <a href={socialLinks[key]} target="_blank" rel="noopener noreferrer"
+                          className="text-coral hover:underline truncate">
+                          {socialLinks[key].replace(/^https?:\/\//, "")}
+                        </a>
+                      </dd>
+                    </div>
+                  ) : null
+                )}
+              </dl>
+            </section>
+          )}
         </div>
 
         {/* RIGHT COLUMN */}
         <div className="col-span-3 flex flex-col gap-6">
-          {/* Name + location */}
+          {/* Name + location + edit */}
           <div>
             <div className="flex items-start justify-between gap-4">
-              <h1 className="text-3xl font-bold text-dark-slate">
-                {user.name ?? "Unnamed user"}
-              </h1>
-              <span className="text-sm text-dark-slate/50 flex items-center gap-1 mt-1 flex-shrink-0">
-                📍 {location}
-              </span>
+              <h1 className="text-3xl font-bold text-dark-slate">{user.name ?? "Unnamed user"}</h1>
+              <Link
+                href="/profile/setup"
+                className="shrink-0 text-sm font-medium px-4 py-2 rounded bg-coral text-white hover:bg-watermelon transition-colors"
+              >
+                Edit profile
+              </Link>
             </div>
-            <p className="text-coral font-medium mt-1">{DUMMY_ROLE}</p>
+            {user.country && (
+              <p className="text-dark-slate/50 text-sm mt-1">📍 {user.country}</p>
+            )}
           </div>
 
           {/* Bio */}
-          <p className="text-dark-slate/80 leading-relaxed">
-            {user.bio ?? "Lorem Ipsum has long been used as placeholder text in the printing and design industry. It is used to fill out web pages with text."}
+          {user.bio ? (
+            <p className="text-dark-slate/80 leading-relaxed">{user.bio}</p>
+          ) : (
+            <p className="text-dark-slate/40 italic text-sm">
+              No bio yet.{" "}
+              <Link href="/profile/setup" className="text-coral hover:underline">Add one →</Link>
+            </p>
+          )}
+
+          {/* Visibility */}
+          <p className="text-xs text-dark-slate/40">
+            {user.showProfile ? "Your profile is visible to other members." : "Your profile is hidden from other members."}
           </p>
 
-          {/* Rankings */}
+          {/* Contact */}
           <section>
-            <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-2">
-              Rating
-            </p>
-            <StarRating rating={DUMMY_RATING} />
-          </section>
-
-          {/* Action buttons */}
-          <div className="flex flex-wrap gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 rounded border border-muted-teal text-dark-slate text-sm hover:border-dark-slate transition-colors">
-              💬 Private message
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded border border-muted-teal text-dark-slate text-sm hover:border-dark-slate transition-colors">
-              🚩 Report
-            </button>
-            <Link
-              href="/profile/setup"
-              className="flex items-center gap-2 px-4 py-2 rounded bg-coral text-white text-sm font-medium hover:bg-watermelon transition-colors"
-            >
-              ✓ Edit profile
-            </Link>
-          </div>
-
-          {/* Tabs */}
-          <div className="border-b border-muted-teal/40">
-            <div className="flex gap-6">
-              {["About me", "Reviews", "Projects"].map((tab, i) => (
-                <button
-                  key={tab}
-                  className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
-                    i === 0
-                      ? "border-coral text-coral"
-                      : "border-transparent text-dark-slate/50 hover:text-dark-slate"
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Contact Information */}
-          <section>
-            <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">
-              Contact information
-            </h2>
+            <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">Contact</h2>
             <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-              <dt className="text-dark-slate/50">Phone</dt>
-              <dd className="text-dark-slate">{DUMMY_PHONE}</dd>
-              <dt className="text-dark-slate/50">Home address</dt>
-              <dd className="text-dark-slate whitespace-pre-line">{DUMMY_ADDRESS}</dd>
-              <dt className="text-dark-slate/50">Email address</dt>
+              <dt className="text-dark-slate/50">Email</dt>
               <dd>
-                <a
-                  href={`mailto:${user.email}`}
-                  className="text-coral hover:text-seagrass underline underline-offset-4"
-                >
+                <a href={`mailto:${user.email}`} className="text-coral hover:underline">
                   {user.email}
                 </a>
               </dd>
             </dl>
           </section>
 
-          {/* Basic Information */}
-          <section>
-            <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">
-              Basic information
-            </h2>
-            <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-              <dt className="text-dark-slate/50">Birthday</dt>
-              <dd className="text-dark-slate">{DUMMY_BIRTHDAY}</dd>
-              <dt className="text-dark-slate/50">Gender</dt>
-              <dd className="text-dark-slate">{DUMMY_GENDER}</dd>
-            </dl>
-          </section>
+          {/* Projects */}
+          {user.projectMemberships.length > 0 && (
+            <section>
+              <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">Projects</h2>
+              <div className="flex flex-col gap-2">
+                {user.projectMemberships.map(({ project }) => (
+                  <Link
+                    key={project.slug}
+                    href={`/projects/${project.slug}`}
+                    className="flex items-start gap-3 p-3 rounded border border-muted-teal/30 hover:border-seagrass transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-dark-slate truncate">{project.title}</p>
+                      {project.description && (
+                        <p className="text-xs text-dark-slate/50 line-clamp-1 mt-0.5">{project.description}</p>
+                      )}
+                    </div>
+                    <span className="text-xs text-dark-slate/40 capitalize shrink-0 mt-0.5">{project.status}</span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </div>

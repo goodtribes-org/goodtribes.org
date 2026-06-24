@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { PrismaClient } from "@prisma/client";
 import { redirect } from "next/navigation";
+import { indexDocuments } from "@/lib/meili";
 
 const prisma = new PrismaClient();
 
@@ -22,7 +23,7 @@ export async function saveProfile(formData: FormData) {
 
   const showProfile = formData.get("showProfile") === "on";
 
-  await prisma.user.update({
+  const updated = await prisma.user.update({
     where: { email: session.user.email },
     data: {
       name,
@@ -33,6 +34,16 @@ export async function saveProfile(formData: FormData) {
       ...(image ? { image } : {}),
     },
   });
+
+  if (showProfile) {
+    await indexDocuments("members", [{
+      id: `member-${updated.id}`,
+      type: "member",
+      title: name,
+      description: bio || "",
+      url: `/members/${updated.id}`,
+    }]);
+  }
 
   redirect("/profile");
 }

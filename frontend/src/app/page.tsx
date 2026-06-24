@@ -1,29 +1,10 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import Image from "next/image";
+import { PrismaClient } from "@prisma/client";
 
-const DUMMY_TEXT =
-  "This is the project description we are experimenting with. Checking if this would work with this text. It would be great if this could work with this text.";
-
-const SELECTED_PROJECTS = [
-  { slug: "kickfix",       name: "Kicklix",          author: "Niklas Gunnas", location: "Sweden", description: DUMMY_TEXT, image: "https://picsum.photos/seed/kickfix/800/600",  likes: 86, members: 17, tasks: 367, raised: 11300, stage: 3 },
-  { slug: "asylguiden-se", name: "Asylguiden.se",    author: "Niklas Gunnas", location: "Sweden", description: DUMMY_TEXT, image: "https://picsum.photos/seed/asylguiden/800/600", likes: 27, members: 17, tasks: 367, raised: 11300, stage: 3 },
-  { slug: "squeakpoint",   name: "SqueakPoint",      author: "Niklas Gunnas", location: "Sweden", description: DUMMY_TEXT, image: "https://picsum.photos/seed/squeak/800/600",    likes: 40, members: 17, tasks: 367, raised: 11300, stage: 3 },
-  { slug: "shampoo-serum", name: "Shampoo Serum",    author: "Niklas Gunnas", location: "Sweden", description: DUMMY_TEXT, image: "https://picsum.photos/seed/shampoo/800/600",   likes: 27, members: 17, tasks: 367, raised: 11300, stage: 3 },
-];
-
-const POPULAR_PROJECTS = [
-  { slug: "urbanart",      name: "UrbanArt",          author: "Niklas Gunnas", location: "Sweden", description: DUMMY_TEXT, image: "https://picsum.photos/seed/urbanart/800/600", likes: 52, members: 17, tasks: 367, raised: 11300, stage: 3 },
-  { slug: "friz",          name: "Friz",               author: "Niklas Gunnas", location: "Sweden", description: DUMMY_TEXT, image: "https://picsum.photos/seed/friz/800/600",     likes: 85, members: 17, tasks: 367, raised: 11300, stage: 3 },
-  { slug: "voices",        name: "The Voices Project", author: "Niklas Gunnas", location: "Sweden", description: DUMMY_TEXT, image: "https://picsum.photos/seed/voices/800/600",   likes: 30, members: 17, tasks: 367, raised: 11300, stage: 3 },
-  { slug: "portrait-studio", name: "Portrait Studio", author: "Niklas Gunnas", location: "Sweden", description: DUMMY_TEXT, image: "https://picsum.photos/seed/portrait/800/600", likes: 23, members: 17, tasks: 367, raised: 11300, stage: 3 },
-];
-
-const NEW_PROJECTS = [
-  { slug: "robo-zero",     name: "RoboZero",           author: "Niklas Gunnas", location: "Sweden", description: DUMMY_TEXT, image: "https://picsum.photos/seed/robozero/800/600", likes: 60,  members: 17, tasks: 367, raised: 11300, stage: 3 },
-  { slug: "beyonde-zero",  name: "Beyonde Zero",        author: "Niklas Gunnas", location: "Sweden", description: DUMMY_TEXT, image: "https://picsum.photos/seed/beyonde/800/600",  likes: 63,  members: 17, tasks: 367, raised: 11300, stage: 3 },
-  { slug: "kaffekultur",   name: "Kaffekultur",          author: "Niklas Gunnas", location: "Sweden", description: DUMMY_TEXT, image: "https://picsum.photos/seed/kaffe/800/600",    likes: 81,  members: 17, tasks: 367, raised: 11300, stage: 3 },
-  { slug: "kevify",        name: "Kevify",               author: "Niklas Gunnas", location: "Sweden", description: DUMMY_TEXT, image: "https://picsum.photos/seed/kevify/800/600",   likes: 104, members: 17, tasks: 367, raised: 11300, stage: 3 },
-];
+const prisma = new PrismaClient();
 
 const FEATURE_CARDS = [
   {
@@ -44,49 +25,53 @@ const FEATURE_CARDS = [
   },
 ];
 
-function ProjectCard({ project }: { project: typeof SELECTED_PROJECTS[number] }) {
+function ProjectCard({ project }: {
+  project: {
+    slug: string;
+    title: string;
+    description: string | null;
+    status: string;
+    imageUrl: string | null;
+    owner: { name: string | null };
+    members: { id: string }[];
+    _count: { kanbanCards: number; todoItems: number };
+  };
+}) {
+  const imageSrc = project.imageUrl ?? `https://picsum.photos/seed/${project.slug}/800/600`;
   return (
     <Link
       href={`/projects/${project.slug}`}
       className="rounded-lg overflow-hidden border border-muted-teal/40 hover:shadow-md transition-shadow bg-white flex flex-col"
     >
       <div className="relative aspect-[4/3] w-full">
-        <Image
-          src={project.image}
-          alt={project.name}
-          fill
-          className="object-cover"
-          sizes="(max-width: 640px) 50vw, 25vw"
-        />
-        <span className="absolute top-2 left-2 bg-white/90 rounded px-1.5 py-0.5 text-xs font-semibold text-dark-slate flex items-center gap-1">
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-coral" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-          </svg>
-          {project.likes}
+        <Image src={imageSrc} alt={project.title} fill className="object-cover"
+          sizes="(max-width: 640px) 50vw, 25vw" />
+        <span className="absolute top-2 left-2 bg-white/90 rounded px-1.5 py-0.5 text-xs font-semibold text-dark-slate capitalize">
+          {project.status}
         </span>
       </div>
       <div className="p-3 flex flex-col flex-1">
-        <p className="font-bold text-dark-slate text-sm leading-tight mb-0.5">{project.name}</p>
+        <p className="font-bold text-dark-slate text-sm leading-tight mb-0.5">{project.title}</p>
         <p className="text-xs text-dark-slate/50 mb-2">
-          by <span className="text-coral">{project.author}</span>, {project.location}
+          by <span className="text-coral">{project.owner.name ?? "Unknown"}</span>
         </p>
-        <p className="text-xs text-dark-slate/70 leading-snug mb-3 line-clamp-3 flex-1">{project.description}</p>
-        <div className="grid grid-cols-4 divide-x divide-muted-teal/30 text-center border-t border-muted-teal/20 pt-2 mt-auto">
+        <p className="text-xs text-dark-slate/70 leading-snug mb-3 line-clamp-3 flex-1">
+          {project.description ?? "No description yet."}
+        </p>
+        <div className="grid grid-cols-3 divide-x divide-muted-teal/30 text-center border-t border-muted-teal/20 pt-2 mt-auto">
           <div className="px-1">
-            <p className="text-xs font-semibold text-dark-slate">{project.members}</p>
+            <p className="text-xs font-semibold text-dark-slate">{project.members.length}</p>
             <p className="text-[10px] text-dark-slate/50 leading-tight">Members</p>
           </div>
           <div className="px-1">
-            <p className="text-xs font-semibold text-dark-slate">{project.tasks}</p>
-            <p className="text-[10px] text-dark-slate/50 leading-tight">Follow</p>
+            <p className="text-xs font-semibold text-dark-slate">
+              {project._count.kanbanCards + project._count.todoItems}
+            </p>
+            <p className="text-[10px] text-dark-slate/50 leading-tight">Tasks</p>
           </div>
           <div className="px-1">
-            <p className="text-xs font-semibold text-dark-slate">{project.raised.toLocaleString("sv-SE")}</p>
-            <p className="text-[10px] text-dark-slate/50 leading-tight">Raised</p>
-          </div>
-          <div className="px-1">
-            <p className="text-xs font-semibold text-dark-slate">{project.stage}</p>
-            <p className="text-[10px] text-dark-slate/50 leading-tight">Steps</p>
+            <p className="text-xs font-semibold text-dark-slate capitalize">{project.status}</p>
+            <p className="text-[10px] text-dark-slate/50 leading-tight">Stage</p>
           </div>
         </div>
       </div>
@@ -94,25 +79,32 @@ function ProjectCard({ project }: { project: typeof SELECTED_PROJECTS[number] })
   );
 }
 
-function ProjectSection({ title, projects }: { title: string; projects: typeof SELECTED_PROJECTS }) {
-  return (
-    <section>
-      <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-4">{title}</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        {projects.map((p) => (
-          <ProjectCard key={p.slug} project={p} />
-        ))}
-      </div>
-    </section>
-  );
-}
+export default async function HomePage() {
+  const [recentProjects, activeProjects] = await Promise.all([
+    prisma.project.findMany({
+      where: { visibility: "public" },
+      orderBy: { createdAt: "desc" },
+      take: 4,
+      include: {
+        owner: { select: { name: true } },
+        members: { select: { id: true } },
+        _count: { select: { kanbanCards: true, todoItems: true } },
+      },
+    }),
+    prisma.project.findMany({
+      where: { visibility: "public" },
+      orderBy: { members: { _count: "desc" } },
+      take: 4,
+      include: {
+        owner: { select: { name: true } },
+        members: { select: { id: true } },
+        _count: { select: { kanbanCards: true, todoItems: true } },
+      },
+    }),
+  ]);
 
-export default function HomePage() {
   return (
     <div className="space-y-12">
-
-      {/* Page headline */}
-      <h1 className="text-4xl font-bold text-center text-dark-slate/30">How Goodtribes work</h1>
 
       {/* What is GoodTribes? */}
       <section className="overflow-hidden">
@@ -121,9 +113,8 @@ export default function HomePage() {
             <Image
               src="/img/what-is-goodtribes.png"
               alt="GoodTribes community illustration"
-              fill
-              className="object-cover"
-              style={{ top: '-1px' }}
+              fill className="object-cover"
+              style={{ top: "-1px" }}
               sizes="(max-width: 768px) 100vw, 50vw"
               priority
             />
@@ -131,19 +122,20 @@ export default function HomePage() {
           <div className="p-8 flex flex-col justify-center">
             <h2 className="text-xl font-bold text-coral mb-4">What is GoodTribes?</h2>
             <p className="text-sm text-dark-slate/70 mb-3">
-              The GoodTribes is a nonprofit foundation that give people the tools they need to make the world a better place.
+              GoodTribes is a nonprofit foundation that gives people the tools they need to make the world a better place.
             </p>
             <p className="text-sm text-dark-slate/70 mb-3">
-              GoodTribes help people to make their ideas and dreams about a better world come true. It is simple, every big
-              change starts with a small step. At Goodtribes, no effort is too small and no dream is too big. It is when we
-              share and help each other that the magic begins.
+              We help people make their ideas and dreams about a better world come true. Every big change starts with a small step — at GoodTribes, no effort is too small and no dream is too big.
             </p>
             <p className="text-sm text-dark-slate/70 mb-4">
-              The world is not changed by a single person, it changes when we work together to make good ideas come true.
+              The world changes when we work together to make good ideas come true.
             </p>
-            <div className="flex justify-end">
-              <Link href="/about" className="text-coral text-sm font-medium hover:underline">
-                Read more
+            <div className="flex gap-3">
+              <Link href="/projects" className="text-sm font-medium bg-coral text-white px-4 py-2 rounded hover:bg-watermelon transition-colors">
+                Browse projects
+              </Link>
+              <Link href="/ideas" className="text-sm font-medium border border-coral text-coral px-4 py-2 rounded hover:bg-coral/5 transition-colors">
+                Share an idea
               </Link>
             </div>
           </div>
@@ -156,30 +148,53 @@ export default function HomePage() {
           <div key={card.title}>
             <div className="relative aspect-[4/3] w-full rounded-t-lg overflow-hidden mb-4">
               <Image
-                src={card.image}
-                alt={card.title}
-                fill
-                className="object-cover"
-                style={{ top: '-1px', objectPosition: card.objectPosition ?? 'center center' }}
+                src={card.image} alt={card.title} fill className="object-cover"
+                style={{ top: "-1px", objectPosition: card.objectPosition ?? "center center" }}
                 sizes="(max-width: 768px) 100vw, 33vw"
               />
             </div>
             <div className="px-3">
               <h3 className="font-bold text-coral mb-2">{card.title}</h3>
               <p className="text-sm text-dark-slate/70 mb-2">{card.description}</p>
-              <div className="flex justify-end">
-                <Link href="/about" className="text-coral text-sm font-medium hover:underline">
-                  Read more
-                </Link>
-              </div>
             </div>
           </div>
         ))}
       </section>
 
-      <ProjectSection title="Selected projects" projects={SELECTED_PROJECTS} />
-      <ProjectSection title="Popular projects" projects={POPULAR_PROJECTS} />
-      <ProjectSection title="New projects" projects={NEW_PROJECTS} />
+      {/* Active projects */}
+      {activeProjects.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">Active projects</h2>
+            <Link href="/projects" className="text-xs text-coral hover:underline">View all →</Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {activeProjects.map((p) => <ProjectCard key={p.slug} project={p} />)}
+          </div>
+        </section>
+      )}
+
+      {/* Recent projects */}
+      {recentProjects.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">New projects</h2>
+            <Link href="/projects/new" className="text-xs text-coral hover:underline">Start a project →</Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {recentProjects.map((p) => <ProjectCard key={p.slug} project={p} />)}
+          </div>
+        </section>
+      )}
+
+      {recentProjects.length === 0 && (
+        <div className="text-center py-16">
+          <p className="text-dark-slate/40 mb-4">No projects yet — be the first!</p>
+          <Link href="/projects/new" className="bg-coral text-white px-6 py-3 rounded font-medium hover:bg-watermelon transition-colors">
+            Create a project
+          </Link>
+        </div>
+      )}
 
     </div>
   );
