@@ -35,8 +35,16 @@ function MemberAvatar({ name, href }: { name: string; href?: string }) {
   return inner;
 }
 
-export default async function OrgDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function OrgDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ tab?: string }>;
+}) {
   const { slug } = await params;
+  const { tab } = await searchParams;
+  const activeTab = tab === "projects" ? "projects" : "story";
   const session = await auth();
   const userId = session?.user?.id;
 
@@ -65,13 +73,22 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
         })
       : null;
 
-  const pendingJoinRequests = isOwner
-    ? await prisma.organisationJoinRequest.findMany({
-        where: { organisationId: org.id, status: "pending" },
-        include: { user: { select: { name: true, image: true } } },
-        orderBy: { createdAt: "asc" },
-      })
-    : [];
+  const [pendingJoinRequests, orgProjects] = await Promise.all([
+    isOwner
+      ? prisma.organisationJoinRequest.findMany({
+          where: { organisationId: org.id, status: "pending" },
+          include: { user: { select: { name: true, image: true } } },
+          orderBy: { createdAt: "asc" },
+        })
+      : Promise.resolve([]),
+    activeTab === "projects"
+      ? prisma.project.findMany({
+          where: { orgId: org.id, visibility: "public" },
+          select: { slug: true, title: true, status: true, description: true, _count: { select: { members: true } } },
+          orderBy: { createdAt: "desc" },
+        })
+      : Promise.resolve([]),
+  ]);
 
   const ownerName = org.owner.name ?? org.owner.email;
   const ownerInitials = ownerName
@@ -177,32 +194,77 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
 
       {/* BOTTOM SECTION */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-        {/* Left: story */}
+        {/* Left: story / projects tabs */}
         <div className="md:col-span-3">
           <div className="border-b border-muted-teal/40 mb-6">
-            <button className="pb-3 text-sm font-medium border-b-2 border-coral text-coral">
-              Story
-            </button>
+            <div className="flex gap-6">
+              <Link
+                href={`/org/${slug}`}
+                className={`pb-3 text-sm font-medium border-b-2 whitespace-nowrap ${activeTab === "story" ? "border-coral text-coral" : "border-transparent text-dark-slate/50 hover:text-dark-slate"}`}
+              >
+                Story
+              </Link>
+              <Link
+                href={`/org/${slug}?tab=projects`}
+                className={`pb-3 text-sm font-medium border-b-2 whitespace-nowrap ${activeTab === "projects" ? "border-coral text-coral" : "border-transparent text-dark-slate/50 hover:text-dark-slate"}`}
+              >
+                Projects ({org._count.projects})
+              </Link>
+            </div>
           </div>
 
-          {org.description ? (
-            <div className="prose prose-sm max-w-none text-dark-slate/80 leading-relaxed space-y-4">
-              {org.description.split("\n\n").map((para, i) => (
-                <p key={i}>{para}</p>
-              ))}
-            </div>
-          ) : (
-            <p className="text-dark-slate/40 italic text-sm">
-              No description yet.
-              {isOwner && (
-                <>
-                  {" "}
-                  <Link href={`/org/${slug}/edit`} className="text-coral hover:underline not-italic">
-                    Add one →
+          {activeTab === "story" && (
+            org.description ? (
+              <div className="prose prose-sm max-w-none text-dark-slate/80 leading-relaxed space-y-4">
+                {org.description.split("\n\n").map((para, i) => (
+                  <p key={i}>{para}</p>
+                ))}
+              </div>
+            ) : (
+              <p className="text-dark-slate/40 italic text-sm">
+                No description yet.
+                {isOwner && (
+                  <>
+                    {" "}
+                    <Link href={`/org/${slug}/edit`} className="text-coral hover:underline not-italic">
+                      Add one →
+                    </Link>
+                  </>
+                )}
+              </p>
+            )
+          )}
+
+          {activeTab === "projects" && (
+            orgProjects.length > 0 ? (
+              <div className="flex flex-col gap-3">
+                {orgProjects.map((p) => (
+                  <Link
+                    key={p.slug}
+                    href={`/projects/${p.slug}`}
+                    className="flex items-start justify-between gap-3 border border-muted-teal/40 rounded-lg p-4 hover:shadow-md hover:border-muted-teal transition-all bg-white"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-medium text-dark-slate truncate">{p.title}</p>
+                        <span className="text-xs bg-dry-sage text-dark-slate/60 px-2 py-0.5 rounded capitalize flex-shrink-0">
+                          {p.status}
+                        </span>
+                      </div>
+                      {p.description && (
+                        <p className="text-sm text-dark-slate/60 line-clamp-2">{p.description}</p>
+                      )}
+                      <p className="text-xs text-dark-slate/40 mt-1">{p._count.members} member{p._count.members !== 1 ? "s" : ""}</p>
+                    </div>
+                    <svg className="w-4 h-4 text-dark-slate/30 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </Link>
-                </>
-              )}
-            </p>
+                ))}
+              </div>
+            ) : (
+              <p className="text-dark-slate/40 italic text-sm">No public projects yet.</p>
+            )
           )}
         </div>
 

@@ -15,11 +15,16 @@ export default async function EditProjectPage({
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const project = await prisma.project.findUnique({
-    where: { slug },
-    include: { members: { where: { userId: session.user.id } } },
-    // imageUrl needed for FileUpload preview
-  });
+  const [project, skills] = await Promise.all([
+    prisma.project.findUnique({
+      where: { slug },
+      include: {
+        members: { where: { userId: session.user.id } },
+        neededSkills: { select: { skillId: true } },
+      },
+    }),
+    prisma.skill.findMany({ select: { id: true, name: true, slug: true }, orderBy: { name: "asc" } }),
+  ]);
   if (!project) redirect("/projects");
 
   const role = project.members[0]?.role;
@@ -37,6 +42,8 @@ export default async function EditProjectPage({
       </div>
       <EditProjectForm
         slug={slug}
+        skills={skills}
+        currentSkillIds={project.neededSkills.map((s) => s.skillId)}
         initial={{
           title: project.title,
           description: project.description,

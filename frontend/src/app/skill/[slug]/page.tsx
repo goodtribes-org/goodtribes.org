@@ -12,7 +12,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const skill = await prisma.skill.findUnique({ where: { slug }, select: { name: true } });
-  if (!skill) return { title: "Kompetens hittades inte" };
+  if (!skill) return { title: "Skill not found" };
   return { title: `${skill.name} — GoodTribes.org` };
 }
 
@@ -27,8 +27,24 @@ export default async function SkillDetailPage({
     where: { slug },
     include: {
       users: {
+        where: { user: { showProfile: true } },
         include: {
           user: { select: { id: true, name: true, bio: true } },
+        },
+        orderBy: { addedAt: "asc" },
+      },
+      projects: {
+        where: { project: { visibility: "public" } },
+        include: {
+          project: {
+            select: {
+              slug: true,
+              title: true,
+              status: true,
+              description: true,
+              _count: { select: { members: true } },
+            },
+          },
         },
         orderBy: { addedAt: "asc" },
       },
@@ -40,7 +56,7 @@ export default async function SkillDetailPage({
   return (
     <div className="max-w-2xl">
       <Link href="/skill" className="text-sm text-dark-slate/50 hover:text-seagrass mb-6 inline-block">
-        ← Alla kompetenser
+        ← All skills
       </Link>
 
       <div className="flex items-start gap-4 mb-4">
@@ -52,34 +68,74 @@ export default async function SkillDetailPage({
 
       <p className="text-dark-slate/70 mb-10">{skill.description}</p>
 
-      <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-4">
-        {skill.users.length} {skill.users.length === 1 ? "person" : "personer"} med denna kompetens
-      </h2>
-
-      {skill.users.length === 0 ? (
-        <p className="text-muted-teal italic text-sm">Ingen har lagt till denna kompetens ännu.</p>
-      ) : (
-        <ul className="flex flex-col gap-4">
-          {skill.users.map(({ user }) => {
-            const initials = user.name
-              ? user.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
-              : "?";
-            return (
-              <li key={user.id} className="flex items-start gap-4 border border-muted-teal rounded-lg p-4">
-                <div className="w-12 h-12 rounded-full bg-dry-sage flex items-center justify-center font-semibold text-dark-slate flex-shrink-0">
-                  {initials}
-                </div>
+      {skill.projects.length > 0 && (
+        <section className="mb-10">
+          <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-4">
+            {skill.projects.length} project{skill.projects.length !== 1 ? "s" : ""} seeking this skill
+          </h2>
+          <div className="flex flex-col gap-3">
+            {skill.projects.map(({ project }) => (
+              <Link
+                key={project.slug}
+                href={`/projects/${project.slug}`}
+                className="flex items-start gap-3 border border-muted-teal/40 rounded-lg p-4 hover:shadow-md hover:border-muted-teal transition-all bg-white"
+              >
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium">{user.name ?? "Namnlös"}</p>
-                  {user.bio && (
-                    <p className="text-sm text-dark-slate/60 mt-1 line-clamp-2">{user.bio}</p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-medium text-dark-slate truncate">{project.title}</p>
+                    <span className="text-xs bg-dry-sage text-dark-slate/60 px-2 py-0.5 rounded capitalize flex-shrink-0">
+                      {project.status}
+                    </span>
+                  </div>
+                  {project.description && (
+                    <p className="text-sm text-dark-slate/60 line-clamp-2">{project.description}</p>
                   )}
+                  <p className="text-xs text-dark-slate/40 mt-1">{project._count.members} member{project._count.members !== 1 ? "s" : ""}</p>
                 </div>
-              </li>
-            );
-          })}
-        </ul>
+                <svg className="w-4 h-4 text-dark-slate/30 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            ))}
+          </div>
+        </section>
       )}
+
+      <section>
+        <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-4">
+          {skill.users.length} {skill.users.length === 1 ? "person" : "people"} with this skill
+        </h2>
+
+        {skill.users.length === 0 ? (
+          <p className="text-muted-teal italic text-sm">No one has added this skill yet.</p>
+        ) : (
+          <ul className="flex flex-col gap-4">
+            {skill.users.map(({ user }) => {
+              const initials = user.name
+                ? user.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+                : "?";
+              return (
+                <li key={user.id}>
+                  <Link
+                    href={`/members/${user.id}`}
+                    className="flex items-start gap-4 border border-muted-teal rounded-lg p-4 hover:shadow-md hover:border-muted-teal transition-all bg-white"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-dry-sage flex items-center justify-center font-semibold text-dark-slate flex-shrink-0">
+                      {initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium">{user.name ?? "Unknown"}</p>
+                      {user.bio && (
+                        <p className="text-sm text-dark-slate/60 mt-1 line-clamp-2">{user.bio}</p>
+                      )}
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

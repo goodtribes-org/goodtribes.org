@@ -28,9 +28,10 @@ const SDG_GOALS = [
 
 interface Props {
   initial?: { title?: string; description?: string; sdgGoals?: number[] };
+  skills: { id: string; name: string; slug: string }[];
 }
 
-export default function NewProjectForm({ initial = {} }: Props) {
+export default function NewProjectForm({ initial = {}, skills }: Props) {
   const [description, setDescription] = useState(initial.description ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set(initial.sdgGoals ?? []));
   const [aiSuggested, setAiSuggested] = useState<number[]>([]);
@@ -194,6 +195,24 @@ export default function NewProjectForm({ initial = {} }: Props) {
           })}
         </div>
       </div>
+
+      {skills.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-dark-slate mb-2">
+            Skills needed <span className="text-dark-slate/50 font-normal">(optional)</span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {skills.map((s) => (
+              <label key={s.id} className="cursor-pointer">
+                <input type="checkbox" name="skillIds" value={s.id} className="sr-only peer" />
+                <span className="inline-block px-3 py-1 rounded-full border border-muted-teal text-sm text-dark-slate/70 transition-all peer-checked:border-seagrass peer-checked:bg-seagrass/10 peer-checked:text-seagrass hover:border-dark-slate/40">
+                  {s.name}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-dark-slate mb-2">Visibility</label>

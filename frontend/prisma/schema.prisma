@@ -50,13 +50,14 @@ model User {
 }
 
 model Skill {
-  id          String      @id @default(cuid())
-  name        String      @unique
+  id          String         @id @default(cuid())
+  name        String         @unique
   tag         String
   description String
-  slug        String      @unique
-  createdAt   DateTime    @default(now())
+  slug        String         @unique
+  createdAt   DateTime       @default(now())
   users       UserSkill[]
+  projects    ProjectSkill[]
 }
 
 model UserSkill {
@@ -272,6 +273,19 @@ model Project {
   activityEvents ActivityEvent[]
   invites        ProjectInvite[]
   wikiPages      WikiPage[]
+  neededSkills   ProjectSkill[]
+}
+
+model ProjectSkill {
+  id        String   @id @default(cuid())
+  projectId String
+  skillId   String
+  addedAt   DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  skill   Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, skillId])
 }
 
 model ProjectMember {

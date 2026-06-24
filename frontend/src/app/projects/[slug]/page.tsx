@@ -79,6 +79,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         where: { status: "pending" },
         include: { user: { select: { id: true, name: true, image: true } } },
       },
+      neededSkills: {
+        include: { skill: { select: { id: true, name: true, slug: true } } },
+        orderBy: { addedAt: "asc" },
+      },
       _count: { select: { kanbanCards: true, todoItems: true } },
     },
   });
@@ -270,6 +274,23 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
 
         <div className="md:col-span-2 flex flex-col gap-8">
+          {project.neededSkills.length > 0 && (
+            <section>
+              <h2 className="text-sm font-semibold text-dark-slate mb-3">Skills needed</h2>
+              <div className="flex flex-wrap gap-2">
+                {project.neededSkills.map(({ skill }) => (
+                  <Link
+                    key={skill.id}
+                    href={`/skill/${skill.slug}`}
+                    className="text-xs bg-dry-sage text-dark-slate px-3 py-1 rounded-full hover:bg-muted-teal/30 transition-colors"
+                  >
+                    {skill.name}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
           <section>
             <h2 className="text-sm font-semibold text-dark-slate mb-3">The Team</h2>
             {project.members.length > 0 ? (

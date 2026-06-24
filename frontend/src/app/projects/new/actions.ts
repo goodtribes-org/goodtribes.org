@@ -46,6 +46,13 @@ export async function createProject(formData: FormData) {
       await prisma.projectMember.create({
         data: { projectId: project.id, userId, role: "owner" },
       });
+      const skillIds = formData.getAll("skillIds") as string[];
+      if (skillIds.length > 0) {
+        await prisma.projectSkill.createMany({
+          data: skillIds.map((skillId) => ({ projectId: project.id, skillId })),
+          skipDuplicates: true,
+        });
+      }
       slug = project.slug;
       await indexDocuments("projects", [
         {

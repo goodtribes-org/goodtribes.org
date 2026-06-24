@@ -27,6 +27,8 @@ const STATUSES = [
 
 interface Props {
   slug: string;
+  skills: { id: string; name: string; slug: string }[];
+  currentSkillIds: string[];
   initial: {
     title: string;
     description: string | null;
@@ -39,7 +41,7 @@ interface Props {
   };
 }
 
-export default function EditProjectForm({ slug, initial }: Props) {
+export default function EditProjectForm({ slug, skills, currentSkillIds, initial }: Props) {
   const [description, setDescription] = useState(initial.description ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set(initial.sdgGoals));
   const [aiSuggested, setAiSuggested] = useState<number[]>([]);
@@ -202,6 +204,30 @@ export default function EditProjectForm({ slug, initial }: Props) {
           })}
         </div>
       </div>
+
+      {skills.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-dark-slate mb-2">
+            Skills needed <span className="text-dark-slate/50 font-normal">(optional)</span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {skills.map((s) => (
+              <label key={s.id} className="cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="skillIds"
+                  value={s.id}
+                  defaultChecked={currentSkillIds.includes(s.id)}
+                  className="sr-only peer"
+                />
+                <span className="inline-block px-3 py-1 rounded-full border border-muted-teal text-sm text-dark-slate/70 transition-all peer-checked:border-seagrass peer-checked:bg-seagrass/10 peer-checked:text-seagrass hover:border-dark-slate/40">
+                  {s.name}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={isPending}

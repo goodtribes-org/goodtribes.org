@@ -40,13 +40,18 @@ export default async function NewProjectPage({
 
   const fromIdea = !!ideaId;
 
+  const skills = await prisma.skill.findMany({
+    select: { id: true, name: true, slug: true },
+    orderBy: { name: "asc" },
+  });
+
   return (
     <div className="max-w-lg mx-auto mt-12">
       <h1 className="text-2xl font-bold mb-1">New project</h1>
       <p className="text-dark-slate/70 mb-8">
         {fromIdea ? "Starting from an idea — edit the details below." : "Fill in the details for your project."}
       </p>
-      <NewProjectForm initial={initial} />
+      <NewProjectForm initial={initial} skills={skills} />
     </div>
   );
 }

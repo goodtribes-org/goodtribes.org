@@ -31,11 +31,22 @@ export async function updateProject(slug: string, formData: FormData) {
   const tags = tagsRaw.split(",").map((t) => t.trim()).filter(Boolean);
   const sdgGoals = formData.getAll("sdgGoals").map(Number).filter((n) => n >= 1 && n <= 17);
   const imageUrl = (formData.get("imageUrl") as string | null)?.trim() || null;
+  const skillIds = formData.getAll("skillIds") as string[];
 
   await prisma.project.update({
     where: { slug },
     data: { title, description, status, visibility, category, tags, sdgGoals, ...(imageUrl ? { imageUrl } : {}) },
   });
+
+  await prisma.$transaction([
+    prisma.projectSkill.deleteMany({ where: { projectId: project.id } }),
+    ...(skillIds.length > 0
+      ? [prisma.projectSkill.createMany({
+          data: skillIds.map((skillId) => ({ projectId: project.id, skillId })),
+          skipDuplicates: true,
+        })]
+      : []),
+  ]);
 
   revalidatePath(`/projects/${slug}`);
   redirect(`/projects/${slug}`);
