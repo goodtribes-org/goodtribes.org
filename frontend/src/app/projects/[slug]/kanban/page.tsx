@@ -7,21 +7,16 @@ import type { Metadata } from "next";
 
 const prisma = new PrismaClient();
 
-const PROJECTS = [
-  { slug: "kickfix", name: "Kickfix" },
-  { slug: "asylguiden-se", name: "Asylguiden.se" },
-];
-
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const project = PROJECTS.find((p) => p.slug === slug);
+  const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) return {};
-  return { title: `${project.name} — Kanban — GoodTribes.org` };
+  return { title: `${project.title} — Kanban — GoodTribes.org` };
 }
 
 export default async function KanbanPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const project = PROJECTS.find((p) => p.slug === slug);
+  const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) notFound();
 
   const session = await auth();
@@ -47,9 +42,9 @@ export default async function KanbanPage({ params }: { params: Promise<{ slug: s
           href={`/projects/${slug}`}
           className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
         >
-          ← {project.name}
+          ← {project.title}
         </Link>
-        <h1 className="text-2xl font-bold text-dark-slate mt-1">{project.name}</h1>
+        <h1 className="text-2xl font-bold text-dark-slate mt-1">{project.title}</h1>
       </div>
       {/* Break out of root layout's max-w-6xl to use full viewport width */}
       <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>

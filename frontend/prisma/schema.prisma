@@ -31,6 +31,8 @@ model User {
   createdKanbanCards      KanbanCard[]              @relation("CreatedKanbanCards")
   createdTodoLists        TodoList[]                @relation("CreatedTodoLists")
   createdTodoItems        TodoItem[]                @relation("CreatedTodoItems")
+  ownedProjects           Project[]                 @relation("OwnedProjects")
+  projectMemberships      ProjectMember[]           @relation("ProjectMemberships")
 }
 
 model Skill {
@@ -71,6 +73,7 @@ model Organisation {
   joinRequests      OrganisationJoinRequest[]
   workspaceMessages WorkspaceMessage[]        @relation("OrgMessages")
   workspaceTasks    WorkspaceTask[]            @relation("OrgTasks")
+  projects          Project[]
 }
 
 model OrganisationMember {
@@ -181,7 +184,8 @@ model KanbanCard {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  createdBy User @relation("CreatedKanbanCards", fields: [createdById], references: [id], onDelete: Cascade)
+  createdBy User    @relation("CreatedKanbanCards", fields: [createdById], references: [id], onDelete: Cascade)
+  project   Project @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
 
   @@index([projectSlug, column])
 }
@@ -196,6 +200,7 @@ model TodoList {
   updatedAt   DateTime   @updatedAt
 
   createdBy User       @relation("CreatedTodoLists", fields: [createdById], references: [id], onDelete: Cascade)
+  project   Project    @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
   items     TodoItem[]
 
   @@index([projectSlug])
@@ -215,7 +220,43 @@ model TodoItem {
 
   createdBy User     @relation("CreatedTodoItems", fields: [createdById], references: [id], onDelete: Cascade)
   list      TodoList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
 
   @@index([listId])
   @@index([projectSlug])
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String?
+  status      String   @default("concept")
+  visibility  String   @default("public")
+  imageUrl    String?
+  sdgGoals    Int[]
+  ownerId     String
+  orgId       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner       User           @relation("OwnedProjects", fields: [ownerId], references: [id], onDelete: Cascade)
+  org         Organisation?  @relation(fields: [orgId], references: [id])
+  members     ProjectMember[]
+  kanbanCards KanbanCard[]
+  todoLists   TodoList[]
+  todoItems   TodoItem[]
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  role      String   @default("collaborator")
+  joinedAt  DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation("ProjectMemberships", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
 }
