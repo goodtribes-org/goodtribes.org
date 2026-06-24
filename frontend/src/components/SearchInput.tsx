@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface SearchResult {
@@ -29,6 +30,7 @@ export default function SearchInput() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (query.length < 2) {
@@ -76,7 +78,13 @@ export default function SearchInput() {
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") setOpen(false);
+          if (e.key === "Enter" && query.trim().length >= 2) {
+            setOpen(false);
+            router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+          }
+        }}
         placeholder="type to search"
         className="border border-muted-teal/60 rounded-md px-3 py-1.5 text-sm text-dark-slate/70 bg-white focus:outline-none focus:ring-1 focus:ring-seagrass w-48"
       />
