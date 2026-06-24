@@ -43,9 +43,9 @@ export default async function ProfilePage() {
 
   return (
     <div className="max-w-5xl">
-      <div className="grid grid-cols-5 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
         {/* LEFT COLUMN */}
-        <div className="col-span-2 flex flex-col gap-8">
+        <div className="md:col-span-2 flex flex-col gap-8">
           {/* Avatar */}
           <div className="flex justify-center">
             {user.image ? (
@@ -104,7 +104,7 @@ export default async function ProfilePage() {
         </div>
 
         {/* RIGHT COLUMN */}
-        <div className="col-span-3 flex flex-col gap-6">
+        <div className="md:col-span-3 flex flex-col gap-6">
           {/* Name + location + edit */}
           <div>
             <div className="flex items-start justify-between gap-4">

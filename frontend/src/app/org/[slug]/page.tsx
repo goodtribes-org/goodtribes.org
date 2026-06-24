@@ -82,9 +82,9 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
       </nav>
 
       {/* TOP SECTION */}
-      <div className="grid grid-cols-5 gap-8 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-10">
         {/* Left: banner */}
-        <div className="col-span-3">
+        <div className="md:col-span-3">
           <div className="relative w-full aspect-video bg-dark-slate rounded overflow-hidden">
             {org.imageUrl ? (
               <img src={org.imageUrl} alt={org.name} className="w-full h-full object-cover" />
@@ -97,7 +97,7 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
         </div>
 
         {/* Right: info */}
-        <div className="col-span-2 flex flex-col gap-4">
+        <div className="md:col-span-2 flex flex-col gap-4">
           <div>
             <h1 className="text-2xl font-bold text-dark-slate mb-1">{org.name}</h1>
             {!org.isPublic && (
@@ -163,9 +163,9 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
       </div>
 
       {/* BOTTOM SECTION */}
-      <div className="grid grid-cols-5 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
         {/* Left: story */}
-        <div className="col-span-3">
+        <div className="md:col-span-3">
           <div className="border-b border-muted-teal/40 mb-6">
             <button className="pb-3 text-sm font-medium border-b-2 border-coral text-coral">
               Story
@@ -194,7 +194,7 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
         </div>
 
         {/* Right: team */}
-        <div className="col-span-2 flex flex-col gap-8">
+        <div className="md:col-span-2 flex flex-col gap-8">
           <section>
             <h2 className="text-sm font-semibold text-dark-slate mb-3">The Team</h2>
             {org.members.length > 0 ? (

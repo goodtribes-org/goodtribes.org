@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PrismaClient } from "@prisma/client";
@@ -104,14 +105,26 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         <span className="text-dark-slate">{project.title}</span>
       </nav>
 
-      <div className="grid grid-cols-5 gap-8 mb-10">
-        <div className="col-span-3">
-          <div className="w-full aspect-video bg-dark-slate rounded overflow-hidden flex items-center justify-center">
-            <p className="text-2xl font-bold text-white text-center px-8 leading-snug">{project.title}</p>
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-10">
+        <div className="md:col-span-3">
+          <div className="relative w-full aspect-video bg-dark-slate rounded overflow-hidden">
+            {project.imageUrl ? (
+              <Image
+                src={project.imageUrl}
+                alt={project.title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 60vw"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <p className="text-2xl font-bold text-white text-center px-8 leading-snug">{project.title}</p>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="col-span-2 flex flex-col gap-4">
+        <div className="md:col-span-2 flex flex-col gap-4">
           <div className="flex items-start justify-between gap-2">
             <div>
               <h1 className="text-2xl font-bold text-dark-slate mb-1">{project.title}</h1>
@@ -207,10 +220,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
       )}
 
-      <div className="grid grid-cols-5 gap-8">
-        <div className="col-span-3">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+        <div className="md:col-span-3">
           <div className="border-b border-muted-teal/40 mb-6">
-            <div className="flex gap-6">
+            <div className="flex gap-6 overflow-x-auto">
               <button className="pb-3 text-sm font-medium border-b-2 border-coral text-coral whitespace-nowrap">Story</button>
               <Link href={`/projects/${slug}/todos`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Todo</Link>
               <Link href={`/projects/${slug}/kanban`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Kanban</Link>
@@ -256,7 +269,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
 
-        <div className="col-span-2 flex flex-col gap-8">
+        <div className="md:col-span-2 flex flex-col gap-8">
           <section>
             <h2 className="text-sm font-semibold text-dark-slate mb-3">The Team</h2>
             {project.members.length > 0 ? (
