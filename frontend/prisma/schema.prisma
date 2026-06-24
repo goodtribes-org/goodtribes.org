@@ -33,6 +33,9 @@ model User {
   createdTodoItems        TodoItem[]                @relation("CreatedTodoItems")
   ownedProjects           Project[]                 @relation("OwnedProjects")
   projectMemberships      ProjectMember[]           @relation("ProjectMemberships")
+  authoredIdeas           Idea[]                    @relation("AuthoredIdeas")
+  ideaVotes               IdeaVote[]                @relation("IdeaVotes")
+  authoredIdeaComments    IdeaComment[]             @relation("AuthoredIdeaComments")
 }
 
 model Skill {
@@ -259,4 +262,40 @@ model ProjectMember {
   user    User    @relation("ProjectMemberships", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])
+}
+
+model Idea {
+  id          String        @id @default(cuid())
+  title       String
+  description String?
+  sdgGoals    Int[]
+  authorId    String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  author   User          @relation("AuthoredIdeas", fields: [authorId], references: [id], onDelete: Cascade)
+  votes    IdeaVote[]
+  comments IdeaComment[]
+}
+
+model IdeaVote {
+  id     String @id @default(cuid())
+  ideaId String
+  userId String
+
+  idea Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  user User @relation("IdeaVotes", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([ideaId, userId])
+}
+
+model IdeaComment {
+  id        String   @id @default(cuid())
+  ideaId    String
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  idea   Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  author User @relation("AuthoredIdeaComments", fields: [authorId], references: [id], onDelete: Cascade)
 }

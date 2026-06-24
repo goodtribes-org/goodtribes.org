@@ -33,6 +33,9 @@ export default function RootLayout({
               <Link href="/projects" className="text-dark-slate/70 hover:text-seagrass">
                 Projects
               </Link>
+              <Link href="/ideas" className="text-dark-slate/70 hover:text-seagrass">
+                Ideas
+              </Link>
               <div className="relative group">
                 <button className="flex items-center gap-1 text-dark-slate/70 hover:text-seagrass">
                   Work With Us
