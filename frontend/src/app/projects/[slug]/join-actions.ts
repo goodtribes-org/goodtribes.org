@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createNotification } from "@/lib/notify";
+import { logActivity } from "@/lib/activity";
 
 const prisma = new PrismaClient();
 
@@ -64,6 +65,7 @@ export async function respondToJoinRequest(
       create: { projectId: req.projectId, userId: req.userId, role: "collaborator" },
       update: {},
     });
+    await logActivity(req.projectId, req.userId, "member_joined");
   }
 
   await createNotification({

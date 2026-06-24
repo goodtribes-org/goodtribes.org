@@ -41,6 +41,8 @@ model User {
   authoredBlogPosts       BlogPost[]                @relation("AuthoredBlogPosts")
   notifications           Notification[]            @relation("UserNotifications")
   assignedKanbanCards     KanbanCard[]              @relation("AssignedKanbanCards")
+  createdMilestones       Milestone[]               @relation("MilestoneCreatedBy")
+  activityEvents          ActivityEvent[]           @relation("ActivityEvents")
 }
 
 model Skill {
@@ -253,14 +255,16 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner        User                 @relation("OwnedProjects", fields: [ownerId], references: [id], onDelete: Cascade)
-  org          Organisation?        @relation(fields: [orgId], references: [id])
-  members      ProjectMember[]
-  joinRequests ProjectJoinRequest[]
-  kanbanCards  KanbanCard[]
-  todoLists    TodoList[]
-  todoItems    TodoItem[]
-  blogPosts    BlogPost[]
+  owner          User                 @relation("OwnedProjects", fields: [ownerId], references: [id], onDelete: Cascade)
+  org            Organisation?        @relation(fields: [orgId], references: [id])
+  members        ProjectMember[]
+  joinRequests   ProjectJoinRequest[]
+  kanbanCards    KanbanCard[]
+  todoLists      TodoList[]
+  todoItems      TodoItem[]
+  blogPosts      BlogPost[]
+  milestones     Milestone[]
+  activityEvents ActivityEvent[]
 }
 
 model ProjectMember {
@@ -353,4 +357,31 @@ model IdeaComment {
 
   idea   Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
   author User @relation("AuthoredIdeaComments", fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Milestone {
+  id          String    @id @default(cuid())
+  projectId   String
+  title       String
+  description String?
+  dueDate     DateTime?
+  status      String    @default("pending")
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User    @relation("MilestoneCreatedBy", fields: [createdById], references: [id])
+}
+
+model ActivityEvent {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  type      String
+  payload   Json?
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation("ActivityEvents", fields: [userId], references: [id])
 }

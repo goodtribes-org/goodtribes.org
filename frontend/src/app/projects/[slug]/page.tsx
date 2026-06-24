@@ -199,7 +199,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <button className="pb-3 text-sm font-medium border-b-2 border-coral text-coral whitespace-nowrap">Story</button>
               <Link href={`/projects/${slug}/todos`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Todo</Link>
               <Link href={`/projects/${slug}/kanban`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Kanban</Link>
+              <Link href={`/projects/${slug}/milestones`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Milestones</Link>
               <Link href={`/projects/${slug}/updates`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Updates</Link>
+              <Link href={`/projects/${slug}/activity`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Activity</Link>
             </div>
           </div>
 

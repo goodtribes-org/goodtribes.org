@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createNotification } from "@/lib/notify";
+import { logActivity } from "@/lib/activity";
 
 const prisma = new PrismaClient();
 
@@ -27,9 +28,11 @@ export async function createBlogPost(slug: string, formData: FormData) {
   const body = (formData.get("body") as string).trim();
   if (!title || !body) return;
 
-  await prisma.blogPost.create({
+  const post = await prisma.blogPost.create({
     data: { projectSlug: slug, authorId: session.user.id, title, body },
   });
+
+  await logActivity(project.id, session.user.id, "update_posted", { title: post.title });
 
   // Notify all project members
   const followers = project.members.filter((m) => m.userId !== session.user!.id);
