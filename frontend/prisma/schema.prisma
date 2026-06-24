@@ -34,9 +34,12 @@ model User {
   createdTodoItems        TodoItem[]                @relation("CreatedTodoItems")
   ownedProjects           Project[]                 @relation("OwnedProjects")
   projectMemberships      ProjectMember[]           @relation("ProjectMemberships")
+  projectJoinRequests     ProjectJoinRequest[]      @relation("ProjectJoinRequests")
   authoredIdeas           Idea[]                    @relation("AuthoredIdeas")
   ideaVotes               IdeaVote[]                @relation("IdeaVotes")
   authoredIdeaComments    IdeaComment[]             @relation("AuthoredIdeaComments")
+  authoredBlogPosts       BlogPost[]                @relation("AuthoredBlogPosts")
+  notifications           Notification[]            @relation("UserNotifications")
 }
 
 model Skill {
@@ -244,12 +247,14 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner       User           @relation("OwnedProjects", fields: [ownerId], references: [id], onDelete: Cascade)
-  org         Organisation?  @relation(fields: [orgId], references: [id])
-  members     ProjectMember[]
-  kanbanCards KanbanCard[]
-  todoLists   TodoList[]
-  todoItems   TodoItem[]
+  owner        User                 @relation("OwnedProjects", fields: [ownerId], references: [id], onDelete: Cascade)
+  org          Organisation?        @relation(fields: [orgId], references: [id])
+  members      ProjectMember[]
+  joinRequests ProjectJoinRequest[]
+  kanbanCards  KanbanCard[]
+  todoLists    TodoList[]
+  todoItems    TodoItem[]
+  blogPosts    BlogPost[]
 }
 
 model ProjectMember {
@@ -288,6 +293,49 @@ model IdeaVote {
   user User @relation("IdeaVotes", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([ideaId, userId])
+}
+
+model ProjectJoinRequest {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  message   String?
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation("ProjectJoinRequests", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  projectSlug String
+  authorId    String
+  title       String
+  body        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
+  author  User    @relation("AuthoredBlogPosts", fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String?
+  url       String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
 }
 
 model IdeaComment {

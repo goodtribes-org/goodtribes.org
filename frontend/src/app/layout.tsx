@@ -5,6 +5,7 @@ import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
 import AuthNav from "@/components/AuthNav";
 import SearchInput from "@/components/SearchInput";
+import NotificationBell from "@/components/NotificationBell";
 
 export const metadata: Metadata = {
   title: "GoodTribes.org",
@@ -60,6 +61,7 @@ export default function RootLayout({
                 About
               </Link>
               <SearchInput />
+              <NotificationBell />
               <AuthNav />
             </nav>
           </header>
