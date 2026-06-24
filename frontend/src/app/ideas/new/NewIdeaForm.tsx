@@ -1,6 +1,7 @@
 "use client";
 
-import { createIdea } from "./actions";
+import { useState, useTransition } from "react";
+import { createIdea, getSdgSuggestions } from "./actions";
 
 const SDG_GOALS = [
   { n: 1, label: "No Poverty" }, { n: 2, label: "Zero Hunger" },
@@ -15,6 +16,31 @@ const SDG_GOALS = [
 ];
 
 export default function NewIdeaForm() {
+  const [description, setDescription] = useState("");
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [aiSuggested, setAiSuggested] = useState<number[]>([]);
+  const [reasoning, setReasoning] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  function toggle(n: number) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(n) ? next.delete(n) : next.add(n);
+      return next;
+    });
+  }
+
+  function handleSuggest() {
+    startTransition(async () => {
+      const result = await getSdgSuggestions(description);
+      if (result) {
+        setAiSuggested(result.goals);
+        setReasoning(result.reasoning);
+        setSelected(new Set(result.goals));
+      }
+    });
+  }
+
   return (
     <form action={createIdea} className="flex flex-col gap-5">
       <div>
@@ -39,29 +65,79 @@ export default function NewIdeaForm() {
           id="description"
           name="description"
           rows={6}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           placeholder="Describe the problem, your proposed solution, and potential impact..."
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent resize-none"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-dark-slate mb-2">
-          UN SDG Goals <span className="text-dark-slate/50 font-normal">(select all that apply)</span>
-        </label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-dark-slate">
+            UN SDG Goals{" "}
+            <span className="text-dark-slate/50 font-normal">(select all that apply)</span>
+          </label>
+          {description.length >= 20 && (
+            <button
+              type="button"
+              onClick={handleSuggest}
+              disabled={isPending}
+              className="flex items-center gap-1.5 text-xs font-medium text-seagrass hover:text-dark-slate transition-colors disabled:opacity-50"
+            >
+              {isPending ? (
+                <>
+                  <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  Analyzing…
+                </>
+              ) : (
+                <>✨ Suggest with AI</>
+              )}
+            </button>
+          )}
+        </div>
+
+        {reasoning && (
+          <p className="text-xs text-dark-slate/50 mb-2 italic">{reasoning}</p>
+        )}
+
         <div className="grid grid-cols-2 gap-2">
-          {SDG_GOALS.map(({ n, label }) => (
-            <label key={n} className="flex items-center gap-2 cursor-pointer group">
-              <input
-                type="checkbox"
-                name="sdgGoals"
-                value={n}
-                className="accent-seagrass w-4 h-4 flex-shrink-0"
-              />
-              <span className="text-xs text-dark-slate/70 group-hover:text-dark-slate transition-colors">
-                <span className="font-semibold">{n}.</span> {label}
-              </span>
-            </label>
-          ))}
+          {SDG_GOALS.map(({ n, label }) => {
+            const isChecked = selected.has(n);
+            const isSuggested = aiSuggested.includes(n);
+            return (
+              <label
+                key={n}
+                className={`flex items-center gap-2 cursor-pointer group rounded px-1 py-0.5 transition-colors ${
+                  isSuggested && isChecked ? "bg-seagrass/10" : ""
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  name="sdgGoals"
+                  value={n}
+                  checked={isChecked}
+                  onChange={() => toggle(n)}
+                  className="accent-seagrass w-4 h-4 flex-shrink-0"
+                />
+                <span
+                  className={`text-xs transition-colors ${
+                    isChecked ? "text-dark-slate font-medium" : "text-dark-slate/60 group-hover:text-dark-slate"
+                  }`}
+                >
+                  <span className="font-semibold">{n}.</span> {label}
+                </span>
+                {isSuggested && (
+                  <span className="ml-auto text-[9px] font-semibold uppercase tracking-wider text-seagrass">
+                    AI
+                  </span>
+                )}
+              </label>
+            );
+          })}
         </div>
       </div>
 

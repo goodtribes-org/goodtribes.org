@@ -4,6 +4,13 @@ import { auth } from "@/auth";
 import { PrismaClient } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { indexDocuments } from "@/lib/meili";
+import { suggestSdgGoals } from "@/lib/claude";
+
+export async function getSdgSuggestions(
+  description: string
+): Promise<{ goals: number[]; reasoning: string } | null> {
+  return suggestSdgGoals(description);
+}
 
 const prisma = new PrismaClient();
 
