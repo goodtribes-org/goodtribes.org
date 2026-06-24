@@ -37,15 +37,20 @@ function ProjectCard({ project }: {
     _count: { kanbanCards: number; todoItems: number };
   };
 }) {
-  const imageSrc = project.imageUrl ?? `https://picsum.photos/seed/${project.slug}/800/600`;
   return (
     <Link
       href={`/projects/${project.slug}`}
       className="rounded-lg overflow-hidden border border-muted-teal/40 hover:shadow-md transition-shadow bg-white flex flex-col"
     >
       <div className="relative aspect-[4/3] w-full">
-        <Image src={imageSrc} alt={project.title} fill className="object-cover"
-          sizes="(max-width: 640px) 50vw, 25vw" />
+        {project.imageUrl ? (
+          <Image src={project.imageUrl} alt={project.title} fill className="object-cover"
+            sizes="(max-width: 640px) 50vw, 25vw" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-dry-sage to-muted-teal/40 flex items-center justify-center p-4">
+            <p className="text-xs font-semibold text-dark-slate/70 text-center leading-tight line-clamp-3">{project.title}</p>
+          </div>
+        )}
         <span className="absolute top-2 left-2 bg-white/90 rounded px-1.5 py-0.5 text-xs font-semibold text-dark-slate capitalize">
           {project.status}
         </span>
@@ -174,20 +179,24 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Recent projects */}
-      {recentProjects.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">New projects</h2>
-            <Link href="/projects/new" className="text-xs text-coral hover:underline">Start a project →</Link>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {recentProjects.map((p) => <ProjectCard key={p.slug} project={p} />)}
-          </div>
-        </section>
-      )}
+      {/* New projects — only those not already shown above */}
+      {(() => {
+        const shownSlugs = new Set(activeProjects.map((p) => p.slug));
+        const fresh = recentProjects.filter((p) => !shownSlugs.has(p.slug));
+        return fresh.length > 0 ? (
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">New projects</h2>
+              <Link href="/projects/new" className="text-xs text-coral hover:underline">Start a project →</Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {fresh.map((p) => <ProjectCard key={p.slug} project={p} />)}
+            </div>
+          </section>
+        ) : null;
+      })()}
 
-      {recentProjects.length === 0 && (
+      {activeProjects.length === 0 && recentProjects.length === 0 && (
         <div className="text-center py-16">
           <p className="text-dark-slate/40 mb-4">No projects yet — be the first!</p>
           <Link href="/projects/new" className="bg-coral text-white px-6 py-3 rounded font-medium hover:bg-watermelon transition-colors">

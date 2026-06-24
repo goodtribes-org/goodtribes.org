@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { requestToJoin } from "./actions";
 import OrgInviteForm from "./invite/OrgInviteForm";
+import { OrgJoinRequestsPanel } from "./OrgJoinSection";
 
 const prisma = new PrismaClient();
 
@@ -63,6 +64,14 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
           where: { organisationId_userId: { organisationId: org.id, userId } },
         })
       : null;
+
+  const pendingJoinRequests = isOwner
+    ? await prisma.organisationJoinRequest.findMany({
+        where: { organisationId: org.id, status: "pending" },
+        include: { user: { select: { name: true, image: true } } },
+        orderBy: { createdAt: "asc" },
+      })
+    : [];
 
   const ownerName = org.owner.name ?? org.owner.email;
   const ownerInitials = ownerName
@@ -161,6 +170,10 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
           </div>
         </div>
       </div>
+
+      {pendingJoinRequests.length > 0 && (
+        <OrgJoinRequestsPanel requests={pendingJoinRequests} slug={slug} />
+      )}
 
       {/* BOTTOM SECTION */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-8">

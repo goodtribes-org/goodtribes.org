@@ -30,6 +30,7 @@ export async function requestToJoin(projectId: string, slug: string, message: st
       where: { id: session.user.id },
       select: { name: true },
     });
+
     await Promise.all(
       project.members.map((m) =>
         createNotification({
@@ -40,6 +41,24 @@ export async function requestToJoin(projectId: string, slug: string, message: st
           url: `/projects/${slug}`,
         })
       )
+    );
+
+    const owners = project.members.filter((m) => ["owner", "admin"].includes(m.role));
+    const ownerUsers = await prisma.user.findMany({
+      where: { id: { in: owners.map((m) => m.userId) } },
+      select: { email: true, name: true },
+    });
+    const base = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
+    await Promise.all(
+      ownerUsers
+        .filter((u) => u.email)
+        .map((u) =>
+          sendEmail({
+            to: u.email!,
+            subject: `New join request for ${project.title}`,
+            html: `<p>Hi ${u.name ?? "there"},</p><p><strong>${requester?.name ?? "Someone"}</strong> wants to join <strong>${project.title}</strong>.</p>${message ? `<p style="color:#666;font-style:italic;">"${message}"</p>` : ""}<p><a href="${base}/projects/${slug}" style="background:#E85D4A;color:white;padding:10px 20px;border-radius:4px;text-decoration:none;display:inline-block;margin:16px 0;">Review request →</a></p>`,
+          }).catch(() => {})
+        )
     );
   }
 
