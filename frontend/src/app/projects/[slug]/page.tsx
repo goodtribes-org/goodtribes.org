@@ -119,14 +119,14 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             )}
           </div>
 
-          {(project.category || project.tags.length > 0) && (
+          {(project.category || (project.tags ?? []).length > 0) && (
             <div className="flex flex-wrap gap-1.5">
               {project.category && (
                 <span className="text-xs bg-muted-teal/30 text-dark-slate px-2 py-0.5 rounded font-medium">
                   {project.category}
                 </span>
               )}
-              {project.tags.map((tag) => (
+              {(project.tags ?? []).map((tag) => (
                 <span key={tag} className="text-xs border border-muted-teal text-dark-slate/60 px-2 py-0.5 rounded">
                   #{tag}
                 </span>
