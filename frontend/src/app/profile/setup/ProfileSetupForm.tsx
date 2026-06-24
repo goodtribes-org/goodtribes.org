@@ -4,6 +4,8 @@ import { useRef } from "react";
 import FileUpload from "@/components/FileUpload";
 import { saveProfile } from "./actions";
 
+type Skill = { id: string; name: string; tag: string };
+
 type Props = {
   name: string;
   bio: string;
@@ -11,13 +13,31 @@ type Props = {
   showProfile: boolean;
   image: string | null;
   isOnboarded: boolean;
+  allSkills: Skill[];
+  currentSkillIds: string[];
 };
 
-export default function ProfileSetupForm({ name, bio, social, showProfile, image, isOnboarded }: Props) {
+export default function ProfileSetupForm({
+  name,
+  bio,
+  social,
+  showProfile,
+  image,
+  isOnboarded,
+  allSkills,
+  currentSkillIds,
+}: Props) {
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   function handleImageUpload(url: string) {
     if (imageInputRef.current) imageInputRef.current.value = url;
+  }
+
+  // Group skills by tag
+  const byTag: Record<string, Skill[]> = {};
+  for (const s of allSkills) {
+    if (!byTag[s.tag]) byTag[s.tag] = [];
+    byTag[s.tag].push(s);
   }
 
   return (
@@ -61,6 +81,38 @@ export default function ProfileSetupForm({ name, bio, social, showProfile, image
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent resize-none"
         />
       </div>
+
+      {/* Skills */}
+      {allSkills.length > 0 && (
+        <fieldset>
+          <legend className="text-sm font-medium text-dark-slate mb-3">Skills</legend>
+          <div className="flex flex-col gap-4">
+            {Object.entries(byTag).map(([tag, skills]) => (
+              <div key={tag}>
+                <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-2">
+                  {tag}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {skills.map((s) => (
+                    <label key={s.id} className="cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="skillIds"
+                        value={s.id}
+                        defaultChecked={currentSkillIds.includes(s.id)}
+                        className="sr-only peer"
+                      />
+                      <span className="inline-block px-3 py-1 rounded-full text-sm border border-muted-teal text-dark-slate/60 peer-checked:border-seagrass peer-checked:bg-seagrass/10 peer-checked:text-seagrass hover:border-dark-slate/40 transition-colors select-none">
+                        {s.name}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </fieldset>
+      )}
 
       <div className="flex items-center gap-3">
         <input

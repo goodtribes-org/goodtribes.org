@@ -22,6 +22,7 @@ export async function saveProfile(formData: FormData) {
   }
 
   const showProfile = formData.get("showProfile") === "on";
+  const skillIds = formData.getAll("skillIds") as string[];
 
   const updated = await prisma.user.update({
     where: { email: session.user.email },
@@ -35,14 +36,24 @@ export async function saveProfile(formData: FormData) {
     },
   });
 
+  await prisma.$transaction([
+    prisma.userSkill.deleteMany({ where: { userId: updated.id } }),
+    prisma.userSkill.createMany({
+      data: skillIds.map((skillId) => ({ userId: updated.id, skillId })),
+      skipDuplicates: true,
+    }),
+  ]);
+
   if (showProfile) {
-    await indexDocuments("members", [{
-      id: `member-${updated.id}`,
-      type: "member",
-      title: name,
-      description: bio || "",
-      url: `/members/${updated.id}`,
-    }]);
+    await indexDocuments("members", [
+      {
+        id: `member-${updated.id}`,
+        type: "member",
+        title: name,
+        description: bio || "",
+        url: `/members/${updated.id}`,
+      },
+    ]);
   }
 
   redirect("/profile");

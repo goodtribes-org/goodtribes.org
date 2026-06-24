@@ -33,9 +33,9 @@ const SDG_INFO: Record<number, { label: string; color: string }> = {
   17: { label: "Partnerships",            color: "#19486A" },
 };
 
-function MemberAvatar({ name }: { name: string }) {
+function MemberAvatar({ name, href }: { name: string; href?: string }) {
   const initials = (name ?? "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-  return (
+  const inner = (
     <div className="flex flex-col items-center gap-1">
       <div className="w-12 h-12 rounded-full bg-dry-sage flex items-center justify-center text-sm font-semibold text-dark-slate">
         {initials}
@@ -45,6 +45,14 @@ function MemberAvatar({ name }: { name: string }) {
       </span>
     </div>
   );
+  if (href) {
+    return (
+      <Link href={href} className="hover:opacity-75 transition-opacity" title={name}>
+        {inner}
+      </Link>
+    );
+  }
+  return inner;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -63,7 +71,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     include: {
       owner: { select: { name: true } },
       members: {
-        include: { user: { select: { name: true, id: true } } },
+        include: { user: { select: { name: true, id: true, showProfile: true } } },
         orderBy: { joinedAt: "asc" },
       },
       joinRequests: {
@@ -253,7 +261,13 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <h2 className="text-sm font-semibold text-dark-slate mb-3">The Team</h2>
             {project.members.length > 0 ? (
               <div className="grid grid-cols-4 gap-3">
-                {project.members.map((m) => <MemberAvatar key={m.id} name={m.user.name ?? "?"} />)}
+                {project.members.map((m) => (
+                <MemberAvatar
+                  key={m.id}
+                  name={m.user.name ?? "?"}
+                  href={m.user.showProfile ? `/members/${m.user.id}` : undefined}
+                />
+              ))}
               </div>
             ) : (
               <p className="text-xs text-dark-slate/40">No members yet.</p>
