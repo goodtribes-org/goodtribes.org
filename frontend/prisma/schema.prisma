@@ -46,6 +46,7 @@ model User {
   createdProjectInvites   ProjectInvite[]           @relation("CreatedProjectInvites")
   createdWikiPages        WikiPage[]                @relation("WikiPageCreatedBy")
   updatedWikiPages        WikiPage[]                @relation("WikiPageUpdatedBy")
+  createdOrgInvites       OrgInvite[]               @relation("CreatedOrgInvites")
 }
 
 model Skill {
@@ -87,6 +88,7 @@ model Organisation {
   workspaceMessages WorkspaceMessage[]        @relation("OrgMessages")
   workspaceTasks    WorkspaceTask[]            @relation("OrgTasks")
   projects          Project[]
+  invites           OrgInvite[]
 }
 
 model OrganisationMember {
@@ -411,6 +413,21 @@ model WikiPage {
   updatedBy User?   @relation("WikiPageUpdatedBy", fields: [updatedById], references: [id])
 
   @@unique([projectSlug, slug])
+}
+
+model OrgInvite {
+  id          String    @id @default(cuid())
+  orgId       String
+  email       String
+  token       String    @unique @default(cuid())
+  role        String    @default("member")
+  createdById String
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  org       Organisation @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdBy User         @relation("CreatedOrgInvites", fields: [createdById], references: [id])
 }
 
 model ActivityEvent {

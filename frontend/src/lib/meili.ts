@@ -30,6 +30,15 @@ export interface SearchResult {
   url: string;
 }
 
+export async function deleteDocument(index: string, id: string) {
+  try {
+    await fetch(`${HOST}/indexes/${index}/documents/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers,
+    });
+  } catch { }
+}
+
 export async function multiSearch(query: string): Promise<SearchResult[]> {
   if (!query.trim()) return [];
   try {

@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { PrismaClient } from "@prisma/client";
 import { redirect } from "next/navigation";
 import EditProjectForm from "./EditProjectForm";
+import DeleteProjectButton from "@/components/DeleteProjectButton";
 
 const prisma = new PrismaClient();
 
@@ -23,6 +24,8 @@ export default async function EditProjectPage({
   const role = project.members[0]?.role;
   if (!role || !["owner", "admin"].includes(role)) redirect(`/projects/${slug}`);
 
+  const isOwner = role === "owner";
+
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
@@ -43,6 +46,15 @@ export default async function EditProjectPage({
           sdgGoals: project.sdgGoals,
         }}
       />
+      {isOwner && (
+        <div className="mt-12 pt-8 border-t border-red-200">
+          <h2 className="text-sm font-semibold text-red-700 mb-2">Danger zone</h2>
+          <p className="text-xs text-dark-slate/60 mb-4">
+            Deleting a project permanently removes all kanban cards, todos, wiki pages, milestones, and activity. This cannot be undone.
+          </p>
+          <DeleteProjectButton slug={slug} />
+        </div>
+      )}
     </div>
   );
 }

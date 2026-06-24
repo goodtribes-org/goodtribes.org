@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { requestToJoin } from "./actions";
+import OrgInviteForm from "./invite/OrgInviteForm";
 
 const prisma = new PrismaClient();
 
@@ -305,6 +306,9 @@ export default async function OrgDetailPage({ params }: { params: Promise<{ slug
                     </div>
                   ))}
             </div>
+            {isOwner && (
+              <OrgInviteForm orgId={org.id} slug={slug} />
+            )}
           </section>
 
           {/* The Global Goals */}

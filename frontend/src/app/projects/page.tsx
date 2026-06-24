@@ -4,6 +4,7 @@ import Image from "next/image";
 import { PrismaClient, Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import ProjectFilters from "@/components/ProjectFilters";
+import Pagination from "@/components/Pagination";
 
 export const metadata: Metadata = {
   title: "Projects — GoodTribes.org",
@@ -11,14 +12,16 @@ export const metadata: Metadata = {
 };
 
 const prisma = new PrismaClient();
+const PAGE_SIZE = 12;
 
 export default async function ProjectsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; category?: string; sdg?: string }>;
+  searchParams: Promise<{ status?: string; category?: string; sdg?: string; page?: string }>;
 }) {
-  const { status, category, sdg } = await searchParams;
+  const { status, category, sdg, page: pageStr } = await searchParams;
   const sdgNum = sdg ? parseInt(sdg) : undefined;
+  const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
 
   const where: Prisma.ProjectWhereInput = {
     visibility: "public",
@@ -27,11 +30,14 @@ export default async function ProjectsPage({
     ...(sdgNum && !isNaN(sdgNum) ? { sdgGoals: { has: sdgNum } } : {}),
   };
 
-  const [session, projects] = await Promise.all([
+  const [session, total, projects] = await Promise.all([
     auth(),
+    prisma.project.count({ where }),
     prisma.project.findMany({
       where,
       orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
       include: {
         owner: { select: { name: true } },
         members: { select: { id: true } },
@@ -40,13 +46,15 @@ export default async function ProjectsPage({
     }),
   ]);
 
+  const rawParams = { status, category, sdg, page: pageStr };
+
   return (
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-dark-slate">
           Projects{" "}
-          <span className="text-dark-slate/40 font-normal">({projects.length})</span>
+          <span className="text-dark-slate/40 font-normal">({total})</span>
         </h1>
         {session?.user?.id && (
           <Link
@@ -58,7 +66,7 @@ export default async function ProjectsPage({
         )}
       </div>
 
-      <ProjectFilters status={status} category={category} sdg={sdg} total={projects.length} />
+      <ProjectFilters status={status} category={category} sdg={sdg} total={total} />
 
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -79,7 +87,7 @@ export default async function ProjectsPage({
       ) : (
         <>
           {/* Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
             {projects.map((project) => {
               const imageSrc =
                 project.imageUrl ?? `https://picsum.photos/seed/${project.slug}/800/600`;
@@ -90,7 +98,6 @@ export default async function ProjectsPage({
                   href={`/projects/${project.slug}`}
                   className="rounded-lg overflow-hidden border border-muted-teal/40 hover:shadow-md transition-shadow bg-white flex flex-col"
                 >
-                  {/* Image */}
                   <div className="relative aspect-[4/3] w-full">
                     <Image
                       src={imageSrc}
@@ -103,8 +110,6 @@ export default async function ProjectsPage({
                       {project.status}
                     </span>
                   </div>
-
-                  {/* Content */}
                   <div className="p-3 flex flex-col flex-1">
                     <p className="font-bold text-dark-slate text-sm leading-tight mb-0.5">
                       {project.title}
@@ -115,8 +120,6 @@ export default async function ProjectsPage({
                     <p className="text-xs text-dark-slate/70 leading-snug mb-3 line-clamp-3 flex-1">
                       {project.description ?? "No description yet."}
                     </p>
-
-                    {/* Stats */}
                     <div className="grid grid-cols-3 divide-x divide-muted-teal/30 text-center border-t border-muted-teal/20 pt-2 mt-auto">
                       <div className="px-1">
                         <p className="text-xs font-semibold text-dark-slate">
@@ -142,6 +145,13 @@ export default async function ProjectsPage({
               );
             })}
           </div>
+          <Pagination
+            page={page}
+            total={total}
+            perPage={PAGE_SIZE}
+            searchParams={rawParams}
+            basePath="/projects"
+          />
         </>
       )}
     </div>

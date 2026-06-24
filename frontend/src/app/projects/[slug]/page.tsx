@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import { auth } from "@/auth";
 import { JoinButton, JoinRequestsPanel } from "./JoinSection";
 import InviteForm from "./invite/InviteForm";
+import LeaveProjectButton from "@/components/LeaveProjectButton";
 
 const prisma = new PrismaClient();
 
@@ -166,12 +167,17 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
           <div className="flex flex-wrap items-center gap-3 mt-1">
             {isMember ? (
-              <Link
-                href={`/projects/${slug}/kanban`}
-                className="px-5 py-2 rounded bg-coral text-white text-sm font-bold uppercase tracking-wide hover:bg-watermelon transition-colors"
-              >
-                Open Kanban →
-              </Link>
+              <>
+                <Link
+                  href={`/projects/${slug}/kanban`}
+                  className="px-5 py-2 rounded bg-coral text-white text-sm font-bold uppercase tracking-wide hover:bg-watermelon transition-colors"
+                >
+                  Open Kanban →
+                </Link>
+                {!isOwnerOrAdmin && (
+                  <LeaveProjectButton projectId={project.id} />
+                )}
+              </>
             ) : userId ? (
               <JoinButton
                 projectId={project.id}
