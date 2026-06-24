@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import { updateProject } from "./actions";
 import { getSdgSuggestions } from "@/app/projects/new/actions";
+import FileUpload from "@/components/FileUpload";
 
 const SDG_GOALS = [
   { n: 1, label: "No Poverty" }, { n: 2, label: "Zero Hunger" },
@@ -34,6 +35,7 @@ interface Props {
     category: string | null;
     tags: string[];
     sdgGoals: number[];
+    imageUrl: string | null;
   };
 }
 
@@ -44,6 +46,11 @@ export default function EditProjectForm({ slug, initial }: Props) {
   const [reasoning, setReasoning] = useState("");
   const [isPending, startTransition] = useTransition();
   const [isSuggesting, startSuggesting] = useTransition();
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  function handleImageUpload(url: string) {
+    if (imageInputRef.current) imageInputRef.current.value = url;
+  }
 
   function toggle(n: number) {
     setSelected((prev) => {
@@ -72,6 +79,20 @@ export default function EditProjectForm({ slug, initial }: Props) {
 
   return (
     <form action={handleSubmit} className="flex flex-col gap-6">
+      {/* Cover image */}
+      <div>
+        <label className="block text-sm font-medium text-dark-slate mb-2">
+          Cover image <span className="text-dark-slate/50 font-normal">(optional)</span>
+        </label>
+        <FileUpload
+          visibility="public"
+          accept="image/*"
+          currentImageUrl={initial.imageUrl ?? undefined}
+          onUpload={handleImageUpload}
+        />
+        <input type="hidden" name="imageUrl" ref={imageInputRef} defaultValue={initial.imageUrl ?? ""} />
+      </div>
+
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-dark-slate mb-1">
           Title <span className="text-watermelon">*</span>

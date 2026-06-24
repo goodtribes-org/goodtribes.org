@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import { createProject, getSdgSuggestions } from "./actions";
+import FileUpload from "@/components/FileUpload";
 
 const CATEGORIES = ["Technology", "Environment", "Education", "Arts", "Community", "Health", "Other"];
 
@@ -35,6 +36,11 @@ export default function NewProjectForm({ initial = {} }: Props) {
   const [aiSuggested, setAiSuggested] = useState<number[]>([]);
   const [reasoning, setReasoning] = useState("");
   const [isPending, startTransition] = useTransition();
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  function handleImageUpload(url: string) {
+    if (imageInputRef.current) imageInputRef.current.value = url;
+  }
 
   function toggle(n: number) {
     setSelected((prev) => {
@@ -57,6 +63,19 @@ export default function NewProjectForm({ initial = {} }: Props) {
 
   return (
     <form action={createProject} className="flex flex-col gap-5">
+      {/* Project image */}
+      <div>
+        <label className="block text-sm font-medium text-dark-slate mb-2">
+          Cover image <span className="text-dark-slate/50 font-normal">(optional)</span>
+        </label>
+        <FileUpload
+          visibility="public"
+          accept="image/*"
+          onUpload={handleImageUpload}
+        />
+        <input type="hidden" name="imageUrl" ref={imageInputRef} defaultValue="" />
+      </div>
+
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-dark-slate mb-1">
           Title <span className="text-watermelon">*</span>

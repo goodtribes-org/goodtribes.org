@@ -36,16 +36,22 @@ function timeAgo(date: Date): string {
 export default async function IdeasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; sort?: string }>;
 }) {
-  const { page: pageStr } = await searchParams;
+  const { page: pageStr, sort: sortParam } = await searchParams;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
+  const sort = sortParam === "top" ? "top" : "new";
+
+  const orderBy =
+    sort === "top"
+      ? { votes: { _count: "desc" as const } }
+      : { createdAt: "desc" as const };
 
   const [session, total, ideas] = await Promise.all([
     auth(),
     prisma.idea.count(),
     prisma.idea.findMany({
-      orderBy: { createdAt: "desc" },
+      orderBy,
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
       include: {
@@ -58,7 +64,7 @@ export default async function IdeasPage({
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold text-dark-slate">
             Ideas{" "}
@@ -76,6 +82,30 @@ export default async function IdeasPage({
             + Share idea
           </Link>
         )}
+      </div>
+
+      {/* Sort toggle */}
+      <div className="flex gap-1 mb-6">
+        <Link
+          href="/ideas"
+          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+            sort === "new"
+              ? "bg-dark-slate text-white"
+              : "text-dark-slate/60 hover:text-dark-slate"
+          }`}
+        >
+          New
+        </Link>
+        <Link
+          href="/ideas?sort=top"
+          className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+            sort === "top"
+              ? "bg-dark-slate text-white"
+              : "text-dark-slate/60 hover:text-dark-slate"
+          }`}
+        >
+          Top
+        </Link>
       </div>
 
       {total === 0 ? (
@@ -104,13 +134,10 @@ export default async function IdeasPage({
                 className="block border border-muted-teal/40 rounded-lg p-5 hover:shadow-md hover:border-muted-teal transition-all bg-white"
               >
                 <div className="flex items-start gap-4">
-                  {/* Vote count */}
                   <div className="flex flex-col items-center gap-1 flex-shrink-0 w-12">
                     <div className="text-xl font-bold text-seagrass">{idea._count.votes}</div>
                     <div className="text-[10px] text-dark-slate/40 uppercase tracking-wider">votes</div>
                   </div>
-
-                  {/* Content */}
                   <div className="flex-1 min-w-0">
                     <h2 className="text-base font-semibold text-dark-slate mb-1 leading-snug">
                       {idea.title}
@@ -120,8 +147,6 @@ export default async function IdeasPage({
                         {idea.description}
                       </p>
                     )}
-
-                    {/* SDG tags */}
                     {idea.sdgGoals.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mb-3">
                         {idea.sdgGoals.map((n) => (
@@ -135,8 +160,6 @@ export default async function IdeasPage({
                         ))}
                       </div>
                     )}
-
-                    {/* Meta */}
                     <div className="flex items-center gap-4 text-xs text-dark-slate/50">
                       <span>by {idea.author.name ?? "Unknown"}</span>
                       <span>{timeAgo(idea.createdAt)}</span>
@@ -156,7 +179,7 @@ export default async function IdeasPage({
             page={page}
             total={total}
             perPage={PAGE_SIZE}
-            searchParams={{ page: pageStr }}
+            searchParams={{ page: pageStr, sort: sortParam }}
             basePath="/ideas"
           />
         </>

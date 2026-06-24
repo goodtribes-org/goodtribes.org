@@ -18,6 +18,7 @@ export default async function EditProjectPage({
   const project = await prisma.project.findUnique({
     where: { slug },
     include: { members: { where: { userId: session.user.id } } },
+    // imageUrl needed for FileUpload preview
   });
   if (!project) redirect("/projects");
 
@@ -44,6 +45,7 @@ export default async function EditProjectPage({
           category: project.category,
           tags: project.tags,
           sdgGoals: project.sdgGoals,
+          imageUrl: project.imageUrl,
         }}
       />
       {isOwner && (
