@@ -64,6 +64,18 @@ export default async function LoginPage({
           Create account →
         </Link>
       </p>
+
+      {process.env.NODE_ENV === "development" && (
+        <div className="mt-8 pt-6 border-t border-muted-teal/40">
+          <p className="text-xs text-dark-slate/40 text-center mb-3">Dev shortcut</p>
+          <a
+            href={`/api/dev-login${params.callbackUrl ? `?callbackUrl=${encodeURIComponent(params.callbackUrl)}` : ""}`}
+            className="block w-full text-center bg-dry-sage text-dark-slate/70 rounded-md px-4 py-2 text-sm font-medium hover:bg-muted-teal/30 transition-colors"
+          >
+            Log in as {process.env.DEV_EMAIL ?? "niklas.gunnas@goodtribes.org"}
+          </a>
+        </div>
+      )}
     </div>
   );
 }
