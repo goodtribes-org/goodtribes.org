@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
+import MembersFilter from "@/components/MembersFilter";
 
 export const dynamic = "force-dynamic";
 
@@ -11,20 +12,37 @@ export const metadata: Metadata = {
   description: "Members of the GoodTribes network",
 };
 
-export default async function MembersPage() {
-  const members = await prisma.user.findMany({
-    where: { showProfile: true, name: { not: null } },
-    orderBy: { name: "asc" },
-    select: {
-      id: true,
-      name: true,
-      bio: true,
-      skills: {
-        select: { skill: { select: { name: true, tag: true } } },
-        take: 3,
+export default async function MembersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ skill?: string }>;
+}) {
+  const { skill } = await searchParams;
+
+  const [members, allSkills] = await Promise.all([
+    prisma.user.findMany({
+      where: {
+        showProfile: true,
+        name: { not: null },
+        ...(skill ? { skills: { some: { skill: { slug: skill } } } } : {}),
       },
-    },
-  });
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        bio: true,
+        skills: {
+          select: { skill: { select: { name: true, tag: true, slug: true } } },
+          take: 3,
+        },
+      },
+    }),
+    prisma.skill.findMany({
+      where: { users: { some: { user: { showProfile: true } } } },
+      orderBy: { name: "asc" },
+      select: { name: true, slug: true },
+    }),
+  ]);
 
   return (
     <div>
@@ -34,6 +52,8 @@ export default async function MembersPage() {
           People in the GoodTribes network who have chosen to be visible.
         </p>
       </div>
+
+      <MembersFilter skills={allSkills} activeSkill={skill} total={members.length} />
 
       {members.length === 0 ? (
         <p className="text-muted-teal italic">No members have chosen to show their profile yet.</p>

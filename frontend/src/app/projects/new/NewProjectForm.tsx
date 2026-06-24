@@ -25,9 +25,13 @@ const SDG_GOALS = [
   { n: 17, label: "Partnerships" },
 ];
 
-export default function NewProjectForm() {
-  const [description, setDescription] = useState("");
-  const [selected, setSelected] = useState<Set<number>>(new Set());
+interface Props {
+  initial?: { title?: string; description?: string; sdgGoals?: number[] };
+}
+
+export default function NewProjectForm({ initial = {} }: Props) {
+  const [description, setDescription] = useState(initial.description ?? "");
+  const [selected, setSelected] = useState<Set<number>>(new Set(initial.sdgGoals ?? []));
   const [aiSuggested, setAiSuggested] = useState<number[]>([]);
   const [reasoning, setReasoning] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -62,6 +66,7 @@ export default function NewProjectForm() {
           name="title"
           type="text"
           required
+          defaultValue={initial.title ?? ""}
           placeholder="Project name"
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
         />
