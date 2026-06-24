@@ -12,6 +12,8 @@ export async function createCard(
   column: string,
   description?: string,
   dueDate?: string,
+  priority?: string,
+  assigneeId?: string,
 ) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
@@ -30,10 +32,36 @@ export async function createCard(
       createdById: session.user.id,
       description: description?.trim() || null,
       dueDate: dueDate ? new Date(dueDate) : null,
+      priority: priority || "normal",
+      assigneeId: assigneeId || null,
     },
   });
 
   revalidatePath(`/projects/${projectSlug}/kanban`);
+}
+
+export async function updateCard(
+  cardId: string,
+  data: { title?: string; description?: string | null; dueDate?: string | null; priority?: string; assigneeId?: string | null },
+) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+
+  const card = await prisma.kanbanCard.findUnique({ where: { id: cardId } });
+  if (!card) return { error: "Card not found" };
+
+  await prisma.kanbanCard.update({
+    where: { id: cardId },
+    data: {
+      ...(data.title !== undefined ? { title: data.title.trim() } : {}),
+      ...(data.description !== undefined ? { description: data.description?.trim() || null } : {}),
+      ...(data.dueDate !== undefined ? { dueDate: data.dueDate ? new Date(data.dueDate) : null } : {}),
+      ...(data.priority !== undefined ? { priority: data.priority } : {}),
+      ...(data.assigneeId !== undefined ? { assigneeId: data.assigneeId || null } : {}),
+    },
+  });
+
+  revalidatePath(`/projects/${card.projectSlug}/kanban`);
 }
 
 export async function moveCard(cardId: string, newColumn: string) {

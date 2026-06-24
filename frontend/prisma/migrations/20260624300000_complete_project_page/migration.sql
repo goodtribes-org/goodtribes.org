@@ -1,0 +1,8 @@
+ALTER TABLE "Project" ADD COLUMN "category" TEXT;
+ALTER TABLE "Project" ADD COLUMN "tags" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];
+
+ALTER TABLE "KanbanCard" ADD COLUMN "priority" TEXT NOT NULL DEFAULT 'normal';
+ALTER TABLE "KanbanCard" ADD COLUMN "assigneeId" TEXT;
+
+ALTER TABLE "KanbanCard" ADD CONSTRAINT "KanbanCard_assigneeId_fkey"
+    FOREIGN KEY ("assigneeId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

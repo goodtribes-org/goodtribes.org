@@ -11,12 +11,24 @@ const STAGES = ["Concept", "Prototype", "Production", "Delivery"];
 const STATUS_TO_STAGE: Record<string, number> = {
   concept: 0, prototype: 1, production: 2, delivery: 3,
 };
-const SDG_LABELS: Record<number, string> = {
-  1: "No Poverty", 2: "Zero Hunger", 3: "Good Health", 4: "Quality Education",
-  5: "Gender Equality", 6: "Clean Water", 7: "Clean Energy", 8: "Decent Work",
-  9: "Industry & Innovation", 10: "Reduced Inequalities", 11: "Sustainable Cities",
-  12: "Responsible Consumption", 13: "Climate Action", 14: "Life Below Water",
-  15: "Life on Land", 16: "Peace & Justice", 17: "Partnerships",
+const SDG_INFO: Record<number, { label: string; color: string }> = {
+  1:  { label: "No Poverty",              color: "#E5243B" },
+  2:  { label: "Zero Hunger",             color: "#DDA63A" },
+  3:  { label: "Good Health",             color: "#4C9F38" },
+  4:  { label: "Quality Education",       color: "#C5192D" },
+  5:  { label: "Gender Equality",         color: "#FF3A21" },
+  6:  { label: "Clean Water",             color: "#26BDE2" },
+  7:  { label: "Clean Energy",            color: "#FCC30B" },
+  8:  { label: "Decent Work",             color: "#A21942" },
+  9:  { label: "Industry & Innovation",   color: "#FD6925" },
+  10: { label: "Reduced Inequalities",    color: "#DD1367" },
+  11: { label: "Sustainable Cities",      color: "#FD9D24" },
+  12: { label: "Responsible Consumption", color: "#BF8B2E" },
+  13: { label: "Climate Action",          color: "#3F7E44" },
+  14: { label: "Life Below Water",        color: "#0A97D9" },
+  15: { label: "Life on Land",            color: "#56C02B" },
+  16: { label: "Peace & Justice",         color: "#00689D" },
+  17: { label: "Partnerships",            color: "#19486A" },
 };
 
 function MemberAvatar({ name }: { name: string }) {
@@ -90,20 +102,53 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
 
         <div className="col-span-2 flex flex-col gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-dark-slate mb-1">{project.title}</h1>
-            <p className="text-sm text-dark-slate/60">
-              by <span className="text-coral">{project.owner.name ?? "Unknown"}</span>
-            </p>
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h1 className="text-2xl font-bold text-dark-slate mb-1">{project.title}</h1>
+              <p className="text-sm text-dark-slate/60">
+                by <span className="text-coral">{project.owner.name ?? "Unknown"}</span>
+              </p>
+            </div>
+            {isOwnerOrAdmin && (
+              <Link
+                href={`/projects/${slug}/edit`}
+                className="shrink-0 px-3 py-1.5 rounded border border-muted-teal text-xs font-medium text-dark-slate/70 hover:text-dark-slate hover:border-dark-slate/40 transition-colors"
+              >
+                Edit
+              </Link>
+            )}
           </div>
+
+          {(project.category || project.tags.length > 0) && (
+            <div className="flex flex-wrap gap-1.5">
+              {project.category && (
+                <span className="text-xs bg-muted-teal/30 text-dark-slate px-2 py-0.5 rounded font-medium">
+                  {project.category}
+                </span>
+              )}
+              {project.tags.map((tag) => (
+                <span key={tag} className="text-xs border border-muted-teal text-dark-slate/60 px-2 py-0.5 rounded">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
 
           {project.sdgGoals.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {project.sdgGoals.map((n) => (
-                <span key={n} className="text-xs bg-dry-sage text-dark-slate px-2 py-0.5 rounded" title={SDG_LABELS[n]}>
-                  SDG {n}
-                </span>
-              ))}
+              {project.sdgGoals.map((n) => {
+                const info = SDG_INFO[n];
+                return (
+                  <span
+                    key={n}
+                    title={`SDG ${n}: ${info?.label ?? ""}`}
+                    className="text-xs font-bold px-2 py-0.5 rounded text-white cursor-default"
+                    style={{ backgroundColor: info?.color ?? "#888" }}
+                  >
+                    {n}
+                  </span>
+                );
+              })}
             </div>
           )}
 

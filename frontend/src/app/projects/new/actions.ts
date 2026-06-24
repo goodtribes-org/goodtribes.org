@@ -23,6 +23,9 @@ export async function createProject(formData: FormData) {
   const title = (formData.get("title") as string).trim();
   const description = (formData.get("description") as string | null)?.trim() || null;
   const visibility = (formData.get("visibility") as string) || "public";
+  const category = (formData.get("category") as string | null)?.trim() || null;
+  const tagsRaw = (formData.get("tags") as string | null)?.trim() || "";
+  const tags = tagsRaw.split(",").map((t) => t.trim()).filter(Boolean);
   const sdgGoals = formData
     .getAll("sdgGoals")
     .map(Number)
@@ -37,7 +40,7 @@ export async function createProject(formData: FormData) {
     const candidate = attempt === 0 ? baseSlug : `${baseSlug}-${attempt}`;
     try {
       const project = await prisma.project.create({
-        data: { slug: candidate, title, description, visibility, sdgGoals, ownerId: userId },
+        data: { slug: candidate, title, description, visibility, category, tags, sdgGoals, ownerId: userId },
       });
       await prisma.projectMember.create({
         data: { projectId: project.id, userId, role: "owner" },

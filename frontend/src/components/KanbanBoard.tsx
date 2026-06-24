@@ -13,9 +13,11 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { createCard, moveCard, deleteCard } from "@/app/projects/[slug]/kanban/actions";
+import { createCard, moveCard, deleteCard, updateCard } from "@/app/projects/[slug]/kanban/actions";
 
 type CardCreator = { name: string | null };
+
+export type Member = { id: string; name: string | null };
 
 type Card = {
   id: string;
@@ -25,10 +27,20 @@ type Card = {
   dueDate: Date | string | null;
   column: string;
   order: number;
+  priority: string;
+  assigneeId: string | null;
+  assignee: Member | null;
   createdById: string;
   createdAt: Date | string;
   updatedAt: Date | string;
   createdBy: CardCreator | null;
+};
+
+const PRIORITY_META: Record<string, { label: string; color: string; dot: string }> = {
+  low:    { label: "Low",    color: "text-gray-400", dot: "bg-gray-300" },
+  normal: { label: "Normal", color: "text-blue-500", dot: "bg-blue-400" },
+  high:   { label: "High",   color: "text-orange-500", dot: "bg-orange-400" },
+  urgent: { label: "Urgent", color: "text-red-500", dot: "bg-red-500" },
 };
 
 type Columns = {
@@ -79,18 +91,22 @@ function AddCardModal({
   projectSlug,
   column,
   columnLabel,
+  members,
   onAdd,
   onClose,
 }: {
   projectSlug: string;
   column: string;
   columnLabel: string;
+  members: Member[];
   onAdd: (card: Card) => void;
   onClose: () => void;
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [priority, setPriority] = useState("normal");
+  const [assigneeId, setAssigneeId] = useState("");
   const [, startTransition] = useTransition();
   const titleRef = useRef<HTMLInputElement>(null);
 
@@ -103,6 +119,7 @@ function AddCardModal({
 
   function submit(andAnother = false) {
     if (!title.trim()) return;
+    const assignee = members.find((m) => m.id === assigneeId) ?? null;
     onAdd({
       id: `temp-${Date.now()}`,
       projectSlug,
@@ -111,17 +128,19 @@ function AddCardModal({
       dueDate: dueDate || null,
       column,
       order: 9999,
+      priority,
+      assigneeId: assigneeId || null,
+      assignee,
       createdById: "",
       createdAt: new Date(),
       updatedAt: new Date(),
       createdBy: null,
     });
-    const [t, desc, due] = [title, description, dueDate];
-    startTransition(async () => { await createCard(projectSlug, t, column, desc, due); });
+    const [t, desc, due, pri, asgn] = [title, description, dueDate, priority, assigneeId];
+    startTransition(async () => { await createCard(projectSlug, t, column, desc, due, pri, asgn || undefined); });
     if (andAnother) {
-      setTitle("");
-      setDescription("");
-      setDueDate("");
+      setTitle(""); setDescription(""); setDueDate("");
+      setPriority("normal"); setAssigneeId("");
       titleRef.current?.focus();
     } else {
       onClose();
@@ -134,16 +153,13 @@ function AddCardModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl">
-        {/* Header */}
         <div className="px-6 pt-6 pb-4 border-b border-gray-100">
           <h2 className="text-base font-semibold text-gray-900">
             Add a new card to {columnLabel}
           </h2>
         </div>
 
-        {/* Form */}
         <div className="px-6 py-4 space-y-4">
-          {/* Title */}
           <div className="flex items-start gap-4">
             <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Title</label>
             <input
@@ -157,31 +173,65 @@ function AddCardModal({
             />
           </div>
 
-          {/* Due date */}
           <div className="flex items-start gap-4">
             <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Due on</label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="flex-1 text-sm text-gray-800 placeholder-gray-400 border-0 border-b border-gray-200 focus:border-blue-400 focus:outline-none py-1.5 transition-colors"
+              className="flex-1 text-sm text-gray-800 border-0 border-b border-gray-200 focus:border-blue-400 focus:outline-none py-1.5 transition-colors"
             />
           </div>
 
-          {/* Description */}
+          <div className="flex items-start gap-4">
+            <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Priority</label>
+            <div className="flex gap-2 flex-wrap pt-1">
+              {Object.entries(PRIORITY_META).map(([key, meta]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setPriority(key)}
+                  className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
+                    priority === key
+                      ? "border-current bg-gray-50 " + meta.color
+                      : "border-gray-200 text-gray-400 hover:border-gray-300"
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${meta.dot}`} />
+                  {meta.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {members.length > 0 && (
+            <div className="flex items-start gap-4">
+              <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Assignee</label>
+              <select
+                value={assigneeId}
+                onChange={(e) => setAssigneeId(e.target.value)}
+                className="flex-1 text-sm text-gray-800 border-0 border-b border-gray-200 focus:border-blue-400 focus:outline-none py-1.5 bg-white transition-colors"
+              >
+                <option value="">— unassigned —</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.id}>{m.name ?? m.id}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="flex items-start gap-4">
             <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your card here..."
-              rows={5}
+              rows={4}
               className="flex-1 text-sm text-gray-800 placeholder-gray-400 border border-gray-200 rounded-lg p-3 focus:outline-none focus:border-blue-400 resize-none transition-colors"
             />
           </div>
         </div>
 
-        {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-100 flex items-center gap-3">
           <button
             onClick={() => submit(false)}
@@ -222,6 +272,7 @@ function KanbanCardItem({
     useSortable({ id: card.id });
 
   const due = formatDate(card.dueDate);
+  const priorityMeta = PRIORITY_META[card.priority] ?? PRIORITY_META.normal;
 
   return (
     <div
@@ -232,16 +283,23 @@ function KanbanCardItem({
       className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm cursor-grab active:cursor-grabbing group hover:shadow-md hover:border-gray-300 transition-all"
     >
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium text-gray-800 leading-snug flex-1">{card.title}</p>
-        <Avatar name={card.createdBy?.name ?? null} />
+        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+          <span className={`w-2 h-2 rounded-full shrink-0 ${priorityMeta.dot}`} title={`Priority: ${priorityMeta.label}`} />
+          <p className="text-sm font-medium text-gray-800 leading-snug truncate">{card.title}</p>
+        </div>
+        <Avatar name={card.assignee?.name ?? card.createdBy?.name ?? null} />
       </div>
       {card.description && (
         <p className="text-xs text-gray-500 mt-1 leading-snug line-clamp-2">{card.description}</p>
       )}
-      <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
-        <span>by {card.createdBy?.name?.split(" ")[0] ?? "Unknown"} · {timeAgo(card.createdAt)}</span>
+      <div className="flex items-center mt-2 text-xs text-gray-400">
+        {card.assignee ? (
+          <span className="truncate">→ {card.assignee.name?.split(" ")[0]}</span>
+        ) : (
+          <span>{card.createdBy?.name?.split(" ")[0] ?? "Unknown"} · {timeAgo(card.createdAt)}</span>
+        )}
         {due && (
-          <span className="ml-auto flex items-center gap-1">
+          <span className="ml-auto flex items-center gap-1 shrink-0">
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
@@ -277,7 +335,8 @@ function DroppableColumn({
   currentUserId: string | null;
   onOpenModal: (colKey: string) => void;
   onDelete: (id: string) => void;
-}) {
+})
+ {
   const { setNodeRef, isOver } = useDroppable({ id: col.key });
 
   return (
@@ -336,11 +395,13 @@ export default function KanbanBoard({
   initialColumns,
   isLoggedIn,
   currentUserId,
+  members,
 }: {
   projectSlug: string;
   initialColumns: Columns;
   isLoggedIn: boolean;
   currentUserId: string | null;
+  members: Member[];
 }) {
   const [columns, setColumns] = useState<Columns>(initialColumns);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
@@ -448,6 +509,7 @@ export default function KanbanBoard({
           projectSlug={projectSlug}
           column={modalCol}
           columnLabel={activeColData.label}
+          members={members}
           onAdd={handleAdd}
           onClose={() => setModalCol(null)}
         />

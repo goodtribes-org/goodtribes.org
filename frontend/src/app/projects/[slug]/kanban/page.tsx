@@ -16,7 +16,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function KanbanPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
+  const project = await prisma.project.findUnique({
+    where: { slug },
+    select: {
+      title: true,
+      members: { include: { user: { select: { id: true, name: true } } } },
+    },
+  });
   if (!project) notFound();
 
   const session = await auth();
@@ -24,7 +30,10 @@ export default async function KanbanPage({ params }: { params: Promise<{ slug: s
   const cards = await prisma.kanbanCard.findMany({
     where: { projectSlug: slug },
     orderBy: [{ column: "asc" }, { order: "asc" }],
-    include: { createdBy: { select: { name: true } } },
+    include: {
+      createdBy: { select: { name: true } },
+      assignee: { select: { id: true, name: true } },
+    },
   });
 
   const columns = {
@@ -34,6 +43,8 @@ export default async function KanbanPage({ params }: { params: Promise<{ slug: s
     REVIEW:  cards.filter((c) => c.column === "REVIEW"),
     DONE:    cards.filter((c) => c.column === "DONE"),
   };
+
+  const members = project.members.map((m) => ({ id: m.user.id, name: m.user.name }));
 
   return (
     <>
@@ -53,6 +64,7 @@ export default async function KanbanPage({ params }: { params: Promise<{ slug: s
           initialColumns={columns}
           isLoggedIn={!!session?.user?.id}
           currentUserId={session?.user?.id ?? null}
+          members={members}
         />
       </div>
     </>

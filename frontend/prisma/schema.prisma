@@ -40,6 +40,7 @@ model User {
   authoredIdeaComments    IdeaComment[]             @relation("AuthoredIdeaComments")
   authoredBlogPosts       BlogPost[]                @relation("AuthoredBlogPosts")
   notifications           Notification[]            @relation("UserNotifications")
+  assignedKanbanCards     KanbanCard[]              @relation("AssignedKanbanCards")
 }
 
 model Skill {
@@ -185,13 +186,16 @@ model KanbanCard {
   title       String
   description String?
   dueDate     DateTime?
-  column      String   @default("BACKLOG")
-  order       Int      @default(0)
+  priority    String    @default("normal")
+  assigneeId  String?
+  column      String    @default("BACKLOG")
+  order       Int       @default(0)
   createdById String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   createdBy User    @relation("CreatedKanbanCards", fields: [createdById], references: [id], onDelete: Cascade)
+  assignee  User?   @relation("AssignedKanbanCards", fields: [assigneeId], references: [id], onDelete: SetNull)
   project   Project @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
 
   @@index([projectSlug, column])
@@ -240,6 +244,8 @@ model Project {
   description String?
   status      String   @default("concept")
   visibility  String   @default("public")
+  category    String?
+  tags        String[]
   imageUrl    String?
   sdgGoals    Int[]
   ownerId     String

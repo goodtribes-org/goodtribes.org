@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import { createProject, getSdgSuggestions } from "./actions";
 
+const CATEGORIES = ["Technology", "Environment", "Education", "Arts", "Community", "Health", "Other"];
+
 const SDG_GOALS = [
   { n: 1, label: "No Poverty" },
   { n: 2, label: "Zero Hunger" },
@@ -63,6 +65,26 @@ export default function NewProjectForm() {
           placeholder="Project name"
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
         />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="category" className="block text-sm font-medium text-dark-slate mb-1">
+            Category
+          </label>
+          <select id="category" name="category"
+            className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral bg-white">
+            <option value="">— none —</option>
+            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="tags" className="block text-sm font-medium text-dark-slate mb-1">
+            Tags <span className="text-dark-slate/50 font-normal">(comma-separated)</span>
+          </label>
+          <input id="tags" name="tags" type="text" placeholder="climate, youth"
+            className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral" />
+        </div>
       </div>
 
       <div>
