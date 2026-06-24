@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { PrismaClient } from "@prisma/client";
 import { redirect } from "next/navigation";
+import { indexDocuments } from "@/lib/meili";
 
 const prisma = new PrismaClient();
 
@@ -22,6 +23,16 @@ export async function createIdea(formData: FormData) {
   const idea = await prisma.idea.create({
     data: { title, description, sdgGoals, authorId: session.user.id },
   });
+
+  await indexDocuments("ideas", [
+    {
+      id: `idea-${idea.id}`,
+      type: "idea",
+      title: idea.title,
+      description: idea.description ?? "",
+      url: `/ideas/${idea.id}`,
+    },
+  ]);
 
   redirect(`/ideas/${idea.id}`);
 }

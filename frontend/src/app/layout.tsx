@@ -4,6 +4,7 @@ import Image from "next/image";
 import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
 import AuthNav from "@/components/AuthNav";
+import SearchInput from "@/components/SearchInput";
 
 export const metadata: Metadata = {
   title: "GoodTribes.org",
@@ -58,11 +59,7 @@ export default function RootLayout({
               <Link href="/about" className="text-dark-slate/70 hover:text-seagrass">
                 About
               </Link>
-              <input
-                type="search"
-                placeholder="type to search"
-                className="border border-muted-teal/60 rounded-md px-3 py-1.5 text-sm text-dark-slate/70 bg-white focus:outline-none focus:ring-1 focus:ring-seagrass w-48"
-              />
+              <SearchInput />
               <AuthNav />
             </nav>
           </header>

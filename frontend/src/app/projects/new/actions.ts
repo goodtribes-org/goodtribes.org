@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { PrismaClient } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { slugify } from "@/lib/slugify";
+import { indexDocuments } from "@/lib/meili";
 
 const prisma = new PrismaClient();
 
@@ -35,6 +36,17 @@ export async function createProject(formData: FormData) {
         data: { projectId: project.id, userId, role: "owner" },
       });
       slug = project.slug;
+      await indexDocuments("projects", [
+        {
+          id: `project-${project.slug}`,
+          type: "project",
+          title: project.title,
+          description: project.description ?? "",
+          url: `/projects/${project.slug}`,
+          status: project.status,
+          sdgGoals: project.sdgGoals,
+        },
+      ]);
       break;
     } catch (e: unknown) {
       const err = e as { code?: string };

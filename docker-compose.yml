@@ -113,6 +113,7 @@ services:
       STRAPI_API_TOKEN: ${STRAPI_API_TOKEN:-}
       NEXT_PUBLIC_MEILI_HOST: http://meilisearch:7700
       NEXT_PUBLIC_MEILI_SEARCH_KEY: ${NEXT_PUBLIC_MEILI_SEARCH_KEY:-}
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-changeme-local-dev-key-32chars}
       DATABASE_URL: postgresql://${POSTGRES_USER:-goodtribes}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-goodtribes}
       AUTH_SECRET: ${AUTH_SECRET}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
