@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { indexDocuments, deleteDocument } from "@/lib/meili";
 
 const prisma = new PrismaClient();
 
@@ -48,6 +49,21 @@ export async function updateProject(slug: string, formData: FormData) {
         })]
       : []),
   ]);
+
+  // Sync Meilisearch — remove old slug entry if slug changed (slug doesn't change here, but keep in sync)
+  if (visibility === "public") {
+    await indexDocuments("projects", [{
+      id: `project-${slug}`,
+      type: "project",
+      title,
+      description: description ?? "",
+      url: `/projects/${slug}`,
+      status,
+      sdgGoals,
+    }]);
+  } else {
+    await deleteDocument("projects", `project-${slug}`);
+  }
 
   revalidatePath(`/projects/${slug}`);
   redirect(`/projects/${slug}`);

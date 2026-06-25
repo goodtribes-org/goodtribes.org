@@ -63,6 +63,17 @@ export default function RootLayout({
             </nav>
           </header>
           <main className="max-w-6xl mx-auto px-6 py-12">{children}</main>
+          <footer className="border-t border-muted-teal/30 mt-16">
+            <div className="max-w-6xl mx-auto px-6 py-8 flex flex-wrap items-center justify-between gap-4 text-xs text-dark-slate/40">
+              <span>© {new Date().getFullYear()} GoodTribes Foundation</span>
+              <div className="flex gap-5">
+                <Link href="/about" className="hover:text-dark-slate transition-colors">About</Link>
+                <Link href="/privacy" className="hover:text-dark-slate transition-colors">Privacy</Link>
+                <Link href="/terms" className="hover:text-dark-slate transition-colors">Terms</Link>
+                <a href="mailto:hej@goodtribes.org" className="hover:text-dark-slate transition-colors">Contact</a>
+              </div>
+            </div>
+          </footer>
         </SessionProvider>
       </body>
     </html>
