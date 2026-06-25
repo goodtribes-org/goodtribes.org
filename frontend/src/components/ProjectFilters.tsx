@@ -24,10 +24,12 @@ interface Props {
   status?: string;
   category?: string;
   sdg?: string;
+  skill?: string;
+  skills: { id: string; name: string; slug: string }[];
   total: number;
 }
 
-export default function ProjectFilters({ status, category, sdg, total }: Props) {
+export default function ProjectFilters({ status, category, sdg, skill, skills, total }: Props) {
   const router = useRouter();
 
   function update(key: string, value: string | null) {
@@ -36,6 +38,7 @@ export default function ProjectFilters({ status, category, sdg, total }: Props) 
     );
     if (value) params.set(key, value);
     else params.delete(key);
+    params.delete("page");
     router.push(`/projects?${params.toString()}`);
   }
 
@@ -43,7 +46,7 @@ export default function ProjectFilters({ status, category, sdg, total }: Props) 
     update(key, current === value ? null : value);
   }
 
-  const activeCount = [status, category, sdg].filter(Boolean).length;
+  const activeCount = [status, category, sdg, skill].filter(Boolean).length;
 
   return (
     <div className="space-y-3 mb-6">
@@ -103,6 +106,26 @@ export default function ProjectFilters({ status, category, sdg, total }: Props) 
           );
         })}
       </div>
+
+      {/* Skill pills */}
+      {skills.length > 0 && (
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-xs text-dark-slate/50 font-medium w-16 shrink-0">Skill</span>
+          {skills.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => toggle("skill", s.slug, skill)}
+              className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                skill === s.slug
+                  ? "bg-dark-slate text-white border-dark-slate"
+                  : "border-muted-teal text-dark-slate/70 hover:border-dark-slate/40 hover:text-dark-slate"
+              }`}
+            >
+              {s.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Active filter summary */}
       {activeCount > 0 && (

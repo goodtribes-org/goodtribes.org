@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
@@ -17,9 +19,9 @@ const PAGE_SIZE = 12;
 export default async function ProjectsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; category?: string; sdg?: string; page?: string }>;
+  searchParams: Promise<{ status?: string; category?: string; sdg?: string; skill?: string; page?: string }>;
 }) {
-  const { status, category, sdg, page: pageStr } = await searchParams;
+  const { status, category, sdg, skill, page: pageStr } = await searchParams;
   const sdgNum = sdg ? parseInt(sdg) : undefined;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
 
@@ -28,9 +30,10 @@ export default async function ProjectsPage({
     ...(status ? { status } : {}),
     ...(category ? { category } : {}),
     ...(sdgNum && !isNaN(sdgNum) ? { sdgGoals: { has: sdgNum } } : {}),
+    ...(skill ? { neededSkills: { some: { skill: { slug: skill } } } } : {}),
   };
 
-  const [session, total, projects] = await Promise.all([
+  const [session, total, projects, skills] = await Promise.all([
     auth(),
     prisma.project.count({ where }),
     prisma.project.findMany({
@@ -44,13 +47,17 @@ export default async function ProjectsPage({
         _count: { select: { kanbanCards: true, todoItems: true } },
       },
     }),
+    prisma.skill.findMany({
+      where: { projects: { some: { project: { visibility: "public" } } } },
+      select: { id: true, name: true, slug: true },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
-  const rawParams = { status, category, sdg, page: pageStr };
+  const rawParams = { status, category, sdg, skill, page: pageStr };
 
   return (
     <div>
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-dark-slate">
           Projects{" "}
@@ -66,31 +73,22 @@ export default async function ProjectsPage({
         )}
       </div>
 
-      <ProjectFilters status={status} category={category} sdg={sdg} total={total} />
+      <ProjectFilters status={status} category={category} sdg={sdg} skill={skill} skills={skills} total={total} />
 
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-dark-slate/50 mb-4">No projects yet.</p>
-          {session?.user?.id ? (
-            <Link
-              href="/projects/new"
-              className="px-5 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors"
-            >
-              Create the first project
-            </Link>
-          ) : (
-            <Link href="/login" className="text-coral hover:underline text-sm">
-              Log in to create a project
-            </Link>
-          )}
+          <p className="text-dark-slate/50 mb-4">No projects match your filters.</p>
+          <button
+            onClick={undefined}
+            className="text-coral hover:underline text-sm"
+          >
+            <Link href="/projects">Clear filters</Link>
+          </button>
         </div>
       ) : (
         <>
-          {/* Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
             {projects.map((project) => {
-              const imageSrc =
-                project.imageUrl ?? `https://picsum.photos/seed/${project.slug}/800/600`;
               const ownerName = project.owner.name ?? "Unknown";
               return (
                 <Link
@@ -99,13 +97,19 @@ export default async function ProjectsPage({
                   className="rounded-lg overflow-hidden border border-muted-teal/40 hover:shadow-md transition-shadow bg-white flex flex-col"
                 >
                   <div className="relative aspect-[4/3] w-full">
-                    <Image
-                      src={imageSrc}
-                      alt={project.title}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    />
+                    {project.imageUrl ? (
+                      <Image
+                        src={project.imageUrl}
+                        alt={project.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-dry-sage to-muted-teal/40 flex items-center justify-center p-4">
+                        <p className="text-xs font-semibold text-dark-slate/70 text-center leading-tight line-clamp-3">{project.title}</p>
+                      </div>
+                    )}
                     <span className="absolute top-2 left-2 bg-white/90 rounded px-1.5 py-0.5 text-xs font-semibold text-dark-slate capitalize">
                       {project.status}
                     </span>
@@ -122,9 +126,7 @@ export default async function ProjectsPage({
                     </p>
                     <div className="grid grid-cols-3 divide-x divide-muted-teal/30 text-center border-t border-muted-teal/20 pt-2 mt-auto">
                       <div className="px-1">
-                        <p className="text-xs font-semibold text-dark-slate">
-                          {project.members.length}
-                        </p>
+                        <p className="text-xs font-semibold text-dark-slate">{project.members.length}</p>
                         <p className="text-[10px] text-dark-slate/50 leading-tight">Members</p>
                       </div>
                       <div className="px-1">
@@ -134,9 +136,7 @@ export default async function ProjectsPage({
                         <p className="text-[10px] text-dark-slate/50 leading-tight">Tasks</p>
                       </div>
                       <div className="px-1">
-                        <p className="text-xs font-semibold text-dark-slate capitalize">
-                          {project.status}
-                        </p>
+                        <p className="text-xs font-semibold text-dark-slate capitalize">{project.status}</p>
                         <p className="text-[10px] text-dark-slate/50 leading-tight">Stage</p>
                       </div>
                     </div>

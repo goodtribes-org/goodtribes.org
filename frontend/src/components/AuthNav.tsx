@@ -9,11 +9,11 @@ export default function AuthNav() {
   if (session?.user) {
     return (
       <div className="flex items-center gap-4 ml-auto">
-        <Link href="/profile" className="text-dark-slate/70 hover:text-seagrass text-sm">
-          My profile
+        <Link href="/dashboard" className="text-dark-slate/70 hover:text-seagrass text-sm">
+          Dashboard
         </Link>
-        <Link href="/workplace" className="text-dark-slate/70 hover:text-seagrass text-sm">
-          Workplace
+        <Link href="/profile" className="text-dark-slate/70 hover:text-seagrass text-sm hidden md:inline">
+          Profile
         </Link>
         <button
           onClick={() => signOut({ callbackUrl: "/" })}

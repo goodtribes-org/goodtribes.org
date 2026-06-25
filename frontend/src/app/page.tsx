@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { PrismaClient } from "@prisma/client";
+import { auth } from "@/auth";
 
 const prisma = new PrismaClient();
 
@@ -84,29 +85,43 @@ function ProjectCard({ project }: {
   );
 }
 
+const PROJECT_INCLUDE = {
+  owner: { select: { name: true } },
+  members: { select: { id: true } },
+  _count: { select: { kanbanCards: true, todoItems: true } },
+} as const;
+
 export default async function HomePage() {
+  const session = await auth();
+  const userId = session?.user?.id;
+
   const [recentProjects, activeProjects] = await Promise.all([
     prisma.project.findMany({
       where: { visibility: "public" },
       orderBy: { createdAt: "desc" },
       take: 4,
-      include: {
-        owner: { select: { name: true } },
-        members: { select: { id: true } },
-        _count: { select: { kanbanCards: true, todoItems: true } },
-      },
+      include: PROJECT_INCLUDE,
     }),
     prisma.project.findMany({
       where: { visibility: "public" },
       orderBy: { members: { _count: "desc" } },
       take: 4,
-      include: {
-        owner: { select: { name: true } },
-        members: { select: { id: true } },
-        _count: { select: { kanbanCards: true, todoItems: true } },
-      },
+      include: PROJECT_INCLUDE,
     }),
   ]);
+
+  const recommended = userId
+    ? await prisma.project.findMany({
+        where: {
+          visibility: "public",
+          neededSkills: { some: { skill: { users: { some: { userId } } } } },
+          members: { none: { userId } },
+        },
+        take: 4,
+        include: PROJECT_INCLUDE,
+        orderBy: { createdAt: "desc" },
+      })
+    : [];
 
   return (
     <div className="space-y-12">
@@ -165,6 +180,22 @@ export default async function HomePage() {
           </div>
         ))}
       </section>
+
+      {/* Recommended for you */}
+      {recommended.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">Recommended for you</h2>
+              <p className="text-xs text-dark-slate/40 mt-0.5">Projects seeking your skills</p>
+            </div>
+            <Link href="/projects" className="text-xs text-coral hover:underline">View all →</Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {recommended.map((p) => <ProjectCard key={p.slug} project={p} />)}
+          </div>
+        </section>
+      )}
 
       {/* Active projects */}
       {activeProjects.length > 0 && (
