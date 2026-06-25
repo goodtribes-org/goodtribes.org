@@ -56,7 +56,20 @@ export default async function MembersPage({
       <MembersFilter skills={allSkills} activeSkill={skill} total={members.length} />
 
       {members.length === 0 ? (
-        <p className="text-muted-teal italic">No members have chosen to show their profile yet.</p>
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <p className="text-dark-slate/50 mb-2">
+            {skill ? "No members with that skill yet." : "No members have chosen to show their profile yet."}
+          </p>
+          <p className="text-sm text-dark-slate/40 mb-4">
+            Want to appear here?{" "}
+            <Link href="/profile/setup" className="text-coral hover:underline">
+              Set up your profile
+            </Link>
+          </p>
+          {skill && (
+            <Link href="/members" className="text-xs text-dark-slate/40 hover:underline">Clear filter →</Link>
+          )}
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {members.map((member) => {

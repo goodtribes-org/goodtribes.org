@@ -244,6 +244,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <Link href={`/projects/${slug}/wiki`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Wiki</Link>
               <Link href={`/projects/${slug}/updates`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Updates</Link>
               <Link href={`/projects/${slug}/chat`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Chat</Link>
+              <Link href={`/projects/${slug}/funding`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Funding</Link>
               <Link href={`/projects/${slug}/activity`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Activity</Link>
             </div>
           </div>

@@ -49,6 +49,7 @@ model User {
   updatedWikiPages        WikiPage[]                @relation("WikiPageUpdatedBy")
   createdOrgInvites       OrgInvite[]               @relation("CreatedOrgInvites")
   projectMessages         ProjectMessage[]          @relation("ProjectMessages")
+  fundingPledges          FundingPledge[]           @relation("FundingPledges")
 }
 
 model Skill {
@@ -275,8 +276,9 @@ model Project {
   activityEvents ActivityEvent[]
   invites        ProjectInvite[]
   wikiPages      WikiPage[]
-  neededSkills   ProjectSkill[]
-  messages       ProjectMessage[]
+  neededSkills     ProjectSkill[]
+  messages         ProjectMessage[]
+  fundingCampaign  FundingCampaign?
 }
 
 model ProjectSkill {
@@ -468,4 +470,32 @@ model ProjectMessage {
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   author  User    @relation("ProjectMessages", fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model FundingCampaign {
+  id          String   @id @default(cuid())
+  projectId   String   @unique
+  title       String
+  description String?
+  goal        Int
+  currency    String   @default("SEK")
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+
+  project Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  pledges FundingPledge[]
+}
+
+model FundingPledge {
+  id         String   @id @default(cuid())
+  campaignId String
+  userId     String
+  amount     Int
+  message    String?
+  createdAt  DateTime @default(now())
+
+  campaign FundingCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user     User            @relation("FundingPledges", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, userId])
 }

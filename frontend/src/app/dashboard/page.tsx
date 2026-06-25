@@ -24,7 +24,7 @@ export default async function DashboardPage() {
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
 
-  const [myMemberships, myOrgs, pendingProjectRequests, pendingOrgRequests] = await Promise.all([
+  const [myMemberships, myOrgs, pendingProjectRequests, pendingOrgRequests, recommended] = await Promise.all([
     prisma.projectMember.findMany({
       where: { userId },
       include: {
@@ -46,6 +46,26 @@ export default async function DashboardPage() {
       where: { userId, status: "pending" },
       include: { organisation: { select: { slug: true, name: true } } },
       orderBy: { createdAt: "asc" },
+    }),
+    prisma.project.findMany({
+      where: {
+        visibility: "public",
+        neededSkills: { some: { skill: { users: { some: { userId } } } } },
+        members: { none: { userId } },
+      },
+      take: 4,
+      select: {
+        slug: true,
+        title: true,
+        status: true,
+        description: true,
+        neededSkills: {
+          where: { skill: { users: { some: { userId } } } },
+          include: { skill: { select: { name: true } } },
+          take: 3,
+        },
+      },
+      orderBy: { createdAt: "desc" },
     }),
   ]);
 
@@ -161,6 +181,70 @@ export default async function DashboardPage() {
           </div>
         )}
       </section>
+
+      {/* Onboarding checklist — shown until user has at least one project */}
+      {myProjects.length === 0 && !session.user.onboarded && (
+        <section className="border border-seagrass/30 bg-seagrass/5 rounded-xl p-6">
+          <h2 className="font-semibold text-dark-slate mb-1">Get started</h2>
+          <p className="text-sm text-dark-slate/50 mb-5">A few steps to make the most of GoodTribes.</p>
+          <ol className="space-y-3">
+            {[
+              { label: "Create your account", done: true },
+              { label: "Complete your profile", href: "/profile/setup", done: !!session.user.name },
+              { label: "Browse projects and ideas", href: "/projects", done: false },
+              { label: "Join or create a project", href: "/projects/new", done: false },
+            ].map((step, i) => (
+              <li key={i} className="flex items-center gap-3">
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${step.done ? "bg-seagrass text-white" : "border-2 border-muted-teal/40 text-dark-slate/30"}`}>
+                  {step.done ? "✓" : i + 1}
+                </span>
+                {step.href && !step.done ? (
+                  <Link href={step.href} className="text-sm text-coral hover:underline">{step.label}</Link>
+                ) : (
+                  <span className={`text-sm ${step.done ? "text-dark-slate/40 line-through" : "text-dark-slate"}`}>{step.label}</span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      {/* Recommended projects */}
+      {recommended.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">Recommended for you</h2>
+              <p className="text-xs text-dark-slate/40 mt-0.5">Projects looking for your skills</p>
+            </div>
+            <Link href="/projects" className="text-xs text-coral hover:underline">See all →</Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {recommended.map((p) => (
+              <Link
+                key={p.slug}
+                href={`/projects/${p.slug}`}
+                className="flex flex-col gap-2 border border-muted-teal/40 rounded-lg p-4 hover:shadow-md hover:border-muted-teal transition-all bg-white"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-medium text-dark-slate text-sm leading-snug">{p.title}</p>
+                  <span className="text-xs text-dark-slate/40 capitalize flex-shrink-0">{STATUS_LABELS[p.status] ?? p.status}</span>
+                </div>
+                {p.description && (
+                  <p className="text-xs text-dark-slate/50 line-clamp-2">{p.description}</p>
+                )}
+                <div className="flex flex-wrap gap-1 mt-auto pt-1">
+                  {p.neededSkills.map(({ skill }) => (
+                    <span key={skill.name} className="text-[10px] bg-seagrass/10 text-seagrass border border-seagrass/20 rounded px-1.5 py-0.5 font-medium">
+                      {skill.name}
+                    </span>
+                  ))}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Pending join requests */}
       {(pendingProjectRequests.length > 0 || pendingOrgRequests.length > 0) && (
