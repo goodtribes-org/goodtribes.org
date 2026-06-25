@@ -34,12 +34,16 @@ const SDG_INFO: Record<number, { label: string; color: string }> = {
   17: { label: "Partnerships",            color: "#19486A" },
 };
 
-function MemberAvatar({ name, href }: { name: string; href?: string }) {
+function MemberAvatar({ name, image, href }: { name: string; image?: string | null; href?: string }) {
   const initials = (name ?? "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
   const inner = (
     <div className="flex flex-col items-center gap-1">
-      <div className="w-12 h-12 rounded-full bg-dry-sage flex items-center justify-center text-sm font-semibold text-dark-slate">
-        {initials}
+      <div className="w-12 h-12 rounded-full bg-dry-sage flex items-center justify-center text-sm font-semibold text-dark-slate overflow-hidden relative">
+        {image ? (
+          <Image src={image} alt={name} fill className="object-cover" unoptimized />
+        ) : (
+          initials
+        )}
       </div>
       <span className="text-xs text-dark-slate/60 text-center leading-tight">
         {(name ?? "?").split(" ")[0]}
@@ -73,7 +77,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       owner: { select: { name: true } },
       org: { select: { name: true, slug: true } },
       members: {
-        include: { user: { select: { name: true, id: true, showProfile: true } } },
+        include: { user: { select: { name: true, id: true, image: true, showProfile: true } } },
         orderBy: { joinedAt: "asc" },
       },
       joinRequests: {
@@ -305,6 +309,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 <MemberAvatar
                   key={m.id}
                   name={m.user.name ?? "?"}
+                  image={m.user.image}
                   href={m.user.showProfile ? `/members/${m.user.id}` : undefined}
                 />
               ))}
