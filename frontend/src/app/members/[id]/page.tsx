@@ -39,7 +39,8 @@ export default async function MemberProfilePage({
       },
       projectMemberships: {
         where: { project: { visibility: "public" } },
-        include: {
+        select: {
+          role: true,
           project: {
             select: { slug: true, title: true, status: true, description: true },
           },
@@ -59,7 +60,7 @@ export default async function MemberProfilePage({
     .slice(0, 2)
     .toUpperCase();
   const skills = member.skills.map((us) => us.skill);
-  const projects = member.projectMemberships.map((pm) => pm.project);
+  const projects = member.projectMemberships.map((pm) => ({ ...pm.project, role: pm.role }));
 
   return (
     <div className="max-w-2xl">
@@ -133,6 +134,11 @@ export default async function MemberProfilePage({
                     <span className="text-xs bg-dry-sage text-dark-slate/60 px-2 py-0.5 rounded capitalize flex-shrink-0">
                       {STATUS_LABELS[project.status] ?? project.status}
                     </span>
+                    {(project.role === "owner" || project.role === "admin") && (
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-coral flex-shrink-0">
+                        {project.role}
+                      </span>
+                    )}
                   </div>
                   {project.description && (
                     <p className="text-sm text-dark-slate/60 line-clamp-2">{project.description}</p>
