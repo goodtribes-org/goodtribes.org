@@ -95,7 +95,7 @@ export default async function HomePage() {
   const session = await auth();
   const userId = session?.user?.id;
 
-  const [recentProjects, activeProjects] = await Promise.all([
+  const [recentProjects, activeProjects, stats] = await Promise.all([
     prisma.project.findMany({
       where: { visibility: "public" },
       orderBy: { createdAt: "desc" },
@@ -108,7 +108,14 @@ export default async function HomePage() {
       take: 4,
       include: PROJECT_INCLUDE,
     }),
+    Promise.all([
+      prisma.project.count({ where: { visibility: "public" } }),
+      prisma.organisation.count({ where: { isPublic: true } }),
+      prisma.user.count({ where: { showProfile: true } }),
+    ]),
   ]);
+
+  const [projectCount, orgCount, memberCount] = stats;
 
   const recommended = userId
     ? await prisma.project.findMany({
@@ -125,6 +132,67 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-12">
+
+      {/* Hero — shown to logged-out visitors */}
+      {!session && (
+        <section className="rounded-2xl bg-gradient-to-br from-dark-slate to-dark-slate/80 text-white px-8 py-14 text-center relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-seagrass via-transparent to-coral" />
+          <div className="relative">
+            <p className="text-seagrass text-sm font-semibold uppercase tracking-widest mb-3">Where good ideas become reality</p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+              Skilled volunteers.<br />Impact-driven projects.
+            </h1>
+            <p className="text-white/70 text-lg mb-8 max-w-lg mx-auto">
+              GoodTribes connects people who want to make a difference with organisations that need their skills.
+            </p>
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Link href="/login" className="bg-coral text-white font-semibold px-6 py-3 rounded-lg hover:bg-watermelon transition-colors">
+                Get started free →
+              </Link>
+              <Link href="/projects" className="bg-white/10 text-white font-medium px-6 py-3 rounded-lg hover:bg-white/20 transition-colors">
+                Browse projects
+              </Link>
+            </div>
+            {/* Stats */}
+            <div className="flex justify-center gap-10 mt-10 pt-8 border-t border-white/10">
+              <div>
+                <p className="text-2xl font-bold">{projectCount}</p>
+                <p className="text-white/50 text-xs mt-0.5">Projects</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{orgCount}</p>
+                <p className="text-white/50 text-xs mt-0.5">Organisations</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{memberCount}</p>
+                <p className="text-white/50 text-xs mt-0.5">Members</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* How it works — logged-out only */}
+      {!session && (
+        <section>
+          <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest text-center mb-8">How it works</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { step: "1", title: "Find your match", body: "Browse projects by skill or cause. Filter by what you're good at — the platform recommends projects that need exactly what you offer." },
+              { step: "2", title: "Join a team", body: "Request to join or accept an invite link. Owners approve and you're in — no CV, no application process." },
+              { step: "3", title: "Make an impact", body: "Contribute through tasks, milestones, and updates. See real progress alongside other volunteers who care about the same things." },
+            ].map((s) => (
+              <div key={s.step} className="border border-muted-teal/40 rounded-xl p-6">
+                <div className="w-8 h-8 rounded-full bg-coral/10 text-coral font-bold text-sm flex items-center justify-center mb-4">
+                  {s.step}
+                </div>
+                <h3 className="font-bold text-dark-slate mb-2">{s.title}</h3>
+                <p className="text-sm text-dark-slate/60 leading-relaxed">{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* What is GoodTribes? */}
       <section className="overflow-hidden">
