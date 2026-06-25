@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useTransition, useState } from "react";
+import { useRef, useTransition, useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { postMessage, generateInviteLink } from "./actions";
 
 type Message = {
@@ -35,6 +36,19 @@ export function ChatBox({
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  const refresh = useCallback(() => router.refresh(), [router]);
+
+  useEffect(() => {
+    const id = setInterval(refresh, 5000);
+    return () => clearInterval(id);
+  }, [refresh]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages.length]);
 
   function handleSubmit(formData: FormData) {
     startTransition(async () => {
@@ -112,6 +126,7 @@ export function ChatBox({
             );
           })
         )}
+        <div ref={bottomRef} />
       </div>
 
       {/* Post form */}
