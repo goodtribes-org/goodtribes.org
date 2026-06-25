@@ -14,6 +14,7 @@ export async function saveProfile(formData: FormData) {
 
   const name = (formData.get("name") as string).trim();
   const bio = (formData.get("bio") as string | null)?.trim() ?? "";
+  const country = (formData.get("country") as string | null)?.trim() || null;
   const image = (formData.get("image") as string | null)?.trim() || null;
 
   const socialLinks: Record<string, string> = {};
@@ -36,6 +37,7 @@ export async function saveProfile(formData: FormData) {
     data: {
       name,
       bio: bio || null,
+      country,
       socialLinks,
       onboarded: true,
       showProfile,

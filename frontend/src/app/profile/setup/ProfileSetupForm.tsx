@@ -9,6 +9,7 @@ type Skill = { id: string; name: string; tag: string };
 type Props = {
   name: string;
   bio: string;
+  country: string;
   social: Record<string, string>;
   showProfile: boolean;
   image: string | null;
@@ -20,6 +21,7 @@ type Props = {
 export default function ProfileSetupForm({
   name,
   bio,
+  country,
   social,
   showProfile,
   image,
@@ -79,6 +81,20 @@ export default function ProfileSetupForm({
           defaultValue={bio}
           placeholder="Tell us a little about yourself, what you can contribute..."
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent resize-none"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="country" className="block text-sm font-medium text-dark-slate mb-1">
+          Country
+        </label>
+        <input
+          id="country"
+          name="country"
+          type="text"
+          defaultValue={country}
+          placeholder="e.g. Sweden"
+          className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
         />
       </div>
 

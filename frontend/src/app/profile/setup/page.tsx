@@ -15,6 +15,7 @@ export default async function ProfileSetupPage() {
       id: true,
       name: true,
       bio: true,
+      country: true,
       socialLinks: true,
       showProfile: true,
       image: true,
@@ -43,6 +44,7 @@ export default async function ProfileSetupPage() {
       <ProfileSetupForm
         name={user?.name ?? ""}
         bio={user?.bio ?? ""}
+        country={user?.country ?? ""}
         social={social}
         showProfile={user?.showProfile ?? false}
         image={user?.image ?? null}
