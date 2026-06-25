@@ -64,9 +64,14 @@ export default async function ProfilePage() {
           </div>
 
           {/* Skills */}
-          {skills.length > 0 && (
-            <section>
-              <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-4">Skills</h2>
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest">Skills</h2>
+              <Link href="/profile/setup" className="text-xs text-coral hover:underline">
+                {skills.length > 0 ? "Edit" : "Add skills"}
+              </Link>
+            </div>
+            {skills.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {skills.map((s) => (
                   <Link
@@ -78,8 +83,12 @@ export default async function ProfilePage() {
                   </Link>
                 ))}
               </div>
-            </section>
-          )}
+            ) : (
+              <p className="text-xs text-dark-slate/40 italic">
+                No skills added yet — add some to get matched with relevant projects.
+              </p>
+            )}
+          </section>
 
           {/* Social links */}
           {Object.keys(socialLinks).length > 0 && (

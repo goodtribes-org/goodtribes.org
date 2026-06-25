@@ -89,7 +89,12 @@ export default function EditOrgForm({ orgId, orgName, description, imageUrl, isP
         <p className="text-sm text-dark-slate/70 mb-4">
           Removing the organisation is permanent and cannot be undone.
         </p>
-        <form action={deleteOrg}>
+        <form
+          action={deleteOrg}
+          onSubmit={(e) => {
+            if (!confirm("Delete this organisation? This cannot be undone.")) e.preventDefault();
+          }}
+        >
           <input type="hidden" name="orgId" value={orgId} />
           <button
             type="submit"

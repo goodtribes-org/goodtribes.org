@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { PrismaClient } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { slugify } from "@/lib/slugify";
 
@@ -42,6 +43,8 @@ export async function updateOrg(formData: FormData) {
     data: { name, slug, description, imageUrl, isPublic },
   });
 
+  revalidatePath(`/org/${slug}`);
+  revalidatePath("/org");
   redirect(`/org/${slug}`);
 }
 
