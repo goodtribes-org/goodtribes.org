@@ -53,6 +53,7 @@ export default async function ProfilePage() {
                 src={user.image}
                 alt={user.name ?? "Profile picture"}
                 width={192} height={192}
+                unoptimized
                 className="w-48 h-48 rounded-sm object-cover"
               />
             ) : (

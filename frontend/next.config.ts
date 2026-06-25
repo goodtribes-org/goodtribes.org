@@ -29,7 +29,7 @@ const nextConfig: NextConfig = {
         protocol: "http",
         hostname: "localhost",
         port: "9000",
-        pathname: "/goodtribes-public/**",
+        pathname: "/**",
       },
       {
         protocol: "https",

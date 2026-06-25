@@ -118,6 +118,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 src={project.imageUrl}
                 alt={project.title}
                 fill
+                unoptimized
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 60vw"
               />

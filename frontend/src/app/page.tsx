@@ -45,7 +45,7 @@ function ProjectCard({ project }: {
     >
       <div className="relative aspect-[4/3] w-full">
         {project.imageUrl ? (
-          <Image src={project.imageUrl} alt={project.title} fill className="object-cover"
+          <Image src={project.imageUrl} alt={project.title} fill unoptimized className="object-cover"
             sizes="(max-width: 640px) 50vw, 25vw" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-dry-sage to-muted-teal/40 flex items-center justify-center p-4">
