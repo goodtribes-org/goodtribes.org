@@ -19,11 +19,17 @@ export default function NotificationBell() {
   const [, startTransition] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const fetchNotifications = () => {
     fetch("/api/notifications")
       .then((r) => r.json())
       .then((data) => setNotifications(data as Notification[]))
       .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const id = setInterval(fetchNotifications, 30_000);
+    return () => clearInterval(id);
   }, []);
 
   useEffect(() => {

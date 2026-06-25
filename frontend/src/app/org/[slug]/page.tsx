@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { requestToJoin } from "./actions";
 import OrgInviteForm from "./invite/OrgInviteForm";
 import { OrgJoinRequestsPanel } from "./OrgJoinSection";
+import OrgTeamManager from "./OrgTeamManager";
 
 const prisma = new PrismaClient();
 
@@ -299,15 +300,29 @@ export default async function OrgDetailPage({
           <section>
             <h2 className="text-sm font-semibold text-dark-slate mb-3">The Team</h2>
             {org.members.length > 0 ? (
-              <div className="grid grid-cols-4 gap-3">
-                {org.members.slice(0, 12).map((m) => (
-                  <MemberAvatar
-                    key={m.id}
-                    name={m.user.name ?? "Unknown"}
-                    href={m.user.showProfile ? `/members/${m.user.id}` : undefined}
-                  />
-                ))}
-              </div>
+              isOwner && userId ? (
+                <OrgTeamManager
+                  orgId={org.id}
+                  slug={slug}
+                  members={org.members.map((m) => ({
+                    userId: m.userId,
+                    role: m.role,
+                    user: { id: m.user.id, name: m.user.name, showProfile: m.user.showProfile },
+                  }))}
+                  currentUserId={userId}
+                  ownerId={org.ownerId}
+                />
+              ) : (
+                <div className="grid grid-cols-4 gap-3">
+                  {org.members.slice(0, 12).map((m) => (
+                    <MemberAvatar
+                      key={m.id}
+                      name={m.user.name ?? "Unknown"}
+                      href={m.user.showProfile ? `/members/${m.user.id}` : undefined}
+                    />
+                  ))}
+                </div>
+              )
             ) : (
               <p className="text-xs text-dark-slate/40">No members yet.</p>
             )}

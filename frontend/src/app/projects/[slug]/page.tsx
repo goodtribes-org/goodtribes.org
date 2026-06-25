@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { JoinButton, JoinRequestsPanel } from "./JoinSection";
 import InviteForm from "./invite/InviteForm";
 import LeaveProjectButton from "@/components/LeaveProjectButton";
+import TeamManager from "./TeamManager";
 
 const prisma = new PrismaClient();
 
@@ -320,16 +321,29 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           <section>
             <h2 className="text-sm font-semibold text-dark-slate mb-3">The Team</h2>
             {project.members.length > 0 ? (
-              <div className="grid grid-cols-4 gap-3">
-                {project.members.map((m) => (
-                <MemberAvatar
-                  key={m.id}
-                  name={m.user.name ?? "?"}
-                  image={m.user.image}
-                  href={m.user.showProfile ? `/members/${m.user.id}` : undefined}
+              isOwnerOrAdmin && userId ? (
+                <TeamManager
+                  projectId={project.id}
+                  slug={slug}
+                  members={project.members.map((m) => ({
+                    userId: m.userId,
+                    role: m.role,
+                    user: { id: m.user.id, name: m.user.name, image: m.user.image, showProfile: m.user.showProfile },
+                  }))}
+                  currentUserId={userId}
                 />
-              ))}
-              </div>
+              ) : (
+                <div className="grid grid-cols-4 gap-3">
+                  {project.members.map((m) => (
+                    <MemberAvatar
+                      key={m.id}
+                      name={m.user.name ?? "?"}
+                      image={m.user.image}
+                      href={m.user.showProfile ? `/members/${m.user.id}` : undefined}
+                    />
+                  ))}
+                </div>
+              )
             ) : (
               <p className="text-xs text-dark-slate/40">No members yet.</p>
             )}
