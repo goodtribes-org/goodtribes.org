@@ -68,3 +68,20 @@ export async function updateProject(slug: string, formData: FormData) {
   revalidatePath(`/projects/${slug}`);
   redirect(`/projects/${slug}`);
 }
+
+export async function deleteProject(slug: string) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const project = await prisma.project.findUnique({
+    where: { slug },
+    include: { members: { where: { userId: session.user.id } } },
+  });
+  if (!project) redirect("/projects");
+  if (project.members[0]?.role !== "owner") redirect(`/projects/${slug}`);
+
+  await prisma.project.delete({ where: { slug } });
+  await deleteDocument("projects", `project-${slug}`);
+
+  redirect("/projects");
+}
