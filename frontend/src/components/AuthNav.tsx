@@ -15,6 +15,9 @@ export default function AuthNav() {
         <Link href="/profile" className="text-dark-slate/70 hover:text-seagrass text-sm hidden md:inline">
           Profile
         </Link>
+        <Link href="/settings" className="text-dark-slate/70 hover:text-seagrass text-sm hidden md:inline">
+          Settings
+        </Link>
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
           className="text-dark-slate/70 hover:text-seagrass text-sm"

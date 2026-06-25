@@ -19,6 +19,7 @@ model User {
   socialLinks   Json?     @default("{}")
   onboarded     Boolean   @default(false)
   showProfile   Boolean   @default(false)
+  digestOptIn   Boolean   @default(true)
   accounts      Account[]
   sessions      Session[]
 

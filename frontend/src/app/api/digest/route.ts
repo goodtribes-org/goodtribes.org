@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
 
   const usersWithNotifications = await prisma.user.findMany({
     where: {
+      digestOptIn: true,
       notifications: {
         some: { read: false, createdAt: { gte: since } },
       },

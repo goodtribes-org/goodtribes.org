@@ -71,6 +71,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     where: { slug },
     include: {
       owner: { select: { name: true } },
+      org: { select: { name: true, slug: true } },
       members: {
         include: { user: { select: { name: true, id: true, showProfile: true } } },
         orderBy: { joinedAt: "asc" },
@@ -134,6 +135,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <h1 className="text-2xl font-bold text-dark-slate mb-1">{project.title}</h1>
               <p className="text-sm text-dark-slate/60">
                 by <span className="text-coral">{project.owner.name ?? "Unknown"}</span>
+                {project.org && (
+                  <> · <Link href={`/org/${project.org.slug}`} className="hover:text-seagrass transition-colors">{project.org.name}</Link></>
+                )}
               </p>
             </div>
             {isOwnerOrAdmin && (

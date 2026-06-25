@@ -28,7 +28,9 @@ const STATUSES = [
 interface Props {
   slug: string;
   skills: { id: string; name: string; slug: string }[];
+  orgs: { id: string; name: string }[];
   currentSkillIds: string[];
+  currentOrgId: string | null;
   initial: {
     title: string;
     description: string | null;
@@ -41,7 +43,7 @@ interface Props {
   };
 }
 
-export default function EditProjectForm({ slug, skills, currentSkillIds, initial }: Props) {
+export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, currentOrgId, initial }: Props) {
   const [description, setDescription] = useState(initial.description ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set(initial.sdgGoals));
   const [aiSuggested, setAiSuggested] = useState<number[]>([]);
@@ -81,6 +83,24 @@ export default function EditProjectForm({ slug, skills, currentSkillIds, initial
 
   return (
     <form action={handleSubmit} className="flex flex-col gap-6">
+      {/* Organisation */}
+      {orgs.length > 0 && (
+        <div>
+          <label htmlFor="orgId" className="block text-sm font-medium text-dark-slate mb-1">
+            Organisation <span className="text-dark-slate/50 font-normal">(optional)</span>
+          </label>
+          <select
+            id="orgId"
+            name="orgId"
+            defaultValue={currentOrgId ?? ""}
+            className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral bg-white"
+          >
+            <option value="">— none —</option>
+            {orgs.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+          </select>
+        </div>
+      )}
+
       {/* Cover image */}
       <div>
         <label className="block text-sm font-medium text-dark-slate mb-2">

@@ -31,6 +31,7 @@ export async function createProject(formData: FormData) {
     .map(Number)
     .filter((n) => n >= 1 && n <= 17);
   const imageUrl = (formData.get("imageUrl") as string | null)?.trim() || null;
+  const orgId = (formData.get("orgId") as string | null)?.trim() || null;
 
   if (!title) return;
 
@@ -41,7 +42,7 @@ export async function createProject(formData: FormData) {
     const candidate = attempt === 0 ? baseSlug : `${baseSlug}-${attempt}`;
     try {
       const project = await prisma.project.create({
-        data: { slug: candidate, title, description, visibility, category, tags, sdgGoals, ownerId: userId, ...(imageUrl ? { imageUrl } : {}) },
+        data: { slug: candidate, title, description, visibility, category, tags, sdgGoals, ownerId: userId, ...(imageUrl ? { imageUrl } : {}), ...(orgId ? { orgId } : {}) },
       });
       await prisma.projectMember.create({
         data: { projectId: project.id, userId, role: "owner" },

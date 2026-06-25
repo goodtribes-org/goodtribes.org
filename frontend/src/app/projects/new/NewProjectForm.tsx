@@ -29,9 +29,10 @@ const SDG_GOALS = [
 interface Props {
   initial?: { title?: string; description?: string; sdgGoals?: number[] };
   skills: { id: string; name: string; slug: string }[];
+  orgs: { id: string; name: string }[];
 }
 
-export default function NewProjectForm({ initial = {}, skills }: Props) {
+export default function NewProjectForm({ initial = {}, skills, orgs }: Props) {
   const [description, setDescription] = useState(initial.description ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set(initial.sdgGoals ?? []));
   const [aiSuggested, setAiSuggested] = useState<number[]>([]);
@@ -76,6 +77,22 @@ export default function NewProjectForm({ initial = {}, skills }: Props) {
         />
         <input type="hidden" name="imageUrl" ref={imageInputRef} defaultValue="" />
       </div>
+
+      {orgs.length > 0 && (
+        <div>
+          <label htmlFor="orgId" className="block text-sm font-medium text-dark-slate mb-1">
+            Organisation <span className="text-dark-slate/50 font-normal">(optional)</span>
+          </label>
+          <select
+            id="orgId"
+            name="orgId"
+            className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral bg-white"
+          >
+            <option value="">— none —</option>
+            {orgs.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+          </select>
+        </div>
+      )}
 
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-dark-slate mb-1">

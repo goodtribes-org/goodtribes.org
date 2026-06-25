@@ -40,10 +40,17 @@ export default async function NewProjectPage({
 
   const fromIdea = !!ideaId;
 
-  const skills = await prisma.skill.findMany({
-    select: { id: true, name: true, slug: true },
-    orderBy: { name: "asc" },
-  });
+  const [skills, userOrgs] = await Promise.all([
+    prisma.skill.findMany({
+      select: { id: true, name: true, slug: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.organisation.findMany({
+      where: { OR: [{ ownerId: session.user.id }, { members: { some: { userId: session.user.id } } }] },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   return (
     <div className="max-w-lg mx-auto mt-12">
@@ -51,7 +58,7 @@ export default async function NewProjectPage({
       <p className="text-dark-slate/70 mb-8">
         {fromIdea ? "Starting from an idea — edit the details below." : "Fill in the details for your project."}
       </p>
-      <NewProjectForm initial={initial} skills={skills} />
+      <NewProjectForm initial={initial} skills={skills} orgs={userOrgs} />
     </div>
   );
 }

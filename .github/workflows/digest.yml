@@ -1,0 +1,17 @@
+name: Weekly Digest
+
+on:
+  schedule:
+    # Every Monday at 08:00 UTC
+    - cron: "0 8 * * 1"
+  workflow_dispatch: {}
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger digest endpoint
+        run: |
+          curl -sf -X POST "${{ vars.APP_URL }}/api/digest" \
+            -H "Authorization: Bearer ${{ secrets.DIGEST_SECRET }}" \
+            -H "Content-Type: application/json"
