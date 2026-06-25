@@ -21,25 +21,35 @@ export async function createIdea(formData: FormData) {
   const title = (formData.get("title") as string).trim();
   if (!title) return;
 
-  const description = (formData.get("description") as string | null)?.trim() || null;
-  const sdgGoals = formData
-    .getAll("sdgGoals")
-    .map(Number)
-    .filter((n) => n >= 1 && n <= 17);
+  const problem = (formData.get("problem") as string | null)?.trim() || null;
+  const solution = (formData.get("solution") as string | null)?.trim() || null;
+  const category = (formData.get("category") as string | null)?.trim() || null;
+  const tagsRaw = (formData.get("tags") as string | null)?.trim() || "";
+  const tags = tagsRaw.split(",").map((t) => t.trim()).filter(Boolean);
+  const imageUrl = (formData.get("imageUrl") as string | null)?.trim() || null;
+  const targetRegion = (formData.get("targetRegion") as string | null)?.trim() || "global";
+  const estimatedReachRaw = formData.get("estimatedReach") as string | null;
+  const estimatedReach = estimatedReachRaw ? parseInt(estimatedReachRaw) || null : null;
+  const status = (formData.get("status") as string | null) === "draft" ? "draft" : "open";
+  const sdgGoals = formData.getAll("sdgGoals").map(Number).filter((n) => n >= 1 && n <= 17);
 
   const idea = await prisma.idea.create({
-    data: { title, description, sdgGoals, authorId: session.user.id },
+    data: {
+      title, problem, solution, category, tags, imageUrl,
+      targetRegion, estimatedReach, status, sdgGoals,
+      authorId: session.user.id,
+    },
   });
 
-  await indexDocuments("ideas", [
-    {
+  if (status === "open") {
+    await indexDocuments("ideas", [{
       id: `idea-${idea.id}`,
       type: "idea",
       title: idea.title,
-      description: idea.description ?? "",
+      description: idea.problem ?? "",
       url: `/ideas/${idea.id}`,
-    },
-  ]);
+    }]).catch(() => {});
+  }
 
   redirect(`/ideas/${idea.id}`);
 }
