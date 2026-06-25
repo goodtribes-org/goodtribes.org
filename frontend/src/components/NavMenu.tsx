@@ -61,7 +61,9 @@ export default function NavMenu() {
             <Link href="/members" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Members</Link>
             <Link href="/org" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Organisations</Link>
             <Link href="/skill" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Skills</Link>
-            <Link href="/about" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass">About</Link>
+            <Link href="/about" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">About</Link>
+            <Link href="/workplace" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Workplace</Link>
+            <Link href="/projects/new" onClick={() => setOpen(false)} className="py-3 text-coral font-medium hover:text-watermelon">+ New project</Link>
           </nav>
         </div>
       )}
