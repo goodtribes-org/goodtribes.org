@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { slugify } from "@/lib/slugify";
+import { indexDocuments, deleteDocument } from "@/lib/meili";
 
 const prisma = new PrismaClient();
 
@@ -43,6 +44,22 @@ export async function updateOrg(formData: FormData) {
     data: { name, slug, description, imageUrl, isPublic },
   });
 
+  // Keep Meilisearch in sync — remove old slug entry if slug changed
+  if (existing.slug !== slug) {
+    await deleteDocument("orgs", `org-${existing.slug}`);
+  }
+  if (isPublic) {
+    await indexDocuments("orgs", [{
+      id: `org-${slug}`,
+      type: "org",
+      title: name,
+      description: description ?? "",
+      url: `/org/${slug}`,
+    }]);
+  } else {
+    await deleteDocument("orgs", `org-${slug}`);
+  }
+
   revalidatePath(`/org/${slug}`);
   revalidatePath("/org");
   redirect(`/org/${slug}`);
@@ -56,11 +73,12 @@ export async function deleteOrg(formData: FormData) {
 
   const existing = await prisma.organisation.findUnique({
     where: { id: orgId },
-    select: { ownerId: true },
+    select: { ownerId: true, slug: true },
   });
   if (!existing || existing.ownerId !== session.user.id) redirect("/org");
 
   await prisma.organisation.delete({ where: { id: orgId } });
+  await deleteDocument("orgs", `org-${existing.slug}`);
 
   redirect("/org");
 }

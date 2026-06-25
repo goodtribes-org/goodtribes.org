@@ -6,7 +6,7 @@ import Link from "next/link";
 
 interface SearchResult {
   id: string;
-  type: "project" | "idea" | "member";
+  type: "project" | "idea" | "org" | "member";
   title: string;
   description?: string;
   url: string;
@@ -15,12 +15,14 @@ interface SearchResult {
 const TYPE_LABEL: Record<SearchResult["type"], string> = {
   project: "Project",
   idea: "Idea",
+  org: "Org",
   member: "Member",
 };
 
 const TYPE_COLOR: Record<SearchResult["type"], string> = {
   project: "text-coral",
   idea: "text-seagrass",
+  org: "text-dark-slate/60",
   member: "text-dark-slate/40",
 };
 

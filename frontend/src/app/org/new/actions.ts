@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { PrismaClient } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { slugify } from "@/lib/slugify";
+import { indexDocuments } from "@/lib/meili";
 
 const prisma = new PrismaClient();
 
@@ -32,6 +33,15 @@ export async function createOrg(formData: FormData) {
         data: { organisationId: org.id, userId, role: "owner" },
       });
       slug = org.slug;
+      if (isPublic) {
+        await indexDocuments("orgs", [{
+          id: `org-${org.slug}`,
+          type: "org",
+          title: org.name,
+          description: org.description ?? "",
+          url: `/org/${org.slug}`,
+        }]);
+      }
       break;
     } catch (e: unknown) {
       const err = e as { code?: string };

@@ -11,12 +11,14 @@ export const metadata: Metadata = {
 const TYPE_LABEL: Record<SearchResult["type"], string> = {
   project: "Project",
   idea: "Idea",
+  org: "Org",
   member: "Member",
 };
 
 const TYPE_COLOR: Record<SearchResult["type"], string> = {
   project: "bg-coral/10 text-coral border-coral/20",
   idea: "bg-seagrass/10 text-seagrass border-seagrass/20",
+  org: "bg-muted-teal/20 text-dark-slate border-muted-teal/40",
   member: "bg-dry-sage text-dark-slate border-muted-teal/40",
 };
 
@@ -33,14 +35,16 @@ export default async function SearchPage({
   const grouped: Record<SearchResult["type"], SearchResult[]> = {
     project: [],
     idea: [],
+    org: [],
     member: [],
   };
   for (const r of results) grouped[r.type].push(r);
 
   const sections: { type: SearchResult["type"]; label: string; href: string }[] = [
-    { type: "project", label: "Projects", href: "/projects" },
-    { type: "idea", label: "Ideas", href: "/ideas" },
-    { type: "member", label: "Members", href: "/members" },
+    { type: "project", label: "Projects",      href: "/projects" },
+    { type: "org",     label: "Organisations", href: "/org" },
+    { type: "idea",    label: "Ideas",         href: "/ideas" },
+    { type: "member",  label: "Members",       href: "/members" },
   ];
 
   return (

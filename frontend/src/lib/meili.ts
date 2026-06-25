@@ -24,7 +24,7 @@ export async function indexDocuments(
 
 export interface SearchResult {
   id: string;
-  type: "project" | "idea" | "member";
+  type: "project" | "idea" | "member" | "org";
   title: string;
   description?: string;
   url: string;
@@ -48,8 +48,9 @@ export async function multiSearch(query: string): Promise<SearchResult[]> {
       body: JSON.stringify({
         queries: [
           { indexUid: "projects", q: query, limit: 4 },
-          { indexUid: "ideas", q: query, limit: 4 },
-          { indexUid: "members", q: query, limit: 3 },
+          { indexUid: "ideas",    q: query, limit: 3 },
+          { indexUid: "orgs",     q: query, limit: 3 },
+          { indexUid: "members",  q: query, limit: 3 },
         ],
       }),
     });
