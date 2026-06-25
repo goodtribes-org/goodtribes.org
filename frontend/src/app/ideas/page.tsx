@@ -6,6 +6,7 @@ import Image from "next/image";
 import { PrismaClient } from "@prisma/client";
 import { auth } from "@/auth";
 import Pagination from "@/components/Pagination";
+import IdeasFilters from "./IdeasFilters";
 
 export const metadata: Metadata = {
   title: "Ideas — GoodTribes.org",
@@ -21,11 +22,6 @@ const STATUS_TABS = [
   { value: "review", label: "Under Review" },
   { value: "shortlisted", label: "Shortlisted" },
   { value: "approved", label: "Approved" },
-];
-
-const CATEGORIES = [
-  "Technology", "Environment", "Education", "Health",
-  "Community", "Policy", "Arts & Culture", "Economy",
 ];
 
 const SDG_LABELS: Record<number, string> = {
@@ -110,17 +106,6 @@ export default async function IdeasPage({
     }),
   ]);
 
-  function buildUrl(overrides: Record<string, string | undefined>) {
-    const params = new URLSearchParams();
-    const current = { sort: sortParam, status, category, sdg, region, page: pageStr };
-    const merged = { ...current, ...overrides };
-    for (const [k, v] of Object.entries(merged)) {
-      if (v) params.set(k, v);
-    }
-    const qs = params.toString();
-    return `/ideas${qs ? `?${qs}` : ""}`;
-  }
-
   return (
     <div>
       {/* Header */}
@@ -145,10 +130,17 @@ export default async function IdeasPage({
       <div className="flex gap-1 mb-5 border-b border-muted-teal/30 pb-0">
         {STATUS_TABS.map((tab) => {
           const active = (status ?? "") === tab.value;
+          const params = new URLSearchParams();
+          if (tab.value) params.set("status", tab.value);
+          if (sort && sort !== "new") params.set("sort", sort);
+          if (category) params.set("category", category);
+          if (region) params.set("region", region);
+          if (sdg) params.set("sdg", sdg);
+          const qs = params.toString();
           return (
             <Link
               key={tab.value}
-              href={buildUrl({ status: tab.value || undefined, page: undefined })}
+              href={`/ideas${qs ? `?${qs}` : ""}`}
               className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                 active
                   ? "border-seagrass text-seagrass"
@@ -161,88 +153,7 @@ export default async function IdeasPage({
         })}
       </div>
 
-      {/* Filter row */}
-      <div className="flex flex-wrap items-center gap-3 mb-6">
-        {/* Sort */}
-        <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-          {[
-            { value: "new", label: "New" },
-            { value: "top", label: "Top" },
-            { value: "trending", label: "Trending" },
-          ].map((s) => (
-            <Link
-              key={s.value}
-              href={buildUrl({ sort: s.value, page: undefined })}
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                sort === s.value
-                  ? "bg-white text-dark-slate shadow-sm"
-                  : "text-dark-slate/60 hover:text-dark-slate"
-              }`}
-            >
-              {s.label}
-            </Link>
-          ))}
-        </div>
-
-        {/* Category */}
-        <select
-          defaultValue={category ?? ""}
-          onChange={(e) => {
-            const url = buildUrl({ category: e.target.value || undefined, page: undefined });
-            window.location.href = url;
-          }}
-          className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
-          suppressHydrationWarning
-        >
-          <option value="">All categories</option>
-          {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
-
-        {/* Region */}
-        <select
-          defaultValue={region ?? ""}
-          onChange={(e) => {
-            const url = buildUrl({ region: e.target.value || undefined, page: undefined });
-            window.location.href = url;
-          }}
-          className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
-          suppressHydrationWarning
-        >
-          <option value="">All regions</option>
-          <option value="local">Local</option>
-          <option value="regional">Regional</option>
-          <option value="national">National</option>
-          <option value="global">Global</option>
-        </select>
-
-        {/* SDG */}
-        <select
-          defaultValue={sdg ?? ""}
-          onChange={(e) => {
-            const url = buildUrl({ sdg: e.target.value || undefined, page: undefined });
-            window.location.href = url;
-          }}
-          className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
-          suppressHydrationWarning
-        >
-          <option value="">All SDG goals</option>
-          {Array.from({ length: 17 }, (_, i) => i + 1).map((n) => (
-            <option key={n} value={n}>SDG {n} — {SDG_LABELS[n]}</option>
-          ))}
-        </select>
-
-        {/* Active filter chips */}
-        {(category || region || sdg) && (
-          <Link
-            href={buildUrl({ category: undefined, region: undefined, sdg: undefined, page: undefined })}
-            className="text-xs text-dark-slate/50 hover:text-dark-slate underline"
-          >
-            Clear filters
-          </Link>
-        )}
-
-        <span className="ml-auto text-xs text-dark-slate/40">{total} idea{total !== 1 ? "s" : ""}</span>
-      </div>
+      <IdeasFilters sort={sort} category={category} region={region} sdg={sdg} status={status} total={total} />
 
       {total === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
