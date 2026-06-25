@@ -34,7 +34,21 @@ export async function generateMetadata({
   const { id } = await params;
   const idea = await prisma.idea.findUnique({ where: { id }, select: { title: true } });
   if (!idea) return {};
-  return { title: `${idea.title} — Ideas — GoodTribes.org` };
+  const description = (await prisma.idea.findUnique({ where: { id }, select: { description: true } }))?.description;
+  return {
+    title: idea.title,
+    description: description ?? undefined,
+    openGraph: {
+      title: `${idea.title} — GoodTribes Ideas`,
+      description: description ?? "An idea on GoodTribes.org",
+      url: `/ideas/${id}`,
+    },
+    twitter: {
+      card: "summary",
+      title: idea.title,
+      description: description ?? "An idea on GoodTribes.org",
+    },
+  };
 }
 
 export default async function IdeaDetailPage({

@@ -2,11 +2,37 @@ import { auth } from "@/auth";
 import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { requestToJoin } from "./actions";
 import OrgInviteForm from "./invite/OrgInviteForm";
 import { OrgJoinRequestsPanel } from "./OrgJoinSection";
 
 const prisma = new PrismaClient();
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const org = await prisma.organisation.findUnique({
+    where: { slug },
+    select: { name: true, description: true, imageUrl: true },
+  });
+  if (!org) return {};
+  return {
+    title: org.name,
+    description: org.description ?? undefined,
+    openGraph: {
+      title: `${org.name} — GoodTribes.org`,
+      description: org.description ?? "An organisation on GoodTribes.org",
+      url: `/org/${slug}`,
+      ...(org.imageUrl ? { images: [{ url: org.imageUrl, alt: org.name }] } : {}),
+    },
+    twitter: {
+      card: org.imageUrl ? "summary_large_image" : "summary",
+      title: org.name,
+      description: org.description ?? "An organisation on GoodTribes.org",
+      ...(org.imageUrl ? { images: [org.imageUrl] } : {}),
+    },
+  };
+}
 
 function MemberAvatar({ name, href }: { name: string; href?: string }) {
   const initials = (name ?? "?")

@@ -64,7 +64,22 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const project = await prisma.project.findUnique({ where: { slug } });
   if (!project) return {};
-  return { title: `${project.title} — GoodTribes.org`, description: project.description ?? undefined };
+  return {
+    title: project.title,
+    description: project.description ?? undefined,
+    openGraph: {
+      title: `${project.title} — GoodTribes.org`,
+      description: project.description ?? "A project on GoodTribes.org",
+      url: `/projects/${slug}`,
+      ...(project.imageUrl ? { images: [{ url: project.imageUrl, alt: project.title }] } : {}),
+    },
+    twitter: {
+      card: project.imageUrl ? "summary_large_image" : "summary",
+      title: project.title,
+      description: project.description ?? "A project on GoodTribes.org",
+      ...(project.imageUrl ? { images: [project.imageUrl] } : {}),
+    },
+  };
 }
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ slug: string }> }) {

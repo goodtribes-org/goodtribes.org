@@ -8,9 +8,30 @@ import SearchInput from "@/components/SearchInput";
 import NotificationBell from "@/components/NotificationBell";
 import NavMenu from "@/components/NavMenu";
 
+const APP_URL = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
+
 export const metadata: Metadata = {
-  title: "GoodTribes.org",
-  description: "GoodTribes.org",
+  title: {
+    default: "GoodTribes.org",
+    template: "%s — GoodTribes.org",
+  },
+  description: "Connecting skilled volunteers with impact-driven organisations to build a better world together.",
+  metadataBase: new URL(APP_URL),
+  openGraph: {
+    siteName: "GoodTribes.org",
+    type: "website",
+    locale: "en_US",
+    title: "GoodTribes.org — Collaborative Impact Platform",
+    description: "Connecting skilled volunteers with impact-driven organisations to build a better world together.",
+    url: APP_URL,
+    images: [{ url: "/img/GoodTribes1.png", width: 800, height: 200, alt: "GoodTribes.org" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "GoodTribes.org",
+    description: "Connecting skilled volunteers with impact-driven organisations.",
+    images: ["/img/GoodTribes1.png"],
+  },
 };
 
 export default function RootLayout({
