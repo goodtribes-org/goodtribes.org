@@ -535,11 +535,17 @@ model FundingCampaign {
   description String?
   goal        Int
   currency    String   @default("SEK")
-  status      String   @default("active")
-  createdAt   DateTime @default(now())
+  status          String   @default("active")
+  campaignType    String   @default("donation")
+  deadline        DateTime?
+  platformFee     Float    @default(5)
+  stripeAccountId String?
+  createdAt       DateTime @default(now())
 
-  project Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  pledges FundingPledge[]
+  project     Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  pledges     FundingPledge[]
+  rewardTiers FundingRewardTier[]
+  expenses    FundingExpense[]
 }
 
 model FundingPledge {
@@ -547,11 +553,15 @@ model FundingPledge {
   campaignId String
   userId     String
   amount     Int
-  message    String?
-  createdAt  DateTime @default(now())
+  message          String?
+  stripeSessionId  String?
+  pledgeStatus     String  @default("confirmed")
+  rewardTierId     String?
+  createdAt        DateTime @default(now())
 
-  campaign FundingCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  user     User            @relation("FundingPledges", fields: [userId], references: [id], onDelete: Cascade)
+  campaign    FundingCampaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user        User               @relation("FundingPledges", fields: [userId], references: [id], onDelete: Cascade)
+  rewardTier  FundingRewardTier? @relation(fields: [rewardTierId], references: [id], onDelete: SetNull)
 
   @@unique([campaignId, userId])
 }
@@ -725,4 +735,33 @@ model PollVote {
 
   @@unique([pollId, pollOptionId, userId])
   @@index([pollId, userId])
+}
+
+model FundingRewardTier {
+  id          String          @id @default(cuid())
+  campaignId  String
+  campaign    FundingCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  minAmount   Int
+  maxBackers  Int?
+  sortOrder   Int             @default(0)
+  pledges     FundingPledge[]
+  createdAt   DateTime        @default(now())
+
+  @@index([campaignId])
+}
+
+model FundingExpense {
+  id          String          @id @default(cuid())
+  campaignId  String
+  campaign    FundingCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  title       String
+  amount      Int
+  description String?
+  receiptUrl  String?
+  date        DateTime        @default(now())
+  createdAt   DateTime        @default(now())
+
+  @@index([campaignId])
 }
