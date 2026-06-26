@@ -18,6 +18,14 @@ export default function NavMenu() {
         <Link href="/ideas" className="text-dark-slate/70 hover:text-seagrass">
           Ideas
         </Link>
+        <Link href="/feed" className="text-dark-slate/70 hover:text-seagrass">
+          Flöde
+        </Link>
+        {session?.user && (
+          <Link href="/match" className="text-dark-slate/70 hover:text-seagrass">
+            Hitta projekt
+          </Link>
+        )}
         <div className="relative group">
           <button className="flex items-center gap-1 text-dark-slate/70 hover:text-seagrass">
             Work With Us
@@ -59,7 +67,11 @@ export default function NavMenu() {
           <nav className="max-w-6xl mx-auto px-6 py-3 flex flex-col">
             <Link href="/projects" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Projects</Link>
             <Link href="/ideas" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Ideas</Link>
+            <Link href="/feed" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Flöde</Link>
             <p className="pt-3 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">Discover</p>
+            {session?.user && (
+              <Link href="/match" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Hitta projekt</Link>
+            )}
             <Link href="/members" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Members</Link>
             <Link href="/org" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Organisations</Link>
             <Link href="/skill" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Skills</Link>

@@ -8,6 +8,33 @@ import Image from "next/image";
 
 const prisma = new PrismaClient();
 
+const SDG_NAMES: Record<number, string> = {
+  1: "Ingen fattigdom",
+  2: "Ingen hunger",
+  3: "God hälsa",
+  4: "God utbildning",
+  5: "Jämställdhet",
+  6: "Rent vatten",
+  7: "Hållbar energi",
+  8: "Anständiga arbetsvillkor",
+  9: "Hållbar industri",
+  10: "Minskad ojämlikhet",
+  11: "Hållbara städer",
+  12: "Hållbar konsumtion",
+  13: "Klimat",
+  14: "Hav",
+  15: "Ekosystem",
+  16: "Fred & rättvisa",
+  17: "Globalt partnerskap",
+};
+
+function sdgChipColor(num: number): string {
+  if (num <= 5) return "bg-red-100 text-red-800";
+  if (num <= 10) return "bg-blue-100 text-blue-800";
+  if (num <= 15) return "bg-green-100 text-green-800";
+  return "bg-indigo-100 text-indigo-900";
+}
+
 export default async function ProfilePage() {
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
@@ -23,6 +50,8 @@ export default async function ProfilePage() {
       bio: true,
       showProfile: true,
       socialLinks: true,
+      availability: true,
+      interests: true,
       skills: {
         select: { skill: { select: { id: true, name: true, slug: true } } },
       },
@@ -92,6 +121,27 @@ export default async function ProfilePage() {
             )}
           </section>
 
+          {/* SDG Interests */}
+          {Array.isArray(user.interests) && user.interests.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest">SDG-intressen</h2>
+                <Link href="/profile/setup" className="text-xs text-coral hover:underline">Edit</Link>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {(user.interests as number[]).map((num) => (
+                  <span
+                    key={num}
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${sdgChipColor(num)}`}
+                  >
+                    <span className="font-bold">{num}</span>
+                    <span>{SDG_NAMES[num]}</span>
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Social links */}
           {Object.keys(socialLinks).length > 0 && (
             <section>
@@ -128,6 +178,21 @@ export default async function ProfilePage() {
                 Edit profile
               </Link>
             </div>
+            {user.availability === "available" && (
+              <span className="inline-flex items-center mt-2 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                ✅ Tillgänglig
+              </span>
+            )}
+            {user.availability === "limited" && (
+              <span className="inline-flex items-center mt-2 px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                ⏳ Begränsad tid
+              </span>
+            )}
+            {user.availability === "busy" && (
+              <span className="inline-flex items-center mt-2 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                🔴 Inte tillgänglig
+              </span>
+            )}
             {user.country && (
               <p className="text-dark-slate/50 text-sm mt-1">📍 {user.country}</p>
             )}

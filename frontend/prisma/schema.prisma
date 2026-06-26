@@ -18,6 +18,8 @@ model User {
   bio           String?
   socialLinks   Json?     @default("{}")
   onboarded     Boolean   @default(false)
+  interests    Int[]    @default([])
+  availability String?
   showProfile   Boolean   @default(false)
   digestOptIn   Boolean   @default(true)
   accounts      Account[]

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import FileUpload from "@/components/FileUpload";
 import { saveProfile } from "./actions";
 
@@ -16,6 +16,28 @@ type Props = {
   isOnboarded: boolean;
   allSkills: Skill[];
   currentSkillIds: string[];
+  availability: string | null;
+  currentInterests: number[];
+};
+
+const SDG_NAMES: Record<number, string> = {
+  1: "Ingen fattigdom",
+  2: "Ingen hunger",
+  3: "God hälsa",
+  4: "God utbildning",
+  5: "Jämställdhet",
+  6: "Rent vatten",
+  7: "Hållbar energi",
+  8: "Anständiga arbetsvillkor",
+  9: "Hållbar industri",
+  10: "Minskad ojämlikhet",
+  11: "Hållbara städer",
+  12: "Hållbar konsumtion",
+  13: "Klimat",
+  14: "Hav",
+  15: "Ekosystem",
+  16: "Fred & rättvisa",
+  17: "Globalt partnerskap",
 };
 
 export default function ProfileSetupForm({
@@ -28,11 +50,20 @@ export default function ProfileSetupForm({
   isOnboarded,
   allSkills,
   currentSkillIds,
+  availability,
+  currentInterests,
 }: Props) {
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const [selectedSdgs, setSelectedSdgs] = useState<number[]>(currentInterests);
 
   function handleImageUpload(url: string) {
     if (imageInputRef.current) imageInputRef.current.value = url;
+  }
+
+  function toggleSdg(num: number) {
+    setSelectedSdgs((prev) =>
+      prev.includes(num) ? prev.filter((n) => n !== num) : [...prev, num]
+    );
   }
 
   // Group skills by tag
@@ -85,6 +116,23 @@ export default function ProfileSetupForm({
       </div>
 
       <div>
+        <label htmlFor="availability" className="block text-sm font-medium text-dark-slate mb-1">
+          Tillgänglighet
+        </label>
+        <select
+          id="availability"
+          name="availability"
+          defaultValue={availability ?? ""}
+          className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent bg-white"
+        >
+          <option value="">Välj tillgänglighet...</option>
+          <option value="available">✅ Tillgänglig för nya projekt</option>
+          <option value="limited">⏳ Begränsad tid</option>
+          <option value="busy">🔴 Inte tillgänglig just nu</option>
+        </select>
+      </div>
+
+      <div>
         <label htmlFor="country" className="block text-sm font-medium text-dark-slate mb-1">
           Country
         </label>
@@ -129,6 +177,38 @@ export default function ProfileSetupForm({
           </div>
         </fieldset>
       )}
+
+      {/* SDG Interests */}
+      <div>
+        <p className="text-sm font-medium text-dark-slate mb-3">
+          Vilket SDG-mål brinner du för?
+        </p>
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+          {Array.from({ length: 17 }, (_, i) => i + 1).map((num) => {
+            const selected = selectedSdgs.includes(num);
+            return (
+              <button
+                key={num}
+                type="button"
+                onClick={() => toggleSdg(num)}
+                className={`flex flex-col items-center justify-center px-2 py-2 rounded-md text-xs font-medium transition-colors select-none leading-tight text-center ${
+                  selected
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                <span className="font-bold text-sm">{num}</span>
+                <span className="mt-0.5 line-clamp-2">{SDG_NAMES[num]}</span>
+              </button>
+            );
+          })}
+        </div>
+        <input
+          type="hidden"
+          name="interests"
+          value={JSON.stringify(selectedSdgs)}
+        />
+      </div>
 
       <div className="flex items-center gap-3">
         <input

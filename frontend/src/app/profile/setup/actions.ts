@@ -26,6 +26,14 @@ export async function saveProfile(formData: FormData) {
   const showProfile = formData.get("showProfile") === "on";
   const skillIds = formData.getAll("skillIds") as string[];
 
+  const interestsRaw = formData.get("interests") as string | null;
+  const interests: number[] = interestsRaw ? (JSON.parse(interestsRaw) as number[]) : [];
+
+  const availabilityRaw = (formData.get("availability") as string | null)?.trim() || null;
+  const availability = availabilityRaw && ["available", "limited", "busy"].includes(availabilityRaw)
+    ? availabilityRaw
+    : null;
+
   const existing = await prisma.user.findUnique({
     where: { email: session.user.email },
     select: { onboarded: true },
@@ -41,6 +49,8 @@ export async function saveProfile(formData: FormData) {
       socialLinks,
       onboarded: true,
       showProfile,
+      interests,
+      availability,
       ...(image ? { image } : {}),
     },
   });

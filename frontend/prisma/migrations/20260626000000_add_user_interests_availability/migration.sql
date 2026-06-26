@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN "interests" INTEGER[] NOT NULL DEFAULT ARRAY[]::INTEGER[];
+ALTER TABLE "User" ADD COLUMN "availability" TEXT;
