@@ -44,7 +44,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-white text-dark-slate">
         <SessionProvider>
           <header className="border-b border-muted-teal relative">
-            <nav className="max-w-6xl mx-auto w-full px-6 py-3 flex items-center gap-6">
+            <nav className="w-full px-6 py-3 flex items-center gap-6">
               <Link href="/" className="shrink-0">
                 <Image
                   src="/img/GoodTribes1.png"
