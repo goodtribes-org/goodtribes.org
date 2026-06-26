@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { acceptMentorship } from "@/app/mentors/actions";
 
 export const metadata: Metadata = { title: "Workplace — GoodTribes.org" };
 
@@ -91,14 +92,17 @@ function activityDateGroup(date: Date): string {
   return "Tidigare";
 }
 
-const TABS = [
+const TABS_BASE = [
   { key: "overview", label: "Översikt" },
   { key: "activity", label: "Min aktivitet" },
   { key: "tokens", label: "Tribe Tokens" },
   { key: "kudos", label: "Kudos" },
 ] as const;
 
-type TabKey = (typeof TABS)[number]["key"];
+const MENTOR_TAB = { key: "mentor-inbox", label: "Mentor Inbox" } as const;
+
+type BaseTabKey = (typeof TABS_BASE)[number]["key"];
+type TabKey = BaseTabKey | "mentor-inbox";
 
 export default async function WorkplacePage({
   searchParams,
@@ -117,7 +121,15 @@ export default async function WorkplacePage({
         ? "tokens"
         : resolvedParams.tab === "kudos"
           ? "kudos"
-          : "overview";
+          : resolvedParams.tab === "mentor-inbox"
+            ? "mentor-inbox"
+            : "overview";
+
+  // Fetch mentor profile to decide whether to show the Mentor Inbox tab
+  const mentorProfile = await prisma.mentor.findUnique({
+    where: { userId },
+    select: { id: true, verified: true },
+  });
 
   // Data needed for both tabs (overview header always visible)
   const [memberships, openKanban, openTodos, myIdeas] = await Promise.all([
@@ -237,6 +249,29 @@ export default async function WorkplacePage({
     totalKudosReceived = kudosCount;
   }
 
+  // Mentor Inbox tab data
+  type MentorRequest = {
+    id: string;
+    status: string;
+    message: string | null;
+    sessionAt: Date | null;
+    createdAt: Date;
+    project: { title: string; slug: string };
+    feedback: { rating: number } | null;
+  };
+  let mentorRequests: MentorRequest[] = [];
+
+  if (activeTab === "mentor-inbox" && mentorProfile?.verified) {
+    mentorRequests = await prisma.mentorshipRequest.findMany({
+      where: { mentorId: mentorProfile.id, status: { in: ["pending", "accepted"] } },
+      include: {
+        project: { select: { title: true, slug: true } },
+        feedback: { select: { rating: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
   // Activity tab data
   let activityEvents: {
     id: string;
@@ -352,7 +387,7 @@ export default async function WorkplacePage({
       {/* Tab navigation */}
       <div className="border-b border-muted-teal">
         <nav className="-mb-px flex gap-6">
-          {TABS.map((tab) => (
+          {[...TABS_BASE, ...(mentorProfile?.verified ? [MENTOR_TAB] : [])].map((tab) => (
             <Link
               key={tab.key}
               href={tab.key === "overview" ? "/workplace" : `/workplace?tab=${tab.key}`}
@@ -614,6 +649,79 @@ export default async function WorkplacePage({
               </div>
             )}
           </section>
+        </div>
+      )}
+
+      {/* Tab: Mentor Inbox */}
+      {activeTab === "mentor-inbox" && mentorProfile?.verified && (
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold">Mentorförfrågningar</h2>
+          {mentorRequests.length === 0 ? (
+            <p className="text-dark-slate/50 italic text-sm">
+              Du har inga aktiva mentorförfrågningar.
+            </p>
+          ) : (
+            <div className="border border-muted-teal rounded-lg overflow-hidden divide-y divide-muted-teal/50">
+              {mentorRequests.map((req) => (
+                <div key={req.id} className="p-5 flex flex-col gap-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <Link
+                        href={`/projects/${req.project.slug}`}
+                        className="font-semibold text-dark-slate hover:text-seagrass transition-colors"
+                      >
+                        {req.project.title}
+                      </Link>
+                      {req.message && (
+                        <p className="text-sm text-dark-slate/70 mt-1">{req.message}</p>
+                      )}
+                      <p className="text-xs text-dark-slate/40 mt-1">
+                        {relativeTime(req.createdAt)}
+                        {req.sessionAt && (
+                          <>
+                            {" "}&middot;{" "}
+                            Sessionsdatum:{" "}
+                            {new Date(req.sessionAt).toLocaleDateString("sv-SE")}
+                          </>
+                        )}
+                      </p>
+                    </div>
+                    <span
+                      className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full flex-shrink-0 ${
+                        req.status === "pending"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {req.status === "pending" ? "Väntande" : "Accepterad"}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    {req.status === "pending" && (
+                      <form
+                        action={acceptMentorship.bind(null, req.id)}
+                      >
+                        <button
+                          type="submit"
+                          className="text-sm font-medium px-4 py-1.5 rounded-md bg-seagrass text-white hover:bg-seagrass/80 transition-colors"
+                        >
+                          Acceptera
+                        </button>
+                      </form>
+                    )}
+                    {req.status === "accepted" && !req.feedback && (
+                      <Link
+                        href={`/projects/${req.project.slug}`}
+                        className="text-sm font-medium px-4 py-1.5 rounded-md border border-seagrass text-seagrass hover:bg-seagrass/10 transition-colors"
+                      >
+                        Slutför
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
