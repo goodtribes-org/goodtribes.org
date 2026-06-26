@@ -21,6 +21,9 @@ export default function NavMenu() {
         <Link href="/feed" className="text-dark-slate/70 hover:text-seagrass">
           Flöde
         </Link>
+        <Link href="/hall-of-impact" className="text-dark-slate/70 hover:text-seagrass">
+          Hall of Impact
+        </Link>
         {session?.user && (
           <Link href="/match" className="text-dark-slate/70 hover:text-seagrass">
             Hitta projekt
@@ -68,6 +71,7 @@ export default function NavMenu() {
             <Link href="/projects" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Projects</Link>
             <Link href="/ideas" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Ideas</Link>
             <Link href="/feed" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Flöde</Link>
+            <Link href="/hall-of-impact" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Hall of Impact</Link>
             <p className="pt-3 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">Discover</p>
             {session?.user && (
               <Link href="/match" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Hitta projekt</Link>

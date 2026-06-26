@@ -812,6 +812,7 @@ model ProjectMaturity {
   scoreBreakdown   Json?
   scaleInitiatedAt DateTime?
   scalingPlan      String?  @db.Text
+  finalReport      String?  @db.Text
   calculatedAt     DateTime @default(now())
 }
 
