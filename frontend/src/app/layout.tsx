@@ -54,7 +54,7 @@ export default function RootLayout({
                   className="object-contain"
                 />
               </Link>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 ml-8">
                 <NavMenu />
               </div>
               <div className="hidden md:block shrink-0">
