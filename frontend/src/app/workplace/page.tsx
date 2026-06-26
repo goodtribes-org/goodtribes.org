@@ -699,7 +699,7 @@ export default async function WorkplacePage({
                   <div className="flex gap-2">
                     {req.status === "pending" && (
                       <form
-                        action={acceptMentorship.bind(null, req.id)}
+                        action={async () => { await acceptMentorship(req.id); }}
                       >
                         <button
                           type="submit"
