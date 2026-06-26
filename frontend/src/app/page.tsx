@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
-import HeroSlideshow from "@/components/HeroSlideshow";
 
 
 const FEATURE_CARDS = [
@@ -132,9 +131,6 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-12">
-
-      {/* Full-bleed hero slideshow */}
-      <HeroSlideshow />
 
       {/* Hero — shown to logged-out visitors */}
       {!session && (
