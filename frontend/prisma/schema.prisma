@@ -61,6 +61,8 @@ model User {
   timeLogReviews   TimeLog[]       @relation("ReviewedTimeLogs")
   tokenLedger      TokenLedger[]   @relation("TokenLedger")
   aiTaskReviews    AiTaskReview[]  @relation("AiTaskReviews")
+  createdPolls     Poll[]          @relation("CreatedPolls")
+  pollVotes        PollVote[]      @relation("UserPollVotes")
 }
 
 model Skill {
@@ -297,6 +299,7 @@ model Project {
   forumPosts       ForumPost[]     @relation("ProjectForumPosts")
   calendarEvents   CalendarEvent[] @relation("ProjectCalendarEvents")
   tokenLedger      TokenLedger[]   @relation("ProjectTokenLedger")
+  polls            Poll[]          @relation("ProjectPolls")
 }
 
 model ProjectSkill {
@@ -674,4 +677,52 @@ model AiTaskReview {
   feedback      String?    @db.Text
   tokensAwarded Float?
   createdAt     DateTime   @default(now())
+}
+
+model Poll {
+  id            String       @id @default(cuid())
+  projectSlug   String
+  project       Project      @relation("ProjectPolls", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  createdById   String
+  createdBy     User         @relation("CreatedPolls", fields: [createdById], references: [id])
+  title         String
+  description   String?      @db.Text
+  type          String       @default("yes_no")
+  status        String       @default("open")
+  visibility    String       @default("live")
+  isBinding     Boolean      @default(false)
+  quorumPercent Float?
+  deadline      DateTime?
+  closedAt      DateTime?
+  createdAt     DateTime     @default(now())
+  options       PollOption[]
+  votes         PollVote[]
+
+  @@index([projectSlug])
+}
+
+model PollOption {
+  id          String     @id @default(cuid())
+  pollId      String
+  poll        Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  label       String
+  description String?
+  sortOrder   Int        @default(0)
+  votes       PollVote[]
+}
+
+model PollVote {
+  id           String     @id @default(cuid())
+  pollId       String
+  poll         Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  pollOptionId String
+  pollOption   PollOption @relation(fields: [pollOptionId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation("UserPollVotes", fields: [userId], references: [id])
+  tokenWeight  Float
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([pollId, pollOptionId, userId])
+  @@index([pollId, userId])
 }
