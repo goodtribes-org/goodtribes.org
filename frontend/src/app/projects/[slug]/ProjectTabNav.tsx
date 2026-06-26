@@ -29,7 +29,7 @@ export default function ProjectTabNav({ slug }: { slug: string }) {
 
   return (
     <div className="border-b border-muted-teal/40 mb-6">
-      <div className="flex gap-6 overflow-x-auto">
+      <div className="flex flex-wrap gap-x-4 gap-y-0">
         {TABS.map((tab) => {
           const href = `${base}${tab.href}`;
           const isActive = tab.href === ""
@@ -39,7 +39,7 @@ export default function ProjectTabNav({ slug }: { slug: string }) {
             <Link
               key={tab.href}
               href={href}
-              className={`pb-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
+              className={`pb-2 text-xs font-medium border-b-2 whitespace-nowrap transition-colors ${
                 isActive
                   ? "border-coral text-coral"
                   : "border-transparent text-dark-slate/50 hover:text-dark-slate"
