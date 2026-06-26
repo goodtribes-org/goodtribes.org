@@ -116,7 +116,7 @@ export default async function ImpactPage({
   });
   if (!project) notFound();
 
-  const role = (project.members as { role: string }[])[0]?.role;
+  const role = ((project.members ?? []) as { role: string }[])[0]?.role;
   const isOwnerOrAdmin = role === "owner" || role === "admin";
 
   const metrics = project.impactMetrics;

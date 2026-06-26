@@ -32,7 +32,7 @@ export default async function ChatPage({ params }: { params: Promise<{ slug: str
   });
   if (!project) notFound();
 
-  const membership = (project.members as { role: string }[])[0];
+  const membership = ((project.members ?? []) as { role: string }[])[0];
   const isMember = !!membership;
   const isOwnerOrAdmin = membership?.role === "owner" || membership?.role === "admin";
 
