@@ -63,6 +63,9 @@ model User {
   aiTaskReviews    AiTaskReview[]  @relation("AiTaskReviews")
   createdPolls     Poll[]          @relation("CreatedPolls")
   pollVotes        PollVote[]      @relation("UserPollVotes")
+  impactUpdates    ImpactUpdate[]    @relation("ImpactUpdates")
+  approvedInstances ProjectInstance[] @relation("ApprovedInstances")
+  alumni           ProjectAlumni[]   @relation("AlumniUsers")
 }
 
 model Skill {
@@ -300,6 +303,12 @@ model Project {
   calendarEvents   CalendarEvent[] @relation("ProjectCalendarEvents")
   tokenLedger      TokenLedger[]   @relation("ProjectTokenLedger")
   polls            Poll[]          @relation("ProjectPolls")
+  impactMetrics    ImpactMetric[]    @relation("ProjectImpactMetrics")
+  maturity         ProjectMaturity?  @relation("ProjectMaturity")
+  parentInstances  ProjectInstance[] @relation("ParentInstances")
+  childInstance    ProjectInstance?  @relation("ChildInstance")
+  alumni           ProjectAlumni[]   @relation("ProjectAlumni")
+  openForReplication Boolean         @default(false)
 }
 
 model ProjectSkill {
@@ -764,4 +773,73 @@ model FundingExpense {
   createdAt   DateTime        @default(now())
 
   @@index([campaignId])
+}
+
+model ImpactMetric {
+  id           String          @id @default(cuid())
+  projectSlug  String
+  project      Project         @relation("ProjectImpactMetrics", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  label        String
+  unit         String
+  targetValue  Float?
+  currentValue Float           @default(0)
+  description  String?
+  updates      ImpactUpdate[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([projectSlug])
+}
+
+model ImpactUpdate {
+  id              String       @id @default(cuid())
+  impactMetricId  String
+  impactMetric    ImpactMetric @relation(fields: [impactMetricId], references: [id], onDelete: Cascade)
+  value           Float
+  note            String?
+  updatedById     String
+  updatedBy       User         @relation("ImpactUpdates", fields: [updatedById], references: [id])
+  createdAt       DateTime     @default(now())
+
+  @@index([impactMetricId])
+}
+
+model ProjectMaturity {
+  id               String   @id @default(cuid())
+  projectSlug      String   @unique
+  project          Project  @relation("ProjectMaturity", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  score            Int      @default(0)
+  scoreBreakdown   Json?
+  scaleInitiatedAt DateTime?
+  scalingPlan      String?  @db.Text
+  calculatedAt     DateTime @default(now())
+}
+
+model ProjectInstance {
+  id              String   @id @default(cuid())
+  parentSlug      String
+  parent          Project  @relation("ParentInstances", fields: [parentSlug], references: [slug], onDelete: Cascade)
+  childSlug       String   @unique
+  child           Project  @relation("ChildInstance", fields: [childSlug], references: [slug], onDelete: Cascade)
+  region          String
+  status          String   @default("pending")
+  approvedById    String?
+  approvedBy      User?    @relation("ApprovedInstances", fields: [approvedById], references: [id])
+  createdAt       DateTime @default(now())
+
+  @@unique([parentSlug, childSlug])
+}
+
+model ProjectAlumni {
+  id             String   @id @default(cuid())
+  projectSlug    String
+  project        Project  @relation("ProjectAlumni", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  userId         String
+  user           User     @relation("AlumniUsers", fields: [userId], references: [id])
+  tokensEarned   Float    @default(0)
+  badgeIssuedAt  DateTime @default(now())
+  finalReport    String?  @db.Text
+
+  @@unique([projectSlug, userId])
+  @@index([projectSlug])
 }

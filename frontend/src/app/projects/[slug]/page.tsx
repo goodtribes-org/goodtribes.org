@@ -8,6 +8,7 @@ import { JoinButton, JoinRequestsPanel } from "./JoinSection";
 import InviteForm from "./invite/InviteForm";
 import LeaveProjectButton from "@/components/LeaveProjectButton";
 import TeamManager from "./TeamManager";
+import MaturityWidget from "@/components/MaturityWidget";
 
 const prisma = new PrismaClient();
 
@@ -121,6 +122,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         where: { projectId_userId: { projectId: project.id, userId } },
       })
     : null;
+
+  const maturity = await prisma.projectMaturity.findUnique({ where: { projectSlug: slug } });
 
   return (
     <div className="max-w-5xl">
@@ -266,6 +269,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               <Link href={`/projects/${slug}/polls`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Omröstningar</Link>
               <Link href={`/projects/${slug}/calendar`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Kalender</Link>
               <Link href={`/projects/${slug}/tokens`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Tokens</Link>
+              <Link href={`/projects/${slug}/impact`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Impact</Link>
               <Link href={`/projects/${slug}/ai-review`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">AI Granskning</Link>
             </div>
           </div>
@@ -306,6 +310,13 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
 
         <div className="md:col-span-2 flex flex-col gap-8">
+          <MaturityWidget
+            projectSlug={slug}
+            initialScore={maturity?.score ?? null}
+            initialScalingPlan={maturity?.scalingPlan ?? null}
+            isOwnerOrAdmin={!!isOwnerOrAdmin}
+          />
+
           {project.neededSkills.length > 0 && (
             <section>
               <h2 className="text-sm font-semibold text-dark-slate mb-3">Skills needed</h2>
