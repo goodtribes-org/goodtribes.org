@@ -9,6 +9,7 @@ import InviteForm from "./invite/InviteForm";
 import LeaveProjectButton from "@/components/LeaveProjectButton";
 import TeamManager from "./TeamManager";
 import MaturityWidget from "@/components/MaturityWidget";
+import FlagProjectButton from "@/components/FlagProjectButton";
 
 const prisma = new PrismaClient();
 
@@ -373,6 +374,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </section>
         </div>
       </div>
+
+      {userId && !isOwnerOrAdmin && (
+        <div className="mt-10 pt-6 border-t border-muted-teal/20 flex justify-end">
+          <FlagProjectButton projectId={project.id} />
+        </div>
+      )}
     </div>
   );
 }

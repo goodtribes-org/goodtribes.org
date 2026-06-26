@@ -21,8 +21,14 @@ export default function NavMenu() {
         <Link href="/feed" className="text-dark-slate/70 hover:text-seagrass">
           Flöde
         </Link>
+        <Link href="/dream-wall" className="text-dark-slate/70 hover:text-seagrass">
+          Drömväggen
+        </Link>
         <Link href="/hall-of-impact" className="text-dark-slate/70 hover:text-seagrass">
           Hall of Impact
+        </Link>
+        <Link href="/academy" className="text-dark-slate/70 hover:text-seagrass">
+          Academy
         </Link>
         {session?.user && (
           <Link href="/match" className="text-dark-slate/70 hover:text-seagrass">
@@ -40,6 +46,7 @@ export default function NavMenu() {
             <Link href="/members" className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-yellow-50">Members</Link>
             <Link href="/org" className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-yellow-50">Organisations</Link>
             <Link href="/skill" className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-yellow-50">Skills</Link>
+            <Link href="/mentors" className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-yellow-50">Mentorer</Link>
           </div>
         </div>
         <Link href="/about" className="text-dark-slate/70 hover:text-seagrass">
@@ -71,7 +78,9 @@ export default function NavMenu() {
             <Link href="/projects" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Projects</Link>
             <Link href="/ideas" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Ideas</Link>
             <Link href="/feed" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Flöde</Link>
+            <Link href="/dream-wall" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Drömväggen</Link>
             <Link href="/hall-of-impact" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Hall of Impact</Link>
+            <Link href="/academy" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Academy</Link>
             <p className="pt-3 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">Discover</p>
             {session?.user && (
               <Link href="/match" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Hitta projekt</Link>
@@ -79,6 +88,7 @@ export default function NavMenu() {
             <Link href="/members" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Members</Link>
             <Link href="/org" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Organisations</Link>
             <Link href="/skill" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Skills</Link>
+            <Link href="/mentors" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Mentorer</Link>
             <Link href="/about" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">About</Link>
 
             {session?.user ? (

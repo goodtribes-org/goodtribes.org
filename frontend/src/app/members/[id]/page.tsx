@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { auth } from "@/auth";
+import KudosButton from "@/components/KudosButton";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +28,7 @@ export default async function MemberProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const session = await auth();
 
   const member = await prisma.user.findFirst({
     where: { id, showProfile: true },
@@ -85,6 +88,14 @@ export default async function MemberProfilePage({
         )}
         <div className="flex-1 min-w-0">
           <h1 className="text-3xl font-bold mb-1">{member.name}</h1>
+          {session?.user?.id && session.user.id !== id && (
+            <div className="mt-2">
+              <KudosButton
+                toUserId={id}
+                toUserName={member.name ?? "denna person"}
+              />
+            </div>
+          )}
         </div>
       </div>
 

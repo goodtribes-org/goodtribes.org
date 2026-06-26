@@ -66,6 +66,19 @@ model User {
   impactUpdates    ImpactUpdate[]    @relation("ImpactUpdates")
   approvedInstances ProjectInstance[] @relation("ApprovedInstances")
   alumni           ProjectAlumni[]   @relation("AlumniUsers")
+  mentorProfile    Mentor?               @relation("MentorProfile")
+  authoredGuides   AcademyGuide[]        @relation("GuideAuthor")
+  reviewedGuides   AcademyGuide[]        @relation("GuideReviewer")
+  guideCompletions UserGuideCompletion[] @relation("GuideCompletions")
+  kudosSent        Kudos[]               @relation("KudosSent")
+  kudosReceived    Kudos[]               @relation("KudosReceived")
+  streaks          UserStreak[]          @relation("UserStreaks")
+  dreamPosts       DreamWallPost[]       @relation("DreamPosts")
+  dreamReactions   DreamWallReaction[]   @relation("DreamReactions")
+  projectFlags     ProjectFlag[]         @relation("FlaggedBy")
+  flagReviews      ProjectFlag[]         @relation("FlagReviewer")
+  ethicsReviews    EthicsReview[]        @relation("EthicsReviewer")
+  onboardingDone   Boolean               @default(false)
 }
 
 model Skill {
@@ -309,6 +322,11 @@ model Project {
   childInstance    ProjectInstance?  @relation("ChildInstance")
   alumni           ProjectAlumni[]   @relation("ProjectAlumni")
   openForReplication Boolean         @default(false)
+  mentorships   MentorshipRequest[] @relation("ProjectMentorships")
+  kudos         Kudos[]             @relation("ProjectKudos")
+  streaks       UserStreak[]        @relation("ProjectStreaks")
+  flags         ProjectFlag[]       @relation("ProjectFlags")
+  ethicsReviews EthicsReview[]      @relation("EthicsReviews")
 }
 
 model ProjectSkill {
@@ -843,4 +861,151 @@ model ProjectAlumni {
 
   @@unique([projectSlug, userId])
   @@index([projectSlug])
+}
+
+model Mentor {
+  id          String               @id @default(cuid())
+  userId      String               @unique
+  user        User                 @relation("MentorProfile", fields: [userId], references: [id], onDelete: Cascade)
+  categories  String[]
+  bio         String?
+  verified    Boolean              @default(false)
+  requests    MentorshipRequest[]
+  createdAt   DateTime             @default(now())
+}
+
+model MentorshipRequest {
+  id          String              @id @default(cuid())
+  projectId   String
+  project     Project             @relation("ProjectMentorships", fields: [projectId], references: [id], onDelete: Cascade)
+  mentorId    String
+  mentor      Mentor              @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  status      String              @default("pending")
+  message     String?
+  sessionAt   DateTime?
+  tokensAwarded Float?
+  feedback    MentorshipFeedback?
+  createdAt   DateTime            @default(now())
+
+  @@index([projectId])
+  @@index([mentorId])
+}
+
+model MentorshipFeedback {
+  id                  String            @id @default(cuid())
+  mentorshipRequestId String            @unique
+  mentorshipRequest   MentorshipRequest @relation(fields: [mentorshipRequestId], references: [id], onDelete: Cascade)
+  rating              Int
+  comment             String?
+  createdAt           DateTime          @default(now())
+}
+
+model AcademyGuide {
+  id               String                @id @default(cuid())
+  title            String
+  bodyMarkdown     String                @db.Text
+  category         String
+  authorId         String
+  author           User                  @relation("GuideAuthor", fields: [authorId], references: [id])
+  reviewedById     String?
+  reviewedBy       User?                 @relation("GuideReviewer", fields: [reviewedById], references: [id])
+  difficulty       String                @default("beginner")
+  readTimeMinutes  Int                   @default(5)
+  published        Boolean               @default(false)
+  completions      UserGuideCompletion[]
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  @@index([category])
+}
+
+model UserGuideCompletion {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation("GuideCompletions", fields: [userId], references: [id], onDelete: Cascade)
+  guideId     String
+  guide       AcademyGuide @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  completedAt DateTime     @default(now())
+
+  @@unique([userId, guideId])
+}
+
+model Kudos {
+  id          String   @id @default(cuid())
+  fromUserId  String
+  fromUser    User     @relation("KudosSent", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId    String
+  toUser      User     @relation("KudosReceived", fields: [toUserId], references: [id], onDelete: Cascade)
+  projectId   String?
+  project     Project? @relation("ProjectKudos", fields: [projectId], references: [id], onDelete: SetNull)
+  message     String
+  createdAt   DateTime @default(now())
+
+  @@index([toUserId])
+}
+
+model UserStreak {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation("UserStreaks", fields: [userId], references: [id], onDelete: Cascade)
+  projectId      String
+  project        Project  @relation("ProjectStreaks", fields: [projectId], references: [id], onDelete: Cascade)
+  currentWeeks   Int      @default(0)
+  longestWeeks   Int      @default(0)
+  lastActivityAt DateTime @default(now())
+
+  @@unique([userId, projectId])
+}
+
+model DreamWallPost {
+  id        String               @id @default(cuid())
+  userId    String
+  user      User                 @relation("DreamPosts", fields: [userId], references: [id], onDelete: Cascade)
+  dreamText String
+  reactions DreamWallReaction[]
+  createdAt DateTime             @default(now())
+}
+
+model DreamWallReaction {
+  id              String        @id @default(cuid())
+  dreamWallPostId String
+  dreamWallPost   DreamWallPost @relation(fields: [dreamWallPostId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation("DreamReactions", fields: [userId], references: [id], onDelete: Cascade)
+  emoji           String
+  createdAt       DateTime      @default(now())
+
+  @@unique([dreamWallPostId, userId, emoji])
+}
+
+model ProjectFlag {
+  id           String        @id @default(cuid())
+  projectId    String
+  project      Project       @relation("ProjectFlags", fields: [projectId], references: [id], onDelete: Cascade)
+  flaggedById  String
+  flaggedBy    User          @relation("FlaggedBy", fields: [flaggedById], references: [id])
+  reason       String
+  status       String        @default("pending")
+  reviewedById String?
+  reviewedBy   User?         @relation("FlagReviewer", fields: [reviewedById], references: [id])
+  decisionNote String?
+  ethicsReview EthicsReview?
+  createdAt    DateTime      @default(now())
+
+  @@index([projectId])
+}
+
+model EthicsReview {
+  id            String      @id @default(cuid())
+  projectId     String
+  project       Project     @relation("EthicsReviews", fields: [projectId], references: [id], onDelete: Cascade)
+  reviewerId    String
+  reviewer      User        @relation("EthicsReviewer", fields: [reviewerId], references: [id])
+  projectFlagId String?     @unique
+  projectFlag   ProjectFlag? @relation(fields: [projectFlagId], references: [id])
+  outcome       String
+  note          String?
+  createdAt     DateTime    @default(now())
+
+  @@index([projectId])
 }
