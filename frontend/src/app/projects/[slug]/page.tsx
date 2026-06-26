@@ -128,29 +128,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className="max-w-5xl">
-      {/* Tab nav — above the project photo */}
-      <div className="border-b border-muted-teal/40 mb-6">
-        <div className="flex gap-6 overflow-x-auto">
-          <button className="pb-3 text-sm font-medium border-b-2 border-coral text-coral whitespace-nowrap">Story</button>
-          <Link href={`/projects/${slug}/todos`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Todo</Link>
-          <Link href={`/projects/${slug}/kanban`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Kanban</Link>
-          <Link href={`/projects/${slug}/milestones`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Milestones</Link>
-          <Link href={`/projects/${slug}/wiki`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Wiki</Link>
-          <Link href={`/projects/${slug}/updates`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Updates</Link>
-          <Link href={`/projects/${slug}/chat`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Chat</Link>
-          <Link href={`/projects/${slug}/funding`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Funding</Link>
-          <Link href={`/projects/${slug}/activity`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Activity</Link>
-          <Link href={`/projects/${slug}/forum`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Forum</Link>
-          <Link href={`/projects/${slug}/polls`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Omröstningar</Link>
-          <Link href={`/projects/${slug}/calendar`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Kalender</Link>
-          <Link href={`/projects/${slug}/tokens`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Tokens</Link>
-          <Link href={`/projects/${slug}/impact`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Impact</Link>
-          <Link href={`/projects/${slug}/ai-review`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">AI Granskning</Link>
-          <Link href={`/projects/${slug}/alumni`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Alumni</Link>
-          <Link href={`/projects/${slug}/scale`} className="pb-3 text-sm font-medium border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate whitespace-nowrap">Skalning</Link>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-10">
         <div className="md:col-span-3">
           <div className="relative w-full aspect-video bg-dark-slate rounded overflow-hidden">
