@@ -49,8 +49,8 @@ export default function RootLayout({
                 <Image
                   src="/img/GoodTribes1.png"
                   alt="GoodTribes.org"
-                  height={40}
-                  width={140}
+                  height={44}
+                  width={176}
                   className="object-contain"
                 />
               </Link>
