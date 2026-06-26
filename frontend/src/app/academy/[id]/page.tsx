@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import CompleteGuideForm from "./CompleteGuideForm";
+import { publishGuide } from "../actions";
 
 
 export async function generateMetadata({
@@ -55,7 +56,12 @@ export default async function AcademyGuidePage({
     }),
   ]);
 
-  if (!guide || !guide.published) notFound();
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "niklas.gunnas@goodtribes.org";
+  const isAdmin = session?.user?.email === ADMIN_EMAIL;
+  const isAuthor = !!session?.user?.id && guide?.authorId === session.user.id;
+  const canManage = isAdmin || isAuthor;
+
+  if (!guide || (!guide.published && !canManage)) notFound();
 
   const hasCompleted = session?.user?.id
     ? !!(await prisma.userGuideCompletion.findUnique({
@@ -103,6 +109,23 @@ export default async function AcademyGuidePage({
           <span>{guide._count.completions} avklarade</span>
         </div>
       </div>
+
+      {/* Publish banner for unpublished guides */}
+      {!guide.published && canManage && (
+        <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3">
+          <p className="text-sm text-amber-800 font-medium">
+            Den här guiden är inte publicerad och syns bara för dig.
+          </p>
+          <form action={publishGuide.bind(null, id)}>
+            <button
+              type="submit"
+              className="shrink-0 px-4 py-1.5 rounded bg-seagrass text-white text-sm font-semibold hover:bg-seagrass/80 transition-colors"
+            >
+              Publicera guide
+            </button>
+          </form>
+        </div>
+      )}
 
       <hr className="border-muted-teal/30 mb-8" />
 

@@ -5,6 +5,31 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "niklas.gunnas@goodtribes.org";
+
+
+export async function publishGuide(guideId: string) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const guide = await prisma.academyGuide.findUnique({
+    where: { id: guideId },
+    select: { authorId: true },
+  });
+  if (!guide) return;
+
+  const isAuthor = guide.authorId === session.user.id;
+  const isAdmin = session.user.email === ADMIN_EMAIL;
+  if (!isAuthor && !isAdmin) return;
+
+  await prisma.academyGuide.update({
+    where: { id: guideId },
+    data: { published: true },
+  });
+
+  revalidatePath("/academy");
+  revalidatePath(`/academy/${guideId}`);
+}
 
 export async function completeGuide(guideId: string) {
   const session = await auth();

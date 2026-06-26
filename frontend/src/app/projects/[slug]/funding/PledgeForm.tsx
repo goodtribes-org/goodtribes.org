@@ -77,12 +77,14 @@ export default function PledgeForm({
       const data = await res.json();
 
       if (!res.ok) {
-        if (data?.error === "no_stripe") {
-          setError(
-            "Stripe är inte konfigurerat. Kontakta projektägaren för att genomföra betalning manuellt."
-          );
+        const notConfigured =
+          res.status === 503 ||
+          (data as { code?: string })?.code === "no_stripe" ||
+          String((data as { error?: string })?.error ?? "").toLowerCase().includes("not configured");
+        if (notConfigured) {
+          setError("Betalningar är inte aktiverade ännu.");
         } else {
-          setError(data?.error ?? "Något gick fel. Försök igen.");
+          setError((data as { error?: string })?.error ?? "Något gick fel. Försök igen.");
         }
         setLoading(false);
         return;

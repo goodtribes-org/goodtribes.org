@@ -10,6 +10,7 @@ import LeaveProjectButton from "@/components/LeaveProjectButton";
 import TeamManager from "./TeamManager";
 import MaturityWidget from "@/components/MaturityWidget";
 import FlagProjectButton from "@/components/FlagProjectButton";
+import KudosButton from "@/components/KudosButton";
 
 
 const STAGES = ["Concept", "Prototype", "Production", "Delivery"];
@@ -353,12 +354,20 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               ) : (
                 <div className="grid grid-cols-4 gap-3">
                   {project.members.map((m) => (
-                    <MemberAvatar
-                      key={m.id}
-                      name={m.user.name ?? "?"}
-                      image={m.user.image}
-                      href={m.user.showProfile ? `/members/${m.user.id}` : undefined}
-                    />
+                    <div key={m.id} className="flex flex-col items-center gap-1">
+                      <MemberAvatar
+                        name={m.user.name ?? "?"}
+                        image={m.user.image}
+                        href={m.user.showProfile ? `/members/${m.user.id}` : undefined}
+                      />
+                      {userId && m.user.id !== userId && (
+                        <KudosButton
+                          toUserId={m.user.id}
+                          toUserName={m.user.name ?? ""}
+                          projectId={project.id}
+                        />
+                      )}
+                    </div>
                   ))}
                 </div>
               )
