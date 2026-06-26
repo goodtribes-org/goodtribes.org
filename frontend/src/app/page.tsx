@@ -138,8 +138,8 @@ export default async function HomePage() {
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", marginTop: 0 }}
       >
         <Image
-          src="/img/hero.png"
-          alt="GoodTribes — Tillsammans gör vi skillnad"
+          src="/img/hero-banner.png"
+          alt="GoodTribes — gör dina idéer verklighet"
           width={1920}
           height={500}
           className="w-full object-cover"
