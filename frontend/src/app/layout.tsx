@@ -45,7 +45,7 @@ export default function RootLayout({
         <SessionProvider>
           <header className="border-b border-muted-teal relative">
             <nav className="max-w-6xl mx-auto px-6 py-4 flex gap-4 items-center">
-              <Link href="/" className="mr-auto shrink-0">
+              <Link href="/" className="shrink-0">
                 <Image
                   src="/img/GoodTribes1.png"
                   alt="GoodTribes.org"
@@ -54,7 +54,9 @@ export default function RootLayout({
                   className="object-contain"
                 />
               </Link>
-              <NavMenu />
+              <div className="flex-1">
+                <NavMenu />
+              </div>
               <div className="hidden md:block">
                 <SearchInput />
               </div>
