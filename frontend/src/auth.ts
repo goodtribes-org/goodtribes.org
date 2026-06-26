@@ -3,11 +3,13 @@ import Resend from "next-auth/providers/resend";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma"
 import { sendEmail } from "@/lib/email";
+import { authConfig } from "@/auth.config";
 
 
 const APP_URL = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma),
   providers: [
     Resend({
@@ -15,11 +17,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       from: "noreply@goodtribes.org",
     }),
   ],
-  pages: {
-    signIn: "/login",
-    newUser: "/profile/setup",
-    error: "/login",
-  },
   callbacks: {
     session({ session, user }) {
       session.user.id = user.id;
