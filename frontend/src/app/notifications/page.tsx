@@ -14,6 +14,9 @@ const TYPE_ICON: Record<string, string> = {
   join_approved: "✅",
   join_rejected: "❌",
   blog_post: "📝",
+  project_update: "📢",
+  member_joined: "🎉",
+  milestone_completed: "🏆",
 };
 
 function timeAgo(date: Date): string {

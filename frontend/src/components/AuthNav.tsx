@@ -8,17 +8,17 @@ export default function AuthNav() {
 
   if (session?.user) {
     return (
-      <div className="flex items-center gap-4 ml-auto">
-        <Link href="/workplace" className="text-dark-slate/70 hover:text-seagrass text-sm hidden md:inline">
+      <div className="hidden md:flex items-center gap-4">
+        <Link href="/workplace" className="text-dark-slate/70 hover:text-seagrass text-sm">
           Workplace
         </Link>
-        <Link href="/dashboard" className="text-dark-slate/70 hover:text-seagrass text-sm hidden md:inline">
+        <Link href="/dashboard" className="text-dark-slate/70 hover:text-seagrass text-sm">
           Dashboard
         </Link>
-        <Link href="/profile" className="text-dark-slate/70 hover:text-seagrass text-sm hidden md:inline">
+        <Link href="/profile" className="text-dark-slate/70 hover:text-seagrass text-sm">
           Profile
         </Link>
-        <Link href="/settings" className="text-dark-slate/70 hover:text-seagrass text-sm hidden md:inline">
+        <Link href="/settings" className="text-dark-slate/70 hover:text-seagrass text-sm">
           Settings
         </Link>
         <Link
@@ -38,7 +38,7 @@ export default function AuthNav() {
   }
 
   return (
-    <div className="flex items-center gap-3 ml-auto">
+    <div className="hidden md:flex items-center gap-3">
       <Link href="/login" className="text-dark-slate/70 hover:text-seagrass text-sm">
         Log in
       </Link>

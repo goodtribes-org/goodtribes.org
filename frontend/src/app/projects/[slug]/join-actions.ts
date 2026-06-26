@@ -98,10 +98,10 @@ export async function respondToJoinRequest(
     url: decision === "approved" ? `/projects/${slug}` : "/projects",
   });
 
-  if (decision === "approved") {
-    const requester = await prisma.user.findUnique({ where: { id: req.userId }, select: { email: true, name: true } });
-    if (requester?.email) {
-      const base = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
+  const requester = await prisma.user.findUnique({ where: { id: req.userId }, select: { email: true, name: true } });
+  if (requester?.email) {
+    const base = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
+    if (decision === "approved") {
       await sendEmail({
         to: requester.email,
         subject: `You're now a member of ${req.project.title}`,
@@ -110,7 +110,18 @@ export async function respondToJoinRequest(
           <p>Your request to join <strong>${req.project.title}</strong> has been approved. Welcome aboard!</p>
           <p><a href="${base}/projects/${slug}" style="background:#E85D4A;color:white;padding:10px 20px;border-radius:4px;text-decoration:none;display:inline-block;margin:16px 0;">Open project →</a></p>
         `,
-      });
+      }).catch(() => {});
+    } else {
+      await sendEmail({
+        to: requester.email,
+        subject: `Your request to join ${req.project.title}`,
+        html: `
+          <p>Hi ${requester.name ?? "there"},</p>
+          <p>Thank you for your interest in <strong>${req.project.title}</strong>. Unfortunately your request was not approved at this time.</p>
+          <p>There are many other projects on GoodTribes that might be a great fit for your skills.</p>
+          <p><a href="${base}/projects" style="background:#E85D4A;color:white;padding:10px 20px;border-radius:4px;text-decoration:none;display:inline-block;margin:16px 0;">Browse projects →</a></p>
+        `,
+      }).catch(() => {});
     }
   }
 
