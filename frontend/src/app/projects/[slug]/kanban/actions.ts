@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { estimateTask } from "@/lib/taskEstimate";
 
 const prisma = new PrismaClient();
 
@@ -23,7 +24,7 @@ export async function createCard(
     _max: { order: true },
   });
 
-  await prisma.kanbanCard.create({
+  const card = await prisma.kanbanCard.create({
     data: {
       projectSlug,
       title: title.trim(),
@@ -36,6 +37,18 @@ export async function createCard(
       assigneeId: assigneeId || null,
     },
   });
+
+  const est = await estimateTask(card.title, card.description);
+  if (est) {
+    await prisma.taskEstimate.create({
+      data: {
+        kanbanCardId: card.id,
+        aiHours: est.hours,
+        aiConfidence: est.confidence,
+        aiReasoning: est.reasoning,
+      },
+    });
+  }
 
   revalidatePath(`/projects/${projectSlug}/kanban`);
 }

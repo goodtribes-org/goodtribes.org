@@ -54,6 +54,12 @@ model User {
   createdOrgInvites       OrgInvite[]               @relation("CreatedOrgInvites")
   projectMessages         ProjectMessage[]          @relation("ProjectMessages")
   fundingPledges          FundingPledge[]           @relation("FundingPledges")
+  forumPosts       ForumPost[]     @relation("AuthoredForumPosts")
+  forumReplies     ForumReply[]    @relation("AuthoredForumReplies")
+  calendarEvents   CalendarEvent[] @relation("CreatedCalendarEvents")
+  timeLogs         TimeLog[]       @relation("UserTimeLogs")
+  timeLogReviews   TimeLog[]       @relation("ReviewedTimeLogs")
+  tokenLedger      TokenLedger[]   @relation("TokenLedger")
 }
 
 model Skill {
@@ -212,6 +218,9 @@ model KanbanCard {
   createdBy User    @relation("CreatedKanbanCards", fields: [createdById], references: [id], onDelete: Cascade)
   assignee  User?   @relation("AssignedKanbanCards", fields: [assigneeId], references: [id], onDelete: SetNull)
   project   Project @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
+  estimate         TaskEstimate?
+  timeLogs         TimeLog[]       @relation("KanbanTimeLogs")
+  tokenLedger      TokenLedger[]   @relation("KanbanTokens")
 
   @@index([projectSlug, column])
 }
@@ -283,6 +292,9 @@ model Project {
   neededSkills     ProjectSkill[]
   messages         ProjectMessage[]
   fundingCampaign  FundingCampaign?
+  forumPosts       ForumPost[]     @relation("ProjectForumPosts")
+  calendarEvents   CalendarEvent[] @relation("ProjectCalendarEvents")
+  tokenLedger      TokenLedger[]   @relation("ProjectTokenLedger")
 }
 
 model ProjectSkill {
@@ -537,4 +549,99 @@ model FundingPledge {
   user     User            @relation("FundingPledges", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([campaignId, userId])
+}
+
+model ForumPost {
+  id          String       @id @default(cuid())
+  projectSlug String
+  project     Project      @relation("ProjectForumPosts", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  authorId    String
+  author      User         @relation("AuthoredForumPosts", fields: [authorId], references: [id])
+  title       String
+  body        String       @db.Text
+  category    String       @default("general")
+  status      String       @default("open")
+  pinned      Boolean      @default(false)
+  replies     ForumReply[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([projectSlug])
+}
+
+model ForumReply {
+  id        String       @id @default(cuid())
+  postId    String
+  post      ForumPost    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    ForumReply?  @relation("ReplyThread", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  ForumReply[] @relation("ReplyThread")
+  authorId  String
+  author    User         @relation("AuthoredForumReplies", fields: [authorId], references: [id])
+  body      String       @db.Text
+  createdAt DateTime     @default(now())
+
+  @@index([postId])
+}
+
+model CalendarEvent {
+  id          String    @id @default(cuid())
+  projectSlug String
+  project     Project   @relation("ProjectCalendarEvents", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  title       String
+  description String?
+  startsAt    DateTime
+  endsAt      DateTime?
+  type        String    @default("custom")
+  createdById String
+  createdBy   User      @relation("CreatedCalendarEvents", fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@index([projectSlug, startsAt])
+}
+
+model TaskEstimate {
+  id           String     @id @default(cuid())
+  kanbanCardId String     @unique
+  kanbanCard   KanbanCard @relation(fields: [kanbanCardId], references: [id], onDelete: Cascade)
+  aiHours      Float
+  aiConfidence String
+  aiReasoning  String     @db.Text
+  manualHours  Float?
+  lockedAt     DateTime?
+  createdAt    DateTime   @default(now())
+}
+
+model TimeLog {
+  id           String     @id @default(cuid())
+  kanbanCardId String
+  kanbanCard   KanbanCard @relation("KanbanTimeLogs", fields: [kanbanCardId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation("UserTimeLogs", fields: [userId], references: [id])
+  loggedHours  Float
+  status       String     @default("pending")
+  reviewedBy   String?
+  reviewer     User?      @relation("ReviewedTimeLogs", fields: [reviewedBy], references: [id])
+  reviewedAt   DateTime?
+  note         String?
+  createdAt    DateTime   @default(now())
+
+  @@index([kanbanCardId])
+  @@index([userId])
+}
+
+model TokenLedger {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation("TokenLedger", fields: [userId], references: [id])
+  projectSlug  String
+  project      Project     @relation("ProjectTokenLedger", fields: [projectSlug], references: [slug])
+  kanbanCardId String?
+  kanbanCard   KanbanCard? @relation("KanbanTokens", fields: [kanbanCardId], references: [id], onDelete: SetNull)
+  tokens       Float
+  reason       String
+  createdAt    DateTime    @default(now())
+
+  @@index([userId])
+  @@index([projectSlug])
 }

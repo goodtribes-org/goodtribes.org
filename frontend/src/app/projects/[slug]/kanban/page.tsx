@@ -33,6 +33,7 @@ export default async function KanbanPage({ params }: { params: Promise<{ slug: s
     include: {
       createdBy: { select: { name: true } },
       assignee: { select: { id: true, name: true } },
+      estimate: true,
     },
   });
 

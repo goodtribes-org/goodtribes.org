@@ -95,6 +95,7 @@ function activityDateGroup(date: Date): string {
 const TABS = [
   { key: "overview", label: "Översikt" },
   { key: "activity", label: "Min aktivitet" },
+  { key: "tokens", label: "Tribe Tokens" },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -110,7 +111,11 @@ export default async function WorkplacePage({
 
   const resolvedParams = await searchParams;
   const activeTab: TabKey =
-    resolvedParams.tab === "activity" ? "activity" : "overview";
+    resolvedParams.tab === "activity"
+      ? "activity"
+      : resolvedParams.tab === "tokens"
+        ? "tokens"
+        : "overview";
 
   // Data needed for both tabs (overview header always visible)
   const [memberships, openKanban, openTodos, myIdeas] = await Promise.all([
@@ -156,6 +161,52 @@ export default async function WorkplacePage({
       include: { _count: { select: { votes: true, comments: true } } },
     }),
   ]);
+
+  // Tokens tab data
+  let totalTokens = 0;
+  let tokensByProject: { projectSlug: string; projectTitle: string; tokens: number }[] = [];
+  let recentTokenActivity: {
+    id: string;
+    reason: string;
+    tokens: number;
+    createdAt: Date;
+    projectSlug: string;
+    projectTitle: string;
+  }[] = [];
+
+  if (activeTab === "tokens") {
+    const ledgerEntries = await prisma.tokenLedger.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      include: { project: { select: { title: true, slug: true } } },
+    });
+
+    totalTokens = ledgerEntries.reduce((sum, e) => sum + e.tokens, 0);
+
+    const projectMap = new Map<string, { projectSlug: string; projectTitle: string; tokens: number }>();
+    for (const entry of ledgerEntries) {
+      const existing = projectMap.get(entry.projectSlug);
+      if (existing) {
+        existing.tokens += entry.tokens;
+      } else {
+        projectMap.set(entry.projectSlug, {
+          projectSlug: entry.projectSlug,
+          projectTitle: entry.project.title,
+          tokens: entry.tokens,
+        });
+      }
+    }
+    tokensByProject = Array.from(projectMap.values()).sort((a, b) => b.tokens - a.tokens);
+
+    recentTokenActivity = ledgerEntries.slice(0, 10).map((e) => ({
+      id: e.id,
+      reason: e.reason,
+      tokens: e.tokens,
+      createdAt: e.createdAt,
+      projectSlug: e.projectSlug,
+      projectTitle: e.project.title,
+    }));
+  }
 
   // Activity tab data
   let activityEvents: {
@@ -276,7 +327,7 @@ export default async function WorkplacePage({
             <Link
               key={tab.key}
               href={tab.key === "overview" ? "/workplace" : `/workplace?tab=${tab.key}`}
-              className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === tab.key
                   ? "border-seagrass text-seagrass"
                   : "border-transparent text-dark-slate/50 hover:text-dark-slate hover:border-muted-teal"
@@ -404,6 +455,77 @@ export default async function WorkplacePage({
                       {idea._count.comments} comment{idea._count.comments !== 1 ? "s" : ""}
                     </span>
                   </Link>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+
+      {/* Tab: Tribe Tokens */}
+      {activeTab === "tokens" && (
+        <div className="space-y-10">
+          {/* Total tokens */}
+          <section>
+            <div className="border border-muted-teal rounded-lg p-8 flex flex-col items-center gap-2 text-center">
+              <span className="text-5xl font-bold text-seagrass">
+                {totalTokens % 1 === 0 ? totalTokens.toFixed(0) : totalTokens.toFixed(1)}
+              </span>
+              <span className="text-lg font-semibold text-dark-slate">Tribe Tokens</span>
+              <span className="text-sm text-dark-slate/50">totalt intjänade</span>
+            </div>
+          </section>
+
+          {/* Per-project breakdown */}
+          <section>
+            <h2 className="text-xl font-semibold mb-4">Per projekt</h2>
+            {tokensByProject.length === 0 ? (
+              <p className="text-dark-slate/50 italic text-sm">
+                Du har inte tjänat några tokens ännu. Logga tid på ett projekt för att komma igång.
+              </p>
+            ) : (
+              <div className="border border-muted-teal rounded-lg overflow-hidden divide-y divide-muted-teal/50">
+                {tokensByProject.map((row) => (
+                  <Link
+                    key={row.projectSlug}
+                    href={`/projects/${row.projectSlug}/tokens`}
+                    className="flex items-center gap-4 px-4 py-3 hover:bg-dry-sage/20 transition-colors"
+                  >
+                    <span className="flex-1 text-sm text-dark-slate">{row.projectTitle}</span>
+                    <span className="text-sm font-bold text-seagrass flex-shrink-0">
+                      {row.tokens % 1 === 0 ? row.tokens.toFixed(0) : row.tokens.toFixed(1)}{" "}
+                      <span className="font-normal text-dark-slate/50">tokens</span>
+                    </span>
+                    <span className="text-xs text-dark-slate/40 flex-shrink-0">→</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Recent activity */}
+          <section>
+            <h2 className="text-xl font-semibold mb-4">Senaste token-aktivitet</h2>
+            {recentTokenActivity.length === 0 ? (
+              <p className="text-dark-slate/50 italic text-sm">Ingen aktivitet ännu.</p>
+            ) : (
+              <div className="border border-muted-teal rounded-lg overflow-hidden divide-y divide-muted-teal/50">
+                {recentTokenActivity.map((entry) => (
+                  <div key={entry.id} className="flex items-center gap-3 px-4 py-3">
+                    <span className="text-lg flex-shrink-0 w-7 text-center" aria-hidden="true">
+                      🪙
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-dark-slate truncate">{entry.reason}</p>
+                      <p className="text-xs text-dark-slate/40">{entry.projectTitle}</p>
+                    </div>
+                    <span className="text-sm font-bold text-seagrass flex-shrink-0">
+                      +{entry.tokens % 1 === 0 ? entry.tokens.toFixed(0) : entry.tokens.toFixed(1)}
+                    </span>
+                    <span className="text-xs text-dark-slate/40 flex-shrink-0">
+                      {relativeTime(entry.createdAt)}
+                    </span>
+                  </div>
                 ))}
               </div>
             )}

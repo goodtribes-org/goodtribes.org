@@ -19,6 +19,12 @@ type CardCreator = { name: string | null };
 
 export type Member = { id: string; name: string | null };
 
+type TaskEstimate = {
+  aiHours: number;
+  aiConfidence: string;
+  aiReasoning: string;
+} | null;
+
 type Card = {
   id: string;
   projectSlug: string;
@@ -34,6 +40,7 @@ type Card = {
   createdAt: Date | string;
   updatedAt: Date | string;
   createdBy: CardCreator | null;
+  estimate?: TaskEstimate;
 };
 
 const PRIORITY_META: Record<string, { label: string; color: string; dot: string }> = {
@@ -274,6 +281,17 @@ function KanbanCardItem({
   const due = formatDate(card.dueDate);
   const priorityMeta = PRIORITY_META[card.priority] ?? PRIORITY_META.normal;
 
+  function roundHalf(n: number) {
+    return Math.round(n * 2) / 2;
+  }
+
+  const estimateBadgeColor =
+    card.estimate?.aiConfidence === "high"
+      ? "bg-green-100 text-green-700"
+      : card.estimate?.aiConfidence === "medium"
+      ? "bg-yellow-100 text-yellow-700"
+      : "bg-gray-100 text-gray-500";
+
   return (
     <div
       ref={setNodeRef}
@@ -307,6 +325,16 @@ function KanbanCardItem({
           </span>
         )}
       </div>
+      {card.estimate && (
+        <div className="mt-2">
+          <span
+            className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${estimateBadgeColor}`}
+            title={card.estimate.aiReasoning}
+          >
+            &#9200; ~{roundHalf(card.estimate.aiHours)} h
+          </span>
+        </div>
+      )}
       {currentUserId === card.createdById && (
         <button
           className="mt-2 text-xs text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
