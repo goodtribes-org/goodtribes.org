@@ -10,7 +10,9 @@ export default async function ProjectLayout({
   const { slug } = await params;
   return (
     <>
-      <ProjectTabNav slug={slug} />
+      <div className="pt-6">
+        <ProjectTabNav slug={slug} />
+      </div>
       {children}
     </>
   );
