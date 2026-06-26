@@ -33,8 +33,6 @@ export default auth((req: any) => {
 });
 
 export const config = {
-  // Run on all routes except Next.js static/image assets
-  matcher: [
-    "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  // Run on all routes except Next.js internals, static assets, and API routes
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/).*)"],
 };

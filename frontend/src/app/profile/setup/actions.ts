@@ -36,9 +36,9 @@ export async function saveProfile(formData: FormData) {
 
   const existing = await prisma.user.findUnique({
     where: { email: session.user.email },
-    select: { onboarded: true },
+    select: { onboardingDone: true },
   });
-  const isFirstSetup = !existing?.onboarded;
+  const isFirstSetup = !existing?.onboardingDone;
 
   const updated = await prisma.user.update({
     where: { email: session.user.email },
@@ -47,7 +47,6 @@ export async function saveProfile(formData: FormData) {
       bio: bio || null,
       country,
       socialLinks,
-      onboarded: true,
       showProfile,
       interests,
       availability,

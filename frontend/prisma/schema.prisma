@@ -17,7 +17,6 @@ model User {
   country       String?
   bio           String?
   socialLinks   Json?     @default("{}")
-  onboarded     Boolean   @default(false)
   interests    Int[]    @default([])
   availability String?
   showProfile   Boolean   @default(false)

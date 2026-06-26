@@ -36,10 +36,10 @@ export default async function ProfileSetupPage() {
   return (
     <div className="max-w-lg mx-auto mt-12">
       <h1 className="text-2xl font-bold mb-1">
-        {session.user?.onboarded ? "Edit profile" : "Welcome!"}
+        {session.user?.onboardingDone ? "Edit profile" : "Welcome!"}
       </h1>
       <p className="text-dark-slate/70 mb-8">
-        {session.user?.onboarded
+        {session.user?.onboardingDone
           ? "Update your details below."
           : "Tell us a little about yourself to get started."}
       </p>
@@ -51,7 +51,7 @@ export default async function ProfileSetupPage() {
         social={social}
         showProfile={user?.showProfile ?? false}
         image={user?.image ?? null}
-        isOnboarded={session.user?.onboarded ?? false}
+        isOnboarded={session.user?.onboardingDone ?? false}
         allSkills={allSkills}
         currentSkillIds={currentSkillIds}
         availability={user?.availability ?? null}

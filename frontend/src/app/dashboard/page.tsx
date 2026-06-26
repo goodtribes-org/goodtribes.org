@@ -183,7 +183,7 @@ export default async function DashboardPage() {
       </section>
 
       {/* Onboarding checklist — shown until user has at least one project */}
-      {myProjects.length === 0 && !session.user.onboarded && (
+      {myProjects.length === 0 && !session.user.onboardingDone && (
         <section className="border border-seagrass/30 bg-seagrass/5 rounded-xl p-6">
           <h2 className="font-semibold text-dark-slate mb-1">Get started</h2>
           <p className="text-sm text-dark-slate/50 mb-5">A few steps to make the most of GoodTribes.</p>

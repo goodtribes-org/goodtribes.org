@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   let user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     user = await prisma.user.create({
-      data: { email, name: "Dev User", onboarded: true },
+      data: { email, name: "Dev User", onboardingDone: true },
     });
   }
 
