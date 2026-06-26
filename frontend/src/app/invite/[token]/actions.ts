@@ -1,11 +1,10 @@
 "use server";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { logActivity } from "@/lib/activity";
 
-const prisma = new PrismaClient();
 
 export async function acceptInvite(token: string): Promise<void> {
   const session = await auth();

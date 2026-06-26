@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import ApplyForm from "./ApplyForm";
 
 export const dynamic = "force-dynamic";
 
-const prisma = new PrismaClient();
 
 export const metadata: Metadata = {
   title: "Bli mentor — GoodTribes.org",

@@ -4,11 +4,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { IdeaSidebar, CommentForm } from "./IdeaInteractions";
 
-const prisma = new PrismaClient();
 
 const SDG_LABELS: Record<number, string> = {
   1:"No Poverty",2:"Zero Hunger",3:"Good Health",4:"Quality Education",

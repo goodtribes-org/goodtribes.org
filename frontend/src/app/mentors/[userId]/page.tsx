@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
@@ -6,7 +6,6 @@ import BookingForm from "./BookingForm";
 
 export const dynamic = "force-dynamic";
 
-const prisma = new PrismaClient();
 
 export default async function MentorProfilePage({
   params,

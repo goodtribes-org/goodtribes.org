@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import MembersFilter from "@/components/MembersFilter";
 import Pagination from "@/components/Pagination";
 
 export const dynamic = "force-dynamic";
 
-const prisma = new PrismaClient();
 const PAGE_SIZE = 24;
 
 export const metadata: Metadata = {

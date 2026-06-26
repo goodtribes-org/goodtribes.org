@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import Anthropic from "@anthropic-ai/sdk";
 import { calculateMaturityScore } from "@/lib/projectMaturity";
 
-const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   const session = await auth();

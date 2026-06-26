@@ -1,9 +1,8 @@
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import NewBlogPostForm from "./NewBlogPostForm";
 
-const prisma = new PrismaClient();
 
 export default async function NewUpdatePage({
   params,

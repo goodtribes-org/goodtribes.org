@@ -3,7 +3,9 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client"
+import { prisma } from "@/lib/prisma"
+
 import { auth } from "@/auth";
 import ProjectFilters from "@/components/ProjectFilters";
 import Pagination from "@/components/Pagination";
@@ -13,7 +15,6 @@ export const metadata: Metadata = {
   description: "Projects built by GoodTribes.org",
 };
 
-const prisma = new PrismaClient();
 const PAGE_SIZE = 12;
 
 const SDG_COLORS: Record<number, string> = {

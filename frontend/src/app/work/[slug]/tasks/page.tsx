@@ -1,9 +1,8 @@
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import { createTask, toggleTask } from "../actions";
 
-const prisma = new PrismaClient();
 
 export default async function TasksPage({
   params,

@@ -1,6 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 
-const prisma = new PrismaClient();
 
 export async function calculateMaturityScore(projectSlug: string): Promise<number> {
   // Fetch the project to get its id (needed for member/milestone queries)

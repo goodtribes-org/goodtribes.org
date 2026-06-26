@@ -1,10 +1,9 @@
 "use server";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 
-const prisma = new PrismaClient();
 
 export async function saveOnboarding(formData: FormData) {
   const session = await auth();

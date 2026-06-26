@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import Pagination from "@/components/Pagination";
 import IdeasFilters from "./IdeasFilters";
@@ -13,7 +13,6 @@ export const metadata: Metadata = {
   description: "Community ideas for impact-driven projects and organisations",
 };
 
-const prisma = new PrismaClient();
 const PAGE_SIZE = 15;
 
 const STATUS_TABS = [

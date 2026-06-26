@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
@@ -8,7 +8,6 @@ import OrgInviteForm from "./invite/OrgInviteForm";
 import { OrgJoinRequestsPanel } from "./OrgJoinSection";
 import OrgTeamManager from "./OrgTeamManager";
 
-const prisma = new PrismaClient();
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;

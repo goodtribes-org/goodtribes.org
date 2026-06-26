@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { randomUUID } from "crypto";
 
-const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   if (process.env.NODE_ENV !== "development") {

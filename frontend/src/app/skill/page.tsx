@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 
-const prisma = new PrismaClient();
 
 export const metadata: Metadata = {
   title: "Skills — GoodTribes.org",

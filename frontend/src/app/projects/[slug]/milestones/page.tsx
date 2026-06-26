@@ -2,12 +2,11 @@ export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { createMilestone, toggleMilestone, deleteMilestone } from "./actions";
 import type { Metadata } from "next";
 
-const prisma = new PrismaClient();
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;

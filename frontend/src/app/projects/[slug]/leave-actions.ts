@@ -1,11 +1,10 @@
 "use server";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { deleteDocument } from "@/lib/meili";
 
-const prisma = new PrismaClient();
 
 export async function leaveProject(projectId: string): Promise<void> {
   const session = await auth();

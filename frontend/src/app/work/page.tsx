@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-const prisma = new PrismaClient();
 
 export const metadata: Metadata = {
   title: "Arbetsrum — GoodTribes.org",

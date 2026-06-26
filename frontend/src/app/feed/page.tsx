@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -9,7 +9,6 @@ export const metadata: Metadata = {
   description: "Senaste aktivitet från hela GoodTribes",
 };
 
-const prisma = new PrismaClient();
 
 const PAGE_SIZE = 20;
 const FETCH_LIMIT = 10;

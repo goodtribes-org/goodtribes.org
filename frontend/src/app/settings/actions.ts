@@ -1,11 +1,10 @@
 "use server";
 
 import { auth, signOut } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-const prisma = new PrismaClient();
 
 export async function updateNotifSettings(formData: FormData) {
   const session = await auth();

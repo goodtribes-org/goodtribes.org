@@ -1,14 +1,13 @@
 "use server";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createNotification } from "@/lib/notify";
 import { logActivity } from "@/lib/activity";
 import { sendEmail } from "@/lib/email";
 
-const prisma = new PrismaClient();
 
 export async function requestToJoin(projectId: string, slug: string, message: string) {
   const session = await auth();

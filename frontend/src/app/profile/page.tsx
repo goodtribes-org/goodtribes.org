@@ -2,11 +2,10 @@ export const dynamic = "force-dynamic";
 
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import Image from "next/image";
 
-const prisma = new PrismaClient();
 
 const SDG_NAMES: Record<number, string> = {
   1: "Ingen fattigdom",

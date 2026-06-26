@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
@@ -6,7 +6,6 @@ import KudosButton from "@/components/KudosButton";
 
 export const dynamic = "force-dynamic";
 
-const prisma = new PrismaClient();
 
 const SOCIAL_LABELS: Record<string, string> = {
   website: "Website",

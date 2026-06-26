@@ -1,12 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { updateWikiPage, deleteWikiPage, createWikiPage } from "../actions";
 import WikiEditor from "./WikiEditor";
 import type { Metadata } from "next";
 
-const prisma = new PrismaClient();
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string; pageSlug: string }> }): Promise<Metadata> {
   const { slug, pageSlug } = await params;

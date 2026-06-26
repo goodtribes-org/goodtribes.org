@@ -1,11 +1,10 @@
 "use server";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { logActivity } from "@/lib/activity";
 
-const prisma = new PrismaClient();
 
 async function requireOwnerOrAdmin(projectId: string, userId: string) {
   const membership = await prisma.projectMember.findUnique({

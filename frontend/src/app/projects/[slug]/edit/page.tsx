@@ -1,10 +1,9 @@
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import EditProjectForm from "./EditProjectForm";
 import DeleteProjectButton from "@/components/DeleteProjectButton";
 
-const prisma = new PrismaClient();
 
 export default async function EditProjectPage({
   params,

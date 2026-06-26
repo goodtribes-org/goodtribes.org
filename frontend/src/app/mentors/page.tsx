@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import { auth } from "@/auth";
 
 export const dynamic = "force-dynamic";
 
-const prisma = new PrismaClient();
 
 export const metadata: Metadata = {
   title: "Mentorer — GoodTribes.org",

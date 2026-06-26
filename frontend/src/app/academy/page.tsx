@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 
 export const metadata: Metadata = {
@@ -10,7 +10,6 @@ export const metadata: Metadata = {
   description: "Lär dig allt du behöver för att förändra världen",
 };
 
-const prisma = new PrismaClient();
 
 const CATEGORIES = [
   { value: "", label: "Alla" },

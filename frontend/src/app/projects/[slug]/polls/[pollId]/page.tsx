@@ -1,13 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import VotingForm from "./VotingForm";
 import CloseButton from "./CloseButton";
 
-const prisma = new PrismaClient();
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString("sv-SE", {

@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-const prisma = new PrismaClient();
 
 export async function generateMetadata({
   params,

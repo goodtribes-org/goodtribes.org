@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { indexDocuments } from "@/lib/meili";
 import { suggestSdgGoals } from "@/lib/claude";
@@ -12,7 +12,6 @@ export async function getSdgSuggestions(
   return suggestSdgGoals(description);
 }
 
-const prisma = new PrismaClient();
 
 export async function createIdea(formData: FormData) {
   const session = await auth();

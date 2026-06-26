@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { sendEmail } from "@/lib/email";
 
-const prisma = new PrismaClient();
 
 // Called weekly by an external scheduler (e.g. GitHub Actions cron or Kubernetes CronJob).
 // Requires Authorization: Bearer <CRON_SECRET> header to prevent unauthorized calls.

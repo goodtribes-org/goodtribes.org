@@ -1,10 +1,9 @@
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { reviewFlag } from "./actions";
 
-const prisma = new PrismaClient();
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "niklas.gunnas@goodtribes.org";
 

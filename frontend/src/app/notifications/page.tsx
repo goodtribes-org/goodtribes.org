@@ -1,11 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
-const prisma = new PrismaClient();
 
 const TYPE_ICON: Record<string, string> = {
   idea_vote: "👍",

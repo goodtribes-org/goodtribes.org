@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { PostDreamForm, ReactionButtons } from "./DreamWallClient";
 
@@ -11,7 +11,6 @@ export const metadata: Metadata = {
     "En mening. En vision. En förändring. Dela din dröm med GoodTribes-gemenskapen.",
 };
 
-const prisma = new PrismaClient();
 
 function relativeTime(date: Date): string {
   const diff = Math.floor((Date.now() - date.getTime()) / 1000);

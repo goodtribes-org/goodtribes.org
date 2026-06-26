@@ -1,11 +1,10 @@
 "use server";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-const prisma = new PrismaClient();
 
 export async function createForumPost(formData: FormData, slug: string) {
   const session = await auth();

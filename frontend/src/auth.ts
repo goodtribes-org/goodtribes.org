@@ -1,10 +1,9 @@
 import NextAuth from "next-auth";
 import Resend from "next-auth/providers/resend";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { sendEmail } from "@/lib/email";
 
-const prisma = new PrismaClient();
 
 const APP_URL = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
 

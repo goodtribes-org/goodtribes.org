@@ -1,12 +1,11 @@
 "use server";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { slugify } from "@/lib/slugify";
 
-const prisma = new PrismaClient();
 
 async function requireMember(projectSlug: string, userId: string) {
   const project = await prisma.project.findUnique({

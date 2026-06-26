@@ -2,14 +2,13 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 
 export const metadata: Metadata = {
   title: "Hall of Impact — GoodTribes.org",
   description: "Projekt som förändrat världen",
 };
 
-const prisma = new PrismaClient();
 
 const SDG_COLORS: Record<number, string> = {
   1: "#E5243B", 2: "#DDA63A", 3: "#4C9F38", 4: "#C5192D", 5: "#FF3A21",

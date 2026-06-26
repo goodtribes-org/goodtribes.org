@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
@@ -10,7 +10,6 @@ export const metadata: Metadata = {
   title: "Dashboard — GoodTribes.org",
 };
 
-const prisma = new PrismaClient();
 
 const STATUS_LABELS: Record<string, string> = {
   concept: "Concept",

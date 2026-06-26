@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import NewProjectForm from "./NewProjectForm";
 import type { Metadata } from "next";
 
@@ -8,7 +8,6 @@ export const metadata: Metadata = {
   title: "New Project — GoodTribes.org",
 };
 
-const prisma = new PrismaClient();
 
 export default async function NewProjectPage({
   searchParams,

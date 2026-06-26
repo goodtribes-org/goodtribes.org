@@ -1,10 +1,9 @@
 "use server";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 
-const prisma = new PrismaClient();
 
 export async function postMessage(projectId: string, slug: string, formData: FormData): Promise<void> {
   const session = await auth();

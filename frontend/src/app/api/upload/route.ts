@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import {
   ALLOWED_TYPES,
   IMAGE_SIZE_LIMIT,
@@ -14,7 +14,6 @@ import {
   resizeImage,
 } from "@/lib/storage";
 
-const prisma = new PrismaClient();
 
 export async function POST(request: Request): Promise<Response> {
   const session = await auth();

@@ -1,10 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 
-const prisma = new PrismaClient();
 
 export async function archiveProject(projectSlug: string): Promise<{ error?: string }> {
   const session = await auth();

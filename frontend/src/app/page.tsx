@@ -2,10 +2,9 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import Image from "next/image";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 
-const prisma = new PrismaClient();
 
 const FEATURE_CARDS = [
   {

@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { PRIVATE_BUCKET, getObjectStream } from "@/lib/storage";
 
-const prisma = new PrismaClient();
 
 export async function GET(
   _request: Request,

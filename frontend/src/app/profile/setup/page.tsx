@@ -1,9 +1,8 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import ProfileSetupForm from "./ProfileSetupForm";
 
-const prisma = new PrismaClient();
 
 export default async function ProfileSetupPage() {
   const session = await auth();

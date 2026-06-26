@@ -1,12 +1,11 @@
 "use server";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { indexDocuments } from "@/lib/meili";
 import { sendEmail } from "@/lib/email";
 
-const prisma = new PrismaClient();
 
 export async function saveProfile(formData: FormData) {
   const session = await auth();

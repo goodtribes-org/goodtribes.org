@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { JoinButton, JoinRequestsPanel } from "./JoinSection";
 import InviteForm from "./invite/InviteForm";
@@ -11,7 +11,6 @@ import TeamManager from "./TeamManager";
 import MaturityWidget from "@/components/MaturityWidget";
 import FlagProjectButton from "@/components/FlagProjectButton";
 
-const prisma = new PrismaClient();
 
 const STAGES = ["Concept", "Prototype", "Production", "Delivery"];
 const STATUS_TO_STAGE: Record<string, number> = {

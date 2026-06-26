@@ -3,11 +3,10 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { AddMetricForm, UpdateMetricForm } from "./ImpactForms";
 
-const prisma = new PrismaClient();
 
 export async function generateMetadata({
   params,

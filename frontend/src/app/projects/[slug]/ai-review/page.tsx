@@ -1,11 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import type { Metadata } from "next";
 import AIReviewActions from "./AIReviewActions";
 
-const prisma = new PrismaClient();
 
 const AGENT_LABELS: Record<string, string> = {
   writer: "Skribent",

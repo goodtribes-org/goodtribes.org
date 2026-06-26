@@ -1,9 +1,8 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import OnboardingWizard from "./OnboardingWizard";
 
-const prisma = new PrismaClient();
 
 export const metadata = { title: "Kom igång – GoodTribes" };
 

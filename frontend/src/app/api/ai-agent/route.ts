@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import Anthropic from "@anthropic-ai/sdk";
 
-const prisma = new PrismaClient();
 
 type AgentType = "writer" | "analyst" | "researcher";
 

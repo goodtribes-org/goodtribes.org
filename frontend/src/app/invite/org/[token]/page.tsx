@@ -1,12 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { acceptOrgInvite } from "./actions";
 
-const prisma = new PrismaClient();
 
 export default async function AcceptOrgInvitePage({
   params,

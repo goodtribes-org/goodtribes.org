@@ -1,11 +1,10 @@
 "use server";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-const prisma = new PrismaClient();
 
 export async function setShowProfile(formData: FormData) {
   const session = await auth();

@@ -1,12 +1,11 @@
 "use server";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { slugify } from "@/lib/slugify";
 import { indexDocuments } from "@/lib/meili";
 
-const prisma = new PrismaClient();
 
 export async function createOrg(formData: FormData) {
   const session = await auth();

@@ -1,9 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import type { MetadataRoute } from "next";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 
-const prisma = new PrismaClient();
 const base = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

@@ -1,11 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import ReplicationToggle from "./ReplicationToggle";
 import StartInstanceForm from "./StartInstanceForm";
 
-const prisma = new PrismaClient();
 
 export default async function ScalePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

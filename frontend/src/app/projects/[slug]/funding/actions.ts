@@ -1,12 +1,11 @@
 "use server";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sendEmail } from "@/lib/email";
 
-const prisma = new PrismaClient();
 const APP_URL = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
 
 export async function createCampaign(projectId: string, slug: string, formData: FormData) {

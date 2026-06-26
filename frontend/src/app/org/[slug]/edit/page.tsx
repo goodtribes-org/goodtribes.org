@@ -1,11 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { notFound, redirect } from "next/navigation";
 import EditOrgForm from "./EditOrgForm";
 
-const prisma = new PrismaClient();
 
 export default async function EditOrgPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

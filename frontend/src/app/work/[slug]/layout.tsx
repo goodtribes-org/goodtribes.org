@@ -1,9 +1,8 @@
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { notFound, redirect } from "next/navigation";
 import WorkspaceTabNav from "@/components/WorkspaceTabNav";
 
-const prisma = new PrismaClient();
 
 export default async function WorkspaceLayout({
   children,

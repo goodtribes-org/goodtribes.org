@@ -1,11 +1,10 @@
 "use server";
 
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notify";
 
-const prisma = new PrismaClient();
 
 export async function toggleVote(ideaId: string) {
   const session = await auth();
