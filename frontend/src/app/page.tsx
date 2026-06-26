@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
+import HeroSlideshow from "@/components/HeroSlideshow";
 
 
 const FEATURE_CARDS = [
@@ -132,21 +133,8 @@ export default async function HomePage() {
   return (
     <div className="space-y-12">
 
-      {/* Full-bleed hero image */}
-      <div
-        className="relative overflow-hidden"
-        style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", marginTop: 0 }}
-      >
-        <Image
-          src="/img/hero-banner.png"
-          alt="GoodTribes — gör dina idéer verklighet"
-          width={1920}
-          height={500}
-          className="w-full object-cover"
-          style={{ maxHeight: "400px" }}
-          priority
-        />
-      </div>
+      {/* Full-bleed hero slideshow */}
+      <HeroSlideshow />
 
       {/* Hero — shown to logged-out visitors */}
       {!session && (
