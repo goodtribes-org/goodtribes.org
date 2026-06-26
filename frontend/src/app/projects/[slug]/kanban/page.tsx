@@ -34,6 +34,18 @@ export default async function KanbanPage({ params }: { params: Promise<{ slug: s
       createdBy: { select: { name: true } },
       assignee: { select: { id: true, name: true } },
       estimate: true,
+      aiTaskRuns: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: {
+          id: true,
+          agentType: true,
+          status: true,
+          outputMarkdown: true,
+          attemptNumber: true,
+          completedAt: true,
+        },
+      },
     },
   });
 

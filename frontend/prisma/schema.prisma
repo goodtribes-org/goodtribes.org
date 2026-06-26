@@ -60,6 +60,7 @@ model User {
   timeLogs         TimeLog[]       @relation("UserTimeLogs")
   timeLogReviews   TimeLog[]       @relation("ReviewedTimeLogs")
   tokenLedger      TokenLedger[]   @relation("TokenLedger")
+  aiTaskReviews    AiTaskReview[]  @relation("AiTaskReviews")
 }
 
 model Skill {
@@ -221,6 +222,7 @@ model KanbanCard {
   estimate         TaskEstimate?
   timeLogs         TimeLog[]       @relation("KanbanTimeLogs")
   tokenLedger      TokenLedger[]   @relation("KanbanTokens")
+  aiTaskRuns       AiTaskRun[]     @relation("KanbanAiRuns")
 
   @@index([projectSlug, column])
 }
@@ -644,4 +646,32 @@ model TokenLedger {
 
   @@index([userId])
   @@index([projectSlug])
+}
+
+model AiTaskRun {
+  id             String         @id @default(cuid())
+  kanbanCardId   String
+  kanbanCard     KanbanCard     @relation("KanbanAiRuns", fields: [kanbanCardId], references: [id], onDelete: Cascade)
+  agentType      String
+  status         String         @default("running")
+  outputMarkdown String?        @db.Text
+  attemptNumber  Int            @default(1)
+  feedback       String?        @db.Text
+  createdAt      DateTime       @default(now())
+  completedAt    DateTime?
+  reviews        AiTaskReview[]
+
+  @@index([kanbanCardId])
+}
+
+model AiTaskReview {
+  id            String     @id @default(cuid())
+  aiTaskRunId   String
+  aiTaskRun     AiTaskRun  @relation(fields: [aiTaskRunId], references: [id], onDelete: Cascade)
+  reviewerId    String
+  reviewer      User       @relation("AiTaskReviews", fields: [reviewerId], references: [id])
+  decision      String
+  feedback      String?    @db.Text
+  tokensAwarded Float?
+  createdAt     DateTime   @default(now())
 }

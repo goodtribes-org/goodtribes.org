@@ -41,6 +41,14 @@ type Card = {
   updatedAt: Date | string;
   createdBy: CardCreator | null;
   estimate?: TaskEstimate;
+  aiTaskRuns?: Array<{
+    id: string;
+    agentType: string;
+    status: string;
+    outputMarkdown: string | null;
+    attemptNumber: number;
+    completedAt: Date | string | null;
+  }>;
 };
 
 const PRIORITY_META: Record<string, { label: string; color: string; dot: string }> = {
@@ -266,17 +274,31 @@ function AddCardModal({
   );
 }
 
+const AGENT_OPTIONS = [
+  { value: "writer",     label: "✍️  Skribent — skriver utkast, texter, rapporter" },
+  { value: "analyst",    label: "📊 Analytiker — analyserar och drar slutsatser" },
+  { value: "researcher", label: "🔍 Researcher — söker och sammanställer information" },
+];
+
 function KanbanCardItem({
   card,
   currentUserId,
   onDelete,
+  runningAI,
+  onRunAI,
 }: {
   card: Card;
   currentUserId: string | null;
   onDelete: (id: string) => void;
+  runningAI: Set<string>;
+  onRunAI: (cardId: string, agentType: string, additionalContext: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: card.id });
+
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState("writer");
+  const [additionalContext, setAdditionalContext] = useState("");
 
   const due = formatDate(card.dueDate);
   const priorityMeta = PRIORITY_META[card.priority] ?? PRIORITY_META.normal;
@@ -291,6 +313,10 @@ function KanbanCardItem({
       : card.estimate?.aiConfidence === "medium"
       ? "bg-yellow-100 text-yellow-700"
       : "bg-gray-100 text-gray-500";
+
+  const latestAiRun = card.aiTaskRuns?.[0];
+  const aiStatus = latestAiRun?.status;
+  const isAiRunning = runningAI.has(card.id) || aiStatus === "running";
 
   return (
     <div
@@ -310,6 +336,29 @@ function KanbanCardItem({
       {card.description && (
         <p className="text-xs text-gray-500 mt-1 leading-snug line-clamp-2">{card.description}</p>
       )}
+
+      {/* AI status badge */}
+      {(isAiRunning || aiStatus === "awaiting_review" || aiStatus === "approved") && (
+        <div className="mt-2">
+          {isAiRunning && (
+            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
+              <span className="animate-spin inline-block w-3 h-3 border border-blue-400 border-t-transparent rounded-full" />
+              🤖 AI arbetar...
+            </span>
+          )}
+          {!isAiRunning && aiStatus === "awaiting_review" && (
+            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
+              🤖 Väntar på granskning
+            </span>
+          )}
+          {!isAiRunning && aiStatus === "approved" && (
+            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+              🤖 AI godkänd
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center mt-2 text-xs text-gray-400">
         {card.assignee ? (
           <span className="truncate">→ {card.assignee.name?.split(" ")[0]}</span>
@@ -335,6 +384,64 @@ function KanbanCardItem({
           </span>
         </div>
       )}
+
+      {/* Tilldela AI button + panel */}
+      <div
+        className="mt-2"
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        <button
+          className="text-xs text-gray-400 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={(e) => { e.stopPropagation(); setAiPanelOpen((v) => !v); }}
+        >
+          🤖 Tilldela AI
+        </button>
+        {aiPanelOpen && (
+          <div className="mt-2 p-2 bg-gray-50 border border-gray-200 rounded-lg space-y-2">
+            {isAiRunning && (
+              <p className="text-xs text-amber-600 font-medium">
+                ⚠️ Kör inte om kort redan har en aktiv AI-körning
+              </p>
+            )}
+            <select
+              value={selectedAgent}
+              onChange={(e) => setSelectedAgent(e.target.value)}
+              className="w-full text-xs border border-gray-200 rounded px-2 py-1.5 bg-white focus:outline-none focus:border-purple-400"
+            >
+              {AGENT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            <textarea
+              value={additionalContext}
+              onChange={(e) => setAdditionalContext(e.target.value)}
+              placeholder="Lägg till kontext eller specifika krav..."
+              rows={2}
+              className="w-full text-xs border border-gray-200 rounded px-2 py-1.5 bg-white focus:outline-none focus:border-purple-400 resize-none"
+            />
+            <button
+              disabled={isAiRunning}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRunAI(card.id, selectedAgent, additionalContext);
+                setAiPanelOpen(false);
+              }}
+              className="w-full flex items-center justify-center gap-1.5 text-xs font-medium bg-purple-600 text-white px-3 py-1.5 rounded hover:bg-purple-700 disabled:opacity-50 transition-colors"
+            >
+              {isAiRunning ? (
+                <>
+                  <span className="animate-spin inline-block w-3 h-3 border border-white border-t-transparent rounded-full" />
+                  Kör...
+                </>
+              ) : (
+                "Kör AI-agent"
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+
       {currentUserId === card.createdById && (
         <button
           className="mt-2 text-xs text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -355,6 +462,8 @@ function DroppableColumn({
   currentUserId,
   onOpenModal,
   onDelete,
+  runningAI,
+  onRunAI,
 }: {
   col: { key: string; label: string; color: string };
   cards: Card[];
@@ -363,6 +472,8 @@ function DroppableColumn({
   currentUserId: string | null;
   onOpenModal: (colKey: string) => void;
   onDelete: (id: string) => void;
+  runningAI: Set<string>;
+  onRunAI: (cardId: string, agentType: string, additionalContext: string) => void;
 })
  {
   const { setNodeRef, isOver } = useDroppable({ id: col.key });
@@ -410,6 +521,8 @@ function DroppableColumn({
               card={card}
               currentUserId={currentUserId}
               onDelete={onDelete}
+              runningAI={runningAI}
+              onRunAI={onRunAI}
             />
           ))}
         </div>
@@ -435,6 +548,23 @@ export default function KanbanBoard({
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [modalCol, setModalCol] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+  const [runningAI, setRunningAI] = useState<Set<string>>(new Set());
+
+  async function handleRunAI(cardId: string, agentType: string, additionalContext: string) {
+    setRunningAI((s) => new Set(s).add(cardId));
+    try {
+      const res = await fetch("/api/ai-agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kanbanCardId: cardId, agentType, additionalContext }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      window.location.reload();
+    } catch {
+      alert("AI-agenten misslyckades. Kontrollera att ANTHROPIC_API_KEY är konfigurerad.");
+      setRunningAI((s) => { const n = new Set(s); n.delete(cardId); return n; });
+    }
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -519,6 +649,8 @@ export default function KanbanBoard({
                 currentUserId={currentUserId}
                 onOpenModal={setModalCol}
                 onDelete={handleDelete}
+                runningAI={runningAI}
+                onRunAI={handleRunAI}
               />
             ))}
           </div>
