@@ -132,6 +132,22 @@ export default async function HomePage() {
   return (
     <div className="space-y-12">
 
+      {/* Full-bleed hero image */}
+      <div
+        className="relative overflow-hidden"
+        style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", marginTop: 0 }}
+      >
+        <Image
+          src="/img/hero.png"
+          alt="GoodTribes — Tillsammans gör vi skillnad"
+          width={1920}
+          height={500}
+          className="w-full object-cover"
+          style={{ maxHeight: "400px" }}
+          priority
+        />
+      </div>
+
       {/* Hero — shown to logged-out visitors */}
       {!session && (
         <section className="rounded-2xl bg-gradient-to-br from-dark-slate to-dark-slate/80 text-white px-8 py-14 text-center relative overflow-hidden">

@@ -64,7 +64,7 @@ export default function RootLayout({
               <AuthNav />
             </nav>
           </header>
-          <main className="max-w-6xl mx-auto px-6 py-12">{children}</main>
+          <main className="max-w-6xl mx-auto px-6 pb-12">{children}</main>
           <footer className="border-t border-muted-teal/30 mt-16">
             <div className="max-w-6xl mx-auto px-6 py-8 flex flex-wrap items-center justify-between gap-4 text-xs text-dark-slate/40">
               <span>© {new Date().getFullYear()} GoodTribes Foundation</span>
