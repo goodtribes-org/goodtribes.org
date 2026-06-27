@@ -193,8 +193,8 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* What is GoodTribes? */}
-      <section className="overflow-hidden">
+      {/* What is GoodTribes? — logged-out only */}
+      {!session && <section className="overflow-hidden">
         <div className="grid md:grid-cols-2">
           <div className="relative min-h-56 md:min-h-0 rounded-tl-lg rounded-bl-lg overflow-hidden">
             <Image
@@ -227,26 +227,28 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </section>}
 
-      {/* Feature cards */}
-      <section className="grid md:grid-cols-3 gap-6">
-        {FEATURE_CARDS.map((card) => (
-          <div key={card.title}>
-            <div className="relative aspect-[4/3] w-full rounded-t-lg overflow-hidden mb-4">
-              <Image
-                src={card.image} alt={card.title} fill className="object-cover"
-                style={{ top: "-1px", objectPosition: card.objectPosition ?? "center center" }}
-                sizes="(max-width: 768px) 100vw, 33vw"
-              />
+      {/* Feature cards — logged-out only */}
+      {!session && (
+        <section className="grid md:grid-cols-3 gap-6">
+          {FEATURE_CARDS.map((card) => (
+            <div key={card.title}>
+              <div className="relative aspect-[4/3] w-full rounded-t-lg overflow-hidden mb-4">
+                <Image
+                  src={card.image} alt={card.title} fill className="object-cover"
+                  style={{ top: "-1px", objectPosition: card.objectPosition ?? "center center" }}
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
+              </div>
+              <div className="px-3">
+                <h3 className="font-bold text-coral mb-2">{card.title}</h3>
+                <p className="text-sm text-dark-slate/70 mb-2">{card.description}</p>
+              </div>
             </div>
-            <div className="px-3">
-              <h3 className="font-bold text-coral mb-2">{card.title}</h3>
-              <p className="text-sm text-dark-slate/70 mb-2">{card.description}</p>
-            </div>
-          </div>
-        ))}
-      </section>
+          ))}
+        </section>
+      )}
 
       {/* Recommended for you */}
       {recommended.length > 0 && (

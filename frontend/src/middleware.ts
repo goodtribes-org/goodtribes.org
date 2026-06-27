@@ -1,11 +1,12 @@
-import NextAuth from "next-auth";
-import { authConfig } from "@/auth.config";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-// Use edge-safe config — no Prisma, no Node.js-only imports.
-// Prisma cannot run on the Edge runtime; the onboarding redirect is
-// handled server-side in protected pages via auth() from @/auth.
-export default NextAuth(authConfig).auth;
-
-export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/).*)"],
-};
+// NextAuth(authConfig).auth was used here, but authConfig has no adapter
+// and defaults to JWT strategy. Our sessions use the database strategy
+// (PrismaAdapter), so the middleware tried to decode a database session
+// token as a JWT, logged JWTSessionError, and cleared the session cookie —
+// causing logged-in users to see login prompts on server-rendered pages.
+// Route protection is handled per-page via auth() from @/auth instead.
+export default function middleware(_req: NextRequest) {
+  return NextResponse.next();
+}
