@@ -27,9 +27,10 @@ const SDG_COLORS: Record<number, string> = {
 export default async function ProjectsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; category?: string; sdg?: string; skill?: string; page?: string }>;
+  searchParams: Promise<{ sort?: string; status?: string; category?: string; sdg?: string; page?: string }>;
 }) {
-  const { status, category, sdg, skill, page: pageStr } = await searchParams;
+  const { sort: sortParam, status, category, sdg, page: pageStr } = await searchParams;
+  const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const sdgNum = sdg ? parseInt(sdg) : undefined;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
 
@@ -38,15 +39,19 @@ export default async function ProjectsPage({
     ...(status ? { status } : {}),
     ...(category ? { category } : {}),
     ...(sdgNum && !isNaN(sdgNum) ? { sdgGoals: { has: sdgNum } } : {}),
-    ...(skill ? { neededSkills: { some: { skill: { slug: skill } } } } : {}),
   };
 
-  const [session, total, projects, skills] = await Promise.all([
+  const orderBy =
+    sort === "top"      ? { members: { _count: "desc" as const } }
+    : sort === "trending" ? { updatedAt: "desc" as const }
+    : { createdAt: "desc" as const };
+
+  const [session, total, projects] = await Promise.all([
     auth(),
     prisma.project.count({ where }),
     prisma.project.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy,
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
       include: {
@@ -55,14 +60,9 @@ export default async function ProjectsPage({
         _count: { select: { kanbanCards: true, todoItems: true } },
       },
     }),
-    prisma.skill.findMany({
-      where: { projects: { some: { project: { visibility: "public" } } } },
-      select: { id: true, name: true, slug: true },
-      orderBy: { name: "asc" },
-    }),
   ]);
 
-  const rawParams = { status, category, sdg, skill, page: pageStr };
+  const rawParams = { sort: sortParam, status, category, sdg, page: pageStr };
 
   return (
     <div>
@@ -81,7 +81,7 @@ export default async function ProjectsPage({
         )}
       </div>
 
-      <ProjectFilters status={status} category={category} sdg={sdg} skill={skill} skills={skills} total={total} />
+      <ProjectFilters sort={sort} status={status} category={category} sdg={sdg} total={total} />
 
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
