@@ -54,9 +54,10 @@ export default function RootLayout({
                   className="object-contain"
                 />
               </Link>
-              <div className="flex-1 min-w-0 ml-8">
+              <div className="shrink-0" style={{ marginLeft: "max(0px, calc(50vw - 48.5rem))" }}>
                 <NavMenu />
               </div>
+              <div className="flex-1" />
               <div className="hidden md:block shrink-0">
                 <SearchInput />
               </div>
