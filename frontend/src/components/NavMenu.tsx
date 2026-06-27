@@ -11,7 +11,7 @@ export default function NavMenu() {
   return (
     <>
       {/* Desktop links */}
-      <div className="hidden md:flex items-center gap-4 text-sm">
+      <div className="hidden md:flex items-center gap-4 text-base">
         <Link href="/projects" className="text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
           Projects
         </Link>
