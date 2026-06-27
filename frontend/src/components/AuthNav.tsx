@@ -45,6 +45,13 @@ export default function AuthNav() {
               <p className="text-xs font-semibold text-dark-slate truncate">{name}</p>
             </div>
             <Link
+              href="/profile"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2 text-sm text-dark-slate/70 hover:bg-dry-sage/30 hover:text-seagrass"
+            >
+              Profile
+            </Link>
+            <Link
               href="/workplace"
               onClick={() => setOpen(false)}
               className="block px-4 py-2 text-sm text-dark-slate/70 hover:bg-dry-sage/30 hover:text-seagrass"
