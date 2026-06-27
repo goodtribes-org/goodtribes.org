@@ -185,7 +185,6 @@ export default async function TokensPage({
                   {/* Avatar */}
                   <div className="w-9 h-9 rounded-full bg-dry-sage flex items-center justify-center text-xs font-semibold text-dark-slate flex-shrink-0 overflow-hidden">
                     {entry.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={entry.image}
                         alt={entry.name ?? ""}

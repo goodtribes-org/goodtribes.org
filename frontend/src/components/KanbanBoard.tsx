@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { createCard, moveCard, deleteCard, updateCard } from "@/app/projects/[slug]/kanban/actions";
+import { createCard, moveCard, deleteCard } from "@/app/projects/[slug]/kanban/actions";
 
 type CardCreator = { name: string | null };
 
@@ -458,7 +458,7 @@ function DroppableColumn({
   col,
   cards,
   isLoggedIn,
-  projectSlug,
+  projectSlug: _projectSlug,
   currentUserId,
   onOpenModal,
   onDelete,

@@ -220,8 +220,6 @@ function TodoListCard({
 }) {
   const [addingItem, setAddingItem] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
-  const [, startTransition] = useTransition();
-
   const open = list.items.filter((i) => !i.done);
   const done = list.items.filter((i) => i.done);
   const pct = list.items.length > 0 ? Math.round((done.length / list.items.length) * 100) : 0;

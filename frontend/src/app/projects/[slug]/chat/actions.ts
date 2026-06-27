@@ -24,7 +24,7 @@ export async function postMessage(projectId: string, slug: string, formData: For
   revalidatePath(`/projects/${slug}/chat`);
 }
 
-export async function generateInviteLink(projectId: string, slug: string): Promise<string> {
+export async function generateInviteLink(projectId: string, _slug: string): Promise<string> {
   const session = await auth();
   if (!session?.user?.id) return "";
 

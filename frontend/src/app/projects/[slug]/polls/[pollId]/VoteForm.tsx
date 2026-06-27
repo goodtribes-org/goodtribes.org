@@ -20,7 +20,7 @@ interface Props {
 export default function VoteForm({
   pollId,
   projectSlug,
-  pollType,
+  pollType: _pollType,
   options,
   existingVoteOptionIds,
 }: Props) {

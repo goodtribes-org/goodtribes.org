@@ -4,9 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
-import { JoinButton, JoinRequestsPanel } from "./JoinSection";
+import { JoinRequestsPanel } from "./JoinSection";
 import InviteForm from "./invite/InviteForm";
-import LeaveProjectButton from "@/components/LeaveProjectButton";
 import TeamManager from "./TeamManager";
 import MaturityWidget from "@/components/MaturityWidget";
 import FlagProjectButton from "@/components/FlagProjectButton";
@@ -93,17 +92,10 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   if (!project) notFound();
 
   const stageIndex = STATUS_TO_STAGE[project.status] ?? 0;
-  const totalTasks = project._count.kanbanCards + project._count.todoItems;
   const userId = session?.user?.id;
   const userMembership = project.members.find((m) => m.user.id === userId);
   const isOwnerOrAdmin = userMembership && ["owner", "admin"].includes(userMembership.role);
-  const isMember = !!userMembership;
 
-  const existingRequest = userId
-    ? await prisma.projectJoinRequest.findUnique({
-        where: { projectId_userId: { projectId: project.id, userId } },
-      })
-    : null;
 
   const maturity = await prisma.projectMaturity.findUnique({ where: { projectSlug: slug } });
 

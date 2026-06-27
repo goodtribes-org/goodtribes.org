@@ -84,7 +84,6 @@ export default async function HallOfImpactPage() {
               {/* Image placeholder */}
               <div className="aspect-video bg-gradient-to-br from-seagrass/20 to-muted-teal/20 flex items-center justify-center relative overflow-hidden">
                 {project.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={project.imageUrl}
                     alt={project.title}
