@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { estimateTask } from "@/lib/taskEstimate";
+import { logActivity } from "@/lib/activity";
 
 
 export async function createCard(
@@ -123,6 +124,11 @@ export async function moveCard(cardId: string, newColumn: string) {
   });
 
   await updateStreak(session.user.id, card.projectSlug);
+
+  if (newColumn === "DONE") {
+    const project = await prisma.project.findUnique({ where: { slug: card.projectSlug }, select: { id: true } });
+    if (project) await logActivity(project.id, session.user.id, "task_completed");
+  }
 
   revalidatePath(`/projects/${card.projectSlug}/kanban`);
 }

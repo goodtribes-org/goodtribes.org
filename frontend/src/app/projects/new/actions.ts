@@ -31,6 +31,7 @@ export async function createProject(formData: FormData) {
     .filter((n) => n >= 1 && n <= 17);
   const imageUrl = (formData.get("imageUrl") as string | null)?.trim() || null;
   const orgId = (formData.get("orgId") as string | null)?.trim() || null;
+  const ideaId = (formData.get("ideaId") as string | null)?.trim() || null;
 
   if (!title) return;
 
@@ -54,6 +55,11 @@ export async function createProject(formData: FormData) {
         });
       }
       slug = project.slug;
+
+      if (ideaId) {
+        await prisma.idea.update({ where: { id: ideaId }, data: { status: "converted" } }).catch(() => {});
+      }
+
       await indexDocuments("projects", [
         {
           id: `project-${project.slug}`,

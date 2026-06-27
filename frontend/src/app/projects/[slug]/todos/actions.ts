@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
+import { logActivity } from "@/lib/activity";
 
 
 export async function createList(projectSlug: string, name: string) {
@@ -72,10 +73,16 @@ export async function toggleItem(itemId: string) {
   const item = await prisma.todoItem.findUnique({ where: { id: itemId } });
   if (!item) return { error: "Not found" };
 
+  const wasDone = item.done;
   await prisma.todoItem.update({
     where: { id: itemId },
     data: { done: !item.done },
   });
+
+  if (!wasDone) {
+    const project = await prisma.project.findUnique({ where: { slug: item.projectSlug }, select: { id: true } });
+    if (project) await logActivity(project.id, session.user.id, "todo_completed");
+  }
 
   revalidatePath(`/projects/${item.projectSlug}/todos`);
 }

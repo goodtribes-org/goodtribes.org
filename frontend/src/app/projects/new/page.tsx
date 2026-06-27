@@ -19,18 +19,22 @@ export default async function NewProjectPage({
 
   const { from: ideaId, title: titleParam } = await searchParams;
 
-  let initial: { title?: string; description?: string; sdgGoals?: number[] } = {};
+  let initial: { title?: string; description?: string; sdgGoals?: number[]; category?: string; tags?: string[]; imageUrl?: string } = {};
 
   if (ideaId) {
     const idea = await prisma.idea.findUnique({
       where: { id: ideaId },
-      select: { title: true, description: true, sdgGoals: true },
+      select: { title: true, description: true, problem: true, solution: true, sdgGoals: true, category: true, tags: true, imageUrl: true },
     });
     if (idea) {
+      const descParts = [idea.description, idea.problem, idea.solution].filter(Boolean);
       initial = {
         title: titleParam ?? idea.title,
-        description: idea.description ?? undefined,
+        description: descParts.join("\n\n") || undefined,
         sdgGoals: idea.sdgGoals,
+        category: idea.category ?? undefined,
+        tags: idea.tags,
+        imageUrl: idea.imageUrl ?? undefined,
       };
     }
   } else if (titleParam) {
@@ -57,7 +61,7 @@ export default async function NewProjectPage({
       <p className="text-dark-slate/70 mb-8">
         {fromIdea ? "Starting from an idea — edit the details below." : "Fill in the details for your project."}
       </p>
-      <NewProjectForm initial={initial} skills={skills} orgs={userOrgs} />
+      <NewProjectForm initial={initial} ideaId={ideaId} skills={skills} orgs={userOrgs} />
     </div>
   );
 }

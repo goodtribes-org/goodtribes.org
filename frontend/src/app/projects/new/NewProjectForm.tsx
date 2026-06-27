@@ -27,12 +27,13 @@ const SDG_GOALS = [
 ];
 
 interface Props {
-  initial?: { title?: string; description?: string; sdgGoals?: number[] };
+  initial?: { title?: string; description?: string; sdgGoals?: number[]; category?: string; tags?: string[]; imageUrl?: string };
+  ideaId?: string;
   skills: { id: string; name: string; slug: string }[];
   orgs: { id: string; name: string }[];
 }
 
-export default function NewProjectForm({ initial = {}, skills, orgs }: Props) {
+export default function NewProjectForm({ initial = {}, ideaId, skills, orgs }: Props) {
   const [description, setDescription] = useState(initial.description ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set(initial.sdgGoals ?? []));
   const [aiSuggested, setAiSuggested] = useState<number[]>([]);
@@ -65,6 +66,8 @@ export default function NewProjectForm({ initial = {}, skills, orgs }: Props) {
 
   return (
     <form action={createProject} className="flex flex-col gap-5">
+      {ideaId && <input type="hidden" name="ideaId" value={ideaId} />}
+
       {/* Project image */}
       <div>
         <label className="block text-sm font-medium text-dark-slate mb-2">
@@ -75,7 +78,7 @@ export default function NewProjectForm({ initial = {}, skills, orgs }: Props) {
           accept="image/*"
           onUpload={handleImageUpload}
         />
-        <input type="hidden" name="imageUrl" ref={imageInputRef} defaultValue="" />
+        <input type="hidden" name="imageUrl" ref={imageInputRef} defaultValue={initial.imageUrl ?? ""} />
       </div>
 
       {orgs.length > 0 && (
@@ -114,7 +117,7 @@ export default function NewProjectForm({ initial = {}, skills, orgs }: Props) {
           <label htmlFor="category" className="block text-sm font-medium text-dark-slate mb-1">
             Category
           </label>
-          <select id="category" name="category"
+          <select id="category" name="category" defaultValue={initial.category ?? ""}
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral bg-white">
             <option value="">— none —</option>
             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -125,6 +128,7 @@ export default function NewProjectForm({ initial = {}, skills, orgs }: Props) {
             Tags <span className="text-dark-slate/50 font-normal">(comma-separated)</span>
           </label>
           <input id="tags" name="tags" type="text" placeholder="climate, youth"
+            defaultValue={initial.tags?.join(", ") ?? ""}
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral" />
         </div>
       </div>
