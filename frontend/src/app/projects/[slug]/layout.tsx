@@ -65,9 +65,9 @@ export default async function ProjectLayout({
 
   return (
     <>
-      {/* Full-bleed hero */}
+      {/* Full-bleed hero — flush with header */}
       <div
-        className="relative"
+        className="relative -mt-8"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
         <div className="relative w-full h-72 md:h-[420px]">
@@ -85,7 +85,6 @@ export default async function ProjectLayout({
               <p className="text-3xl font-bold text-white text-center px-8 leading-snug">{project.title}</p>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
         </div>
 
         {/* Info overlay */}
