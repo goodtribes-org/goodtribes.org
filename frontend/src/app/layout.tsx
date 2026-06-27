@@ -44,9 +44,14 @@ export default function RootLayout({
       <body className="min-h-screen bg-white text-dark-slate">
         <SessionProvider>
           <header className="border-b border-muted-teal">
-            <nav className="max-w-6xl mx-auto px-6 py-3 flex items-center gap-6">
-              {/* Negative margin cancels the container offset so logo stays at viewport left edge */}
-              <Link href="/" className="shrink-0" style={{ marginLeft: "min(0px, calc((72rem - 100vw) / 2))" }}>
+            <nav
+              className="w-full py-3 flex items-center gap-6"
+              style={{
+                paddingLeft: "1.5rem",
+                paddingRight: "max(1.5rem, calc((100vw - 72rem) / 2 + 1.5rem))",
+              }}
+            >
+              <Link href="/" className="shrink-0">
                 <Image
                   src="/img/GoodTribes1.png"
                   alt="GoodTribes.org"
