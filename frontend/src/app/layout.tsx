@@ -43,8 +43,9 @@ export default function RootLayout({
     <html lang="en" className="bg-white">
       <body className="min-h-screen bg-white text-dark-slate">
         <SessionProvider>
-          <header className="border-b border-muted-teal relative">
-            <nav className="w-full px-6 py-3 flex items-center gap-6">
+          <header className="border-b border-muted-teal">
+            {/* Row 1: logo left, utilities right */}
+            <div className="w-full px-6 py-3 flex items-center gap-4">
               <Link href="/" className="shrink-0">
                 <Image
                   src="/img/GoodTribes1.png"
@@ -54,15 +55,17 @@ export default function RootLayout({
                   className="object-contain"
                 />
               </Link>
-              <div className="flex-1 min-w-0 ml-16">
-                <NavMenu />
-              </div>
+              <div className="flex-1" />
               <div className="hidden md:block shrink-0">
                 <SearchInput />
               </div>
               <NotificationBell />
               <AuthNav />
-            </nav>
+            </div>
+            {/* Row 2: nav aligned with content container */}
+            <div className="max-w-6xl mx-auto px-6 pb-2">
+              <NavMenu />
+            </div>
           </header>
           <main className="max-w-6xl mx-auto px-6 pt-8 pb-12">{children}</main>
           <footer className="border-t border-muted-teal/30 mt-16">
