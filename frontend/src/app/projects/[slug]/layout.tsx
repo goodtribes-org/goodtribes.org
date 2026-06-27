@@ -70,7 +70,7 @@ export default async function ProjectLayout({
         className="relative -mt-8"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
-        <div className="relative w-full h-80 md:h-[520px]">
+        <div className="relative w-full h-72 md:h-[420px]">
           {project.imageUrl ? (
             <Image
               src={project.imageUrl}
