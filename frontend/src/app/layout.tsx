@@ -44,7 +44,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-white text-dark-slate">
         <SessionProvider>
           <header className="border-b border-muted-teal">
-            <nav className="w-full px-6 py-3 flex items-center gap-6">
+            <nav className="max-w-6xl mx-auto px-6 py-3 flex items-center gap-6">
               <Link href="/" className="shrink-0">
                 <Image
                   src="/img/GoodTribes1.png"
@@ -54,7 +54,7 @@ export default function RootLayout({
                   className="object-contain"
                 />
               </Link>
-              <div className="shrink-0" style={{ marginLeft: "max(0px, calc(50vw - 48.5rem))" }}>
+              <div className="shrink-0 ml-8">
                 <NavMenu />
               </div>
               <div className="flex-1" />
