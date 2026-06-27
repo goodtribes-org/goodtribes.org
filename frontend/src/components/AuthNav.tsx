@@ -21,12 +21,6 @@ export default function AuthNav() {
         <Link href="/settings" className="text-dark-slate/70 hover:text-seagrass text-sm">
           Settings
         </Link>
-        <Link
-          href="/projects/new"
-          className="bg-coral text-white text-sm font-medium px-3 py-1.5 rounded-md hover:bg-watermelon transition-colors whitespace-nowrap"
-        >
-          + New project
-        </Link>
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
           className="text-dark-slate/70 hover:text-seagrass text-sm"
