@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const STAGES = [
@@ -24,18 +25,20 @@ const SDG_LABELS: Record<number, string> = {
 
 interface Props {
   sort: string;
+  q?: string;
   status?: string;
   category?: string;
   sdg?: string;
   total: number;
 }
 
-export default function ProjectFilters({ sort, status, category, sdg, total }: Props) {
+export default function ProjectFilters({ sort, q, status, category, sdg, total }: Props) {
   const router = useRouter();
+  const [query, setQuery] = useState(q ?? "");
 
   function buildUrl(overrides: Record<string, string | undefined>) {
     const params = new URLSearchParams();
-    const current: Record<string, string | undefined> = { sort, status, category, sdg };
+    const current: Record<string, string | undefined> = { sort, q, status, category, sdg };
     const merged = { ...current, ...overrides };
     for (const [k, v] of Object.entries(merged)) {
       if (v) params.set(k, v);
@@ -44,8 +47,31 @@ export default function ProjectFilters({ sort, status, category, sdg, total }: P
     return `/projects${qs ? `?${qs}` : ""}`;
   }
 
+  function submitSearch(e: React.FormEvent) {
+    e.preventDefault();
+    router.push(buildUrl({ q: query.trim() || undefined, page: undefined }));
+  }
+
   return (
-    <div className="flex flex-wrap items-center gap-3 mb-6">
+    <div className="flex flex-col gap-3 mb-6">
+      {/* Search */}
+      <form onSubmit={submitSearch} className="flex gap-2">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search projects…"
+          className="flex-1 text-sm border border-muted-teal rounded-lg px-4 py-2 bg-white text-dark-slate placeholder-dark-slate/40 focus:outline-none focus:ring-2 focus:ring-coral"
+        />
+        <button
+          type="submit"
+          className="px-4 py-2 bg-coral text-white text-sm font-medium rounded-lg hover:bg-watermelon transition-colors"
+        >
+          Search
+        </button>
+      </form>
+
+    <div className="flex flex-wrap items-center gap-3">
       {/* Sort */}
       <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
         {[
@@ -109,6 +135,7 @@ export default function ProjectFilters({ sort, status, category, sdg, total }: P
       )}
 
       <span className="ml-auto text-xs text-dark-slate/40">{total} project{total !== 1 ? "s" : ""}</span>
+    </div>
     </div>
   );
 }

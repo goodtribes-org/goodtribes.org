@@ -27,15 +27,19 @@ const SDG_COLORS: Record<number, string> = {
 export default async function ProjectsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sort?: string; status?: string; category?: string; sdg?: string; page?: string }>;
+  searchParams: Promise<{ sort?: string; q?: string; status?: string; category?: string; sdg?: string; page?: string }>;
 }) {
-  const { sort: sortParam, status, category, sdg, page: pageStr } = await searchParams;
+  const { sort: sortParam, q, status, category, sdg, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const sdgNum = sdg ? parseInt(sdg) : undefined;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
 
   const where: Prisma.ProjectWhereInput = {
     visibility: "public",
+    ...(q ? { OR: [
+      { title: { contains: q, mode: "insensitive" } },
+      { description: { contains: q, mode: "insensitive" } },
+    ]} : {}),
     ...(status ? { status } : {}),
     ...(category ? { category } : {}),
     ...(sdgNum && !isNaN(sdgNum) ? { sdgGoals: { has: sdgNum } } : {}),
@@ -62,7 +66,7 @@ export default async function ProjectsPage({
     }),
   ]);
 
-  const rawParams = { sort: sortParam, status, category, sdg, page: pageStr };
+  const rawParams = { sort: sortParam, q, status, category, sdg, page: pageStr };
 
   return (
     <div>
@@ -81,7 +85,7 @@ export default async function ProjectsPage({
         )}
       </div>
 
-      <ProjectFilters sort={sort} status={status} category={category} sdg={sdg} total={total} />
+      <ProjectFilters sort={sort} q={q} status={status} category={category} sdg={sdg} total={total} />
 
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
