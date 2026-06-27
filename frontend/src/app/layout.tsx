@@ -7,6 +7,7 @@ import AuthNav from "@/components/AuthNav";
 import SearchInput from "@/components/SearchInput";
 import NotificationBell from "@/components/NotificationBell";
 import NavMenu from "@/components/NavMenu";
+import { auth } from "@/auth";
 
 const APP_URL = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
 
@@ -34,15 +35,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
   return (
     <html lang="en" className="bg-white">
       <body className="min-h-screen bg-white text-dark-slate">
-        <SessionProvider>
+        <SessionProvider session={session}>
           <header className="border-b border-muted-teal">
             <nav className="w-full px-6 py-3 flex items-center gap-6">
               <Link href="/" className="shrink-0">
