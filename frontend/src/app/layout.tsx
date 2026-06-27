@@ -63,8 +63,11 @@ export default async function RootLayout({
               <div className="hidden md:block shrink-0">
                 <SearchInput />
               </div>
-              {/* Spacer that grows to align search right edge with content container right edge */}
-              <div className="shrink-0 hidden md:block" style={{ width: "max(0px, calc((100vw - 72rem) / 2 - 17.625rem))" }} />
+              {/* Spacer that grows to align search right edge with content container right edge.
+                  Width accounts for: px-6(1.5) + notifbell(1.75) + gap×2(3) + authnav width.
+                  Logged-in authnav = w-8 avatar (2rem) → 8.25rem total.
+                  Logged-out authnav = Log-in + Create-account buttons (~11.375rem) → 17.625rem total. */}
+              <div className="shrink-0 hidden md:block" style={{ width: session?.user ? "max(0px, calc((100vw - 72rem) / 2 - 8.25rem))" : "max(0px, calc((100vw - 72rem) / 2 - 17.625rem))" }} />
               <NotificationBell />
               <AuthNav />
             </nav>
