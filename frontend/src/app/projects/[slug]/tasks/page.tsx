@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import TasksPage from "@/components/TasksPage";
-import Link from "next/link";
 import type { Metadata } from "next";
 
 
@@ -60,15 +59,6 @@ export default async function TasksRoutePage({ params }: { params: Promise<{ slu
 
   return (
     <>
-      <div className="mb-4">
-        <Link
-          href={`/projects/${slug}`}
-          className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          ← {project.title}
-        </Link>
-        <h1 className="text-2xl font-bold text-dark-slate mt-1">{project.title}</h1>
-      </div>
       <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
         <TasksPage
           projectSlug={slug}

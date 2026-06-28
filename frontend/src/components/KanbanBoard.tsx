@@ -551,18 +551,26 @@ export default function KanbanBoard({
   isLoggedIn,
   currentUserId,
   members,
+  requestAddColumn,
+  onRequestAddDone,
 }: {
   projectSlug: string;
   initialColumns: Columns;
   isLoggedIn: boolean;
   currentUserId: string | null;
   members: Member[];
+  requestAddColumn?: string | null;
+  onRequestAddDone?: () => void;
 }) {
   const [columns, setColumns] = useState<Columns>(initialColumns);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [modalCol, setModalCol] = useState<string | null>(null);
   const [runningAI, setRunningAI] = useState<Set<string>>(new Set());
   const [, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (requestAddColumn) setModalCol(requestAddColumn);
+  }, [requestAddColumn]);
 
   async function handleRunAI(cardId: string, agentType: string, additionalContext: string) {
     setRunningAI((s) => new Set(s).add(cardId));
@@ -644,17 +652,6 @@ export default function KanbanBoard({
 
   return (
     <div>
-      {isLoggedIn && (
-        <div className="flex items-center gap-3 mb-6">
-          <button
-            onClick={() => setModalCol("BACKLOG")}
-            className="flex items-center gap-1.5 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-          >
-            <span className="text-base leading-none font-bold">+</span> Add a card
-          </button>
-        </div>
-      )}
-
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="overflow-x-auto pb-4">
           <div className="flex gap-3 w-full">
@@ -690,7 +687,7 @@ export default function KanbanBoard({
           columnLabel={activeColData.label}
           members={members}
           onAdd={handleAdd}
-          onClose={() => setModalCol(null)}
+          onClose={() => { setModalCol(null); onRequestAddDone?.(); }}
         />
       )}
     </div>
