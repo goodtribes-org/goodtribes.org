@@ -116,10 +116,11 @@ export default async function ProjectLayout({
 
               {/* Card 1: project image — 820 × 460 */}
               <div
-                className="shrink-0 bg-white rounded-2xl overflow-hidden w-full"
+                className="shrink-0 bg-white overflow-hidden"
                 style={{
                   width: "820px",
                   height: "460px",
+                  border: "12px solid white",
                   boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
                 }}
               >
