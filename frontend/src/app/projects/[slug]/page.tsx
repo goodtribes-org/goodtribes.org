@@ -293,7 +293,7 @@ export default async function ProjectDetailPage({
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row gap-5 items-start project-overview-layout">
+      <div className="flex flex-col md:flex-row gap-5 items-start md:-mr-7">
         {/* Left: project story */}
         <div className="flex-1 min-w-0 space-y-8">
           <section>
