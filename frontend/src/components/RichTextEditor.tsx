@@ -4,7 +4,14 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TiptapImage from "@tiptap/extension-image";
 import TiptapLink from "@tiptap/extension-link";
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
+
+const btnClass = (active?: boolean) =>
+  `px-2 py-1 rounded text-xs font-semibold transition-colors ${
+    active
+      ? "bg-dark-slate text-white"
+      : "text-dark-slate/60 hover:text-dark-slate hover:bg-dark-slate/10"
+  }`;
 
 function Btn({
   onClick,
@@ -18,16 +25,7 @@ function Btn({
   children: React.ReactNode;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      className={`px-2 py-1 rounded text-xs font-semibold transition-colors ${
-        active
-          ? "bg-dark-slate text-white"
-          : "text-dark-slate/60 hover:text-dark-slate hover:bg-dark-slate/10"
-      }`}
-    >
+    <button type="button" onClick={onClick} title={title} className={btnClass(active)}>
       {children}
     </button>
   );
@@ -44,8 +42,6 @@ export default function RichTextEditor({
   content: string;
   onChange: (html: string) => void;
 }) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -105,30 +101,16 @@ export default function RichTextEditor({
 
         <Divider />
 
-        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive("heading", { level: 1 })} title="Rubrik 1">
-          H1
-        </Btn>
-        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive("heading", { level: 2 })} title="Rubrik 2">
-          H2
-        </Btn>
-        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive("heading", { level: 3 })} title="Rubrik 3">
-          H3
-        </Btn>
+        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive("heading", { level: 1 })} title="Rubrik 1">H1</Btn>
+        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive("heading", { level: 2 })} title="Rubrik 2">H2</Btn>
+        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive("heading", { level: 3 })} title="Rubrik 3">H3</Btn>
 
         <Divider />
 
-        <Btn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title="Punktlista">
-          • Lista
-        </Btn>
-        <Btn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title="Numrerad lista">
-          1. Lista
-        </Btn>
-        <Btn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive("blockquote")} title="Citat">
-          ❝ Citat
-        </Btn>
-        <Btn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive("codeBlock")} title="Kodblock">
-          {"</>"}
-        </Btn>
+        <Btn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title="Punktlista">• Lista</Btn>
+        <Btn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title="Numrerad lista">1. Lista</Btn>
+        <Btn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive("blockquote")} title="Citat">❝ Citat</Btn>
+        <Btn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive("codeBlock")} title="Kodblock">{"</>"}</Btn>
 
         <Divider />
 
@@ -137,44 +119,40 @@ export default function RichTextEditor({
             const prev = editor.isActive("link") ? editor.getAttributes("link").href : "";
             const url = window.prompt("Länk-URL:", prev);
             if (url === null) return;
-            if (url === "") {
-              editor.chain().focus().unsetLink().run();
-            } else {
-              editor.chain().focus().setLink({ href: url }).run();
-            }
+            if (url === "") editor.chain().focus().unsetLink().run();
+            else editor.chain().focus().setLink({ href: url }).run();
           }}
           active={editor.isActive("link")}
           title="Lägg till/redigera länk"
         >
           🔗 Länk
         </Btn>
-        <Btn onClick={() => fileInputRef.current?.click()} title="Ladda upp bild">
+
+        {/* Image upload — label wraps input so mobile browsers open native picker directly */}
+        <label
+          className={btnClass()}
+          title="Ladda upp bild (välj från galleri eller kamera)"
+        >
           🖼 Bild
-        </Btn>
+          <input
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) uploadImage(file);
+              e.target.value = "";
+            }}
+          />
+        </label>
 
         <Divider />
 
-        <Btn onClick={() => editor.chain().focus().undo().run()} title="Ångra (Ctrl+Z)">
-          ↩ Ångra
-        </Btn>
-        <Btn onClick={() => editor.chain().focus().redo().run()} title="Gör om (Ctrl+Y)">
-          ↪ Gör om
-        </Btn>
+        <Btn onClick={() => editor.chain().focus().undo().run()} title="Ångra (Ctrl+Z)">↩ Ångra</Btn>
+        <Btn onClick={() => editor.chain().focus().redo().run()} title="Gör om (Ctrl+Y)">↪ Gör om</Btn>
       </div>
 
       <EditorContent editor={editor} />
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) uploadImage(file);
-          e.target.value = "";
-        }}
-      />
     </div>
   );
 }
