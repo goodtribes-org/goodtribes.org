@@ -4,6 +4,7 @@ import { useState, useTransition, useRef } from "react";
 import { updateProject, deleteProject } from "./actions";
 import { getSdgSuggestions } from "@/app/projects/new/actions";
 import FileUpload from "@/components/FileUpload";
+import RichTextEditor from "@/components/RichTextEditor";
 
 const SDG_GOALS = [
   { n: 1, label: "No Poverty" }, { n: 2, label: "Zero Hunger" },
@@ -127,15 +128,11 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
       </div>
 
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-dark-slate mb-1">
+        <label className="block text-sm font-medium text-dark-slate mb-2">
           Description
         </label>
-        <textarea
-          id="description" name="description" rows={5}
-          value={description} onChange={(e) => setDescription(e.target.value)}
-          placeholder="What is this project about?"
-          className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral resize-none"
-        />
+        <input type="hidden" name="description" value={description} />
+        <RichTextEditor content={description} onChange={setDescription} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">

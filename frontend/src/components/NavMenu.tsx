@@ -12,31 +12,31 @@ export default function NavMenu() {
     <>
       {/* Desktop links */}
       <div className="hidden md:flex items-center gap-4 text-base">
-        <Link href="/projects" className="text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
+        <Link href="/projects" className="font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
           Projects
         </Link>
-        <Link href="/ideas" className="text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
+        <Link href="/ideas" className="font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
           Ideas
         </Link>
-        <Link href="/feed" className="text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
+        <Link href="/feed" className="font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
           Flöde
         </Link>
-        <Link href="/dream-wall" className="text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
+        <Link href="/dream-wall" className="font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
           Drömväggen
         </Link>
-        <Link href="/hall-of-impact" className="text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
+        <Link href="/hall-of-impact" className="font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
           Hall of Impact
         </Link>
-        <Link href="/academy" className="text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
+        <Link href="/academy" className="font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
           Academy
         </Link>
         {session?.user && (
-          <Link href="/match" className="text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
+          <Link href="/match" className="font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
             Hitta projekt
           </Link>
         )}
         <div className="relative group">
-          <button className="flex items-center gap-1 text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
+          <button className="flex items-center gap-1 font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
             Work With Us
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3 mt-0.5">
               <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />

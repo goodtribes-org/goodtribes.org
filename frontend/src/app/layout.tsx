@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { Inter } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 import SessionProvider from "@/components/SessionProvider";
 import AuthNav from "@/components/AuthNav";
 import SearchInput from "@/components/SearchInput";
@@ -42,7 +45,7 @@ export default async function RootLayout({
 }) {
   const session = await auth();
   return (
-    <html lang="en" className="bg-white">
+    <html lang="en" className={`bg-white ${inter.className}`}>
       <body className="min-h-screen bg-white text-dark-slate">
         <SessionProvider session={session}>
           <header className="border-b border-muted-teal">

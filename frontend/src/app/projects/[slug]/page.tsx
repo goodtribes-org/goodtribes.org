@@ -257,12 +257,22 @@ export default async function ProjectDetailPage({
           <section>
             <h2 className="text-base font-semibold text-dark-slate mb-4">Om projektet</h2>
             {project.description ? (
-              <article className="prose prose-sm max-w-none text-dark-slate/80 leading-relaxed
-                prose-headings:text-dark-slate prose-headings:font-semibold
-                prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
-                prose-strong:text-dark-slate prose-img:rounded-xl">
-                <ReactMarkdown>{project.description}</ReactMarkdown>
-              </article>
+              project.description.trimStart().startsWith("<") ? (
+                <article
+                  className="prose prose-sm max-w-none text-dark-slate/80 leading-relaxed
+                    prose-headings:text-dark-slate prose-headings:font-semibold
+                    prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
+                    prose-strong:text-dark-slate prose-img:rounded-xl prose-img:max-w-full"
+                  dangerouslySetInnerHTML={{ __html: project.description }}
+                />
+              ) : (
+                <article className="prose prose-sm max-w-none text-dark-slate/80 leading-relaxed
+                  prose-headings:text-dark-slate prose-headings:font-semibold
+                  prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
+                  prose-strong:text-dark-slate prose-img:rounded-xl">
+                  <ReactMarkdown>{project.description}</ReactMarkdown>
+                </article>
+              )
             ) : (
               <p className="text-dark-slate/40 italic text-sm">Ingen beskrivning ännu.</p>
             )}
