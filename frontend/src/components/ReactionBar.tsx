@@ -72,13 +72,13 @@ export function ReactionBar({
             type="button"
             disabled={!currentUserId || isPending}
             onClick={() => handleToggle(emoji)}
-            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition-colors ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border transition-colors ${
               mine
                 ? "bg-coral/15 border-coral/40 text-dark-slate font-medium"
                 : "bg-white border-muted-teal/30 text-dark-slate/60 hover:border-muted-teal/60"
             }`}
           >
-            <span className="text-base leading-none">{emoji}</span>
+            <span className="text-xl leading-none">{emoji}</span>
             <span>{userIds.length}</span>
           </button>
         );
@@ -89,7 +89,7 @@ export function ReactionBar({
           <button
             type="button"
             onClick={() => setShowPicker((v) => !v)}
-            className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs border border-dashed border-muted-teal/40 text-dark-slate/40 hover:text-dark-slate/70 hover:border-muted-teal transition-colors"
+            className="inline-flex items-center px-2.5 py-1 rounded-full text-sm border border-dashed border-muted-teal/40 text-dark-slate/40 hover:text-dark-slate/70 hover:border-muted-teal transition-colors"
             title="Lägg till reaktion"
           >
             +
