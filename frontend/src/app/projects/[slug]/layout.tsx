@@ -92,7 +92,7 @@ export default async function ProjectLayout({
         className="relative -mt-8"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
-        <div className="relative overflow-hidden" style={{ minHeight: "500px" }}>
+        <div className="relative overflow-hidden" style={{ height: "490px" }}>
           {/* Blurred background image */}
           {project.imageUrl ? (
             <>
