@@ -119,7 +119,7 @@ export default async function ProjectLayout({
               style={{
                 color: "white",
                 textShadow:
-                  "-1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999, 0 2px 12px rgba(0,0,0,0.4)",
+                  "-1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999, 2px 4px 12px rgba(0,0,0,0.35)",
               }}
             >
               {project.title}
