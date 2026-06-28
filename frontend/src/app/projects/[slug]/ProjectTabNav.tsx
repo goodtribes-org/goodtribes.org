@@ -40,10 +40,10 @@ export default function ProjectTabNav({ slug }: { slug: string }) {
           <Link
             key={tab.href}
             href={href}
-            className={`px-4 pb-2.5 pt-1 text-sm font-bold border-b-2 whitespace-nowrap transition-colors -mb-px ${
+            className={`px-4 pb-2.5 pt-1 text-sm font-bold whitespace-nowrap transition-colors -mb-px ${
               isActive
-                ? "border-coral text-dark-slate"
-                : "border-transparent text-dark-slate/50 hover:text-dark-slate hover:border-muted-teal/40"
+                ? "border-b-4 border-coral text-dark-slate"
+                : "border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate hover:border-muted-teal/40"
             }`}
           >
             {tab.label}
