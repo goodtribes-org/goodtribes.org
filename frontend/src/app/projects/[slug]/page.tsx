@@ -292,135 +292,6 @@ export default async function ProjectDetailPage({
 
         {/* Right sidebar */}
         <div className="flex flex-col gap-5">
-          {/* Funding widget */}
-          {fundingCampaign && (
-            <section className="border border-muted-teal/30 rounded-xl p-4">
-              <div className="space-y-2 mb-4">
-                <div className="flex justify-between items-end">
-                  <span className="text-xl font-bold text-dark-slate">
-                    {raised.toLocaleString("sv-SE")}
-                  </span>
-                  <span className="text-xs text-dark-slate/50">
-                    av {fundingCampaign.goal.toLocaleString("sv-SE")} {fundingCampaign.currency}
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-muted-teal/20 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-coral rounded-full transition-all"
-                    style={{ width: `${fundingPct}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-xs text-dark-slate/50">
-                  <span className="font-semibold text-dark-slate">{fundingPct}% finansierat</span>
-                  {daysLeft !== null && <span>{daysLeft} dagar kvar</span>}
-                </div>
-              </div>
-              <Link
-                href={`/projects/${slug}/funding`}
-                className="block w-full text-center px-4 py-2.5 bg-coral text-white rounded-xl font-semibold text-sm hover:bg-coral/90 transition-colors"
-              >
-                Stöd projektet
-              </Link>
-            </section>
-          )}
-
-          {/* Join CTA */}
-          {!isMember && userId && (
-            <div className="border border-seagrass/40 rounded-xl p-4 bg-seagrass/5">
-              <h2 className="text-sm font-semibold text-dark-slate mb-1">Vill du bidra?</h2>
-              <p className="text-xs text-dark-slate/60 mb-3">Ansök om att gå med i projektet.</p>
-              <JoinButton
-                projectId={project.id}
-                slug={slug}
-                existingStatus={userJoinRequest?.status ?? null}
-              />
-            </div>
-          )}
-          {!isMember && !userId && (
-            <div className="border border-muted-teal/30 rounded-xl p-4 text-center">
-              <p className="text-sm text-dark-slate/60 mb-3">
-                Logga in för att gå med i projektet
-              </p>
-              <Link href="/auth/signin" className="text-sm text-coral font-medium hover:underline">
-                Logga in →
-              </Link>
-            </div>
-          )}
-
-          {/* Calendar widget */}
-          <section className="border border-muted-teal/30 rounded-xl p-4">
-            <h2 className="text-sm font-semibold text-dark-slate mb-3">Kalender</h2>
-            <MiniCalendar events={monthEvents} />
-            {upcomingEvents.length > 0 && (
-              <ul className="mt-3 space-y-1.5 border-t border-muted-teal/20 pt-3">
-                {upcomingEvents.slice(0, 3).map((ev) => (
-                  <li key={ev.id} className="flex gap-2 items-start text-xs">
-                    <span className="shrink-0 font-semibold text-coral tabular-nums w-10 text-right">
-                      {ev.startsAt.toLocaleDateString("sv-SE", { day: "numeric", month: "short" })}
-                    </span>
-                    <span className="text-dark-slate/70 leading-snug">{ev.title}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <Link
-              href={`/projects/${slug}/calendar`}
-              className="mt-2 block text-xs text-seagrass hover:underline"
-            >
-              Öppna kalender →
-            </Link>
-          </section>
-
-          {/* Costs */}
-          {fundingCampaign && fundingCampaign.expenses.length > 0 && (
-            <section className="border border-muted-teal/30 rounded-xl p-4">
-              <h2 className="text-sm font-semibold text-dark-slate mb-3">Kostnader</h2>
-              <ul className="space-y-2">
-                {fundingCampaign.expenses.map((exp) => (
-                  <li key={exp.id} className="flex justify-between items-center text-xs">
-                    <span className="text-dark-slate/70 truncate pr-2">{exp.title}</span>
-                    <span className="shrink-0 font-semibold text-dark-slate tabular-nums">
-                      {exp.amount.toLocaleString("sv-SE")} {fundingCampaign.currency}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href={`/projects/${slug}/funding`}
-                className="mt-3 block text-xs text-seagrass hover:underline"
-              >
-                Alla utgifter →
-              </Link>
-            </section>
-          )}
-
-          {/* Links */}
-          {projectLinks.length > 0 && (
-            <section className="border border-muted-teal/30 rounded-xl p-4">
-              <h2 className="text-sm font-semibold text-dark-slate mb-3">Länkar</h2>
-              <ul className="space-y-2">
-                {projectLinks.map((url, i) => {
-                  let hostname = url;
-                  try {
-                    hostname = new URL(url).hostname.replace(/^www\./, "");
-                  } catch {}
-                  return (
-                    <li key={i}>
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-xs text-seagrass hover:underline"
-                      >
-                        <span className="text-dark-slate/40">🔗</span>
-                        <span className="truncate">{hostname}</span>
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          )}
 
           {/* The Team */}
           <section>
@@ -487,6 +358,136 @@ export default async function ProjectDetailPage({
                   </Link>
                 ))}
               </div>
+            </section>
+          )}
+
+          {/* Links */}
+          {projectLinks.length > 0 && (
+            <section className="border border-muted-teal/30 rounded-xl p-4">
+              <h2 className="text-sm font-semibold text-dark-slate mb-3">Länkar</h2>
+              <ul className="space-y-2">
+                {projectLinks.map((url, i) => {
+                  let hostname = url;
+                  try {
+                    hostname = new URL(url).hostname.replace(/^www\./, "");
+                  } catch {}
+                  return (
+                    <li key={i}>
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-xs text-seagrass hover:underline"
+                      >
+                        <span className="text-dark-slate/40">🔗</span>
+                        <span className="truncate">{hostname}</span>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+
+          {/* Calendar widget */}
+          <section className="border border-muted-teal/30 rounded-xl p-4">
+            <h2 className="text-sm font-semibold text-dark-slate mb-3">Kalender</h2>
+            <MiniCalendar events={monthEvents} />
+            {upcomingEvents.length > 0 && (
+              <ul className="mt-3 space-y-1.5 border-t border-muted-teal/20 pt-3">
+                {upcomingEvents.slice(0, 3).map((ev) => (
+                  <li key={ev.id} className="flex gap-2 items-start text-xs">
+                    <span className="shrink-0 font-semibold text-coral tabular-nums w-10 text-right">
+                      {ev.startsAt.toLocaleDateString("sv-SE", { day: "numeric", month: "short" })}
+                    </span>
+                    <span className="text-dark-slate/70 leading-snug">{ev.title}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Link
+              href={`/projects/${slug}/calendar`}
+              className="mt-2 block text-xs text-seagrass hover:underline"
+            >
+              Öppna kalender →
+            </Link>
+          </section>
+
+          {/* Costs */}
+          {fundingCampaign && fundingCampaign.expenses.length > 0 && (
+            <section className="border border-muted-teal/30 rounded-xl p-4">
+              <h2 className="text-sm font-semibold text-dark-slate mb-3">Kostnader</h2>
+              <ul className="space-y-2">
+                {fundingCampaign.expenses.map((exp) => (
+                  <li key={exp.id} className="flex justify-between items-center text-xs">
+                    <span className="text-dark-slate/70 truncate pr-2">{exp.title}</span>
+                    <span className="shrink-0 font-semibold text-dark-slate tabular-nums">
+                      {exp.amount.toLocaleString("sv-SE")} {fundingCampaign.currency}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={`/projects/${slug}/funding`}
+                className="mt-3 block text-xs text-seagrass hover:underline"
+              >
+                Alla utgifter →
+              </Link>
+            </section>
+          )}
+
+          {/* Join CTA */}
+          {!isMember && userId && (
+            <div className="border border-seagrass/40 rounded-xl p-4 bg-seagrass/5">
+              <h2 className="text-sm font-semibold text-dark-slate mb-1">Vill du bidra?</h2>
+              <p className="text-xs text-dark-slate/60 mb-3">Ansök om att gå med i projektet.</p>
+              <JoinButton
+                projectId={project.id}
+                slug={slug}
+                existingStatus={userJoinRequest?.status ?? null}
+              />
+            </div>
+          )}
+          {!isMember && !userId && (
+            <div className="border border-muted-teal/30 rounded-xl p-4 text-center">
+              <p className="text-sm text-dark-slate/60 mb-3">
+                Logga in för att gå med i projektet
+              </p>
+              <Link href="/auth/signin" className="text-sm text-coral font-medium hover:underline">
+                Logga in →
+              </Link>
+            </div>
+          )}
+
+          {/* Funding widget */}
+          {fundingCampaign && (
+            <section className="border border-muted-teal/30 rounded-xl p-4">
+              <div className="space-y-2 mb-4">
+                <div className="flex justify-between items-end">
+                  <span className="text-xl font-bold text-dark-slate">
+                    {raised.toLocaleString("sv-SE")}
+                  </span>
+                  <span className="text-xs text-dark-slate/50">
+                    av {fundingCampaign.goal.toLocaleString("sv-SE")} {fundingCampaign.currency}
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-muted-teal/20 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-coral rounded-full transition-all"
+                    style={{ width: `${fundingPct}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-dark-slate/50">
+                  <span className="font-semibold text-dark-slate">{fundingPct}% finansierat</span>
+                  {daysLeft !== null && <span>{daysLeft} dagar kvar</span>}
+                </div>
+              </div>
+              <Link
+                href={`/projects/${slug}/funding`}
+                className="block w-full text-center px-4 py-2.5 bg-coral text-white rounded-xl font-semibold text-sm hover:bg-coral/90 transition-colors"
+              >
+                Stöd projektet
+              </Link>
             </section>
           )}
         </div>

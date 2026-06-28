@@ -163,7 +163,7 @@ export default async function ProjectLayout({
               <div
                 className="shrink-0 bg-white rounded-2xl p-5 flex flex-col"
                 style={{
-                  width: "420px",
+                  width: "320px",
                   height: "460px",
                   boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
                 }}
@@ -273,44 +273,6 @@ export default async function ProjectLayout({
 
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Below-hero: stage, tags, funding progress */}
-      <div className="py-3 border-b border-muted-teal/20 mb-2">
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xs font-semibold px-2.5 py-1 bg-seagrass/20 text-seagrass rounded-full">
-              {STAGES[stageIndex]}
-            </span>
-            {project.category && (
-              <span className="text-xs bg-muted-teal/30 text-dark-slate px-2.5 py-1 rounded-full font-medium">
-                {project.category}
-              </span>
-            )}
-            {(project.tags ?? []).map((tag) => (
-              <span
-                key={tag}
-                className="text-xs border border-muted-teal/60 text-dark-slate/60 px-2.5 py-1 rounded-full"
-              >
-                #{tag}
-              </span>
-            ))}
-            {fundingCampaign && (
-              <span className="ml-auto text-xs text-dark-slate/50">
-                <span className="font-semibold text-dark-slate">{fundingPct}%</span> finansierat
-                {daysLeft !== null && ` · ${daysLeft} dagar kvar`}
-              </span>
-            )}
-          </div>
-          {fundingCampaign && (
-            <div className="w-full h-1.5 bg-muted-teal/20 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-coral rounded-full transition-all"
-                style={{ width: `${fundingPct}%` }}
-              />
-            </div>
-          )}
         </div>
       </div>
 
