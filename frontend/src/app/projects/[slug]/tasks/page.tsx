@@ -32,6 +32,7 @@ export default async function TasksRoutePage({ params }: { params: Promise<{ slu
       createdBy: { select: { name: true } },
       assignee: { select: { id: true, name: true } },
       estimate: true,
+      subtasks: { orderBy: { order: "asc" } },
       aiTaskRuns: {
         orderBy: { createdAt: "desc" },
         take: 1,
