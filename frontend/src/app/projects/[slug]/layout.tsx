@@ -87,13 +87,13 @@ export default async function ProjectLayout({
 
   return (
     <>
-      {/* Full-bleed hero: blurred background + two photo cards */}
+      {/* Full-bleed hero: blurred background + title + two photo cards */}
       <div
         className="relative -mt-8"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
-        <div className="relative overflow-hidden" style={{ height: "490px" }}>
-          {/* Blurred background image */}
+        {/* Background — fixed 490 px, clipped */}
+        <div className="absolute top-0 left-0 right-0 overflow-hidden" style={{ height: "490px" }}>
           {project.imageUrl ? (
             <>
               <Image
@@ -109,9 +109,26 @@ export default async function ProjectLayout({
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-dark-slate to-dark-slate/70" />
           )}
+        </div>
+
+        {/* Content layer — title above, cards below (may overflow bg) */}
+        <div className="relative z-10">
+          {/* Project title */}
+          <div className="flex justify-center pt-12 pb-6 px-6">
+            <h1
+              className="text-5xl md:text-6xl font-bold text-center leading-tight"
+              style={{
+                color: "white",
+                textShadow:
+                  "-1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999, 0 2px 12px rgba(0,0,0,0.4)",
+              }}
+            >
+              {project.title}
+            </h1>
+          </div>
 
           {/* Two cards */}
-          <div className="relative z-10 flex items-center justify-center px-4 py-8">
+          <div className="flex justify-center px-4 pb-10">
             <div className="flex flex-col md:flex-row gap-5 items-stretch">
 
               {/* Card 1: project image — 820 × 460 */}
