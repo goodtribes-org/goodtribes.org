@@ -82,7 +82,7 @@ export default function RichTextEditor({
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm max-w-none min-h-[240px] p-4 focus:outline-none " +
+          "prose max-w-none min-h-[240px] p-4 focus:outline-none " +
           "prose-headings:text-dark-slate prose-headings:font-semibold " +
           "prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline " +
           "prose-strong:text-dark-slate prose-img:rounded-xl prose-img:max-w-full",

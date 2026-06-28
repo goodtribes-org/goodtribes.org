@@ -302,14 +302,14 @@ export default async function ProjectDetailPage({
               project.description.trimStart().startsWith("<") ? (
                 <article
                   className="prose max-w-none text-dark-slate leading-relaxed
-                    prose-headings:text-dark-slate prose-headings:font-semibold
+                    prose-headings:text-dark-slate
                     prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
                     prose-strong:text-dark-slate prose-img:rounded-xl prose-img:max-w-full"
                   dangerouslySetInnerHTML={{ __html: project.description }}
                 />
               ) : (
                 <article className="prose max-w-none text-dark-slate leading-relaxed
-                  prose-headings:text-dark-slate prose-headings:font-semibold
+                  prose-headings:text-dark-slate
                   prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
                   prose-strong:text-dark-slate prose-img:rounded-xl">
                   <ReactMarkdown>{project.description}</ReactMarkdown>
