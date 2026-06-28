@@ -648,13 +648,24 @@ function KanbanCardItem({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
       {...attributes}
-      {...listeners}
       onClick={() => onOpenCard(card)}
       suppressHydrationWarning
-      className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm cursor-grab active:cursor-grabbing group hover:shadow-md hover:border-gray-300 transition-all"
+      className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm cursor-pointer group hover:shadow-md hover:border-gray-300 transition-all"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
+          <span
+            {...listeners}
+            onClick={(e) => e.stopPropagation()}
+            className="cursor-grab active:cursor-grabbing shrink-0 text-gray-300 hover:text-gray-500 transition-colors opacity-0 group-hover:opacity-100 touch-none"
+            title="Dra för att flytta"
+          >
+            <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
+              <circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/>
+              <circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/>
+              <circle cx="2" cy="14" r="1.5"/><circle cx="8" cy="14" r="1.5"/>
+            </svg>
+          </span>
           <span className={`w-2 h-2 rounded-full shrink-0 ${priorityMeta.dot}`} title={`Priority: ${priorityMeta.label}`} />
           <p className="text-sm font-medium text-gray-800 leading-snug truncate">{card.title}</p>
         </div>
