@@ -535,7 +535,9 @@ export default async function ProjectDetailPage({
                             {relativeTime(msg.createdAt)}
                           </span>
                         </div>
-                        <p className="text-xs text-dark-slate/70 leading-snug line-clamp-2">{msg.body}</p>
+                        <p className="text-xs text-dark-slate/70 leading-snug line-clamp-2">
+                          {msg.body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()}
+                        </p>
                       </div>
                     </li>
                   );
