@@ -1,68 +1,8 @@
 "use server";
-
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma"
-import { revalidatePath } from "next/cache";
-
-
-export async function postMessage(projectId: string, slug: string, formData: FormData): Promise<void> {
-  const session = await auth();
-  if (!session?.user?.id) return;
-
-  const isMember = await prisma.projectMember.findUnique({
-    where: { projectId_userId: { projectId, userId: session.user.id } },
-  });
-  if (!isMember) return;
-
-  const body = (formData.get("body") as string).trim();
-  if (!body || body.length > 2000) return;
-
-  await prisma.projectMessage.create({
-    data: { projectId, authorId: session.user.id, body },
-  });
-
-  revalidatePath(`/projects/${slug}/chat`);
-}
-
-export async function toggleReaction(messageId: string, slug: string, emoji: string): Promise<void> {
-  const session = await auth();
-  if (!session?.user?.id) return;
-
-  const existing = await prisma.messageReaction.findUnique({
-    where: { messageId_userId_emoji: { messageId, userId: session.user.id, emoji } },
-  });
-
-  if (existing) {
-    await prisma.messageReaction.delete({ where: { id: existing.id } });
-  } else {
-    await prisma.messageReaction.create({
-      data: { messageId, userId: session.user.id, emoji },
-    });
-  }
-
-  revalidatePath(`/projects/${slug}/chat`);
-}
-
-export async function generateInviteLink(projectId: string, _slug: string): Promise<string> {
-  const session = await auth();
-  if (!session?.user?.id) return "";
-
-  const membership = await prisma.projectMember.findUnique({
-    where: { projectId_userId: { projectId, userId: session.user.id } },
-  });
-  if (!membership || !["owner", "admin"].includes(membership.role)) return "";
-
-  const invite = await prisma.projectInvite.create({
-    data: {
-      projectId,
-      email: null,
-      token: undefined,
-      role: "collaborator",
-      createdById: session.user.id,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    },
-  });
-
-  const base = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
-  return `${base}/invite/${invite.token}`;
-}
+// Chat has been replaced by Kanaler.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function postMessage(..._args: unknown[]) {}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function toggleReaction(..._args: unknown[]) {}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function generateInviteLink(..._args: unknown[]): Promise<string | null> { return null; }

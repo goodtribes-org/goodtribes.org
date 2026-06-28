@@ -51,10 +51,7 @@ model User {
   createdWikiPages        WikiPage[]                @relation("WikiPageCreatedBy")
   updatedWikiPages        WikiPage[]                @relation("WikiPageUpdatedBy")
   createdOrgInvites       OrgInvite[]               @relation("CreatedOrgInvites")
-  projectMessages         ProjectMessage[]          @relation("ProjectMessages")
   fundingPledges          FundingPledge[]           @relation("FundingPledges")
-  forumPosts       ForumPost[]     @relation("AuthoredForumPosts")
-  forumReplies     ForumReply[]    @relation("AuthoredForumReplies")
   calendarEvents   CalendarEvent[] @relation("CreatedCalendarEvents")
   timeLogs         TimeLog[]       @relation("UserTimeLogs")
   timeLogReviews   TimeLog[]       @relation("ReviewedTimeLogs")
@@ -77,9 +74,9 @@ model User {
   projectFlags     ProjectFlag[]         @relation("FlaggedBy")
   flagReviews      ProjectFlag[]         @relation("FlagReviewer")
   ethicsReviews      EthicsReview[]        @relation("EthicsReviewer")
-  messageReactions     MessageReaction[]     @relation("MessageReactions")
-  forumPostReactions   ForumPostReaction[]   @relation("ForumPostReactions")
-  forumReplyReactions  ForumReplyReaction[]  @relation("ForumReplyReactions")
+  channelMessages    ChannelMessage[]         @relation("ChannelMessages")
+  channelReactions   ChannelMessageReaction[] @relation("ChannelReactions")
+  channelReadMarkers ChannelReadMarker[]      @relation("ChannelReadMarkers")
   onboardingDone       Boolean               @default(false)
 }
 
@@ -313,9 +310,8 @@ model Project {
   invites        ProjectInvite[]
   wikiPages      WikiPage[]
   neededSkills     ProjectSkill[]
-  messages         ProjectMessage[]
   fundingCampaign  FundingCampaign?
-  forumPosts       ForumPost[]     @relation("ProjectForumPosts")
+  channels         Channel[]       @relation("ProjectChannels")
   calendarEvents   CalendarEvent[] @relation("ProjectCalendarEvents")
   tokenLedger      TokenLedger[]   @relation("ProjectTokenLedger")
   polls            Poll[]          @relation("ProjectPolls")
@@ -547,30 +543,6 @@ model ActivityEvent {
   user    User    @relation("ActivityEvents", fields: [userId], references: [id])
 }
 
-model ProjectMessage {
-  id        String   @id @default(cuid())
-  projectId String
-  authorId  String
-  body      String
-  createdAt DateTime @default(now())
-
-  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  author    User              @relation("ProjectMessages", fields: [authorId], references: [id], onDelete: Cascade)
-  reactions MessageReaction[]
-}
-
-model MessageReaction {
-  id        String   @id @default(cuid())
-  messageId String
-  userId    String
-  emoji     String
-  createdAt DateTime @default(now())
-
-  message ProjectMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  user    User           @relation("MessageReactions", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([messageId, userId, emoji])
-}
 
 model FundingCampaign {
   id          String   @id @default(cuid())
@@ -610,66 +582,6 @@ model FundingPledge {
   @@unique([campaignId, userId])
 }
 
-model ForumPost {
-  id          String              @id @default(cuid())
-  projectSlug String
-  project     Project             @relation("ProjectForumPosts", fields: [projectSlug], references: [slug], onDelete: Cascade)
-  authorId    String
-  author      User                @relation("AuthoredForumPosts", fields: [authorId], references: [id])
-  title       String
-  body        String              @db.Text
-  category    String              @default("general")
-  status      String              @default("open")
-  pinned      Boolean             @default(false)
-  replies     ForumReply[]
-  reactions   ForumPostReaction[]
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-
-  @@index([projectSlug])
-}
-
-model ForumReply {
-  id        String               @id @default(cuid())
-  postId    String
-  post      ForumPost            @relation(fields: [postId], references: [id], onDelete: Cascade)
-  parentId  String?
-  parent    ForumReply?          @relation("ReplyThread", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children  ForumReply[]         @relation("ReplyThread")
-  authorId  String
-  author    User                 @relation("AuthoredForumReplies", fields: [authorId], references: [id])
-  body      String               @db.Text
-  reactions ForumReplyReaction[]
-  createdAt DateTime             @default(now())
-
-  @@index([postId])
-}
-
-model ForumPostReaction {
-  id        String    @id @default(cuid())
-  postId    String
-  userId    String
-  emoji     String
-  createdAt DateTime  @default(now())
-
-  post ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user User      @relation("ForumPostReactions", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([postId, userId, emoji])
-}
-
-model ForumReplyReaction {
-  id        String    @id @default(cuid())
-  replyId   String
-  userId    String
-  emoji     String
-  createdAt DateTime  @default(now())
-
-  reply ForumReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
-  user  User       @relation("ForumReplyReactions", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([replyId, userId, emoji])
-}
 
 model CalendarEvent {
   id          String    @id @default(cuid())
@@ -1053,4 +965,63 @@ model EthicsReview {
   createdAt     DateTime    @default(now())
 
   @@index([projectId])
+}
+
+model Channel {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation("ProjectChannels", fields: [projectId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  type        String   @default("text")
+  order       Int      @default(0)
+  pinned      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  messages    ChannelMessage[]
+  readMarkers ChannelReadMarker[]
+
+  @@index([projectId])
+  @@unique([projectId, name])
+}
+
+model ChannelMessage {
+  id             String   @id @default(cuid())
+  channelId      String
+  channel        Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  authorId       String
+  author         User     @relation("ChannelMessages", fields: [authorId], references: [id], onDelete: Cascade)
+  body           String   @db.Text
+  threadParentId String?
+  threadParent   ChannelMessage?  @relation("MessageThread", fields: [threadParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  threadReplies  ChannelMessage[] @relation("MessageThread")
+  reactions      ChannelMessageReaction[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([channelId, createdAt])
+  @@index([threadParentId])
+}
+
+model ChannelMessageReaction {
+  id        String         @id @default(cuid())
+  messageId String
+  message   ChannelMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User           @relation("ChannelReactions", fields: [userId], references: [id], onDelete: Cascade)
+  emoji     String
+  createdAt DateTime       @default(now())
+
+  @@unique([messageId, userId, emoji])
+}
+
+model ChannelReadMarker {
+  id         String   @id @default(cuid())
+  channelId  String
+  channel    Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation("ChannelReadMarkers", fields: [userId], references: [id], onDelete: Cascade)
+  lastReadAt DateTime @default(now())
+
+  @@unique([channelId, userId])
+  @@index([userId])
 }

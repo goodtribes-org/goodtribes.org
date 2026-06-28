@@ -47,6 +47,13 @@ export async function createProject(formData: FormData) {
       await prisma.projectMember.create({
         data: { projectId: project.id, userId, role: "owner" },
       });
+      await prisma.channel.createMany({
+        data: [
+          { projectId: project.id, name: "allmänt", type: "text",         order: 0 },
+          { projectId: project.id, name: "beslut",  type: "announcement", order: 1 },
+          { projectId: project.id, name: "ideer",   type: "text",         order: 2 },
+        ],
+      });
       const skillIds = formData.getAll("skillIds") as string[];
       if (skillIds.length > 0) {
         await prisma.projectSkill.createMany({

@@ -24,7 +24,7 @@ export async function calculateMaturityScore(projectSlug: string): Promise<numbe
     prisma.tokenLedger.aggregate({ where: { projectSlug }, _sum: { tokens: true } }),
     prisma.impactMetric.count({ where: { projectSlug } }),
     prisma.blogPost.count({ where: { projectSlug } }),
-    prisma.forumPost.count({ where: { projectSlug } }),
+    prisma.channelMessage.count({ where: { channel: { project: { slug: projectSlug } }, threadParentId: null } }),
   ]);
 
   // Funding: sum pledges via the campaign if one exists

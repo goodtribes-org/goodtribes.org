@@ -192,7 +192,7 @@ export default async function ProjectDetailPage({
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-  const [latestUpdate, fundingCampaign, monthEvents, userJoinRequest, kanbanCards, todoLists, recentMessages, forumPosts] =
+  const [latestUpdate, fundingCampaign, monthEvents, userJoinRequest, kanbanCards, todoLists, recentChannelMessages] =
     await Promise.all([
       prisma.blogPost.findFirst({
         where: { projectSlug: slug },
@@ -241,8 +241,8 @@ export default async function ProjectDetailPage({
           },
         },
       }),
-      prisma.projectMessage.findMany({
-        where: { project: { slug } },
+      prisma.channelMessage.findMany({
+        where: { channel: { projectId: project.id }, threadParentId: null },
         orderBy: { createdAt: "desc" },
         take: 5,
         select: {
@@ -250,20 +250,7 @@ export default async function ProjectDetailPage({
           body: true,
           createdAt: true,
           author: { select: { name: true, image: true } },
-        },
-      }),
-      prisma.forumPost.findMany({
-        where: { projectSlug: slug },
-        orderBy: { createdAt: "desc" },
-        take: 4,
-        select: {
-          id: true,
-          title: true,
-          body: true,
-          createdAt: true,
-          pinned: true,
-          author: { select: { name: true, image: true } },
-          _count: { select: { replies: true } },
+          channel: { select: { id: true, name: true } },
         },
       }),
     ]);
@@ -507,17 +494,17 @@ export default async function ProjectDetailPage({
             );
           })()}
 
-          {/* Chat preview */}
-          {recentMessages.length > 0 && (
+          {/* Kanaler preview */}
+          {recentChannelMessages.length > 0 && (
             <section className="border border-muted-teal/30 rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-dark-slate">Chatt</h2>
-                <Link href={`/projects/${slug}/chat`} className="text-xs text-seagrass hover:underline">
+                <h2 className="text-sm font-semibold text-dark-slate">Kanaler</h2>
+                <Link href={`/projects/${slug}/kanaler`} className="text-xs text-seagrass hover:underline">
                   Öppna →
                 </Link>
               </div>
               <ul className="space-y-3">
-                {[...recentMessages].reverse().map((msg) => {
+                {[...recentChannelMessages].reverse().map((msg) => {
                   const initials = (msg.author.name ?? "?").charAt(0).toUpperCase();
                   return (
                     <li key={msg.id} className="flex gap-2 items-start">
@@ -532,7 +519,7 @@ export default async function ProjectDetailPage({
                             {msg.author.name?.split(" ")[0] ?? "?"}
                           </span>
                           <span className="text-[10px] text-dark-slate/40 shrink-0">
-                            {relativeTime(msg.createdAt)}
+                            #{msg.channel.name} · {relativeTime(msg.createdAt)}
                           </span>
                         </div>
                         <p className="text-xs text-dark-slate/70 leading-snug line-clamp-2">
@@ -544,56 +531,10 @@ export default async function ProjectDetailPage({
                 })}
               </ul>
               <Link
-                href={`/projects/${slug}/chat`}
+                href={`/projects/${slug}/kanaler`}
                 className="mt-3 block text-center text-xs text-white bg-seagrass hover:bg-seagrass/90 rounded-lg py-1.5 transition-colors"
               >
-                Skriv ett meddelande
-              </Link>
-            </section>
-          )}
-
-          {/* Forum posts */}
-          {forumPosts.length > 0 && (
-            <section className="border border-muted-teal/30 rounded-xl p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-dark-slate">Meddelanden</h2>
-                <Link href={`/projects/${slug}/forum`} className="text-xs text-seagrass hover:underline">
-                  Öppna →
-                </Link>
-              </div>
-              <ul className="space-y-2.5">
-                {forumPosts.map((post) => (
-                  <li key={post.id}>
-                    <Link href={`/projects/${slug}/forum`} className="group block">
-                      <div className="flex items-start gap-2">
-                        {post.pinned && (
-                          <span className="text-[9px] font-bold text-coral bg-coral/10 px-1.5 py-0.5 rounded shrink-0 mt-0.5">
-                            FÄST
-                          </span>
-                        )}
-                        <p className="text-xs font-medium text-dark-slate group-hover:text-seagrass transition-colors leading-snug line-clamp-2 flex-1">
-                          {post.title}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 mt-1 ml-0.5">
-                        <span className="text-[10px] text-dark-slate/40">
-                          {post.author.name?.split(" ")[0]} · {relativeTime(post.createdAt)}
-                        </span>
-                        {post._count.replies > 0 && (
-                          <span className="text-[10px] text-dark-slate/40">
-                            💬 {post._count.replies}
-                          </span>
-                        )}
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href={`/projects/${slug}/forum`}
-                className="mt-3 block text-center text-xs text-white bg-seagrass hover:bg-seagrass/90 rounded-lg py-1.5 transition-colors"
-              >
-                Nytt meddelande
+                Öppna kanaler
               </Link>
             </section>
           )}
