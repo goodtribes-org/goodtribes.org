@@ -5,7 +5,7 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY frontend/package.json ./package.json
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Build
 FROM base AS builder

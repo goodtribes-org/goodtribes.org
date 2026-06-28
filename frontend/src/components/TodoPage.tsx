@@ -390,7 +390,7 @@ export default function TodoPage({
       const result = await createList(projectSlug, name);
       if (result && "list" in result) {
         setLists((prev) =>
-          prev.map((l) => (l.id === tempId ? (result.list as TodoList) : l))
+          prev.map((l) => (l.id === tempId ? (result.list as unknown as TodoList) : l))
         );
       }
     });
