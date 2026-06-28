@@ -1,11 +1,17 @@
 import React from "react";
 
-// Wrap emoji characters in text nodes so CSS can size them independently.
+// Explicit Unicode ranges covering the vast majority of emoji characters.
+// Using character classes instead of \p{} property escapes for maximum
+// bundler compatibility.
+const EMOJI_RE =
+  /[\u{1F300}-\u{1F9FF}\u{1FA00}-\u{1FFFF}\u{2600}-\u{27FF}\u{2300}-\u{23FF}\u{2B00}-\u{2BFF}\u{FE00}-\u{FEFF}]/gu;
+
 function wrapEmojis(html: string): string {
+  // Only replace inside text nodes (between > and <), never inside tags.
   return html.replace(/>([^<]+)</g, (_, text) => {
     const wrapped = text.replace(
-      /(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu,
-      '<span class="emoji-char">$1</span>'
+      EMOJI_RE,
+      (ch: string) => `<span class="emoji-char">${ch}</span>`
     );
     return `>${wrapped}<`;
   });
@@ -20,12 +26,14 @@ export function renderBody(body: string): React.ReactNode {
       />
     );
   }
-  // Plain text: still wrap emojis via a tiny helper
-  const parts = body.split(/(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu);
+
+  // Plain text fallback: split and wrap emoji characters inline.
+  const emojiTest = new RegExp(EMOJI_RE.source, "u");
+  const parts = body.split(new RegExp(`(${EMOJI_RE.source})`, "gu"));
   return (
     <p className="text-sm text-dark-slate/80 whitespace-pre-wrap break-words leading-relaxed">
       {parts.map((part, i) =>
-        /(\p{Emoji_Presentation}|\p{Extended_Pictographic})/u.test(part)
+        emojiTest.test(part)
           ? <span key={i} className="emoji-char">{part}</span>
           : part
       )}
