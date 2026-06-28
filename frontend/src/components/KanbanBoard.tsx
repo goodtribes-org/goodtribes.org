@@ -372,6 +372,7 @@ function KanbanCardItem({
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState("writer");
   const [additionalContext, setAdditionalContext] = useState("");
+  const [localSubtasks, setLocalSubtasks] = useState(card.subtasks ?? []);
   const [, startTransition] = useTransition();
 
   const due = formatDate(card.dueDate);
@@ -412,41 +413,39 @@ function KanbanCardItem({
         <p className="text-xs text-gray-500 mt-1 leading-snug line-clamp-2">{card.description}</p>
       )}
 
-      {card.subtasks && card.subtasks.length > 0 && (
+      {localSubtasks.length > 0 && (
         <div
           className="mt-2 space-y-1"
           onClick={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
         >
-          {(() => {
-            const doneCount = card.subtasks.filter((s) => s.done).length;
-            const total = card.subtasks.length;
-            return (
-              <>
-                <div className="flex items-center gap-1 mb-1">
-                  <span className={`text-xs font-medium ${doneCount === total ? "text-green-600" : "text-gray-400"}`}>
-                    {doneCount}/{total} klart
-                  </span>
-                </div>
-                {card.subtasks.map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => { startTransition(async () => { await toggleSubtask(s.id, !s.done); }); }}
-                    className="flex items-center gap-1.5 w-full text-left group/sub"
-                  >
-                    <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"}`}>
-                      {s.done && (
-                        <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
-                    </span>
-                    <span className={`text-xs leading-snug ${s.done ? "line-through text-gray-400" : "text-gray-600"}`}>{s.title}</span>
-                  </button>
-                ))}
-              </>
-            );
-          })()}
+          <span className={`text-xs font-medium ${localSubtasks.every((s) => s.done) ? "text-green-600" : "text-gray-400"}`}>
+            {localSubtasks.filter((s) => s.done).length}/{localSubtasks.length} klart
+          </span>
+          {localSubtasks.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (s.id.startsWith("temp-")) return;
+                setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: !t.done } : t));
+                startTransition(async () => {
+                  await toggleSubtask(s.id, !s.done);
+                });
+              }}
+              className="flex items-center gap-1.5 w-full text-left group/sub"
+            >
+              <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"}`}>
+                {s.done && (
+                  <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </span>
+              <span className={`text-xs leading-snug ${s.done ? "line-through text-gray-400" : "text-gray-600"}`}>{s.title}</span>
+            </button>
+          ))}
         </div>
       )}
 
