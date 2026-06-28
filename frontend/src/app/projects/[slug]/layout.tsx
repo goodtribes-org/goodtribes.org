@@ -114,7 +114,7 @@ export default async function ProjectLayout({
         {/* Content layer — title above, cards below (may overflow bg) */}
         <div className="relative z-10">
           {/* Project title */}
-          <div className="flex justify-center pt-12 pb-6 px-6">
+          <div className="flex justify-center pt-5 pb-3 px-6">
             <h1
               className="text-5xl md:text-6xl font-bold text-center leading-tight"
               style={{
