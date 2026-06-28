@@ -54,7 +54,7 @@ export default async function ProjectLayout({
         members: {
           select: { user: { select: { name: true, image: true } } },
           orderBy: { joinedAt: "asc" },
-          take: 8,
+          take: 12,
         },
         _count: { select: { members: true } },
       },
@@ -87,98 +87,182 @@ export default async function ProjectLayout({
 
   return (
     <>
-      {/* Full-bleed hero with title overlay — flush with header */}
+      {/* Full-bleed hero: blurred background + two photo cards */}
       <div
         className="relative -mt-8"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
-        <div className="relative w-full h-64 md:h-[480px]">
+        <div className="relative overflow-hidden" style={{ minHeight: "320px" }}>
+          {/* Blurred background image */}
           {project.imageUrl ? (
-            <Image
-              src={project.imageUrl}
-              alt={project.title}
-              fill
-              unoptimized
-              className="object-cover"
-              sizes="100vw"
-            />
+            <>
+              <Image
+                src={project.imageUrl}
+                alt=""
+                fill
+                unoptimized
+                className="object-cover scale-110 blur-md"
+                sizes="100vw"
+              />
+              <div className="absolute inset-0 bg-black/40" />
+            </>
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-dark-slate to-dark-slate/70" />
+            <div className="absolute inset-0 bg-gradient-to-br from-dark-slate to-dark-slate/70" />
           )}
-          {/* Top-right: member avatar cluster */}
-          <div className="absolute top-4 right-4 md:top-6 md:right-6 flex flex-col items-end gap-2">
-            {/* Owner avatar (large) */}
-            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full ring-2 ring-white/70 overflow-hidden bg-dark-slate/60 flex items-center justify-center text-white font-bold text-lg shrink-0 relative">
-              {project.owner.image ? (
-                <Image src={project.owner.image} alt={project.owner.name ?? ""} fill className="object-cover" unoptimized />
-              ) : (
-                (project.owner.name ?? "?").charAt(0).toUpperCase()
-              )}
-            </div>
-            {/* Team member avatars (small row) */}
-            {project.members.length > 0 && (
-              <div className="flex -space-x-2">
-                {project.members.slice(0, 6).map((m, i) => {
-                  const initials = (m.user.name ?? "?").charAt(0).toUpperCase();
-                  return (
-                    <div
-                      key={i}
-                      title={m.user.name ?? ""}
-                      className="w-8 h-8 rounded-full ring-2 ring-white/60 overflow-hidden bg-dark-slate/60 flex items-center justify-center text-white text-xs font-semibold shrink-0 relative"
-                    >
-                      {m.user.image ? (
-                        <Image src={m.user.image} alt={m.user.name ?? ""} fill className="object-cover" unoptimized />
-                      ) : (
-                        initials
-                      )}
-                    </div>
-                  );
-                })}
-                {project._count.members > 6 && (
-                  <div className="w-8 h-8 rounded-full ring-2 ring-white/60 bg-black/50 flex items-center justify-center text-white text-xs font-semibold">
-                    +{project._count.members - 6}
+
+          {/* Two cards centred within content width */}
+          <div className="relative z-10 flex items-center justify-center px-4 py-8 md:py-10">
+            <div className="w-full max-w-5xl flex flex-col md:flex-row gap-4 md:gap-6 items-stretch">
+
+              {/* Card 1: project image (photo/lapp-känsla) */}
+              <div
+                className="shrink-0 w-full md:w-72 bg-white rounded-2xl overflow-hidden"
+                style={{
+                  boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
+                  minHeight: "200px",
+                }}
+              >
+                {project.imageUrl ? (
+                  <div className="relative w-full h-full" style={{ minHeight: "200px" }}>
+                    <Image
+                      src={project.imageUrl}
+                      alt={project.title}
+                      fill
+                      unoptimized
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className="w-full h-full flex items-center justify-center bg-dry-sage/20"
+                    style={{ minHeight: "200px" }}
+                  >
+                    <span className="text-6xl font-bold text-dark-slate/20">
+                      {project.title[0]}
+                    </span>
                   </div>
                 )}
               </div>
-            )}
-          </div>
 
-          {/* Bottom: title + owner overlay */}
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-6 pb-6 pt-24">
-            <div className="max-w-5xl mx-auto flex items-end justify-between gap-4">
-              <div className="min-w-0">
-                <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight drop-shadow">
-                  {project.title}
-                </h1>
-                <p className="text-white/70 text-sm mt-2">
-                  av <span className="text-white/90 font-medium">{project.owner.name ?? "Okänd"}</span>
-                  {project.org && (
-                    <>
-                      {" "}·{" "}
-                      <Link href={`/org/${project.org.slug}`} className="text-white/70 hover:text-white transition-colors">
-                        {project.org.name}
-                      </Link>
-                    </>
+              {/* Card 2: team + SDG + join */}
+              <div
+                className="flex-1 bg-white rounded-2xl p-5 flex flex-col"
+                style={{
+                  boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
+                }}
+              >
+                {/* Header: title + edit */}
+                <div className="flex items-start justify-between gap-2 mb-4">
+                  <div className="min-w-0">
+                    <h1 className="text-xl md:text-2xl font-bold text-dark-slate leading-tight">
+                      {project.title}
+                    </h1>
+                    <p className="text-xs text-dark-slate/50 mt-0.5">
+                      av{" "}
+                      <span className="text-dark-slate/70 font-medium">
+                        {project.owner.name ?? "Okänd"}
+                      </span>
+                      {project.org && (
+                        <>
+                          {" "}·{" "}
+                          <Link
+                            href={`/org/${project.org.slug}`}
+                            className="hover:text-seagrass transition-colors"
+                          >
+                            {project.org.name}
+                          </Link>
+                        </>
+                      )}
+                    </p>
+                  </div>
+                  {isOwner && (
+                    <Link
+                      href={`/projects/${slug}/edit`}
+                      className="shrink-0 px-2.5 py-1 rounded border border-muted-teal/50 text-xs text-dark-slate/50 hover:text-dark-slate transition-colors"
+                    >
+                      Redigera
+                    </Link>
                   )}
-                </p>
-              </div>
-              {isOwner && (
+                </div>
+
+                {/* Team member avatars */}
+                {project.members.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs font-medium text-dark-slate/40 mb-2 uppercase tracking-wide">
+                      Teamet · {project._count.members} {project._count.members === 1 ? "medlem" : "medlemmar"}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {project.members.map((m, i) => {
+                        const initials = (m.user.name ?? "?").charAt(0).toUpperCase();
+                        return (
+                          <div
+                            key={i}
+                            title={m.user.name ?? ""}
+                            className="w-10 h-10 rounded-full overflow-hidden bg-dry-sage ring-2 ring-white relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0"
+                          >
+                            {m.user.image ? (
+                              <Image
+                                src={m.user.image}
+                                alt={m.user.name ?? ""}
+                                fill
+                                className="object-cover"
+                                unoptimized
+                              />
+                            ) : (
+                              initials
+                            )}
+                          </div>
+                        );
+                      })}
+                      {project._count.members > 12 && (
+                        <div className="w-10 h-10 rounded-full ring-2 ring-white bg-muted-teal/20 flex items-center justify-center text-xs font-semibold text-dark-slate/60">
+                          +{project._count.members - 12}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* SDG badges */}
+                {project.sdgGoals.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {project.sdgGoals.map((n) => {
+                      const info = SDG_INFO[n];
+                      return (
+                        <span
+                          key={n}
+                          title={`SDG ${n}: ${info?.label ?? ""}`}
+                          className="text-xs font-bold px-2.5 py-1 rounded-full text-white"
+                          style={{ backgroundColor: info?.color ?? "#888" }}
+                        >
+                          SDG {n}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Spacer */}
+                <div className="flex-1" />
+
+                {/* Join button */}
                 <Link
-                  href={`/projects/${slug}/edit`}
-                  className="shrink-0 px-3 py-1.5 rounded border border-white/40 text-xs font-medium text-white/80 hover:text-white hover:border-white/70 transition-colors backdrop-blur-sm"
+                  href={`/projects/${slug}`}
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-seagrass text-white rounded-xl font-semibold text-sm hover:bg-seagrass/90 transition-colors self-start"
                 >
-                  Redigera
+                  Gå med i projektet →
                 </Link>
-              )}
+              </div>
+
             </div>
           </div>
         </div>
       </div>
 
-      {/* Below-hero meta bar — tags, stage, SDG, members, funding */}
-      <div className="py-4 border-b border-muted-teal/20 mb-2">
-        <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
-          <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
+      {/* Below-hero: stage, tags, funding progress */}
+      <div className="py-3 border-b border-muted-teal/20 mb-2">
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-xs font-semibold px-2.5 py-1 bg-seagrass/20 text-seagrass rounded-full">
               {STAGES[stageIndex]}
             </span>
@@ -188,42 +272,29 @@ export default async function ProjectLayout({
               </span>
             )}
             {(project.tags ?? []).map((tag) => (
-              <span key={tag} className="text-xs border border-muted-teal/60 text-dark-slate/60 px-2.5 py-1 rounded-full">
+              <span
+                key={tag}
+                className="text-xs border border-muted-teal/60 text-dark-slate/60 px-2.5 py-1 rounded-full"
+              >
                 #{tag}
               </span>
             ))}
-            {project.sdgGoals.map((n) => {
-              const info = SDG_INFO[n];
-              return (
-                <span
-                  key={n}
-                  title={`SDG ${n}: ${info?.label ?? ""}`}
-                  className="text-xs font-bold px-2.5 py-1 rounded-full text-white cursor-default"
-                  style={{ backgroundColor: info?.color ?? "#888" }}
-                >
-                  SDG {n}
-                </span>
-              );
-            })}
-          </div>
-          <div className="flex items-center gap-4 shrink-0 text-sm text-dark-slate/60">
-            <span>👥 {project._count.members} {project._count.members === 1 ? "medlem" : "medlemmar"}</span>
             {fundingCampaign && (
-              <span className="font-semibold text-dark-slate">
-                {fundingPct}% finansierat
-                {daysLeft !== null && <span className="font-normal text-dark-slate/50"> · {daysLeft} dagar kvar</span>}
+              <span className="ml-auto text-xs text-dark-slate/50">
+                <span className="font-semibold text-dark-slate">{fundingPct}%</span> finansierat
+                {daysLeft !== null && ` · ${daysLeft} dagar kvar`}
               </span>
             )}
           </div>
+          {fundingCampaign && (
+            <div className="w-full h-1.5 bg-muted-teal/20 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-coral rounded-full transition-all"
+                style={{ width: `${fundingPct}%` }}
+              />
+            </div>
+          )}
         </div>
-        {fundingCampaign && (
-          <div className="w-full h-1.5 bg-muted-teal/20 rounded-full overflow-hidden mt-3">
-            <div
-              className="h-full bg-coral rounded-full transition-all"
-              style={{ width: `${fundingPct}%` }}
-            />
-          </div>
-        )}
       </div>
 
       {/* Tab nav */}
