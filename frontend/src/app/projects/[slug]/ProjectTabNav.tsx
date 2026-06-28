@@ -27,7 +27,9 @@ export default function ProjectTabNav({ slug }: { slug: string }) {
   const base = `/projects/${slug}`;
 
   return (
-    <div className="flex flex-wrap gap-x-1 gap-y-0">
+    <div className="flex flex-nowrap overflow-x-auto gap-x-1 scrollbar-none"
+      style={{ scrollbarWidth: "none" }}
+    >
       {ALL_TABS.map((tab) => {
         const href = `${base}${tab.href}`;
         const isActive =
