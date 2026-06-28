@@ -137,7 +137,7 @@ export default async function ProjectLayout({
                 style={{
                   width: "820px",
                   height: "460px",
-                  border: "12px solid white",
+                  border: "24px solid white",
                   boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
                 }}
               >
