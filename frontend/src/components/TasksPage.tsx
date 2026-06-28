@@ -70,7 +70,15 @@ export default function TasksPage({
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-      <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+      {isLoggedIn && (
+        <button
+          onClick={() => setAddColKey("BACKLOG")}
+          className="flex items-center gap-1.5 bg-coral text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-watermelon transition-colors"
+        >
+          <span className="text-base leading-none font-bold">+</span> Add task
+        </button>
+      )}
+      <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 ml-auto">
         <button
           onClick={() => switchView("board")}
           className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
@@ -92,14 +100,6 @@ export default function TasksPage({
           Lista
         </button>
       </div>
-      {isLoggedIn && (
-        <button
-          onClick={() => setAddColKey("BACKLOG")}
-          className="flex items-center gap-1.5 bg-coral text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-watermelon transition-colors"
-        >
-          <span className="text-base leading-none font-bold">+</span> Add task
-        </button>
-      )}
       </div>
 
       {view === "board" && (
