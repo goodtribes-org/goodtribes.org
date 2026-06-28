@@ -6,8 +6,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import ReplyForm from "./ReplyForm";
 import StatusActions from "./StatusActions";
-import { ReactionBar } from "@/components/ReactionBar";
-import { togglePostReaction, toggleReplyReaction } from "../actions";
+import { ForumPostReactionBar, ForumReplyReactionBar } from "@/components/ForumReactionBar";
 
 
 function timeAgo(date: Date): string {
@@ -118,7 +117,6 @@ export default async function ForumPostPage({
   }
 
   const currentUserId = session?.user?.id ?? null;
-  const canReact = !!currentUserId;
 
   const totalReplies = post.replies.reduce(
     (acc, r) => acc + 1 + (r.children?.length ?? 0) + (r.children?.reduce((a, c) => a + (c.children?.length ?? 0), 0) ?? 0),
@@ -176,11 +174,11 @@ export default async function ForumPostPage({
         {/* Body */}
         {renderBody(post.body)}
 
-        <ReactionBar
+        <ForumPostReactionBar
+          postId={post.id}
+          slug={slug}
           reactions={post.reactions}
           currentUserId={currentUserId}
-          canAdd={canReact}
-          onToggle={(emoji) => togglePostReaction(post.id, slug, emoji)}
         />
 
         {/* Status actions */}
@@ -221,11 +219,12 @@ export default async function ForumPostPage({
                   <span>{timeAgo(reply.createdAt)}</span>
                 </div>
                 {renderBody(reply.body)}
-                <ReactionBar
+                <ForumReplyReactionBar
+                  replyId={reply.id}
+                  postId={post.id}
+                  slug={slug}
                   reactions={reply.reactions}
                   currentUserId={currentUserId}
-                  canAdd={canReact}
-                  onToggle={(emoji) => toggleReplyReaction(reply.id, post.id, slug, emoji)}
                 />
               </div>
 
@@ -250,11 +249,12 @@ export default async function ForumPostPage({
                           <span>{timeAgo(child.createdAt)}</span>
                         </div>
                         {renderBody(child.body)}
-                        <ReactionBar
+                        <ForumReplyReactionBar
+                          replyId={child.id}
+                          postId={post.id}
+                          slug={slug}
                           reactions={child.reactions}
                           currentUserId={currentUserId}
-                          canAdd={canReact}
-                          onToggle={(emoji) => toggleReplyReaction(child.id, post.id, slug, emoji)}
                         />
                       </div>
 
@@ -281,11 +281,12 @@ export default async function ForumPostPage({
                                 <span>{timeAgo(grandchild.createdAt)}</span>
                               </div>
                               {renderBody(grandchild.body)}
-                              <ReactionBar
+                              <ForumReplyReactionBar
+                                replyId={grandchild.id}
+                                postId={post.id}
+                                slug={slug}
                                 reactions={grandchild.reactions}
                                 currentUserId={currentUserId}
-                                canAdd={canReact}
-                                onToggle={(emoji) => toggleReplyReaction(grandchild.id, post.id, slug, emoji)}
                               />
                             </div>
                           ))}
