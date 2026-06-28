@@ -225,6 +225,7 @@ model KanbanCard {
   title       String
   description String?
   dueDate     DateTime?
+  startDate   DateTime?
   priority    String    @default("normal")
   assigneeId  String?
   column      String    @default("BACKLOG")

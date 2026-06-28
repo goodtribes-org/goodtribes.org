@@ -15,6 +15,7 @@ export async function createCard(
   dueDate?: string,
   priority?: string,
   assigneeId?: string,
+  startDate?: string,
 ) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
@@ -33,6 +34,7 @@ export async function createCard(
       createdById: session.user.id,
       description: description?.trim() || null,
       dueDate: dueDate ? new Date(dueDate) : null,
+      startDate: startDate ? new Date(startDate) : null,
       priority: priority || "normal",
       assigneeId: assigneeId || null,
     },
@@ -56,7 +58,7 @@ export async function createCard(
 
 export async function updateCard(
   cardId: string,
-  data: { title?: string; description?: string | null; dueDate?: string | null; priority?: string; assigneeId?: string | null },
+  data: { title?: string; description?: string | null; dueDate?: string | null; startDate?: string | null; priority?: string; assigneeId?: string | null },
 ) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
@@ -70,12 +72,14 @@ export async function updateCard(
       ...(data.title !== undefined ? { title: data.title.trim() } : {}),
       ...(data.description !== undefined ? { description: data.description?.trim() || null } : {}),
       ...(data.dueDate !== undefined ? { dueDate: data.dueDate ? new Date(data.dueDate) : null } : {}),
+      ...(data.startDate !== undefined ? { startDate: data.startDate ? new Date(data.startDate) : null } : {}),
       ...(data.priority !== undefined ? { priority: data.priority } : {}),
       ...(data.assigneeId !== undefined ? { assigneeId: data.assigneeId || null } : {}),
     },
   });
 
   revalidatePath(`/projects/${card.projectSlug}/kanban`);
+  revalidatePath(`/projects/${card.projectSlug}/calendar`);
 }
 
 async function updateStreak(userId: string, projectSlug: string) {

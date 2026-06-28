@@ -31,6 +31,7 @@ type Card = {
   title: string;
   description: string | null;
   dueDate: Date | string | null;
+  startDate?: Date | string | null;
   column: string;
   order: number;
   priority: string;
@@ -119,6 +120,7 @@ function AddCardModal({
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState("normal");
   const [assigneeId, setAssigneeId] = useState("");
@@ -140,6 +142,7 @@ function AddCardModal({
       projectSlug,
       title: title.trim(),
       description: description.trim() || null,
+      startDate: startDate || null,
       dueDate: dueDate || null,
       column,
       order: 9999,
@@ -151,10 +154,10 @@ function AddCardModal({
       updatedAt: new Date(),
       createdBy: null,
     });
-    const [t, desc, due, pri, asgn] = [title, description, dueDate, priority, assigneeId];
-    startTransition(async () => { await createCard(projectSlug, t, column, desc, due, pri, asgn || undefined); });
+    const [t, desc, sd, due, pri, asgn] = [title, description, startDate, dueDate, priority, assigneeId];
+    startTransition(async () => { await createCard(projectSlug, t, column, desc, due, pri, asgn || undefined, sd || undefined); });
     if (andAnother) {
-      setTitle(""); setDescription(""); setDueDate("");
+      setTitle(""); setDescription(""); setStartDate(""); setDueDate("");
       setPriority("normal"); setAssigneeId("");
       titleRef.current?.focus();
     } else {
@@ -185,6 +188,16 @@ function AddCardModal({
               onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
               placeholder="Type a card title..."
               className="flex-1 text-sm text-gray-800 placeholder-gray-400 border-0 border-b border-gray-200 focus:border-blue-400 focus:outline-none py-1.5 transition-colors"
+            />
+          </div>
+
+          <div className="flex items-start gap-4">
+            <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Start</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="flex-1 text-sm text-gray-800 border-0 border-b border-gray-200 focus:border-blue-400 focus:outline-none py-1.5 transition-colors"
             />
           </div>
 

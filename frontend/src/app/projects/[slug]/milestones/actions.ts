@@ -30,6 +30,7 @@ export async function createMilestone(projectId: string, slug: string, formData:
 
   await logActivity(projectId, session.user.id, "milestone_added", { title: milestone.title });
   revalidatePath(`/projects/${slug}/milestones`);
+  revalidatePath(`/projects/${slug}/calendar`);
 }
 
 export async function toggleMilestone(id: string, slug: string): Promise<void> {
@@ -47,6 +48,7 @@ export async function toggleMilestone(id: string, slug: string): Promise<void> {
     await logActivity(milestone.projectId, session.user.id, "milestone_completed", { title: milestone.title });
   }
   revalidatePath(`/projects/${slug}/milestones`);
+  revalidatePath(`/projects/${slug}/calendar`);
 }
 
 export async function deleteMilestone(id: string, slug: string): Promise<void> {
@@ -59,4 +61,5 @@ export async function deleteMilestone(id: string, slug: string): Promise<void> {
 
   await prisma.milestone.delete({ where: { id } });
   revalidatePath(`/projects/${slug}/milestones`);
+  revalidatePath(`/projects/${slug}/calendar`);
 }
