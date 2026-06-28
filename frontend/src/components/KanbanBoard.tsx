@@ -153,6 +153,7 @@ function AddCardModal({
 
   function submit(andAnother = false) {
     if (!title.trim()) return;
+    const allSubs = subtaskInput.trim() ? [...subtasks, subtaskInput.trim()] : subtasks;
     const assignee = members.find((m) => m.id === assigneeId) ?? null;
     onAdd({
       id: `temp-${Date.now()}`,
@@ -170,9 +171,9 @@ function AddCardModal({
       createdAt: new Date(),
       updatedAt: new Date(),
       createdBy: null,
-      subtasks: subtasks.map((t, i) => ({ id: `temp-sub-${i}`, title: t, done: false, order: i })),
+      subtasks: allSubs.map((t, i) => ({ id: `temp-sub-${i}`, title: t, done: false, order: i })),
     });
-    const [t, desc, sd, due, pri, asgn, subs] = [title, description, startDate, dueDate, priority, assigneeId, subtasks];
+    const [t, desc, sd, due, pri, asgn, subs] = [title, description, startDate, dueDate, priority, assigneeId, allSubs];
     startTransition(async () => { await createCard(projectSlug, t, column, desc, due, pri, asgn || undefined, sd || undefined, subs.length ? subs : undefined); });
     if (andAnother) {
       setTitle(""); setDescription(""); setStartDate(""); setDueDate("");
