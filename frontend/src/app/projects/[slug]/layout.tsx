@@ -92,7 +92,7 @@ export default async function ProjectLayout({
         className="relative -mt-8"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
-        <div className="relative overflow-hidden" style={{ minHeight: "320px" }}>
+        <div className="relative overflow-hidden" style={{ minHeight: "500px" }}>
           {/* Blurred background image */}
           {project.imageUrl ? (
             <>
@@ -110,20 +110,21 @@ export default async function ProjectLayout({
             <div className="absolute inset-0 bg-gradient-to-br from-dark-slate to-dark-slate/70" />
           )}
 
-          {/* Two cards centred within content width */}
-          <div className="relative z-10 flex items-center justify-center px-4 py-8 md:py-10">
-            <div className="w-full max-w-5xl flex flex-col md:flex-row gap-4 md:gap-6 items-stretch">
+          {/* Two cards */}
+          <div className="relative z-10 flex items-center justify-center px-4 py-8">
+            <div className="flex flex-col md:flex-row gap-5 items-stretch">
 
-              {/* Card 1: project image (photo/lapp-känsla) */}
+              {/* Card 1: project image — 820 × 460 */}
               <div
-                className="shrink-0 w-full md:w-72 bg-white rounded-2xl overflow-hidden"
+                className="shrink-0 bg-white rounded-2xl overflow-hidden w-full"
                 style={{
+                  width: "820px",
+                  height: "460px",
                   boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
-                  minHeight: "200px",
                 }}
               >
                 {project.imageUrl ? (
-                  <div className="relative w-full h-full" style={{ minHeight: "200px" }}>
+                  <div className="relative w-full h-full">
                     <Image
                       src={project.imageUrl}
                       alt={project.title}
@@ -133,10 +134,7 @@ export default async function ProjectLayout({
                     />
                   </div>
                 ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center bg-dry-sage/20"
-                    style={{ minHeight: "200px" }}
-                  >
+                  <div className="w-full h-full flex items-center justify-center bg-dry-sage/20">
                     <span className="text-6xl font-bold text-dark-slate/20">
                       {project.title[0]}
                     </span>
@@ -144,10 +142,12 @@ export default async function ProjectLayout({
                 )}
               </div>
 
-              {/* Card 2: team + SDG + join */}
+              {/* Card 2: team + SDG + join — 420 × 460 */}
               <div
-                className="flex-1 bg-white rounded-2xl p-5 flex flex-col"
+                className="shrink-0 bg-white rounded-2xl p-5 flex flex-col"
                 style={{
+                  width: "420px",
+                  height: "460px",
                   boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
                 }}
               >
