@@ -375,8 +375,9 @@ export default function TodoPage({
   const [, startTransition] = useTransition();
 
   function handleCreateList(name: string) {
+    const tempId = `temp-${Date.now()}`;
     const optimistic: TodoList = {
-      id: `temp-${Date.now()}`,
+      id: tempId,
       projectSlug,
       name,
       order: lists.length,
@@ -385,7 +386,14 @@ export default function TodoPage({
       items: [],
     };
     setLists((prev) => [...prev, optimistic]);
-    startTransition(async () => { await createList(projectSlug, name); });
+    startTransition(async () => {
+      const result = await createList(projectSlug, name);
+      if (result && "list" in result) {
+        setLists((prev) =>
+          prev.map((l) => (l.id === tempId ? (result.list as TodoList) : l))
+        );
+      }
+    });
   }
 
   function handleDeleteList(listId: string) {

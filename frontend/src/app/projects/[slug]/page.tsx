@@ -192,7 +192,7 @@ export default async function ProjectDetailPage({
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-  const [latestUpdate, fundingCampaign, monthEvents, userJoinRequest] =
+  const [latestUpdate, fundingCampaign, monthEvents, userJoinRequest, kanbanCards, todoLists, recentMessages, forumPosts] =
     await Promise.all([
       prisma.blogPost.findFirst({
         where: { projectSlug: slug },
@@ -224,6 +224,48 @@ export default async function ProjectDetailPage({
             select: { status: true },
           })
         : Promise.resolve(null),
+      prisma.kanbanCard.findMany({
+        where: { projectSlug: slug },
+        select: { column: true, title: true, priority: true },
+        orderBy: [{ column: "asc" }, { order: "asc" }],
+      }),
+      prisma.todoList.findMany({
+        where: { projectSlug: slug },
+        orderBy: { order: "asc" },
+        select: {
+          id: true,
+          name: true,
+          items: {
+            select: { id: true, title: true, done: true, dueDate: true },
+            orderBy: { order: "asc" },
+          },
+        },
+      }),
+      prisma.projectMessage.findMany({
+        where: { project: { slug } },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          body: true,
+          createdAt: true,
+          author: { select: { name: true, image: true } },
+        },
+      }),
+      prisma.forumPost.findMany({
+        where: { projectSlug: slug },
+        orderBy: { createdAt: "desc" },
+        take: 4,
+        select: {
+          id: true,
+          title: true,
+          body: true,
+          createdAt: true,
+          pinned: true,
+          author: { select: { name: true, image: true } },
+          _count: { select: { replies: true } },
+        },
+      }),
     ]);
 
   const raised =
@@ -303,56 +345,6 @@ export default async function ProjectDetailPage({
         {/* Right sidebar */}
         <div className="flex flex-col gap-5">
 
-          {/* The Team */}
-          <section>
-            <h2 className="text-sm font-semibold text-dark-slate mb-3">Teamet</h2>
-            {project.members.length > 0 ? (
-              isOwnerOrAdmin && userId ? (
-                <TeamManager
-                  projectId={project.id}
-                  slug={slug}
-                  members={project.members.map((m) => ({
-                    userId: m.userId,
-                    role: m.role,
-                    user: {
-                      id: m.user.id,
-                      name: m.user.name,
-                      image: m.user.image,
-                      showProfile: m.user.showProfile,
-                    },
-                  }))}
-                  currentUserId={userId}
-                />
-              ) : (
-                <div className="grid grid-cols-4 gap-3">
-                  {project.members.map((m) => (
-                    <div key={m.id} className="flex flex-col items-center gap-1">
-                      <MemberAvatar
-                        name={m.user.name ?? "?"}
-                        image={m.user.image}
-                        href={m.user.showProfile ? `/members/${m.user.id}` : undefined}
-                      />
-                      {userId && m.user.id !== userId && (
-                        <KudosButton
-                          toUserId={m.user.id}
-                          toUserName={m.user.name ?? ""}
-                          projectId={project.id}
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )
-            ) : (
-              <p className="text-xs text-dark-slate/40">Inga medlemmar ännu.</p>
-            )}
-            {isOwnerOrAdmin && (
-              <div className="mt-3">
-                <InviteForm projectId={project.id} slug={slug} />
-              </div>
-            )}
-          </section>
-
           {/* Skills needed */}
           {project.neededSkills.length > 0 && (
             <section>
@@ -396,6 +388,211 @@ export default async function ProjectDetailPage({
                   );
                 })}
               </ul>
+            </section>
+          )}
+
+          {/* Kanban summary — bar chart */}
+          {kanbanCards.length > 0 && (() => {
+            const cols = [
+              { key: "BACKLOG", label: "Backlog",  bg: "#b2b09b" },
+              { key: "TODO",    label: "Att göra", bg: "#7bad93" },
+              { key: "DOING",   label: "Pågår",    bg: "#ff6f59" },
+              { key: "REVIEW",  label: "Granskas", bg: "#f59e0b" },
+              { key: "DONE",    label: "Klart",    bg: "#43aa8b" },
+            ];
+            const counts = cols.map(c => kanbanCards.filter(k => k.column === c.key).length);
+            const max = Math.max(...counts, 1);
+            const total = kanbanCards.length;
+            const done = counts[4];
+            return (
+              <section className="border border-muted-teal/30 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold text-dark-slate">Arbete</h2>
+                  <Link href={`/projects/${slug}/kanban`} className="text-xs text-seagrass hover:underline">
+                    Öppna →
+                  </Link>
+                </div>
+
+                {/* Vertical bar chart */}
+                <div className="flex items-end justify-between gap-1.5 mb-2">
+                  {cols.map(({ key, label, bg }, i) => {
+                    const count = counts[i];
+                    const barH = count === 0 ? 4 : Math.max(8, Math.round((count / max) * 80));
+                    return (
+                      <div key={key} className="flex flex-col items-center gap-1 flex-1" title={`${label}: ${count}`}>
+                        <span className="text-[10px] font-semibold text-dark-slate tabular-nums">{count}</span>
+                        <div
+                          className="w-full rounded-t-sm"
+                          style={{ height: `${barH}px`, backgroundColor: bg }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Labels */}
+                <div className="flex justify-between gap-1.5">
+                  {cols.map(({ key, label }) => (
+                    <div key={key} className="flex-1 text-center">
+                      <span className="text-[9px] text-dark-slate/50 leading-tight block truncate">{label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <p className="text-xs text-dark-slate/40 mt-3 text-center">
+                  {done} av {total} uppgifter klara
+                </p>
+              </section>
+            );
+          })()}
+
+          {/* Todo summary */}
+          {todoLists.length > 0 && (() => {
+            const allItems = todoLists.flatMap(l => l.items);
+            const total = allItems.length;
+            const done = allItems.filter(i => i.done).length;
+            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+            const overdue = allItems.filter(i => !i.done && i.dueDate && new Date(i.dueDate) < new Date());
+            return (
+              <section className="border border-muted-teal/30 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold text-dark-slate">Todos</h2>
+                  <Link href={`/projects/${slug}/todos`} className="text-xs text-seagrass hover:underline">
+                    Öppna →
+                  </Link>
+                </div>
+
+                {/* Progress bar */}
+                <div className="w-full h-2 bg-muted-teal/20 rounded-full overflow-hidden mb-1">
+                  <div className="h-full bg-seagrass rounded-full transition-all" style={{ width: `${pct}%` }} />
+                </div>
+                <p className="text-xs text-dark-slate/50 mb-3">{done} av {total} klara · {pct}%</p>
+
+                {/* Lists */}
+                <div className="space-y-3">
+                  {todoLists.map(list => {
+                    const listDone = list.items.filter(i => i.done).length;
+                    const listTotal = list.items.length;
+                    const undone = list.items.filter(i => !i.done).slice(0, 3);
+                    return (
+                      <div key={list.id}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-medium text-dark-slate truncate">{list.name}</span>
+                          <span className="text-xs text-dark-slate/40 shrink-0 ml-2">{listDone}/{listTotal}</span>
+                        </div>
+                        <ul className="space-y-1">
+                          {undone.map(item => (
+                            <li key={item.id} className="flex items-start gap-2 text-xs text-dark-slate/60">
+                              <span className="mt-0.5 w-3 h-3 shrink-0 rounded border border-muted-teal/50" />
+                              <span className="leading-snug truncate">{item.title}</span>
+                            </li>
+                          ))}
+                          {list.items.filter(i => !i.done).length > 3 && (
+                            <li className="text-xs text-dark-slate/40 pl-5">
+                              +{list.items.filter(i => !i.done).length - 3} till…
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {overdue.length > 0 && (
+                  <p className="text-xs text-coral mt-3">
+                    ⚠ {overdue.length} försenad{overdue.length !== 1 ? "e" : ""}
+                  </p>
+                )}
+              </section>
+            );
+          })()}
+
+          {/* Chat preview */}
+          {recentMessages.length > 0 && (
+            <section className="border border-muted-teal/30 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-dark-slate">Chatt</h2>
+                <Link href={`/projects/${slug}/chat`} className="text-xs text-seagrass hover:underline">
+                  Öppna →
+                </Link>
+              </div>
+              <ul className="space-y-3">
+                {[...recentMessages].reverse().map((msg) => {
+                  const initials = (msg.author.name ?? "?").charAt(0).toUpperCase();
+                  return (
+                    <li key={msg.id} className="flex gap-2 items-start">
+                      <div className="w-6 h-6 rounded-full bg-dry-sage shrink-0 flex items-center justify-center text-[10px] font-bold text-dark-slate overflow-hidden relative mt-0.5">
+                        {msg.author.image ? (
+                          <Image src={msg.author.image} alt={msg.author.name ?? ""} fill className="object-cover" unoptimized />
+                        ) : initials}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-xs font-semibold text-dark-slate truncate">
+                            {msg.author.name?.split(" ")[0] ?? "?"}
+                          </span>
+                          <span className="text-[10px] text-dark-slate/40 shrink-0">
+                            {relativeTime(msg.createdAt)}
+                          </span>
+                        </div>
+                        <p className="text-xs text-dark-slate/70 leading-snug line-clamp-2">{msg.body}</p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+              <Link
+                href={`/projects/${slug}/chat`}
+                className="mt-3 block text-center text-xs text-white bg-seagrass hover:bg-seagrass/90 rounded-lg py-1.5 transition-colors"
+              >
+                Skriv ett meddelande
+              </Link>
+            </section>
+          )}
+
+          {/* Forum posts */}
+          {forumPosts.length > 0 && (
+            <section className="border border-muted-teal/30 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-dark-slate">Meddelanden</h2>
+                <Link href={`/projects/${slug}/forum`} className="text-xs text-seagrass hover:underline">
+                  Öppna →
+                </Link>
+              </div>
+              <ul className="space-y-2.5">
+                {forumPosts.map((post) => (
+                  <li key={post.id}>
+                    <Link href={`/projects/${slug}/forum`} className="group block">
+                      <div className="flex items-start gap-2">
+                        {post.pinned && (
+                          <span className="text-[9px] font-bold text-coral bg-coral/10 px-1.5 py-0.5 rounded shrink-0 mt-0.5">
+                            FÄST
+                          </span>
+                        )}
+                        <p className="text-xs font-medium text-dark-slate group-hover:text-seagrass transition-colors leading-snug line-clamp-2 flex-1">
+                          {post.title}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1 ml-0.5">
+                        <span className="text-[10px] text-dark-slate/40">
+                          {post.author.name?.split(" ")[0]} · {relativeTime(post.createdAt)}
+                        </span>
+                        {post._count.replies > 0 && (
+                          <span className="text-[10px] text-dark-slate/40">
+                            💬 {post._count.replies}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={`/projects/${slug}/forum`}
+                className="mt-3 block text-center text-xs text-white bg-seagrass hover:bg-seagrass/90 rounded-lg py-1.5 transition-colors"
+              >
+                Nytt meddelande
+              </Link>
             </section>
           )}
 

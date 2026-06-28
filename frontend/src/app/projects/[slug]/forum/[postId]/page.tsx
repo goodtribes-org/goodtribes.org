@@ -46,6 +46,18 @@ const STATUS_COLORS: Record<string, string> = {
   decided: "bg-blue-100 text-blue-700",
 };
 
+function renderBody(body: string) {
+  if (body.trimStart().startsWith("<")) {
+    return (
+      <div
+        className="text-sm text-dark-slate/80 leading-relaxed prose prose-sm max-w-none prose-img:rounded-xl prose-img:max-w-full"
+        dangerouslySetInnerHTML={{ __html: body }}
+      />
+    );
+  }
+  return <p className="text-sm text-dark-slate/80 whitespace-pre-wrap leading-relaxed">{body}</p>;
+}
+
 export default async function ForumPostPage({
   params,
 }: {
@@ -151,9 +163,7 @@ export default async function ForumPostPage({
         </div>
 
         {/* Body */}
-        <div className="text-sm text-dark-slate/80 whitespace-pre-wrap leading-relaxed prose prose-sm max-w-none">
-          {post.body}
-        </div>
+        {renderBody(post.body)}
 
         {/* Status actions */}
         {canManageStatus && (
@@ -192,9 +202,7 @@ export default async function ForumPostPage({
                   <span>·</span>
                   <span>{timeAgo(reply.createdAt)}</span>
                 </div>
-                <p className="text-sm text-dark-slate/80 whitespace-pre-wrap leading-relaxed">
-                  {reply.body}
-                </p>
+                {renderBody(reply.body)}
               </div>
 
               {/* Level 2 replies */}
@@ -217,9 +225,7 @@ export default async function ForumPostPage({
                           <span>·</span>
                           <span>{timeAgo(child.createdAt)}</span>
                         </div>
-                        <p className="text-sm text-dark-slate/80 whitespace-pre-wrap leading-relaxed">
-                          {child.body}
-                        </p>
+                        {renderBody(child.body)}
                       </div>
 
                       {/* Level 3 replies */}
@@ -244,9 +250,7 @@ export default async function ForumPostPage({
                                 <span>·</span>
                                 <span>{timeAgo(grandchild.createdAt)}</span>
                               </div>
-                              <p className="text-sm text-dark-slate/80 whitespace-pre-wrap leading-relaxed">
-                                {grandchild.body}
-                              </p>
+                              {renderBody(grandchild.body)}
                             </div>
                           ))}
                         </div>

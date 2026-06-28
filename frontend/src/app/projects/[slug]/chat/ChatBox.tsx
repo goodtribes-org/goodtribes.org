@@ -1,8 +1,12 @@
 "use client";
 
-import { useRef, useTransition, useState, useEffect, useCallback } from "react";
+import { useTransition, useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import dynamic from "next/dynamic";
 import { postMessage, generateInviteLink } from "./actions";
+
+const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
 type Message = {
   id: string;
@@ -19,6 +23,22 @@ function timeAgo(date: Date) {
   return new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
+function renderBody(body: string) {
+  if (body.trimStart().startsWith("<")) {
+    return (
+      <div
+        className="text-sm text-dark-slate/80 prose prose-sm max-w-none prose-img:rounded-xl prose-img:max-w-full"
+        dangerouslySetInnerHTML={{ __html: body }}
+      />
+    );
+  }
+  return <p className="text-sm text-dark-slate/80 whitespace-pre-wrap break-words">{body}</p>;
+}
+
+function isEmpty(html: string) {
+  return !html || html.replace(/<[^>]*>/g, "").trim() === "";
+}
+
 export function ChatBox({
   projectId,
   slug,
@@ -33,9 +53,10 @@ export function ChatBox({
   isOwnerOrAdmin: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
+  const [body, setBody] = useState("");
+  const [editorKey, setEditorKey] = useState(0);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -50,10 +71,15 @@ export function ChatBox({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
-  function handleSubmit(formData: FormData) {
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (isEmpty(body)) return;
+    const formData = new FormData();
+    formData.set("body", body);
     startTransition(async () => {
       await postMessage(projectId, slug, formData);
-      formRef.current?.reset();
+      setBody("");
+      setEditorKey((k) => k + 1);
     });
   }
 
@@ -71,7 +97,6 @@ export function ChatBox({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Invite link panel for owners/admins */}
       {isOwnerOrAdmin && (
         <div className="border border-muted-teal/30 rounded-lg p-3 bg-dry-sage/20">
           <p className="text-xs font-medium text-dark-slate mb-2">Invite link</p>
@@ -88,10 +113,7 @@ export function ChatBox({
               </button>
             </div>
           ) : (
-            <button
-              onClick={handleGenerateLink}
-              className="text-xs text-coral hover:underline"
-            >
+            <button onClick={handleGenerateLink} className="text-xs text-coral hover:underline">
               Generate invite link (valid 7 days) →
             </button>
           )}
@@ -110,9 +132,9 @@ export function ChatBox({
               .split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
             return (
               <div key={m.id} className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-dry-sage flex items-center justify-center text-xs font-semibold text-dark-slate shrink-0">
+                <div className="w-8 h-8 rounded-full bg-dry-sage flex items-center justify-center text-xs font-semibold text-dark-slate shrink-0 overflow-hidden relative">
                   {m.author.image
-                    ? <img src={m.author.image} className="w-8 h-8 rounded-full object-cover" alt="" />
+                    ? <Image src={m.author.image} fill className="object-cover" alt="" unoptimized />
                     : initials}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -120,7 +142,7 @@ export function ChatBox({
                     <span className="text-xs font-semibold text-dark-slate">{m.author.name ?? "Unknown"}</span>
                     <span className="text-[10px] text-dark-slate/40">{timeAgo(m.createdAt)}</span>
                   </div>
-                  <p className="text-sm text-dark-slate/80 whitespace-pre-wrap break-words">{m.body}</p>
+                  {renderBody(m.body)}
                 </div>
               </div>
             );
@@ -131,22 +153,17 @@ export function ChatBox({
 
       {/* Post form */}
       {isMember && (
-        <form ref={formRef} action={handleSubmit} className="flex gap-2 items-end border-t border-muted-teal/20 pt-3">
-          <textarea
-            name="body"
-            required
-            rows={2}
-            placeholder="Write a message…"
-            maxLength={2000}
-            className="flex-1 border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral resize-none"
-          />
-          <button
-            type="submit"
-            disabled={isPending}
-            className="px-4 py-2 bg-coral text-white text-sm font-medium rounded-md hover:bg-watermelon transition-colors disabled:opacity-60 shrink-0"
-          >
-            Send
-          </button>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2 border-t border-muted-teal/20 pt-3">
+          <RichTextEditor key={editorKey} content={body} onChange={setBody} />
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={isPending || isEmpty(body)}
+              className="px-4 py-2 bg-coral text-white text-sm font-medium rounded-md hover:bg-watermelon transition-colors disabled:opacity-60"
+            >
+              {isPending ? "Skickar…" : "Skicka"}
+            </button>
+          </div>
         </form>
       )}
     </div>
