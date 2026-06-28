@@ -101,10 +101,9 @@ export default async function ProjectLayout({
                 alt=""
                 fill
                 unoptimized
-                className="object-cover scale-110 blur-md"
+                className="object-cover"
                 sizes="100vw"
               />
-              <div className="absolute inset-0 bg-black/40" />
             </>
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-dark-slate to-dark-slate/70" />
