@@ -24,6 +24,25 @@ export async function postMessage(projectId: string, slug: string, formData: For
   revalidatePath(`/projects/${slug}/chat`);
 }
 
+export async function toggleReaction(messageId: string, slug: string, emoji: string): Promise<void> {
+  const session = await auth();
+  if (!session?.user?.id) return;
+
+  const existing = await prisma.messageReaction.findUnique({
+    where: { messageId_userId_emoji: { messageId, userId: session.user.id, emoji } },
+  });
+
+  if (existing) {
+    await prisma.messageReaction.delete({ where: { id: existing.id } });
+  } else {
+    await prisma.messageReaction.create({
+      data: { messageId, userId: session.user.id, emoji },
+    });
+  }
+
+  revalidatePath(`/projects/${slug}/chat`);
+}
+
 export async function generateInviteLink(projectId: string, _slug: string): Promise<string> {
   const session = await auth();
   if (!session?.user?.id) return "";

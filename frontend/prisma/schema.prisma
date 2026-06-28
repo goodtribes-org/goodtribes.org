@@ -76,8 +76,9 @@ model User {
   dreamReactions   DreamWallReaction[]   @relation("DreamReactions")
   projectFlags     ProjectFlag[]         @relation("FlaggedBy")
   flagReviews      ProjectFlag[]         @relation("FlagReviewer")
-  ethicsReviews    EthicsReview[]        @relation("EthicsReviewer")
-  onboardingDone   Boolean               @default(false)
+  ethicsReviews      EthicsReview[]        @relation("EthicsReviewer")
+  messageReactions   MessageReaction[]     @relation("MessageReactions")
+  onboardingDone     Boolean               @default(false)
 }
 
 model Skill {
@@ -551,8 +552,22 @@ model ProjectMessage {
   body      String
   createdAt DateTime @default(now())
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  author  User    @relation("ProjectMessages", fields: [authorId], references: [id], onDelete: Cascade)
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  author    User              @relation("ProjectMessages", fields: [authorId], references: [id], onDelete: Cascade)
+  reactions MessageReaction[]
+}
+
+model MessageReaction {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  message ProjectMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User           @relation("MessageReactions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
 }
 
 model FundingCampaign {

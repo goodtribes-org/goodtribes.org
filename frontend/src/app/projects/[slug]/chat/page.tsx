@@ -26,7 +26,10 @@ export default async function ChatPage({ params }: { params: Promise<{ slug: str
       messages: {
         orderBy: { createdAt: "asc" },
         take: 100,
-        include: { author: { select: { name: true, image: true } } },
+        include: {
+          author: { select: { name: true, image: true } },
+          reactions: { select: { id: true, emoji: true, userId: true } },
+        },
       },
     },
   });
@@ -52,6 +55,7 @@ export default async function ChatPage({ params }: { params: Promise<{ slug: str
         messages={project.messages}
         isMember={isMember}
         isOwnerOrAdmin={isOwnerOrAdmin}
+        currentUserId={session?.user?.id ?? null}
       />
     </div>
   );

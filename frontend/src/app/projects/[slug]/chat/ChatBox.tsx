@@ -4,15 +4,30 @@ import { useTransition, useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { postMessage, generateInviteLink } from "./actions";
+import { postMessage, generateInviteLink, toggleReaction } from "./actions";
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
+type EmojiPickerProps = {
+  data: unknown;
+  onEmojiSelect: (emoji: { native: string }) => void;
+  locale?: string;
+  theme?: string;
+  previewPosition?: string;
+  skinTonePosition?: string;
+};
+const EmojiPicker = dynamic<EmojiPickerProps>(
+  () => import("@emoji-mart/react").then((m) => m.default ?? m),
+  { ssr: false }
+);
+
+type Reaction = { id: string; emoji: string; userId: string };
 type Message = {
   id: string;
   body: string;
   createdAt: Date;
   author: { name: string | null; image: string | null };
+  reactions: Reaction[];
 };
 
 function timeAgo(date: Date) {
@@ -39,18 +54,121 @@ function isEmpty(html: string) {
   return !html || html.replace(/<[^>]*>/g, "").trim() === "";
 }
 
+function groupReactions(reactions: Reaction[]) {
+  const map = new Map<string, string[]>();
+  for (const r of reactions) {
+    const arr = map.get(r.emoji) ?? [];
+    arr.push(r.userId);
+    map.set(r.emoji, arr);
+  }
+  return Array.from(map.entries()).map(([emoji, userIds]) => ({ emoji, userIds }));
+}
+
+function ReactionBar({
+  messageId,
+  reactions,
+  currentUserId,
+  slug,
+  isMember,
+}: {
+  messageId: string;
+  reactions: Reaction[];
+  currentUserId: string | null;
+  slug: string;
+  isMember: boolean;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [showPicker, setShowPicker] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showPicker) return;
+    function handleClick(e: MouseEvent) {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setShowPicker(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showPicker]);
+
+  function toggle(emoji: string) {
+    if (!currentUserId) return;
+    startTransition(() => toggleReaction(messageId, slug, emoji));
+  }
+
+  const groups = groupReactions(reactions);
+
+  return (
+    <div className="flex flex-wrap items-center gap-1 mt-1.5">
+      {groups.map(({ emoji, userIds }) => {
+        const mine = currentUserId ? userIds.includes(currentUserId) : false;
+        return (
+          <button
+            key={emoji}
+            type="button"
+            disabled={!currentUserId || isPending}
+            onClick={() => toggle(emoji)}
+            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs border transition-colors ${
+              mine
+                ? "bg-coral/15 border-coral/40 text-dark-slate font-medium"
+                : "bg-white border-muted-teal/30 text-dark-slate/60 hover:border-muted-teal/60"
+            }`}
+          >
+            <span>{emoji}</span>
+            <span>{userIds.length}</span>
+          </button>
+        );
+      })}
+
+      {isMember && currentUserId && (
+        <div ref={pickerRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setShowPicker((v) => !v)}
+            className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs border border-dashed border-muted-teal/40 text-dark-slate/40 hover:text-dark-slate/70 hover:border-muted-teal transition-colors"
+            title="Lägg till reaktion"
+          >
+            +
+          </button>
+          {showPicker && (
+            <div className="absolute left-0 bottom-full mb-1 z-50 shadow-xl rounded-xl overflow-hidden">
+              <EmojiPicker
+                data={async () => {
+                  const res = await import("@emoji-mart/data");
+                  return res.default;
+                }}
+                onEmojiSelect={(e: { native: string }) => {
+                  toggle(e.native);
+                  setShowPicker(false);
+                }}
+                locale="sv"
+                theme="light"
+                previewPosition="none"
+                skinTonePosition="none"
+              />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ChatBox({
   projectId,
   slug,
   messages,
   isMember,
   isOwnerOrAdmin,
+  currentUserId,
 }: {
   projectId: string;
   slug: string;
   messages: Message[];
   isMember: boolean;
   isOwnerOrAdmin: boolean;
+  currentUserId: string | null;
 }) {
   const [isPending, startTransition] = useTransition();
   const [body, setBody] = useState("");
@@ -121,7 +239,7 @@ export function ChatBox({
       )}
 
       {/* Messages */}
-      <div className="flex flex-col gap-3 min-h-[100px]">
+      <div className="flex flex-col gap-4 min-h-[100px]">
         {messages.length === 0 ? (
           <p className="text-sm text-dark-slate/40 italic text-center py-6">
             No messages yet. {isMember ? "Start the conversation!" : "Join the project to chat."}
@@ -143,6 +261,13 @@ export function ChatBox({
                     <span className="text-[10px] text-dark-slate/40">{timeAgo(m.createdAt)}</span>
                   </div>
                   {renderBody(m.body)}
+                  <ReactionBar
+                    messageId={m.id}
+                    reactions={m.reactions}
+                    currentUserId={currentUserId}
+                    slug={slug}
+                    isMember={isMember}
+                  />
                 </div>
               </div>
             );
