@@ -16,3 +16,10 @@
 body {
   background-color: white;
 }
+
+.emoji-char {
+  font-size: 1.4em;
+  line-height: 1;
+  vertical-align: -0.15em;
+  display: inline-block;
+}

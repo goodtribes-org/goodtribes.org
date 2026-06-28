@@ -7,6 +7,7 @@ import Link from "next/link";
 import ReplyForm from "./ReplyForm";
 import StatusActions from "./StatusActions";
 import { ForumPostReactionBar, ForumReplyReactionBar } from "@/components/ForumReactionBar";
+import { renderBody } from "@/lib/renderBody";
 
 
 function timeAgo(date: Date): string {
@@ -47,17 +48,6 @@ const STATUS_COLORS: Record<string, string> = {
   decided: "bg-blue-100 text-blue-700",
 };
 
-function renderBody(body: string) {
-  if (body.trimStart().startsWith("<")) {
-    return (
-      <div
-        className="text-sm text-dark-slate/80 leading-relaxed prose prose-sm max-w-none prose-img:rounded-xl prose-img:max-w-full"
-        dangerouslySetInnerHTML={{ __html: body }}
-      />
-    );
-  }
-  return <p className="text-sm text-dark-slate/80 whitespace-pre-wrap leading-relaxed">{body}</p>;
-}
 
 export default async function ForumPostPage({
   params,

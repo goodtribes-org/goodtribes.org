@@ -6,6 +6,7 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { postMessage, generateInviteLink, toggleReaction } from "./actions";
 import { ReactionBar } from "@/components/ReactionBar";
+import { renderBody } from "@/lib/renderBody";
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
@@ -24,18 +25,6 @@ function timeAgo(date: Date) {
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
   return new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-}
-
-function renderBody(body: string) {
-  if (body.trimStart().startsWith("<")) {
-    return (
-      <div
-        className="text-sm text-dark-slate/80 prose prose-sm max-w-none prose-img:rounded-xl prose-img:max-w-full"
-        dangerouslySetInnerHTML={{ __html: body }}
-      />
-    );
-  }
-  return <p className="text-sm text-dark-slate/80 whitespace-pre-wrap break-words">{body}</p>;
 }
 
 function isEmpty(html: string) {
