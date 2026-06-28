@@ -50,7 +50,12 @@ export default async function ProjectLayout({
         tags: true,
         sdgGoals: true,
         org: { select: { name: true, slug: true } },
-        owner: { select: { name: true } },
+        owner: { select: { name: true, image: true } },
+        members: {
+          select: { user: { select: { name: true, image: true } } },
+          orderBy: { joinedAt: "asc" },
+          take: 8,
+        },
         _count: { select: { members: true } },
       },
     }),
@@ -100,7 +105,45 @@ export default async function ProjectLayout({
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-dark-slate to-dark-slate/70" />
           )}
-          {/* Title overlay */}
+          {/* Top-right: member avatar cluster */}
+          <div className="absolute top-4 right-4 md:top-6 md:right-6 flex flex-col items-end gap-2">
+            {/* Owner avatar (large) */}
+            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full ring-2 ring-white/70 overflow-hidden bg-dark-slate/60 flex items-center justify-center text-white font-bold text-lg shrink-0 relative">
+              {project.owner.image ? (
+                <Image src={project.owner.image} alt={project.owner.name ?? ""} fill className="object-cover" unoptimized />
+              ) : (
+                (project.owner.name ?? "?").charAt(0).toUpperCase()
+              )}
+            </div>
+            {/* Team member avatars (small row) */}
+            {project.members.length > 0 && (
+              <div className="flex -space-x-2">
+                {project.members.slice(0, 6).map((m, i) => {
+                  const initials = (m.user.name ?? "?").charAt(0).toUpperCase();
+                  return (
+                    <div
+                      key={i}
+                      title={m.user.name ?? ""}
+                      className="w-8 h-8 rounded-full ring-2 ring-white/60 overflow-hidden bg-dark-slate/60 flex items-center justify-center text-white text-xs font-semibold shrink-0 relative"
+                    >
+                      {m.user.image ? (
+                        <Image src={m.user.image} alt={m.user.name ?? ""} fill className="object-cover" unoptimized />
+                      ) : (
+                        initials
+                      )}
+                    </div>
+                  );
+                })}
+                {project._count.members > 6 && (
+                  <div className="w-8 h-8 rounded-full ring-2 ring-white/60 bg-black/50 flex items-center justify-center text-white text-xs font-semibold">
+                    +{project._count.members - 6}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Bottom: title + owner overlay */}
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-6 pb-6 pt-24">
             <div className="max-w-5xl mx-auto flex items-end justify-between gap-4">
               <div className="min-w-0">

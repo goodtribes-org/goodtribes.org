@@ -290,6 +290,7 @@ model Project {
   category    String?
   tags        String[]
   imageUrl    String?
+  links       String[] @default([])
   sdgGoals    Int[]
   ownerId     String
   orgId       String?

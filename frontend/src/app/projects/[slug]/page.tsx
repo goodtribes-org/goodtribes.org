@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { JoinButton, JoinRequestsPanel } from "./JoinSection";
@@ -49,7 +50,6 @@ function MemberAvatar({
   return inner;
 }
 
-
 function relativeTime(date: Date): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
   if (seconds < 60) return "Just nu";
@@ -60,6 +60,65 @@ function relativeTime(date: Date): string {
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days} dag${days !== 1 ? "ar" : ""} sedan`;
   return date.toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
+}
+
+function MiniCalendar({ events }: { events: { startsAt: Date }[] }) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  const firstDay = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  // Monday-first: 0=Mon … 6=Sun
+  const startDow = (firstDay.getDay() + 6) % 7;
+
+  const eventDays = new Set(
+    events
+      .filter((e) => {
+        const d = e.startsAt;
+        return d.getFullYear() === year && d.getMonth() === month;
+      })
+      .map((e) => e.startsAt.getDate())
+  );
+  const today = now.getDate();
+
+  const monthName = now.toLocaleDateString("sv-SE", { month: "long", year: "numeric" });
+  const dayLabels = ["M", "T", "O", "T", "F", "L", "S"];
+
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < startDow; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  return (
+    <div className="text-xs select-none">
+      <div className="font-semibold text-dark-slate mb-2 capitalize">{monthName}</div>
+      <div className="grid grid-cols-7 gap-0.5 text-center">
+        {dayLabels.map((d, i) => (
+          <div key={i} className="text-dark-slate/40 font-medium pb-1">{d}</div>
+        ))}
+        {cells.map((day, i) => {
+          if (!day) return <div key={i} />;
+          const isToday = day === today;
+          const hasEvent = eventDays.has(day);
+          return (
+            <div
+              key={i}
+              className={`py-0.5 rounded font-medium ${
+                isToday
+                  ? "bg-coral text-white"
+                  : hasEvent
+                  ? "bg-seagrass/20 text-seagrass font-semibold"
+                  : "text-dark-slate/60"
+              }`}
+            >
+              {day}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 export async function generateMetadata({
@@ -128,7 +187,12 @@ export default async function ProjectDetailPage({
     userMembership && ["owner", "admin"].includes(userMembership.role);
   const isMember = !!userMembership;
 
-  const [latestUpdate, fundingCampaign, upcomingEvents, userJoinRequest] =
+  // Month bounds for calendar
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+  const [latestUpdate, fundingCampaign, monthEvents, userJoinRequest] =
     await Promise.all([
       prisma.blogPost.findFirst({
         where: { projectSlug: slug },
@@ -137,12 +201,21 @@ export default async function ProjectDetailPage({
       }),
       prisma.fundingCampaign.findUnique({
         where: { projectId: project.id },
-        include: { pledges: { select: { amount: true } } },
+        include: {
+          pledges: { select: { amount: true } },
+          expenses: {
+            select: { id: true, title: true, amount: true },
+            orderBy: { date: "desc" },
+            take: 6,
+          },
+        },
       }),
       prisma.calendarEvent.findMany({
-        where: { projectSlug: slug, startsAt: { gte: new Date() } },
+        where: {
+          projectSlug: slug,
+          startsAt: { gte: monthStart, lte: monthEnd },
+        },
         orderBy: { startsAt: "asc" },
-        take: 3,
         select: { id: true, title: true, startsAt: true },
       }),
       userId && !isMember
@@ -167,6 +240,9 @@ export default async function ProjectDetailPage({
       )
     : null;
 
+  const upcomingEvents = monthEvents.filter((e) => e.startsAt >= now);
+  const projectLinks: string[] = (project as typeof project & { links: string[] }).links ?? [];
+
   return (
     <div className="max-w-5xl">
       {isOwnerOrAdmin && project.joinRequests.length > 0 && (
@@ -180,11 +256,16 @@ export default async function ProjectDetailPage({
         <div className="md:col-span-2 space-y-8">
           <section>
             <h2 className="text-base font-semibold text-dark-slate mb-4">Om projektet</h2>
-            <div className="prose prose-sm max-w-none text-dark-slate/80 leading-relaxed whitespace-pre-wrap">
-              {project.description ?? (
-                <span className="text-dark-slate/40 italic">Ingen beskrivning ännu.</span>
-              )}
-            </div>
+            {project.description ? (
+              <article className="prose prose-sm max-w-none text-dark-slate/80 leading-relaxed
+                prose-headings:text-dark-slate prose-headings:font-semibold
+                prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
+                prose-strong:text-dark-slate prose-img:rounded-xl">
+                <ReactMarkdown>{project.description}</ReactMarkdown>
+              </article>
+            ) : (
+              <p className="text-dark-slate/40 italic text-sm">Ingen beskrivning ännu.</p>
+            )}
           </section>
 
           {latestUpdate && (
@@ -214,8 +295,7 @@ export default async function ProjectDetailPage({
           {/* Funding widget */}
           {fundingCampaign && (
             <section className="border border-muted-teal/30 rounded-xl p-4">
-              <h2 className="text-sm font-semibold text-dark-slate mb-3">Finansiering</h2>
-              <div className="space-y-2">
+              <div className="space-y-2 mb-4">
                 <div className="flex justify-between items-end">
                   <span className="text-xl font-bold text-dark-slate">
                     {raised.toLocaleString("sv-SE")}
@@ -224,20 +304,20 @@ export default async function ProjectDetailPage({
                     av {fundingCampaign.goal.toLocaleString("sv-SE")} {fundingCampaign.currency}
                   </span>
                 </div>
-                <div className="w-full h-2.5 bg-muted-teal/20 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-muted-teal/20 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-coral rounded-full transition-all"
                     style={{ width: `${fundingPct}%` }}
                   />
                 </div>
                 <div className="flex justify-between text-xs text-dark-slate/50">
-                  <span className="font-semibold text-dark-slate">{fundingPct}%</span>
+                  <span className="font-semibold text-dark-slate">{fundingPct}% finansierat</span>
                   {daysLeft !== null && <span>{daysLeft} dagar kvar</span>}
                 </div>
               </div>
               <Link
                 href={`/projects/${slug}/funding`}
-                className="mt-4 block w-full text-center px-4 py-2.5 bg-coral text-white rounded-xl font-semibold text-sm hover:bg-coral/90 transition-colors"
+                className="block w-full text-center px-4 py-2.5 bg-coral text-white rounded-xl font-semibold text-sm hover:bg-coral/90 transition-colors"
               >
                 Stöd projektet
               </Link>
@@ -258,36 +338,87 @@ export default async function ProjectDetailPage({
           )}
           {!isMember && !userId && (
             <div className="border border-muted-teal/30 rounded-xl p-4 text-center">
-              <p className="text-sm text-dark-slate/60 mb-3">Logga in för att gå med i projektet</p>
-              <Link
-                href="/auth/signin"
-                className="text-sm text-coral font-medium hover:underline"
-              >
+              <p className="text-sm text-dark-slate/60 mb-3">
+                Logga in för att gå med i projektet
+              </p>
+              <Link href="/auth/signin" className="text-sm text-coral font-medium hover:underline">
                 Logga in →
               </Link>
             </div>
           )}
 
-          {/* Upcoming events */}
-          {upcomingEvents.length > 0 && (
-            <section className="border border-muted-teal/30 rounded-xl p-4">
-              <h2 className="text-sm font-semibold text-dark-slate mb-3">Kommande</h2>
-              <ul className="space-y-2.5">
-                {upcomingEvents.map((ev) => (
-                  <li key={ev.id} className="flex gap-3 items-start text-sm">
-                    <span className="shrink-0 text-xs font-semibold text-coral mt-0.5 w-12 text-right tabular-nums">
+          {/* Calendar widget */}
+          <section className="border border-muted-teal/30 rounded-xl p-4">
+            <h2 className="text-sm font-semibold text-dark-slate mb-3">Kalender</h2>
+            <MiniCalendar events={monthEvents} />
+            {upcomingEvents.length > 0 && (
+              <ul className="mt-3 space-y-1.5 border-t border-muted-teal/20 pt-3">
+                {upcomingEvents.slice(0, 3).map((ev) => (
+                  <li key={ev.id} className="flex gap-2 items-start text-xs">
+                    <span className="shrink-0 font-semibold text-coral tabular-nums w-10 text-right">
                       {ev.startsAt.toLocaleDateString("sv-SE", { day: "numeric", month: "short" })}
                     </span>
-                    <span className="text-dark-slate/80 leading-snug">{ev.title}</span>
+                    <span className="text-dark-slate/70 leading-snug">{ev.title}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Link
+              href={`/projects/${slug}/calendar`}
+              className="mt-2 block text-xs text-seagrass hover:underline"
+            >
+              Öppna kalender →
+            </Link>
+          </section>
+
+          {/* Costs */}
+          {fundingCampaign && fundingCampaign.expenses.length > 0 && (
+            <section className="border border-muted-teal/30 rounded-xl p-4">
+              <h2 className="text-sm font-semibold text-dark-slate mb-3">Kostnader</h2>
+              <ul className="space-y-2">
+                {fundingCampaign.expenses.map((exp) => (
+                  <li key={exp.id} className="flex justify-between items-center text-xs">
+                    <span className="text-dark-slate/70 truncate pr-2">{exp.title}</span>
+                    <span className="shrink-0 font-semibold text-dark-slate tabular-nums">
+                      {exp.amount.toLocaleString("sv-SE")} {fundingCampaign.currency}
+                    </span>
                   </li>
                 ))}
               </ul>
               <Link
-                href={`/projects/${slug}/calendar`}
+                href={`/projects/${slug}/funding`}
                 className="mt-3 block text-xs text-seagrass hover:underline"
               >
-                Visa kalender →
+                Alla utgifter →
               </Link>
+            </section>
+          )}
+
+          {/* Links */}
+          {projectLinks.length > 0 && (
+            <section className="border border-muted-teal/30 rounded-xl p-4">
+              <h2 className="text-sm font-semibold text-dark-slate mb-3">Länkar</h2>
+              <ul className="space-y-2">
+                {projectLinks.map((url, i) => {
+                  let hostname = url;
+                  try {
+                    hostname = new URL(url).hostname.replace(/^www\./, "");
+                  } catch {}
+                  return (
+                    <li key={i}>
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-xs text-seagrass hover:underline"
+                      >
+                        <span className="text-dark-slate/40">🔗</span>
+                        <span className="truncate">{hostname}</span>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
             </section>
           )}
 
@@ -318,9 +449,7 @@ export default async function ProjectDetailPage({
                       <MemberAvatar
                         name={m.user.name ?? "?"}
                         image={m.user.image}
-                        href={
-                          m.user.showProfile ? `/members/${m.user.id}` : undefined
-                        }
+                        href={m.user.showProfile ? `/members/${m.user.id}` : undefined}
                       />
                       {userId && m.user.id !== userId && (
                         <KudosButton
