@@ -17,6 +17,14 @@ body {
   background-color: white;
 }
 
+/* Aligns project overview columns with the 1160px hero card arrangement */
+@media (min-width: 768px) {
+  .project-overview-layout {
+    margin-left: calc(50% - 580px);
+    width: 1160px;
+  }
+}
+
 .emoji-char {
   font-size: 1.4em !important;
   line-height: 1 !important;
