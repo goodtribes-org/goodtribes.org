@@ -6,7 +6,15 @@ import {
   createCard,
   moveCard,
   deleteCard,
+  toggleSubtask,
 } from "@/app/projects/[slug]/kanban/actions";
+
+type Subtask = {
+  id: string;
+  title: string;
+  done: boolean;
+  order: number;
+};
 
 type Card = {
   id: string;
@@ -23,6 +31,7 @@ type Card = {
   createdAt: Date | string;
   updatedAt: Date | string;
   createdBy: { name: string | null } | null;
+  subtasks?: Subtask[];
 };
 
 type Columns = {
@@ -262,57 +271,111 @@ function TaskRow({
   const isDone = card.column === "DONE";
   const due = formatDate(card.dueDate);
   const priorityDot = PRIORITY_DOT[card.priority] ?? "bg-gray-300";
+  const hasSubtasks = (card.subtasks?.length ?? 0) > 0;
+  const [expanded, setExpanded] = useState(false);
+  const [localSubtasks, setLocalSubtasks] = useState<Subtask[]>(card.subtasks ?? []);
+  const [, startSubTransition] = useTransition();
 
   return (
-    <div className="flex items-center gap-3 py-2 group hover:bg-gray-50 -mx-2 px-2 rounded-md transition-colors">
-      <button
-        onClick={isLoggedIn ? onCheck : undefined}
-        className={`w-5 h-5 shrink-0 rounded border-2 flex items-center justify-center transition-colors ${
-          isDone
-            ? "bg-seagrass border-seagrass"
-            : isLoggedIn
-              ? "border-gray-300 hover:border-seagrass"
-              : "border-gray-200 cursor-default"
-        }`}
-        aria-label={isDone ? "Markera som ej klar" : "Markera som klar"}
-      >
-        {isDone && (
-          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-          </svg>
-        )}
-      </button>
-
-      <span className={`w-2 h-2 rounded-full shrink-0 ${priorityDot}`} />
-
-      <span className={`text-sm flex-1 truncate ${isDone ? "line-through text-gray-400" : "text-gray-800"}`}>
-        {card.title}
-      </span>
-
-      {due && !isDone && (
-        <span className="flex items-center gap-1 text-xs text-gray-400 shrink-0">
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          {due}
-        </span>
-      )}
-
-      {card.assignee && (
-        <div className="w-6 h-6 rounded-full bg-seagrass flex items-center justify-center text-white text-xs font-bold shrink-0">
-          {(card.assignee.name ?? "?").charAt(0).toUpperCase()}
-        </div>
-      )}
-
-      {isLoggedIn && currentUserId === card.createdById && (
+    <div className="group">
+      <div className="flex items-center gap-3 py-2 hover:bg-gray-50 -mx-2 px-2 rounded-md transition-colors">
         <button
-          onClick={onDelete}
-          className="text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-lg leading-none"
-          aria-label="Ta bort uppgift"
+          onClick={isLoggedIn ? onCheck : undefined}
+          className={`w-5 h-5 shrink-0 rounded border-2 flex items-center justify-center transition-colors ${
+            isDone
+              ? "bg-seagrass border-seagrass"
+              : isLoggedIn
+                ? "border-gray-300 hover:border-seagrass"
+                : "border-gray-200 cursor-default"
+          }`}
+          aria-label={isDone ? "Markera som ej klar" : "Markera som klar"}
         >
-          ×
+          {isDone && (
+            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+            </svg>
+          )}
         </button>
+
+        <span className={`w-2 h-2 rounded-full shrink-0 ${priorityDot}`} />
+
+        <button
+          onClick={hasSubtasks ? () => setExpanded((e) => !e) : undefined}
+          className={`text-sm flex-1 text-left truncate ${isDone ? "line-through text-gray-400" : "text-gray-800"} ${hasSubtasks ? "cursor-pointer" : "cursor-default"}`}
+        >
+          {card.title}
+        </button>
+
+        {hasSubtasks && (
+          <span className={`text-xs font-medium shrink-0 ${localSubtasks.every((s) => s.done) ? "text-green-600" : "text-gray-400"}`}>
+            {localSubtasks.filter((s) => s.done).length}/{localSubtasks.length}
+          </span>
+        )}
+
+        {due && !isDone && (
+          <span className="flex items-center gap-1 text-xs text-gray-400 shrink-0">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            {due}
+          </span>
+        )}
+
+        {card.assignee && (
+          <div className="w-6 h-6 rounded-full bg-seagrass flex items-center justify-center text-white text-xs font-bold shrink-0">
+            {(card.assignee.name ?? "?").charAt(0).toUpperCase()}
+          </div>
+        )}
+
+        {hasSubtasks && (
+          <button
+            onClick={() => setExpanded((e) => !e)}
+            className="text-gray-300 hover:text-gray-500 shrink-0 transition-colors"
+            aria-label={expanded ? "Dölj deluppgifter" : "Visa deluppgifter"}
+          >
+            <svg className={`w-4 h-4 transition-transform ${expanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        )}
+
+        {isLoggedIn && currentUserId === card.createdById && (
+          <button
+            onClick={onDelete}
+            className="text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-lg leading-none"
+            aria-label="Ta bort uppgift"
+          >
+            ×
+          </button>
+        )}
+      </div>
+
+      {expanded && hasSubtasks && (
+        <div className="ml-8 mb-1 space-y-0.5">
+          {localSubtasks.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => {
+                setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: !t.done } : t));
+                if (!s.id.startsWith("temp-") && isLoggedIn) {
+                  startSubTransition(async () => { await toggleSubtask(s.id, !s.done); });
+                }
+              }}
+              className="flex items-center gap-2 w-full text-left py-0.5 group/sub"
+            >
+              <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"}`}>
+                {s.done && (
+                  <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </span>
+              <span className={`text-xs ${s.done ? "line-through text-gray-400" : "text-gray-600"}`}>{s.title}</span>
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -330,8 +393,11 @@ function InlineAddRow({
   onClose: () => void;
 }) {
   const [title, setTitle] = useState("");
+  const [subtasks, setSubtasks] = useState<string[]>([]);
+  const [subtaskInput, setSubtaskInput] = useState("");
   const [, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
+  const subtaskInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -342,8 +408,16 @@ function InlineAddRow({
     return () => document.removeEventListener("keydown", handler);
   }, [onClose]);
 
+  function addSubtask() {
+    if (!subtaskInput.trim()) return;
+    setSubtasks((prev) => [...prev, subtaskInput.trim()]);
+    setSubtaskInput("");
+    subtaskInputRef.current?.focus();
+  }
+
   function submit() {
     if (!title.trim()) return;
+    const allSubs = subtaskInput.trim() ? [...subtasks, subtaskInput.trim()] : subtasks;
     const optimistic: Card = {
       id: `temp-${Date.now()}`,
       projectSlug,
@@ -359,30 +433,64 @@ function InlineAddRow({
       createdAt: new Date(),
       updatedAt: new Date(),
       createdBy: null,
+      subtasks: allSubs.map((t, i) => ({ id: `temp-sub-${i}`, title: t, done: false, order: i })),
     };
     const t = title.trim();
     onAdd(optimistic);
-    startTransition(async () => { await createCard(projectSlug, t, column); });
+    startTransition(async () => { await createCard(projectSlug, t, column, undefined, undefined, undefined, undefined, undefined, allSubs.length ? allSubs : undefined); });
     setTitle("");
+    setSubtasks([]);
+    setSubtaskInput("");
     inputRef.current?.focus();
   }
 
   return (
-    <div className="flex items-center gap-3 py-2 border border-blue-200 rounded-lg px-3 bg-blue-50/30 mt-1">
-      <div className="w-5 h-5 shrink-0 rounded border-2 border-gray-200" />
-      <input
-        ref={inputRef}
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") submit();
-          if (e.key === "Escape") onClose();
-        }}
-        placeholder="Uppgiftsnamn..."
-        className="flex-1 text-sm bg-transparent border-0 outline-none placeholder-gray-400 text-gray-800"
-      />
-      <div className="flex items-center gap-2 shrink-0">
+    <div className="border border-blue-200 rounded-lg px-3 py-2 bg-blue-50/30 mt-1 space-y-2">
+      <div className="flex items-center gap-3">
+        <div className="w-5 h-5 shrink-0 rounded border-2 border-gray-200" />
+        <input
+          ref={inputRef}
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") { e.preventDefault(); subtaskInputRef.current?.focus(); }
+            if (e.key === "Escape") onClose();
+          }}
+          placeholder="Uppgiftsnamn..."
+          className="flex-1 text-sm bg-transparent border-0 outline-none placeholder-gray-400 text-gray-800"
+        />
+      </div>
+
+      {subtasks.length > 0 && (
+        <ul className="ml-8 space-y-0.5">
+          {subtasks.map((s, i) => (
+            <li key={i} className="flex items-center gap-2 text-xs text-gray-600">
+              <span className="w-3 h-3 rounded border border-gray-300 shrink-0" />
+              <span className="flex-1">{s}</span>
+              <button type="button" onClick={() => setSubtasks((p) => p.filter((_, j) => j !== i))} className="text-gray-300 hover:text-red-400 transition-colors">×</button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="flex items-center gap-2 ml-8">
+        <input
+          ref={subtaskInputRef}
+          type="text"
+          value={subtaskInput}
+          onChange={(e) => setSubtaskInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") { e.preventDefault(); addSubtask(); }
+            if (e.key === "Escape") onClose();
+          }}
+          placeholder="Lägg till deluppgift..."
+          className="flex-1 text-xs bg-transparent border-0 border-b border-gray-200 focus:border-blue-400 outline-none placeholder-gray-400 text-gray-700 py-0.5"
+        />
+        <button type="button" onClick={addSubtask} disabled={!subtaskInput.trim()} className="text-blue-500 hover:text-blue-700 disabled:opacity-30 text-xs font-bold px-1">+</button>
+      </div>
+
+      <div className="flex items-center gap-2 justify-end">
         <button
           onClick={submit}
           disabled={!title.trim()}

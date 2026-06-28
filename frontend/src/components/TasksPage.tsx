@@ -19,6 +19,7 @@ type Card = {
   createdAt: Date | string;
   updatedAt: Date | string;
   createdBy: { name: string | null } | null;
+  subtasks?: Array<{ id: string; title: string; done: boolean; order: number }>;
   estimate?: { aiHours: number; aiConfidence: string; aiReasoning: string } | null;
   aiTaskRuns?: Array<{
     id: string;

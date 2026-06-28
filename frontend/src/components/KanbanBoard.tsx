@@ -429,11 +429,12 @@ function KanbanCardItem({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                if (s.id.startsWith("temp-")) return;
                 setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: !t.done } : t));
-                startTransition(async () => {
-                  await toggleSubtask(s.id, !s.done);
-                });
+                if (!s.id.startsWith("temp-")) {
+                  startTransition(async () => {
+                    await toggleSubtask(s.id, !s.done);
+                  });
+                }
               }}
               className="flex items-center gap-1.5 w-full text-left group/sub"
             >
