@@ -286,16 +286,16 @@ export default async function ProjectDetailPage({
   const projectLinks: string[] = (project as typeof project & { links: string[] }).links ?? [];
 
   return (
-    <div className="max-w-5xl">
+    <div>
       {isOwnerOrAdmin && project.joinRequests.length > 0 && (
         <div className="mb-8">
           <JoinRequestsPanel requests={project.joinRequests} slug={slug} />
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="flex flex-col md:flex-row gap-5 items-start">
         {/* Left: project story */}
-        <div className="md:col-span-2 space-y-8">
+        <div className="flex-1 min-w-0 space-y-8">
           <section>
             <h2 className="text-base font-semibold text-dark-slate mb-4">Om projektet</h2>
             {project.description ? (
@@ -342,8 +342,8 @@ export default async function ProjectDetailPage({
           )}
         </div>
 
-        {/* Right sidebar */}
-        <div className="flex flex-col gap-5">
+        {/* Right sidebar — 320px to align with hero right card */}
+        <div className="w-full md:w-[320px] shrink-0 flex flex-col gap-5">
 
           {/* Skills needed */}
           {project.neededSkills.length > 0 && (
