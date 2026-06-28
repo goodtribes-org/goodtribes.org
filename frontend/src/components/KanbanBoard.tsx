@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { createCard, moveCard, deleteCard } from "@/app/projects/[slug]/kanban/actions";
+import { createCard, deleteCard } from "@/app/projects/[slug]/kanban/actions";
 
 type CardCreator = { name: string | null };
 
@@ -547,8 +547,8 @@ export default function KanbanBoard({
   const [columns, setColumns] = useState<Columns>(initialColumns);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [modalCol, setModalCol] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
   const [runningAI, setRunningAI] = useState<Set<string>>(new Set());
+  const [, startTransition] = useTransition();
 
   async function handleRunAI(cardId: string, agentType: string, additionalContext: string) {
     setRunningAI((s) => new Set(s).add(cardId));
@@ -603,7 +603,12 @@ export default function KanbanBoard({
         [targetCol]: [...(prev[targetCol as keyof Columns] as Card[]), { ...card, column: targetCol }],
       };
     });
-    startTransition(async () => { await moveCard(cardId, targetCol); });
+    fetch("/api/kanban/move", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cardId, newColumn: targetCol }),
+      keepalive: true,
+    });
   }
 
   function handleAdd(card: Card) {
