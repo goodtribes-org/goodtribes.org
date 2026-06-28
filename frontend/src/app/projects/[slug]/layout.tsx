@@ -281,7 +281,7 @@ export default async function ProjectLayout({
         className="mb-6 border-b border-muted-teal/20"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="px-6">
           <ProjectTabNav slug={slug} />
         </div>
       </div>
