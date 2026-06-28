@@ -142,6 +142,8 @@ export async function toggleReaction(
       data: { messageId, userId: session.user.id, emoji },
     });
   }
+
+  revalidatePath(`/projects/${projectSlug}/kanaler/${channelId}`);
 }
 
 export async function createChannel(

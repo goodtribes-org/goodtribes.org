@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition, useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 
 type EmojiPickerProps = {
@@ -42,12 +43,36 @@ export function ReactionBar({
 }) {
   const [isPending, startTransition] = useTransition();
   const [showPicker, setShowPicker] = useState(false);
+  const [pickerStyle, setPickerStyle] = useState<React.CSSProperties>({});
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
+
+  // Position picker relative to the "+" button using fixed coords to escape any overflow:hidden
+  function openPicker() {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const pickerHeight = 420;
+      const pickerWidth = 352;
+      const spaceAbove = rect.top;
+      const spaceBelow = window.innerHeight - rect.bottom;
+
+      const top = spaceAbove > pickerHeight || spaceAbove > spaceBelow
+        ? rect.top - pickerHeight - 4
+        : rect.bottom + 4;
+      const left = Math.min(rect.left, window.innerWidth - pickerWidth - 8);
+
+      setPickerStyle({ position: "fixed", top, left, zIndex: 9999 });
+    }
+    setShowPicker((v) => !v);
+  }
 
   useEffect(() => {
     if (!showPicker) return;
     function handleClick(e: MouseEvent) {
-      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+      if (
+        pickerRef.current && !pickerRef.current.contains(e.target as Node) &&
+        buttonRef.current && !buttonRef.current.contains(e.target as Node)
+      ) {
         setShowPicker(false);
       }
     }
@@ -85,17 +110,18 @@ export function ReactionBar({
       })}
 
       {canAdd && currentUserId && (
-        <div ref={pickerRef} className="relative">
+        <>
           <button
+            ref={buttonRef}
             type="button"
-            onClick={() => setShowPicker((v) => !v)}
+            onClick={openPicker}
             className="inline-flex items-center px-2.5 py-1 rounded-full text-sm border border-dashed border-muted-teal/40 text-dark-slate/40 hover:text-dark-slate/70 hover:border-muted-teal transition-colors"
             title="Lägg till reaktion"
           >
             +
           </button>
-          {showPicker && (
-            <div className="absolute left-0 bottom-full mb-1 z-50 shadow-xl rounded-xl overflow-hidden">
+          {showPicker && typeof document !== "undefined" && createPortal(
+            <div ref={pickerRef} style={pickerStyle} className="shadow-2xl rounded-xl overflow-hidden">
               <EmojiPicker
                 data={async () => {
                   const res = await import("@emoji-mart/data");
@@ -110,9 +136,10 @@ export function ReactionBar({
                 previewPosition="none"
                 skinTonePosition="none"
               />
-            </div>
+            </div>,
+            document.body
           )}
-        </div>
+        </>
       )}
     </div>
   );
