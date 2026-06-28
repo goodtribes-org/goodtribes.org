@@ -6,6 +6,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import ReplyForm from "./ReplyForm";
 import StatusActions from "./StatusActions";
+import { ReactionBar } from "@/components/ReactionBar";
+import { togglePostReaction, toggleReplyReaction } from "../actions";
 
 
 function timeAgo(date: Date): string {
@@ -66,20 +68,26 @@ export default async function ForumPostPage({
   const { slug, postId } = await params;
   const session = await auth();
 
+  const reactionSelect = { select: { emoji: true, userId: true } };
+
   const post = await prisma.forumPost.findUnique({
     where: { id: postId },
     include: {
       author: { select: { id: true, name: true, image: true } },
+      reactions: reactionSelect,
       replies: {
         where: { parentId: null },
         include: {
           author: { select: { name: true, image: true } },
+          reactions: reactionSelect,
           children: {
             include: {
               author: { select: { name: true, image: true } },
+              reactions: reactionSelect,
               children: {
                 include: {
                   author: { select: { name: true, image: true } },
+                  reactions: reactionSelect,
                 },
                 orderBy: { createdAt: "asc" },
               },
@@ -108,6 +116,9 @@ export default async function ForumPostPage({
         (!!role && ["owner", "admin"].includes(role));
     }
   }
+
+  const currentUserId = session?.user?.id ?? null;
+  const canReact = !!currentUserId;
 
   const totalReplies = post.replies.reduce(
     (acc, r) => acc + 1 + (r.children?.length ?? 0) + (r.children?.reduce((a, c) => a + (c.children?.length ?? 0), 0) ?? 0),
@@ -165,6 +176,13 @@ export default async function ForumPostPage({
         {/* Body */}
         {renderBody(post.body)}
 
+        <ReactionBar
+          reactions={post.reactions}
+          currentUserId={currentUserId}
+          canAdd={canReact}
+          onToggle={(emoji) => togglePostReaction(post.id, slug, emoji)}
+        />
+
         {/* Status actions */}
         {canManageStatus && (
           <div className="mt-5 pt-4 border-t border-muted-teal">
@@ -203,6 +221,12 @@ export default async function ForumPostPage({
                   <span>{timeAgo(reply.createdAt)}</span>
                 </div>
                 {renderBody(reply.body)}
+                <ReactionBar
+                  reactions={reply.reactions}
+                  currentUserId={currentUserId}
+                  canAdd={canReact}
+                  onToggle={(emoji) => toggleReplyReaction(reply.id, post.id, slug, emoji)}
+                />
               </div>
 
               {/* Level 2 replies */}
@@ -226,6 +250,12 @@ export default async function ForumPostPage({
                           <span>{timeAgo(child.createdAt)}</span>
                         </div>
                         {renderBody(child.body)}
+                        <ReactionBar
+                          reactions={child.reactions}
+                          currentUserId={currentUserId}
+                          canAdd={canReact}
+                          onToggle={(emoji) => toggleReplyReaction(child.id, post.id, slug, emoji)}
+                        />
                       </div>
 
                       {/* Level 3 replies */}
@@ -251,6 +281,12 @@ export default async function ForumPostPage({
                                 <span>{timeAgo(grandchild.createdAt)}</span>
                               </div>
                               {renderBody(grandchild.body)}
+                              <ReactionBar
+                                reactions={grandchild.reactions}
+                                currentUserId={currentUserId}
+                                canAdd={canReact}
+                                onToggle={(emoji) => toggleReplyReaction(grandchild.id, post.id, slug, emoji)}
+                              />
                             </div>
                           ))}
                         </div>

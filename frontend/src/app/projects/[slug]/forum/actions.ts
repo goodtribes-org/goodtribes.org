@@ -53,6 +53,40 @@ export async function createForumReply(
   revalidatePath(`/projects/${projectSlug}/forum/${postId}`);
 }
 
+export async function togglePostReaction(postId: string, slug: string, emoji: string): Promise<void> {
+  const session = await auth();
+  if (!session?.user?.id) return;
+
+  const existing = await prisma.forumPostReaction.findUnique({
+    where: { postId_userId_emoji: { postId, userId: session.user.id, emoji } },
+  });
+  if (existing) {
+    await prisma.forumPostReaction.delete({ where: { id: existing.id } });
+  } else {
+    await prisma.forumPostReaction.create({
+      data: { postId, userId: session.user.id, emoji },
+    });
+  }
+  revalidatePath(`/projects/${slug}/forum/${postId}`);
+}
+
+export async function toggleReplyReaction(replyId: string, postId: string, slug: string, emoji: string): Promise<void> {
+  const session = await auth();
+  if (!session?.user?.id) return;
+
+  const existing = await prisma.forumReplyReaction.findUnique({
+    where: { replyId_userId_emoji: { replyId, userId: session.user.id, emoji } },
+  });
+  if (existing) {
+    await prisma.forumReplyReaction.delete({ where: { id: existing.id } });
+  } else {
+    await prisma.forumReplyReaction.create({
+      data: { replyId, userId: session.user.id, emoji },
+    });
+  }
+  revalidatePath(`/projects/${slug}/forum/${postId}`);
+}
+
 export async function updateForumPostStatus(
   postId: string,
   status: string,

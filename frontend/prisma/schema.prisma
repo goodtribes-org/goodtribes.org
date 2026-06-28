@@ -77,8 +77,10 @@ model User {
   projectFlags     ProjectFlag[]         @relation("FlaggedBy")
   flagReviews      ProjectFlag[]         @relation("FlagReviewer")
   ethicsReviews      EthicsReview[]        @relation("EthicsReviewer")
-  messageReactions   MessageReaction[]     @relation("MessageReactions")
-  onboardingDone     Boolean               @default(false)
+  messageReactions     MessageReaction[]     @relation("MessageReactions")
+  forumPostReactions   ForumPostReaction[]   @relation("ForumPostReactions")
+  forumReplyReactions  ForumReplyReaction[]  @relation("ForumReplyReactions")
+  onboardingDone       Boolean               @default(false)
 }
 
 model Skill {
@@ -609,36 +611,64 @@ model FundingPledge {
 }
 
 model ForumPost {
-  id          String       @id @default(cuid())
+  id          String              @id @default(cuid())
   projectSlug String
-  project     Project      @relation("ProjectForumPosts", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  project     Project             @relation("ProjectForumPosts", fields: [projectSlug], references: [slug], onDelete: Cascade)
   authorId    String
-  author      User         @relation("AuthoredForumPosts", fields: [authorId], references: [id])
+  author      User                @relation("AuthoredForumPosts", fields: [authorId], references: [id])
   title       String
-  body        String       @db.Text
-  category    String       @default("general")
-  status      String       @default("open")
-  pinned      Boolean      @default(false)
+  body        String              @db.Text
+  category    String              @default("general")
+  status      String              @default("open")
+  pinned      Boolean             @default(false)
   replies     ForumReply[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  reactions   ForumPostReaction[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
 
   @@index([projectSlug])
 }
 
 model ForumReply {
-  id        String       @id @default(cuid())
+  id        String               @id @default(cuid())
   postId    String
-  post      ForumPost    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post      ForumPost            @relation(fields: [postId], references: [id], onDelete: Cascade)
   parentId  String?
-  parent    ForumReply?  @relation("ReplyThread", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children  ForumReply[] @relation("ReplyThread")
+  parent    ForumReply?          @relation("ReplyThread", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  ForumReply[]         @relation("ReplyThread")
   authorId  String
-  author    User         @relation("AuthoredForumReplies", fields: [authorId], references: [id])
-  body      String       @db.Text
-  createdAt DateTime     @default(now())
+  author    User                 @relation("AuthoredForumReplies", fields: [authorId], references: [id])
+  body      String               @db.Text
+  reactions ForumReplyReaction[]
+  createdAt DateTime             @default(now())
 
   @@index([postId])
+}
+
+model ForumPostReaction {
+  id        String    @id @default(cuid())
+  postId    String
+  userId    String
+  emoji     String
+  createdAt DateTime  @default(now())
+
+  post ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User      @relation("ForumPostReactions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId, emoji])
+}
+
+model ForumReplyReaction {
+  id        String    @id @default(cuid())
+  replyId   String
+  userId    String
+  emoji     String
+  createdAt DateTime  @default(now())
+
+  reply ForumReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  user  User       @relation("ForumReplyReactions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([replyId, userId, emoji])
 }
 
 model CalendarEvent {
