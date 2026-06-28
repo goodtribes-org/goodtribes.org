@@ -6,15 +6,15 @@ import { useState, useRef, useEffect } from "react";
 
 const MAIN_TABS = [
   { label: "Projekt",      href: "" },
-  { label: "Resurser",     href: "/wiki" },
-  { label: "Kanaler",      href: "/kanaler" },
-  { label: "Planering",    href: "/calendar" },
   { label: "Uppgifter",    href: "/tasks" },
+  { label: "Planering",    href: "/calendar" },
+  { label: "Kanaler",      href: "/kanaler" },
   { label: "Omröstningar", href: "/polls" },
 ];
 
 const MENU_TABS = [
   { label: "Uppdateringar", href: "/updates" },
+  { label: "Resurser",      href: "/wiki" },
   { label: "Bidrag",        href: "/funding" },
   { label: "Tokens",        href: "/tokens" },
   { label: "Impact",        href: "/impact" },
