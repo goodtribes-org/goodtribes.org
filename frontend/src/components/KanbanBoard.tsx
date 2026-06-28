@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { createCard, deleteCard } from "@/app/projects/[slug]/kanban/actions";
+import { createCard, deleteCard, toggleSubtask } from "@/app/projects/[slug]/kanban/actions";
 
 type CardCreator = { name: string | null };
 
@@ -24,6 +24,8 @@ type TaskEstimate = {
   aiConfidence: string;
   aiReasoning: string;
 } | null;
+
+type Subtask = { id: string; title: string; done: boolean; order: number };
 
 type Card = {
   id: string;
@@ -42,6 +44,7 @@ type Card = {
   updatedAt: Date | string;
   createdBy: CardCreator | null;
   estimate?: TaskEstimate;
+  subtasks?: Subtask[];
   aiTaskRuns?: Array<{
     id: string;
     agentType: string;
@@ -124,8 +127,11 @@ function AddCardModal({
   const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState("normal");
   const [assigneeId, setAssigneeId] = useState("");
+  const [subtasks, setSubtasks] = useState<string[]>([]);
+  const [subtaskInput, setSubtaskInput] = useState("");
   const [, startTransition] = useTransition();
   const titleRef = useRef<HTMLInputElement>(null);
+  const subtaskInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     titleRef.current?.focus();
@@ -133,6 +139,17 @@ function AddCardModal({
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  function addSubtask() {
+    if (!subtaskInput.trim()) return;
+    setSubtasks((prev) => [...prev, subtaskInput.trim()]);
+    setSubtaskInput("");
+    subtaskInputRef.current?.focus();
+  }
+
+  function removeSubtask(index: number) {
+    setSubtasks((prev) => prev.filter((_, i) => i !== index));
+  }
 
   function submit(andAnother = false) {
     if (!title.trim()) return;
@@ -153,12 +170,13 @@ function AddCardModal({
       createdAt: new Date(),
       updatedAt: new Date(),
       createdBy: null,
+      subtasks: subtasks.map((t, i) => ({ id: `temp-sub-${i}`, title: t, done: false, order: i })),
     });
-    const [t, desc, sd, due, pri, asgn] = [title, description, startDate, dueDate, priority, assigneeId];
-    startTransition(async () => { await createCard(projectSlug, t, column, desc, due, pri, asgn || undefined, sd || undefined); });
+    const [t, desc, sd, due, pri, asgn, subs] = [title, description, startDate, dueDate, priority, assigneeId, subtasks];
+    startTransition(async () => { await createCard(projectSlug, t, column, desc, due, pri, asgn || undefined, sd || undefined, subs.length ? subs : undefined); });
     if (andAnother) {
       setTitle(""); setDescription(""); setStartDate(""); setDueDate("");
-      setPriority("normal"); setAssigneeId("");
+      setPriority("normal"); setAssigneeId(""); setSubtasks([]); setSubtaskInput("");
       titleRef.current?.focus();
     } else {
       onClose();
@@ -258,6 +276,48 @@ function AddCardModal({
               className="flex-1 text-sm text-gray-800 placeholder-gray-400 border border-gray-200 rounded-lg p-3 focus:outline-none focus:border-blue-400 resize-none transition-colors"
             />
           </div>
+
+          <div className="flex items-start gap-4">
+            <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Subtasks</label>
+            <div className="flex-1 space-y-2">
+              <div className="flex gap-2">
+                <input
+                  ref={subtaskInputRef}
+                  type="text"
+                  value={subtaskInput}
+                  onChange={(e) => setSubtaskInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSubtask(); } }}
+                  placeholder="Add a subtask..."
+                  className="flex-1 text-sm text-gray-800 placeholder-gray-400 border-0 border-b border-gray-200 focus:border-blue-400 focus:outline-none py-1.5 transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={addSubtask}
+                  disabled={!subtaskInput.trim()}
+                  className="text-xs font-medium text-blue-600 hover:text-blue-700 disabled:opacity-30 px-1 transition-colors"
+                >
+                  +
+                </button>
+              </div>
+              {subtasks.length > 0 && (
+                <ul className="space-y-1">
+                  {subtasks.map((s, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
+                      <span className="w-3.5 h-3.5 rounded border border-gray-300 shrink-0" />
+                      <span className="flex-1">{s}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeSubtask(i)}
+                        className="text-gray-300 hover:text-red-400 transition-colors text-xs"
+                      >
+                        ×
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="px-6 py-4 border-t border-gray-100 flex items-center gap-3">
@@ -312,6 +372,7 @@ function KanbanCardItem({
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState("writer");
   const [additionalContext, setAdditionalContext] = useState("");
+  const [, startTransition] = useTransition();
 
   const due = formatDate(card.dueDate);
   const priorityMeta = PRIORITY_META[card.priority] ?? PRIORITY_META.normal;
@@ -349,6 +410,44 @@ function KanbanCardItem({
       </div>
       {card.description && (
         <p className="text-xs text-gray-500 mt-1 leading-snug line-clamp-2">{card.description}</p>
+      )}
+
+      {card.subtasks && card.subtasks.length > 0 && (
+        <div
+          className="mt-2 space-y-1"
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          {(() => {
+            const doneCount = card.subtasks.filter((s) => s.done).length;
+            const total = card.subtasks.length;
+            return (
+              <>
+                <div className="flex items-center gap-1 mb-1">
+                  <span className={`text-xs font-medium ${doneCount === total ? "text-green-600" : "text-gray-400"}`}>
+                    {doneCount}/{total} klart
+                  </span>
+                </div>
+                {card.subtasks.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => { startTransition(async () => { await toggleSubtask(s.id, !s.done); }); }}
+                    className="flex items-center gap-1.5 w-full text-left group/sub"
+                  >
+                    <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"}`}>
+                      {s.done && (
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </span>
+                    <span className={`text-xs leading-snug ${s.done ? "line-through text-gray-400" : "text-gray-600"}`}>{s.title}</span>
+                  </button>
+                ))}
+              </>
+            );
+          })()}
+        </div>
       )}
 
       {/* AI status badge */}

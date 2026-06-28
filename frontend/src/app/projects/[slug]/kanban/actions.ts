@@ -16,6 +16,7 @@ export async function createCard(
   priority?: string,
   assigneeId?: string,
   startDate?: string,
+  subtasks?: string[],
 ) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
@@ -40,6 +41,16 @@ export async function createCard(
     },
   });
 
+  if (subtasks && subtasks.length > 0) {
+    await prisma.kanbanCardSubtask.createMany({
+      data: subtasks.filter((t) => t.trim()).map((t, i) => ({
+        cardId: card.id,
+        title: t.trim(),
+        order: i,
+      })),
+    });
+  }
+
   const est = await estimateTask(card.title, card.description);
   if (est) {
     await prisma.taskEstimate.create({
@@ -54,6 +65,24 @@ export async function createCard(
 
   revalidatePath(`/projects/${projectSlug}/kanban`);
   revalidatePath(`/projects/${projectSlug}/tasks`);
+}
+
+export async function toggleSubtask(subtaskId: string, done: boolean) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+
+  const subtask = await prisma.kanbanCardSubtask.findUnique({
+    where: { id: subtaskId },
+    include: { card: { select: { projectSlug: true } } },
+  });
+  if (!subtask) return { error: "Subtask not found" };
+
+  await prisma.kanbanCardSubtask.update({
+    where: { id: subtaskId },
+    data: { done },
+  });
+
+  revalidatePath(`/projects/${subtask.card.projectSlug}/kanban`);
 }
 
 export async function updateCard(

@@ -241,8 +241,21 @@ model KanbanCard {
   timeLogs         TimeLog[]       @relation("KanbanTimeLogs")
   tokenLedger      TokenLedger[]   @relation("KanbanTokens")
   aiTaskRuns       AiTaskRun[]     @relation("KanbanAiRuns")
+  subtasks         KanbanCardSubtask[]
 
   @@index([projectSlug, column])
+}
+
+model KanbanCardSubtask {
+  id        String     @id @default(cuid())
+  cardId    String
+  card      KanbanCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  title     String
+  done      Boolean    @default(false)
+  order     Int        @default(0)
+  createdAt DateTime   @default(now())
+
+  @@index([cardId])
 }
 
 model TodoList {
