@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { createCard, deleteCard, toggleSubtask } from "@/app/projects/[slug]/kanban/actions";
+import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask } from "@/app/projects/[slug]/kanban/actions";
 
 type CardCreator = { name: string | null };
 
@@ -102,6 +102,253 @@ function Avatar({ name }: { name: string | null }) {
   return (
     <div className="w-7 h-7 rounded-full bg-seagrass flex items-center justify-center text-white text-xs font-bold shrink-0">
       {initials}
+    </div>
+  );
+}
+
+function toDateInput(val: Date | string | null | undefined): string {
+  if (!val) return "";
+  const d = typeof val === "string" ? new Date(val) : val;
+  return d.toISOString().slice(0, 10);
+}
+
+function CardDetailModal({
+  card,
+  members,
+  isLoggedIn,
+  onClose,
+  onSaved,
+}: {
+  card: Card;
+  members: Member[];
+  isLoggedIn: boolean;
+  onClose: () => void;
+  onSaved: (cardId: string, patch: Partial<Card>) => void;
+}) {
+  const [title, setTitle] = useState(card.title);
+  const [description, setDescription] = useState(card.description ?? "");
+  const [priority, setPriority] = useState(card.priority);
+  const [assigneeId, setAssigneeId] = useState(card.assigneeId ?? "");
+  const [startDate, setStartDate] = useState(toDateInput(card.startDate));
+  const [dueDate, setDueDate] = useState(toDateInput(card.dueDate));
+  const [localSubtasks, setLocalSubtasks] = useState<Subtask[]>(card.subtasks ?? []);
+  const [newSubtaskInput, setNewSubtaskInput] = useState("");
+  const [, startTransition] = useTransition();
+
+  const columnLabel = COLUMNS.find((c) => c.key === card.column)?.label ?? card.column;
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  function save() {
+    if (!title.trim()) return;
+    startTransition(async () => {
+      await updateCard(card.id, {
+        title: title.trim(),
+        description: description.trim() || null,
+        priority,
+        assigneeId: assigneeId || null,
+        startDate: startDate || null,
+        dueDate: dueDate || null,
+      });
+    });
+    onSaved(card.id, {
+      title: title.trim(),
+      description: description.trim() || null,
+      priority,
+      assigneeId: assigneeId || null,
+    });
+    onClose();
+  }
+
+  function handleToggle(s: Subtask) {
+    setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: !t.done } : t));
+    if (!s.id.startsWith("temp-")) {
+      startTransition(async () => { await toggleSubtask(s.id, !s.done); });
+    }
+  }
+
+  async function handleAddSubtask() {
+    if (!newSubtaskInput.trim()) return;
+    const t = newSubtaskInput.trim();
+    const tempId = `temp-${Date.now()}`;
+    setLocalSubtasks((prev) => [...prev, { id: tempId, title: t, done: false, order: prev.length }]);
+    setNewSubtaskInput("");
+    const result = await addSubtask(card.id, t);
+    if (result && "subtask" in result && result.subtask) {
+      setLocalSubtasks((prev) => prev.map((s) => s.id === tempId ? (result.subtask as Subtask) : s));
+    }
+  }
+
+  const donePct = localSubtasks.length > 0
+    ? Math.round((localSubtasks.filter((s) => s.done).length / localSubtasks.length) * 100)
+    : 0;
+
+  return (
+    <div className="fixed inset-0 z-50 flex">
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" onClick={onClose} />
+      <div className="relative ml-auto bg-white h-full w-full max-w-lg shadow-2xl flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100 shrink-0">
+          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{columnLabel}</span>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 transition-colors text-xl leading-none">×</button>
+        </div>
+
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          {/* Title */}
+          <textarea
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            disabled={!isLoggedIn}
+            rows={2}
+            className="w-full text-xl font-semibold text-gray-900 resize-none border-0 outline-none bg-transparent placeholder-gray-300 focus:ring-0"
+            placeholder="Kortets titel"
+          />
+
+          {/* Metadata grid */}
+          <div className="grid grid-cols-[7rem_1fr] gap-y-3 gap-x-3 text-sm">
+            <span className="text-gray-400 pt-1">Prioritet</span>
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              disabled={!isLoggedIn}
+              className="border border-gray-200 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:border-blue-400 bg-white disabled:opacity-60"
+            >
+              {Object.entries(PRIORITY_META).map(([k, v]) => (
+                <option key={k} value={k}>{v.label}</option>
+              ))}
+            </select>
+
+            <span className="text-gray-400 pt-1">Ansvarig</span>
+            <select
+              value={assigneeId}
+              onChange={(e) => setAssigneeId(e.target.value)}
+              disabled={!isLoggedIn}
+              className="border border-gray-200 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:border-blue-400 bg-white disabled:opacity-60"
+            >
+              <option value="">— ingen —</option>
+              {members.map((m) => (
+                <option key={m.id} value={m.id}>{m.name ?? m.id}</option>
+              ))}
+            </select>
+
+            <span className="text-gray-400 pt-1">Startdatum</span>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              disabled={!isLoggedIn}
+              className="border border-gray-200 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:border-blue-400 disabled:opacity-60"
+            />
+
+            <span className="text-gray-400 pt-1">Slutdatum</span>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              disabled={!isLoggedIn}
+              className="border border-gray-200 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:border-blue-400 disabled:opacity-60"
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Beskrivning</p>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={!isLoggedIn}
+              rows={4}
+              placeholder="Lägg till en beskrivning..."
+              className="w-full text-sm text-gray-700 border border-gray-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:border-blue-400 placeholder-gray-300 disabled:opacity-60"
+            />
+          </div>
+
+          {/* Subtasks */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Deluppgifter</p>
+              {localSubtasks.length > 0 && (
+                <span className={`text-xs font-medium ${donePct === 100 ? "text-green-600" : "text-gray-400"}`}>
+                  {localSubtasks.filter((s) => s.done).length}/{localSubtasks.length}
+                </span>
+              )}
+            </div>
+
+            {localSubtasks.length > 0 && (
+              <>
+                <div className="h-1.5 rounded-full bg-gray-100 mb-3 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${donePct === 100 ? "bg-green-500" : "bg-blue-400"}`}
+                    style={{ width: `${donePct}%` }}
+                  />
+                </div>
+                <div className="space-y-1 mb-3">
+                  {localSubtasks.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => isLoggedIn && handleToggle(s)}
+                      className={`flex items-center gap-2.5 w-full text-left py-1 group/sub ${isLoggedIn ? "cursor-pointer" : "cursor-default"}`}
+                    >
+                      <span className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"}`}>
+                        {s.done && (
+                          <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </span>
+                      <span className={`text-sm ${s.done ? "line-through text-gray-400" : "text-gray-700"}`}>{s.title}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {isLoggedIn && (
+              <div className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  value={newSubtaskInput}
+                  onChange={(e) => setNewSubtaskInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddSubtask(); } }}
+                  placeholder="Lägg till deluppgift..."
+                  className="flex-1 text-sm border-0 border-b border-gray-200 focus:border-blue-400 outline-none py-1 placeholder-gray-300 text-gray-700"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddSubtask}
+                  disabled={!newSubtaskInput.trim()}
+                  className="text-blue-500 hover:text-blue-700 disabled:opacity-30 font-bold text-lg leading-none"
+                >+</button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        {isLoggedIn && (
+          <div className="flex items-center gap-3 px-6 py-4 border-t border-gray-100 shrink-0">
+            <button
+              onClick={save}
+              disabled={!title.trim()}
+              className="bg-seagrass text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-seagrass/80 disabled:opacity-40 transition-colors"
+            >
+              Spara
+            </button>
+            <button
+              onClick={onClose}
+              className="text-sm font-medium text-gray-500 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+            >
+              Avbryt
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -358,12 +605,14 @@ function KanbanCardItem({
   card,
   currentUserId,
   onDelete,
+  onOpenCard,
   runningAI,
   onRunAI,
 }: {
   card: Card;
   currentUserId: string | null;
   onDelete: (id: string) => void;
+  onOpenCard: (card: Card) => void;
   runningAI: Set<string>;
   onRunAI: (cardId: string, agentType: string, additionalContext: string) => void;
 }) {
@@ -400,6 +649,7 @@ function KanbanCardItem({
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
       {...attributes}
       {...listeners}
+      onClick={() => onOpenCard(card)}
       suppressHydrationWarning
       className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm cursor-grab active:cursor-grabbing group hover:shadow-md hover:border-gray-300 transition-all"
     >
@@ -560,6 +810,7 @@ function KanbanCardItem({
         <button
           className="mt-2 text-xs text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
           onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
+          onPointerDown={(e) => e.stopPropagation()}
         >
           Delete
         </button>
@@ -576,6 +827,7 @@ function DroppableColumn({
   currentUserId,
   onOpenModal,
   onDelete,
+  onOpenCard,
   runningAI,
   onRunAI,
 }: {
@@ -586,6 +838,7 @@ function DroppableColumn({
   currentUserId: string | null;
   onOpenModal: (colKey: string) => void;
   onDelete: (id: string) => void;
+  onOpenCard: (card: Card) => void;
   runningAI: Set<string>;
   onRunAI: (cardId: string, agentType: string, additionalContext: string) => void;
 })
@@ -635,6 +888,7 @@ function DroppableColumn({
               card={card}
               currentUserId={currentUserId}
               onDelete={onDelete}
+              onOpenCard={onOpenCard}
               runningAI={runningAI}
               onRunAI={onRunAI}
             />
@@ -665,6 +919,7 @@ export default function KanbanBoard({
   const [columns, setColumns] = useState<Columns>(initialColumns);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [modalCol, setModalCol] = useState<string | null>(null);
+  const [editingCard, setEditingCard] = useState<Card | null>(null);
   const [runningAI, setRunningAI] = useState<Set<string>>(new Set());
   const [, startTransition] = useTransition();
 
@@ -750,6 +1005,23 @@ export default function KanbanBoard({
     startTransition(async () => { await deleteCard(cardId); });
   }
 
+  function handleCardSaved(cardId: string, patch: Partial<Card>) {
+    setColumns((prev) => {
+      const updated = { ...prev };
+      for (const key of COLUMN_ORDER) {
+        const col = key as keyof Columns;
+        const idx = (updated[col] as Card[]).findIndex((c) => c.id === cardId);
+        if (idx !== -1) {
+          const cards = [...(updated[col] as Card[])];
+          cards[idx] = { ...cards[idx], ...patch };
+          updated[col] = cards as typeof updated[typeof col];
+          break;
+        }
+      }
+      return updated;
+    });
+  }
+
   return (
     <div>
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -765,6 +1037,7 @@ export default function KanbanBoard({
                 currentUserId={currentUserId}
                 onOpenModal={setModalCol}
                 onDelete={handleDelete}
+                onOpenCard={setEditingCard}
                 runningAI={runningAI}
                 onRunAI={handleRunAI}
               />
@@ -788,6 +1061,16 @@ export default function KanbanBoard({
           members={members}
           onAdd={handleAdd}
           onClose={() => { setModalCol(null); onRequestAddDone?.(); }}
+        />
+      )}
+
+      {editingCard && (
+        <CardDetailModal
+          card={editingCard}
+          members={members}
+          isLoggedIn={isLoggedIn}
+          onClose={() => setEditingCard(null)}
+          onSaved={handleCardSaved}
         />
       )}
     </div>

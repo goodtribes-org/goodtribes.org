@@ -67,6 +67,30 @@ export async function createCard(
   revalidatePath(`/projects/${projectSlug}/tasks`);
 }
 
+export async function addSubtask(cardId: string, title: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+
+  const card = await prisma.kanbanCard.findUnique({
+    where: { id: cardId },
+    select: { projectSlug: true },
+  });
+  if (!card) return { error: "Card not found" };
+
+  const maxOrder = await prisma.kanbanCardSubtask.aggregate({
+    where: { cardId },
+    _max: { order: true },
+  });
+
+  const subtask = await prisma.kanbanCardSubtask.create({
+    data: { cardId, title: title.trim(), order: (maxOrder._max.order ?? -1) + 1 },
+  });
+
+  revalidatePath(`/projects/${card.projectSlug}/kanban`);
+  revalidatePath(`/projects/${card.projectSlug}/tasks`);
+  return { subtask };
+}
+
 export async function toggleSubtask(subtaskId: string, done: boolean) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
