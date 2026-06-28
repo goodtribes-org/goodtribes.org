@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 
@@ -14,10 +15,34 @@ export default async function KanalerIndexPage({
   });
   if (!project) notFound();
 
-  const first = await prisma.channel.findFirst({
+  let first = await prisma.channel.findFirst({
     where: { projectId: project.id },
     orderBy: { order: "asc" },
   });
+
+  // Auto-seed default channels for project owners on first visit
+  if (!first) {
+    const session = await auth();
+    if (session?.user?.id) {
+      const member = await prisma.projectMember.findUnique({
+        where: { projectId_userId: { projectId: project.id, userId: session.user.id } },
+        select: { role: true },
+      });
+      if (member?.role === "owner" || member?.role === "admin") {
+        await prisma.channel.createMany({
+          data: [
+            { projectId: project.id, name: "allmänt", type: "text",         order: 0 },
+            { projectId: project.id, name: "beslut",  type: "announcement", order: 1 },
+            { projectId: project.id, name: "ideer",   type: "text",         order: 2 },
+          ],
+        });
+        first = await prisma.channel.findFirst({
+          where: { projectId: project.id },
+          orderBy: { order: "asc" },
+        });
+      }
+    }
+  }
 
   if (first) {
     redirect(`/projects/${slug}/kanaler/${first.id}`);
