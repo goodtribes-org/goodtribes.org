@@ -27,7 +27,7 @@ export default function ProjectTabNav({ slug }: { slug: string }) {
   const base = `/projects/${slug}`;
 
   return (
-    <div className="flex flex-nowrap overflow-x-auto gap-x-1 scrollbar-none"
+    <div className="flex flex-nowrap overflow-x-auto justify-center gap-x-1 scrollbar-none"
       style={{ scrollbarWidth: "none" }}
     >
       {ALL_TABS.map((tab) => {
