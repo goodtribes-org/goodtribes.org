@@ -4,7 +4,22 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TiptapImage from "@tiptap/extension-image";
 import TiptapLink from "@tiptap/extension-link";
-import { useCallback } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
+
+type EmojiPickerProps = {
+  data: unknown;
+  onEmojiSelect: (emoji: { native: string }) => void;
+  locale?: string;
+  theme?: string;
+  previewPosition?: string;
+  skinTonePosition?: string;
+};
+
+const EmojiPicker = dynamic<EmojiPickerProps>(
+  () => import("@emoji-mart/react").then((m) => m.default ?? m),
+  { ssr: false }
+);
 
 const btnClass = (active?: boolean) =>
   `px-2 py-1 rounded text-xs font-semibold transition-colors ${
@@ -42,6 +57,20 @@ export default function RichTextEditor({
   content: string;
   onChange: (html: string) => void;
 }) {
+  const [showEmoji, setShowEmoji] = useState(false);
+  const emojiRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showEmoji) return;
+    function handleClick(e: MouseEvent) {
+      if (emojiRef.current && !emojiRef.current.contains(e.target as Node)) {
+        setShowEmoji(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showEmoji]);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -85,7 +114,7 @@ export default function RichTextEditor({
   return (
     <div className="border border-muted-teal rounded-md overflow-hidden">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 bg-gray-50 border-b border-muted-teal/30">
+      <div className="relative flex flex-wrap items-center gap-0.5 px-2 py-1.5 bg-gray-50 border-b border-muted-teal/30">
         <Btn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Fet (Ctrl+B)">
           <strong>B</strong>
         </Btn>
@@ -150,6 +179,38 @@ export default function RichTextEditor({
 
         <Btn onClick={() => editor.chain().focus().undo().run()} title="Ångra (Ctrl+Z)">↩ Ångra</Btn>
         <Btn onClick={() => editor.chain().focus().redo().run()} title="Gör om (Ctrl+Y)">↪ Gör om</Btn>
+
+        <Divider />
+
+        {/* Emoji picker */}
+        <div ref={emojiRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setShowEmoji((v) => !v)}
+            title="Infoga emoji"
+            className={btnClass(showEmoji)}
+          >
+            😊
+          </button>
+          {showEmoji && (
+            <div className="absolute left-0 top-full mt-1 z-50 shadow-xl rounded-xl overflow-hidden">
+              <EmojiPicker
+                data={async () => {
+                  const res = await import("@emoji-mart/data");
+                  return res.default;
+                }}
+                onEmojiSelect={(emoji: { native: string }) => {
+                  editor.chain().focus().insertContent(emoji.native).run();
+                  setShowEmoji(false);
+                }}
+                locale="sv"
+                theme="light"
+                previewPosition="none"
+                skinTonePosition="none"
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <EditorContent editor={editor} />
