@@ -51,6 +51,7 @@ export async function createCard(
   }
 
   revalidatePath(`/projects/${projectSlug}/kanban`);
+  revalidatePath(`/projects/${projectSlug}/tasks`);
 }
 
 export async function updateCard(
@@ -131,6 +132,7 @@ export async function moveCard(cardId: string, newColumn: string) {
   }
 
   revalidatePath(`/projects/${card.projectSlug}/kanban`);
+  revalidatePath(`/projects/${card.projectSlug}/tasks`);
 }
 
 export async function deleteCard(cardId: string) {
@@ -143,4 +145,5 @@ export async function deleteCard(cardId: string) {
 
   await prisma.kanbanCard.delete({ where: { id: cardId } });
   revalidatePath(`/projects/${card.projectSlug}/kanban`);
+  revalidatePath(`/projects/${card.projectSlug}/tasks`);
 }
