@@ -301,14 +301,14 @@ export default async function ProjectDetailPage({
             {project.description ? (
               project.description.trimStart().startsWith("<") ? (
                 <article
-                  className="prose max-w-[760px] text-dark-slate leading-relaxed
+                  className="prose max-w-[760px] mx-auto text-dark-slate leading-relaxed
                     prose-headings:text-dark-slate
                     prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
                     prose-strong:text-dark-slate prose-img:rounded-xl prose-img:max-w-full"
                   dangerouslySetInnerHTML={{ __html: project.description }}
                 />
               ) : (
-                <article className="prose max-w-[760px] text-dark-slate leading-relaxed
+                <article className="prose max-w-[760px] mx-auto text-dark-slate leading-relaxed
                   prose-headings:text-dark-slate
                   prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
                   prose-strong:text-dark-slate prose-img:rounded-xl">
