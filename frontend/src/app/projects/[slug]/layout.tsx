@@ -82,12 +82,12 @@ export default async function ProjectLayout({
 
   return (
     <>
-      {/* Full-bleed hero — flush with header */}
+      {/* Full-bleed hero with title overlay — flush with header */}
       <div
         className="relative -mt-8"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
-        <div className="relative w-full h-64 md:h-[500px]">
+        <div className="relative w-full h-64 md:h-[480px]">
           {project.imageUrl ? (
             <Image
               src={project.imageUrl}
@@ -98,108 +98,89 @@ export default async function ProjectLayout({
               sizes="100vw"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-dark-slate to-dark-slate/70 flex items-center justify-center">
-              <p className="text-4xl font-bold text-white text-center px-8 leading-snug">{project.title}</p>
-            </div>
+            <div className="w-full h-full bg-gradient-to-br from-dark-slate to-dark-slate/70" />
           )}
-        </div>
-      </div>
-
-      {/* Below-hero info bar */}
-      <div className="py-5 border-b border-muted-teal/20 mb-2">
-        <div className="flex flex-col md:flex-row md:items-start gap-5 md:gap-8">
-          {/* Left: title + meta */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <h1 className="text-2xl font-bold text-dark-slate leading-tight">{project.title}</h1>
+          {/* Title overlay */}
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-6 pb-6 pt-24">
+            <div className="max-w-5xl mx-auto flex items-end justify-between gap-4">
+              <div className="min-w-0">
+                <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight drop-shadow">
+                  {project.title}
+                </h1>
+                <p className="text-white/70 text-sm mt-2">
+                  av <span className="text-white/90 font-medium">{project.owner.name ?? "Okänd"}</span>
+                  {project.org && (
+                    <>
+                      {" "}·{" "}
+                      <Link href={`/org/${project.org.slug}`} className="text-white/70 hover:text-white transition-colors">
+                        {project.org.name}
+                      </Link>
+                    </>
+                  )}
+                </p>
+              </div>
               {isOwner && (
                 <Link
                   href={`/projects/${slug}/edit`}
-                  className="shrink-0 px-3 py-1 rounded border border-muted-teal/60 text-xs font-medium text-dark-slate/70 hover:text-dark-slate transition-colors"
+                  className="shrink-0 px-3 py-1.5 rounded border border-white/40 text-xs font-medium text-white/80 hover:text-white hover:border-white/70 transition-colors backdrop-blur-sm"
                 >
                   Redigera
                 </Link>
               )}
             </div>
-            <p className="text-sm text-dark-slate/60 mt-1">
-              av <span className="text-coral font-medium">{project.owner.name ?? "Okänd"}</span>
-              {project.org && (
-                <>
-                  {" "}·{" "}
-                  <Link href={`/org/${project.org.slug}`} className="hover:text-seagrass transition-colors">
-                    {project.org.name}
-                  </Link>
-                </>
-              )}
-            </p>
-            <div className="flex flex-wrap gap-1.5 mt-3">
-              <span className="text-xs font-semibold px-2.5 py-1 bg-seagrass/20 text-seagrass rounded-full">
-                {STAGES[stageIndex]}
-              </span>
-              {project.category && (
-                <span className="text-xs bg-muted-teal/30 text-dark-slate px-2.5 py-1 rounded-full font-medium">
-                  {project.category}
-                </span>
-              )}
-              {(project.tags ?? []).map((tag) => (
-                <span key={tag} className="text-xs border border-muted-teal/60 text-dark-slate/60 px-2.5 py-1 rounded-full">
-                  #{tag}
-                </span>
-              ))}
-              {project.sdgGoals.map((n) => {
-                const info = SDG_INFO[n];
-                return (
-                  <span
-                    key={n}
-                    title={`SDG ${n}: ${info?.label ?? ""}`}
-                    className="text-xs font-bold px-2.5 py-1 rounded-full text-white cursor-default"
-                    style={{ backgroundColor: info?.color ?? "#888" }}
-                  >
-                    SDG {n}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Right: funding progress + CTA */}
-          <div className="flex flex-col gap-3 md:w-56 shrink-0">
-            {fundingCampaign && (
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-end">
-                  <span className="text-lg font-bold text-dark-slate">
-                    {raised.toLocaleString("sv-SE")} {fundingCampaign.currency}
-                  </span>
-                  <span className="text-xs text-dark-slate/50">
-                    av {fundingCampaign.goal.toLocaleString("sv-SE")}
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-muted-teal/20 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-coral rounded-full transition-all"
-                    style={{ width: `${fundingPct}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-xs text-dark-slate/50">
-                  <span className="font-semibold text-dark-slate">{fundingPct}% finansierat</span>
-                  {daysLeft !== null && <span>{daysLeft} dagar kvar</span>}
-                </div>
-              </div>
-            )}
-            <div className="flex items-center gap-2 text-sm text-dark-slate/60">
-              <span>👥</span>
-              <span>
-                {project._count.members} {project._count.members === 1 ? "medlem" : "medlemmar"}
-              </span>
-            </div>
-            <Link
-              href={`/projects/${slug}`}
-              className="w-full text-center px-4 py-2.5 bg-coral text-white rounded-xl font-semibold text-sm hover:bg-coral/90 transition-colors"
-            >
-              Gå med
-            </Link>
           </div>
         </div>
+      </div>
+
+      {/* Below-hero meta bar — tags, stage, SDG, members, funding */}
+      <div className="py-4 border-b border-muted-teal/20 mb-2">
+        <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
+          <div className="flex flex-wrap gap-1.5 flex-1 min-w-0">
+            <span className="text-xs font-semibold px-2.5 py-1 bg-seagrass/20 text-seagrass rounded-full">
+              {STAGES[stageIndex]}
+            </span>
+            {project.category && (
+              <span className="text-xs bg-muted-teal/30 text-dark-slate px-2.5 py-1 rounded-full font-medium">
+                {project.category}
+              </span>
+            )}
+            {(project.tags ?? []).map((tag) => (
+              <span key={tag} className="text-xs border border-muted-teal/60 text-dark-slate/60 px-2.5 py-1 rounded-full">
+                #{tag}
+              </span>
+            ))}
+            {project.sdgGoals.map((n) => {
+              const info = SDG_INFO[n];
+              return (
+                <span
+                  key={n}
+                  title={`SDG ${n}: ${info?.label ?? ""}`}
+                  className="text-xs font-bold px-2.5 py-1 rounded-full text-white cursor-default"
+                  style={{ backgroundColor: info?.color ?? "#888" }}
+                >
+                  SDG {n}
+                </span>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-4 shrink-0 text-sm text-dark-slate/60">
+            <span>👥 {project._count.members} {project._count.members === 1 ? "medlem" : "medlemmar"}</span>
+            {fundingCampaign && (
+              <span className="font-semibold text-dark-slate">
+                {fundingPct}% finansierat
+                {daysLeft !== null && <span className="font-normal text-dark-slate/50"> · {daysLeft} dagar kvar</span>}
+              </span>
+            )}
+          </div>
+        </div>
+        {fundingCampaign && (
+          <div className="w-full h-1.5 bg-muted-teal/20 rounded-full overflow-hidden mt-3">
+            <div
+              className="h-full bg-coral rounded-full transition-all"
+              style={{ width: `${fundingPct}%` }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Tab nav */}

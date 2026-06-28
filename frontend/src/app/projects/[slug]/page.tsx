@@ -7,7 +7,6 @@ import { auth } from "@/auth";
 import { JoinButton, JoinRequestsPanel } from "./JoinSection";
 import InviteForm from "./invite/InviteForm";
 import TeamManager from "./TeamManager";
-import MaturityWidget from "@/components/MaturityWidget";
 import FlagProjectButton from "@/components/FlagProjectButton";
 import KudosButton from "@/components/KudosButton";
 
@@ -50,29 +49,6 @@ function MemberAvatar({
   return inner;
 }
 
-function activityLabel(type: string, userName: string): string {
-  switch (type) {
-    case "member_joined":    return `${userName} gick med i projektet`;
-    case "task_completed":   return `${userName} avklarade en uppgift`;
-    case "todo_completed":   return `${userName} kryssade av en to-do`;
-    case "milestone_reached":return "Milstolpe nådd";
-    case "update_posted":    return `${userName} postade en uppdatering`;
-    case "kanban_moved":     return `${userName} uppdaterade en uppgift`;
-    default:                 return `${userName}: ${type.replace(/_/g, " ")}`;
-  }
-}
-
-function activityIcon(type: string): string {
-  switch (type) {
-    case "member_joined":    return "👤";
-    case "task_completed":   return "✅";
-    case "todo_completed":   return "☑️";
-    case "milestone_reached":return "🎯";
-    case "update_posted":    return "📝";
-    case "kanban_moved":     return "📋";
-    default:                 return "📌";
-  }
-}
 
 function relativeTime(date: Date): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -152,15 +128,8 @@ export default async function ProjectDetailPage({
     userMembership && ["owner", "admin"].includes(userMembership.role);
   const isMember = !!userMembership;
 
-  const [maturity, recentActivity, latestUpdate, fundingCampaign, userJoinRequest] =
+  const [latestUpdate, fundingCampaign, upcomingEvents, userJoinRequest] =
     await Promise.all([
-      prisma.projectMaturity.findUnique({ where: { projectSlug: slug } }),
-      prisma.activityEvent.findMany({
-        where: { project: { slug } },
-        orderBy: { createdAt: "desc" },
-        take: 8,
-        include: { user: { select: { name: true } } },
-      }),
       prisma.blogPost.findFirst({
         where: { projectSlug: slug },
         orderBy: { createdAt: "desc" },
@@ -169,6 +138,12 @@ export default async function ProjectDetailPage({
       prisma.fundingCampaign.findUnique({
         where: { projectId: project.id },
         include: { pledges: { select: { amount: true } } },
+      }),
+      prisma.calendarEvent.findMany({
+        where: { projectSlug: slug, startsAt: { gte: new Date() } },
+        orderBy: { startsAt: "asc" },
+        take: 3,
+        select: { id: true, title: true, startsAt: true },
       }),
       userId && !isMember
         ? prisma.projectJoinRequest.findFirst({
@@ -200,67 +175,18 @@ export default async function ProjectDetailPage({
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-        {/* Left: pitch + activity + latest update */}
-        <div className="md:col-span-3 space-y-8">
-          {/* Description */}
-          <div className="prose prose-sm max-w-none text-dark-slate/80 leading-relaxed">
-            {project.description ? (
-              <p>{project.description}</p>
-            ) : (
-              <p className="text-dark-slate/40 italic">Ingen beskrivning ännu.</p>
-            )}
-          </div>
-
-          {/* Quick stats */}
-          {(project._count.kanbanCards > 0 || project._count.todoItems > 0) && (
-            <div className="flex gap-4 text-sm text-dark-slate/60">
-              {project._count.kanbanCards > 0 && (
-                <Link
-                  href={`/projects/${slug}/kanban`}
-                  className="hover:text-dark-slate transition-colors"
-                >
-                  📋 {project._count.kanbanCards} uppgifter
-                </Link>
-              )}
-              {project._count.todoItems > 0 && (
-                <Link
-                  href={`/projects/${slug}/todos`}
-                  className="hover:text-dark-slate transition-colors"
-                >
-                  ☑️ {project._count.todoItems} to-dos
-                </Link>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Left: project story */}
+        <div className="md:col-span-2 space-y-8">
+          <section>
+            <h2 className="text-base font-semibold text-dark-slate mb-4">Om projektet</h2>
+            <div className="prose prose-sm max-w-none text-dark-slate/80 leading-relaxed whitespace-pre-wrap">
+              {project.description ?? (
+                <span className="text-dark-slate/40 italic">Ingen beskrivning ännu.</span>
               )}
             </div>
-          )}
-
-          {/* Activity feed */}
-          <section>
-            <h2 className="text-sm font-semibold text-dark-slate mb-3">Senaste aktivitet</h2>
-            {recentActivity.length > 0 ? (
-              <ul className="space-y-2.5">
-                {recentActivity.map((event) => (
-                  <li key={event.id} className="flex items-start gap-3 text-sm">
-                    <span className="text-base leading-none mt-0.5 shrink-0">
-                      {activityIcon(event.type)}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-dark-slate/80">
-                        {activityLabel(event.type, event.user.name ?? "Någon")}
-                      </span>
-                      <span className="ml-2 text-xs text-dark-slate/40">
-                        {relativeTime(event.createdAt)}
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-dark-slate/40 italic">Ingen aktivitet ännu.</p>
-            )}
           </section>
 
-          {/* Latest update */}
           {latestUpdate && (
             <section>
               <h2 className="text-sm font-semibold text-dark-slate mb-3">Senaste uppdatering</h2>
@@ -283,8 +209,8 @@ export default async function ProjectDetailPage({
           )}
         </div>
 
-        {/* Right: funding + join + skills + team + maturity */}
-        <div className="md:col-span-2 flex flex-col gap-6">
+        {/* Right sidebar */}
+        <div className="flex flex-col gap-5">
           {/* Funding widget */}
           {fundingCampaign && (
             <section className="border border-muted-teal/30 rounded-xl p-4">
@@ -342,21 +268,26 @@ export default async function ProjectDetailPage({
             </div>
           )}
 
-          {/* Skills needed */}
-          {project.neededSkills.length > 0 && (
-            <section>
-              <h2 className="text-sm font-semibold text-dark-slate mb-3">Söker kompetenser</h2>
-              <div className="flex flex-wrap gap-2">
-                {project.neededSkills.map(({ skill }) => (
-                  <Link
-                    key={skill.id}
-                    href={`/skill/${skill.slug}`}
-                    className="text-xs bg-dry-sage text-dark-slate px-3 py-1 rounded-full hover:bg-muted-teal/30 transition-colors"
-                  >
-                    {skill.name}
-                  </Link>
+          {/* Upcoming events */}
+          {upcomingEvents.length > 0 && (
+            <section className="border border-muted-teal/30 rounded-xl p-4">
+              <h2 className="text-sm font-semibold text-dark-slate mb-3">Kommande</h2>
+              <ul className="space-y-2.5">
+                {upcomingEvents.map((ev) => (
+                  <li key={ev.id} className="flex gap-3 items-start text-sm">
+                    <span className="shrink-0 text-xs font-semibold text-coral mt-0.5 w-12 text-right tabular-nums">
+                      {ev.startsAt.toLocaleDateString("sv-SE", { day: "numeric", month: "short" })}
+                    </span>
+                    <span className="text-dark-slate/80 leading-snug">{ev.title}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
+              <Link
+                href={`/projects/${slug}/calendar`}
+                className="mt-3 block text-xs text-seagrass hover:underline"
+              >
+                Visa kalender →
+              </Link>
             </section>
           )}
 
@@ -412,13 +343,23 @@ export default async function ProjectDetailPage({
             )}
           </section>
 
-          {/* Maturity */}
-          <MaturityWidget
-            projectSlug={slug}
-            initialScore={maturity?.score ?? null}
-            initialScalingPlan={maturity?.scalingPlan ?? null}
-            isOwnerOrAdmin={!!isOwnerOrAdmin}
-          />
+          {/* Skills needed */}
+          {project.neededSkills.length > 0 && (
+            <section>
+              <h2 className="text-sm font-semibold text-dark-slate mb-3">Söker kompetenser</h2>
+              <div className="flex flex-wrap gap-2">
+                {project.neededSkills.map(({ skill }) => (
+                  <Link
+                    key={skill.id}
+                    href={`/skill/${skill.slug}`}
+                    className="text-xs bg-dry-sage text-dark-slate px-3 py-1 rounded-full hover:bg-muted-teal/30 transition-colors"
+                  >
+                    {skill.name}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </div>
 
