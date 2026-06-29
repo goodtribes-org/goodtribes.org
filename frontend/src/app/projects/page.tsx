@@ -135,7 +135,7 @@ export default async function ProjectsPage({
                       by <span className="text-coral">{ownerName}</span>
                     </p>
                     <p className="text-xs text-dark-slate/70 leading-snug mb-2 line-clamp-3 flex-1">
-                      {project.description ?? "No description yet."}
+                      {(project as typeof project & { summary: string | null }).summary ?? project.description ?? "Ingen beskrivning ännu."}
                     </p>
                     {project.sdgGoals.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-2">

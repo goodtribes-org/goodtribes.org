@@ -23,6 +23,7 @@ export async function updateProject(slug: string, formData: FormData) {
   const title = (formData.get("title") as string).trim();
   if (!title) return;
 
+  const summary = (formData.get("summary") as string | null)?.trim() || null;
   const description = (formData.get("description") as string | null)?.trim() || null;
   const status = (formData.get("status") as string) || "concept";
   const visibility = (formData.get("visibility") as string) || "public";
@@ -36,7 +37,7 @@ export async function updateProject(slug: string, formData: FormData) {
 
   await prisma.project.update({
     where: { slug },
-    data: { title, description, status, visibility, category, tags, sdgGoals, ...(imageUrl ? { imageUrl } : {}), orgId },
+    data: { title, summary, description, status, visibility, category, tags, sdgGoals, ...(imageUrl ? { imageUrl } : {}), orgId },
   });
 
   await prisma.$transaction([

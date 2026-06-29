@@ -52,6 +52,7 @@ export default async function EditProjectPage({
         currentOrgId={project.orgId}
         initial={{
           title: project.title,
+          summary: (project as typeof project & { summary: string | null }).summary,
           description: project.description,
           status: project.status,
           visibility: project.visibility,

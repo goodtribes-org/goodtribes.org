@@ -34,6 +34,7 @@ interface Props {
   currentOrgId: string | null;
   initial: {
     title: string;
+    summary: string | null;
     description: string | null;
     status: string;
     visibility: string;
@@ -124,6 +125,18 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
           id="title" name="title" type="text" required
           defaultValue={initial.title}
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="summary" className="block text-sm font-medium text-dark-slate mb-1">
+          Summary <span className="text-dark-slate/50 font-normal">(visas på projektkortet)</span>
+        </label>
+        <textarea
+          id="summary" name="summary" rows={2}
+          defaultValue={initial.summary ?? ""}
+          placeholder="Kort sammanfattning av projektet — 1–2 meningar"
+          className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral resize-none"
         />
       </div>
 

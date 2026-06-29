@@ -134,6 +134,19 @@ export default function NewProjectForm({ initial = {}, ideaId, skills, orgs }: P
       </div>
 
       <div>
+        <label htmlFor="summary" className="block text-sm font-medium text-dark-slate mb-1">
+          Summary <span className="text-dark-slate/50 font-normal">(visas på projektkortet)</span>
+        </label>
+        <textarea
+          id="summary"
+          name="summary"
+          rows={2}
+          placeholder="Kort sammanfattning — 1–2 meningar"
+          className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent resize-none"
+        />
+      </div>
+
+      <div>
         <label htmlFor="description" className="block text-sm font-medium text-dark-slate mb-1">
           Description
         </label>

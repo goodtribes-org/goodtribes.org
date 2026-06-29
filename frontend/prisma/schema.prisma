@@ -313,6 +313,7 @@ model Project {
   id          String   @id @default(cuid())
   slug        String   @unique
   title       String
+  summary     String?
   description String?
   status      String   @default("concept")
   visibility  String   @default("public")

@@ -285,6 +285,11 @@ export default async function ProjectDetailPage({
         <div className="flex-1 min-w-0 space-y-8">
           <section>
             <h2 className="text-base font-semibold text-dark-slate mb-4">Om projektet</h2>
+            {(project as typeof project & { summary: string | null }).summary && (
+              <p className="text-base text-dark-slate/80 leading-relaxed mb-4 font-medium">
+                {(project as typeof project & { summary: string | null }).summary}
+              </p>
+            )}
             {project.description ? (
               project.description.trimStart().startsWith("<") ? (
                 <article

@@ -20,6 +20,7 @@ export async function createProject(formData: FormData) {
 
   const userId = session.user.id;
   const title = (formData.get("title") as string).trim();
+  const summary = (formData.get("summary") as string | null)?.trim() || null;
   const description = (formData.get("description") as string | null)?.trim() || null;
   const visibility = (formData.get("visibility") as string) || "public";
   const category = (formData.get("category") as string | null)?.trim() || null;
@@ -42,7 +43,7 @@ export async function createProject(formData: FormData) {
     const candidate = attempt === 0 ? baseSlug : `${baseSlug}-${attempt}`;
     try {
       const project = await prisma.project.create({
-        data: { slug: candidate, title, description, visibility, category, tags, sdgGoals, ownerId: userId, ...(imageUrl ? { imageUrl } : {}), ...(orgId ? { orgId } : {}) },
+        data: { slug: candidate, title, summary, description, visibility, category, tags, sdgGoals, ownerId: userId, ...(imageUrl ? { imageUrl } : {}), ...(orgId ? { orgId } : {}) },
       });
       await prisma.projectMember.create({
         data: { projectId: project.id, userId, role: "owner" },
