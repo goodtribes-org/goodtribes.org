@@ -221,7 +221,7 @@ export default async function CalendarPage({
       {view === "calendar" && (
         <>
           {/* Toolbar: Ny händelse | månad nav | kalender/gantt toggle */}
-          <div className="flex items-center gap-3 mb-4 flex-wrap">
+          <div className="flex items-center gap-3 mb-4 flex-wrap relative">
             {session?.user?.id && (
               <Link
                 href={`/projects/${slug}/calendar/new`}
@@ -233,7 +233,7 @@ export default async function CalendarPage({
                 Ny händelse
               </Link>
             )}
-            <div className="flex items-center gap-2">
+            <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
               <Link
                 href={`?view=calendar&year=${prev.year}&month=${prev.month + 1}`}
                 className="p-1.5 rounded hover:bg-muted-teal/20 transition-colors text-dark-slate/60 hover:text-dark-slate"
