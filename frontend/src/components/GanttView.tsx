@@ -19,8 +19,16 @@ type GanttMilestone = {
   status: string;
 };
 
+type GanttTodo = {
+  id: string;
+  title: string;
+  dueDate: Date | string | null;
+  done: boolean;
+};
+
 interface GanttViewProps {
   cards: GanttCard[];
+  todos?: GanttTodo[];
   milestones: GanttMilestone[];
   projectSlug: string;
   isOwnerOrAdmin: boolean;
@@ -67,7 +75,7 @@ function diffDays(a: Date, b: Date): number {
   return Math.round((b.getTime() - a.getTime()) / 86400000);
 }
 
-export default function GanttView({ cards, milestones, isOwnerOrAdmin }: GanttViewProps) {
+export default function GanttView({ cards, todos = [], milestones, isOwnerOrAdmin }: GanttViewProps) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [editingCard, setEditingCard] = useState<string | null>(null);
   const [editStart, setEditStart] = useState("");
@@ -88,7 +96,14 @@ export default function GanttView({ cards, milestones, isOwnerOrAdmin }: GanttVi
     const d = toDate(m.dueDate);
     if (d) allDates.push(d);
   }
+  for (const t of todos) {
+    const d = toDate(t.dueDate);
+    if (d) allDates.push(d);
+  }
   allDates.push(now);
+
+  const scheduledTodos = todos.filter((t) => toDate(t.dueDate));
+  const unscheduledTodos = todos.filter((t) => !toDate(t.dueDate));
 
   let rangeStart = addDays(new Date(Math.min(...allDates.map((d) => d.getTime()))), -7);
   let rangeEnd = addDays(new Date(Math.max(...allDates.map((d) => d.getTime()))), 14);
@@ -227,6 +242,55 @@ export default function GanttView({ cards, milestones, isOwnerOrAdmin }: GanttVi
               </div>
             )}
 
+            {/* Todo group */}
+            {scheduledTodos.length > 0 && (
+              <div>
+                <div className="flex border-b border-muted-teal/20 bg-amber-50/40 h-8">
+                  <div
+                    style={{ width: LABEL_WIDTH, minWidth: LABEL_WIDTH }}
+                    className="shrink-0 sticky left-0 bg-amber-50/60 z-10 border-r border-muted-teal/20 flex items-center px-3"
+                  >
+                    <span className="text-xs font-semibold text-amber-700">Todos</span>
+                    <span className="text-xs text-amber-500/60 ml-auto">{scheduledTodos.length}</span>
+                  </div>
+                  <div className="relative flex-1 bg-amber-50/30">
+                    {todayOffset >= 0 && (
+                      <div className="absolute top-0 bottom-0 w-px bg-coral/50 z-10 pointer-events-none" style={{ left: todayOffset }} />
+                    )}
+                  </div>
+                </div>
+                {scheduledTodos.map((todo) => {
+                  const d = toDate(todo.dueDate)!;
+                  const left = diffDays(rangeStart, d) * DAY_WIDTH;
+                  return (
+                    <div key={todo.id} className="flex border-b border-muted-teal/10" style={{ minHeight: ROW_H }}>
+                      <div
+                        style={{ width: LABEL_WIDTH, minWidth: LABEL_WIDTH }}
+                        className="shrink-0 sticky left-0 bg-white z-10 border-r border-muted-teal/20 flex items-center px-3 gap-2"
+                      >
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${todo.done ? "bg-green-400" : "bg-amber-400"}`} />
+                        <span className={`text-xs truncate ${todo.done ? "line-through text-dark-slate/40" : "text-dark-slate"}`} title={todo.title}>
+                          {todo.title}
+                        </span>
+                      </div>
+                      <div className="relative flex-1" style={{ minHeight: ROW_H }}>
+                        {todayOffset >= 0 && (
+                          <div className="absolute top-0 bottom-0 w-px bg-coral/50 z-10 pointer-events-none" style={{ left: todayOffset }} />
+                        )}
+                        <div
+                          className={`absolute top-1/2 -translate-y-1/2 flex items-center justify-center ${todo.done ? "text-green-500" : "text-amber-500"}`}
+                          style={{ left: left - 7 }}
+                          title={todo.title}
+                        >
+                          <span className="text-base leading-none select-none">◆</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             {/* Column groups */}
             {COLUMN_ORDER.map((col) => {
               const colCards = byColumn[col] ?? [];
@@ -343,10 +407,10 @@ export default function GanttView({ cards, milestones, isOwnerOrAdmin }: GanttVi
       </div>
 
       {/* Unscheduled */}
-      {unscheduled.length > 0 && (
+      {(unscheduled.length > 0 || unscheduledTodos.length > 0) && (
         <div className="mt-6">
           <h3 className="text-sm font-semibold text-dark-slate/50 mb-2">
-            Ej schemalagda ({unscheduled.length})
+            Ej schemalagda ({unscheduled.length + unscheduledTodos.length})
           </h3>
           <div className="space-y-1">
             {unscheduled.map((card) => (
@@ -357,6 +421,16 @@ export default function GanttView({ cards, milestones, isOwnerOrAdmin }: GanttVi
                 <span className={`w-2 h-2 rounded-full shrink-0 ${COLUMN_COLORS[card.column]}`} />
                 <span className="text-sm text-dark-slate">{card.title}</span>
                 <span className="text-xs text-dark-slate/30 ml-auto">{COLUMN_LABELS[card.column]}</span>
+              </div>
+            ))}
+            {unscheduledTodos.map((todo) => (
+              <div
+                key={todo.id}
+                className="flex items-center gap-2 px-3 py-2 rounded border border-amber-100 bg-amber-50/40"
+              >
+                <span className={`w-2 h-2 rounded-full shrink-0 ${todo.done ? "bg-green-400" : "bg-amber-400"}`} />
+                <span className={`text-sm ${todo.done ? "line-through text-dark-slate/40" : "text-dark-slate"}`}>{todo.title}</span>
+                <span className="text-xs text-amber-400/70 ml-auto">Todo</span>
               </div>
             ))}
           </div>

@@ -28,7 +28,7 @@ export async function generateMetadata({
 interface CalendarEntry {
   id: string;
   title: string;
-  type: "milestone" | "task" | "meeting" | "deadline" | "custom";
+  type: "milestone" | "task" | "todo" | "meeting" | "deadline" | "custom";
   color: string;
   href?: string;
 }
@@ -36,9 +36,10 @@ interface CalendarEntry {
 const TYPE_COLORS: Record<CalendarEntry["type"], string> = {
   milestone: "bg-purple-500",
   task: "bg-blue-500",
+  todo: "bg-amber-500",
   meeting: "bg-seagrass",
   deadline: "bg-watermelon",
-  custom: "bg-amber-500",
+  custom: "bg-gray-400",
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -117,8 +118,8 @@ export default async function CalendarPage({
   const monthStart = new Date(year, month, 1);
   const monthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
-  // Fetch calendar data + milestones (all) + all kanban cards for Gantt
-  const [milestones, kanbanCardsMonth, calendarEvents, allMilestones, allKanbanCards] = await Promise.all([
+  // Fetch calendar data + milestones (all) + all kanban cards + todos for Gantt
+  const [milestones, kanbanCardsMonth, calendarEvents, todoItemsMonth, allMilestones, allKanbanCards, allTodoItems] = await Promise.all([
     // Calendar: milestones in this month
     prisma.milestone.findMany({
       where: { projectId: project.id, dueDate: { gte: monthStart, lte: monthEnd } },
@@ -134,6 +135,11 @@ export default async function CalendarPage({
       where: { projectSlug: slug, startsAt: { gte: monthStart, lte: monthEnd } },
       select: { id: true, title: true, type: true, startsAt: true, createdBy: { select: { name: true } } },
     }),
+    // Calendar: todo items due this month
+    prisma.todoItem.findMany({
+      where: { list: { projectSlug: slug }, dueDate: { gte: monthStart, lte: monthEnd } },
+      select: { id: true, title: true, dueDate: true },
+    }),
     // Milestones section: all milestones
     prisma.milestone.findMany({
       where: { projectId: project.id },
@@ -144,6 +150,12 @@ export default async function CalendarPage({
       where: { projectSlug: slug },
       select: { id: true, title: true, column: true, priority: true, startDate: true, dueDate: true },
       orderBy: [{ column: "asc" }, { order: "asc" }],
+    }),
+    // Gantt: all todo items
+    prisma.todoItem.findMany({
+      where: { list: { projectSlug: slug } },
+      select: { id: true, title: true, dueDate: true, done: true },
+      orderBy: { order: "asc" },
     }),
   ]);
 
@@ -170,6 +182,13 @@ export default async function CalendarPage({
     const knownTypes: string[] = ["milestone", "task", "meeting", "deadline", "custom"];
     const type: CalendarEntry["type"] = knownTypes.includes(e.type) ? (e.type as CalendarEntry["type"]) : "custom";
     addEntry(e.startsAt.getDate(), { id: e.id, title: e.title, type, color: TYPE_COLORS[type] });
+  }
+  for (const t of todoItemsMonth) {
+    if (!t.dueDate) continue;
+    addEntry(t.dueDate.getDate(), {
+      id: t.id, title: t.title, type: "todo", color: TYPE_COLORS.todo,
+      href: `/projects/${slug}/todos`,
+    });
   }
 
   const daysInMonth = getDaysInMonth(year, month);
@@ -273,10 +292,10 @@ export default async function CalendarPage({
 
           {/* Legend */}
           <div className="flex flex-wrap gap-3 mb-4 text-xs text-dark-slate/70">
-            {(["milestone", "task", "meeting", "deadline", "custom"] as const).map((t) => (
+            {(["milestone", "task", "todo", "meeting", "deadline", "custom"] as const).map((t) => (
               <span key={t} className="flex items-center gap-1.5">
                 <span className={`w-2.5 h-2.5 rounded-full ${TYPE_COLORS[t]}`} />
-                {{ milestone: "Milstolpe", task: "Uppgift", meeting: "Möte", deadline: "Deadline", custom: "Anpassad" }[t]}
+                {{ milestone: "Milstolpe", task: "Kanban", todo: "Todo", meeting: "Möte", deadline: "Deadline", custom: "Anpassad" }[t]}
               </span>
             ))}
           </div>
@@ -496,6 +515,7 @@ export default async function CalendarPage({
           ) : (
             <GanttView
               cards={allKanbanCards}
+              todos={allTodoItems}
               milestones={allMilestones.map((m) => ({
                 id: m.id,
                 title: m.title,
