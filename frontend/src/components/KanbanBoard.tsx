@@ -13,7 +13,9 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask } from "@/app/projects/[slug]/kanban/actions";
+import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask, addComment, deleteComment } from "@/app/projects/[slug]/kanban/actions";
+import dynamic from "next/dynamic";
+const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
 type CardCreator = { name: string | null };
 
@@ -26,6 +28,14 @@ type TaskEstimate = {
 } | null;
 
 type Subtask = { id: string; title: string; done: boolean; order: number };
+
+type Comment = {
+  id: string;
+  authorId: string;
+  author: { id: string; name: string | null };
+  body: string;
+  createdAt: Date | string;
+};
 
 type Card = {
   id: string;
@@ -45,6 +55,7 @@ type Card = {
   createdBy: CardCreator | null;
   estimate?: TaskEstimate;
   subtasks?: Subtask[];
+  comments?: Comment[];
   aiTaskRuns?: Array<{
     id: string;
     agentType: string;
@@ -116,14 +127,18 @@ function CardDetailModal({
   card,
   members,
   isLoggedIn,
+  currentUserId,
   onClose,
   onSaved,
+  onDelete,
 }: {
   card: Card;
   members: Member[];
   isLoggedIn: boolean;
+  currentUserId: string | null;
   onClose: () => void;
   onSaved: (cardId: string, patch: Partial<Card>) => void;
+  onDelete: (cardId: string) => void;
 }) {
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description ?? "");
@@ -133,7 +148,13 @@ function CardDetailModal({
   const [dueDate, setDueDate] = useState(toDateInput(card.dueDate));
   const [localSubtasks, setLocalSubtasks] = useState<Subtask[]>(card.subtasks ?? []);
   const [newSubtaskInput, setNewSubtaskInput] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [comments, setComments] = useState<Comment[]>(card.comments ?? []);
+  const [commentBody, setCommentBody] = useState("");
+  const [submittingComment, setSubmittingComment] = useState(false);
   const [, startTransition] = useTransition();
+
+  const canDelete = currentUserId === card.createdById;
 
   const columnLabel = COLUMNS.find((c) => c.key === card.column)?.label ?? card.column;
 
@@ -186,6 +207,22 @@ function CardDetailModal({
   const donePct = localSubtasks.length > 0
     ? Math.round((localSubtasks.filter((s) => s.done).length / localSubtasks.length) * 100)
     : 0;
+
+  async function handleSubmitComment() {
+    if (!commentBody.trim() || commentBody === "<p></p>") return;
+    setSubmittingComment(true);
+    const result = await addComment(card.id, commentBody);
+    if (result && "comment" in result && result.comment) {
+      setComments((prev) => [...prev, result.comment as Comment]);
+      setCommentBody("");
+    }
+    setSubmittingComment(false);
+  }
+
+  async function handleDeleteComment(commentId: string) {
+    setComments((prev) => prev.filter((c) => c.id !== commentId));
+    await deleteComment(commentId);
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -328,6 +365,54 @@ function CardDetailModal({
               </div>
             )}
           </div>
+
+          {/* Comments */}
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              Kommentarer{comments.length > 0 ? ` (${comments.length})` : ""}
+            </p>
+
+            {comments.length > 0 && (
+              <div className="space-y-4 mb-4">
+                {comments.map((c) => (
+                  <div key={c.id} className="group">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-6 h-6 rounded-full bg-seagrass flex items-center justify-center text-white text-xs font-bold shrink-0">
+                        {(c.author.name ?? "?").charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-sm font-medium text-gray-700">{c.author.name ?? "Okänd"}</span>
+                      <span className="text-xs text-gray-400">{timeAgo(c.createdAt)}</span>
+                      {c.authorId === currentUserId && (
+                        <button
+                          onClick={() => handleDeleteComment(c.id)}
+                          className="ml-auto text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                        >
+                          Ta bort
+                        </button>
+                      )}
+                    </div>
+                    <div
+                      className="prose prose-sm max-w-none pl-8 text-gray-700"
+                      dangerouslySetInnerHTML={{ __html: c.body }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {isLoggedIn && (
+              <div className="space-y-2">
+                <RichTextEditor content={commentBody} onChange={setCommentBody} />
+                <button
+                  onClick={handleSubmitComment}
+                  disabled={submittingComment || !commentBody.trim() || commentBody === "<p></p>"}
+                  className="text-sm font-medium bg-seagrass text-white px-4 py-1.5 rounded-lg hover:bg-seagrass/80 disabled:opacity-40 transition-colors"
+                >
+                  {submittingComment ? "Skickar..." : "Skicka kommentar"}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
@@ -346,6 +431,37 @@ function CardDetailModal({
             >
               Avbryt
             </button>
+            {canDelete && (
+              <div className="ml-auto">
+                {confirmDelete ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">Är du säker?</span>
+                    <button
+                      onClick={() => { onDelete(card.id); onClose(); }}
+                      className="text-xs font-medium text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-md transition-colors"
+                    >
+                      Ja, ta bort
+                    </button>
+                    <button
+                      onClick={() => setConfirmDelete(false)}
+                      className="text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                      Avbryt
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setConfirmDelete(true)}
+                    className="text-xs font-medium text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Ta bort
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1080,8 +1196,10 @@ export default function KanbanBoard({
           card={editingCard}
           members={members}
           isLoggedIn={isLoggedIn}
+          currentUserId={currentUserId}
           onClose={() => setEditingCard(null)}
           onSaved={handleCardSaved}
+          onDelete={(cardId) => { handleDelete(cardId); setEditingCard(null); }}
         />
       )}
     </div>

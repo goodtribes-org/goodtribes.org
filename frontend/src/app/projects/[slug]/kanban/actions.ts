@@ -91,6 +91,42 @@ export async function addSubtask(cardId: string, title: string) {
   return { subtask };
 }
 
+export async function addComment(cardId: string, body: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+
+  const card = await prisma.kanbanCard.findUnique({
+    where: { id: cardId },
+    select: { projectSlug: true },
+  });
+  if (!card) return { error: "Card not found" };
+
+  const comment = await prisma.kanbanCardComment.create({
+    data: { cardId, authorId: session.user.id, body },
+    include: { author: { select: { id: true, name: true } } },
+  });
+
+  revalidatePath(`/projects/${card.projectSlug}/kanban`);
+  revalidatePath(`/projects/${card.projectSlug}/tasks`);
+  return { comment };
+}
+
+export async function deleteComment(commentId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+
+  const comment = await prisma.kanbanCardComment.findUnique({
+    where: { id: commentId },
+    include: { card: { select: { projectSlug: true } } },
+  });
+  if (!comment) return { error: "Comment not found" };
+  if (comment.authorId !== session.user.id) return { error: "Not authorized" };
+
+  await prisma.kanbanCardComment.delete({ where: { id: commentId } });
+  revalidatePath(`/projects/${comment.card.projectSlug}/kanban`);
+  revalidatePath(`/projects/${comment.card.projectSlug}/tasks`);
+}
+
 export async function toggleSubtask(subtaskId: string, done: boolean) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
