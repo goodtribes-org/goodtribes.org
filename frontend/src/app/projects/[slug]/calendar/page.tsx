@@ -524,15 +524,6 @@ export default async function CalendarPage({
                 </Link>
               </div>
             </div>
-            {/* Legend */}
-            <div className="flex flex-wrap gap-3 mb-4 text-xs text-dark-slate/70">
-              {(["milestone", "task", "todo", "meeting", "deadline", "custom"] as const).map((t) => (
-                <span key={t} className="flex items-center gap-1.5">
-                  <span className={`w-2.5 h-2.5 rounded-full ${TYPE_COLORS[t]}`} />
-                  {{ milestone: "Milstolpe", task: "Kanban", todo: "Todo", meeting: "Möte", deadline: "Deadline", custom: "Anpassad" }[t]}
-                </span>
-              ))}
-            </div>
           </div>
           {allKanbanCards.length === 0 && allTodoItems.length === 0 ? (
             <p className="text-sm text-dark-slate/40 py-8 text-center">Inga uppgifter ännu.</p>

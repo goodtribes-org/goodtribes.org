@@ -77,6 +77,7 @@ function diffDays(a: Date, b: Date): number {
 
 export default function GanttView({ cards, todos = [], milestones, isOwnerOrAdmin }: GanttViewProps) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [unscheduledOpen, setUnscheduledOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<string | null>(null);
   const [editStart, setEditStart] = useState("");
   const [editEnd, setEditEnd] = useState("");
@@ -406,36 +407,65 @@ export default function GanttView({ cards, todos = [], milestones, isOwnerOrAdmi
         </div>
       </div>
 
-      {/* Unscheduled */}
-      {(unscheduled.length > 0 || unscheduledTodos.length > 0) && (
-        <div className="mt-6">
-          <h3 className="text-sm font-semibold text-dark-slate/50 mb-2">
-            Ej schemalagda ({unscheduled.length + unscheduledTodos.length})
-          </h3>
-          <div className="space-y-1">
-            {unscheduled.map((card) => (
-              <div
-                key={card.id}
-                className="flex items-center gap-2 px-3 py-2 rounded border border-muted-teal/20 bg-white"
-              >
-                <span className={`w-2 h-2 rounded-full shrink-0 ${COLUMN_COLORS[card.column]}`} />
-                <span className="text-sm text-dark-slate">{card.title}</span>
-                <span className="text-xs text-dark-slate/30 ml-auto">{COLUMN_LABELS[card.column]}</span>
-              </div>
-            ))}
-            {unscheduledTodos.map((todo) => (
-              <div
-                key={todo.id}
-                className="flex items-center gap-2 px-3 py-2 rounded border border-amber-100 bg-amber-50/40"
-              >
-                <span className={`w-2 h-2 rounded-full shrink-0 ${todo.done ? "bg-green-400" : "bg-amber-400"}`} />
-                <span className={`text-sm ${todo.done ? "line-through text-dark-slate/40" : "text-dark-slate"}`}>{todo.title}</span>
-                <span className="text-xs text-amber-400/70 ml-auto">Todo</span>
-              </div>
-            ))}
-          </div>
+      {/* Legend + Ej schemalagda */}
+      <div className="mt-6 flex flex-col gap-4">
+        {/* Legend */}
+        <div className="flex flex-wrap gap-3 text-xs text-dark-slate/70">
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-purple-500" /> Milstolpe
+          </span>
+          {COLUMN_ORDER.map((col) => (
+            <span key={col} className="flex items-center gap-1.5">
+              <span className={`w-2.5 h-2.5 rounded-full ${COLUMN_COLORS[col]}`} /> {COLUMN_LABELS[col]}
+            </span>
+          ))}
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-400" /> Todo
+          </span>
         </div>
-      )}
+
+        {/* Ej schemalagda — collapsible, collapsed by default */}
+        {(unscheduled.length > 0 || unscheduledTodos.length > 0) && (
+          <div>
+            <button
+              onClick={() => setUnscheduledOpen((o) => !o)}
+              className="flex items-center gap-1.5 text-sm font-semibold text-dark-slate/50 hover:text-dark-slate transition-colors"
+            >
+              <svg
+                className={`w-4 h-4 transition-transform ${unscheduledOpen ? "rotate-180" : ""}`}
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+              Ej schemalagda ({unscheduled.length + unscheduledTodos.length})
+            </button>
+            {unscheduledOpen && (
+              <div className="space-y-1 mt-2">
+                {unscheduled.map((card) => (
+                  <div
+                    key={card.id}
+                    className="flex items-center gap-2 px-3 py-2 rounded border border-muted-teal/20 bg-white"
+                  >
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${COLUMN_COLORS[card.column]}`} />
+                    <span className="text-sm text-dark-slate">{card.title}</span>
+                    <span className="text-xs text-dark-slate/30 ml-auto">{COLUMN_LABELS[card.column]}</span>
+                  </div>
+                ))}
+                {unscheduledTodos.map((todo) => (
+                  <div
+                    key={todo.id}
+                    className="flex items-center gap-2 px-3 py-2 rounded border border-amber-100 bg-amber-50/40"
+                  >
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${todo.done ? "bg-green-400" : "bg-amber-400"}`} />
+                    <span className={`text-sm ${todo.done ? "line-through text-dark-slate/40" : "text-dark-slate"}`}>{todo.title}</span>
+                    <span className="text-xs text-amber-400/70 ml-auto">Todo</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
