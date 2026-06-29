@@ -217,16 +217,9 @@ export default async function CalendarPage({
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
     <div>
-      {/* Back link + heading */}
-      <div className="mb-4">
-        <Link href={`/projects/${slug}`} className="text-xs text-dark-slate/40 hover:text-dark-slate transition-colors">
-          ← {project.title}
-        </Link>
-        <h1 className="text-xl font-bold text-dark-slate mt-0.5">Planering</h1>
-      </div>
-
-      {/* View toggle */}
-      <div className="flex items-center gap-1 mb-5 bg-gray-100 rounded-lg p-1 w-fit">
+      {/* View toggle — right-aligned */}
+      <div className="flex justify-end mb-5">
+      <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
         <Link
           href={`?view=calendar&year=${year}&month=${month + 1}`}
           className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
@@ -247,6 +240,7 @@ export default async function CalendarPage({
         >
           Gantt
         </Link>
+      </div>
       </div>
 
       {/* ── Calendar view ─────────────────────────────────────────────────── */}
