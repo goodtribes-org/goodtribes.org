@@ -510,21 +510,23 @@ export default async function CalendarPage({
       {/* ── Gantt view ────────────────────────────────────────────────────── */}
       {view === "gantt" && (
         <>
-          {allKanbanCards.length === 0 ? (
-            <p className="text-sm text-dark-slate/40 py-8 text-center">Inga uppgifter i kanbanen ännu.</p>
+          {allKanbanCards.length === 0 && allTodoItems.length === 0 ? (
+            <p className="text-sm text-dark-slate/40 py-8 text-center">Inga uppgifter ännu.</p>
           ) : (
-            <GanttView
-              cards={allKanbanCards}
-              todos={allTodoItems}
-              milestones={allMilestones.map((m) => ({
-                id: m.id,
-                title: m.title,
-                dueDate: m.dueDate,
-                status: m.status,
-              }))}
-              projectSlug={slug}
-              isOwnerOrAdmin={isOwnerOrAdmin}
-            />
+            <div style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
+              <GanttView
+                cards={allKanbanCards}
+                todos={allTodoItems}
+                milestones={allMilestones.map((m) => ({
+                  id: m.id,
+                  title: m.title,
+                  dueDate: m.dueDate,
+                  status: m.status,
+                }))}
+                projectSlug={slug}
+                isOwnerOrAdmin={isOwnerOrAdmin}
+              />
+            </div>
           )}
         </>
       )}
