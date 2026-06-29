@@ -496,21 +496,34 @@ export default async function CalendarPage({
       {/* ── Gantt view ────────────────────────────────────────────────────── */}
       {view === "gantt" && (
         <>
-          {/* Toolbar: toggle only */}
-          <div className="flex justify-end mb-4">
-            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-              <Link
-                href={`?view=calendar&year=${year}&month=${month + 1}`}
-                className="px-4 py-1.5 text-sm font-medium rounded-md transition-colors text-dark-slate/50 hover:text-dark-slate"
-              >
-                Kalender
-              </Link>
-              <Link
-                href="?view=gantt"
-                className="px-4 py-1.5 text-sm font-medium rounded-md transition-colors bg-white text-dark-slate shadow-sm"
-              >
-                Gantt
-              </Link>
+          {/* Toolbar: Ny händelse | spacer | kalender/gantt toggle — full bleed */}
+          <div style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
+            <div className="flex items-center mb-4">
+              {session?.user?.id && (
+                <Link
+                  href={`/projects/${slug}/calendar/new`}
+                  className="flex items-center gap-1.5 bg-coral text-white text-sm font-medium px-4 py-1.5 rounded hover:bg-watermelon transition-colors shrink-0"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Ny händelse
+                </Link>
+              )}
+              <div className="ml-auto flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                <Link
+                  href={`?view=calendar&year=${year}&month=${month + 1}`}
+                  className="px-4 py-1.5 text-sm font-medium rounded-md transition-colors text-dark-slate/50 hover:text-dark-slate"
+                >
+                  Kalender
+                </Link>
+                <Link
+                  href="?view=gantt"
+                  className="px-4 py-1.5 text-sm font-medium rounded-md transition-colors bg-white text-dark-slate shadow-sm"
+                >
+                  Gantt
+                </Link>
+              </div>
             </div>
           </div>
           {allKanbanCards.length === 0 && allTodoItems.length === 0 ? (
