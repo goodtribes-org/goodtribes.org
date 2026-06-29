@@ -220,7 +220,8 @@ export default async function CalendarPage({
       {/* ── Calendar view ─────────────────────────────────────────────────── */}
       {view === "calendar" && (
         <>
-          {/* Toolbar: Ny händelse | månad nav | kalender/gantt toggle */}
+          {/* Toolbar: Ny händelse | månad nav | kalender/gantt toggle — full bleed */}
+          <div style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
           <div className="flex items-center gap-3 mb-4 flex-wrap relative">
             {session?.user?.id && (
               <Link
@@ -271,15 +272,6 @@ export default async function CalendarPage({
               </Link>
             </div>
           </div>
-
-          {/* Legend */}
-          <div className="flex flex-wrap gap-3 mb-4 text-xs text-dark-slate/70">
-            {(["milestone", "task", "todo", "meeting", "deadline", "custom"] as const).map((t) => (
-              <span key={t} className="flex items-center gap-1.5">
-                <span className={`w-2.5 h-2.5 rounded-full ${TYPE_COLORS[t]}`} />
-                {{ milestone: "Milstolpe", task: "Kanban", todo: "Todo", meeting: "Möte", deadline: "Deadline", custom: "Anpassad" }[t]}
-              </span>
-            ))}
           </div>
 
           {/* Calendar grid — full bleed */}
@@ -357,6 +349,16 @@ export default async function CalendarPage({
               </div>
             </div>
           </div>
+          </div>
+
+          {/* Legend — under kalendern */}
+          <div className="flex flex-wrap gap-3 mt-3 mb-2 text-xs text-dark-slate/70">
+            {(["milestone", "task", "todo", "meeting", "deadline", "custom"] as const).map((t) => (
+              <span key={t} className="flex items-center gap-1.5">
+                <span className={`w-2.5 h-2.5 rounded-full ${TYPE_COLORS[t]}`} />
+                {{ milestone: "Milstolpe", task: "Kanban", todo: "Todo", meeting: "Möte", deadline: "Deadline", custom: "Anpassad" }[t]}
+              </span>
+            ))}
           </div>
 
           {/* ── Milestones section ─────────────────────────────────────────── */}
