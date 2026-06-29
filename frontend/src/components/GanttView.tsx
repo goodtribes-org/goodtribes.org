@@ -407,24 +407,23 @@ export default function GanttView({ cards, todos = [], milestones, isOwnerOrAdmi
         </div>
       </div>
 
-      {/* Legend + Ej schemalagda */}
-      <div className="mt-6 flex flex-col gap-4">
-        {/* Legend */}
-        <div className="flex flex-wrap gap-3 text-xs text-dark-slate/70">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-purple-500" /> Milstolpe
+      {/* Legend — under Gantt-schemat */}
+      <div className="mt-3 flex flex-wrap gap-3 text-xs text-dark-slate/70">
+        <span className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-purple-500" /> Milstolpe
+        </span>
+        {COLUMN_ORDER.map((col) => (
+          <span key={col} className="flex items-center gap-1.5">
+            <span className={`w-2.5 h-2.5 rounded-full ${COLUMN_COLORS[col]}`} /> {COLUMN_LABELS[col]}
           </span>
-          {COLUMN_ORDER.map((col) => (
-            <span key={col} className="flex items-center gap-1.5">
-              <span className={`w-2.5 h-2.5 rounded-full ${COLUMN_COLORS[col]}`} /> {COLUMN_LABELS[col]}
-            </span>
-          ))}
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-400" /> Todo
-          </span>
-        </div>
+        ))}
+        <span className="flex items-center gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-400" /> Todo
+        </span>
+      </div>
 
-        {/* Ej schemalagda — collapsible, collapsed by default */}
+      {/* Ej schemalagda — collapsible, collapsed by default */}
+      <div className="mt-4">
         {(unscheduled.length > 0 || unscheduledTodos.length > 0) && (
           <div>
             <button
