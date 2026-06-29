@@ -282,7 +282,8 @@ export default async function CalendarPage({
             ))}
           </div>
 
-          {/* Calendar grid */}
+          {/* Calendar grid — full bleed */}
+          <div style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
           <div className="overflow-x-auto">
             <div className="min-w-[320px]">
               <div className="grid grid-cols-7 mb-1">
@@ -304,7 +305,7 @@ export default async function CalendarPage({
                       return (
                         <div
                           key={di}
-                          className={`min-h-[72px] sm:min-h-[88px] p-1 sm:p-1.5 ${
+                          className={`min-h-[88px] sm:min-h-[120px] p-1 sm:p-2 ${
                             di < 6 ? "border-r border-muted-teal/20" : ""
                           } ${day ? "bg-white" : "bg-gray-50/60"}`}
                         >
@@ -355,6 +356,7 @@ export default async function CalendarPage({
                 ))}
               </div>
             </div>
+          </div>
           </div>
 
           {/* ── Milestones section ─────────────────────────────────────────── */}
