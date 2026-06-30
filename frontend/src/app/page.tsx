@@ -75,7 +75,7 @@ function ProjectCard({ project }: {
         {project.sdgGoals.length > 0 && (
           <div className="flex flex-wrap items-center gap-1 mb-2">
             <span className="text-[11px] font-bold text-dark-slate/40 mr-0.5">Agenda 2030:</span>
-            {project.sdgGoals.slice(0, 5).map((n) => (
+            {project.sdgGoals.slice(0, 7).map((n) => (
               <SdgIcon key={n} n={n} size={20} />
             ))}
           </div>

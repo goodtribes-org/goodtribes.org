@@ -69,7 +69,7 @@ function MatchCard({
         {showSdgs && (
           <>
             <span className="text-[9px] font-medium text-dark-slate/40">Agenda 2030:</span>
-            {project.sdgGoals.slice(0, 5).map((n) => (
+            {project.sdgGoals.slice(0, 7).map((n) => (
               <SdgIcon key={n} n={n} size={20} />
             ))}
           </>
