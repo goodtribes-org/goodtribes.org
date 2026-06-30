@@ -4,29 +4,11 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import ProjectTabNav from "./ProjectTabNav";
+import { SdgIcon } from "@/components/SdgIcon";
 
 const STAGES = ["Concept", "Prototype", "Production", "Delivery"];
 const STATUS_TO_STAGE: Record<string, number> = {
   concept: 0, prototype: 1, production: 2, delivery: 3,
-};
-const SDG_INFO: Record<number, { label: string; color: string }> = {
-  1:  { label: "No Poverty",              color: "#E5243B" },
-  2:  { label: "Zero Hunger",             color: "#DDA63A" },
-  3:  { label: "Good Health",             color: "#4C9F38" },
-  4:  { label: "Quality Education",       color: "#C5192D" },
-  5:  { label: "Gender Equality",         color: "#FF3A21" },
-  6:  { label: "Clean Water",             color: "#26BDE2" },
-  7:  { label: "Clean Energy",            color: "#FCC30B" },
-  8:  { label: "Decent Work",             color: "#A21942" },
-  9:  { label: "Industry & Innovation",   color: "#FD6925" },
-  10: { label: "Reduced Inequalities",    color: "#DD1367" },
-  11: { label: "Sustainable Cities",      color: "#FD9D24" },
-  12: { label: "Responsible Consumption", color: "#BF8B2E" },
-  13: { label: "Climate Action",          color: "#3F7E44" },
-  14: { label: "Life Below Water",        color: "#0A97D9" },
-  15: { label: "Life on Land",            color: "#56C02B" },
-  16: { label: "Peace & Justice",         color: "#00689D" },
-  17: { label: "Partnerships",            color: "#19486A" },
 };
 
 export default async function ProjectLayout({
@@ -243,19 +225,9 @@ export default async function ProjectLayout({
                 {/* SDG badges */}
                 {project.sdgGoals.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-4">
-                    {project.sdgGoals.map((n) => {
-                      const info = SDG_INFO[n];
-                      return (
-                        <span
-                          key={n}
-                          title={`SDG ${n}: ${info?.label ?? ""}`}
-                          className="text-xs font-bold px-2.5 py-1 rounded-full text-white"
-                          style={{ backgroundColor: info?.color ?? "#888" }}
-                        >
-                          SDG {n}
-                        </span>
-                      );
-                    })}
+                    {project.sdgGoals.map((n) => (
+                      <SdgIcon key={n} n={n} size={36} />
+                    ))}
                   </div>
                 )}
 

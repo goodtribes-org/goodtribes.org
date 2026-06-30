@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import FileUpload from "@/components/FileUpload";
 import { saveProfile } from "./actions";
+import { SdgIcon } from "@/components/SdgIcon";
+import { SDG_NUMBERS, SDG_LABELS_SV } from "@/lib/sdg";
 
 type Skill = { id: string; name: string; tag: string };
 
@@ -18,26 +20,6 @@ type Props = {
   currentSkillIds: string[];
   availability: string | null;
   currentInterests: number[];
-};
-
-const SDG_NAMES: Record<number, string> = {
-  1: "Ingen fattigdom",
-  2: "Ingen hunger",
-  3: "God hälsa",
-  4: "God utbildning",
-  5: "Jämställdhet",
-  6: "Rent vatten",
-  7: "Hållbar energi",
-  8: "Anständiga arbetsvillkor",
-  9: "Hållbar industri",
-  10: "Minskad ojämlikhet",
-  11: "Hållbara städer",
-  12: "Hållbar konsumtion",
-  13: "Klimat",
-  14: "Hav",
-  15: "Ekosystem",
-  16: "Fred & rättvisa",
-  17: "Globalt partnerskap",
 };
 
 export default function ProfileSetupForm({
@@ -184,21 +166,21 @@ export default function ProfileSetupForm({
           Vilket SDG-mål brinner du för?
         </p>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-          {Array.from({ length: 17 }, (_, i) => i + 1).map((num) => {
+          {SDG_NUMBERS.map((num) => {
             const selected = selectedSdgs.includes(num);
             return (
               <button
                 key={num}
                 type="button"
                 onClick={() => toggleSdg(num)}
-                className={`flex flex-col items-center justify-center px-2 py-2 rounded-md text-xs font-medium transition-colors select-none leading-tight text-center ${
+                className={`flex flex-col items-center justify-center px-2 py-2 rounded-md text-xs font-medium transition-colors select-none leading-tight text-center border-2 ${
                   selected
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "border-dark-slate/60 bg-dark-slate/5"
+                    : "border-transparent bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
-                <span className="font-bold text-sm">{num}</span>
-                <span className="mt-0.5 line-clamp-2">{SDG_NAMES[num]}</span>
+                <SdgIcon n={num} size={36} />
+                <span className="mt-1 line-clamp-2 text-dark-slate">{SDG_LABELS_SV[num]}</span>
               </button>
             );
           })}

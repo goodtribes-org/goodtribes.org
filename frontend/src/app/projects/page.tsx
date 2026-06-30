@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import ProjectFilters from "@/components/ProjectFilters";
 import Pagination from "@/components/Pagination";
+import { SdgIcon } from "@/components/SdgIcon";
 
 export const metadata: Metadata = {
   title: "Projects — GoodTribes.org",
@@ -16,13 +17,6 @@ export const metadata: Metadata = {
 };
 
 const PAGE_SIZE = 12;
-
-const SDG_COLORS: Record<number, string> = {
-  1:"#E5243B",2:"#DDA63A",3:"#4C9F38",4:"#C5192D",5:"#FF3A21",
-  6:"#26BDE2",7:"#FCC30B",8:"#A21942",9:"#FD6925",10:"#DD1367",
-  11:"#FD9D24",12:"#BF8B2E",13:"#3F7E44",14:"#0A97D9",15:"#56C02B",
-  16:"#00689D",17:"#19486A",
-};
 
 export default async function ProjectsPage({
   searchParams,
@@ -140,14 +134,7 @@ export default async function ProjectsPage({
                     {project.sdgGoals.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-2">
                         {project.sdgGoals.slice(0, 5).map((n) => (
-                          <span
-                            key={n}
-                            title={`SDG ${n}`}
-                            className="w-5 h-5 rounded text-[9px] font-bold text-white flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: SDG_COLORS[n] }}
-                          >
-                            {n}
-                          </span>
+                          <SdgIcon key={n} n={n} size={20} />
                         ))}
                       </div>
                     )}

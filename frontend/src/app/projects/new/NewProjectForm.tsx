@@ -3,28 +3,10 @@
 import { useState, useTransition, useRef } from "react";
 import { createProject, getSdgSuggestions } from "./actions";
 import FileUpload from "@/components/FileUpload";
+import { SdgIcon } from "@/components/SdgIcon";
+import { SDG_NUMBERS, SDG_LABELS_EN } from "@/lib/sdg";
 
 const CATEGORIES = ["Technology", "Environment", "Education", "Arts", "Community", "Health", "Other"];
-
-const SDG_GOALS = [
-  { n: 1, label: "No Poverty" },
-  { n: 2, label: "Zero Hunger" },
-  { n: 3, label: "Good Health" },
-  { n: 4, label: "Quality Education" },
-  { n: 5, label: "Gender Equality" },
-  { n: 6, label: "Clean Water" },
-  { n: 7, label: "Clean Energy" },
-  { n: 8, label: "Decent Work" },
-  { n: 9, label: "Industry & Innovation" },
-  { n: 10, label: "Reduced Inequalities" },
-  { n: 11, label: "Sustainable Cities" },
-  { n: 12, label: "Responsible Consumption" },
-  { n: 13, label: "Climate Action" },
-  { n: 14, label: "Life Below Water" },
-  { n: 15, label: "Life on Land" },
-  { n: 16, label: "Peace & Justice" },
-  { n: 17, label: "Partnerships" },
-];
 
 interface Props {
   initial?: { title?: string; description?: string; sdgGoals?: number[]; category?: string; tags?: string[]; imageUrl?: string };
@@ -194,7 +176,8 @@ export default function NewProjectForm({ initial = {}, ideaId, skills, orgs }: P
         )}
 
         <div className="grid grid-cols-2 gap-2">
-          {SDG_GOALS.map(({ n, label }) => {
+          {SDG_NUMBERS.map((n) => {
+            const label = SDG_LABELS_EN[n];
             const isChecked = selected.has(n);
             const isSuggested = aiSuggested.includes(n);
             return (
@@ -212,12 +195,13 @@ export default function NewProjectForm({ initial = {}, ideaId, skills, orgs }: P
                   onChange={() => toggle(n)}
                   className="accent-seagrass w-4 h-4 flex-shrink-0"
                 />
+                <SdgIcon n={n} size={20} />
                 <span
                   className={`text-xs transition-colors ${
                     isChecked ? "text-dark-slate font-medium" : "text-dark-slate/60 group-hover:text-dark-slate"
                   }`}
                 >
-                  <span className="font-semibold">{n}.</span> {label}
+                  {label}
                 </span>
                 {isSuggested && (
                   <span className="ml-auto text-[9px] font-semibold uppercase tracking-wider text-seagrass">

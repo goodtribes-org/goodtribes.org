@@ -7,22 +7,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { IdeaSidebar, CommentForm } from "./IdeaInteractions";
-
-
-const SDG_LABELS: Record<number, string> = {
-  1:"No Poverty",2:"Zero Hunger",3:"Good Health",4:"Quality Education",
-  5:"Gender Equality",6:"Clean Water",7:"Clean Energy",8:"Decent Work",
-  9:"Industry & Innovation",10:"Reduced Inequalities",11:"Sustainable Cities",
-  12:"Responsible Consumption",13:"Climate Action",14:"Life Below Water",
-  15:"Life on Land",16:"Peace & Justice",17:"Partnerships",
-};
-
-const SDG_COLORS: Record<number, string> = {
-  1:"#E5243B",2:"#DDA63A",3:"#4C9F38",4:"#C5192D",5:"#FF3A21",
-  6:"#26BDE2",7:"#FCC30B",8:"#A21942",9:"#FD6925",10:"#DD1367",
-  11:"#FD9D24",12:"#BF8B2E",13:"#3F7E44",14:"#0A97D9",15:"#56C02B",
-  16:"#00689D",17:"#19486A",
-};
+import { SdgIcon } from "@/components/SdgIcon";
+import { SDG_LABELS_EN } from "@/lib/sdg";
 
 const STATUS_STEPS = ["open", "review", "shortlisted", "approved", "converted"];
 
@@ -260,13 +246,9 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ id:
                 {idea.sdgGoals.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {idea.sdgGoals.map((n) => (
-                      <div
-                        key={n}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-xs font-medium"
-                        style={{ backgroundColor: SDG_COLORS[n] }}
-                      >
-                        <span className="font-bold">SDG {n}</span>
-                        <span className="opacity-80">{SDG_LABELS[n]}</span>
+                      <div key={n} className="flex items-center gap-1.5">
+                        <SdgIcon n={n} size={32} />
+                        <span className="text-xs font-medium text-dark-slate">{SDG_LABELS_EN[n]}</span>
                       </div>
                     ))}
                   </div>

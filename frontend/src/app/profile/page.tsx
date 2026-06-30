@@ -5,34 +5,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import Image from "next/image";
-
-
-const SDG_NAMES: Record<number, string> = {
-  1: "Ingen fattigdom",
-  2: "Ingen hunger",
-  3: "God hälsa",
-  4: "God utbildning",
-  5: "Jämställdhet",
-  6: "Rent vatten",
-  7: "Hållbar energi",
-  8: "Anständiga arbetsvillkor",
-  9: "Hållbar industri",
-  10: "Minskad ojämlikhet",
-  11: "Hållbara städer",
-  12: "Hållbar konsumtion",
-  13: "Klimat",
-  14: "Hav",
-  15: "Ekosystem",
-  16: "Fred & rättvisa",
-  17: "Globalt partnerskap",
-};
-
-function sdgChipColor(num: number): string {
-  if (num <= 5) return "bg-red-100 text-red-800";
-  if (num <= 10) return "bg-blue-100 text-blue-800";
-  if (num <= 15) return "bg-green-100 text-green-800";
-  return "bg-indigo-100 text-indigo-900";
-}
+import { SdgIcon } from "@/components/SdgIcon";
+import { SDG_LABELS_SV } from "@/lib/sdg";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -129,13 +103,10 @@ export default async function ProfilePage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 {(user.interests as number[]).map((num) => (
-                  <span
-                    key={num}
-                    className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${sdgChipColor(num)}`}
-                  >
-                    <span className="font-bold">{num}</span>
-                    <span>{SDG_NAMES[num]}</span>
-                  </span>
+                  <div key={num} className="flex items-center gap-1.5">
+                    <SdgIcon n={num} size={24} />
+                    <span className="text-xs text-dark-slate/70">{SDG_LABELS_SV[num]}</span>
+                  </div>
                 ))}
               </div>
             </section>

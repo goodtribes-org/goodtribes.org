@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { saveOnboarding } from "./actions";
+import { SdgIcon } from "@/components/SdgIcon";
+import { SDG_NUMBERS, SDG_LABELS_SV } from "@/lib/sdg";
 
 interface Skill {
   id: string;
@@ -12,27 +14,6 @@ interface Skill {
 interface Props {
   skills: Skill[];
 }
-
-// SDG goals: number → label + color
-const SDG_GOALS: { id: number; label: string; color: string }[] = [
-  { id: 1,  label: "Ingen fattigdom",               color: "#E5243B" },
-  { id: 2,  label: "Ingen hunger",                  color: "#DDA63A" },
-  { id: 3,  label: "God hälsa",                     color: "#4C9F38" },
-  { id: 4,  label: "God utbildning",                color: "#C5192D" },
-  { id: 5,  label: "Jämställdhet",                  color: "#FF3A21" },
-  { id: 6,  label: "Rent vatten",                   color: "#26BDE2" },
-  { id: 7,  label: "Hållbar energi",                color: "#FCC30B" },
-  { id: 8,  label: "Anständigt arbete",             color: "#A21942" },
-  { id: 9,  label: "Hållbar industri",              color: "#FD6925" },
-  { id: 10, label: "Minskad ojämlikhet",            color: "#DD1367" },
-  { id: 11, label: "Hållbara städer",               color: "#FD9D24" },
-  { id: 12, label: "Hållbar konsumtion",            color: "#BF8B2E" },
-  { id: 13, label: "Bekämpa klimatförändringen",    color: "#3F7E44" },
-  { id: 14, label: "Hav och marina resurser",       color: "#0A97D9" },
-  { id: 15, label: "Ekosystem och biologisk mångfald", color: "#56C02B" },
-  { id: 16, label: "Fredliga samhällen",            color: "#00689D" },
-  { id: 17, label: "Genomförande och partnerskap",  color: "#19486A" },
-];
 
 const TOTAL_STEPS = 3;
 
@@ -99,28 +80,22 @@ export default function OnboardingWizard({ skills }: Props) {
             Välj de globala mål som engagerar dig mest. Du kan ändra detta när som helst.
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {SDG_GOALS.map((sdg) => {
-              const active = selectedInterests.includes(sdg.id);
+            {SDG_NUMBERS.map((id) => {
+              const active = selectedInterests.includes(id);
               return (
                 <button
-                  key={sdg.id}
+                  key={id}
                   type="button"
-                  onClick={() => toggleInterest(sdg.id)}
-                  style={active ? { backgroundColor: sdg.color, borderColor: sdg.color } : { borderColor: sdg.color + "60" }}
+                  onClick={() => toggleInterest(id)}
                   className={[
                     "flex items-center gap-2 rounded-lg border-2 px-3 py-2 text-left text-sm font-medium transition-all duration-150",
                     active
-                      ? "text-white shadow-sm"
-                      : "text-dark-slate hover:border-opacity-100",
+                      ? "border-dark-slate/60 bg-dark-slate/5 shadow-sm"
+                      : "border-gray-200 text-dark-slate hover:border-gray-400",
                   ].join(" ")}
                 >
-                  <span
-                    className="shrink-0 text-xs font-bold w-5 h-5 rounded flex items-center justify-center"
-                    style={{ backgroundColor: active ? "rgba(255,255,255,0.25)" : sdg.color, color: active ? "white" : "white" }}
-                  >
-                    {sdg.id}
-                  </span>
-                  <span className="leading-tight">{sdg.label}</span>
+                  <SdgIcon n={id} size={28} />
+                  <span className="leading-tight text-dark-slate">{SDG_LABELS_SV[id]}</span>
                 </button>
               );
             })}
