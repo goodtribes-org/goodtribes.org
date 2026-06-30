@@ -12,7 +12,7 @@ export type ProjectCardData = {
   sdgGoals: number[];
   owner: { name: string | null };
   members: { id: string }[];
-  _count: { kanbanCards: number; todoItems: number };
+  _count: { kanbanCards: number };
 };
 
 export default function ProjectCard({ project }: { project: ProjectCardData }) {
@@ -63,7 +63,7 @@ export default function ProjectCard({ project }: { project: ProjectCardData }) {
           </div>
           <div className="px-1">
             <p className="text-xs font-semibold text-dark-slate">
-              {project._count.kanbanCards + project._count.todoItems}
+              {project._count.kanbanCards}
             </p>
             <p className="text-[10px] text-dark-slate/50 leading-tight">Tasks</p>
           </div>

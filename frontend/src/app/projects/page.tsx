@@ -54,7 +54,7 @@ export default async function ProjectsPage({
       include: {
         owner: { select: { name: true } },
         members: { select: { id: true } },
-        _count: { select: { kanbanCards: true, todoItems: true } },
+        _count: { select: { kanbanCards: true } },
       },
     }),
   ]);

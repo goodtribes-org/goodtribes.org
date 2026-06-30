@@ -176,7 +176,6 @@ export default async function ProjectDetailPage({
         include: { skill: { select: { id: true, name: true, slug: true } } },
         orderBy: { addedAt: "asc" },
       },
-      _count: { select: { kanbanCards: true, todoItems: true } },
     },
   });
   if (!project) notFound();
