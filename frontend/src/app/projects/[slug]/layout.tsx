@@ -248,9 +248,9 @@ export default async function ProjectLayout({
                 {project.sdgGoals.length > 0 && (
                   <div className="mb-4">
                     <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">Agenda 2030:</p>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="grid grid-cols-9 gap-1">
                       {project.sdgGoals.map((n) => (
-                        <SdgIcon key={n} n={n} size={36} />
+                        <SdgIcon key={n} n={n} size={26} />
                       ))}
                     </div>
                   </div>
