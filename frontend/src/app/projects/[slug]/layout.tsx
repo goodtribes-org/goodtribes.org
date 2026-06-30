@@ -250,7 +250,7 @@ export default async function ProjectLayout({
                 {/* SDG badges */}
                 <div className="mt-2">
                   <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">Agenda 2030:</p>
-                  <div className="grid grid-cols-9 gap-1">
+                  <div className="grid grid-cols-6 gap-1">
                     {Array.from({ length: 18 }, (_, i) => i + 1).map((n) => {
                       const selected = n === 18 || project.sdgGoals.includes(n);
                       return (
