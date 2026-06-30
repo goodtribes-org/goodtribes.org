@@ -66,9 +66,14 @@ function MatchCard({
         )}
 
         {/* SDG badges when showing interest-based results */}
-        {showSdgs && project.sdgGoals.slice(0, 5).map((n) => (
-          <SdgIcon key={n} n={n} size={20} />
-        ))}
+        {showSdgs && (
+          <>
+            <span className="text-[9px] font-medium text-dark-slate/40">Agenda 2030:</span>
+            {project.sdgGoals.slice(0, 5).map((n) => (
+              <SdgIcon key={n} n={n} size={20} />
+            ))}
+          </>
+        )}
 
         <span className="ml-auto text-[10px] text-dark-slate/40 flex-shrink-0">
           {project._count.members} {project._count.members === 1 ? "medlem" : "medlemmar"}

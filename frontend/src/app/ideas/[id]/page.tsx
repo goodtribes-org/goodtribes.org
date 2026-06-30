@@ -244,13 +244,16 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ id:
                   </div>
                 )}
                 {idea.sdgGoals.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {idea.sdgGoals.map((n) => (
-                      <div key={n} className="flex items-center gap-1.5">
-                        <SdgIcon n={n} size={32} />
-                        <span className="text-xs font-medium text-dark-slate">{SDG_LABELS_EN[n]}</span>
-                      </div>
-                    ))}
+                  <div>
+                    <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-2">Agenda 2030:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {idea.sdgGoals.map((n) => (
+                        <div key={n} className="flex items-center gap-1.5">
+                          <SdgIcon n={n} size={32} />
+                          <span className="text-xs font-medium text-dark-slate">{SDG_LABELS_EN[n]}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

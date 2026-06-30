@@ -224,10 +224,13 @@ export default async function ProjectLayout({
 
                 {/* SDG badges */}
                 {project.sdgGoals.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {project.sdgGoals.map((n) => (
-                      <SdgIcon key={n} n={n} size={36} />
-                    ))}
+                  <div className="mb-4">
+                    <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">Agenda 2030:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {project.sdgGoals.map((n) => (
+                        <SdgIcon key={n} n={n} size={36} />
+                      ))}
+                    </div>
                   </div>
                 )}
 

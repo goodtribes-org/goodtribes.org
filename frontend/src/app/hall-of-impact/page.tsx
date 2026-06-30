@@ -107,7 +107,8 @@ export default async function HallOfImpactPage() {
 
                 {/* SDG badges */}
                 {project.sdgGoals.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap items-center gap-1">
+                    <span className="text-[9px] font-medium text-dark-slate/40 mr-0.5">Agenda 2030:</span>
                     {project.sdgGoals.slice(0, 5).map((n) => (
                       <SdgIcon key={n} n={n} size={24} />
                     ))}

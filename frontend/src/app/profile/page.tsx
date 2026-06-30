@@ -98,7 +98,7 @@ export default async function ProfilePage() {
           {Array.isArray(user.interests) && user.interests.length > 0 && (
             <section>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest">SDG-intressen</h2>
+                <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest">Agenda 2030</h2>
                 <Link href="/profile/setup" className="text-xs text-coral hover:underline">Edit</Link>
               </div>
               <div className="flex flex-wrap gap-2">
