@@ -359,7 +359,7 @@ export default async function ProjectDetailPage({
                       rel="noopener noreferrer"
                       className="transition-all duration-200 ease-in-out hover:scale-[1.3] hover:shadow-md block cursor-pointer"
                     >
-                      <SdgIcon n={n} size={34} />
+                      <SdgIcon n={n} size={44} />
                     </a>
                   </Tooltip>
                 ))}
