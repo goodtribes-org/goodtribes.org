@@ -254,7 +254,7 @@ export default async function ProjectLayout({
                     {Array.from({ length: 18 }, (_, i) => i + 1).map((n) => {
                       const selected = n === 18 || project.sdgGoals.includes(n);
                       return (
-                        <div key={n} className={selected ? "" : "opacity-20 grayscale"}>
+                        <div key={n} className={selected ? "" : "brightness-0 opacity-20"}>
                           <SdgIcon n={n} size={38} />
                         </div>
                       );
