@@ -255,7 +255,7 @@ export default async function ProjectLayout({
                       const selected = n === 18 || project.sdgGoals.includes(n);
                       return (
                         <div key={n} className={selected ? "" : "opacity-20 grayscale"}>
-                          <SdgIcon n={n} size={26} />
+                          <SdgIcon n={n} size={38} />
                         </div>
                       );
                     })}
