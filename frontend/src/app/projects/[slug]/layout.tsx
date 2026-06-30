@@ -184,7 +184,7 @@ export default async function ProjectLayout({
                     <div className="w-full h-2 bg-muted-teal/20 rounded-full overflow-hidden mb-1">
                       <div className="h-full bg-coral rounded-full transition-all" style={{ width: `${fundingPct}%` }} />
                     </div>
-                    <p className="text-xs text-dark-slate/50">
+                    <p className="text-xs text-dark-slate/50 text-right">
                       {raised.toLocaleString("sv-SE")} av {fundingCampaign.goal.toLocaleString("sv-SE")} {fundingCampaign.currency}
                       {" · "}{fundingPct}%
                       {daysLeft !== null && ` · ${daysLeft} dagar kvar`}
@@ -199,7 +199,7 @@ export default async function ProjectLayout({
                     <div className="w-full h-2 bg-muted-teal/20 rounded-full overflow-hidden mb-1">
                       <div className="h-full bg-seagrass rounded-full transition-all" style={{ width: `${taskPct}%` }} />
                     </div>
-                    <p className="text-xs text-dark-slate/50">
+                    <p className="text-xs text-dark-slate/50 text-right">
                       {doneTasks} av {totalTasks} klara · {taskPct}%
                     </p>
                   </div>
