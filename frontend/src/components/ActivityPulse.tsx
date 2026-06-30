@@ -14,7 +14,7 @@ type PulseItem = {
 export default async function ActivityPulse() {
   const LIMIT = 5;
 
-  const [blogPosts, milestones, projects, ideas] = await Promise.all([
+  const [blogPosts, milestones, projects, ideas, activities] = await Promise.all([
     prisma.blogPost.findMany({
       where: { project: { visibility: "public" } },
       orderBy: { createdAt: "desc" },
@@ -60,7 +60,34 @@ export default async function ActivityPulse() {
         author: { select: { name: true } },
       },
     }),
+    prisma.activityEvent.findMany({
+      where: {
+        type: { in: ["task_completed", "todo_completed", "member_joined"] },
+        project: { visibility: "public" },
+      },
+      orderBy: { createdAt: "desc" },
+      take: LIMIT * 2,
+      select: {
+        id: true,
+        type: true,
+        createdAt: true,
+        user: { select: { name: true } },
+        project: { select: { title: true, slug: true } },
+      },
+    }),
   ]);
+
+  const activityIcon: Record<string, { emoji: string; bg: string }> = {
+    member_joined:  { emoji: "👤", bg: "bg-indigo-100" },
+    task_completed: { emoji: "✅", bg: "bg-teal-100"   },
+    todo_completed: { emoji: "☑️", bg: "bg-cyan-100"   },
+  };
+
+  const activityLabel: Record<string, (userName: string, projectTitle: string) => string> = {
+    member_joined:  (u, p) => `${u} gick med i ${p}`,
+    task_completed: (u, p) => `${u} slutförde en uppgift i ${p}`,
+    todo_completed: (u, p) => `${u} checkade av en punkt i ${p}`,
+  };
 
   const items: PulseItem[] = [
     ...blogPosts.map((p) => ({
@@ -95,6 +122,20 @@ export default async function ActivityPulse() {
       href: `/ideas/${i.id}`,
       date: i.createdAt,
     })),
+    ...activities.map((a) => {
+      const icon = activityIcon[a.type] ?? { emoji: "⚡", bg: "bg-orange-100" };
+      const label = activityLabel[a.type];
+      return {
+        id: `activity-${a.id}`,
+        emoji: icon.emoji,
+        bgClass: icon.bg,
+        title: label
+          ? label(a.user.name ?? "Någon", a.project.title)
+          : `Aktivitet i ${a.project.title}`,
+        href: `/projects/${a.project.slug}`,
+        date: a.createdAt,
+      };
+    }),
   ];
 
   items.sort((a, b) => b.date.getTime() - a.date.getTime());

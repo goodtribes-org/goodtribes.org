@@ -46,6 +46,15 @@ type FeedItem =
       category: string | null;
       authorName: string | null;
       date: Date;
+    }
+  | {
+      kind: "activity";
+      id: string;
+      activityType: "task_completed" | "todo_completed" | "member_joined";
+      projectTitle: string;
+      projectSlug: string;
+      userName: string | null;
+      date: Date;
     };
 
 function relativeTime(date: Date): string {
@@ -64,11 +73,24 @@ function relativeTime(date: Date): string {
 }
 
 const ICON_CONFIG = {
-  blog: { emoji: "✍️", bg: "bg-blue-100", text: "text-blue-600" },
-  project: { emoji: "🚀", bg: "bg-green-100", text: "text-green-600" },
-  milestone: { emoji: "🎯", bg: "bg-purple-100", text: "text-purple-600" },
-  idea: { emoji: "💡", bg: "bg-yellow-100", text: "text-yellow-600" },
+  blog:      { emoji: "✍️",  bg: "bg-blue-100",   text: "text-blue-600"   },
+  project:   { emoji: "🚀",  bg: "bg-green-100",  text: "text-green-600"  },
+  milestone: { emoji: "🎯",  bg: "bg-purple-100", text: "text-purple-600" },
+  idea:      { emoji: "💡",  bg: "bg-yellow-100", text: "text-yellow-600" },
 } as const;
+
+const ACTIVITY_ICON: Record<string, { emoji: string; bg: string }> = {
+  member_joined:  { emoji: "👤", bg: "bg-indigo-100" },
+  task_completed: { emoji: "✅", bg: "bg-teal-100"   },
+  todo_completed: { emoji: "☑️", bg: "bg-cyan-100"   },
+};
+
+function itemIcon(item: FeedItem): { emoji: string; bg: string } {
+  if (item.kind === "activity") {
+    return ACTIVITY_ICON[item.activityType] ?? { emoji: "⚡", bg: "bg-orange-100" };
+  }
+  return ICON_CONFIG[item.kind];
+}
 
 function itemTitle(item: FeedItem): string {
   switch (item.kind) {
@@ -80,6 +102,12 @@ function itemTitle(item: FeedItem): string {
       return `Milstolpe uppnådd: ${item.title}`;
     case "idea":
       return `Ny idé: ${item.title}`;
+    case "activity":
+      switch (item.activityType) {
+        case "member_joined":  return `${item.userName ?? "Någon"} gick med i ${item.projectTitle}`;
+        case "task_completed": return `${item.userName ?? "Någon"} slutförde en uppgift i ${item.projectTitle}`;
+        case "todo_completed": return `${item.userName ?? "Någon"} checkade av en punkt i ${item.projectTitle}`;
+      }
   }
 }
 
@@ -93,6 +121,8 @@ function itemHref(item: FeedItem): string {
       return `/projects/${item.projectSlug}/milestones`;
     case "idea":
       return `/ideas/${item.id}`;
+    case "activity":
+      return `/projects/${item.projectSlug}`;
   }
 }
 
@@ -108,6 +138,8 @@ function itemMeta(item: FeedItem): string {
       return item.projectTitle;
     case "idea":
       return item.authorName ?? "Okänd";
+    case "activity":
+      return item.projectTitle;
   }
 }
 
@@ -119,7 +151,7 @@ export default async function FeedPage({
   const { page: pageStr } = await searchParams;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
 
-  const [rawBlogPosts, rawProjects, rawMilestones, rawIdeas] = await Promise.all([
+  const [rawBlogPosts, rawProjects, rawMilestones, rawIdeas, rawActivities] = await Promise.all([
     prisma.blogPost.findMany({
       take: FETCH_LIMIT,
       orderBy: { createdAt: "desc" },
@@ -133,7 +165,7 @@ export default async function FeedPage({
     }),
     prisma.project.findMany({
       take: FETCH_LIMIT,
-      where: { status: "active", visibility: "public" },
+      where: { visibility: "public" },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -164,6 +196,21 @@ export default async function FeedPage({
         category: true,
         createdAt: true,
         author: { select: { name: true } },
+      },
+    }),
+    prisma.activityEvent.findMany({
+      take: FETCH_LIMIT * 3,
+      where: {
+        type: { in: ["task_completed", "todo_completed", "member_joined"] },
+        project: { visibility: "public" },
+      },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        type: true,
+        createdAt: true,
+        user: { select: { name: true } },
+        project: { select: { title: true, slug: true } },
       },
     }),
   ]);
@@ -210,6 +257,17 @@ export default async function FeedPage({
         date: i.createdAt,
       })
     ),
+    ...rawActivities.map(
+      (a): FeedItem => ({
+        kind: "activity",
+        id: a.id,
+        activityType: a.type as "task_completed" | "todo_completed" | "member_joined",
+        projectTitle: a.project.title,
+        projectSlug: a.project.slug,
+        userName: a.user.name,
+        date: a.createdAt,
+      })
+    ),
   ];
 
   feedItems.sort((a, b) => b.date.getTime() - a.date.getTime());
@@ -242,7 +300,7 @@ export default async function FeedPage({
       ) : (
         <div className="flex flex-col gap-3">
           {pageItems.map((item) => {
-            const cfg = ICON_CONFIG[item.kind];
+            const cfg = itemIcon(item);
             const href = itemHref(item);
             return (
               <Link
