@@ -229,18 +229,21 @@ export default async function ProjectLayout({
                   <div className="mt-2">
                     <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">Agenda 2030:</p>
                     <div className="grid grid-cols-6 gap-1">
-                      {[...project.sdgGoals, 18].map((n) => (
-                        <Tooltip key={n} lines={[`SDG ${n}`, SDG_LABELS_SV[n] ?? ""]}>
-                          <a
-                            href={SDG_UN_URLS[n] ?? "https://www.un.org/sustainabledevelopment/sustainable-development-goals/"}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg block cursor-pointer"
-                          >
-                            <SdgIcon n={n} size={44} />
-                          </a>
-                        </Tooltip>
-                      ))}
+                      {[...Array.from({ length: 17 }, (_, i) => i + 1), 18].map((n) => {
+                        const isSelected = project.sdgGoals.includes(n) || n === 18;
+                        return (
+                          <Tooltip key={n} lines={[`SDG ${n}`, SDG_LABELS_SV[n] ?? ""]}>
+                            <a
+                              href={SDG_UN_URLS[n] ?? "https://www.un.org/sustainabledevelopment/sustainable-development-goals/"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg block cursor-pointer ${!isSelected ? "grayscale brightness-[0.4]" : ""}`}
+                            >
+                              <SdgIcon n={n} size={44} />
+                            </a>
+                          </Tooltip>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
