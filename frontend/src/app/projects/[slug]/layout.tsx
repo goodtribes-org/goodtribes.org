@@ -177,45 +177,6 @@ export default async function ProjectLayout({
                   </div>
                 )}
 
-                {/* Team member avatars */}
-                {project.members.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-xs font-medium text-dark-slate/40 mb-2 uppercase tracking-wide">
-                      Teamet · {project._count.members} {project._count.members === 1 ? "medlem" : "medlemmar"}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {sortedMembers.map((m, i) => {
-                        const isProjectOwner = m.userId === project.ownerId;
-                        const initials = (m.user.name ?? "?").charAt(0).toUpperCase();
-                        return (
-                          <div
-                            key={i}
-                            title={m.user.name ?? ""}
-                            className={`w-10 h-10 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0 ring-2 ${isProjectOwner ? "ring-seagrass" : "ring-white"}`}
-                          >
-                            {m.user.image ? (
-                              <Image
-                                src={m.user.image}
-                                alt={m.user.name ?? ""}
-                                fill
-                                className="object-cover"
-                                unoptimized
-                              />
-                            ) : (
-                              initials
-                            )}
-                          </div>
-                        );
-                      })}
-                      {project._count.members > 12 && (
-                        <div className="w-10 h-10 rounded-full ring-2 ring-white bg-muted-teal/20 flex items-center justify-center text-xs font-semibold text-dark-slate/60">
-                          +{project._count.members - 12}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
                 {/* Funding bar */}
                 {fundingCampaign && (
                   <div className="mb-4">
@@ -258,6 +219,45 @@ export default async function ProjectLayout({
 
                 {/* Spacer */}
                 <div className="flex-1" />
+
+                {/* Team member avatars */}
+                {project.members.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-xs font-medium text-dark-slate/40 mb-2 uppercase tracking-wide">
+                      Teamet · {project._count.members} {project._count.members === 1 ? "medlem" : "medlemmar"}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {sortedMembers.map((m, i) => {
+                        const isProjectOwner = m.userId === project.ownerId;
+                        const initials = (m.user.name ?? "?").charAt(0).toUpperCase();
+                        return (
+                          <div
+                            key={i}
+                            title={m.user.name ?? ""}
+                            className={`w-10 h-10 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0 ring-2 ${isProjectOwner ? "ring-seagrass" : "ring-white"}`}
+                          >
+                            {m.user.image ? (
+                              <Image
+                                src={m.user.image}
+                                alt={m.user.name ?? ""}
+                                fill
+                                className="object-cover"
+                                unoptimized
+                              />
+                            ) : (
+                              initials
+                            )}
+                          </div>
+                        );
+                      })}
+                      {project._count.members > 12 && (
+                        <div className="w-10 h-10 rounded-full ring-2 ring-white bg-muted-teal/20 flex items-center justify-center text-xs font-semibold text-dark-slate/60">
+                          +{project._count.members - 12}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
             </div>
