@@ -25,6 +25,7 @@ export default async function ProjectLayout({
       where: { slug },
       select: {
         id: true,
+        ownerId: true,
         imageUrl: true,
         title: true,
         status: true,
@@ -34,7 +35,7 @@ export default async function ProjectLayout({
         org: { select: { name: true, slug: true } },
         owner: { select: { name: true, image: true } },
         members: {
-          select: { user: { select: { name: true, image: true } } },
+          select: { userId: true, user: { select: { name: true, image: true } } },
           orderBy: { joinedAt: "asc" },
           take: 12,
         },
@@ -46,7 +47,7 @@ export default async function ProjectLayout({
 
   const stageIndex = STATUS_TO_STAGE[project.status] ?? 0;
 
-  const [fundingCampaign, isOwnerRecord] = await Promise.all([
+  const [fundingCampaign, isOwnerRecord, isMemberRecord, totalTasks, doneTasks] = await Promise.all([
     prisma.fundingCampaign.findUnique({
       where: { projectId: project.id },
       include: { pledges: { select: { amount: true } } },
@@ -56,9 +57,17 @@ export default async function ProjectLayout({
           where: { project: { slug }, userId: session.user.id, role: { in: ["owner", "admin"] } },
         })
       : Promise.resolve(null),
+    session?.user?.id
+      ? prisma.projectMember.findFirst({
+          where: { project: { slug }, userId: session.user.id },
+        })
+      : Promise.resolve(null),
+    prisma.kanbanCard.count({ where: { projectSlug: slug } }),
+    prisma.kanbanCard.count({ where: { projectSlug: slug, column: "DONE" } }),
   ]);
 
   const isOwner = !!isOwnerRecord;
+  const isMember = !!isMemberRecord;
   const raised = fundingCampaign?.pledges.reduce((s, p) => s + p.amount, 0) ?? 0;
   const fundingPct = fundingCampaign
     ? Math.min(100, Math.round((raised / fundingCampaign.goal) * 100))
@@ -66,6 +75,12 @@ export default async function ProjectLayout({
   const daysLeft = fundingCampaign?.deadline
     ? Math.max(0, Math.ceil((new Date(fundingCampaign.deadline).getTime() - Date.now()) / 86400000))
     : null;
+  const taskPct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+
+  // Sort members so owner appears first
+  const sortedMembers = [...project.members].sort((a, b) =>
+    a.userId === project.ownerId ? -1 : b.userId === project.ownerId ? 1 : 0
+  );
 
   return (
     <>
@@ -141,12 +156,12 @@ export default async function ProjectLayout({
                 )}
               </div>
 
-              {/* Card 2: team + SDG + join — 420 × 460 */}
+              {/* Card 2: team + SDG + join */}
               <div
                 className="shrink-0 bg-white rounded-2xl p-5 flex flex-col"
                 style={{
                   width: "320px",
-                  height: "460px",
+                  minHeight: "460px",
                   boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
                 }}
               >
@@ -191,13 +206,14 @@ export default async function ProjectLayout({
                       Teamet · {project._count.members} {project._count.members === 1 ? "medlem" : "medlemmar"}
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {project.members.map((m, i) => {
+                      {sortedMembers.map((m, i) => {
+                        const isProjectOwner = m.userId === project.ownerId;
                         const initials = (m.user.name ?? "?").charAt(0).toUpperCase();
                         return (
                           <div
                             key={i}
                             title={m.user.name ?? ""}
-                            className="w-10 h-10 rounded-full overflow-hidden bg-dry-sage ring-2 ring-white relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0"
+                            className={`w-10 h-10 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0 ring-2 ${isProjectOwner ? "ring-seagrass" : "ring-white"}`}
                           >
                             {m.user.image ? (
                               <Image
@@ -222,6 +238,34 @@ export default async function ProjectLayout({
                   </div>
                 )}
 
+                {/* Funding bar */}
+                {fundingCampaign && (
+                  <div className="mb-4">
+                    <p className="text-xs font-medium text-dark-slate/40 mb-1.5 uppercase tracking-wide">Finansiering</p>
+                    <div className="w-full h-2 bg-muted-teal/20 rounded-full overflow-hidden mb-1">
+                      <div className="h-full bg-coral rounded-full transition-all" style={{ width: `${fundingPct}%` }} />
+                    </div>
+                    <p className="text-xs text-dark-slate/50">
+                      {raised.toLocaleString("sv-SE")} av {fundingCampaign.goal.toLocaleString("sv-SE")} {fundingCampaign.currency}
+                      {" · "}{fundingPct}%
+                      {daysLeft !== null && ` · ${daysLeft} dagar kvar`}
+                    </p>
+                  </div>
+                )}
+
+                {/* Tasks bar */}
+                {totalTasks > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs font-medium text-dark-slate/40 mb-1.5 uppercase tracking-wide">Uppgifter</p>
+                    <div className="w-full h-2 bg-muted-teal/20 rounded-full overflow-hidden mb-1">
+                      <div className="h-full bg-seagrass rounded-full transition-all" style={{ width: `${taskPct}%` }} />
+                    </div>
+                    <p className="text-xs text-dark-slate/50">
+                      {doneTasks} av {totalTasks} klara · {taskPct}%
+                    </p>
+                  </div>
+                )}
+
                 {/* SDG badges */}
                 {project.sdgGoals.length > 0 && (
                   <div className="mb-4">
@@ -237,13 +281,15 @@ export default async function ProjectLayout({
                 {/* Spacer */}
                 <div className="flex-1" />
 
-                {/* Join button */}
-                <Link
-                  href={`/projects/${slug}`}
-                  className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-seagrass text-white rounded-xl font-semibold text-sm hover:bg-seagrass/90 transition-colors self-start"
-                >
-                  Gå med i projektet →
-                </Link>
+                {/* Join button — hidden if already a member */}
+                {!isMember && (
+                  <Link
+                    href={`/projects/${slug}`}
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-seagrass text-white rounded-xl font-semibold text-sm hover:bg-seagrass/90 transition-colors self-start"
+                  >
+                    Gå med i projektet →
+                  </Link>
+                )}
               </div>
 
             </div>
