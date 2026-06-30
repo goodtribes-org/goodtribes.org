@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
+import { SdgIcon } from "@/components/SdgIcon";
 
 
 const FEATURE_CARDS = [
@@ -33,6 +34,7 @@ function ProjectCard({ project }: {
     description: string | null;
     status: string;
     imageUrl: string | null;
+    sdgGoals: number[];
     owner: { name: string | null };
     members: { id: string }[];
     _count: { kanbanCards: number; todoItems: number };
@@ -43,19 +45,40 @@ function ProjectCard({ project }: {
       href={`/projects/${project.slug}`}
       className="rounded-lg overflow-hidden border border-muted-teal/40 hover:shadow-md transition-shadow bg-white flex flex-col"
     >
+      <div className="relative aspect-[4/3] w-full">
+        {project.imageUrl ? (
+          <Image
+            src={project.imageUrl}
+            alt={project.title}
+            fill
+            unoptimized
+            className="object-cover"
+            sizes="(max-width: 640px) 50vw, 25vw"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-dry-sage to-muted-teal/40 flex items-center justify-center p-4">
+            <p className="text-xs font-semibold text-dark-slate/70 text-center leading-tight line-clamp-3">{project.title}</p>
+          </div>
+        )}
+        <span className="absolute top-2 left-2 bg-white/90 rounded px-1.5 py-0.5 text-xs font-semibold text-dark-slate capitalize">
+          {project.status}
+        </span>
+      </div>
       <div className="p-3 flex flex-col flex-1">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <p className="font-bold text-dark-slate text-sm leading-tight">{project.title}</p>
-          <span className="bg-dry-sage/60 rounded px-1.5 py-0.5 text-[10px] font-semibold text-dark-slate/70 capitalize flex-shrink-0">
-            {project.status}
-          </span>
-        </div>
+        <p className="font-bold text-dark-slate text-sm leading-tight mb-0.5">{project.title}</p>
         <p className="text-xs text-dark-slate/50 mb-2">
           by <span className="text-coral">{project.owner.name ?? "Unknown"}</span>
         </p>
-        <p className="text-xs text-dark-slate/70 leading-snug mb-3 line-clamp-4 flex-1">
+        <p className="text-xs text-dark-slate/70 leading-snug mb-2 line-clamp-3 flex-1">
           {project.summary ?? project.description ?? "No description yet."}
         </p>
+        {project.sdgGoals.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {project.sdgGoals.slice(0, 5).map((n) => (
+              <SdgIcon key={n} n={n} size={20} />
+            ))}
+          </div>
+        )}
         <div className="grid grid-cols-3 divide-x divide-muted-teal/30 text-center border-t border-muted-teal/20 pt-2 mt-auto">
           <div className="px-1">
             <p className="text-xs font-semibold text-dark-slate">{project.members.length}</p>
