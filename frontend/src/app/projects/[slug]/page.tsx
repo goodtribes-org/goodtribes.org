@@ -10,6 +10,9 @@ import InviteForm from "./invite/InviteForm";
 import TeamManager from "./TeamManager";
 import FlagProjectButton from "@/components/FlagProjectButton";
 import KudosButton from "@/components/KudosButton";
+import { SdgIcon } from "@/components/SdgIcon";
+import Tooltip from "@/components/Tooltip";
+import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 
 function MemberAvatar({
   name,
@@ -283,13 +286,19 @@ export default async function ProjectDetailPage({
       <div className="flex flex-col md:flex-row gap-5 items-start md:-mr-7">
         {/* Left: project story */}
         <div className="flex-1 min-w-0 space-y-8">
+          {(project as typeof project & { summary: string | null }).summary && (
+            <section>
+              <div className="relative pl-5">
+                <div className="absolute left-0 top-0 bottom-0 w-1 rounded-full bg-gradient-to-b from-coral via-seagrass to-muted-teal" />
+                <p className="text-[22px] leading-snug font-semibold text-dark-slate tracking-tight">
+                  {(project as typeof project & { summary: string | null }).summary}
+                </p>
+              </div>
+            </section>
+          )}
+
           <section>
             <h2 className="text-base font-semibold text-dark-slate mb-4">Om projektet</h2>
-            {(project as typeof project & { summary: string | null }).summary && (
-              <p className="text-base text-dark-slate/80 leading-relaxed mb-4 font-medium">
-                {(project as typeof project & { summary: string | null }).summary}
-              </p>
-            )}
             {project.description ? (
               project.description.trimStart().startsWith("<") ? (
                 <article
@@ -336,6 +345,27 @@ export default async function ProjectDetailPage({
 
         {/* Right sidebar — 320px to align with hero right card */}
         <div className="w-full md:w-[320px] shrink-0 flex flex-col gap-5">
+
+          {/* Agenda 2030 widget */}
+          {project.sdgGoals.length > 0 && (
+            <section className="border border-muted-teal/30 rounded-xl p-4">
+              <h2 className="text-sm font-semibold text-dark-slate mb-3">Agenda 2030</h2>
+              <div className="grid grid-cols-7 gap-0.5">
+                {[...project.sdgGoals, 18].map((n) => (
+                  <Tooltip key={n} lines={[`SDG ${n}`, SDG_LABELS_SV[n] ?? ""]}>
+                    <a
+                      href={SDG_UN_URLS[n] ?? "https://www.un.org/sustainabledevelopment/sustainable-development-goals/"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="transition-all duration-200 ease-in-out hover:scale-[1.3] hover:shadow-md block cursor-pointer"
+                    >
+                      <SdgIcon n={n} size={34} />
+                    </a>
+                  </Tooltip>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Skills needed */}
           {project.neededSkills.length > 0 && (
