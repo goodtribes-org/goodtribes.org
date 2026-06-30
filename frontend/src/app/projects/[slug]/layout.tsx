@@ -253,7 +253,7 @@ export default async function ProjectLayout({
                       {[...project.sdgGoals, 18].map((n) => (
                         <Tooltip key={n} lines={[`SDG ${n}`, SDG_LABELS_SV[n] ?? ""]}>
                           <a
-                            href={n < 18 ? `https://sdgs.un.org/goals/goal${n}` : "https://goodtribes.org"}
+                            href={n < 18 ? `https://sdgs.un.org/goals/goal${n}` : "https://www.un.org/sustainabledevelopment/sustainable-development-goals/"}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg block cursor-pointer"
