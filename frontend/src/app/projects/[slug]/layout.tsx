@@ -252,9 +252,20 @@ export default async function ProjectLayout({
                     <div className="grid grid-cols-7 gap-0.5">
                       {[...project.sdgGoals, 18].map((n) => (
                         <Tooltip key={n} lines={[`SDG ${n}`, SDG_LABELS_SV[n] ?? ""]}>
-                          <div className="transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg cursor-pointer">
-                            <SdgIcon n={n} size={38} />
-                          </div>
+                          {n < 18 ? (
+                            <a
+                              href={`https://sdgs.un.org/goals/goal${n}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg block"
+                            >
+                              <SdgIcon n={n} size={38} />
+                            </a>
+                          ) : (
+                            <div className="transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg cursor-pointer">
+                              <SdgIcon n={n} size={38} />
+                            </div>
+                          )}
                         </Tooltip>
                       ))}
                     </div>
