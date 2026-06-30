@@ -249,7 +249,7 @@ export default async function ProjectLayout({
                 {(project.sdgGoals.length > 0) && (
                   <div className="mt-2">
                     <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">Agenda 2030:</p>
-                    <div className="grid grid-cols-7 gap-0.5">
+                    <div className="grid grid-cols-6 gap-1">
                       {[...project.sdgGoals, 18].map((n) => (
                         <Tooltip key={n} lines={[`SDG ${n}`, SDG_LABELS_SV[n] ?? ""]}>
                           <a
@@ -258,7 +258,7 @@ export default async function ProjectLayout({
                             rel="noopener noreferrer"
                             className="transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg block cursor-pointer"
                           >
-                            <SdgIcon n={n} size={38} />
+                            <SdgIcon n={n} size={44} />
                           </a>
                         </Tooltip>
                       ))}
