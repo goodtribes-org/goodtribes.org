@@ -346,36 +346,6 @@ export default async function ProjectDetailPage({
         {/* Right sidebar — 320px to align with hero right card */}
         <div className="w-full md:w-[320px] shrink-0 flex flex-col gap-5">
 
-          {/* Finansiering & Uppgifter widget */}
-          {(fundingCampaign || totalTasks > 0) && (
-            <section className="border border-muted-teal/30 rounded-xl p-4 flex flex-col gap-4">
-              {fundingCampaign && (
-                <div>
-                  <p className="text-xs font-medium text-dark-slate/40 mb-1.5 uppercase tracking-wide">Finansiering</p>
-                  <div className="w-full h-2 bg-muted-teal/20 rounded-full overflow-hidden mb-1">
-                    <div className="h-full bg-coral rounded-full transition-all" style={{ width: `${fundingPct}%` }} />
-                  </div>
-                  <p className="text-xs text-dark-slate/50 text-right">
-                    {raised.toLocaleString("sv-SE")} av {fundingCampaign.goal.toLocaleString("sv-SE")} {fundingCampaign.currency}
-                    {" · "}{fundingPct}%
-                    {daysLeft !== null && ` · ${daysLeft} dagar kvar`}
-                  </p>
-                </div>
-              )}
-              {totalTasks > 0 && (
-                <div>
-                  <p className="text-xs font-medium text-dark-slate/40 mb-1.5 uppercase tracking-wide">Uppgifter</p>
-                  <div className="w-full h-2 bg-muted-teal/20 rounded-full overflow-hidden mb-1">
-                    <div className="h-full bg-seagrass rounded-full transition-all" style={{ width: `${taskPct}%` }} />
-                  </div>
-                  <p className="text-xs text-dark-slate/50 text-right">
-                    {doneTasks} av {totalTasks} klara · {taskPct}%
-                  </p>
-                </div>
-              )}
-            </section>
-          )}
-
           {/* Skills needed */}
           {project.neededSkills.length > 0 && (
             <section>

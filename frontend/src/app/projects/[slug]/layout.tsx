@@ -100,7 +100,7 @@ export default async function ProjectLayout({
                 alt=""
                 fill
                 unoptimized
-                className="object-cover"
+                className="object-cover blur-2xl scale-110"
                 sizes="100vw"
               />
             </>
