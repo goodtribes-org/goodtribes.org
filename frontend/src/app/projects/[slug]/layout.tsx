@@ -220,7 +220,7 @@ export default async function ProjectLayout({
                         return (
                           <Tooltip key={i} lines={[m.user.name ?? "?", ...(isProjectOwner ? ["Founder"] : [])]}>
                             <div
-                              className={`w-10 h-10 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0 ring-2 transition-transform hover:scale-[1.6] cursor-pointer ${isProjectOwner ? "ring-seagrass" : "ring-white"}`}
+                              className={`w-10 h-10 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0 ring-2 transition-transform duration-200 hover:scale-[1.6] cursor-pointer ${isProjectOwner ? "ring-seagrass" : "ring-white"}`}
                             >
                               {m.user.image ? (
                                 <Image
@@ -256,7 +256,7 @@ export default async function ProjectLayout({
                     <div className="grid grid-cols-7 gap-0.5">
                       {[...project.sdgGoals, 18].map((n) => (
                         <Tooltip key={n} lines={[`SDG ${n}`, SDG_LABELS_SV[n] ?? ""]}>
-                          <div className="transition-transform hover:scale-[1.6] cursor-pointer">
+                          <div className="transition-transform duration-200 hover:scale-[1.6] cursor-pointer">
                             <SdgIcon n={n} size={38} />
                           </div>
                         </Tooltip>
