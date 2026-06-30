@@ -137,6 +137,9 @@ export default async function ProjectLayout({
                   height: "460px",
                   border: "24px solid white",
                   boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
+                  transform: "rotate(-3deg)",
+                  position: "relative",
+                  zIndex: 1,
                 }}
               >
                 {project.imageUrl ? (
@@ -165,6 +168,8 @@ export default async function ProjectLayout({
                   width: "320px",
                   minHeight: "460px",
                   boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
+                  marginLeft: "-10px",
+                  transform: "rotate(3deg)",
                 }}
               >
                 {/* Team member avatars */}
