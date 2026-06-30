@@ -214,34 +214,6 @@ export default async function ProjectLayout({
                   </div>
                 )}
 
-                {/* Funding bar */}
-                {fundingCampaign && (
-                  <div className="mb-4">
-                    <p className="text-xs font-medium text-dark-slate/40 mb-1.5 uppercase tracking-wide">Finansiering</p>
-                    <div className="w-full h-2 bg-muted-teal/20 rounded-full overflow-hidden mb-1">
-                      <div className="h-full bg-coral rounded-full transition-all" style={{ width: `${fundingPct}%` }} />
-                    </div>
-                    <p className="text-xs text-dark-slate/50 text-right">
-                      {raised.toLocaleString("sv-SE")} av {fundingCampaign.goal.toLocaleString("sv-SE")} {fundingCampaign.currency}
-                      {" · "}{fundingPct}%
-                      {daysLeft !== null && ` · ${daysLeft} dagar kvar`}
-                    </p>
-                  </div>
-                )}
-
-                {/* Tasks bar */}
-                {totalTasks > 0 && (
-                  <div className="mb-4">
-                    <p className="text-xs font-medium text-dark-slate/40 mb-1.5 uppercase tracking-wide">Uppgifter</p>
-                    <div className="w-full h-2 bg-muted-teal/20 rounded-full overflow-hidden mb-1">
-                      <div className="h-full bg-seagrass rounded-full transition-all" style={{ width: `${taskPct}%` }} />
-                    </div>
-                    <p className="text-xs text-dark-slate/50 text-right">
-                      {doneTasks} av {totalTasks} klara · {taskPct}%
-                    </p>
-                  </div>
-                )}
-
                 {/* Spacer */}
                 <div className="flex-1" />
 
