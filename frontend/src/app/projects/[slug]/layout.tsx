@@ -168,10 +168,10 @@ export default async function ProjectLayout({
                 }}
               >
                 {/* Join button */}
-                <div className="mb-4 flex justify-center">
+                <div className="mb-4">
                   <Link
                     href={`/projects/${slug}`}
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-seagrass text-white rounded-xl font-semibold text-sm hover:bg-seagrass/90 transition-colors"
+                    className="flex justify-center w-full py-3 bg-seagrass text-white rounded-xl font-bold text-base hover:bg-seagrass/90 transition-colors shadow-md"
                   >
                     Support GoodTribes
                   </Link>
