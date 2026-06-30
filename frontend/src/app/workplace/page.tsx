@@ -138,7 +138,13 @@ export default async function WorkplacePage({
       orderBy: { joinedAt: "desc" },
       include: {
         project: {
-          include: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            status: true,
+            summary: true,
+            description: true,
             _count: {
               select: {
                 kanbanCards: { where: { column: { not: "DONE" } } },
@@ -432,8 +438,8 @@ export default async function WorkplacePage({
                         {STATUS_LABEL[project.status] ?? project.status}
                       </span>
                     </div>
-                    {project.description && (
-                      <p className="text-sm text-dark-slate/60 line-clamp-2">{project.description}</p>
+                    {(project.summary ?? project.description) && (
+                      <p className="text-sm text-dark-slate/60 line-clamp-2">{project.summary ?? project.description}</p>
                     )}
                     <div className="flex items-center gap-4 text-xs text-dark-slate/50 mt-auto pt-1 border-t border-muted-teal/40">
                       <span className="font-medium text-seagrass">{ROLE_LABEL[role] ?? role}</span>
