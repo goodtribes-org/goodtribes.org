@@ -218,23 +218,23 @@ export default async function ProjectLayout({
                         const isProjectOwner = m.userId === project.ownerId;
                         const initials = (m.user.name ?? "?").charAt(0).toUpperCase();
                         return (
-                          <div
-                            key={i}
-                            title={m.user.name ?? ""}
-                            className={`w-10 h-10 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0 ring-2 ${isProjectOwner ? "ring-seagrass" : "ring-white"}`}
-                          >
-                            {m.user.image ? (
-                              <Image
-                                src={m.user.image}
-                                alt={m.user.name ?? ""}
-                                fill
-                                className="object-cover"
-                                unoptimized
-                              />
-                            ) : (
-                              initials
-                            )}
-                          </div>
+                          <Tooltip key={i} lines={[m.user.name ?? "?", ...(isProjectOwner ? ["Ägare"] : [])]}>
+                            <div
+                              className={`w-10 h-10 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0 ring-2 ${isProjectOwner ? "ring-seagrass" : "ring-white"}`}
+                            >
+                              {m.user.image ? (
+                                <Image
+                                  src={m.user.image}
+                                  alt={m.user.name ?? ""}
+                                  fill
+                                  className="object-cover"
+                                  unoptimized
+                                />
+                              ) : (
+                                initials
+                              )}
+                            </div>
+                          </Tooltip>
                         );
                       })}
                       {project._count.members > 12 && (
