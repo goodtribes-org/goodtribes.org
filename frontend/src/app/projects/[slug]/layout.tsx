@@ -212,16 +212,14 @@ export default async function ProjectLayout({
                 )}
 
                 {/* Join button */}
-                {!isMember && (
-                  <div className="mb-4 flex justify-center">
-                    <Link
-                      href={`/projects/${slug}`}
-                      className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-seagrass text-white rounded-xl font-semibold text-sm hover:bg-seagrass/90 transition-colors"
-                    >
-                      Support GoodTribes
-                    </Link>
-                  </div>
-                )}
+                <div className="mb-4 flex justify-center">
+                  <Link
+                    href={`/projects/${slug}`}
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-seagrass text-white rounded-xl font-semibold text-sm hover:bg-seagrass/90 transition-colors"
+                  >
+                    Support GoodTribes
+                  </Link>
+                </div>
 
                 {/* Spacer */}
                 <div className="flex-1" />
