@@ -253,7 +253,9 @@ export default async function ProjectLayout({
                     <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">Agenda 2030:</p>
                     <div className="flex flex-wrap gap-1">
                       {[...project.sdgGoals, 18].map((n) => (
-                        <SdgIcon key={n} n={n} size={38} />
+                        <div key={n} className="transition-transform hover:scale-125 cursor-pointer">
+                          <SdgIcon n={n} size={38} />
+                        </div>
                       ))}
                     </div>
                   </div>
