@@ -237,9 +237,9 @@ export default async function ProjectLayout({
                               href={SDG_UN_URLS[n] ?? "https://www.un.org/sustainabledevelopment/sustainable-development-goals/"}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className={`transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg block cursor-pointer ${!isSelected ? "grayscale brightness-[0.4]" : ""}`}
+                              className="transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg block cursor-pointer"
                             >
-                              <SdgIcon n={n} size={44} />
+                              <SdgIcon n={n} size={44} dark={!isSelected} />
                             </a>
                           </Tooltip>
                         );

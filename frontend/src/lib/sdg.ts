@@ -73,3 +73,7 @@ export const SDG_UN_URLS: Record<number, string> = {
 export function sdgIconPath(n: number): string {
   return `/SDG/sdg-${String(n).padStart(2, "0")}.png`;
 }
+
+export function sdgIconPathDark(n: number): string {
+  return `/SDG/sdgK-${String(n).padStart(2, "0")}.png`;
+}
