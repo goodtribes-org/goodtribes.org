@@ -10,9 +10,6 @@ import InviteForm from "./invite/InviteForm";
 import TeamManager from "./TeamManager";
 import FlagProjectButton from "@/components/FlagProjectButton";
 import KudosButton from "@/components/KudosButton";
-import { SdgIcon } from "@/components/SdgIcon";
-import Tooltip from "@/components/Tooltip";
-import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 
 function MemberAvatar({
   name,
@@ -348,27 +345,6 @@ export default async function ProjectDetailPage({
 
         {/* Right sidebar — 320px to align with hero right card */}
         <div className="w-full md:w-[320px] shrink-0 flex flex-col gap-5">
-
-          {/* Agenda 2030 widget */}
-          {project.sdgGoals.length > 0 && (
-            <section className="border border-muted-teal/30 rounded-xl p-4">
-              <h2 className="text-sm font-semibold text-dark-slate mb-3">Agenda 2030</h2>
-              <div className="grid grid-cols-6 gap-1">
-                {[...project.sdgGoals, 18].map((n) => (
-                  <Tooltip key={n} lines={[`SDG ${n}`, SDG_LABELS_SV[n] ?? ""]}>
-                    <a
-                      href={SDG_UN_URLS[n] ?? "https://www.un.org/sustainabledevelopment/sustainable-development-goals/"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="transition-all duration-200 ease-in-out hover:scale-[1.3] hover:shadow-md block cursor-pointer"
-                    >
-                      <SdgIcon n={n} size={44} />
-                    </a>
-                  </Tooltip>
-                ))}
-              </div>
-            </section>
-          )}
 
           {/* Finansiering & Uppgifter widget */}
           {(fundingCampaign || totalTasks > 0) && (
