@@ -254,7 +254,7 @@ export default async function ProjectLayout({
                     {Array.from({ length: 18 }, (_, i) => i + 1).map((n) => {
                       const selected = n === 18 || project.sdgGoals.includes(n);
                       return (
-                        <div key={n} className="relative">
+                        <div key={n} className="relative w-[38px] h-[38px]">
                           <SdgIcon n={n} size={38} />
                           {!selected && <div className="absolute inset-0 bg-gray-400/80 rounded-sm" />}
                         </div>
