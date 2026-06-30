@@ -49,6 +49,27 @@ export const SDG_COLORS: Record<number, string> = {
 
 export const SDG_NUMBERS = Array.from({ length: 17 }, (_, i) => i + 1);
 
+export const SDG_UN_URLS: Record<number, string> = {
+  1:  "https://www.un.org/sustainabledevelopment/poverty/",
+  2:  "https://www.un.org/sustainabledevelopment/hunger/",
+  3:  "https://www.un.org/sustainabledevelopment/health/",
+  4:  "https://www.un.org/sustainabledevelopment/education/",
+  5:  "https://www.un.org/sustainabledevelopment/gender-equality/",
+  6:  "https://www.un.org/sustainabledevelopment/water-and-sanitation/",
+  7:  "https://www.un.org/sustainabledevelopment/energy/",
+  8:  "https://www.un.org/sustainabledevelopment/economic-growth/",
+  9:  "https://www.un.org/sustainabledevelopment/infrastructure-industrialization/",
+  10: "https://www.un.org/sustainabledevelopment/inequality/",
+  11: "https://www.un.org/sustainabledevelopment/cities/",
+  12: "https://www.un.org/sustainabledevelopment/sustainable-consumption-production/",
+  13: "https://www.un.org/sustainabledevelopment/climate-change/",
+  14: "https://www.un.org/sustainabledevelopment/oceans/",
+  15: "https://www.un.org/sustainabledevelopment/biodiversity/",
+  16: "https://www.un.org/sustainabledevelopment/peace-justice/",
+  17: "https://www.un.org/sustainabledevelopment/globalpartnerships/",
+  18: "https://www.un.org/sustainabledevelopment/sustainable-development-goals/",
+};
+
 export function sdgIconPath(n: number): string {
   return `/SDG/sdg-${String(n).padStart(2, "0")}.png`;
 }

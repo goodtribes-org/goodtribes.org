@@ -6,7 +6,7 @@ import { auth } from "@/auth";
 import ProjectTabNav from "./ProjectTabNav";
 import { SdgIcon } from "@/components/SdgIcon";
 import Tooltip from "@/components/Tooltip";
-import { SDG_LABELS_SV } from "@/lib/sdg";
+import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 
 const STAGES = ["Concept", "Prototype", "Production", "Delivery"];
 const STATUS_TO_STAGE: Record<string, number> = {
@@ -253,7 +253,7 @@ export default async function ProjectLayout({
                       {[...project.sdgGoals, 18].map((n) => (
                         <Tooltip key={n} lines={[`SDG ${n}`, SDG_LABELS_SV[n] ?? ""]}>
                           <a
-                            href={n < 18 ? `https://sdgs.un.org/goals/goal${n}` : "https://www.un.org/sustainabledevelopment/sustainable-development-goals/"}
+                            href={SDG_UN_URLS[n] ?? "https://www.un.org/sustainabledevelopment/sustainable-development-goals/"}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg block cursor-pointer"
