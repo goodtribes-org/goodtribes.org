@@ -165,43 +165,17 @@ export default async function ProjectLayout({
                   boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
                 }}
               >
-                {/* Header: join button + edit */}
-                <div className="flex items-start justify-between gap-2 mb-4">
-                  {!isMember ? (
+                {/* Join button */}
+                {!isMember && (
+                  <div className="mb-4">
                     <Link
                       href={`/projects/${slug}`}
                       className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-seagrass text-white rounded-xl font-semibold text-sm hover:bg-seagrass/90 transition-colors"
                     >
                       Join the project →
                     </Link>
-                  ) : (
-                    <p className="text-xs text-dark-slate/50">
-                      av{" "}
-                      <span className="text-dark-slate/70 font-medium">
-                        {project.owner.name ?? "Okänd"}
-                      </span>
-                      {project.org && (
-                        <>
-                          {" "}·{" "}
-                          <Link
-                            href={`/org/${project.org.slug}`}
-                            className="hover:text-seagrass transition-colors"
-                          >
-                            {project.org.name}
-                          </Link>
-                        </>
-                      )}
-                    </p>
-                  )}
-                  {isOwner && (
-                    <Link
-                      href={`/projects/${slug}/edit`}
-                      className="shrink-0 px-2.5 py-1 rounded border border-muted-teal/50 text-xs text-dark-slate/50 hover:text-dark-slate transition-colors"
-                    >
-                      Redigera
-                    </Link>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Team member avatars */}
                 {project.members.length > 0 && (
@@ -297,7 +271,7 @@ export default async function ProjectLayout({
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
         <div className="px-6">
-          <ProjectTabNav slug={slug} />
+          <ProjectTabNav slug={slug} isOwner={isOwner} />
         </div>
       </div>
 
