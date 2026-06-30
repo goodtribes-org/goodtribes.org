@@ -30,9 +30,10 @@ interface Props {
   category?: string;
   sdg?: string;
   total: number;
+  basePath?: string;
 }
 
-export default function ProjectFilters({ sort, q, status, category, sdg, total }: Props) {
+export default function ProjectFilters({ sort, q, status, category, sdg, total, basePath }: Props) {
   const router = useRouter();
   const [query, setQuery] = useState(q ?? "");
 
@@ -44,7 +45,7 @@ export default function ProjectFilters({ sort, q, status, category, sdg, total }
       if (v) params.set(k, v);
     }
     const qs = params.toString();
-    return `/projects${qs ? `?${qs}` : ""}`;
+    return `${basePath ?? "/projects"}${qs ? `?${qs}` : ""}`;
   }
 
   function submitSearch(e: React.FormEvent) {
