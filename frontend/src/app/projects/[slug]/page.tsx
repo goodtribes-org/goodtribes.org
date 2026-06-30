@@ -192,7 +192,7 @@ export default async function ProjectDetailPage({
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-  const [latestUpdate, fundingCampaign, monthEvents, userJoinRequest, kanbanCards, todoLists, recentChannelMessages] =
+  const [latestUpdate, fundingCampaign, monthEvents, userJoinRequest, kanbanCards, recentChannelMessages] =
     await Promise.all([
       prisma.blogPost.findFirst({
         where: { projectSlug: slug },
@@ -228,18 +228,6 @@ export default async function ProjectDetailPage({
         where: { projectSlug: slug },
         select: { column: true, title: true, priority: true },
         orderBy: [{ column: "asc" }, { order: "asc" }],
-      }),
-      prisma.todoList.findMany({
-        where: { projectSlug: slug },
-        orderBy: { order: "asc" },
-        select: {
-          id: true,
-          name: true,
-          items: {
-            select: { id: true, title: true, done: true, dueDate: true },
-            orderBy: { order: "asc" },
-          },
-        },
       }),
       prisma.channelMessage.findMany({
         where: { channel: { projectId: project.id }, threadParentId: null },
@@ -443,67 +431,6 @@ export default async function ProjectDetailPage({
                 <p className="text-xs text-dark-slate/40 mt-3 text-center">
                   {done} av {total} uppgifter klara
                 </p>
-              </section>
-            );
-          })()}
-
-          {/* Todo summary */}
-          {todoLists.length > 0 && (() => {
-            const allItems = todoLists.flatMap(l => l.items);
-            const total = allItems.length;
-            const done = allItems.filter(i => i.done).length;
-            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-            const overdue = allItems.filter(i => !i.done && i.dueDate && new Date(i.dueDate) < new Date());
-            return (
-              <section className="border border-muted-teal/30 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-semibold text-dark-slate">Todos</h2>
-                  <Link href={`/projects/${slug}/todos`} className="text-xs text-seagrass hover:underline">
-                    Öppna →
-                  </Link>
-                </div>
-
-                {/* Progress bar */}
-                <div className="w-full h-2 bg-muted-teal/20 rounded-full overflow-hidden mb-1">
-                  <div className="h-full bg-seagrass rounded-full transition-all" style={{ width: `${pct}%` }} />
-                </div>
-                <p className="text-xs text-dark-slate/50 mb-3">{done} av {total} klara · {pct}%</p>
-
-                {/* Lists */}
-                <div className="space-y-3">
-                  {todoLists.map(list => {
-                    const listDone = list.items.filter(i => i.done).length;
-                    const listTotal = list.items.length;
-                    const undone = list.items.filter(i => !i.done).slice(0, 3);
-                    return (
-                      <div key={list.id}>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-medium text-dark-slate truncate">{list.name}</span>
-                          <span className="text-xs text-dark-slate/40 shrink-0 ml-2">{listDone}/{listTotal}</span>
-                        </div>
-                        <ul className="space-y-1">
-                          {undone.map(item => (
-                            <li key={item.id} className="flex items-start gap-2 text-xs text-dark-slate/60">
-                              <span className="mt-0.5 w-3 h-3 shrink-0 rounded border border-muted-teal/50" />
-                              <span className="leading-snug truncate">{item.title}</span>
-                            </li>
-                          ))}
-                          {list.items.filter(i => !i.done).length > 3 && (
-                            <li className="text-xs text-dark-slate/40 pl-5">
-                              +{list.items.filter(i => !i.done).length - 3} till…
-                            </li>
-                          )}
-                        </ul>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {overdue.length > 0 && (
-                  <p className="text-xs text-coral mt-3">
-                    ⚠ {overdue.length} försenad{overdue.length !== 1 ? "e" : ""}
-                  </p>
-                )}
               </section>
             );
           })()}
