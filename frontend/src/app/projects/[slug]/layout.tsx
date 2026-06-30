@@ -170,32 +170,41 @@ export default async function ProjectLayout({
                 {/* Team member avatars */}
                 {project.members.length > 0 && (
                   <div className="mb-4">
-                    <p className="text-xs font-medium text-dark-slate/40 mb-2 uppercase tracking-wide">
-                      GoodTribes teamet <span className="text-[10px] font-normal">· {project._count.members} {project._count.members === 1 ? "medlem" : "medlemmar"}</span>
+                    <p className="text-sm font-semibold text-dark-slate/70 mb-2 uppercase tracking-wide">
+                      GoodTribes teamet <span className="text-[9px] font-normal text-dark-slate/40">· {project._count.members} {project._count.members === 1 ? "medlem" : "medlemmar"}</span>
                     </p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-3">
                       {sortedMembers.map((m, i) => {
                         const isProjectOwner = m.userId === project.ownerId;
                         const initials = (m.user.name ?? "?").charAt(0).toUpperCase();
-                        const avatarClass = `w-10 h-10 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0 ring-2 transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg cursor-pointer ${isProjectOwner ? "ring-seagrass" : "ring-white"}`;
+                        const firstName = (m.user.name ?? "?").split(" ")[0];
+                        const avatarClass = `w-14 h-14 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-base font-semibold text-dark-slate shrink-0 ring-2 transition-all duration-200 ease-in-out hover:scale-[1.3] hover:shadow-lg cursor-pointer ${isProjectOwner ? "ring-seagrass" : "ring-white"}`;
                         const avatarContent = m.user.image ? (
                           <Image src={m.user.image} alt={m.user.name ?? ""} fill className="object-cover" unoptimized />
                         ) : initials;
+                        const avatar = m.user.showProfile ? (
+                          <Link href={`/members/${m.userId}`} className={avatarClass}>
+                            {avatarContent}
+                          </Link>
+                        ) : (
+                          <div className={avatarClass}>{avatarContent}</div>
+                        );
                         return (
-                          <Tooltip key={i} lines={[m.user.name ?? "?", ...(isProjectOwner ? ["Founder"] : [])]}>
-                            {m.user.showProfile ? (
-                              <Link href={`/members/${m.userId}`} className={avatarClass}>
-                                {avatarContent}
-                              </Link>
-                            ) : (
-                              <div className={avatarClass}>{avatarContent}</div>
-                            )}
+                          <Tooltip key={i} lines={[...(isProjectOwner ? ["Founder"] : [])]}>
+                            <div className="flex flex-col items-center gap-1 w-14">
+                              {avatar}
+                              <span className="text-[9px] text-dark-slate/60 text-center truncate w-full leading-tight">
+                                {firstName}
+                              </span>
+                            </div>
                           </Tooltip>
                         );
                       })}
                       {project._count.members > 12 && (
-                        <div className="w-10 h-10 rounded-full ring-2 ring-white bg-muted-teal/20 flex items-center justify-center text-xs font-semibold text-dark-slate/60">
-                          +{project._count.members - 12}
+                        <div className="flex flex-col items-center gap-1 w-14">
+                          <div className="w-14 h-14 rounded-full ring-2 ring-white bg-muted-teal/20 flex items-center justify-center text-xs font-semibold text-dark-slate/60">
+                            +{project._count.members - 12}
+                          </div>
                         </div>
                       )}
                     </div>
