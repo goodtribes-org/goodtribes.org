@@ -167,6 +167,16 @@ export default async function ProjectLayout({
                   boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
                 }}
               >
+                {/* Join button */}
+                <div className="mb-4 flex justify-center">
+                  <Link
+                    href={`/projects/${slug}`}
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-seagrass text-white rounded-xl font-semibold text-sm hover:bg-seagrass/90 transition-colors"
+                  >
+                    Support GoodTribes
+                  </Link>
+                </div>
+
                 {/* Team member avatars */}
                 {project.members.length > 0 && (
                   <div className="mb-4">
@@ -210,16 +220,6 @@ export default async function ProjectLayout({
                     </div>
                   </div>
                 )}
-
-                {/* Join button */}
-                <div className="mb-4 flex justify-center">
-                  <Link
-                    href={`/projects/${slug}`}
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-seagrass text-white rounded-xl font-semibold text-sm hover:bg-seagrass/90 transition-colors"
-                  >
-                    Support GoodTribes
-                  </Link>
-                </div>
 
                 {/* Spacer */}
                 <div className="flex-1" />
