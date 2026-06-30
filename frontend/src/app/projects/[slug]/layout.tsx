@@ -165,13 +165,17 @@ export default async function ProjectLayout({
                   boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
                 }}
               >
-                {/* Header: title + edit */}
+                {/* Header: join button + edit */}
                 <div className="flex items-start justify-between gap-2 mb-4">
-                  <div className="min-w-0">
-                    <h1 className="text-xl md:text-2xl font-bold text-dark-slate leading-tight">
-                      {project.title}
-                    </h1>
-                    <p className="text-xs text-dark-slate/50 mt-0.5">
+                  {!isMember ? (
+                    <Link
+                      href={`/projects/${slug}`}
+                      className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-seagrass text-white rounded-xl font-semibold text-sm hover:bg-seagrass/90 transition-colors"
+                    >
+                      Join the project →
+                    </Link>
+                  ) : (
+                    <p className="text-xs text-dark-slate/50">
                       av{" "}
                       <span className="text-dark-slate/70 font-medium">
                         {project.owner.name ?? "Okänd"}
@@ -188,7 +192,7 @@ export default async function ProjectLayout({
                         </>
                       )}
                     </p>
-                  </div>
+                  )}
                   {isOwner && (
                     <Link
                       href={`/projects/${slug}/edit`}
@@ -280,16 +284,6 @@ export default async function ProjectLayout({
 
                 {/* Spacer */}
                 <div className="flex-1" />
-
-                {/* Join button — hidden if already a member */}
-                {!isMember && (
-                  <Link
-                    href={`/projects/${slug}`}
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-seagrass text-white rounded-xl font-semibold text-sm hover:bg-seagrass/90 transition-colors self-start"
-                  >
-                    Gå med i projektet →
-                  </Link>
-                )}
               </div>
 
             </div>
