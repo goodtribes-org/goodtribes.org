@@ -248,17 +248,19 @@ export default async function ProjectLayout({
                 <div className="flex-1" />
 
                 {/* SDG badges */}
-                {project.sdgGoals.length > 0 && (
-                  <div className="mt-2">
-                    <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">Agenda 2030:</p>
-                    <div className="grid grid-cols-9 gap-1">
-                      {project.sdgGoals.map((n) => (
-                        <SdgIcon key={n} n={n} size={26} />
-                      ))}
-                      <SdgIcon n={18} size={26} />
-                    </div>
+                <div className="mt-2">
+                  <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">Agenda 2030:</p>
+                  <div className="grid grid-cols-9 gap-1">
+                    {Array.from({ length: 18 }, (_, i) => i + 1).map((n) => {
+                      const selected = n === 18 || project.sdgGoals.includes(n);
+                      return (
+                        <div key={n} className={selected ? "" : "opacity-20 grayscale"}>
+                          <SdgIcon n={n} size={26} />
+                        </div>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
               </div>
 
             </div>
