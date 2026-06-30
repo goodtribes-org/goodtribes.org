@@ -132,7 +132,7 @@ export default async function WorkplacePage({
   });
 
   // Data needed for both tabs (overview header always visible)
-  const [memberships, openKanban, openTodos, myIdeas] = await Promise.all([
+  const [memberships, openKanban, myIdeas] = await Promise.all([
     prisma.projectMember.findMany({
       where: { userId },
       orderBy: { joinedAt: "desc" },
@@ -148,7 +148,6 @@ export default async function WorkplacePage({
             _count: {
               select: {
                 kanbanCards: { where: { column: { not: "DONE" } } },
-                todoItems: { where: { done: false } },
                 members: true,
               },
             },
@@ -160,15 +159,6 @@ export default async function WorkplacePage({
       where: {
         project: { members: { some: { userId } } },
         column: { not: "DONE" },
-      },
-      orderBy: [{ dueDate: { sort: "asc", nulls: "last" } }, { createdAt: "desc" }],
-      take: 15,
-      include: { project: { select: { title: true, slug: true } } },
-    }),
-    prisma.todoItem.findMany({
-      where: {
-        project: { members: { some: { userId } } },
-        done: false,
       },
       orderBy: [{ dueDate: { sort: "asc", nulls: "last" } }, { createdAt: "desc" }],
       take: 15,
@@ -318,41 +308,12 @@ export default async function WorkplacePage({
     ideasCount = ideasCountResult;
   }
 
-  const totalOpenTasks =
-    memberships.reduce(
-      (sum, m) =>
-        sum + m.project._count.kanbanCards + m.project._count.todoItems,
-      0
-    );
+  const totalOpenTasks = memberships.reduce(
+    (sum, m) => sum + m.project._count.kanbanCards,
+    0
+  );
 
-  type TaskRow =
-    | { kind: "kanban"; id: string; title: string; project: { title: string; slug: string }; dueDate: Date | null; column: string }
-    | { kind: "todo"; id: string; title: string; project: { title: string; slug: string }; dueDate: Date | null };
-
-  const allTasks: TaskRow[] = [
-    ...openKanban.map((c) => ({
-      kind: "kanban" as const,
-      id: c.id,
-      title: c.title,
-      project: c.project,
-      dueDate: c.dueDate,
-      column: c.column,
-    })),
-    ...openTodos.map((t) => ({
-      kind: "todo" as const,
-      id: t.id,
-      title: t.title,
-      project: t.project,
-      dueDate: t.dueDate,
-    })),
-  ]
-    .sort((a, b) => {
-      if (!a.dueDate && !b.dueDate) return 0;
-      if (!a.dueDate) return 1;
-      if (!b.dueDate) return -1;
-      return a.dueDate.getTime() - b.dueDate.getTime();
-    })
-    .slice(0, 15);
+  const allTasks = openKanban.slice(0, 15);
 
   // Group activity events by date label
   const groupedEvents: { label: string; events: typeof activityEvents }[] = [];
@@ -444,7 +405,6 @@ export default async function WorkplacePage({
                     <div className="flex items-center gap-4 text-xs text-dark-slate/50 mt-auto pt-1 border-t border-muted-teal/40">
                       <span className="font-medium text-seagrass">{ROLE_LABEL[role] ?? role}</span>
                       <span>{project._count.kanbanCards} Kanban</span>
-                      <span>{project._count.todoItems} todos</span>
                       <span>{project._count.members} member{project._count.members !== 1 ? "s" : ""}</span>
                     </div>
                   </Link>
@@ -462,20 +422,12 @@ export default async function WorkplacePage({
               <div className="border border-muted-teal rounded-lg overflow-hidden divide-y divide-muted-teal/50">
                 {allTasks.map((task) => (
                   <Link
-                    key={`${task.kind}-${task.id}`}
-                    href={
-                      task.kind === "kanban"
-                        ? `/projects/${task.project.slug}/kanban`
-                        : `/projects/${task.project.slug}/todos`
-                    }
+                    key={task.id}
+                    href={`/projects/${task.project.slug}/kanban`}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-dry-sage/20 transition-colors"
                   >
-                    <span
-                      className={`text-[10px] font-semibold uppercase tracking-wider w-12 flex-shrink-0 ${
-                        task.kind === "kanban" ? "text-coral" : "text-seagrass"
-                      }`}
-                    >
-                      {task.kind === "kanban" ? "Board" : "Todo"}
+                    <span className="text-[10px] font-semibold uppercase tracking-wider w-12 flex-shrink-0 text-coral">
+                      Board
                     </span>
                     <span className="flex-1 text-sm text-dark-slate truncate">{task.title}</span>
                     <span className="text-xs text-dark-slate/40 flex-shrink-0">
