@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import ProjectTabNav from "./ProjectTabNav";
 import { SdgIcon } from "@/components/SdgIcon";
+import Tooltip from "@/components/Tooltip";
+import { SDG_LABELS_SV } from "@/lib/sdg";
 
 const STAGES = ["Concept", "Prototype", "Production", "Delivery"];
 const STATUS_TO_STAGE: Record<string, number> = {
@@ -253,9 +255,11 @@ export default async function ProjectLayout({
                     <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">Agenda 2030:</p>
                     <div className="flex flex-wrap gap-1">
                       {[...project.sdgGoals, 18].map((n) => (
-                        <div key={n} className="transition-transform hover:scale-125 cursor-pointer">
-                          <SdgIcon n={n} size={38} />
-                        </div>
+                        <Tooltip key={n} lines={[`SDG ${n}`, SDG_LABELS_SV[n] ?? ""]}>
+                          <div className="transition-transform hover:scale-125 cursor-pointer">
+                            <SdgIcon n={n} size={38} />
+                          </div>
+                        </Tooltip>
                       ))}
                     </div>
                   </div>
