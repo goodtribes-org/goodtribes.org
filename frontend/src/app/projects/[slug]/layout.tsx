@@ -205,24 +205,9 @@ export default async function ProjectLayout({
                   </div>
                 )}
 
-                {/* SDG badges */}
-                {project.sdgGoals.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">Agenda 2030:</p>
-                    <div className="grid grid-cols-9 gap-1">
-                      {project.sdgGoals.map((n) => (
-                        <SdgIcon key={n} n={n} size={26} />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Spacer */}
-                <div className="flex-1" />
-
                 {/* Team member avatars */}
                 {project.members.length > 0 && (
-                  <div className="mt-2">
+                  <div className="mb-4">
                     <p className="text-xs font-medium text-dark-slate/40 mb-2 uppercase tracking-wide">
                       Teamet · {project._count.members} {project._count.members === 1 ? "medlem" : "medlemmar"}
                     </p>
@@ -255,6 +240,21 @@ export default async function ProjectLayout({
                           +{project._count.members - 12}
                         </div>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Spacer */}
+                <div className="flex-1" />
+
+                {/* SDG badges */}
+                {project.sdgGoals.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">Agenda 2030:</p>
+                    <div className="grid grid-cols-9 gap-1">
+                      {project.sdgGoals.map((n) => (
+                        <SdgIcon key={n} n={n} size={26} />
+                      ))}
                     </div>
                   </div>
                 )}
