@@ -220,7 +220,7 @@ export default async function ProjectLayout({
                         return (
                           <Tooltip key={i} lines={[m.user.name ?? "?", ...(isProjectOwner ? ["Founder"] : [])]}>
                             <div
-                              className={`w-10 h-10 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0 ring-2 ${isProjectOwner ? "ring-seagrass" : "ring-white"}`}
+                              className={`w-10 h-10 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0 ring-2 transition-transform hover:scale-110 cursor-pointer ${isProjectOwner ? "ring-seagrass" : "ring-white"}`}
                             >
                               {m.user.image ? (
                                 <Image
