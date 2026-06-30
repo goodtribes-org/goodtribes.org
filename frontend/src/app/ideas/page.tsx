@@ -192,7 +192,7 @@ export default async function IdeasPage({
                   </p>
                   {idea.sdgGoals.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1 mb-2">
-                      <span className="text-[9px] font-medium text-dark-slate/40 mr-0.5">Agenda 2030:</span>
+                      <span className="text-[11px] font-bold text-dark-slate/40 mr-0.5">Agenda 2030:</span>
                       {idea.sdgGoals.slice(0, 5).map((n) => (
                         <SdgIcon key={n} n={n} size={20} />
                       ))}
