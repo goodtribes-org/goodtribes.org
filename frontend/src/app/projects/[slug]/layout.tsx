@@ -37,7 +37,7 @@ export default async function ProjectLayout({
         org: { select: { name: true, slug: true } },
         owner: { select: { name: true, image: true } },
         members: {
-          select: { userId: true, user: { select: { name: true, image: true } } },
+          select: { userId: true, user: { select: { name: true, image: true, showProfile: true } } },
           orderBy: { joinedAt: "asc" },
           take: 12,
         },
@@ -217,23 +217,19 @@ export default async function ProjectLayout({
                       {sortedMembers.map((m, i) => {
                         const isProjectOwner = m.userId === project.ownerId;
                         const initials = (m.user.name ?? "?").charAt(0).toUpperCase();
+                        const avatarClass = `w-10 h-10 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0 ring-2 transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg cursor-pointer ${isProjectOwner ? "ring-seagrass" : "ring-white"}`;
+                        const avatarContent = m.user.image ? (
+                          <Image src={m.user.image} alt={m.user.name ?? ""} fill className="object-cover" unoptimized />
+                        ) : initials;
                         return (
                           <Tooltip key={i} lines={[m.user.name ?? "?", ...(isProjectOwner ? ["Founder"] : [])]}>
-                            <div
-                              className={`w-10 h-10 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0 ring-2 transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg cursor-pointer ${isProjectOwner ? "ring-seagrass" : "ring-white"}`}
-                            >
-                              {m.user.image ? (
-                                <Image
-                                  src={m.user.image}
-                                  alt={m.user.name ?? ""}
-                                  fill
-                                  className="object-cover"
-                                  unoptimized
-                                />
-                              ) : (
-                                initials
-                              )}
-                            </div>
+                            {m.user.showProfile ? (
+                              <Link href={`/members/${m.userId}`} className={avatarClass}>
+                                {avatarContent}
+                              </Link>
+                            ) : (
+                              <div className={avatarClass}>{avatarContent}</div>
+                            )}
                           </Tooltip>
                         );
                       })}
