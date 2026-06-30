@@ -255,6 +255,7 @@ export default async function ProjectLayout({
                       {project.sdgGoals.map((n) => (
                         <SdgIcon key={n} n={n} size={26} />
                       ))}
+                      <SdgIcon n={18} size={26} />
                     </div>
                   </div>
                 )}

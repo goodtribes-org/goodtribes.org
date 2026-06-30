@@ -16,6 +16,7 @@ export const SDG_LABELS_SV: Record<number, string> = {
   15: "Ekosystem och biologisk mångfald",
   16: "Fredliga och inkluderande samhällen",
   17: "Genomförande och globalt partnerskap",
+  18: "GoodTribes",
 };
 
 export const SDG_LABELS_EN: Record<number, string> = {
@@ -36,6 +37,7 @@ export const SDG_LABELS_EN: Record<number, string> = {
   15: "Life on Land",
   16: "Peace & Justice",
   17: "Partnerships",
+  18: "GoodTribes",
 };
 
 export const SDG_COLORS: Record<number, string> = {
