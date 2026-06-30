@@ -350,7 +350,7 @@ export default async function ProjectDetailPage({
           {project.sdgGoals.length > 0 && (
             <section className="border border-muted-teal/30 rounded-xl p-4">
               <h2 className="text-sm font-semibold text-dark-slate mb-3">Agenda 2030</h2>
-              <div className="grid grid-cols-7 gap-0.5">
+              <div className="grid grid-cols-6 gap-1">
                 {[...project.sdgGoals, 18].map((n) => (
                   <Tooltip key={n} lines={[`SDG ${n}`, SDG_LABELS_SV[n] ?? ""]}>
                     <a
