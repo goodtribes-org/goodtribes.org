@@ -256,7 +256,7 @@ export default async function ProjectLayout({
                       return (
                         <div key={n} className="relative">
                           <SdgIcon n={n} size={38} />
-                          {!selected && <div className="absolute inset-0 bg-white/75 rounded-sm" />}
+                          {!selected && <div className="absolute inset-0 bg-gray-400/80 rounded-sm" />}
                         </div>
                       );
                     })}
