@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -8,6 +9,7 @@ import ProjectCard from "@/components/ProjectCard";
 import ProjectFilters from "@/components/ProjectFilters";
 import Pagination from "@/components/Pagination";
 import ActivityPulse from "@/components/ActivityPulse";
+import HeroCards from "@/components/HeroCards";
 
 const PAGE_SIZE = 12;
 
@@ -68,89 +70,110 @@ export default async function HomePage({
   return (
     <div className="space-y-16">
 
-      {/* Del 1 — Hero */}
-      <section className="rounded-2xl bg-gradient-to-br from-dark-slate to-dark-slate/80 text-white px-8 py-14 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-seagrass via-transparent to-coral" />
-        <div className="relative md:grid md:grid-cols-2 md:gap-12 md:items-center">
-          {/* Copy */}
-          <div className="text-center md:text-left">
-            <p className="text-seagrass text-sm font-semibold uppercase tracking-widest mb-3">
-              Where good ideas become reality
-            </p>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-              Skilled volunteers.<br />Impact-driven projects.
+      {/* Del 1 — Hero: full-bleed with blurred background + two tilted cards */}
+      <div
+        className="relative -mt-8"
+        style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
+      >
+        {/* Background — blurred hero image, clipped to 490 px */}
+        <div className="absolute top-0 left-0 right-0 overflow-hidden" style={{ height: "490px" }}>
+          <Image
+            src="/img/hero-banner.png"
+            alt=""
+            fill
+            unoptimized
+            className="object-cover blur-2xl scale-110"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-dark-slate/30" />
+        </div>
+
+        {/* Content layer */}
+        <div className="relative z-10">
+          {/* Title above cards */}
+          <div className="flex justify-center pt-5 pb-2 px-6">
+            <h1
+              className="text-5xl md:text-6xl font-bold text-center leading-tight"
+              style={{
+                color: "white",
+                textShadow:
+                  "-1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999, 2px 4px 12px rgba(0,0,0,0.35)",
+                marginRight: "330px",
+              }}
+            >
+              Crowdsourcing for Good
             </h1>
-            <p className="text-white/70 text-lg mb-8 max-w-lg mx-auto md:mx-0">
-              GoodTribes connects people who want to make a difference with organisations that need their skills.
-            </p>
-            <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-              {session ? (
-                <>
-                  <Link
-                    href="/projects/new"
-                    className="bg-coral text-white font-semibold px-6 py-3 rounded-lg hover:bg-watermelon transition-colors"
-                  >
-                    Starta ett projekt →
-                  </Link>
+          </div>
+
+          {/* Two cards */}
+          <div className="flex justify-center px-4 pb-10">
+            <div className="flex flex-col md:flex-row gap-5 items-stretch">
+
+              <HeroCards />
+
+              {/* Card 2: stats + CTA */}
+              <div
+                className="shrink-0 bg-white rounded-2xl p-5 flex flex-col"
+                style={{
+                  width: "320px",
+                  minHeight: "460px",
+                  boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
+                  marginLeft: "-10px",
+                  transform: "rotate(3deg)",
+                }}
+              >
+                <p className="text-seagrass text-xs font-semibold uppercase tracking-widest mb-4">
+                  Where good ideas become reality
+                </p>
+
+                {/* Stats */}
+                <div className="space-y-3 mb-4">
+                  <div className="bg-dry-sage/20 rounded-xl px-4 py-3 text-center">
+                    <p className="text-3xl font-bold text-dark-slate">{projectCount}</p>
+                    <p className="text-dark-slate/60 text-sm mt-0.5">Aktiva projekt</p>
+                  </div>
+                  <div className="bg-dry-sage/20 rounded-xl px-4 py-3 text-center">
+                    <p className="text-3xl font-bold text-dark-slate">{orgCount}</p>
+                    <p className="text-dark-slate/60 text-sm mt-0.5">Organisationer</p>
+                  </div>
+                  <div className="bg-dry-sage/20 rounded-xl px-4 py-3 text-center">
+                    <p className="text-3xl font-bold text-dark-slate">{memberCount}</p>
+                    <p className="text-dark-slate/60 text-sm mt-0.5">Volontärer</p>
+                  </div>
+                </div>
+
+                <div className="flex-1" />
+
+                {/* CTA buttons */}
+                <div className="space-y-2">
+                  {session ? (
+                    <Link
+                      href="/projects/new"
+                      className="block w-full text-center bg-coral text-white font-semibold px-4 py-3 rounded-xl hover:bg-watermelon transition-colors"
+                    >
+                      Starta ett projekt →
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/login"
+                      className="block w-full text-center bg-coral text-white font-semibold px-4 py-3 rounded-xl hover:bg-watermelon transition-colors"
+                    >
+                      Kom igång gratis →
+                    </Link>
+                  )}
                   <Link
                     href="#projects"
-                    className="bg-white/10 text-white font-medium px-6 py-3 rounded-lg hover:bg-white/20 transition-colors"
+                    className="block w-full text-center bg-seagrass/10 text-dark-slate font-medium px-4 py-2.5 rounded-xl hover:bg-seagrass/20 transition-colors text-sm"
                   >
                     Utforska projekt
                   </Link>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className="bg-coral text-white font-semibold px-6 py-3 rounded-lg hover:bg-watermelon transition-colors"
-                  >
-                    Kom igång gratis →
-                  </Link>
-                  <Link
-                    href="#projects"
-                    className="bg-white/10 text-white font-medium px-6 py-3 rounded-lg hover:bg-white/20 transition-colors"
-                  >
-                    Utforska projekt
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
+                </div>
+              </div>
 
-          {/* Stats — desktop: cards column, mobile: row below copy */}
-          <div className="hidden md:grid grid-cols-1 gap-4">
-            <div className="bg-white/10 backdrop-blur rounded-xl px-6 py-5 text-center">
-              <p className="text-3xl font-bold">{projectCount}</p>
-              <p className="text-white/60 text-sm mt-1">Aktiva projekt</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl px-6 py-5 text-center">
-              <p className="text-3xl font-bold">{orgCount}</p>
-              <p className="text-white/60 text-sm mt-1">Organisationer</p>
-            </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl px-6 py-5 text-center">
-              <p className="text-3xl font-bold">{memberCount}</p>
-              <p className="text-white/60 text-sm mt-1">Volontärer</p>
             </div>
           </div>
         </div>
-
-        {/* Stats — mobile row */}
-        <div className="flex justify-center gap-10 mt-10 pt-8 border-t border-white/10 md:hidden">
-          <div className="text-center">
-            <p className="text-2xl font-bold">{projectCount}</p>
-            <p className="text-white/50 text-xs mt-0.5">Projekt</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold">{orgCount}</p>
-            <p className="text-white/50 text-xs mt-0.5">Organisationer</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold">{memberCount}</p>
-            <p className="text-white/50 text-xs mt-0.5">Volontärer</p>
-          </div>
-        </div>
-      </section>
+      </div>
 
       {/* Del 2 — Activity Pulse */}
       <section>
