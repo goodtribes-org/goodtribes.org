@@ -39,75 +39,81 @@ const CARDS = [
 
 export default function HeroCards() {
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: "12px",
-        width: "820px",
-        height: "460px",
-        position: "relative",
-        zIndex: 1,
-      }}
-    >
-      {CARDS.map(({ src, alt, rotate, heading, body, bg }) => (
-        <div
-          key={src}
-          style={{
-            perspective: "1000px",
-            transform: `rotate(${rotate})`,
-          }}
-        >
+    <>
+      <style>{`
+        .hero-flip:hover .hero-flip-inner {
+          transform: rotateY(180deg);
+        }
+      `}</style>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "12px",
+          width: "820px",
+          height: "460px",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        {CARDS.map(({ src, alt, rotate, heading, body, bg }) => (
           <div
-            className="group"
+            key={src}
+            className="hero-flip"
             style={{
-              width: "100%",
-              height: "100%",
-              position: "relative",
-              transformStyle: "preserve-3d",
-              transition: "transform 0.55s cubic-bezier(0.4,0.2,0.2,1)",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.transform = "rotateY(180deg)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.transform = "rotateY(0deg)";
+              perspective: "1000px",
+              transform: `rotate(${rotate})`,
+              cursor: "pointer",
             }}
           >
-            {/* Front */}
             <div
-              className="bg-white overflow-hidden"
+              className="hero-flip-inner"
               style={{
-                position: "absolute",
-                inset: 0,
-                backfaceVisibility: "hidden",
-                border: "12px solid white",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.45), 0 1px 6px rgba(0,0,0,0.25)",
+                width: "100%",
+                height: "100%",
+                position: "relative",
+                transformStyle: "preserve-3d",
+                transition: "transform 0.55s cubic-bezier(0.4,0.2,0.2,1)",
               }}
             >
-              <div className="relative w-full h-full">
-                <Image src={src} alt={alt} fill unoptimized className="object-cover" />
+              {/* Front */}
+              <div
+                className="bg-white overflow-hidden"
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  backfaceVisibility: "hidden",
+                  WebkitBackfaceVisibility: "hidden",
+                  border: "12px solid white",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.45), 0 1px 6px rgba(0,0,0,0.25)",
+                }}
+              >
+                <div className="relative w-full h-full">
+                  <Image src={src} alt={alt} fill unoptimized className="object-cover" />
+                </div>
+              </div>
+
+              {/* Back */}
+              <div
+                className={`bg-gradient-to-br ${bg} flex flex-col items-center justify-center p-5 text-center`}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  backfaceVisibility: "hidden",
+                  WebkitBackfaceVisibility: "hidden",
+                  transform: "rotateY(180deg)",
+                  border: "12px solid white",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.45), 0 1px 6px rgba(0,0,0,0.25)",
+                }}
+              >
+                <p className="text-white font-bold text-lg mb-2 leading-tight">{heading}</p>
+                <p className="text-white/85 text-sm leading-snug">{body}</p>
               </div>
             </div>
-
-            {/* Back */}
-            <div
-              className={`bg-gradient-to-br ${bg} flex flex-col items-center justify-center p-5 text-center`}
-              style={{
-                position: "absolute",
-                inset: 0,
-                backfaceVisibility: "hidden",
-                transform: "rotateY(180deg)",
-                border: "12px solid white",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.45), 0 1px 6px rgba(0,0,0,0.25)",
-              }}
-            >
-              <p className="text-white font-bold text-lg mb-2 leading-tight">{heading}</p>
-              <p className="text-white/85 text-sm leading-snug">{body}</p>
-            </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+    </>
   );
 }
