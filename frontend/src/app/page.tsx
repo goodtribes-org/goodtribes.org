@@ -118,8 +118,10 @@ export default async function HomePage({
                   width: "320px",
                   minHeight: "460px",
                   boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
-                  marginLeft: "-10px",
-                  transform: "rotate(3deg)",
+                  marginLeft: "8px",
+                  transform: "rotate(0deg)",
+                  position: "relative",
+                  zIndex: -1,
                 }}
               >
                 <p className="text-seagrass text-xs font-semibold uppercase tracking-widest mb-4">
