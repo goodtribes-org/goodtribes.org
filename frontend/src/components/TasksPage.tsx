@@ -135,7 +135,7 @@ export default function TasksPage({
         <div>
           <div className="flex justify-end mb-4">{viewToggle}</div>
           <GanttView
-            cards={Object.values(initialColumns).flat()}
+            cards={Object.values(initialColumns).flat().map(c => ({ ...c, startDate: c.startDate ?? null }))}
             milestones={[]}
             projectSlug={projectSlug}
             isOwnerOrAdmin={isLoggedIn}
