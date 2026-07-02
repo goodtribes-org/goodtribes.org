@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import KanbanBoard, { type Member } from "@/components/KanbanBoard";
 import TaskListView from "@/components/TaskListView";
+import GanttView from "@/components/GanttView";
 
 type Card = {
   id: string;
@@ -10,6 +11,7 @@ type Card = {
   title: string;
   description: string | null;
   dueDate: Date | string | null;
+  startDate?: Date | string | null;
   column: string;
   order: number;
   priority: string;
@@ -39,7 +41,7 @@ type Columns = {
   DONE: Card[];
 };
 
-type View = "board" | "list";
+type View = "board" | "list" | "gantt";
 
 export default function TasksPage({
   projectSlug,
@@ -60,7 +62,7 @@ export default function TasksPage({
 
   useEffect(() => {
     const saved = localStorage.getItem(storageKey);
-    if (saved === "list" || saved === "board") setView(saved);
+    if (saved === "list" || saved === "board" || saved === "gantt") setView(saved);
   }, [storageKey]);
 
   function switchView(v: View) {
@@ -90,6 +92,16 @@ export default function TasksPage({
       >
         Lista
       </button>
+      <button
+        onClick={() => switchView("gantt")}
+        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+          view === "gantt"
+            ? "bg-white text-dark-slate shadow-sm"
+            : "text-dark-slate/50 hover:text-dark-slate"
+        }`}
+      >
+        Gantt
+      </button>
     </div>
   );
 
@@ -116,6 +128,17 @@ export default function TasksPage({
             isLoggedIn={isLoggedIn}
             currentUserId={currentUserId}
             members={members}
+          />
+        </div>
+      )}
+      {view === "gantt" && (
+        <div>
+          <div className="flex justify-end mb-4">{viewToggle}</div>
+          <GanttView
+            cards={Object.values(initialColumns).flat()}
+            milestones={[]}
+            projectSlug={projectSlug}
+            isOwnerOrAdmin={isLoggedIn}
           />
         </div>
       )}
