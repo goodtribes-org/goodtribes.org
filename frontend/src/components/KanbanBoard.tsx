@@ -131,6 +131,7 @@ function CardDetailModal({
   onClose,
   onSaved,
   onDelete,
+  onSubtaskAdded,
 }: {
   card: Card;
   members: Member[];
@@ -139,6 +140,7 @@ function CardDetailModal({
   onClose: () => void;
   onSaved: (cardId: string, patch: Partial<Card>) => void;
   onDelete: (cardId: string) => void;
+  onSubtaskAdded?: (cardId: string, subtask: Subtask) => void;
 }) {
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description ?? "");
@@ -200,7 +202,9 @@ function CardDetailModal({
     setNewSubtaskInput("");
     const result = await addSubtask(card.id, t);
     if (result && "subtask" in result && result.subtask) {
-      setLocalSubtasks((prev) => prev.map((s) => s.id === tempId ? (result.subtask as Subtask) : s));
+      const newSubtask = result.subtask as Subtask;
+      setLocalSubtasks((prev) => prev.map((s) => s.id === tempId ? newSubtask : s));
+      onSubtaskAdded?.(card.id, newSubtask);
     }
   }
 
@@ -478,6 +482,7 @@ function AddCardModal({
   members,
   onAdd,
   onClose,
+  onCardCreated,
 }: {
   projectSlug: string;
   column: string;
@@ -485,6 +490,7 @@ function AddCardModal({
   members: Member[];
   onAdd: (card: Card) => void;
   onClose: () => void;
+  onCardCreated?: (tempId: string, cardId: string) => void;
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -494,7 +500,6 @@ function AddCardModal({
   const [assigneeId, setAssigneeId] = useState("");
   const [subtasks, setSubtasks] = useState<string[]>([]);
   const [subtaskInput, setSubtaskInput] = useState("");
-  const [, startTransition] = useTransition();
   const titleRef = useRef<HTMLInputElement>(null);
   const subtaskInputRef = useRef<HTMLInputElement>(null);
 
@@ -520,8 +525,9 @@ function AddCardModal({
     if (!title.trim()) return;
     const allSubs = subtaskInput.trim() ? [...subtasks, subtaskInput.trim()] : subtasks;
     const assignee = members.find((m) => m.id === assigneeId) ?? null;
+    const tempId = `temp-${Date.now()}`;
     onAdd({
-      id: `temp-${Date.now()}`,
+      id: tempId,
       projectSlug,
       title: title.trim(),
       description: description.trim() || null,
@@ -539,7 +545,11 @@ function AddCardModal({
       subtasks: allSubs.map((t, i) => ({ id: `temp-sub-${i}`, title: t, done: false, order: i })),
     });
     const [t, desc, sd, due, pri, asgn, subs] = [title, description, startDate, dueDate, priority, assigneeId, allSubs];
-    startTransition(async () => { await createCard(projectSlug, t, column, desc, due, pri, asgn || undefined, sd || undefined, subs.length ? subs : undefined); });
+    createCard(projectSlug, t, column, desc, due, pri, asgn || undefined, sd || undefined, subs.length ? subs : undefined)
+      .then((result) => {
+        if (result && "cardId" in result) onCardCreated?.(tempId, result.cardId);
+      })
+      .catch(() => {});
     if (andAnother) {
       setTitle(""); setDescription(""); setStartDate(""); setDueDate("");
       setPriority("normal"); setAssigneeId(""); setSubtasks([]); setSubtaskInput("");
@@ -1154,6 +1164,40 @@ export default function KanbanBoard({
     });
   }
 
+  function handleSubtaskAdded(cardId: string, subtask: Subtask) {
+    setColumns((prev) => {
+      const updated = { ...prev };
+      for (const key of COLUMN_ORDER) {
+        const col = key as keyof Columns;
+        const idx = (updated[col] as Card[]).findIndex((c) => c.id === cardId);
+        if (idx !== -1) {
+          const cards = [...(updated[col] as Card[])];
+          cards[idx] = { ...cards[idx], subtasks: [...(cards[idx].subtasks ?? []), subtask] };
+          updated[col] = cards as typeof updated[typeof col];
+          break;
+        }
+      }
+      return updated;
+    });
+  }
+
+  function handleTempCardResolved(tempId: string, cardId: string) {
+    setColumns((prev) => {
+      const updated = { ...prev };
+      for (const key of COLUMN_ORDER) {
+        const col = key as keyof Columns;
+        const idx = (updated[col] as Card[]).findIndex((c) => c.id === tempId);
+        if (idx !== -1) {
+          const cards = [...(updated[col] as Card[])];
+          cards[idx] = { ...cards[idx], id: cardId };
+          updated[col] = cards as typeof updated[typeof col];
+          break;
+        }
+      }
+      return updated;
+    });
+  }
+
   return (
     <div>
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -1193,6 +1237,7 @@ export default function KanbanBoard({
           members={members}
           onAdd={handleAdd}
           onClose={() => { setModalCol(null); onRequestAddDone?.(); }}
+          onCardCreated={handleTempCardResolved}
         />
       )}
 
@@ -1205,6 +1250,7 @@ export default function KanbanBoard({
           onClose={() => setEditingCard(null)}
           onSaved={handleCardSaved}
           onDelete={(cardId) => { handleDelete(cardId); setEditingCard(null); }}
+          onSubtaskAdded={handleSubtaskAdded}
         />
       )}
     </div>

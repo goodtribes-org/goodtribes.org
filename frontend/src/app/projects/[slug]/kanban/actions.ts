@@ -65,6 +65,7 @@ export async function createCard(
 
   revalidatePath(`/projects/${projectSlug}/kanban`);
   revalidatePath(`/projects/${projectSlug}/tasks`);
+  return { cardId: card.id };
 }
 
 export async function addSubtask(cardId: string, title: string) {
