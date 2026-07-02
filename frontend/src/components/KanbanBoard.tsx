@@ -92,10 +92,10 @@ type Columns = {
 };
 
 const COLUMNS = [
-  { key: "BACKLOG", label: "Backlog", color: "#8b5cf6" },
+  { key: "BACKLOG", label: "Backlog", color: "#ef4444" },
   { key: "TODO",    label: "ToDo",    color: "#f59e0b" },
-  { key: "DOING",   label: "Doing",   color: "#3b82f6" },
-  { key: "REVIEW",  label: "Review",  color: "#6b7280" },
+  { key: "DOING",   label: "Doing",   color: "#eab308" },
+  { key: "REVIEW",  label: "Review",  color: "#3b82f6" },
   { key: "DONE",    label: "Done",    color: "#10b981" },
 ];
 
