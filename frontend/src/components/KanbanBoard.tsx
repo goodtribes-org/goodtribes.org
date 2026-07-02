@@ -1309,69 +1309,79 @@ export default function KanbanBoard({
 
   return (
     <div>
-      {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        {/* Category dropdown */}
-        <select
-          value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value)}
-          className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-blue-400"
-        >
-          <option value="">Alla kategorier</option>
-          {Object.entries(CATEGORY_META).map(([key, meta]) => (
-            <option key={key} value={key}>{meta.label}</option>
-          ))}
-        </select>
-
-        {/* Priority dropdown */}
-        <select
-          value={filterPriority}
-          onChange={(e) => setFilterPriority(e.target.value)}
-          className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-blue-400"
-        >
-          <option value="">Alla prioriteter</option>
-          {Object.entries(PRIORITY_META).map(([key, meta]) => (
-            <option key={key} value={key}>{meta.label}</option>
-          ))}
-        </select>
-
-        {/* Assignee */}
-        {members.length > 0 && (
-          <select
-            value={filterAssignee}
-            onChange={(e) => setFilterAssignee(e.target.value)}
-            className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-blue-400"
-          >
-            <option value="">Alla ansvariga</option>
-            {members.map((m) => (
-              <option key={m.id} value={m.id}>{m.name ?? m.id}</option>
-            ))}
-          </select>
-        )}
-
-        {/* Clear + count */}
-        {hasFilters && (
+      {/* Toolbar: add button left, filters centered */}
+      <div className="flex items-center gap-3 mb-4">
+        {isLoggedIn && (
           <button
             type="button"
-            onClick={() => { setFilterQuery(""); setFilterCategory(""); setFilterPriority(""); setFilterAssignee(""); }}
-            className="text-xs text-gray-400 hover:text-gray-700 underline transition-colors"
+            onClick={() => openNewCard("BACKLOG")}
+            className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-seagrass text-white hover:bg-seagrass/90 transition-colors shrink-0"
           >
-            Rensa filter
+            <span className="text-base leading-none font-light">+</span> Lägg till kort
           </button>
         )}
-        {totalVisible !== null && (
-          <span className="text-xs text-gray-400">{totalVisible} av {totalCards} kort</span>
-        )}
 
-        {/* Search — rightmost */}
-        <div className="ml-auto">
+        <div className="flex flex-1 items-center justify-center gap-2 flex-wrap">
+          {/* Category */}
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-blue-400"
+          >
+            <option value="">Alla kategorier</option>
+            {Object.entries(CATEGORY_META).map(([key, meta]) => (
+              <option key={key} value={key}>{meta.label}</option>
+            ))}
+          </select>
+
+          {/* Priority */}
+          <select
+            value={filterPriority}
+            onChange={(e) => setFilterPriority(e.target.value)}
+            className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-blue-400"
+          >
+            <option value="">Alla prioriteter</option>
+            {Object.entries(PRIORITY_META).map(([key, meta]) => (
+              <option key={key} value={key}>{meta.label}</option>
+            ))}
+          </select>
+
+          {/* Assignee */}
+          {members.length > 0 && (
+            <select
+              value={filterAssignee}
+              onChange={(e) => setFilterAssignee(e.target.value)}
+              className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-blue-400"
+            >
+              <option value="">Alla ansvariga</option>
+              {members.map((m) => (
+                <option key={m.id} value={m.id}>{m.name ?? m.id}</option>
+              ))}
+            </select>
+          )}
+
+          {/* Search */}
           <input
             type="search"
             value={filterQuery}
             onChange={(e) => setFilterQuery(e.target.value)}
             placeholder="Sök kort…"
-            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-400 w-44"
+            className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-400 w-36"
           />
+
+          {/* Clear + count */}
+          {hasFilters && (
+            <button
+              type="button"
+              onClick={() => { setFilterQuery(""); setFilterCategory(""); setFilterPriority(""); setFilterAssignee(""); }}
+              className="text-xs text-gray-400 hover:text-gray-700 underline transition-colors"
+            >
+              Rensa
+            </button>
+          )}
+          {totalVisible !== null && (
+            <span className="text-xs text-gray-400">{totalVisible}/{totalCards}</span>
+          )}
         </div>
       </div>
 
