@@ -28,7 +28,7 @@ export default async function ProjectLayout({
     <>
       {/* Tab nav — full-bleed border line */}
       <div
-        className="mb-6"
+        className="mb-6 border-b border-muted-teal/20"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
         <div className="px-6">
