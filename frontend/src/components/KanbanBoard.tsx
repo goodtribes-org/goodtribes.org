@@ -47,6 +47,7 @@ type Card = {
   column: string;
   order: number;
   priority: string;
+  category?: string | null;
   assigneeId: string | null;
   assignee: Member | null;
   createdById: string;
@@ -64,6 +65,15 @@ type Card = {
     attemptNumber: number;
     completedAt: Date | string | null;
   }>;
+};
+
+const CATEGORY_META: Record<string, { label: string; bg: string; text: string; hex: string }> = {
+  teknik:         { label: "Teknik",        bg: "bg-blue-100",   text: "text-blue-700",   hex: "#3b82f6" },
+  design:         { label: "Design",        bg: "bg-pink-100",   text: "text-pink-700",   hex: "#ec4899" },
+  ekonomi:        { label: "Ekonomi",       bg: "bg-emerald-100",text: "text-emerald-700",hex: "#10b981" },
+  strategi:       { label: "Strategi",      bg: "bg-amber-100",  text: "text-amber-700",  hex: "#f59e0b" },
+  administration: { label: "Admin",         bg: "bg-slate-100",  text: "text-slate-600",  hex: "#64748b" },
+  community:      { label: "Community",     bg: "bg-orange-100", text: "text-orange-700", hex: "#f97316" },
 };
 
 const PRIORITY_META: Record<string, { label: string; color: string; dot: string }> = {
@@ -151,6 +161,7 @@ function CardDetailModal({
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description ?? "");
   const [priority, setPriority] = useState(card.priority);
+  const [category, setCategory] = useState(card.category ?? "");
   const [assigneeId, setAssigneeId] = useState(card.assigneeId ?? "");
   const [startDate, setStartDate] = useState(toDateInput(card.startDate));
   const [dueDate, setDueDate] = useState(toDateInput(card.dueDate));
@@ -177,7 +188,7 @@ function CardDetailModal({
     if (isNew) {
       const subtaskTitles = localSubtasks.map((s) => s.title).filter(Boolean);
       const assignee = members.find((m) => m.id === assigneeId) ?? null;
-      onAdd?.({ ...card, title: title.trim(), description: description.trim() || null, priority, assigneeId: assigneeId || null, assignee, subtasks: localSubtasks });
+      onAdd?.({ ...card, title: title.trim(), description: description.trim() || null, priority, category: category || null, assigneeId: assigneeId || null, assignee, subtasks: localSubtasks });
       createCard(
         card.projectSlug,
         title.trim(),
@@ -188,6 +199,7 @@ function CardDetailModal({
         assigneeId || undefined,
         startDate || undefined,
         subtaskTitles.length ? subtaskTitles : undefined,
+        category || undefined,
       )
         .then((result) => {
           if (result && "cardId" in result) onCardCreated?.(card.id, result.cardId as string);
@@ -199,6 +211,7 @@ function CardDetailModal({
           title: title.trim(),
           description: description.trim() || null,
           priority,
+          category: category || null,
           assigneeId: assigneeId || null,
           startDate: startDate || null,
           dueDate: dueDate || null,
@@ -208,6 +221,7 @@ function CardDetailModal({
         title: title.trim(),
         description: description.trim() || null,
         priority,
+        category: category || null,
         assigneeId: assigneeId || null,
       });
     }
@@ -292,6 +306,32 @@ function CardDetailModal({
                 <option key={k} value={k}>{v.label}</option>
               ))}
             </select>
+
+            <span className="text-gray-400 pt-2">Kategori</span>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => isLoggedIn && setCategory("")}
+                className={`text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
+                  !category ? "border-gray-400 bg-gray-100 text-gray-600" : "border-gray-200 text-gray-400 hover:border-gray-300"
+                }`}
+              >
+                Ingen
+              </button>
+              {Object.entries(CATEGORY_META).map(([key, meta]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => isLoggedIn && setCategory(category === key ? "" : key)}
+                  style={category === key ? { backgroundColor: meta.hex + "22", borderColor: meta.hex, color: meta.hex } : {}}
+                  className={`text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
+                    category === key ? "" : "border-gray-200 text-gray-400 hover:border-gray-300"
+                  }`}
+                >
+                  {meta.label}
+                </button>
+              ))}
+            </div>
 
             <span className="text-gray-400 pt-1">Ansvarig</span>
             <select
@@ -586,6 +626,16 @@ function KanbanCardItem({
           className="text-xs text-gray-500 mt-1 leading-snug line-clamp-2 prose prose-xs max-w-none [&_*]:text-xs [&_*]:text-gray-500 [&_p]:m-0"
           dangerouslySetInnerHTML={{ __html: card.description }}
         />
+      )}
+
+      {card.category && CATEGORY_META[card.category] && (
+        <div className="mt-2">
+          <span
+            className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full ${CATEGORY_META[card.category].bg} ${CATEGORY_META[card.category].text}`}
+          >
+            {CATEGORY_META[card.category].label}
+          </span>
+        </div>
       )}
 
       {localSubtasks.length > 0 && (

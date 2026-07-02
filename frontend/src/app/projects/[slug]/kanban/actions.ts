@@ -17,6 +17,7 @@ export async function createCard(
   assigneeId?: string,
   startDate?: string,
   subtasks?: string[],
+  category?: string,
 ) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
@@ -37,6 +38,7 @@ export async function createCard(
       dueDate: dueDate ? new Date(dueDate) : null,
       startDate: startDate ? new Date(startDate) : null,
       priority: priority || "normal",
+      category: category || null,
       assigneeId: assigneeId || null,
     },
   });
@@ -148,7 +150,7 @@ export async function toggleSubtask(subtaskId: string, done: boolean) {
 
 export async function updateCard(
   cardId: string,
-  data: { title?: string; description?: string | null; dueDate?: string | null; startDate?: string | null; priority?: string; assigneeId?: string | null },
+  data: { title?: string; description?: string | null; dueDate?: string | null; startDate?: string | null; priority?: string; assigneeId?: string | null; category?: string | null },
 ) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
@@ -164,6 +166,7 @@ export async function updateCard(
       ...(data.dueDate !== undefined ? { dueDate: data.dueDate ? new Date(data.dueDate) : null } : {}),
       ...(data.startDate !== undefined ? { startDate: data.startDate ? new Date(data.startDate) : null } : {}),
       ...(data.priority !== undefined ? { priority: data.priority } : {}),
+      ...(data.category !== undefined ? { category: data.category || null } : {}),
       ...(data.assigneeId !== undefined ? { assigneeId: data.assigneeId || null } : {}),
     },
   });

@@ -228,6 +228,7 @@ model KanbanCard {
   dueDate     DateTime?
   startDate   DateTime?
   priority    String    @default("normal")
+  category    String?
   assigneeId  String?
   column      String    @default("BACKLOG")
   order       Int       @default(0)
