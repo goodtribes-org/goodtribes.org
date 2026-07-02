@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useRef } from "react";
+import { useState, useTransition, useEffect } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -132,6 +132,9 @@ function CardDetailModal({
   onSaved,
   onDelete,
   onSubtaskAdded,
+  isNew,
+  onAdd,
+  onCardCreated,
 }: {
   card: Card;
   members: Member[];
@@ -141,6 +144,9 @@ function CardDetailModal({
   onSaved: (cardId: string, patch: Partial<Card>) => void;
   onDelete: (cardId: string) => void;
   onSubtaskAdded?: (cardId: string, subtask: Subtask) => void;
+  isNew?: boolean;
+  onAdd?: (card: Card) => void;
+  onCardCreated?: (tempId: string, cardId: string) => void;
 }) {
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description ?? "");
@@ -168,22 +174,43 @@ function CardDetailModal({
 
   function save() {
     if (!title.trim()) return;
-    startTransition(async () => {
-      await updateCard(card.id, {
+    if (isNew) {
+      const subtaskTitles = localSubtasks.map((s) => s.title).filter(Boolean);
+      const assignee = members.find((m) => m.id === assigneeId) ?? null;
+      onAdd?.({ ...card, title: title.trim(), description: description.trim() || null, priority, assigneeId: assigneeId || null, assignee, subtasks: localSubtasks });
+      createCard(
+        card.projectSlug,
+        title.trim(),
+        card.column,
+        description.trim() || undefined,
+        dueDate || undefined,
+        priority,
+        assigneeId || undefined,
+        startDate || undefined,
+        subtaskTitles.length ? subtaskTitles : undefined,
+      )
+        .then((result) => {
+          if (result && "cardId" in result) onCardCreated?.(card.id, result.cardId as string);
+        })
+        .catch(() => {});
+    } else {
+      startTransition(async () => {
+        await updateCard(card.id, {
+          title: title.trim(),
+          description: description.trim() || null,
+          priority,
+          assigneeId: assigneeId || null,
+          startDate: startDate || null,
+          dueDate: dueDate || null,
+        });
+      });
+      onSaved(card.id, {
         title: title.trim(),
         description: description.trim() || null,
         priority,
         assigneeId: assigneeId || null,
-        startDate: startDate || null,
-        dueDate: dueDate || null,
       });
-    });
-    onSaved(card.id, {
-      title: title.trim(),
-      description: description.trim() || null,
-      priority,
-      assigneeId: assigneeId || null,
-    });
+    }
     onClose();
   }
 
@@ -200,11 +227,13 @@ function CardDetailModal({
     const tempId = `temp-${Date.now()}`;
     setLocalSubtasks((prev) => [...prev, { id: tempId, title: t, done: false, order: prev.length }]);
     setNewSubtaskInput("");
-    const result = await addSubtask(card.id, t);
-    if (result && "subtask" in result && result.subtask) {
-      const newSubtask = result.subtask as Subtask;
-      setLocalSubtasks((prev) => prev.map((s) => s.id === tempId ? newSubtask : s));
-      onSubtaskAdded?.(card.id, newSubtask);
+    if (!isNew) {
+      const result = await addSubtask(card.id, t);
+      if (result && "subtask" in result && result.subtask) {
+        const newSubtask = result.subtask as Subtask;
+        setLocalSubtasks((prev) => prev.map((s) => s.id === tempId ? newSubtask : s));
+        onSubtaskAdded?.(card.id, newSubtask);
+      }
     }
   }
 
@@ -231,10 +260,10 @@ function CardDetailModal({
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" onClick={onClose} />
-      <div className="relative ml-auto bg-white h-full w-full max-w-lg shadow-2xl flex flex-col">
+      <div className="relative ml-auto bg-white h-full w-full max-w-2xl shadow-2xl flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100 shrink-0">
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{columnLabel}</span>
+          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{isNew ? "Nytt kort" : columnLabel}</span>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700 transition-colors text-xl leading-none">×</button>
         </div>
 
@@ -373,7 +402,7 @@ function CardDetailModal({
           </div>
 
           {/* Comments */}
-          <div>
+          {!isNew && <div>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
               Kommentarer{comments.length > 0 ? ` (${comments.length})` : ""}
             </p>
@@ -418,7 +447,7 @@ function CardDetailModal({
                 </button>
               </div>
             )}
-          </div>
+          </div>}
         </div>
 
         {/* Footer */}
@@ -429,7 +458,7 @@ function CardDetailModal({
               disabled={!title.trim()}
               className="bg-seagrass text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-seagrass/80 disabled:opacity-40 transition-colors"
             >
-              Spara
+              {isNew ? "Skapa kort" : "Spara"}
             </button>
             <button
               onClick={onClose}
@@ -475,253 +504,6 @@ function CardDetailModal({
   );
 }
 
-function AddCardModal({
-  projectSlug,
-  column,
-  columnLabel,
-  members,
-  onAdd,
-  onClose,
-  onCardCreated,
-}: {
-  projectSlug: string;
-  column: string;
-  columnLabel: string;
-  members: Member[];
-  onAdd: (card: Card) => void;
-  onClose: () => void;
-  onCardCreated?: (tempId: string, cardId: string) => void;
-}) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [priority, setPriority] = useState("normal");
-  const [assigneeId, setAssigneeId] = useState("");
-  const [subtasks, setSubtasks] = useState<string[]>([]);
-  const [subtaskInput, setSubtaskInput] = useState("");
-  const titleRef = useRef<HTMLInputElement>(null);
-  const subtaskInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    titleRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  function addSubtask() {
-    if (!subtaskInput.trim()) return;
-    setSubtasks((prev) => [...prev, subtaskInput.trim()]);
-    setSubtaskInput("");
-    subtaskInputRef.current?.focus();
-  }
-
-  function removeSubtask(index: number) {
-    setSubtasks((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  function submit(andAnother = false) {
-    if (!title.trim()) return;
-    const allSubs = subtaskInput.trim() ? [...subtasks, subtaskInput.trim()] : subtasks;
-    const assignee = members.find((m) => m.id === assigneeId) ?? null;
-    const tempId = `temp-${Date.now()}`;
-    onAdd({
-      id: tempId,
-      projectSlug,
-      title: title.trim(),
-      description: description.trim() || null,
-      startDate: startDate || null,
-      dueDate: dueDate || null,
-      column,
-      order: 9999,
-      priority,
-      assigneeId: assigneeId || null,
-      assignee,
-      createdById: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      createdBy: null,
-      subtasks: allSubs.map((t, i) => ({ id: `temp-sub-${i}`, title: t, done: false, order: i })),
-    });
-    const [t, desc, sd, due, pri, asgn, subs] = [title, description, startDate, dueDate, priority, assigneeId, allSubs];
-    createCard(projectSlug, t, column, desc, due, pri, asgn || undefined, sd || undefined, subs.length ? subs : undefined)
-      .then((result) => {
-        if (result && "cardId" in result) onCardCreated?.(tempId, result.cardId);
-      })
-      .catch(() => {});
-    if (andAnother) {
-      setTitle(""); setDescription(""); setStartDate(""); setDueDate("");
-      setPriority("normal"); setAssigneeId(""); setSubtasks([]); setSubtaskInput("");
-      titleRef.current?.focus();
-    } else {
-      onClose();
-    }
-  }
-
-  return (
-    <div
-      className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl">
-        <div className="px-6 pt-6 pb-4 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">
-            Add a new card to {columnLabel}
-          </h2>
-        </div>
-
-        <div className="px-6 py-4 space-y-4">
-          <div className="flex items-start gap-4">
-            <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Title</label>
-            <input
-              ref={titleRef}
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
-              placeholder="Type a card title..."
-              className="flex-1 text-sm text-gray-800 placeholder-gray-400 border-0 border-b border-gray-200 focus:border-blue-400 focus:outline-none py-1.5 transition-colors"
-            />
-          </div>
-
-          <div className="flex items-start gap-4">
-            <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Start</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="flex-1 text-sm text-gray-800 border-0 border-b border-gray-200 focus:border-blue-400 focus:outline-none py-1.5 transition-colors"
-            />
-          </div>
-
-          <div className="flex items-start gap-4">
-            <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Due on</label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="flex-1 text-sm text-gray-800 border-0 border-b border-gray-200 focus:border-blue-400 focus:outline-none py-1.5 transition-colors"
-            />
-          </div>
-
-          <div className="flex items-start gap-4">
-            <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Priority</label>
-            <div className="flex gap-2 flex-wrap pt-1">
-              {Object.entries(PRIORITY_META).map(([key, meta]) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setPriority(key)}
-                  className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
-                    priority === key
-                      ? "border-current bg-gray-50 " + meta.color
-                      : "border-gray-200 text-gray-400 hover:border-gray-300"
-                  }`}
-                >
-                  <span className={`w-2 h-2 rounded-full ${meta.dot}`} />
-                  {meta.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {members.length > 0 && (
-            <div className="flex items-start gap-4">
-              <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Assignee</label>
-              <select
-                value={assigneeId}
-                onChange={(e) => setAssigneeId(e.target.value)}
-                className="flex-1 text-sm text-gray-800 border-0 border-b border-gray-200 focus:border-blue-400 focus:outline-none py-1.5 bg-white transition-colors"
-              >
-                <option value="">— unassigned —</option>
-                {members.map((m) => (
-                  <option key={m.id} value={m.id}>{m.name ?? m.id}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <div className="flex items-start gap-4">
-            <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Description</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your card here..."
-              rows={4}
-              className="flex-1 text-sm text-gray-800 placeholder-gray-400 border border-gray-200 rounded-lg p-3 focus:outline-none focus:border-blue-400 resize-none transition-colors"
-            />
-          </div>
-
-          <div className="flex items-start gap-4">
-            <label className="w-24 text-sm font-semibold text-gray-700 pt-2 shrink-0">Subtasks</label>
-            <div className="flex-1 space-y-2">
-              <div className="flex gap-2">
-                <input
-                  ref={subtaskInputRef}
-                  type="text"
-                  value={subtaskInput}
-                  onChange={(e) => setSubtaskInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSubtask(); } }}
-                  placeholder="Add a subtask..."
-                  className="flex-1 text-sm text-gray-800 placeholder-gray-400 border-0 border-b border-gray-200 focus:border-blue-400 focus:outline-none py-1.5 transition-colors"
-                />
-                <button
-                  type="button"
-                  onClick={addSubtask}
-                  disabled={!subtaskInput.trim()}
-                  className="text-xs font-medium text-blue-600 hover:text-blue-700 disabled:opacity-30 px-1 transition-colors"
-                >
-                  +
-                </button>
-              </div>
-              {subtasks.length > 0 && (
-                <ul className="space-y-1">
-                  {subtasks.map((s, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                      <span className="w-3.5 h-3.5 rounded border border-gray-300 shrink-0" />
-                      <span className="flex-1">{s}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeSubtask(i)}
-                        className="text-gray-300 hover:text-red-400 transition-colors text-xs"
-                      >
-                        ×
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="px-6 py-4 border-t border-gray-100 flex items-center gap-3">
-          <button
-            onClick={() => submit(false)}
-            disabled={!title.trim()}
-            className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-40 transition-colors"
-          >
-            Save card
-          </button>
-          <button
-            onClick={() => submit(true)}
-            disabled={!title.trim()}
-            className="text-sm font-medium text-gray-700 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 transition-colors"
-          >
-            Save and add another
-          </button>
-          <button
-            onClick={onClose}
-            className="text-sm font-medium text-gray-500 px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
-          >
-            Never mind
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 const AGENT_OPTIONS = [
   { value: "writer",     label: "✍️  Skribent — skriver utkast, texter, rapporter" },
@@ -1060,13 +842,40 @@ export default function KanbanBoard({
 }) {
   const [columns, setColumns] = useState<Columns>(initialColumns);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
-  const [modalCol, setModalCol] = useState<string | null>(null);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
+  const [isNewCard, setIsNewCard] = useState(false);
   const [runningAI, setRunningAI] = useState<Set<string>>(new Set());
   const [, startTransition] = useTransition();
 
+  function openNewCard(colKey: string) {
+    setEditingCard({
+      id: `new-${Date.now()}`,
+      projectSlug,
+      title: "",
+      description: null,
+      dueDate: null,
+      startDate: null,
+      column: colKey,
+      order: 9999,
+      priority: "normal",
+      assigneeId: null,
+      assignee: null,
+      createdById: "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: null,
+      subtasks: [],
+      comments: [],
+    });
+    setIsNewCard(true);
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (requestAddColumn) setModalCol(requestAddColumn);
+    if (requestAddColumn) {
+      openNewCard(requestAddColumn);
+      onRequestAddDone?.();
+    }
   }, [requestAddColumn]);
 
   async function handleRunAI(cardId: string, agentType: string, additionalContext: string) {
@@ -1088,8 +897,6 @@ export default function KanbanBoard({
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
-
-  const activeColData = COLUMNS.find((c) => c.key === modalCol);
 
   function findCardColumn(cardId: string): string | null {
     for (const col of COLUMN_ORDER) {
@@ -1211,7 +1018,7 @@ export default function KanbanBoard({
                 isLoggedIn={isLoggedIn}
                 projectSlug={projectSlug}
                 currentUserId={currentUserId}
-                onOpenModal={setModalCol}
+                onOpenModal={openNewCard}
                 onDelete={handleDelete}
                 onOpenCard={setEditingCard}
                 runningAI={runningAI}
@@ -1229,28 +1036,19 @@ export default function KanbanBoard({
         </DragOverlay>
       </DndContext>
 
-      {modalCol && activeColData && (
-        <AddCardModal
-          projectSlug={projectSlug}
-          column={modalCol}
-          columnLabel={activeColData.label}
-          members={members}
-          onAdd={handleAdd}
-          onClose={() => { setModalCol(null); onRequestAddDone?.(); }}
-          onCardCreated={handleTempCardResolved}
-        />
-      )}
-
       {editingCard && (
         <CardDetailModal
           card={editingCard}
           members={members}
           isLoggedIn={isLoggedIn}
           currentUserId={currentUserId}
-          onClose={() => setEditingCard(null)}
+          onClose={() => { setEditingCard(null); setIsNewCard(false); }}
           onSaved={handleCardSaved}
-          onDelete={(cardId) => { handleDelete(cardId); setEditingCard(null); }}
+          onDelete={(cardId) => { handleDelete(cardId); setEditingCard(null); setIsNewCard(false); }}
           onSubtaskAdded={handleSubtaskAdded}
+          isNew={isNewCard}
+          onAdd={handleAdd}
+          onCardCreated={handleTempCardResolved}
         />
       )}
     </div>
