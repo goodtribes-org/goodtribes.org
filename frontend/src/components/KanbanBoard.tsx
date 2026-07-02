@@ -295,14 +295,16 @@ function CardDetailModal({
           {/* Description */}
           <div>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Beskrivning</p>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={!isLoggedIn}
-              rows={4}
-              placeholder="Lägg till en beskrivning..."
-              className="w-full text-sm text-gray-700 border border-gray-200 rounded-lg px-3 py-2 resize-none focus:outline-none focus:border-blue-400 placeholder-gray-300 disabled:opacity-60"
-            />
+            {isLoggedIn ? (
+              <RichTextEditor content={description} onChange={setDescription} />
+            ) : description ? (
+              <div
+                className="prose prose-sm max-w-none text-gray-700"
+                dangerouslySetInnerHTML={{ __html: description }}
+              />
+            ) : (
+              <p className="text-sm text-gray-300 italic">Ingen beskrivning</p>
+            )}
           </div>
 
           {/* Subtasks */}
@@ -788,7 +790,10 @@ function KanbanCardItem({
         <Avatar name={card.assignee?.name ?? card.createdBy?.name ?? null} />
       </div>
       {card.description && (
-        <p className="text-xs text-gray-500 mt-1 leading-snug line-clamp-2">{card.description}</p>
+        <div
+          className="text-xs text-gray-500 mt-1 leading-snug line-clamp-2 prose prose-xs max-w-none [&_*]:text-xs [&_*]:text-gray-500 [&_p]:m-0"
+          dangerouslySetInnerHTML={{ __html: card.description }}
+        />
       )}
 
       {localSubtasks.length > 0 && (

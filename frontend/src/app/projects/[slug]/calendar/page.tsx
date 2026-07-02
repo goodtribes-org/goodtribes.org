@@ -6,7 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import type { Metadata } from "next";
 import GanttView from "@/components/GanttView";
-import { createMilestone, toggleMilestone, deleteMilestone } from "../milestones/actions";
+import Tooltip from "@/components/Tooltip";
+import { toggleMilestone, deleteMilestone } from "../milestones/actions";
 
 
 export async function generateMetadata({
@@ -31,6 +32,7 @@ interface CalendarEntry {
   type: "milestone" | "task" | "todo" | "meeting" | "deadline" | "custom";
   color: string;
   href?: string;
+  tooltip: string[];
 }
 
 const TYPE_COLORS: Record<CalendarEntry["type"], string> = {
@@ -114,31 +116,36 @@ export default async function CalendarPage({
     : null;
   const isOwnerOrAdmin = memberRow?.role === "owner" || memberRow?.role === "admin";
 
-  // Date range for calendar month
-  const monthStart = new Date(year, month, 1);
-  const monthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999);
+  // Grid geometry — computed early so we can derive the visible date range
+  const daysInMonth = getDaysInMonth(year, month);
+  const firstWeekday = getFirstWeekday(year, month);
+  const totalCells = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
+
+  // Full visible grid range (includes padding days from prev/next month)
+  const gridStart = new Date(year, month, 1 - firstWeekday, 0, 0, 0, 0);
+  const gridEnd = new Date(year, month, 1 - firstWeekday + totalCells - 1, 23, 59, 59, 999);
 
   // Fetch calendar data + milestones (all) + all kanban cards + todos for Gantt
   const [milestones, kanbanCardsMonth, calendarEvents, todoItemsMonth, allMilestones, allKanbanCards, allTodoItems] = await Promise.all([
-    // Calendar: milestones in this month
+    // Calendar: milestones visible in grid
     prisma.milestone.findMany({
-      where: { projectId: project.id, dueDate: { gte: monthStart, lte: monthEnd } },
-      select: { id: true, title: true, dueDate: true },
+      where: { projectId: project.id, dueDate: { gte: gridStart, lte: gridEnd } },
+      select: { id: true, title: true, dueDate: true, description: true },
     }),
-    // Calendar: kanban cards due this month
+    // Calendar: kanban cards due in grid
     prisma.kanbanCard.findMany({
-      where: { projectSlug: slug, dueDate: { gte: monthStart, lte: monthEnd } },
-      select: { id: true, title: true, dueDate: true },
+      where: { projectSlug: slug, dueDate: { gte: gridStart, lte: gridEnd } },
+      select: { id: true, title: true, dueDate: true, description: true, assignee: { select: { name: true } } },
     }),
-    // Calendar: events this month
+    // Calendar: events visible in grid
     prisma.calendarEvent.findMany({
-      where: { projectSlug: slug, startsAt: { gte: monthStart, lte: monthEnd } },
-      select: { id: true, title: true, type: true, startsAt: true, createdBy: { select: { name: true } } },
+      where: { projectSlug: slug, startsAt: { gte: gridStart, lte: gridEnd } },
+      select: { id: true, title: true, type: true, startsAt: true, endsAt: true, description: true, createdBy: { select: { name: true } } },
     }),
-    // Calendar: todo items due this month
+    // Calendar: todo items due in grid
     prisma.todoItem.findMany({
-      where: { list: { projectSlug: slug }, dueDate: { gte: monthStart, lte: monthEnd } },
-      select: { id: true, title: true, dueDate: true },
+      where: { list: { projectSlug: slug }, dueDate: { gte: gridStart, lte: gridEnd } },
+      select: { id: true, title: true, dueDate: true, done: true },
     }),
     // Milestones section: all milestones
     prisma.milestone.findMany({
@@ -148,7 +155,7 @@ export default async function CalendarPage({
     // Gantt: all kanban cards
     prisma.kanbanCard.findMany({
       where: { projectSlug: slug },
-      select: { id: true, title: true, column: true, priority: true, startDate: true, dueDate: true },
+      select: { id: true, title: true, column: true, priority: true, startDate: true, dueDate: true, description: true, assignee: { select: { name: true } } },
       orderBy: [{ column: "asc" }, { order: "asc" }],
     }),
     // Gantt: all todo items
@@ -161,52 +168,68 @@ export default async function CalendarPage({
 
   // ─── Calendar grid data ────────────────────────────────────────────────────
 
-  const dayEvents: Record<number, CalendarEntry[]> = {};
-  function addEntry(day: number, entry: CalendarEntry) {
-    if (!dayEvents[day]) dayEvents[day] = [];
-    dayEvents[day].push(entry);
+  // Key: "YYYY-MM-DD" in local time
+  function localKey(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }
+
+  const dayEvents: Record<string, CalendarEntry[]> = {};
+  function addEntry(date: Date, entry: CalendarEntry) {
+    const k = localKey(date);
+    if (!dayEvents[k]) dayEvents[k] = [];
+    dayEvents[k].push(entry);
+  }
+
+  const EVENT_TYPE_LABEL: Record<string, string> = {
+    meeting: "Möte", deadline: "Deadline", custom: "Anpassad",
+  };
 
   for (const m of milestones) {
     if (!m.dueDate) continue;
-    addEntry(m.dueDate.getDate(), { id: m.id, title: m.title, type: "milestone", color: TYPE_COLORS.milestone });
+    const lines = ["Milstolpe", m.description].filter((s): s is string => Boolean(s));
+    addEntry(m.dueDate, { id: m.id, title: m.title, type: "milestone", color: TYPE_COLORS.milestone, tooltip: lines });
   }
   for (const c of kanbanCardsMonth) {
     if (!c.dueDate) continue;
-    addEntry(c.dueDate.getDate(), {
+    const lines = [
+      c.title,
+      c.assignee?.name ? `Ansvarig: ${c.assignee.name}` : null,
+      c.description ?? null,
+    ].filter((s): s is string => Boolean(s));
+    addEntry(c.dueDate, {
       id: c.id, title: c.title, type: "task", color: TYPE_COLORS.task,
       href: `/projects/${slug}/kanban`,
+      tooltip: lines,
     });
   }
   for (const e of calendarEvents) {
     const knownTypes: string[] = ["milestone", "task", "meeting", "deadline", "custom"];
     const type: CalendarEntry["type"] = knownTypes.includes(e.type) ? (e.type as CalendarEntry["type"]) : "custom";
-    addEntry(e.startsAt.getDate(), { id: e.id, title: e.title, type, color: TYPE_COLORS[type] });
+    const lines = [
+      EVENT_TYPE_LABEL[e.type] ?? "Händelse",
+      e.createdBy.name ? `Ansvarig: ${e.createdBy.name}` : null,
+      e.description ?? null,
+    ].filter((s): s is string => Boolean(s));
+    addEntry(e.startsAt, { id: e.id, title: e.title, type, color: TYPE_COLORS[type], tooltip: lines });
   }
   for (const t of todoItemsMonth) {
     if (!t.dueDate) continue;
-    addEntry(t.dueDate.getDate(), {
+    addEntry(t.dueDate, {
       id: t.id, title: t.title, type: "todo", color: TYPE_COLORS.todo,
       href: `/projects/${slug}/todos`,
+      tooltip: [t.title],
     });
   }
 
-  const daysInMonth = getDaysInMonth(year, month);
-  const firstWeekday = getFirstWeekday(year, month);
   const prev = prevMonth(year, month);
   const next = nextMonth(year, month);
-  const todayYear = now.getFullYear();
-  const todayMonth = now.getMonth();
-  const todayDay = now.getDate();
-  const isCurrentMonth = todayYear === year && todayMonth === month;
+  const todayKey = localKey(now);
 
-  const totalCells = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
-  const cells: (number | null)[] = [
-    ...Array(firstWeekday).fill(null),
-    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
-    ...Array(totalCells - firstWeekday - daysInMonth).fill(null),
-  ];
-  const weeks: (number | null)[][] = [];
+  // Build cells as Date objects covering the full visible grid
+  const cells: Date[] = Array.from({ length: totalCells }, (_, i) =>
+    new Date(year, month, 1 - firstWeekday + i)
+  );
+  const weeks: Date[][] = [];
   for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
 
   // ─── Milestones section data ───────────────────────────────────────────────
@@ -298,9 +321,11 @@ export default async function CalendarPage({
                     key={wi}
                     className={`grid grid-cols-7 ${wi < weeks.length - 1 ? "border-b border-muted-teal/20" : ""}`}
                   >
-                    {week.map((day, di) => {
-                      const isToday = isCurrentMonth && day === todayDay;
-                      const entries = day ? (dayEvents[day] ?? []) : [];
+                    {week.map((date, di) => {
+                      const isCurrMonth = date.getMonth() === month && date.getFullYear() === year;
+                      const k = localKey(date);
+                      const isToday = k === todayKey;
+                      const entries = dayEvents[k] ?? [];
                       const visible = entries.slice(0, 3);
                       const overflow = entries.length - 3;
                       return (
@@ -308,48 +333,48 @@ export default async function CalendarPage({
                           key={di}
                           className={`min-h-[88px] sm:min-h-[120px] p-1 sm:p-2 ${
                             di < 6 ? "border-r border-muted-teal/20" : ""
-                          } ${day ? "bg-white" : "bg-gray-50/60"}`}
+                          } ${isCurrMonth ? "bg-white" : "bg-gray-50/60"}`}
                         >
-                          {day !== null && (
-                            <>
-                              <div className="flex justify-end mb-1">
-                                <span
-                                  className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full ${
-                                    isToday ? "bg-coral text-white" : "text-dark-slate/70"
-                                  }`}
-                                >
-                                  {day}
-                                </span>
-                              </div>
-                              <div className="space-y-0.5">
-                                {visible.map((entry) =>
-                                  entry.href ? (
-                                    <Link
-                                      key={entry.id}
-                                      href={entry.href}
-                                      className={`block truncate text-[10px] sm:text-xs leading-none rounded px-1 py-0.5 text-white ${entry.color} hover:opacity-80 transition-opacity`}
-                                      title={entry.title}
-                                    >
-                                      {entry.title}
-                                    </Link>
-                                  ) : (
-                                    <div
-                                      key={entry.id}
-                                      className={`block truncate text-[10px] sm:text-xs leading-none rounded px-1 py-0.5 text-white ${entry.color}`}
-                                      title={entry.title}
-                                    >
-                                      {entry.title}
-                                    </div>
-                                  )
-                                )}
-                                {overflow > 0 && (
-                                  <div className="text-[10px] text-dark-slate/40 px-1 leading-none">
-                                    +{overflow} fler
+                          <div className="flex justify-end mb-1">
+                            <span
+                              className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full ${
+                                isToday
+                                  ? "bg-coral text-white"
+                                  : isCurrMonth
+                                  ? "text-dark-slate/70"
+                                  : "text-dark-slate/25"
+                              }`}
+                            >
+                              {date.getDate()}
+                            </span>
+                          </div>
+                          <div className="space-y-0.5">
+                            {visible.map((entry) =>
+                              entry.href ? (
+                                <Tooltip key={entry.id} lines={entry.tooltip}>
+                                  <Link
+                                    href={entry.href}
+                                    className={`block truncate text-[10px] sm:text-xs leading-none rounded px-1 py-0.5 text-white ${entry.color} ${isCurrMonth ? "" : "opacity-40"} hover:opacity-80 transition-opacity`}
+                                  >
+                                    {entry.title}
+                                  </Link>
+                                </Tooltip>
+                              ) : (
+                                <Tooltip key={entry.id} lines={entry.tooltip}>
+                                  <div
+                                    className={`block truncate text-[10px] sm:text-xs leading-none rounded px-1 py-0.5 text-white ${entry.color} ${isCurrMonth ? "" : "opacity-40"}`}
+                                  >
+                                    {entry.title}
                                   </div>
-                                )}
+                                </Tooltip>
+                              )
+                            )}
+                            {overflow > 0 && (
+                              <div className="text-[10px] text-dark-slate/40 px-1 leading-none">
+                                +{overflow} fler
                               </div>
-                            </>
-                          )}
+                            )}
+                          </div>
                         </div>
                       );
                     })}
@@ -362,7 +387,17 @@ export default async function CalendarPage({
 
           {/* ── Milestones section ─────────────────────────────────────────── */}
           <div className="mt-10">
-            <h2 className="text-base font-bold text-dark-slate mb-4">Milstolpar</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-dark-slate">Milstolpar</h2>
+              {isOwnerOrAdmin && (
+                <Link
+                  href={`/projects/${slug}/calendar/new?type=milestone`}
+                  className="text-xs text-coral hover:text-watermelon font-medium transition-colors"
+                >
+                  + Ny milstolpe
+                </Link>
+              )}
+            </div>
 
             {totalMilestones > 0 && (
               <div className="mb-5">
@@ -455,39 +490,6 @@ export default async function CalendarPage({
               })}
             </div>
 
-            {isOwnerOrAdmin && (
-              <div className="border border-muted-teal/30 rounded-lg p-4">
-                <h3 className="text-sm font-semibold text-dark-slate mb-3">Lägg till milstolpe</h3>
-                <form action={createMilestone.bind(null, project.id, slug)} className="space-y-3">
-                  <input
-                    name="title"
-                    type="text"
-                    required
-                    placeholder="Milstolpens titel"
-                    className="w-full border border-muted-teal rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
-                  />
-                  <div className="grid grid-cols-2 gap-3">
-                    <input
-                      name="description"
-                      type="text"
-                      placeholder="Beskrivning (valfritt)"
-                      className="border border-muted-teal rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
-                    />
-                    <input
-                      name="dueDate"
-                      type="date"
-                      className="border border-muted-teal rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="bg-coral text-white text-sm font-medium px-4 py-2 rounded hover:bg-watermelon transition-colors"
-                  >
-                    Lägg till
-                  </button>
-                </form>
-              </div>
-            )}
           </div>
         </>
       )}

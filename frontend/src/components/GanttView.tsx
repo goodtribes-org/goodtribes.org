@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { updateCard } from "@/app/projects/[slug]/kanban/actions";
+import Tooltip from "@/components/Tooltip";
 
 type GanttCard = {
   id: string;
@@ -10,6 +11,8 @@ type GanttCard = {
   priority: string;
   startDate: Date | string | null;
   dueDate: Date | string | null;
+  description?: string | null;
+  assignee?: { name: string | null } | null;
 };
 
 type GanttMilestone = {
@@ -73,6 +76,12 @@ function addDays(d: Date, n: number): Date {
 
 function diffDays(a: Date, b: Date): number {
   return Math.round((b.getTime() - a.getTime()) / 86400000);
+}
+
+function fmtDate(d: Date | string | null): string | null {
+  const date = toDate(d);
+  if (!date) return null;
+  return date.toLocaleDateString("sv-SE", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export default function GanttView({ cards, todos = [], milestones, isOwnerOrAdmin }: GanttViewProps) {
@@ -228,15 +237,11 @@ export default function GanttView({ cards, todos = [], milestones, isOwnerOrAdmi
                     const d = toDate(m.dueDate);
                     if (!d) return null;
                     const left = diffDays(rangeStart, d) * DAY_WIDTH;
+                    const tooltipLines = [m.title].filter(Boolean);
                     return (
-                      <div
-                        key={m.id}
-                        className="absolute flex items-center justify-center"
-                        style={{ left: left - 7, top: "50%", transform: "translateY(-50%)", width: 14 }}
-                        title={m.title}
-                      >
+                      <Tooltip key={m.id} lines={tooltipLines} className="absolute flex items-center justify-center" style={{ left: left - 7, top: "50%", transform: "translateY(-50%)", width: 14 } as React.CSSProperties}>
                         <span className={`text-base leading-none select-none ${m.status === "done" ? "text-seagrass" : "text-purple-600"}`}>◆</span>
-                      </div>
+                      </Tooltip>
                     );
                   })}
                 </div>
@@ -278,13 +283,13 @@ export default function GanttView({ cards, todos = [], milestones, isOwnerOrAdmi
                         {todayOffset >= 0 && (
                           <div className="absolute top-0 bottom-0 w-px bg-coral/50 z-10 pointer-events-none" style={{ left: todayOffset }} />
                         )}
-                        <div
+                        <Tooltip
+                          lines={[todo.title]}
                           className={`absolute top-1/2 -translate-y-1/2 flex items-center justify-center ${todo.done ? "text-green-500" : "text-amber-500"}`}
                           style={{ left: left - 7 }}
-                          title={todo.title}
                         >
                           <span className="text-base leading-none select-none">◆</span>
-                        </div>
+                        </Tooltip>
                       </div>
                     </div>
                   );
@@ -384,18 +389,29 @@ export default function GanttView({ cards, todos = [], milestones, isOwnerOrAdmi
                             {todayOffset >= 0 && (
                               <div className="absolute top-0 bottom-0 w-px bg-coral/50 z-10 pointer-events-none" style={{ left: todayOffset }} />
                             )}
-                            {left !== null && (
-                              <button
-                                onClick={() => isOwnerOrAdmin ? (isEditing ? setEditingCard(null) : openEdit(card)) : undefined}
-                                className={`absolute top-1/2 -translate-y-1/2 h-5 rounded transition-opacity ${
-                                  COLUMN_COLORS[card.column]
-                                } ${isOwnerOrAdmin ? "cursor-pointer opacity-80 hover:opacity-100" : "cursor-default opacity-80"} ${
-                                  isEditing ? "ring-2 ring-offset-1 ring-coral" : ""
-                                }`}
-                                style={{ left, width }}
-                                title={card.title}
-                              />
-                            )}
+                            {left !== null && (() => {
+                              const tooltipLines = [
+                                card.title,
+                                card.assignee?.name ? `Ansvarig: ${card.assignee.name}` : null,
+                                card.description ?? null,
+                              ].filter((s): s is string => Boolean(s));
+                              return (
+                                <Tooltip
+                                  lines={tooltipLines}
+                                  className="absolute top-1/2 -translate-y-1/2"
+                                  style={{ left, width }}
+                                >
+                                  <button
+                                    onClick={() => isOwnerOrAdmin ? (isEditing ? setEditingCard(null) : openEdit(card)) : undefined}
+                                    className={`w-full h-5 rounded transition-opacity ${
+                                      COLUMN_COLORS[card.column]
+                                    } ${isOwnerOrAdmin ? "cursor-pointer opacity-80 hover:opacity-100" : "cursor-default opacity-80"} ${
+                                      isEditing ? "ring-2 ring-offset-1 ring-coral" : ""
+                                    }`}
+                                  />
+                                </Tooltip>
+                              );
+                            })()}
                           </div>
                         </div>
                       );
