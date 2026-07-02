@@ -27,7 +27,7 @@ export default async function WorkspaceLayout({
   return (
     <>
       <div
-        className="mb-6 border-b border-muted-teal/20"
+        className="mb-6"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
         <div className="px-6">
