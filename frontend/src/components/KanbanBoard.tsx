@@ -669,15 +669,19 @@ const AGENT_OPTIONS = [
 function KanbanCardItem({
   card,
   currentUserId,
+  isLoggedIn,
   onDelete,
   onOpenCard,
+  onAddCard,
   runningAI,
   onRunAI,
 }: {
   card: Card;
   currentUserId: string | null;
+  isLoggedIn: boolean;
   onDelete: (id: string) => void;
   onOpenCard: (card: Card) => void;
+  onAddCard?: (card: Card) => void;
   runningAI: Set<string>;
   onRunAI: (cardId: string, agentType: string, additionalContext: string) => void;
 }) {
@@ -688,6 +692,11 @@ function KanbanCardItem({
   const [selectedAgent, setSelectedAgent] = useState("writer");
   const [additionalContext, setAdditionalContext] = useState("");
   const [localSubtasks, setLocalSubtasks] = useState(card.subtasks ?? []);
+  const [addingSubtask, setAddingSubtask] = useState(false);
+  const [newSubtaskInput, setNewSubtaskInput] = useState("");
+  const [subtaskMenuOpen, setSubtaskMenuOpen] = useState<string | null>(null);
+  const [editingSubtaskId, setEditingSubtaskId] = useState<string | null>(null);
+  const [editingSubtaskTitle, setEditingSubtaskTitle] = useState("");
   const [, startTransition] = useTransition();
 
   const due = formatDate(card.dueDate);
@@ -709,6 +718,49 @@ function KanbanCardItem({
   const isAiRunning = runningAI.has(card.id) || aiStatus === "running";
 
   const categoryHex = card.category ? CATEGORY_META[card.category]?.hex : null;
+
+  async function handleQuickAddSubtask() {
+    if (!newSubtaskInput.trim() || card.id.startsWith("new-")) return;
+    const title = newSubtaskInput.trim();
+    const tempId = `temp-${Date.now()}`;
+    setLocalSubtasks((prev) => [...prev, { id: tempId, title, done: false, order: prev.length }]);
+    setNewSubtaskInput("");
+    const result = await addSubtask(card.id, title);
+    if (result && "subtask" in result && result.subtask) {
+      const real = result.subtask as Subtask;
+      setLocalSubtasks((prev) => prev.map((s) => s.id === tempId ? real : s));
+    }
+  }
+
+  async function handleCardDeleteSubtask(s: Subtask) {
+    setLocalSubtasks((prev) => prev.filter((t) => t.id !== s.id));
+    if (!s.id.startsWith("temp-")) await deleteSubtask(s.id);
+  }
+
+  async function handleCardSaveSubtaskEdit(s: Subtask) {
+    const newTitle = editingSubtaskTitle.trim();
+    if (!newTitle) { setEditingSubtaskId(null); return; }
+    setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, title: newTitle } : t));
+    setEditingSubtaskId(null);
+    if (!s.id.startsWith("temp-")) await updateSubtaskTitle(s.id, newTitle);
+  }
+
+  async function handleCardPromoteSubtask(s: Subtask) {
+    if (s.id.startsWith("temp-")) return;
+    setLocalSubtasks((prev) => prev.filter((t) => t.id !== s.id));
+    const result = await promoteSubtaskToCard(s.id);
+    if (result && "card" in result && result.card) {
+      const c = result.card;
+      onAddCard?.({
+        id: c.id, projectSlug: c.projectSlug, title: c.title,
+        description: null, dueDate: null, startDate: null,
+        column: c.column, order: c.order, priority: c.priority,
+        category: c.category ?? null, assigneeId: null, assignee: null,
+        createdById: c.createdById, createdAt: c.createdAt, updatedAt: c.updatedAt,
+        createdBy: null, subtasks: [], comments: [],
+      });
+    }
+  }
 
   return (
     <div
@@ -749,42 +801,97 @@ function KanbanCardItem({
         />
       )}
 
-      {localSubtasks.length > 0 && (
-        <div
-          className="mt-2 space-y-1"
-          onClick={(e) => e.stopPropagation()}
-          onPointerDown={(e) => e.stopPropagation()}
-        >
-          <span className={`text-xs font-medium ${localSubtasks.every((s) => s.done) ? "text-green-600" : "text-gray-400"}`}>
-            {localSubtasks.filter((s) => s.done).length}/{localSubtasks.length} klart
-          </span>
-          {localSubtasks.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: !t.done } : t));
-                if (!s.id.startsWith("temp-")) {
-                  startTransition(async () => {
-                    await toggleSubtask(s.id, !s.done);
-                  });
-                }
-              }}
-              className="flex items-center gap-1.5 w-full text-left group/sub"
-            >
-              <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"}`}>
-                {s.done && (
-                  <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
+      <div
+        className="mt-2 space-y-0.5"
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        {localSubtasks.length > 0 && (
+          <>
+            <span className={`text-xs font-medium ${localSubtasks.every((s) => s.done) ? "text-green-600" : "text-gray-400"}`}>
+              {localSubtasks.filter((s) => s.done).length}/{localSubtasks.length} klart
+            </span>
+            {localSubtasks.map((s) => (
+              <div key={s.id} className="relative flex items-center gap-1.5 group/sub py-0.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: !t.done } : t));
+                    if (!s.id.startsWith("temp-")) startTransition(async () => { await toggleSubtask(s.id, !s.done); });
+                  }}
+                  className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"}`}
+                >
+                  {s.done && <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                </button>
+
+                {editingSubtaskId === s.id ? (
+                  <input
+                    autoFocus
+                    className="flex-1 text-xs border-b border-blue-400 outline-none bg-transparent text-gray-700 py-0"
+                    value={editingSubtaskTitle}
+                    onChange={(e) => setEditingSubtaskTitle(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleCardSaveSubtaskEdit(s); if (e.key === "Escape") setEditingSubtaskId(null); }}
+                    onBlur={() => handleCardSaveSubtaskEdit(s)}
+                  />
+                ) : (
+                  <span className={`flex-1 text-xs leading-snug ${s.done ? "line-through text-gray-400" : "text-gray-600"}`}>{s.title}</span>
                 )}
-              </span>
-              <span className={`text-xs leading-snug ${s.done ? "line-through text-gray-400" : "text-gray-600"}`}>{s.title}</span>
-            </button>
-          ))}
-        </div>
-      )}
+
+                {isLoggedIn && (
+                  <button
+                    type="button"
+                    onClick={() => setSubtaskMenuOpen(subtaskMenuOpen === s.id ? null : s.id)}
+                    className="opacity-0 group-hover/sub:opacity-100 text-gray-400 hover:text-gray-600 transition-opacity text-xs leading-none px-0.5"
+                  >
+                    •••
+                  </button>
+                )}
+
+                {subtaskMenuOpen === s.id && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setSubtaskMenuOpen(null)} />
+                    <div className="absolute right-0 top-6 z-20 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[120px]">
+                      <button type="button" onClick={() => { setEditingSubtaskId(s.id); setEditingSubtaskTitle(s.title); setSubtaskMenuOpen(null); }} className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50">Ändra</button>
+                      <button type="button" onClick={() => { handleCardDeleteSubtask(s); setSubtaskMenuOpen(null); }} className="w-full text-left text-xs px-3 py-1.5 text-red-500 hover:bg-red-50">Ta bort</button>
+                      {!s.id.startsWith("temp-") && (
+                        <button type="button" onClick={() => { handleCardPromoteSubtask(s); setSubtaskMenuOpen(null); }} className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50">Eget kort</button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </>
+        )}
+
+        {isLoggedIn && !addingSubtask && (
+          <button
+            type="button"
+            onClick={() => setAddingSubtask(true)}
+            className="mt-1 flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all"
+          >
+            <span className="text-base leading-none font-light">+</span> Lägg till uppgift
+          </button>
+        )}
+
+        {isLoggedIn && addingSubtask && (
+          <div className="mt-1 flex items-center gap-1">
+            <input
+              autoFocus
+              type="text"
+              value={newSubtaskInput}
+              onChange={(e) => setNewSubtaskInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") { handleQuickAddSubtask(); }
+                if (e.key === "Escape") { setAddingSubtask(false); setNewSubtaskInput(""); }
+              }}
+              onBlur={() => { if (!newSubtaskInput.trim()) setAddingSubtask(false); else handleQuickAddSubtask().then(() => setAddingSubtask(false)); }}
+              placeholder="Ny uppgift..."
+              className="flex-1 text-xs border-b border-blue-400 outline-none py-0.5 placeholder-gray-300 bg-transparent text-gray-700"
+            />
+          </div>
+        )}
+      </div>
 
       {/* AI status badge */}
       {(isAiRunning || aiStatus === "awaiting_review" || aiStatus === "approved") && (
@@ -914,6 +1021,7 @@ function DroppableColumn({
   onOpenModal,
   onDelete,
   onOpenCard,
+  onAddCard,
   runningAI,
   onRunAI,
 }: {
@@ -925,6 +1033,7 @@ function DroppableColumn({
   onOpenModal: (colKey: string) => void;
   onDelete: (id: string) => void;
   onOpenCard: (card: Card) => void;
+  onAddCard: (card: Card) => void;
   runningAI: Set<string>;
   onRunAI: (cardId: string, agentType: string, additionalContext: string) => void;
 })
@@ -973,8 +1082,10 @@ function DroppableColumn({
               key={card.id}
               card={card}
               currentUserId={currentUserId}
+              isLoggedIn={isLoggedIn}
               onDelete={onDelete}
               onOpenCard={onOpenCard}
+              onAddCard={onAddCard}
               runningAI={runningAI}
               onRunAI={onRunAI}
             />
@@ -1183,6 +1294,7 @@ export default function KanbanBoard({
                 onOpenModal={openNewCard}
                 onDelete={handleDelete}
                 onOpenCard={setEditingCard}
+                onAddCard={handleAdd}
                 runningAI={runningAI}
                 onRunAI={handleRunAI}
               />
