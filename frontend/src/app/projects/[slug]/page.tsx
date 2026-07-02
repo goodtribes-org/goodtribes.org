@@ -13,6 +13,7 @@ import KudosButton from "@/components/KudosButton";
 import { SdgIcon } from "@/components/SdgIcon";
 import Tooltip from "@/components/Tooltip";
 import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
+import ProjectTabNav from "./ProjectTabNav";
 
 function MemberAvatar({
   name,
@@ -382,6 +383,16 @@ export default async function ProjectDetailPage({
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Tab nav — below hero */}
+      <div
+        className="mb-6 border-b border-muted-teal/20"
+        style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
+      >
+        <div className="px-6">
+          <ProjectTabNav slug={slug} isOwner={!!isOwnerOrAdmin} />
         </div>
       </div>
 
