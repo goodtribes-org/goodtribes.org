@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition, useEffect, useMemo } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -1118,6 +1118,10 @@ export default function KanbanBoard({
   const [editingCard, setEditingCard] = useState<Card | null>(null);
   const [isNewCard, setIsNewCard] = useState(false);
   const [runningAI, setRunningAI] = useState<Set<string>>(new Set());
+  const [filterQuery, setFilterQuery] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterPriority, setFilterPriority] = useState("");
+  const [filterAssignee, setFilterAssignee] = useState("");
   const [, startTransition] = useTransition();
 
   function openNewCard(colKey: string) {
@@ -1150,6 +1154,31 @@ export default function KanbanBoard({
       onRequestAddDone?.();
     }
   }, [requestAddColumn]);
+
+  const hasFilters = !!(filterQuery || filterCategory || filterPriority || filterAssignee);
+
+  const filteredColumns = useMemo(() => {
+    const q = filterQuery.toLowerCase();
+    const apply = (cards: Card[]) => cards.filter((c) => {
+      if (q && !c.title.toLowerCase().includes(q)) return false;
+      if (filterCategory && c.category !== filterCategory) return false;
+      if (filterPriority && c.priority !== filterPriority) return false;
+      if (filterAssignee && c.assigneeId !== filterAssignee) return false;
+      return true;
+    });
+    return {
+      BACKLOG: apply(columns.BACKLOG),
+      TODO:    apply(columns.TODO),
+      DOING:   apply(columns.DOING),
+      REVIEW:  apply(columns.REVIEW),
+      DONE:    apply(columns.DONE),
+    };
+  }, [columns, filterQuery, filterCategory, filterPriority, filterAssignee]);
+
+  const totalVisible = hasFilters
+    ? Object.values(filteredColumns).reduce((s, c) => s + c.length, 0)
+    : null;
+  const totalCards = Object.values(columns).reduce((s, c) => s + c.length, 0);
 
   async function handleRunAI(cardId: string, agentType: string, additionalContext: string) {
     setRunningAI((s) => new Set(s).add(cardId));
@@ -1280,6 +1309,82 @@ export default function KanbanBoard({
 
   return (
     <div>
+      {/* Filter bar */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        {/* Search */}
+        <input
+          type="search"
+          value={filterQuery}
+          onChange={(e) => setFilterQuery(e.target.value)}
+          placeholder="Sök kort…"
+          className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-400 w-44"
+        />
+
+        {/* Category chips */}
+        <div className="flex gap-1 flex-wrap">
+          {Object.entries(CATEGORY_META).map(([key, meta]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setFilterCategory(filterCategory === key ? "" : key)}
+              style={filterCategory === key ? { backgroundColor: meta.hex + "22", borderColor: meta.hex, color: meta.hex } : {}}
+              className={`text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
+                filterCategory === key ? "" : "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700"
+              }`}
+            >
+              {meta.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Priority chips */}
+        <div className="flex gap-1">
+          {Object.entries(PRIORITY_META).map(([key, meta]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setFilterPriority(filterPriority === key ? "" : key)}
+              className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
+                filterPriority === key
+                  ? "border-current bg-gray-50 " + meta.color
+                  : "border-gray-200 text-gray-500 hover:border-gray-300"
+              }`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} />
+              {meta.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Assignee */}
+        {members.length > 0 && (
+          <select
+            value={filterAssignee}
+            onChange={(e) => setFilterAssignee(e.target.value)}
+            className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-blue-400"
+          >
+            <option value="">Alla ansvariga</option>
+            {members.map((m) => (
+              <option key={m.id} value={m.id}>{m.name ?? m.id}</option>
+            ))}
+          </select>
+        )}
+
+        {/* Clear + count */}
+        {hasFilters && (
+          <button
+            type="button"
+            onClick={() => { setFilterQuery(""); setFilterCategory(""); setFilterPriority(""); setFilterAssignee(""); }}
+            className="text-xs text-gray-400 hover:text-gray-700 underline transition-colors"
+          >
+            Rensa filter
+          </button>
+        )}
+        {totalVisible !== null && (
+          <span className="ml-auto text-xs text-gray-400">{totalVisible} av {totalCards} kort</span>
+        )}
+      </div>
+
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="overflow-x-auto pb-4">
           <div className="flex gap-3 w-full">
@@ -1287,7 +1392,7 @@ export default function KanbanBoard({
               <DroppableColumn
                 key={col.key}
                 col={col}
-                cards={columns[col.key as keyof Columns] as Card[]}
+                cards={filteredColumns[col.key as keyof Columns] as Card[]}
                 isLoggedIn={isLoggedIn}
                 projectSlug={projectSlug}
                 currentUserId={currentUserId}
