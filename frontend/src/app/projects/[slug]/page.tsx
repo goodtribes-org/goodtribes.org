@@ -229,7 +229,16 @@ export default async function ProjectDetailPage({
         : Promise.resolve(null),
       prisma.kanbanCard.findMany({
         where: { projectSlug: slug },
-        select: { column: true, title: true, priority: true },
+        select: {
+          id: true,
+          column: true,
+          title: true,
+          priority: true,
+          subtasks: {
+            select: { id: true, title: true, done: true },
+            orderBy: { order: "asc" },
+          },
+        },
         orderBy: [{ column: "asc" }, { order: "asc" }],
       }),
       prisma.channelMessage.findMany({
@@ -520,10 +529,16 @@ export default async function ProjectDetailPage({
               { key: "REVIEW",  label: "Granskas", bg: "#f59e0b" },
               { key: "DONE",    label: "Klart",    bg: "#43aa8b" },
             ];
-            const counts = cols.map(c => kanbanCards.filter(k => k.column === c.key).length);
+            const counts = cols.map(c => {
+              const cardsInCol = kanbanCards.filter(k => k.column === c.key);
+              const subtaskCount = cardsInCol.reduce((sum, k) => sum + (k.subtasks?.length ?? 0), 0);
+              return cardsInCol.length + subtaskCount;
+            });
             const max = Math.max(...counts, 1);
-            const total = kanbanCards.length;
-            const done = counts[4];
+            const total = kanbanCards.reduce((sum, k) => sum + 1 + (k.subtasks?.length ?? 0), 0);
+            const doneCards = kanbanCards.filter(k => k.column === "DONE").length;
+            const doneSubtasks = kanbanCards.reduce((sum, k) => sum + (k.subtasks?.filter(s => s.done).length ?? 0), 0);
+            const done = doneCards + doneSubtasks;
             return (
               <section className="border border-muted-teal/30 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-4">
@@ -562,6 +577,51 @@ export default async function ProjectDetailPage({
                 <p className="text-xs text-dark-slate/40 mt-3 text-center">
                   {done} av {total} uppgifter klara
                 </p>
+              </section>
+            );
+          })()}
+
+          {/* Deluppgifter widget */}
+          {(() => {
+            const colOrder = ["BACKLOG", "TODO", "DOING", "REVIEW", "DONE"];
+            const cardsWithSubtasks = [...kanbanCards]
+              .filter(c => c.subtasks && c.subtasks.length > 0)
+              .sort((a, b) => colOrder.indexOf(a.column) - colOrder.indexOf(b.column));
+            if (cardsWithSubtasks.length === 0) return null;
+            return (
+              <section className="border border-muted-teal/30 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-semibold text-dark-slate">Deluppgifter</h2>
+                  <Link href={`/projects/${slug}/kanban`} className="text-xs text-seagrass hover:underline">
+                    Öppna →
+                  </Link>
+                </div>
+                <div className="max-h-64 overflow-y-auto space-y-3">
+                  {cardsWithSubtasks.map(card => {
+                    const doneCount = card.subtasks!.filter(s => s.done).length;
+                    const totalCount = card.subtasks!.length;
+                    return (
+                      <div key={card.id}>
+                        <div className="flex items-center justify-between gap-1 mb-1">
+                          <span className="text-[11px] font-semibold text-dark-slate truncate">{card.title}</span>
+                          <span className="text-[10px] text-dark-slate/40 shrink-0">{doneCount}/{totalCount}</span>
+                        </div>
+                        <ul className="space-y-0.5">
+                          {card.subtasks!.map(s => (
+                            <li key={s.id} className="flex items-start gap-1.5">
+                              <span className="text-[10px] shrink-0 mt-px" style={{ color: s.done ? "#43aa8b" : "#b2b09b" }}>
+                                {s.done ? "✓" : "○"}
+                              </span>
+                              <span className={`text-[10px] leading-snug ${s.done ? "line-through text-dark-slate/30" : "text-dark-slate/60"}`}>
+                                {s.title}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    );
+                  })}
+                </div>
               </section>
             );
           })()}
