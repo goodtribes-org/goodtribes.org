@@ -21,8 +21,8 @@ export default function NotificationBell() {
 
   const fetchNotifications = () => {
     fetch("/api/notifications")
-      .then((r) => r.json())
-      .then((data) => setNotifications(data as Notification[]))
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => { if (Array.isArray(data)) setNotifications(data as Notification[]); })
       .catch(() => {});
   };
 
