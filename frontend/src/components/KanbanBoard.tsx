@@ -96,7 +96,7 @@ const COLUMNS = [
   { key: "TODO",    label: "ToDo",    color: "#f97316" },
   { key: "DOING",   label: "Doing",   color: "#facc15" },
   { key: "REVIEW",  label: "Review",  color: "#3b82f6" },
-  { key: "DONE",    label: "Done",    color: "#10b981" },
+  { key: "DONE",    label: "Done",    color: "#16a34a" },
 ];
 
 const COLUMN_ORDER = COLUMNS.map((c) => c.key);
