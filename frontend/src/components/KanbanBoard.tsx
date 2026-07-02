@@ -76,11 +76,11 @@ const CATEGORY_META: Record<string, { label: string; bg: string; text: string; h
   community:      { label: "Community",     bg: "bg-orange-100", text: "text-orange-700", hex: "#f97316" },
 };
 
-const PRIORITY_META: Record<string, { label: string; color: string; dot: string }> = {
-  low:    { label: "Low",    color: "text-gray-400", dot: "bg-gray-300" },
-  normal: { label: "Normal", color: "text-blue-500", dot: "bg-blue-400" },
-  high:   { label: "High",   color: "text-orange-500", dot: "bg-orange-400" },
-  urgent: { label: "Urgent", color: "text-red-500", dot: "bg-red-500" },
+const PRIORITY_META: Record<string, { label: string; color: string; dot: string; bottomHex: string }> = {
+  low:    { label: "Low",    color: "text-gray-400",   dot: "bg-gray-300",   bottomHex: "#d1d5db" },
+  normal: { label: "Normal", color: "text-blue-500",   dot: "bg-blue-400",   bottomHex: "#60a5fa" },
+  high:   { label: "High",   color: "text-orange-500", dot: "bg-orange-400", bottomHex: "#fb923c" },
+  urgent: { label: "Urgent", color: "text-red-500",    dot: "bg-red-500",    bottomHex: "#ef4444" },
 };
 
 type Columns = {
@@ -698,6 +698,8 @@ function KanbanCardItem({
   const [editingSubtaskId, setEditingSubtaskId] = useState<string | null>(null);
   const [editingSubtaskTitle, setEditingSubtaskTitle] = useState("");
   const [, startTransition] = useTransition();
+  const [cardMenuOpen, setCardMenuOpen] = useState(false);
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
 
   const due = formatDate(card.dueDate);
   const priorityMeta = PRIORITY_META[card.priority] ?? PRIORITY_META.normal;
@@ -765,248 +767,189 @@ function KanbanCardItem({
   return (
     <div
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1, borderBottomColor: priorityMeta.bottomHex }}
       {...attributes}
-      onClick={() => onOpenCard(card)}
+      {...listeners}
       suppressHydrationWarning
-      className="bg-white border border-gray-200 rounded-lg shadow-sm cursor-pointer group hover:shadow-md hover:border-gray-300 transition-all overflow-hidden"
+      className="bg-white border border-gray-200 rounded-lg shadow-sm group hover:shadow-md hover:border-gray-300 transition-all overflow-hidden"
     >
       {categoryHex && (
         <div className="h-1" style={{ backgroundColor: categoryHex }} title={CATEGORY_META[card.category!].label} />
       )}
-      <div className="p-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+      <div className="px-2 py-1.5">
+        {/* Rad 1: drag, prioritet, titel, datum, meny, avatar */}
+        <div className="flex items-center gap-1.5">
           <span
             {...listeners}
             onClick={(e) => e.stopPropagation()}
-            className="cursor-grab active:cursor-grabbing shrink-0 text-gray-300 hover:text-gray-500 transition-colors opacity-0 group-hover:opacity-100 touch-none"
-            title="Dra för att flytta"
+            className="absolute opacity-0 pointer-events-none touch-none"
+            aria-hidden
+          />
+          <p className="text-sm font-medium text-gray-800 leading-snug truncate flex-1 min-w-0">{card.title}</p>
+          {due && (
+            <span className="text-xs text-gray-400 shrink-0 whitespace-nowrap">{due}</span>
+          )}
+          <div
+            className="relative shrink-0"
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
           >
-            <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor">
-              <circle cx="2" cy="2" r="1.5"/><circle cx="8" cy="2" r="1.5"/>
-              <circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/>
-              <circle cx="2" cy="14" r="1.5"/><circle cx="8" cy="14" r="1.5"/>
-            </svg>
-          </span>
-          <span className={`w-2 h-2 rounded-full shrink-0 ${priorityMeta.dot}`} title={`Priority: ${priorityMeta.label}`} />
-          <p className="text-sm font-medium text-gray-800 leading-snug truncate">{card.title}</p>
-        </div>
-        <Avatar name={card.assignee?.name ?? card.createdBy?.name ?? null} />
-      </div>
-      {card.description && (
-        <div
-          className="text-xs text-gray-500 mt-1 leading-snug line-clamp-2 prose prose-xs max-w-none [&_*]:text-xs [&_*]:text-gray-500 [&_p]:m-0"
-          dangerouslySetInnerHTML={{ __html: card.description }}
-        />
-      )}
-
-      <div
-        className="mt-2 space-y-0.5"
-        onClick={(e) => e.stopPropagation()}
-        onPointerDown={(e) => e.stopPropagation()}
-      >
-        {localSubtasks.length > 0 && (
-          <>
-            <span className={`text-xs font-medium ${localSubtasks.every((s) => s.done) ? "text-green-600" : "text-gray-400"}`}>
-              {localSubtasks.filter((s) => s.done).length}/{localSubtasks.length} klart
-            </span>
-            {localSubtasks.map((s) => (
-              <div key={s.id} className="relative flex items-center gap-1.5 group/sub py-0.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: !t.done } : t));
-                    if (!s.id.startsWith("temp-")) startTransition(async () => { await toggleSubtask(s.id, !s.done); });
-                  }}
-                  className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"}`}
-                >
-                  {s.done && <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
-                </button>
-
-                {editingSubtaskId === s.id ? (
-                  <input
-                    autoFocus
-                    className="flex-1 text-xs border-b border-blue-400 outline-none bg-transparent text-gray-700 py-0"
-                    value={editingSubtaskTitle}
-                    onChange={(e) => setEditingSubtaskTitle(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") handleCardSaveSubtaskEdit(s); if (e.key === "Escape") setEditingSubtaskId(null); }}
-                    onBlur={() => handleCardSaveSubtaskEdit(s)}
-                  />
-                ) : (
-                  <span className={`flex-1 text-xs leading-snug ${s.done ? "line-through text-gray-400" : "text-gray-600"}`}>{s.title}</span>
-                )}
-
-                {isLoggedIn && (
+            <button
+              type="button"
+              onClick={() => setCardMenuOpen((v) => !v)}
+              className="text-gray-400 hover:text-gray-600 transition-colors p-0.5 rounded"
+              title="Alternativ"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+              </svg>
+            </button>
+            {cardMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setCardMenuOpen(false)} />
+                <div className="absolute right-0 top-6 z-20 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[120px]">
                   <button
                     type="button"
-                    onClick={() => setSubtaskMenuOpen(subtaskMenuOpen === s.id ? null : s.id)}
-                    className="opacity-0 group-hover/sub:opacity-100 text-gray-400 hover:text-gray-600 transition-opacity text-xs leading-none px-0.5"
+                    onClick={() => { setCardMenuOpen(false); onOpenCard(card); }}
+                    className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50"
                   >
-                    •••
+                    Ändra
                   </button>
-                )}
-
-                {subtaskMenuOpen === s.id && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setSubtaskMenuOpen(null)} />
-                    <div className="absolute right-0 top-6 z-20 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[120px]">
-                      <button type="button" onClick={() => { setEditingSubtaskId(s.id); setEditingSubtaskTitle(s.title); setSubtaskMenuOpen(null); }} className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50">Ändra</button>
-                      <button type="button" onClick={() => { handleCardDeleteSubtask(s); setSubtaskMenuOpen(null); }} className="w-full text-left text-xs px-3 py-1.5 text-red-500 hover:bg-red-50">Ta bort</button>
-                      {!s.id.startsWith("temp-") && (
-                        <button type="button" onClick={() => { handleCardPromoteSubtask(s); setSubtaskMenuOpen(null); }} className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50">Eget kort</button>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-          </>
-        )}
-
-        {isLoggedIn && !addingSubtask && (
-          <button
-            type="button"
-            onClick={() => setAddingSubtask(true)}
-            className="mt-1 flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all"
-          >
-            <span className="text-base leading-none font-light">+</span> Lägg till uppgift
-          </button>
-        )}
-
-        {isLoggedIn && addingSubtask && (
-          <div className="mt-1 flex items-center gap-1">
-            <input
-              autoFocus
-              type="text"
-              value={newSubtaskInput}
-              onChange={(e) => setNewSubtaskInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") { handleQuickAddSubtask(); }
-                if (e.key === "Escape") { setAddingSubtask(false); setNewSubtaskInput(""); }
-              }}
-              onBlur={() => { if (!newSubtaskInput.trim()) setAddingSubtask(false); else handleQuickAddSubtask().then(() => setAddingSubtask(false)); }}
-              placeholder="Ny uppgift..."
-              className="flex-1 text-xs border-b border-blue-400 outline-none py-0.5 placeholder-gray-300 bg-transparent text-gray-700"
-            />
-          </div>
-        )}
-      </div>
-
-      {/* AI status badge */}
-      {(isAiRunning || aiStatus === "awaiting_review" || aiStatus === "approved") && (
-        <div className="mt-2">
-          {isAiRunning && (
-            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
-              <span className="animate-spin inline-block w-3 h-3 border border-blue-400 border-t-transparent rounded-full" />
-              🤖 AI arbetar...
-            </span>
-          )}
-          {!isAiRunning && aiStatus === "awaiting_review" && (
-            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
-              🤖 Väntar på granskning
-            </span>
-          )}
-          {!isAiRunning && aiStatus === "approved" && (
-            <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
-              🤖 AI godkänd
-            </span>
-          )}
-        </div>
-      )}
-
-      <div className="flex items-center mt-2 text-xs text-gray-400">
-        {card.assignee ? (
-          <span className="truncate">→ {card.assignee.name?.split(" ")[0]}</span>
-        ) : (
-          <span>{card.createdBy?.name?.split(" ")[0] ?? "Unknown"} · {timeAgo(card.createdAt)}</span>
-        )}
-        {due && (
-          <span className="ml-auto flex items-center gap-1 shrink-0">
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            {due}
-          </span>
-        )}
-      </div>
-      {card.estimate && (
-        <div className="mt-2">
-          <span
-            className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${estimateBadgeColor}`}
-            title={card.estimate.aiReasoning}
-          >
-            &#9200; ~{roundHalf(card.estimate.aiHours)} h
-          </span>
-        </div>
-      )}
-
-      {/* Tilldela AI button + panel */}
-      <div
-        className="mt-2"
-        onClick={(e) => e.stopPropagation()}
-        onPointerDown={(e) => e.stopPropagation()}
-      >
-        <button
-          className="text-xs text-gray-400 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={(e) => { e.stopPropagation(); setAiPanelOpen((v) => !v); }}
-        >
-          🤖 Tilldela AI
-        </button>
-        {aiPanelOpen && (
-          <div className="mt-2 p-2 bg-gray-50 border border-gray-200 rounded-lg space-y-2">
-            {isAiRunning && (
-              <p className="text-xs text-amber-600 font-medium">
-                ⚠️ Kör inte om kort redan har en aktiv AI-körning
-              </p>
+                  {currentUserId === card.createdById && (
+                    <button
+                      type="button"
+                      onClick={() => { setCardMenuOpen(false); onDelete(card.id); }}
+                      className="w-full text-left text-xs px-3 py-1.5 text-red-500 hover:bg-red-50"
+                    >
+                      Ta bort
+                    </button>
+                  )}
+                </div>
+              </>
             )}
-            <select
-              value={selectedAgent}
-              onChange={(e) => setSelectedAgent(e.target.value)}
-              className="w-full text-xs border border-gray-200 rounded px-2 py-1.5 bg-white focus:outline-none focus:border-purple-400"
-            >
-              {AGENT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-            <textarea
-              value={additionalContext}
-              onChange={(e) => setAdditionalContext(e.target.value)}
-              placeholder="Lägg till kontext eller specifika krav..."
-              rows={2}
-              className="w-full text-xs border border-gray-200 rounded px-2 py-1.5 bg-white focus:outline-none focus:border-purple-400 resize-none"
-            />
+          </div>
+          <Avatar name={card.assignee?.name ?? card.createdBy?.name ?? null} />
+        </div>
+
+        {/* Rad 2 + expanderat block */}
+        <div>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            {card.description ? (
+              <div
+                className="text-xs text-gray-400 leading-snug truncate flex-1 min-w-0 prose prose-xs max-w-none [&_*]:text-xs [&_*]:text-gray-400 [&_p]:m-0"
+                dangerouslySetInnerHTML={{ __html: card.description }}
+              />
+            ) : (
+              <div className="flex-1" />
+            )}
             <button
-              disabled={isAiRunning}
-              onClick={(e) => {
-                e.stopPropagation();
-                onRunAI(card.id, selectedAgent, additionalContext);
-                setAiPanelOpen(false);
-              }}
-              className="w-full flex items-center justify-center gap-1.5 text-xs font-medium bg-purple-600 text-white px-3 py-1.5 rounded hover:bg-purple-700 disabled:opacity-50 transition-colors"
+              type="button"
+              onMouseEnter={() => setDetailsExpanded(true)}
+              onClick={(e) => { e.stopPropagation(); setDetailsExpanded(false); }}
+              onPointerDown={(e) => e.stopPropagation()}
+              className="shrink-0 text-gray-300 hover:text-gray-500 transition-colors p-0.5"
+              title="Visa detaljer"
             >
-              {isAiRunning ? (
-                <>
-                  <span className="animate-spin inline-block w-3 h-3 border border-white border-t-transparent rounded-full" />
-                  Kör...
-                </>
-              ) : (
-                "Kör AI-agent"
-              )}
+              <svg className={`w-3.5 h-3.5 transition-transform ${detailsExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
           </div>
-        )}
-      </div>
 
-      {currentUserId === card.createdById && (
-        <button
-          className="mt-2 text-xs text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={(e) => { e.stopPropagation(); onDelete(card.id); }}
-          onPointerDown={(e) => e.stopPropagation()}
-        >
-          Delete
-        </button>
-      )}
+          {detailsExpanded && (
+            <div
+              className="mt-1.5 pt-1.5 border-t border-gray-100 space-y-0.5"
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              {localSubtasks.length > 0 && (
+                <>
+                  <span className={`text-xs font-medium ${localSubtasks.every((s) => s.done) ? "text-green-600" : "text-gray-400"}`}>
+                    {localSubtasks.filter((s) => s.done).length}/{localSubtasks.length} klart
+                  </span>
+                  {localSubtasks.map((s) => (
+                    <div key={s.id} className="relative flex items-center gap-1.5 group/sub py-0.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: !t.done } : t));
+                          if (!s.id.startsWith("temp-")) startTransition(async () => { await toggleSubtask(s.id, !s.done); });
+                        }}
+                        className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"}`}
+                      >
+                        {s.done && <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                      </button>
+
+                      {editingSubtaskId === s.id ? (
+                        <input
+                          autoFocus
+                          className="flex-1 text-xs border-b border-blue-400 outline-none bg-transparent text-gray-700 py-0"
+                          value={editingSubtaskTitle}
+                          onChange={(e) => setEditingSubtaskTitle(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === "Enter") handleCardSaveSubtaskEdit(s); if (e.key === "Escape") setEditingSubtaskId(null); }}
+                          onBlur={() => handleCardSaveSubtaskEdit(s)}
+                        />
+                      ) : (
+                        <span className={`flex-1 text-xs leading-snug ${s.done ? "line-through text-gray-400" : "text-gray-600"}`}>{s.title}</span>
+                      )}
+
+                      {isLoggedIn && (
+                        <button
+                          type="button"
+                          onClick={() => setSubtaskMenuOpen(subtaskMenuOpen === s.id ? null : s.id)}
+                          className="opacity-0 group-hover/sub:opacity-100 text-gray-400 hover:text-gray-600 transition-opacity text-xs leading-none px-0.5"
+                        >
+                          •••
+                        </button>
+                      )}
+
+                      {subtaskMenuOpen === s.id && (
+                        <>
+                          <div className="fixed inset-0 z-10" onClick={() => setSubtaskMenuOpen(null)} />
+                          <div className="absolute right-0 top-6 z-20 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[120px]">
+                            <button type="button" onClick={() => { setEditingSubtaskId(s.id); setEditingSubtaskTitle(s.title); setSubtaskMenuOpen(null); }} className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50">Ändra</button>
+                            <button type="button" onClick={() => { handleCardDeleteSubtask(s); setSubtaskMenuOpen(null); }} className="w-full text-left text-xs px-3 py-1.5 text-red-500 hover:bg-red-50">Ta bort</button>
+                            {!s.id.startsWith("temp-") && (
+                              <button type="button" onClick={() => { handleCardPromoteSubtask(s); setSubtaskMenuOpen(null); }} className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50">Eget kort</button>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </>
+              )}
+
+              {isLoggedIn && !addingSubtask && (
+                <button
+                  type="button"
+                  onClick={() => setAddingSubtask(true)}
+                  className="mt-1 flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-all"
+                >
+                  <span className="text-base leading-none font-light">+</span> Lägg till uppgift
+                </button>
+              )}
+
+              {isLoggedIn && addingSubtask && (
+                <div className="mt-1 flex items-center gap-1">
+                  <input
+                    autoFocus
+                    type="text"
+                    value={newSubtaskInput}
+                    onChange={(e) => setNewSubtaskInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") { handleQuickAddSubtask(); }
+                      if (e.key === "Escape") { setAddingSubtask(false); setNewSubtaskInput(""); }
+                    }}
+                    onBlur={() => { if (!newSubtaskInput.trim()) setAddingSubtask(false); else handleQuickAddSubtask().then(() => setAddingSubtask(false)); }}
+                    placeholder="Ny uppgift..."
+                    className="flex-1 text-xs border-b border-blue-400 outline-none py-0.5 placeholder-gray-300 bg-transparent text-gray-700"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
