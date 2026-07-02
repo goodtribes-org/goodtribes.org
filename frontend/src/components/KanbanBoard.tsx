@@ -593,6 +593,8 @@ function KanbanCardItem({
   const aiStatus = latestAiRun?.status;
   const isAiRunning = runningAI.has(card.id) || aiStatus === "running";
 
+  const categoryHex = card.category ? CATEGORY_META[card.category]?.hex : null;
+
   return (
     <div
       ref={setNodeRef}
@@ -600,8 +602,12 @@ function KanbanCardItem({
       {...attributes}
       onClick={() => onOpenCard(card)}
       suppressHydrationWarning
-      className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm cursor-pointer group hover:shadow-md hover:border-gray-300 transition-all"
+      className="bg-white border border-gray-200 rounded-lg shadow-sm cursor-pointer group hover:shadow-md hover:border-gray-300 transition-all overflow-hidden"
     >
+      {categoryHex && (
+        <div className="h-1" style={{ backgroundColor: categoryHex }} title={CATEGORY_META[card.category!].label} />
+      )}
+      <div className="p-3">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
           <span
@@ -626,16 +632,6 @@ function KanbanCardItem({
           className="text-xs text-gray-500 mt-1 leading-snug line-clamp-2 prose prose-xs max-w-none [&_*]:text-xs [&_*]:text-gray-500 [&_p]:m-0"
           dangerouslySetInnerHTML={{ __html: card.description }}
         />
-      )}
-
-      {card.category && CATEGORY_META[card.category] && (
-        <div className="mt-2">
-          <span
-            className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full ${CATEGORY_META[card.category].bg} ${CATEGORY_META[card.category].text}`}
-          >
-            {CATEGORY_META[card.category].label}
-          </span>
-        </div>
       )}
 
       {localSubtasks.length > 0 && (
@@ -789,6 +785,7 @@ function KanbanCardItem({
           Delete
         </button>
       )}
+      </div>
     </div>
   );
 }
