@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { JoinButton, JoinRequestsPanel } from "./JoinSection";
-import InviteForm from "./invite/InviteForm";
+import InviteForm from "./(workspace)/invite/InviteForm";
 import TeamManager from "./TeamManager";
 import FlagProjectButton from "@/components/FlagProjectButton";
 import KudosButton from "@/components/KudosButton";
