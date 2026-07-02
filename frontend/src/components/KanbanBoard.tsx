@@ -1044,8 +1044,8 @@ function DroppableColumn({
     <div className="flex flex-col flex-1 min-w-52 shrink-0">
       <div className="h-1 rounded-t-lg" style={{ backgroundColor: col.color }} />
       <div
-        className="flex items-center justify-between px-3 py-2 border-x border-gray-200 bg-white"
-        style={{ borderTop: `1px solid ${col.color}22` }}
+        className="flex items-center justify-between px-3 py-2 border-x border-gray-200"
+        style={{ backgroundColor: `${col.color}12`, borderTop: `1px solid ${col.color}22` }}
       >
         <span className="text-sm font-semibold text-gray-700">
           {col.label}{" "}
@@ -1069,7 +1069,7 @@ function DroppableColumn({
         <div
           ref={setNodeRef}
           className="flex-1 min-h-32 p-2 border-x border-b border-gray-200 rounded-b-lg flex flex-col gap-2 transition-colors"
-          style={{ backgroundColor: isOver ? `${col.color}22` : `${col.color}08` }}
+          style={{ backgroundColor: isOver ? `${col.color}30` : `${col.color}12` }}
         >
           {cards.length === 0 && !isOver && (
             <div
