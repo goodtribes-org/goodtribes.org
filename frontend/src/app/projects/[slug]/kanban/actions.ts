@@ -70,6 +70,40 @@ export async function createCard(
   return { cardId: card.id };
 }
 
+export async function promoteSubtaskToCard(subtaskId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+
+  const subtask = await prisma.kanbanCardSubtask.findUnique({
+    where: { id: subtaskId },
+    include: { card: true },
+  });
+  if (!subtask) return { error: "Subtask not found" };
+
+  const maxOrder = await prisma.kanbanCard.aggregate({
+    where: { projectSlug: subtask.card.projectSlug, column: subtask.card.column },
+    _max: { order: true },
+  });
+
+  const newCard = await prisma.kanbanCard.create({
+    data: {
+      projectSlug: subtask.card.projectSlug,
+      title: subtask.title,
+      column: subtask.card.column,
+      order: (maxOrder._max.order ?? -1) + 1,
+      createdById: session.user.id,
+      priority: subtask.card.priority,
+      category: subtask.card.category,
+    },
+  });
+
+  await prisma.kanbanCardSubtask.delete({ where: { id: subtaskId } });
+
+  revalidatePath(`/projects/${subtask.card.projectSlug}/kanban`);
+  revalidatePath(`/projects/${subtask.card.projectSlug}/tasks`);
+  return { card: newCard };
+}
+
 export async function addSubtask(cardId: string, title: string) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };

@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask, addComment, deleteComment } from "@/app/projects/[slug]/kanban/actions";
+import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask, addComment, deleteComment, promoteSubtaskToCard } from "@/app/projects/[slug]/kanban/actions";
 import dynamic from "next/dynamic";
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
@@ -235,6 +235,35 @@ function CardDetailModal({
     }
   }
 
+  async function handlePromoteSubtask(s: Subtask) {
+    if (isNew || s.id.startsWith("temp-")) return;
+    setLocalSubtasks((prev) => prev.filter((t) => t.id !== s.id));
+    const result = await promoteSubtaskToCard(s.id);
+    if (result && "card" in result && result.card) {
+      const c = result.card;
+      onAdd?.({
+        id: c.id,
+        projectSlug: c.projectSlug,
+        title: c.title,
+        description: null,
+        dueDate: null,
+        startDate: null,
+        column: c.column,
+        order: c.order,
+        priority: c.priority,
+        category: c.category ?? null,
+        assigneeId: null,
+        assignee: null,
+        createdById: c.createdById,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+        createdBy: null,
+        subtasks: [],
+        comments: [],
+      });
+    }
+  }
+
   async function handleAddSubtask() {
     if (!newSubtaskInput.trim()) return;
     const t = newSubtaskInput.trim();
@@ -384,11 +413,26 @@ function CardDetailModal({
           <div>
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Deluppgifter</p>
-              {localSubtasks.length > 0 && (
-                <span className={`text-xs font-medium ${donePct === 100 ? "text-green-600" : "text-gray-400"}`}>
-                  {localSubtasks.filter((s) => s.done).length}/{localSubtasks.length}
-                </span>
-              )}
+              <div className="flex items-center gap-3">
+                {localSubtasks.length > 0 && isLoggedIn && !isNew && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const eligible = localSubtasks.filter((s) => !s.id.startsWith("temp-"));
+                      eligible.forEach((s) => handlePromoteSubtask(s));
+                    }}
+                    className="text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors"
+                    title="Gör om alla deluppgifter till egna kanban-kort"
+                  >
+                    Gör om alla till kort
+                  </button>
+                )}
+                {localSubtasks.length > 0 && (
+                  <span className={`text-xs font-medium ${donePct === 100 ? "text-green-600" : "text-gray-400"}`}>
+                    {localSubtasks.filter((s) => s.done).length}/{localSubtasks.length}
+                  </span>
+                )}
+              </div>
             </div>
 
             {localSubtasks.length > 0 && (
@@ -401,21 +445,33 @@ function CardDetailModal({
                 </div>
                 <div className="space-y-1 mb-3">
                   {localSubtasks.map((s) => (
-                    <button
+                    <div
                       key={s.id}
-                      type="button"
-                      onClick={() => isLoggedIn && handleToggle(s)}
-                      className={`flex items-center gap-2.5 w-full text-left py-1 group/sub ${isLoggedIn ? "cursor-pointer" : "cursor-default"}`}
+                      className="flex items-center gap-2 group/sub py-1"
                     >
-                      <span className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"}`}>
+                      <button
+                        type="button"
+                        onClick={() => isLoggedIn && handleToggle(s)}
+                        className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"} ${isLoggedIn ? "cursor-pointer" : "cursor-default"}`}
+                      >
                         {s.done && (
                           <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         )}
-                      </span>
-                      <span className={`text-sm ${s.done ? "line-through text-gray-400" : "text-gray-700"}`}>{s.title}</span>
-                    </button>
+                      </button>
+                      <span className={`flex-1 text-sm ${s.done ? "line-through text-gray-400" : "text-gray-700"}`}>{s.title}</span>
+                      {isLoggedIn && !isNew && !s.id.startsWith("temp-") && (
+                        <button
+                          type="button"
+                          onClick={() => handlePromoteSubtask(s)}
+                          className="opacity-0 group-hover/sub:opacity-100 text-gray-300 hover:text-blue-500 transition-all text-sm leading-none"
+                          title="Gör om till kanban-kort"
+                        >
+                          →
+                        </button>
+                      )}
+                    </div>
                   ))}
                 </div>
               </>
