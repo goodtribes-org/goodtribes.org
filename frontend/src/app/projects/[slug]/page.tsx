@@ -10,6 +10,9 @@ import InviteForm from "./invite/InviteForm";
 import TeamManager from "./TeamManager";
 import FlagProjectButton from "@/components/FlagProjectButton";
 import KudosButton from "@/components/KudosButton";
+import { SdgIcon } from "@/components/SdgIcon";
+import Tooltip from "@/components/Tooltip";
+import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 
 function MemberAvatar({
   name,
@@ -262,8 +265,126 @@ export default async function ProjectDetailPage({
   const upcomingEvents = monthEvents.filter((e) => e.startsAt >= now);
   const projectLinks: string[] = (project as typeof project & { links: string[] }).links ?? [];
 
+  const sortedMembers = [...project.members].sort((a, b) =>
+    a.user.id === (project as typeof project & { ownerId: string }).ownerId ? -1
+    : b.user.id === (project as typeof project & { ownerId: string }).ownerId ? 1 : 0
+  );
+
   return (
     <div>
+      {/* Hero: full-bleed with blurred background + two photo cards */}
+      <div
+        className="relative -mt-8 mb-10"
+        style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
+      >
+        <div className="absolute top-0 left-0 right-0 overflow-hidden" style={{ height: "490px" }}>
+          {project.imageUrl ? (
+            <Image src={project.imageUrl} alt="" fill unoptimized className="object-cover blur-2xl scale-110" sizes="100vw" />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-dark-slate to-dark-slate/70" />
+          )}
+        </div>
+        <div className="relative z-10">
+          <div className="flex justify-center pt-5 pb-2 px-6">
+            <h1
+              className="text-5xl md:text-6xl font-bold text-center leading-tight"
+              style={{
+                color: "white",
+                textShadow: "-1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999, 2px 4px 12px rgba(0,0,0,0.35)",
+                transform: "rotate(-3deg)",
+                marginRight: "330px",
+              }}
+            >
+              {project.title}
+            </h1>
+          </div>
+          <div className="flex justify-center px-4 pb-10">
+            <div className="flex flex-col md:flex-row gap-5 items-stretch">
+              {/* Card 1: project image */}
+              <div
+                className="shrink-0 bg-white overflow-hidden"
+                style={{ width: "820px", height: "460px", border: "24px solid white", boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)", transform: "rotate(-3deg)", position: "relative", zIndex: 1 }}
+              >
+                {project.imageUrl ? (
+                  <div className="relative w-full h-full">
+                    <Image src={project.imageUrl} alt={project.title} fill unoptimized className="object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-dry-sage/20">
+                    <span className="text-6xl font-bold text-dark-slate/20">{project.title[0]}</span>
+                  </div>
+                )}
+              </div>
+              {/* Card 2: team + SDG + join */}
+              <div
+                className="shrink-0 bg-white rounded-2xl p-5 flex flex-col"
+                style={{ width: "320px", minHeight: "460px", boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)", marginLeft: "-10px", transform: "rotate(3deg)" }}
+              >
+                {project.members.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-sm font-semibold text-dark-slate/70 mb-2 uppercase tracking-wide">
+                      GoodTribes teamet <span className="text-[9px] font-normal text-dark-slate/40">· {project.members.length} {project.members.length === 1 ? "medlem" : "medlemmar"}</span>
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      {sortedMembers.slice(0, 12).map((m, i) => {
+                        const isProjectOwner = m.user.id === (project as typeof project & { ownerId: string }).ownerId;
+                        const initials = (m.user.name ?? "?").charAt(0).toUpperCase();
+                        const firstName = (m.user.name ?? "?").split(" ")[0];
+                        const avatarClass = `w-14 h-14 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-base font-semibold text-dark-slate shrink-0 ring-2 transition-all duration-200 ease-in-out hover:scale-[1.3] hover:shadow-lg cursor-pointer ${isProjectOwner ? "ring-seagrass" : "ring-white"}`;
+                        const avatarContent = m.user.image ? (
+                          <Image src={m.user.image} alt={m.user.name ?? ""} fill className="object-cover" unoptimized />
+                        ) : initials;
+                        const avatar = m.user.showProfile ? (
+                          <Link href={`/members/${m.user.id}`} className={avatarClass}>{avatarContent}</Link>
+                        ) : (
+                          <div className={avatarClass}>{avatarContent}</div>
+                        );
+                        return (
+                          <Tooltip key={i} lines={isProjectOwner ? ["Founder"] : []}>
+                            <div className="flex flex-col items-center gap-1 w-14">
+                              {avatar}
+                              <span className="text-[9px] text-dark-slate/60 text-center truncate w-full leading-tight">{firstName}</span>
+                            </div>
+                          </Tooltip>
+                        );
+                      })}
+                      {project.members.length > 12 && (
+                        <div className="flex flex-col items-center gap-1 w-14">
+                          <div className="w-14 h-14 rounded-full ring-2 ring-white bg-muted-teal/20 flex items-center justify-center text-xs font-semibold text-dark-slate/60">+{project.members.length - 12}</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                <div className="flex-1" />
+                <div className="mb-4">
+                  <Link href={`/projects/${slug}`} className="flex justify-center w-full py-3 bg-seagrass text-white rounded-xl font-bold text-base hover:bg-seagrass/90 transition-colors shadow-md">
+                    Support GoodTribes
+                  </Link>
+                </div>
+                {(project as typeof project & { sdgGoals: number[] }).sdgGoals.length > 0 && (
+                  <div className="mt-2">
+                    <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">Agenda 2030:</p>
+                    <div className="grid grid-cols-6 gap-1">
+                      {[...Array.from({ length: 17 }, (_, i) => i + 1), 18].map((n) => {
+                        const isSelected = (project as typeof project & { sdgGoals: number[] }).sdgGoals.includes(n) || n === 18;
+                        return (
+                          <Tooltip key={n} lines={[`SDG ${n}`, SDG_LABELS_SV[n] ?? ""]}>
+                            <a href={SDG_UN_URLS[n] ?? "https://www.un.org/sustainabledevelopment/sustainable-development-goals/"} target="_blank" rel="noopener noreferrer" className="transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg block cursor-pointer">
+                              <SdgIcon n={n} size={44} dark={!isSelected} />
+                            </a>
+                          </Tooltip>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {isOwnerOrAdmin && project.joinRequests.length > 0 && (
         <div className="mb-8">
           <JoinRequestsPanel requests={project.joinRequests} slug={slug} />
