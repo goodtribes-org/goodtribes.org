@@ -1311,50 +1311,29 @@ export default function KanbanBoard({
     <div>
       {/* Filter bar */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        {/* Search */}
-        <input
-          type="search"
-          value={filterQuery}
-          onChange={(e) => setFilterQuery(e.target.value)}
-          placeholder="Sök kort…"
-          className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-400 w-44"
-        />
-
-        {/* Category chips */}
-        <div className="flex gap-1 flex-wrap">
+        {/* Category dropdown */}
+        <select
+          value={filterCategory}
+          onChange={(e) => setFilterCategory(e.target.value)}
+          className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-blue-400"
+        >
+          <option value="">Alla kategorier</option>
           {Object.entries(CATEGORY_META).map(([key, meta]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setFilterCategory(filterCategory === key ? "" : key)}
-              style={filterCategory === key ? { backgroundColor: meta.hex + "22", borderColor: meta.hex, color: meta.hex } : {}}
-              className={`text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
-                filterCategory === key ? "" : "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700"
-              }`}
-            >
-              {meta.label}
-            </button>
+            <option key={key} value={key}>{meta.label}</option>
           ))}
-        </div>
+        </select>
 
-        {/* Priority chips */}
-        <div className="flex gap-1">
+        {/* Priority dropdown */}
+        <select
+          value={filterPriority}
+          onChange={(e) => setFilterPriority(e.target.value)}
+          className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-blue-400"
+        >
+          <option value="">Alla prioriteter</option>
           {Object.entries(PRIORITY_META).map(([key, meta]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setFilterPriority(filterPriority === key ? "" : key)}
-              className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
-                filterPriority === key
-                  ? "border-current bg-gray-50 " + meta.color
-                  : "border-gray-200 text-gray-500 hover:border-gray-300"
-              }`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} />
-              {meta.label}
-            </button>
+            <option key={key} value={key}>{meta.label}</option>
           ))}
-        </div>
+        </select>
 
         {/* Assignee */}
         {members.length > 0 && (
@@ -1381,8 +1360,19 @@ export default function KanbanBoard({
           </button>
         )}
         {totalVisible !== null && (
-          <span className="ml-auto text-xs text-gray-400">{totalVisible} av {totalCards} kort</span>
+          <span className="text-xs text-gray-400">{totalVisible} av {totalCards} kort</span>
         )}
+
+        {/* Search — rightmost */}
+        <div className="ml-auto">
+          <input
+            type="search"
+            value={filterQuery}
+            onChange={(e) => setFilterQuery(e.target.value)}
+            placeholder="Sök kort…"
+            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-400 w-44"
+          />
+        </div>
       </div>
 
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
