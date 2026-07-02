@@ -48,7 +48,7 @@ export default async function RootLayout({
     <html lang="en" className={`bg-white ${inter.className}`}>
       <body className="min-h-screen bg-white text-dark-slate">
         <SessionProvider session={session}>
-          <header className="border-b border-muted-teal">
+          <header>
             <nav className="w-full px-6 py-3 flex items-center gap-6">
               <Link href="/" className="shrink-0">
                 <Image
