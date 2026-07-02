@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask, addComment, deleteComment, promoteSubtaskToCard } from "@/app/projects/[slug]/kanban/actions";
+import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask, addComment, deleteComment, promoteSubtaskToCard, deleteSubtask, updateSubtaskTitle } from "@/app/projects/[slug]/kanban/actions";
 import dynamic from "next/dynamic";
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
@@ -167,6 +167,9 @@ function CardDetailModal({
   const [dueDate, setDueDate] = useState(toDateInput(card.dueDate));
   const [localSubtasks, setLocalSubtasks] = useState<Subtask[]>(card.subtasks ?? []);
   const [newSubtaskInput, setNewSubtaskInput] = useState("");
+  const [subtaskMenuOpen, setSubtaskMenuOpen] = useState<string | null>(null);
+  const [editingSubtaskId, setEditingSubtaskId] = useState<string | null>(null);
+  const [editingSubtaskTitle, setEditingSubtaskTitle] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [comments, setComments] = useState<Comment[]>(card.comments ?? []);
   const [commentBody, setCommentBody] = useState("");
@@ -262,6 +265,19 @@ function CardDetailModal({
         comments: [],
       });
     }
+  }
+
+  async function handleDeleteSubtask(s: Subtask) {
+    setLocalSubtasks((prev) => prev.filter((t) => t.id !== s.id));
+    if (!s.id.startsWith("temp-")) await deleteSubtask(s.id);
+  }
+
+  async function handleSaveSubtaskEdit(s: Subtask) {
+    const newTitle = editingSubtaskTitle.trim();
+    if (!newTitle) { setEditingSubtaskId(null); return; }
+    setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, title: newTitle } : t));
+    setEditingSubtaskId(null);
+    if (!s.id.startsWith("temp-")) await updateSubtaskTitle(s.id, newTitle);
   }
 
   async function handleAddSubtask() {
@@ -445,10 +461,7 @@ function CardDetailModal({
                 </div>
                 <div className="space-y-1 mb-3">
                   {localSubtasks.map((s) => (
-                    <div
-                      key={s.id}
-                      className="flex items-center gap-2 group/sub py-1"
-                    >
+                    <div key={s.id} className="relative flex items-center gap-2 group/sub py-1">
                       <button
                         type="button"
                         onClick={() => isLoggedIn && handleToggle(s)}
@@ -460,16 +473,62 @@ function CardDetailModal({
                           </svg>
                         )}
                       </button>
-                      <span className={`flex-1 text-sm ${s.done ? "line-through text-gray-400" : "text-gray-700"}`}>{s.title}</span>
-                      {isLoggedIn && !isNew && !s.id.startsWith("temp-") && (
+
+                      {editingSubtaskId === s.id ? (
+                        <input
+                          autoFocus
+                          className="flex-1 text-sm border-b border-blue-400 outline-none py-0.5 text-gray-700 bg-transparent"
+                          value={editingSubtaskTitle}
+                          onChange={(e) => setEditingSubtaskTitle(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSaveSubtaskEdit(s);
+                            if (e.key === "Escape") setEditingSubtaskId(null);
+                          }}
+                          onBlur={() => handleSaveSubtaskEdit(s)}
+                        />
+                      ) : (
+                        <span className={`flex-1 text-sm ${s.done ? "line-through text-gray-400" : "text-gray-700"}`}>{s.title}</span>
+                      )}
+
+                      {isLoggedIn && (
                         <button
                           type="button"
-                          onClick={() => handlePromoteSubtask(s)}
-                          className="opacity-0 group-hover/sub:opacity-100 text-gray-300 hover:text-blue-500 transition-all text-sm leading-none"
-                          title="Gör om till kanban-kort"
+                          onClick={() => setSubtaskMenuOpen(subtaskMenuOpen === s.id ? null : s.id)}
+                          className="opacity-0 group-hover/sub:opacity-100 text-gray-400 hover:text-gray-700 transition-opacity px-1 text-base leading-none"
                         >
-                          →
+                          •••
                         </button>
+                      )}
+
+                      {subtaskMenuOpen === s.id && (
+                        <>
+                          <div className="fixed inset-0 z-10" onClick={() => setSubtaskMenuOpen(null)} />
+                          <div className="absolute right-0 top-7 z-20 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[120px]">
+                            <button
+                              type="button"
+                              onClick={() => { setEditingSubtaskId(s.id); setEditingSubtaskTitle(s.title); setSubtaskMenuOpen(null); }}
+                              className="w-full text-left text-sm px-3 py-1.5 text-gray-700 hover:bg-gray-50 transition-colors"
+                            >
+                              Ändra
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { handleDeleteSubtask(s); setSubtaskMenuOpen(null); }}
+                              className="w-full text-left text-sm px-3 py-1.5 text-red-500 hover:bg-red-50 transition-colors"
+                            >
+                              Ta bort
+                            </button>
+                            {!isNew && !s.id.startsWith("temp-") && (
+                              <button
+                                type="button"
+                                onClick={() => { handlePromoteSubtask(s); setSubtaskMenuOpen(null); }}
+                                className="w-full text-left text-sm px-3 py-1.5 text-gray-700 hover:bg-gray-50 transition-colors"
+                              >
+                                Eget kort
+                              </button>
+                            )}
+                          </div>
+                        </>
                       )}
                     </div>
                   ))}

@@ -104,6 +104,39 @@ export async function promoteSubtaskToCard(subtaskId: string) {
   return { card: newCard };
 }
 
+export async function deleteSubtask(subtaskId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+
+  const subtask = await prisma.kanbanCardSubtask.findUnique({
+    where: { id: subtaskId },
+    include: { card: { select: { projectSlug: true } } },
+  });
+  if (!subtask) return { error: "Subtask not found" };
+
+  await prisma.kanbanCardSubtask.delete({ where: { id: subtaskId } });
+  revalidatePath(`/projects/${subtask.card.projectSlug}/kanban`);
+  return { ok: true };
+}
+
+export async function updateSubtaskTitle(subtaskId: string, title: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+
+  const subtask = await prisma.kanbanCardSubtask.findUnique({
+    where: { id: subtaskId },
+    include: { card: { select: { projectSlug: true } } },
+  });
+  if (!subtask) return { error: "Subtask not found" };
+
+  await prisma.kanbanCardSubtask.update({
+    where: { id: subtaskId },
+    data: { title: title.trim() },
+  });
+  revalidatePath(`/projects/${subtask.card.projectSlug}/kanban`);
+  return { ok: true };
+}
+
 export async function addSubtask(cardId: string, title: string) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
