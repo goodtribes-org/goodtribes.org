@@ -275,7 +275,7 @@ export default async function ProjectDetailPage({
     <div>
       {/* Hero: full-bleed with blurred background + two photo cards */}
       <div
-        className="relative mb-10"
+        className="relative -mt-8 mb-10"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
         <div className="absolute top-0 left-0 right-0 overflow-hidden" style={{ height: "490px" }}>
