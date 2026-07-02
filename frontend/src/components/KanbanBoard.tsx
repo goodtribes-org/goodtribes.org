@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask, addComment, deleteComment, promoteSubtaskToCard, deleteSubtask, updateSubtaskTitle } from "@/app/projects/[slug]/kanban/actions";
+import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask, addComment, deleteComment, promoteSubtaskToCard, deleteSubtask, updateSubtaskTitle } from "@/app/projects/[slug]/(workspace)/kanban/actions";
 import dynamic from "next/dynamic";
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 

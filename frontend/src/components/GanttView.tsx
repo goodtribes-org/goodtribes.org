@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateCard } from "@/app/projects/[slug]/kanban/actions";
+import { updateCard } from "@/app/projects/[slug]/(workspace)/kanban/actions";
 import Tooltip from "@/components/Tooltip";
 
 type GanttCard = {
