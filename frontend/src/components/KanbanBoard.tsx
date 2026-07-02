@@ -1069,7 +1069,7 @@ function DroppableColumn({
         <div
           ref={setNodeRef}
           className="flex-1 min-h-32 p-2 border-x border-b border-gray-200 rounded-b-lg flex flex-col gap-2 transition-colors"
-          style={{ backgroundColor: isOver ? `${col.color}10` : cards.length === 0 ? "#fafafa" : "white" }}
+          style={{ backgroundColor: isOver ? `${col.color}22` : `${col.color}08` }}
         >
           {cards.length === 0 && !isOver && (
             <div
