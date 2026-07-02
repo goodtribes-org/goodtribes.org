@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useEffect, useMemo } from "react";
+import React, { useState, useTransition, useEffect, useMemo } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -1104,6 +1104,7 @@ export default function KanbanBoard({
   members,
   requestAddColumn,
   onRequestAddDone,
+  viewToggle,
 }: {
   projectSlug: string;
   initialColumns: Columns;
@@ -1112,6 +1113,7 @@ export default function KanbanBoard({
   members: Member[];
   requestAddColumn?: string | null;
   onRequestAddDone?: () => void;
+  viewToggle?: React.ReactNode;
 }) {
   const [columns, setColumns] = useState<Columns>(initialColumns);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
@@ -1321,7 +1323,7 @@ export default function KanbanBoard({
           </button>
         )}
 
-        <div className="flex flex-1 items-center justify-center gap-2 flex-wrap">
+        <div className="flex flex-1 items-center justify-center gap-2 flex-wrap min-w-0">
           {/* Category */}
           <select
             value={filterCategory}
@@ -1383,6 +1385,8 @@ export default function KanbanBoard({
             <span className="text-xs text-gray-400">{totalVisible}/{totalCards}</span>
           )}
         </div>
+
+        {viewToggle && <div className="shrink-0">{viewToggle}</div>}
       </div>
 
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>

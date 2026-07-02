@@ -68,41 +68,33 @@ export default function TasksPage({
     localStorage.setItem(storageKey, v);
   }
 
+  const viewToggle = (
+    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+      <button
+        onClick={() => switchView("board")}
+        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+          view === "board"
+            ? "bg-white text-dark-slate shadow-sm"
+            : "text-dark-slate/50 hover:text-dark-slate"
+        }`}
+      >
+        Tavla
+      </button>
+      <button
+        onClick={() => switchView("list")}
+        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+          view === "list"
+            ? "bg-white text-dark-slate shadow-sm"
+            : "text-dark-slate/50 hover:text-dark-slate"
+        }`}
+      >
+        Lista
+      </button>
+    </div>
+  );
+
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
-      {isLoggedIn && (
-        <button
-          onClick={() => setAddColKey("BACKLOG")}
-          className="flex items-center gap-1.5 bg-coral text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-watermelon transition-colors"
-        >
-          <span className="text-base leading-none font-bold">+</span> Add task
-        </button>
-      )}
-      <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 ml-auto">
-        <button
-          onClick={() => switchView("board")}
-          className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            view === "board"
-              ? "bg-white text-dark-slate shadow-sm"
-              : "text-dark-slate/50 hover:text-dark-slate"
-          }`}
-        >
-          Tavla
-        </button>
-        <button
-          onClick={() => switchView("list")}
-          className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            view === "list"
-              ? "bg-white text-dark-slate shadow-sm"
-              : "text-dark-slate/50 hover:text-dark-slate"
-          }`}
-        >
-          Lista
-        </button>
-      </div>
-      </div>
-
       {view === "board" && (
         <KanbanBoard
           projectSlug={projectSlug}
@@ -112,16 +104,20 @@ export default function TasksPage({
           members={members}
           requestAddColumn={addColKey}
           onRequestAddDone={() => setAddColKey(null)}
+          viewToggle={viewToggle}
         />
       )}
       {view === "list" && (
-        <TaskListView
-          projectSlug={projectSlug}
-          initialColumns={initialColumns}
-          isLoggedIn={isLoggedIn}
-          currentUserId={currentUserId}
-          members={members}
-        />
+        <div>
+          <div className="flex justify-end mb-4">{viewToggle}</div>
+          <TaskListView
+            projectSlug={projectSlug}
+            initialColumns={initialColumns}
+            isLoggedIn={isLoggedIn}
+            currentUserId={currentUserId}
+            members={members}
+          />
+        </div>
       )}
     </div>
   );
