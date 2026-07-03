@@ -381,8 +381,8 @@ function CardDetailModal({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             disabled={!isLoggedIn}
-            rows={2}
-            className="w-full text-lg font-semibold text-gray-900 resize-none border-0 outline-none bg-transparent placeholder-gray-300 focus:ring-0"
+            rows={1}
+            className="w-full text-lg font-semibold text-gray-900 resize-none border-0 outline-none bg-transparent placeholder-gray-300 focus:ring-0 leading-tight"
             placeholder="Kortets titel"
           />
 
