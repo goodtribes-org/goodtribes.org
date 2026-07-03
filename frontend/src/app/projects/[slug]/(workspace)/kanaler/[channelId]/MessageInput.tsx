@@ -39,16 +39,18 @@ export function MessageInput({ channelId, projectSlug, threadParentId, onSent }:
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-      <RichTextEditor
-        key={editorKey}
-        content={body}
-        onChange={setBody}
-      />
+      <div className="border border-gray-300 rounded-xl overflow-hidden focus-within:border-seagrass focus-within:ring-1 focus-within:ring-seagrass/30 transition-all bg-white">
+        <RichTextEditor
+          key={editorKey}
+          content={body}
+          onChange={setBody}
+        />
+      </div>
       <div className="flex justify-end">
         <button
           type="submit"
           disabled={isPending || isEmpty(body)}
-          className="px-4 py-2 bg-coral text-white text-sm font-medium rounded-md hover:bg-watermelon transition-colors disabled:opacity-60"
+          className="px-4 py-1.5 bg-coral text-white text-sm font-medium rounded-lg hover:bg-watermelon transition-colors disabled:opacity-60"
         >
           {isPending ? "Skickar…" : "Skicka"}
         </button>
