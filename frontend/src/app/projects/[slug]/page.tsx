@@ -367,6 +367,26 @@ export default async function ProjectDetailPage({
                   </div>
                 )}
                 <div className="flex-1" />
+                {!isMember && (
+                  <div className="mb-3">
+                    {userId ? (
+                      <JoinButton
+                        projectId={project.id}
+                        slug={slug}
+                        existingStatus={userJoinRequest?.status ?? null}
+                        label="Join GoodTribes"
+                        className="flex justify-center w-full py-2.5 bg-coral text-white rounded-xl font-bold text-base hover:bg-coral/90 transition-colors shadow-md"
+                      />
+                    ) : (
+                      <Link
+                        href="/auth/signin"
+                        className="flex justify-center w-full py-2.5 bg-coral text-white rounded-xl font-bold text-base hover:bg-coral/90 transition-colors shadow-md"
+                      >
+                        Join GoodTribes
+                      </Link>
+                    )}
+                  </div>
+                )}
                 <div className="mb-4">
                   <Link href={`/projects/${slug}`} className="flex justify-center w-full py-3 bg-seagrass text-white rounded-xl font-bold text-base hover:bg-seagrass/90 transition-colors shadow-md">
                     Support GoodTribes

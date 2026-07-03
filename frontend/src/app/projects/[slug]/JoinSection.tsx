@@ -14,10 +14,14 @@ export function JoinButton({
   projectId,
   slug,
   existingStatus,
+  label = "Join project",
+  className,
 }: {
   projectId: string;
   slug: string;
   existingStatus: string | null;
+  label?: string;
+  className?: string;
 }) {
   const [sent, setSent] = useState(existingStatus === "pending");
   const [message, setMessage] = useState("");
@@ -67,9 +71,9 @@ export function JoinButton({
   ) : (
     <button
       onClick={() => setOpen(true)}
-      className="bg-seagrass text-white text-sm font-medium px-4 py-2 rounded-md hover:opacity-90 transition-opacity"
+      className={className ?? "bg-seagrass text-white text-sm font-medium px-4 py-2 rounded-md hover:opacity-90 transition-opacity"}
     >
-      Join project
+      {label}
     </button>
   );
 }

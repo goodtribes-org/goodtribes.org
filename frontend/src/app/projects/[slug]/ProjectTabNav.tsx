@@ -24,7 +24,8 @@ const MENU_TABS = [
 ];
 
 const ADMIN_TABS = [
-  { label: "Redigera", href: "/edit" },
+  { label: "Redigera",   href: "/edit" },
+  { label: "Medlemmar",  href: "/members" },
 ];
 
 export default function ProjectTabNav({ slug, isOwner }: { slug: string; isOwner?: boolean }) {
