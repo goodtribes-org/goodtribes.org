@@ -726,7 +726,6 @@ function KanbanCardItem({
   const [editingSubtaskId, setEditingSubtaskId] = useState<string | null>(null);
   const [editingSubtaskTitle, setEditingSubtaskTitle] = useState("");
   const [, startTransition] = useTransition();
-  const [cardMenuOpen, setCardMenuOpen] = useState(false);
   const [detailsExpanded, setDetailsExpanded] = useState(false);
   const [descTip, setDescTip] = useState<{ x: number; y: number } | null>(null);
 
@@ -848,45 +847,17 @@ function KanbanCardItem({
 
           {/* Höger: + knapp, sedan avatar med pil rakt under */}
           <div className="shrink-0 flex items-start gap-1">
-            <div
-              className="relative"
-              onClick={(e) => e.stopPropagation()}
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onOpenCard(card); }}
               onPointerDown={(e) => e.stopPropagation()}
+              className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 hover:bg-seagrass hover:text-white text-gray-500 transition-colors mt-0.5"
+              title="Ändra"
             >
-              <button
-                type="button"
-                onClick={() => setCardMenuOpen((v) => !v)}
-                className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 hover:bg-seagrass hover:text-white text-gray-500 transition-colors mt-0.5"
-                title="Alternativ"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M12 4v16M4 12h16" />
-                </svg>
-              </button>
-              {cardMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setCardMenuOpen(false)} />
-                  <div className="absolute right-0 top-6 z-20 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[120px]">
-                    <button
-                      type="button"
-                      onClick={() => { setCardMenuOpen(false); onOpenCard(card); }}
-                      className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50"
-                    >
-                      Ändra
-                    </button>
-                    {currentUserId === card.createdById && (
-                      <button
-                        type="button"
-                        onClick={() => { setCardMenuOpen(false); onDelete(card.id); }}
-                        className="w-full text-left text-xs px-3 py-1.5 text-red-500 hover:bg-red-50"
-                      >
-                        Ta bort
-                      </button>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <path d="M12 4v16M4 12h16" />
+              </svg>
+            </button>
             {/* Avatar + pil staplade */}
             <div className="flex flex-col items-center gap-0.5">
               <Avatar
