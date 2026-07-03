@@ -815,8 +815,6 @@ function KanbanCardItem({
   return (
     <div
       className="relative"
-      onMouseEnter={(e) => { if (card.description) setDescTip({ x: e.clientX, y: e.clientY }); }}
-      onMouseMove={(e) => { if (descTip) setDescTip({ x: e.clientX, y: e.clientY }); }}
       onMouseLeave={() => setDescTip(null)}
     >
     <div
@@ -831,7 +829,11 @@ function KanbanCardItem({
         <div className="h-1" style={{ backgroundColor: categoryHex }} title={CATEGORY_META[card.category!].label} />
       )}
       <div className="px-2 py-1.5">
-        <div className="flex gap-1.5 items-start">
+        <div
+          className="flex gap-1.5 items-start"
+          onMouseEnter={(e) => { if (card.description) setDescTip({ x: e.clientX, y: e.clientY }); }}
+          onMouseMove={(e) => { if (descTip) setDescTip({ x: e.clientX, y: e.clientY }); }}
+        >
           {/* Vänster: titel + metadata */}
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-gray-800 leading-snug truncate">{card.title}</p>
@@ -900,6 +902,7 @@ function KanbanCardItem({
           {detailsExpanded && (
             <div
               className="mt-1.5 pt-1.5 border-t border-gray-100 space-y-0.5"
+              onMouseEnter={() => setDescTip(null)}
               onClick={(e) => e.stopPropagation()}
               onPointerDown={(e) => e.stopPropagation()}
             >
