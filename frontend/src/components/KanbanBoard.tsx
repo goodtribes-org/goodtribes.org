@@ -117,14 +117,20 @@ function formatDate(date: Date | string | null): string | null {
 }
 
 function Avatar({ name, image }: { name: string | null; image?: string | null }) {
-  if (image) {
-    return (
-      <img src={image} alt={name ?? ""} className="w-7 h-7 rounded-full object-cover shrink-0" />
-    );
-  }
+  const [imgFailed, setImgFailed] = useState(false);
   const initials = name
     ? name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
     : "?";
+  if (image && !imgFailed) {
+    return (
+      <img
+        src={image}
+        alt={name ?? ""}
+        className="w-7 h-7 rounded-full object-cover shrink-0"
+        onError={() => setImgFailed(true)}
+      />
+    );
+  }
   return (
     <div className="w-7 h-7 rounded-full bg-seagrass flex items-center justify-center text-white text-xs font-bold shrink-0">
       {initials}
