@@ -1318,7 +1318,7 @@ export default function KanbanBoard({
           <button
             type="button"
             onClick={() => openNewCard("BACKLOG")}
-            className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors shrink-0"
+            className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-coral text-white hover:bg-watermelon transition-colors shrink-0"
           >
             <span className="text-base leading-none font-light">+</span> Lägg till kort
           </button>
