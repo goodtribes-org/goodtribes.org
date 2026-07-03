@@ -837,24 +837,23 @@ function KanbanCardItem({
           {/* Vänster: titel + metadata */}
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-gray-800 leading-snug truncate">{card.title}</p>
-            <div className="flex items-center gap-2 mt-1 min-w-0">
-              <span className="text-xs text-gray-400 truncate min-w-0 max-w-[90px]">
-                {card.assignee?.name?.split(" ")[0] ?? card.createdBy?.name?.split(" ")[0] ?? "—"}
-              </span>
-              {due && <span className="text-xs text-gray-400 shrink-0 whitespace-nowrap">{due}</span>}
+            <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+              {(card.startDate || card.dueDate) ? (
+                <span className="text-[10px] text-gray-400 shrink-0 whitespace-nowrap">
+                  Dates: {[formatDate(card.startDate ?? null), formatDate(card.dueDate)].filter(Boolean).join(" – ")}
+                </span>
+              ) : (
+                <span className="text-[10px] text-gray-400 shrink-0 whitespace-nowrap">
+                  Created: {formatDate(card.createdAt)}
+                </span>
+              )}
               {(card.subtasks?.length ?? 0) > 0 && (
-                <span className="text-xs text-gray-400 shrink-0 flex items-center gap-0.5">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {card.subtasks!.filter((s) => s.done).length}/{card.subtasks!.length}
+                <span className="text-[10px] text-gray-400 shrink-0 whitespace-nowrap">
+                  {card.subtasks!.filter((s) => s.done).length}/{card.subtasks!.length} klara
                 </span>
               )}
               {(card.comments?.length ?? 0) > 0 && (
-                <span className="text-xs text-gray-400 shrink-0 flex items-center gap-0.5">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
+                <span className="w-4 h-4 rounded-full bg-coral flex items-center justify-center text-white text-[9px] font-bold shrink-0">
                   {card.comments!.length}
                 </span>
               )}
