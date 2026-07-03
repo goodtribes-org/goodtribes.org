@@ -856,10 +856,10 @@ function KanbanCardItem({
               <button
                 type="button"
                 onClick={() => setCardMenuOpen((v) => !v)}
-                className="text-gray-400 hover:text-gray-600 transition-colors p-0.5 rounded mt-0.5"
+                className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 hover:bg-seagrass hover:text-white text-gray-500 transition-colors mt-0.5"
                 title="Alternativ"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <path d="M12 4v16M4 12h16" />
                 </svg>
               </button>
