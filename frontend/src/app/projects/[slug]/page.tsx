@@ -600,7 +600,7 @@ export default async function ProjectDetailPage({
             );
           })()}
 
-          {/* Deluppgifter widget */}
+          {/* Uppgifter widget */}
           {(() => {
             const colOrder = ["TODO", "DOING", "REVIEW"];
             const cardsWithSubtasks = [...kanbanCards]
@@ -610,7 +610,7 @@ export default async function ProjectDetailPage({
             return (
               <section className="border border-muted-teal/30 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-semibold text-dark-slate">Deluppgifter</h2>
+                  <h2 className="text-sm font-semibold text-dark-slate">Uppgifter</h2>
                   <Link href={`/projects/${slug}/kanban`} className="text-xs text-seagrass hover:underline">
                     Öppna →
                   </Link>
