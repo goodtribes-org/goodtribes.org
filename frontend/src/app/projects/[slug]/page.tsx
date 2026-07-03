@@ -540,8 +540,8 @@ export default async function ProjectDetailPage({
             </section>
           )}
 
-          {/* Kanban summary — bar chart (subtasks only) */}
-          {kanbanCards.some(k => (k.subtasks?.length ?? 0) > 0) && (() => {
+          {/* Kanban summary — bar chart */}
+          {kanbanCards.length > 0 && (() => {
             const cols = [
               { key: "BACKLOG", label: "Backlog",  bg: "#b2b09b" },
               { key: "TODO",    label: "Att göra", bg: "#7bad93" },
@@ -549,14 +549,15 @@ export default async function ProjectDetailPage({
               { key: "REVIEW",  label: "Granskas", bg: "#f59e0b" },
               { key: "DONE",    label: "Klart",    bg: "#43aa8b" },
             ];
-            const counts = cols.map(c =>
-              kanbanCards
-                .filter(k => k.column === c.key)
-                .reduce((sum, k) => sum + (k.subtasks?.length ?? 0), 0)
-            );
+            const counts = cols.map(c => {
+              const cardsInCol = kanbanCards.filter(k => k.column === c.key);
+              return cardsInCol.length + cardsInCol.reduce((sum, k) => sum + (k.subtasks?.length ?? 0), 0);
+            });
             const max = Math.max(...counts, 1);
-            const total = kanbanCards.reduce((sum, k) => sum + (k.subtasks?.length ?? 0), 0);
-            const done = kanbanCards.reduce((sum, k) => sum + (k.subtasks?.filter(s => s.done).length ?? 0), 0);
+            const total = kanbanCards.reduce((sum, k) => sum + 1 + (k.subtasks?.length ?? 0), 0);
+            const doneCards = kanbanCards.filter(k => k.column === "DONE").length;
+            const doneSubtasks = kanbanCards.reduce((sum, k) => sum + (k.subtasks?.filter(s => s.done).length ?? 0), 0);
+            const done = doneCards + doneSubtasks;
             return (
               <section className="border border-muted-teal/30 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-4">
