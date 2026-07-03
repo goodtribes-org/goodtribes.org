@@ -812,104 +812,105 @@ function KanbanCardItem({
         <div className="h-1" style={{ backgroundColor: categoryHex }} title={CATEGORY_META[card.category!].label} />
       )}
       <div className="px-2 py-1.5">
-        {/* Rad 1: drag, prioritet, titel, datum, meny, avatar */}
-        <div className="flex items-center gap-1.5">
-          <span
-            {...listeners}
-            onClick={(e) => e.stopPropagation()}
-            className="absolute opacity-0 pointer-events-none touch-none"
-            aria-hidden
-          />
-          <p className="text-sm font-medium text-gray-800 leading-snug truncate flex-1 min-w-0">{card.title}</p>
-          <div
-            className="relative shrink-0"
-            onClick={(e) => e.stopPropagation()}
-            onPointerDown={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setCardMenuOpen((v) => !v)}
-              className="text-gray-400 hover:text-gray-600 transition-colors p-0.5 rounded"
-              title="Alternativ"
+        <span
+          {...listeners}
+          onClick={(e) => e.stopPropagation()}
+          className="absolute opacity-0 pointer-events-none touch-none"
+          aria-hidden
+        />
+        <div className="flex gap-1.5 items-start">
+          {/* Vänster: titel + metadata */}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-800 leading-snug truncate">{card.title}</p>
+            <div className="flex items-center gap-2 mt-1 min-w-0">
+              <span className="text-xs text-gray-400 truncate min-w-0 max-w-[90px]">
+                {card.assignee?.name?.split(" ")[0] ?? card.createdBy?.name?.split(" ")[0] ?? "—"}
+              </span>
+              {due && <span className="text-xs text-gray-400 shrink-0 whitespace-nowrap">{due}</span>}
+              {(card.subtasks?.length ?? 0) > 0 && (
+                <span className="text-xs text-gray-400 shrink-0 flex items-center gap-0.5">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {card.subtasks!.filter((s) => s.done).length}/{card.subtasks!.length}
+                </span>
+              )}
+              {(card.comments?.length ?? 0) > 0 && (
+                <span className="text-xs text-gray-400 shrink-0 flex items-center gap-0.5">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  {card.comments!.length}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Höger: + knapp, sedan avatar med pil rakt under */}
+          <div className="shrink-0 flex items-start gap-1">
+            <div
+              className="relative"
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M12 4v16M4 12h16" />
-              </svg>
-            </button>
-            {cardMenuOpen && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setCardMenuOpen(false)} />
-                <div className="absolute right-0 top-6 z-20 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[120px]">
-                  <button
-                    type="button"
-                    onClick={() => { setCardMenuOpen(false); onOpenCard(card); }}
-                    className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50"
-                  >
-                    Ändra
-                  </button>
-                  {currentUserId === card.createdById && (
+              <button
+                type="button"
+                onClick={() => setCardMenuOpen((v) => !v)}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-0.5 rounded mt-0.5"
+                title="Alternativ"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M12 4v16M4 12h16" />
+                </svg>
+              </button>
+              {cardMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setCardMenuOpen(false)} />
+                  <div className="absolute right-0 top-6 z-20 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[120px]">
                     <button
                       type="button"
-                      onClick={() => { setCardMenuOpen(false); onDelete(card.id); }}
-                      className="w-full text-left text-xs px-3 py-1.5 text-red-500 hover:bg-red-50"
+                      onClick={() => { setCardMenuOpen(false); onOpenCard(card); }}
+                      className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50"
                     >
-                      Ta bort
+                      Ändra
                     </button>
-                  )}
-                </div>
-              </>
-            )}
+                    {currentUserId === card.createdById && (
+                      <button
+                        type="button"
+                        onClick={() => { setCardMenuOpen(false); onDelete(card.id); }}
+                        className="w-full text-left text-xs px-3 py-1.5 text-red-500 hover:bg-red-50"
+                      >
+                        Ta bort
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+            {/* Avatar + pil staplade */}
+            <div className="flex flex-col items-center gap-0.5">
+              <Avatar
+                name={card.assignee?.name ?? card.createdBy?.name ?? null}
+                image={card.assignee?.image ?? card.createdBy?.image ?? null}
+              />
+              <button
+                type="button"
+                onMouseEnter={() => setDetailsExpanded(true)}
+                onClick={(e) => { e.stopPropagation(); setDetailsExpanded(false); }}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="flex items-center justify-center w-5 h-5 rounded bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
+                title="Visa detaljer"
+              >
+                <svg className={`w-3.5 h-3.5 transition-transform ${detailsExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
           </div>
-          <Avatar
-            name={card.assignee?.name ?? card.createdBy?.name ?? null}
-            image={card.assignee?.image ?? card.createdBy?.image ?? null}
-          />
         </div>
 
-        {/* Rad 2 + expanderat block */}
+        {/* Expanderat block */}
         <div>
-          <div className="flex items-center gap-2 mt-1 min-w-0">
-            {/* by */}
-            <span className="text-xs text-gray-400 truncate min-w-0 max-w-[90px]">
-              {card.assignee?.name?.split(" ")[0] ?? card.createdBy?.name?.split(" ")[0] ?? "—"}
-            </span>
-            {/* date */}
-            {due && (
-              <span className="text-xs text-gray-400 shrink-0 whitespace-nowrap">{due}</span>
-            )}
-            {/* subtasks */}
-            {(card.subtasks?.length ?? 0) > 0 && (
-              <span className="text-xs text-gray-400 shrink-0 flex items-center gap-0.5">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {card.subtasks!.filter((s) => s.done).length}/{card.subtasks!.length}
-              </span>
-            )}
-            {/* comments */}
-            {(card.comments?.length ?? 0) > 0 && (
-              <span className="text-xs text-gray-400 shrink-0 flex items-center gap-0.5">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                {card.comments!.length}
-              </span>
-            )}
-            <div className="flex-1" />
-            {/* expand arrow */}
-            <button
-              type="button"
-              onMouseEnter={() => setDetailsExpanded(true)}
-              onClick={(e) => { e.stopPropagation(); setDetailsExpanded(false); }}
-              onPointerDown={(e) => e.stopPropagation()}
-              className="shrink-0 flex items-center justify-center w-5 h-5 rounded bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
-              title="Visa detaljer"
-            >
-              <svg className={`w-3.5 h-3.5 transition-transform ${detailsExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
 
           {detailsExpanded && (
             <div
