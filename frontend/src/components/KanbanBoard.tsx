@@ -365,9 +365,9 @@ function CardDetailModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" onClick={onClose} />
-      <div className="relative ml-auto bg-white h-full w-full max-w-2xl shadow-2xl flex flex-col">
+      <div className="relative bg-white w-full max-w-2xl max-h-[90vh] shadow-2xl flex flex-col rounded-xl mx-4">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100 shrink-0">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{isNew ? "Nytt kort" : columnLabel}</span>
