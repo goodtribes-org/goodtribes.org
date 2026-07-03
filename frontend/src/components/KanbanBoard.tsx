@@ -742,7 +742,7 @@ function KanbanCardItem({
   const [localSubtasks, setLocalSubtasks] = useState(card.subtasks ?? []);
   const [addingSubtask, setAddingSubtask] = useState(false);
   const [newSubtaskInput, setNewSubtaskInput] = useState("");
-  const [subtaskMenuOpen, setSubtaskMenuOpen] = useState<string | null>(null);
+  const [subtaskMenuPos, setSubtaskMenuPos] = useState<{ id: string; x: number; y: number } | null>(null);
   const [editingSubtaskId, setEditingSubtaskId] = useState<string | null>(null);
   const [editingSubtaskTitle, setEditingSubtaskTitle] = useState("");
   const [, startTransition] = useTransition();
@@ -939,24 +939,16 @@ function KanbanCardItem({
                       {isLoggedIn && (
                         <button
                           type="button"
-                          onClick={() => setSubtaskMenuOpen(subtaskMenuOpen === s.id ? null : s.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setSubtaskMenuPos(subtaskMenuPos?.id === s.id ? null : { id: s.id, x: rect.right, y: rect.bottom });
+                          }}
+                          onPointerDown={(e) => e.stopPropagation()}
                           className="opacity-0 group-hover/sub:opacity-100 text-gray-400 hover:text-gray-600 transition-opacity text-xs leading-none px-0.5"
                         >
                           •••
                         </button>
-                      )}
-
-                      {subtaskMenuOpen === s.id && (
-                        <>
-                          <div className="fixed inset-0 z-10" onClick={() => setSubtaskMenuOpen(null)} />
-                          <div className="absolute right-0 top-6 z-20 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[120px]">
-                            <button type="button" onClick={() => { setEditingSubtaskId(s.id); setEditingSubtaskTitle(s.title); setSubtaskMenuOpen(null); }} className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50">Ändra</button>
-                            <button type="button" onClick={() => { handleCardDeleteSubtask(s); setSubtaskMenuOpen(null); }} className="w-full text-left text-xs px-3 py-1.5 text-red-500 hover:bg-red-50">Ta bort</button>
-                            {!s.id.startsWith("temp-") && (
-                              <button type="button" onClick={() => { handleCardPromoteSubtask(s); setSubtaskMenuOpen(null); }} className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50">Eget kort</button>
-                            )}
-                          </div>
-                        </>
                       )}
                     </div>
                   ))}
@@ -995,6 +987,26 @@ function KanbanCardItem({
         </div>
       </div>
     </div>
+    {subtaskMenuPos && (() => {
+      const s = localSubtasks.find((t) => t.id === subtaskMenuPos.id);
+      if (!s) return null;
+      return createPortal(
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setSubtaskMenuPos(null)} />
+          <div
+            className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[120px]"
+            style={{ right: window.innerWidth - subtaskMenuPos.x, top: subtaskMenuPos.y + 4 }}
+          >
+            <button type="button" onClick={() => { setEditingSubtaskId(s.id); setEditingSubtaskTitle(s.title); setSubtaskMenuPos(null); }} className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50">Ändra</button>
+            <button type="button" onClick={() => { handleCardDeleteSubtask(s); setSubtaskMenuPos(null); }} className="w-full text-left text-xs px-3 py-1.5 text-red-500 hover:bg-red-50">Ta bort</button>
+            {!s.id.startsWith("temp-") && (
+              <button type="button" onClick={() => { handleCardPromoteSubtask(s); setSubtaskMenuPos(null); }} className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50">Eget kort</button>
+            )}
+          </div>
+        </>,
+        document.body
+      );
+    })()}
     {descTip && card.description && createPortal(
       <div
         className="fixed z-[9999] pointer-events-none bg-dark-slate text-white text-xs rounded-lg px-3 py-2 shadow-xl max-w-[260px]"
