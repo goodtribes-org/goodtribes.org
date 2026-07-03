@@ -19,7 +19,7 @@ export default async function KanbanPage({ params }: { params: Promise<{ slug: s
     where: { slug },
     select: {
       title: true,
-      members: { include: { user: { select: { id: true, name: true } } } },
+      members: { include: { user: { select: { id: true, name: true, image: true } } } },
     },
   });
   if (!project) notFound();
@@ -30,8 +30,8 @@ export default async function KanbanPage({ params }: { params: Promise<{ slug: s
     where: { projectSlug: slug },
     orderBy: [{ column: "asc" }, { order: "asc" }],
     include: {
-      createdBy: { select: { name: true } },
-      assignee: { select: { id: true, name: true } },
+      createdBy: { select: { name: true, image: true } },
+      assignee: { select: { id: true, name: true, image: true } },
       estimate: true,
       subtasks: { orderBy: { order: "asc" } },
       comments: {
@@ -61,7 +61,7 @@ export default async function KanbanPage({ params }: { params: Promise<{ slug: s
     DONE:    cards.filter((c) => c.column === "DONE"),
   };
 
-  const members = project.members.map((m) => ({ id: m.user.id, name: m.user.name }));
+  const members = project.members.map((m) => ({ id: m.user.id, name: m.user.name, image: m.user.image }));
 
   return (
     <>

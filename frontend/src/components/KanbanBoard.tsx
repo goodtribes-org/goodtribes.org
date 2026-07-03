@@ -17,9 +17,9 @@ import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask, addComme
 import dynamic from "next/dynamic";
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
-type CardCreator = { name: string | null };
+type CardCreator = { name: string | null; image?: string | null };
 
-export type Member = { id: string; name: string | null };
+export type Member = { id: string; name: string | null; image?: string | null };
 
 type TaskEstimate = {
   aiHours: number;
@@ -116,7 +116,12 @@ function formatDate(date: Date | string | null): string | null {
   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
 }
 
-function Avatar({ name }: { name: string | null }) {
+function Avatar({ name, image }: { name: string | null; image?: string | null }) {
+  if (image) {
+    return (
+      <img src={image} alt={name ?? ""} className="w-7 h-7 rounded-full object-cover shrink-0" />
+    );
+  }
   const initials = name
     ? name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
     : "?";
@@ -828,7 +833,10 @@ function KanbanCardItem({
               </>
             )}
           </div>
-          <Avatar name={card.assignee?.name ?? card.createdBy?.name ?? null} />
+          <Avatar
+            name={card.assignee?.name ?? card.createdBy?.name ?? null}
+            image={card.assignee?.image ?? card.createdBy?.image ?? null}
+          />
         </div>
 
         {/* Rad 2 + expanderat block */}
@@ -998,9 +1006,13 @@ function DroppableColumn({
           {isLoggedIn && (
             <button
               onClick={() => onOpenModal(col.key)}
-              className="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors text-base font-medium"
+              className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold text-gray-500 hover:text-gray-800 hover:bg-white border border-transparent hover:border-gray-200 transition-all"
+              title="Lägg till kort"
             >
-              +
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+              </svg>
+              Lägg till
             </button>
           )}
           <button className="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors tracking-widest text-xs pb-1">
