@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useTransition, useEffect, useMemo } from "react";
+import NextImage from "next/image";
 import {
   DndContext,
   DragEndEvent,
@@ -123,10 +124,12 @@ function Avatar({ name, image }: { name: string | null; image?: string | null })
     : "?";
   if (image && !imgFailed) {
     return (
-      <img
+      <NextImage
         src={image}
         alt={name ?? ""}
-        className="w-7 h-7 rounded-full object-cover shrink-0"
+        width={28}
+        height={28}
+        className="rounded-full object-cover shrink-0"
         onError={() => setImgFailed(true)}
       />
     );
