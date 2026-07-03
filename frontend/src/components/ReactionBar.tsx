@@ -103,7 +103,7 @@ export function ReactionBar({
                 : "bg-white border-muted-teal/30 text-dark-slate/60 hover:border-muted-teal/60"
             }`}
           >
-            <span className="text-xl leading-none">{emoji}</span>
+            <span className="text-base leading-none">{emoji}</span>
             <span>{userIds.length}</span>
           </button>
         );
