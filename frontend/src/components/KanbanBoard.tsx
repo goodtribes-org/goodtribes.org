@@ -820,7 +820,7 @@ function KanbanCardItem({
         <div className="flex gap-1.5 items-start">
           {/* Vänster: titel + metadata */}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-800 leading-snug truncate">{card.title}</p>
+            <p className="text-xs font-medium text-gray-800 leading-snug truncate">{card.title}</p>
             <div className="flex items-center gap-2 mt-1 min-w-0">
               <span className="text-xs text-gray-400 truncate min-w-0 max-w-[90px]">
                 {card.assignee?.name?.split(" ")[0] ?? card.createdBy?.name?.split(" ")[0] ?? "—"}
