@@ -152,19 +152,18 @@ export default function MembersManager({
                   <p className="text-xs text-dark-slate/40 truncate">{m.email}</p>
                 </div>
                 {isOwner ? (
-                  <span className="text-xs font-semibold text-dark-slate/50 px-2 py-1 bg-gray-100 rounded-md">
-                    Ägare
+                  <span className="text-xs font-semibold text-seagrass/80 px-2 py-1 bg-seagrass/10 rounded-md">
+                    Founder
                   </span>
                 ) : (
                   <select
-                    value={m.role}
+                    value={m.role === "admin" ? "admin" : "collaborator"}
                     disabled={isPending}
                     onChange={(e) => handleRoleChange(m.userId, e.target.value)}
                     className="text-xs border border-gray-200 rounded-md px-2 py-1 bg-white text-dark-slate/70 focus:outline-none focus:border-seagrass disabled:opacity-50"
                   >
                     <option value="admin">Admin</option>
-                    <option value="collaborator">Bidragsgivare</option>
-                    <option value="follower">Följare</option>
+                    <option value="collaborator">Medlem</option>
                   </select>
                 )}
                 {!isOwner && !isSelf && (
