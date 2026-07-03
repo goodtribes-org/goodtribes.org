@@ -851,7 +851,7 @@ function KanbanCardItem({
               type="button"
               onClick={(e) => { e.stopPropagation(); onOpenCard(card); }}
               onPointerDown={(e) => e.stopPropagation()}
-              className="flex items-center justify-center w-6 h-6 rounded-md bg-gray-100 hover:bg-seagrass hover:text-white text-gray-500 transition-colors mt-0.5"
+              className="flex items-center justify-center w-6 h-6 rounded bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors mt-0.5"
               title="Ändra"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
