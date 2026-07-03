@@ -847,9 +847,9 @@ function KanbanCardItem({
                   Created: {formatDate(card.createdAt)}
                 </span>
               )}
-              {(card.subtasks?.length ?? 0) > 0 && (
+              {localSubtasks.length > 0 && (
                 <span className="text-[10px] text-gray-400 shrink-0 whitespace-nowrap">
-                  {card.subtasks!.filter((s) => s.done).length}/{card.subtasks!.length} klara
+                  {localSubtasks.filter((s) => s.done).length}/{localSubtasks.length} klara
                 </span>
               )}
               {(card.comments?.length ?? 0) > 0 && (
