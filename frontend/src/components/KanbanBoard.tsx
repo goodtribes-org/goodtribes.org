@@ -161,6 +161,26 @@ function toDateInput(val: Date | string | null | undefined): string {
   return d.toISOString().slice(0, 10);
 }
 
+class ChunkErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { crashed: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { crashed: false };
+  }
+  static getDerivedStateFromError(error: unknown) {
+    if (typeof window !== "undefined" && error instanceof Error && error.name === "ChunkLoadError") {
+      window.location.reload();
+    }
+    return { crashed: true };
+  }
+  render() {
+    if (this.state.crashed) return null;
+    return this.props.children;
+  }
+}
+
 function CardDetailModal({
   card,
   members,
@@ -811,12 +831,6 @@ function KanbanCardItem({
         <div className="h-1" style={{ backgroundColor: categoryHex }} title={CATEGORY_META[card.category!].label} />
       )}
       <div className="px-2 py-1.5">
-        <span
-          {...listeners}
-          onClick={(e) => e.stopPropagation()}
-          className="absolute opacity-0 pointer-events-none touch-none"
-          aria-hidden
-        />
         <div className="flex gap-1.5 items-start">
           {/* Vänster: titel + metadata */}
           <div className="flex-1 min-w-0">
@@ -1304,7 +1318,7 @@ export default function KanbanBoard({
           <button
             type="button"
             onClick={() => openNewCard("BACKLOG")}
-            className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-seagrass text-white hover:bg-seagrass/90 transition-colors shrink-0"
+            className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors shrink-0"
           >
             <span className="text-base leading-none font-light">+</span> Lägg till kort
           </button>
@@ -1406,21 +1420,23 @@ export default function KanbanBoard({
         </DragOverlay>
       </DndContext>
 
-      {editingCard && (
-        <CardDetailModal
-          card={editingCard}
-          members={members}
-          isLoggedIn={isLoggedIn}
-          currentUserId={currentUserId}
-          onClose={() => { setEditingCard(null); setIsNewCard(false); }}
-          onSaved={handleCardSaved}
-          onDelete={(cardId) => { handleDelete(cardId); setEditingCard(null); setIsNewCard(false); }}
-          onSubtaskAdded={handleSubtaskAdded}
-          isNew={isNewCard}
-          onAdd={handleAdd}
-          onCardCreated={handleTempCardResolved}
-        />
-      )}
+      <ChunkErrorBoundary>
+        {editingCard && (
+          <CardDetailModal
+            card={editingCard}
+            members={members}
+            isLoggedIn={isLoggedIn}
+            currentUserId={currentUserId}
+            onClose={() => { setEditingCard(null); setIsNewCard(false); }}
+            onSaved={handleCardSaved}
+            onDelete={(cardId) => { handleDelete(cardId); setEditingCard(null); setIsNewCard(false); }}
+            onSubtaskAdded={handleSubtaskAdded}
+            isNew={isNewCard}
+            onAdd={handleAdd}
+            onCardCreated={handleTempCardResolved}
+          />
+        )}
+      </ChunkErrorBoundary>
     </div>
   );
 }
