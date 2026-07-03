@@ -832,8 +832,8 @@ function KanbanCardItem({
               className="text-gray-400 hover:text-gray-600 transition-colors p-0.5 rounded"
               title="Alternativ"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <path d="M12 4v16M4 12h16" />
               </svg>
             </button>
             {cardMenuOpen && (
