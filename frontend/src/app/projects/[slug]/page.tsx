@@ -601,9 +601,9 @@ export default async function ProjectDetailPage({
 
           {/* Deluppgifter widget */}
           {(() => {
-            const colOrder = ["BACKLOG", "TODO", "DOING", "REVIEW", "DONE"];
+            const colOrder = ["TODO", "DOING", "REVIEW"];
             const cardsWithSubtasks = [...kanbanCards]
-              .filter(c => c.subtasks && c.subtasks.length > 0)
+              .filter(c => colOrder.includes(c.column) && c.subtasks && c.subtasks.length > 0)
               .sort((a, b) => colOrder.indexOf(a.column) - colOrder.indexOf(b.column));
             if (cardsWithSubtasks.length === 0) return null;
             return (
