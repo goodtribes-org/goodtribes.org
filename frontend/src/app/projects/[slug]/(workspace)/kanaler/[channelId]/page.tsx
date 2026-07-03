@@ -72,20 +72,22 @@ export default async function ChannelPage({
   const unreadMap = Object.fromEntries(unreadCounts.map((u) => [u.channelId, u.count]));
 
   return (
-    <KanalerShell
-      slug={slug}
-      projectId={project.id}
-      channels={channels}
-      currentChannelId={channelId}
-      initialMessages={messages.map((m) => ({
-        ...m,
-        createdAt: m.createdAt.toISOString(),
-        updatedAt: m.updatedAt.toISOString(),
-      }))}
-      isMember={isMember}
-      isAdmin={isAdmin}
-      currentUserId={session?.user?.id ?? null}
-      unreadMap={unreadMap}
-    />
+    <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)" }}>
+      <KanalerShell
+        slug={slug}
+        projectId={project.id}
+        channels={channels}
+        currentChannelId={channelId}
+        initialMessages={messages.map((m) => ({
+          ...m,
+          createdAt: m.createdAt.toISOString(),
+          updatedAt: m.updatedAt.toISOString(),
+        }))}
+        isMember={isMember}
+        isAdmin={isAdmin}
+        currentUserId={session?.user?.id ?? null}
+        unreadMap={unreadMap}
+      />
+    </div>
   );
 }

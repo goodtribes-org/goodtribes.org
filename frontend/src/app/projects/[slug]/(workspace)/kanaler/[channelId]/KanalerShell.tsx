@@ -110,7 +110,7 @@ export function KanalerShell({
   const activeChannel = channels.find((c) => c.id === activeChannelId);
 
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100dvh-220px)] border border-muted-teal/20 rounded-xl overflow-hidden bg-white">
+    <div className="flex flex-col md:flex-row h-[calc(100dvh-220px)] overflow-hidden bg-white">
       {/* Mobile sidebar toggle */}
       <button
         className="md:hidden flex items-center gap-2 px-4 py-2 border-b border-muted-teal/20 text-sm font-medium text-dark-slate bg-dry-sage/10"
