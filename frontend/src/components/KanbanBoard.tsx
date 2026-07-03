@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useTransition, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import {
   DndContext,
   DragEndEvent,
@@ -727,6 +728,7 @@ function KanbanCardItem({
   const [, startTransition] = useTransition();
   const [cardMenuOpen, setCardMenuOpen] = useState(false);
   const [detailsExpanded, setDetailsExpanded] = useState(false);
+  const [descTip, setDescTip] = useState<{ x: number; y: number } | null>(null);
 
   const due = formatDate(card.dueDate);
   const priorityMeta = PRIORITY_META[card.priority] ?? PRIORITY_META.normal;
@@ -792,7 +794,12 @@ function KanbanCardItem({
   }
 
   return (
-    <div className="relative group/card">
+    <div
+      className="relative"
+      onMouseEnter={(e) => { if (card.description) setDescTip({ x: e.clientX, y: e.clientY }); }}
+      onMouseMove={(e) => { if (descTip) setDescTip({ x: e.clientX, y: e.clientY }); }}
+      onMouseLeave={() => setDescTip(null)}
+    >
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1, borderBottomColor: priorityMeta.bottomHex }}
@@ -1000,15 +1007,17 @@ function KanbanCardItem({
         </div>
       </div>
     </div>
-    {card.description && (
-      <div className="absolute left-0 right-0 top-full mt-1 z-50 invisible group-hover/card:visible pointer-events-none">
-        <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-2.5">
-          <div
-            className="text-xs text-gray-600 prose prose-xs max-w-none [&_p]:m-0 [&_*]:text-xs line-clamp-5"
-            dangerouslySetInnerHTML={{ __html: card.description }}
-          />
-        </div>
-      </div>
+    {descTip && card.description && createPortal(
+      <div
+        className="fixed z-[9999] pointer-events-none bg-dark-slate text-white text-xs rounded-lg px-3 py-2 shadow-xl max-w-[260px]"
+        style={{ left: descTip.x + 14, top: descTip.y - 10 }}
+      >
+        <div
+          className="prose prose-xs max-w-none [&_*]:text-white/80 [&_p]:m-0 [&_strong]:font-semibold [&_strong]:text-white line-clamp-8"
+          dangerouslySetInnerHTML={{ __html: card.description }}
+        />
+      </div>,
+      document.body
     )}
     </div>
   );
