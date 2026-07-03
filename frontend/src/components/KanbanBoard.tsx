@@ -375,7 +375,7 @@ function CardDetailModal({
         </div>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto px-6 pt-3 pb-5 space-y-2">
+        <div className="flex-1 overflow-y-auto px-6 pt-3 pb-5 space-y-1">
           {/* Title */}
           <textarea
             value={title}
