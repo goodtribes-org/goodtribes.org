@@ -813,9 +813,6 @@ function KanbanCardItem({
             aria-hidden
           />
           <p className="text-sm font-medium text-gray-800 leading-snug truncate flex-1 min-w-0">{card.title}</p>
-          {due && (
-            <span className="text-xs text-gray-400 shrink-0 whitespace-nowrap">{due}</span>
-          )}
           <div
             className="relative shrink-0"
             onClick={(e) => e.stopPropagation()}
@@ -863,25 +860,45 @@ function KanbanCardItem({
 
         {/* Rad 2 + expanderat block */}
         <div>
-          <div className="flex items-center gap-1.5 mt-0.5">
-            {card.description ? (
-              <div
-                className="text-xs text-gray-400 leading-snug truncate flex-1 min-w-0 prose prose-xs max-w-none [&_*]:text-xs [&_*]:text-gray-400 [&_p]:m-0"
-                dangerouslySetInnerHTML={{ __html: card.description }}
-              />
-            ) : (
-              <div className="flex-1" />
+          <div className="flex items-center gap-2 mt-1 min-w-0">
+            {/* by */}
+            <span className="text-xs text-gray-400 truncate min-w-0 max-w-[90px]">
+              {card.assignee?.name?.split(" ")[0] ?? card.createdBy?.name?.split(" ")[0] ?? "—"}
+            </span>
+            {/* date */}
+            {due && (
+              <span className="text-xs text-gray-400 shrink-0 whitespace-nowrap">{due}</span>
             )}
+            {/* subtasks */}
+            {(card.subtasks?.length ?? 0) > 0 && (
+              <span className="text-xs text-gray-400 shrink-0 flex items-center gap-0.5">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {card.subtasks!.filter((s) => s.done).length}/{card.subtasks!.length}
+              </span>
+            )}
+            {/* comments */}
+            {(card.comments?.length ?? 0) > 0 && (
+              <span className="text-xs text-gray-400 shrink-0 flex items-center gap-0.5">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                {card.comments!.length}
+              </span>
+            )}
+            <div className="flex-1" />
+            {/* expand arrow */}
             <button
               type="button"
               onMouseEnter={() => setDetailsExpanded(true)}
               onClick={(e) => { e.stopPropagation(); setDetailsExpanded(false); }}
               onPointerDown={(e) => e.stopPropagation()}
-              className="shrink-0 text-gray-300 hover:text-gray-500 transition-colors p-0.5"
+              className="shrink-0 flex items-center justify-center w-5 h-5 rounded bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
               title="Visa detaljer"
             >
               <svg className={`w-3.5 h-3.5 transition-transform ${detailsExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
           </div>
