@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useTransition, useEffect, useMemo } from "react";
-import NextImage from "next/image";
 import {
   DndContext,
   DragEndEvent,
@@ -117,6 +116,22 @@ function formatDate(date: Date | string | null): string | null {
   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
 }
 
+// Convert any stored image URL (http://localhost:9000/... or https://goodtribes.org/storage/...)
+// to a /storage/{key} relative path that routes through the Next.js proxy in both dev and prod.
+function toProxyUrl(url: string): string {
+  const knownBases = [
+    process.env.NEXT_PUBLIC_STORAGE_URL,
+    "http://localhost:9000/goodtribes-public",
+    "https://goodtribes.org/storage",
+  ].filter(Boolean) as string[];
+  for (const base of knownBases) {
+    if (url.startsWith(base + "/")) {
+      return `/storage/${url.slice(base.length + 1)}`;
+    }
+  }
+  return url;
+}
+
 function Avatar({ name, image }: { name: string | null; image?: string | null }) {
   const [imgFailed, setImgFailed] = useState(false);
   const initials = name
@@ -124,12 +139,10 @@ function Avatar({ name, image }: { name: string | null; image?: string | null })
     : "?";
   if (image && !imgFailed) {
     return (
-      <NextImage
-        src={image}
+      <img
+        src={toProxyUrl(image)}
         alt={name ?? ""}
-        width={28}
-        height={28}
-        className="rounded-full object-cover shrink-0"
+        className="w-7 h-7 rounded-full object-cover shrink-0"
         onError={() => setImgFailed(true)}
       />
     );
