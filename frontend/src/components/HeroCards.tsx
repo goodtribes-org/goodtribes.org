@@ -134,7 +134,7 @@ export default function HeroCards() {
           className="hero-lift"
           style={{
             position: "absolute",
-            left: `${GRID_W + 28 + (320 - CARD_W) / 2}px`,
+            left: `${(GRID_W - CARD_W) / 2}px`,
             top: `${(GRID_H - CARD_H) / 2}px`,
             width: `${CARD_W}px`,
             height: `${CARD_H}px`,
