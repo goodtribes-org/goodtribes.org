@@ -258,15 +258,17 @@ function CardDetailModal({
         .catch(() => {});
     } else {
       startTransition(async () => {
-        await updateCard(card.id, {
-          title: title.trim(),
-          description: description.trim() || null,
-          priority,
-          category: category || null,
-          assigneeId: assigneeId || null,
-          startDate: startDate || null,
-          dueDate: dueDate || null,
-        });
+        try {
+          await updateCard(card.id, {
+            title: title.trim(),
+            description: description.trim() || null,
+            priority,
+            category: category || null,
+            assigneeId: assigneeId || null,
+            startDate: startDate || null,
+            dueDate: dueDate || null,
+          });
+        } catch { /* server error — optimistic update stays, page won't crash */ }
       });
       onSaved(card.id, {
         title: title.trim(),
@@ -282,7 +284,10 @@ function CardDetailModal({
   function handleToggle(s: Subtask) {
     setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: !t.done } : t));
     if (!s.id.startsWith("temp-")) {
-      startTransition(async () => { await toggleSubtask(s.id, !s.done); });
+      startTransition(async () => {
+        try { await toggleSubtask(s.id, !s.done); }
+        catch { setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: s.done } : t)); }
+      });
     }
   }
 
@@ -916,7 +921,10 @@ function KanbanCardItem({
                         type="button"
                         onClick={() => {
                           setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: !t.done } : t));
-                          if (!s.id.startsWith("temp-")) startTransition(async () => { await toggleSubtask(s.id, !s.done); });
+                          if (!s.id.startsWith("temp-")) startTransition(async () => {
+                            try { await toggleSubtask(s.id, !s.done); }
+                            catch { setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: s.done } : t)); }
+                          });
                         }}
                         className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"}`}
                       >
@@ -1270,7 +1278,7 @@ export default function KanbanBoard({
       ...prev,
       [col]: (prev[col as keyof Columns] as Card[]).filter((c) => c.id !== cardId),
     }));
-    startTransition(async () => { await deleteCard(cardId); });
+    startTransition(async () => { try { await deleteCard(cardId); } catch { /* ignore */ } });
   }
 
   function handleCardSaved(cardId: string, patch: Partial<Card>) {

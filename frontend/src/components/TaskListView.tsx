@@ -218,15 +218,21 @@ function SectionGroup({
               onCheck={() => {
                 if (card.column === "DONE") {
                   onCardUndone(card.id);
-                  startTransition(async () => { await moveCard(card.id, "TODO"); });
+                  startTransition(async () => {
+                    try { await moveCard(card.id, "TODO"); }
+                    catch { onCardDone(card.id); }
+                  });
                 } else {
                   onCardDone(card.id);
-                  startTransition(async () => { await moveCard(card.id, "DONE"); });
+                  startTransition(async () => {
+                    try { await moveCard(card.id, "DONE"); }
+                    catch { onCardUndone(card.id); }
+                  });
                 }
               }}
               onDelete={() => {
                 onCardDeleted(card.id);
-                startTransition(async () => { await deleteCard(card.id); });
+                startTransition(async () => { try { await deleteCard(card.id); } catch { /* ignore */ } });
               }}
             />
           ))}
@@ -360,7 +366,10 @@ function TaskRow({
               onClick={() => {
                 setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: !t.done } : t));
                 if (!s.id.startsWith("temp-") && isLoggedIn) {
-                  startSubTransition(async () => { await toggleSubtask(s.id, !s.done); });
+                  startSubTransition(async () => {
+                    try { await toggleSubtask(s.id, !s.done); }
+                    catch { setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: s.done } : t)); }
+                  });
                 }
               }}
               className="flex items-center gap-2 w-full text-left py-0.5 group/sub"

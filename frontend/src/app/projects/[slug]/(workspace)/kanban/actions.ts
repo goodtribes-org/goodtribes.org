@@ -213,6 +213,7 @@ export async function toggleSubtask(subtaskId: string, done: boolean) {
   });
 
   revalidatePath(`/projects/${subtask.card.projectSlug}/kanban`);
+  revalidatePath(`/projects/${subtask.card.projectSlug}/tasks`);
 }
 
 export async function updateCard(
