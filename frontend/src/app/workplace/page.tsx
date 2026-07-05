@@ -423,7 +423,7 @@ export default async function WorkplacePage({
                 {allTasks.map((task) => (
                   <Link
                     key={task.id}
-                    href={`/projects/${task.project.slug}/kanban`}
+                    href={`/projects/${task.project.slug}/tasks`}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-dry-sage/20 transition-colors"
                   >
                     <span className="text-[10px] font-semibold uppercase tracking-wider w-12 flex-shrink-0 text-coral">

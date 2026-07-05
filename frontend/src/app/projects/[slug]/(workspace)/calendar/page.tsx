@@ -198,7 +198,7 @@ export default async function CalendarPage({
     ].filter((s): s is string => Boolean(s));
     addEntry(c.dueDate, {
       id: c.id, title: c.title, type: "task", color: TYPE_COLORS.task,
-      href: `/projects/${slug}/kanban`,
+      href: `/projects/${slug}/tasks`,
       tooltip: lines,
     });
   }
