@@ -562,7 +562,7 @@ export default async function ProjectDetailPage({
               <section className="border border-muted-teal/30 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-sm font-semibold text-dark-slate">Arbete</h2>
-                  <Link href={`/projects/${slug}/kanban`} className="text-xs text-seagrass hover:underline">
+                  <Link href={`/projects/${slug}/tasks`} className="text-xs text-seagrass hover:underline">
                     Öppna →
                   </Link>
                 </div>
