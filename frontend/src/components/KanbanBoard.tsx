@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition, useEffect, useMemo, useRef } from "react";
+import React, { useState, useTransition, useEffect, useMemo, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import {
   DndContext,
@@ -1343,7 +1343,7 @@ export default function KanbanBoard({
     });
   }
 
-  function handleCardSubtasksSynced(cardId: string, subtasks: Subtask[]) {
+  const handleCardSubtasksSynced = useCallback((cardId: string, subtasks: Subtask[]) => {
     setColumns((prev) => {
       for (const key of COLUMN_ORDER) {
         const col = key as keyof Columns;
@@ -1357,7 +1357,7 @@ export default function KanbanBoard({
       }
       return prev;
     });
-  }
+  }, []);
 
   function handleTempCardResolved(tempId: string, cardId: string) {
     setColumns((prev) => {
