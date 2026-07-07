@@ -178,7 +178,7 @@ export default async function ActivityPulse() {
       };
     }),
     ...activities.map((a) => {
-      const payload = a.payload as unknown as { title?: string; cardId?: string } | null;
+      const payload = a.payload as unknown as { title?: string; cardId?: string; description?: string | null } | null;
       const action =
         a.type === "task_completed" && payload?.title
           ? `slutförde uppgiften "${payload.title}"`
@@ -187,11 +187,16 @@ export default async function ActivityPulse() {
         a.type === "task_completed" && payload?.cardId
           ? `/projects/${a.project.slug}/tasks?card=${payload.cardId}`
           : `/projects/${a.project.slug}`;
+      const body =
+        a.type === "task_completed" && payload?.description
+          ? htmlToPreviewText(payload.description)
+          : undefined;
       return {
         id: `activity-${a.id}`, targetType: "activityEvent", targetId: a.id,
         avatarName: a.user.name, avatarImage: a.user.image, projectImage: a.project.imageUrl,
         projectName: a.project.title, projectHref: `/projects/${a.project.slug}`, projectId: a.project.id,
         action,
+        body,
         href, date: a.createdAt,
       };
     }),

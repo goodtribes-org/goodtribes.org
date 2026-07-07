@@ -17,7 +17,7 @@ type FeedItem =
   | { kind: "project";         id: string; title: string; slug: string; category: string | null; memberCount: number; date: Date }
   | { kind: "milestone";       id: string; title: string; projectTitle: string; projectSlug: string; date: Date }
   | { kind: "idea";            id: string; title: string; category: string | null; authorName: string | null; date: Date }
-  | { kind: "activity";        id: string; activityType: "task_completed" | "todo_completed" | "member_joined"; projectTitle: string; projectSlug: string; userName: string | null; date: Date }
+  | { kind: "activity";        id: string; activityType: "task_completed" | "todo_completed" | "member_joined"; projectTitle: string; projectSlug: string; userName: string | null; date: Date; cardId?: string; taskTitle?: string }
   | { kind: "channel_message"; id: string; projectTitle: string; projectSlug: string; userName: string | null; date: Date }
   | { kind: "kanban_comment";  id: string; cardTitle: string; projectTitle: string; projectSlug: string; userName: string | null; date: Date }
   | { kind: "idea_comment";    id: string; ideaId: string; ideaTitle: string; userName: string | null; date: Date };
@@ -68,7 +68,9 @@ function itemTitle(item: FeedItem): string {
     case "activity":
       switch (item.activityType) {
         case "member_joined":  return `${item.userName ?? "Någon"} gick med i ${item.projectTitle}`;
-        case "task_completed": return `${item.userName ?? "Någon"} slutförde en uppgift i ${item.projectTitle}`;
+        case "task_completed": return item.taskTitle
+          ? `${item.userName ?? "Någon"} slutförde uppgiften "${item.taskTitle}" i ${item.projectTitle}`
+          : `${item.userName ?? "Någon"} slutförde en uppgift i ${item.projectTitle}`;
         case "todo_completed": return `${item.userName ?? "Någon"} checkade av en punkt i ${item.projectTitle}`;
       }
   }
@@ -83,7 +85,9 @@ function itemHref(item: FeedItem): string {
     case "channel_message": return `/projects/${item.projectSlug}`;
     case "kanban_comment":  return `/projects/${item.projectSlug}`;
     case "idea_comment":    return `/ideas/${item.ideaId}`;
-    case "activity":        return `/projects/${item.projectSlug}`;
+    case "activity":        return item.activityType === "task_completed" && item.cardId
+      ? `/projects/${item.projectSlug}/tasks?card=${item.cardId}`
+      : `/projects/${item.projectSlug}`;
   }
 }
 
@@ -160,7 +164,7 @@ export default async function FeedPage({
       },
       orderBy: { createdAt: "desc" },
       select: {
-        id: true, type: true, createdAt: true,
+        id: true, type: true, payload: true, createdAt: true,
         user: { select: { name: true } },
         project: { select: { title: true, slug: true } },
       },
@@ -222,12 +226,16 @@ export default async function FeedPage({
       kind: "idea", id: i.id, title: i.title, category: i.category,
       authorName: i.author.name, date: i.createdAt,
     })),
-    ...rawActivities.map((a): FeedItem => ({
-      kind: "activity", id: a.id,
-      activityType: a.type as "task_completed" | "todo_completed" | "member_joined",
-      projectTitle: a.project.title, projectSlug: a.project.slug,
-      userName: a.user.name, date: a.createdAt,
-    })),
+    ...rawActivities.map((a): FeedItem => {
+      const payload = a.payload as unknown as { title?: string; cardId?: string } | null;
+      return {
+        kind: "activity", id: a.id,
+        activityType: a.type as "task_completed" | "todo_completed" | "member_joined",
+        projectTitle: a.project.title, projectSlug: a.project.slug,
+        userName: a.user.name, date: a.createdAt,
+        cardId: payload?.cardId, taskTitle: payload?.title,
+      };
+    }),
     ...rawChannelMessages.map((m): FeedItem => ({
       kind: "channel_message", id: m.id,
       projectTitle: m.channel.project.title, projectSlug: m.channel.project.slug,

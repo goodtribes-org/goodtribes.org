@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
       where: { slug: card.projectSlug },
       select: { id: true },
     });
-    if (project) await logActivity(project.id, session.user.id, "task_completed", { title: card.title, cardId: card.id });
+    if (project) await logActivity(project.id, session.user.id, "task_completed", { title: card.title, cardId: card.id, description: card.description });
   }
 
   revalidatePath(`/projects/${card.projectSlug}/kanban`);
