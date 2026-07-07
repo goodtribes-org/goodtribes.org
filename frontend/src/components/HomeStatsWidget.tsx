@@ -12,12 +12,15 @@ export default function HomeStatsWidget({
   isLoggedIn: boolean;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-5 flex flex-col border border-muted-teal/40 shadow-sm">
-      <p className="text-seagrass text-xs font-semibold uppercase tracking-widest mb-4">
-        Where good ideas become reality
-      </p>
+    <section className="border border-muted-teal/30 rounded-xl p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-semibold text-dark-slate">Statistik</h2>
+        <Link href="#projects" className="text-xs text-seagrass hover:underline">
+          Utforska projekt →
+        </Link>
+      </div>
 
-      <div className="space-y-3 mb-4">
+      <div className="space-y-2 mb-4">
         <div className="bg-dry-sage/20 rounded-xl px-4 py-3 text-center">
           <p className="text-3xl font-bold text-dark-slate">{projectCount}</p>
           <p className="text-dark-slate/60 text-sm mt-0.5">Aktiva projekt</p>
@@ -32,29 +35,12 @@ export default function HomeStatsWidget({
         </div>
       </div>
 
-      <div className="space-y-2">
-        {isLoggedIn ? (
-          <Link
-            href="/projects/new"
-            className="block w-full text-center bg-coral text-white font-semibold px-4 py-3 rounded-xl hover:bg-watermelon transition-colors"
-          >
-            Starta ett projekt →
-          </Link>
-        ) : (
-          <Link
-            href="/login"
-            className="block w-full text-center bg-coral text-white font-semibold px-4 py-3 rounded-xl hover:bg-watermelon transition-colors"
-          >
-            Kom igång gratis →
-          </Link>
-        )}
-        <Link
-          href="#projects"
-          className="block w-full text-center bg-seagrass/10 text-dark-slate font-medium px-4 py-2.5 rounded-xl hover:bg-seagrass/20 transition-colors text-sm"
-        >
-          Utforska projekt
-        </Link>
-      </div>
-    </div>
+      <Link
+        href={isLoggedIn ? "/projects/new" : "/login"}
+        className="block w-full text-center px-4 py-2.5 bg-coral text-white rounded-xl font-semibold text-sm hover:bg-coral/90 transition-colors"
+      >
+        {isLoggedIn ? "Starta ett projekt →" : "Kom igång gratis →"}
+      </Link>
+    </section>
   );
 }
