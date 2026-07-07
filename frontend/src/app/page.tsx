@@ -119,15 +119,17 @@ export default async function HomePage({
   const rawParams = { sort: sortParam, q, status, category, sdg, page: pageStr };
 
   return (
-    <div className="space-y-16">
+    <div>
 
       {/* Del 1 — Hero: flip cards */}
-      <div className="-mt-8">
-        <div className="flex flex-col items-center px-4 pt-8 pb-10">
-          <p className="text-xl font-semibold text-dark-slate/60 mb-2">Sidan är i Beta och under kraftig utveckling</p>
+      <div className="-mt-8 mb-4">
+        <div className="flex flex-col items-center px-4 pt-2">
+          <p className="text-xl font-semibold text-dark-slate/60 mb-1">Sidan är i Beta och under kraftig utveckling</p>
           <HeroCards />
         </div>
       </div>
+
+      <div className="space-y-16">
 
       {/* Del 2 — Activity Pulse */}
       <section>
@@ -200,6 +202,8 @@ export default async function HomePage({
           </>
         )}
       </section>
+
+      </div>
 
     </div>
   );
