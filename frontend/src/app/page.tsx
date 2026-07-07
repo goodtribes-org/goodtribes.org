@@ -7,7 +7,7 @@ import ProjectCard from "@/components/ProjectCard";
 import SortToggle from "@/components/SortToggle";
 import Pagination from "@/components/Pagination";
 import ActivityPulse from "@/components/ActivityPulse";
-import HeroCards from "@/components/HeroCards";
+import HeroPhotoStack from "@/components/HeroPhotoStack";
 import HomeStatsWidget from "@/components/HomeStatsWidget";
 import ImpactStatsWidget from "@/components/ImpactStatsWidget";
 import LeaderboardWidget from "@/components/LeaderboardWidget";
@@ -121,12 +121,47 @@ export default async function HomePage({
   return (
     <div>
 
-      {/* Del 1 — Hero: flip cards */}
-      <div className="-mt-8 mb-4">
-        <div className="flex flex-col items-center px-4 pt-2">
-          <p className="text-xl font-semibold text-dark-slate/60 mb-1">Sidan är i Beta och under kraftig utveckling</p>
-          <HeroCards />
+      {/* Del 1 — Hero */}
+      <section className="flex flex-col items-center text-center px-4 pt-4 pb-10 max-w-3xl mx-auto">
+        <span className="inline-block text-xs font-medium text-dark-slate/60 bg-dry-sage/20 rounded-full px-3 py-1 mb-4">
+          Sidan är i Beta och under kraftig utveckling
+        </span>
+        <h1 className="text-3xl md:text-4xl font-bold text-dark-slate">
+          Tillsammans gör vi bra idéer till verklighet
+        </h1>
+        <p className="mt-4 text-dark-slate/80">
+          Runt om i världen bubblar det av fantastiska idéer — projekt som vill rädda bin, städa hav
+          eller skapa tryggare kvarter. Samtidigt finns det tusentals människor som vill hjälpa till
+          och göra skillnad, men som inte vet var de ska börja.
+        </p>
+        <p className="mt-3 text-dark-slate/80">
+          GoodTribes är mötesplatsen däremellan. Vi kopplar ihop visionära projekt med engagerade
+          volontärer, så att goda idéer inte stannar vid en dröm utan faktiskt blir verklighet.
+        </p>
+        <p className="mt-4 text-sm text-dark-slate/70">
+          <strong className="text-dark-slate">Har du ett projekt?</strong> Beskriv vad du behöver.
+          <span className="mx-1.5">·</span>
+          <strong className="text-dark-slate">Vill du hjälpa till?</strong> Dela med dig av din tid
+          eller kunskap.
+        </p>
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href="/projects/new"
+            className="bg-coral text-white text-sm font-medium px-5 py-2.5 rounded hover:bg-watermelon transition-colors"
+          >
+            Skapa ett projekt
+          </Link>
+          <Link
+            href="/projects"
+            className="text-coral text-sm font-medium px-5 py-2.5 rounded border border-coral hover:bg-coral/5 transition-colors"
+          >
+            Utforska projekt
+          </Link>
         </div>
+      </section>
+
+      <div className="flex justify-center px-4 pb-16">
+        <HeroPhotoStack />
       </div>
 
       <div className="space-y-16">
