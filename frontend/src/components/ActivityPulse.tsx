@@ -12,6 +12,7 @@ type PulseItem = {
   targetId: string;
   avatarName: string | null;
   avatarImage: string | null;
+  projectImage?: string | null;
   title: string;
   body?: string;
   imageUrl?: string | null;
@@ -40,7 +41,7 @@ export default async function ActivityPulse() {
         select: {
           id: true, title: true, projectSlug: true, createdAt: true,
           author: { select: { name: true, image: true } },
-          project: { select: { title: true } },
+          project: { select: { title: true, imageUrl: true } },
         },
       }),
       prisma.milestone.findMany({
@@ -50,7 +51,7 @@ export default async function ActivityPulse() {
         select: {
           id: true, title: true, updatedAt: true,
           createdBy: { select: { name: true, image: true } },
-          project: { select: { title: true, slug: true } },
+          project: { select: { title: true, slug: true, imageUrl: true } },
         },
       }),
       prisma.project.findMany({
@@ -58,7 +59,7 @@ export default async function ActivityPulse() {
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
-          id: true, title: true, slug: true, createdAt: true,
+          id: true, title: true, slug: true, createdAt: true, imageUrl: true,
           owner: { select: { name: true, image: true } },
         },
       }),
@@ -80,7 +81,7 @@ export default async function ActivityPulse() {
         select: {
           id: true, type: true, createdAt: true,
           user: { select: { name: true, image: true } },
-          project: { select: { title: true, slug: true } },
+          project: { select: { title: true, slug: true, imageUrl: true } },
         },
       }),
       prisma.channelMessage.findMany({
@@ -93,7 +94,7 @@ export default async function ActivityPulse() {
         select: {
           id: true, createdAt: true,
           author: { select: { name: true, image: true } },
-          channel: { select: { project: { select: { title: true, slug: true } } } },
+          channel: { select: { project: { select: { title: true, slug: true, imageUrl: true } } } },
         },
       }),
       prisma.kanbanCardComment.findMany({
@@ -106,7 +107,7 @@ export default async function ActivityPulse() {
           card: {
             select: {
               title: true, projectSlug: true,
-              project: { select: { title: true } },
+              project: { select: { title: true, imageUrl: true } },
             },
           },
         },
@@ -139,19 +140,19 @@ export default async function ActivityPulse() {
     })),
     ...blogPosts.map((p) => ({
       id: `blog-${p.id}`, targetType: "blogPost", targetId: p.id,
-      avatarName: p.author.name, avatarImage: p.author.image,
+      avatarName: p.author.name, avatarImage: p.author.image, projectImage: p.project.imageUrl,
       title: `${p.author.name ?? "Någon"} postade en uppdatering i ${p.project.title}`,
       href: `/projects/${p.projectSlug}/updates`, date: p.createdAt,
     })),
     ...milestones.map((m) => ({
       id: `milestone-${m.id}`, targetType: "milestone", targetId: m.id,
-      avatarName: m.createdBy.name, avatarImage: m.createdBy.image,
+      avatarName: m.createdBy.name, avatarImage: m.createdBy.image, projectImage: m.project.imageUrl,
       title: `Milstolpe klar: ${m.title} i ${m.project.title}`,
       href: `/projects/${m.project.slug}/milestones`, date: m.updatedAt,
     })),
     ...projects.map((p) => ({
       id: `project-${p.id}`, targetType: "project", targetId: p.id,
-      avatarName: p.owner.name, avatarImage: p.owner.image,
+      avatarName: p.owner.name, avatarImage: p.owner.image, projectImage: p.imageUrl,
       title: `Nytt projekt: ${p.title}`,
       href: `/projects/${p.slug}`, date: p.createdAt,
     })),
@@ -165,20 +166,20 @@ export default async function ActivityPulse() {
       const label = activityLabel[a.type];
       return {
         id: `activity-${a.id}`, targetType: "activityEvent", targetId: a.id,
-        avatarName: a.user.name, avatarImage: a.user.image,
+        avatarName: a.user.name, avatarImage: a.user.image, projectImage: a.project.imageUrl,
         title: label ? label(a.user.name ?? "Någon", a.project.title) : `Aktivitet i ${a.project.title}`,
         href: `/projects/${a.project.slug}`, date: a.createdAt,
       };
     }),
     ...channelMessages.map((m) => ({
       id: `msg-${m.id}`, targetType: "channelMessage", targetId: m.id,
-      avatarName: m.author.name, avatarImage: m.author.image,
+      avatarName: m.author.name, avatarImage: m.author.image, projectImage: m.channel.project.imageUrl,
       title: `${m.author.name ?? "Någon"} skickade ett meddelande i ${m.channel.project.title}`,
       href: `/projects/${m.channel.project.slug}`, date: m.createdAt,
     })),
     ...kanbanComments.map((c) => ({
       id: `kcomment-${c.id}`, targetType: "kanbanCardComment", targetId: c.id,
-      avatarName: c.author.name, avatarImage: c.author.image,
+      avatarName: c.author.name, avatarImage: c.author.image, projectImage: c.card.project.imageUrl,
       title: `${c.author.name ?? "Någon"} kommenterade på "${c.card.title}"`,
       href: `/projects/${c.card.projectSlug}`, date: c.createdAt,
     })),
@@ -232,6 +233,7 @@ export default async function ActivityPulse() {
         const initials = item.avatarName
           ? item.avatarName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
           : "?";
+        const iconImage = item.projectImage || item.avatarImage;
         return (
           <div
             key={item.id}
@@ -239,8 +241,8 @@ export default async function ActivityPulse() {
           >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-dry-sage flex items-center justify-center text-xs font-semibold text-dark-slate overflow-hidden relative shrink-0">
-                {item.avatarImage ? (
-                  <Image src={item.avatarImage} alt={item.avatarName ?? ""} fill className="object-cover" unoptimized />
+                {iconImage ? (
+                  <Image src={iconImage} alt={item.avatarName ?? ""} fill className="object-cover" unoptimized />
                 ) : (
                   initials
                 )}
