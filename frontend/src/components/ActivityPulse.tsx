@@ -1,21 +1,36 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { auth } from "@/auth";
 import { timeAgo } from "@/lib/timeAgo";
+import PostComposer from "@/components/PostComposer";
+import FeedItemActions from "@/components/FeedItemActions";
 
 type PulseItem = {
   id: string;
+  targetType: string;
+  targetId: string;
   emoji: string;
   bgClass: string;
   title: string;
-  href: string;
+  body?: string;
+  href: string | null;
   date: Date;
 };
 
 export default async function ActivityPulse() {
+  const session = await auth();
   const LIMIT = 5;
 
-  const [blogPosts, milestones, projects, ideas, activities, channelMessages, kanbanComments, ideaComments] =
+  const [feedPosts, blogPosts, milestones, projects, ideas, activities, channelMessages, kanbanComments, ideaComments] =
     await Promise.all([
+      prisma.feedPost.findMany({
+        orderBy: { createdAt: "desc" },
+        take: LIMIT,
+        select: {
+          id: true, body: true, createdAt: true,
+          author: { select: { name: true } },
+        },
+      }),
       prisma.blogPost.findMany({
         where: { project: { visibility: "public" } },
         orderBy: { createdAt: "desc" },
@@ -114,23 +129,34 @@ export default async function ActivityPulse() {
   };
 
   const items: PulseItem[] = [
+    ...feedPosts.map((p) => ({
+      id: `post-${p.id}`, targetType: "feedPost", targetId: p.id,
+      emoji: "📝", bgClass: "bg-rose-100",
+      title: p.author.name ?? "Någon",
+      body: p.body,
+      href: null, date: p.createdAt,
+    })),
     ...blogPosts.map((p) => ({
-      id: `blog-${p.id}`, emoji: "✍️", bgClass: "bg-blue-100",
+      id: `blog-${p.id}`, targetType: "blogPost", targetId: p.id,
+      emoji: "✍️", bgClass: "bg-blue-100",
       title: `${p.author.name ?? "Någon"} postade en uppdatering i ${p.project.title}`,
       href: `/projects/${p.projectSlug}/updates`, date: p.createdAt,
     })),
     ...milestones.map((m) => ({
-      id: `milestone-${m.id}`, emoji: "🎯", bgClass: "bg-purple-100",
+      id: `milestone-${m.id}`, targetType: "milestone", targetId: m.id,
+      emoji: "🎯", bgClass: "bg-purple-100",
       title: `Milstolpe klar: ${m.title} i ${m.project.title}`,
       href: `/projects/${m.project.slug}/milestones`, date: m.updatedAt,
     })),
     ...projects.map((p) => ({
-      id: `project-${p.id}`, emoji: "🚀", bgClass: "bg-green-100",
+      id: `project-${p.id}`, targetType: "project", targetId: p.id,
+      emoji: "🚀", bgClass: "bg-green-100",
       title: `Nytt projekt: ${p.title}`,
       href: `/projects/${p.slug}`, date: p.createdAt,
     })),
     ...ideas.map((i) => ({
-      id: `idea-${i.id}`, emoji: "💡", bgClass: "bg-yellow-100",
+      id: `idea-${i.id}`, targetType: "idea", targetId: i.id,
+      emoji: "💡", bgClass: "bg-yellow-100",
       title: `Ny idé: ${i.title}`,
       href: `/ideas/${i.id}`, date: i.createdAt,
     })),
@@ -138,23 +164,27 @@ export default async function ActivityPulse() {
       const icon = activityIcon[a.type] ?? { emoji: "⚡", bg: "bg-orange-100" };
       const label = activityLabel[a.type];
       return {
-        id: `activity-${a.id}`, emoji: icon.emoji, bgClass: icon.bg,
+        id: `activity-${a.id}`, targetType: "activityEvent", targetId: a.id,
+        emoji: icon.emoji, bgClass: icon.bg,
         title: label ? label(a.user.name ?? "Någon", a.project.title) : `Aktivitet i ${a.project.title}`,
         href: `/projects/${a.project.slug}`, date: a.createdAt,
       };
     }),
     ...channelMessages.map((m) => ({
-      id: `msg-${m.id}`, emoji: "💬", bgClass: "bg-sky-100",
+      id: `msg-${m.id}`, targetType: "channelMessage", targetId: m.id,
+      emoji: "💬", bgClass: "bg-sky-100",
       title: `${m.author.name ?? "Någon"} skickade ett meddelande i ${m.channel.project.title}`,
       href: `/projects/${m.channel.project.slug}`, date: m.createdAt,
     })),
     ...kanbanComments.map((c) => ({
-      id: `kcomment-${c.id}`, emoji: "💬", bgClass: "bg-slate-100",
+      id: `kcomment-${c.id}`, targetType: "kanbanCardComment", targetId: c.id,
+      emoji: "💬", bgClass: "bg-slate-100",
       title: `${c.author.name ?? "Någon"} kommenterade på "${c.card.title}"`,
       href: `/projects/${c.card.projectSlug}`, date: c.createdAt,
     })),
     ...ideaComments.map((c) => ({
-      id: `icomment-${c.id}`, emoji: "💬", bgClass: "bg-amber-100",
+      id: `icomment-${c.id}`, targetType: "ideaComment", targetId: c.id,
+      emoji: "💬", bgClass: "bg-amber-100",
       title: `${c.author.name ?? "Någon"} kommenterade på idén "${c.idea.title}"`,
       href: `/ideas/${c.idea.id}`, date: c.createdAt,
     })),
@@ -163,25 +193,74 @@ export default async function ActivityPulse() {
   items.sort((a, b) => b.date.getTime() - a.date.getTime());
   const displayed = items.slice(0, 10);
 
-  if (displayed.length === 0) return null;
+  const targetsOr = displayed.map((i) => ({ targetType: i.targetType, targetId: i.targetId }));
+  const [likes, comments] = targetsOr.length > 0
+    ? await Promise.all([
+        prisma.feedLike.findMany({ where: { OR: targetsOr } }),
+        prisma.feedComment.findMany({
+          where: { OR: targetsOr },
+          orderBy: { createdAt: "asc" },
+          include: { author: { select: { name: true } } },
+        }),
+      ])
+    : [[], []];
+
+  const likeCountByTarget = new Map<string, number>();
+  const likedByMe = new Set<string>();
+  for (const l of likes) {
+    const key = `${l.targetType}:${l.targetId}`;
+    likeCountByTarget.set(key, (likeCountByTarget.get(key) ?? 0) + 1);
+    if (session?.user?.id && l.userId === session.user.id) likedByMe.add(key);
+  }
+
+  const commentsByTarget = new Map<string, { id: string; author: string; body: string; timeAgo: string }[]>();
+  for (const c of comments) {
+    const key = `${c.targetType}:${c.targetId}`;
+    const arr = commentsByTarget.get(key) ?? [];
+    arr.push({ id: c.id, author: c.author.name ?? "Någon", body: c.body, timeAgo: timeAgo(c.createdAt) });
+    commentsByTarget.set(key, arr);
+  }
+
+  const isLoggedIn = !!session?.user?.id;
 
   return (
-    <div className="flex flex-col gap-2">
-      {displayed.map((item) => (
-        <Link
-          key={item.id}
-          href={item.href}
-          className="rounded-xl border border-muted-teal/40 bg-white hover:shadow-md hover:border-muted-teal transition-all p-3 flex items-center gap-3"
-        >
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 ${item.bgClass}`}>
-            {item.emoji}
+    <div className="flex flex-col gap-3">
+      <PostComposer isLoggedIn={isLoggedIn} />
+
+      {displayed.map((item) => {
+        const key = `${item.targetType}:${item.targetId}`;
+        return (
+          <div
+            key={item.id}
+            className="rounded-xl border border-muted-teal/40 bg-white p-3"
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 ${item.bgClass}`}>
+                {item.emoji}
+              </div>
+              <div className="flex-1 min-w-0">
+                {item.href ? (
+                  <Link href={item.href} className="text-xs font-medium text-dark-slate leading-snug line-clamp-2 hover:underline">
+                    {item.title}
+                  </Link>
+                ) : (
+                  <p className="text-xs font-semibold text-dark-slate leading-snug">{item.title}</p>
+                )}
+                {item.body && <p className="text-xs text-dark-slate/80 leading-snug mt-1">{item.body}</p>}
+                <p className="text-[10px] text-dark-slate/40 mt-0.5">{timeAgo(item.date)}</p>
+              </div>
+            </div>
+            <FeedItemActions
+              targetType={item.targetType}
+              targetId={item.targetId}
+              isLoggedIn={isLoggedIn}
+              initialLikeCount={likeCountByTarget.get(key) ?? 0}
+              initialLiked={likedByMe.has(key)}
+              initialComments={commentsByTarget.get(key) ?? []}
+            />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-dark-slate leading-snug line-clamp-2">{item.title}</p>
-            <p className="text-[10px] text-dark-slate/40 mt-0.5">{timeAgo(item.date)}</p>
-          </div>
-        </Link>
-      ))}
+        );
+      })}
     </div>
   );
 }

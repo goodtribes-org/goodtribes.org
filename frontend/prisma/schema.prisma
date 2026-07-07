@@ -79,6 +79,9 @@ model User {
   channelReadMarkers ChannelReadMarker[]      @relation("ChannelReadMarkers")
   kanbanComments     KanbanCardComment[]     @relation("KanbanComments")
   onboardingDone       Boolean               @default(false)
+  feedPosts        FeedPost[]    @relation("AuthoredFeedPosts")
+  feedLikes        FeedLike[]    @relation("FeedLikes")
+  feedComments     FeedComment[] @relation("AuthoredFeedComments")
 }
 
 model Skill {
@@ -1055,4 +1058,44 @@ model ChannelReadMarker {
 
   @@unique([channelId, userId])
   @@index([userId])
+}
+
+model FeedPost {
+  id        String   @id @default(cuid())
+  authorId  String
+  author    User     @relation("AuthoredFeedPosts", fields: [authorId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
+// Likes on any feed item (FeedPost, BlogPost, Milestone, Project, Idea,
+// ActivityEvent, ChannelMessage, KanbanCardComment, IdeaComment). Not a
+// Prisma relation to the target — targetType/targetId is looked up by the
+// app layer, matching how the feed already treats these as a loose union.
+model FeedLike {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation("FeedLikes", fields: [userId], references: [id], onDelete: Cascade)
+  targetType String
+  targetId   String
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, targetType, targetId])
+  @@index([targetType, targetId])
+}
+
+// Comments on any feed item — same loose targetType/targetId pairing as FeedLike.
+model FeedComment {
+  id         String   @id @default(cuid())
+  authorId   String
+  author     User     @relation("AuthoredFeedComments", fields: [authorId], references: [id], onDelete: Cascade)
+  targetType String
+  targetId   String
+  body       String
+  createdAt  DateTime @default(now())
+
+  @@index([targetType, targetId])
 }
