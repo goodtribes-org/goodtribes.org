@@ -123,7 +123,8 @@ export default async function HomePage({
 
       {/* Del 1 — Hero: flip cards */}
       <div className="-mt-8">
-        <div className="flex justify-center px-4 pt-8 pb-10">
+        <div className="flex flex-col items-center px-4 pt-8 pb-10">
+          <p className="text-xl font-semibold text-dark-slate/60 mb-2">Sidan är i Beta och under kraftig utveckling</p>
           <HeroCards />
         </div>
       </div>
