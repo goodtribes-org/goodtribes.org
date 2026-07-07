@@ -3,15 +3,40 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
 import ProjectCard from "@/components/ProjectCard";
-import ProjectFilters from "@/components/ProjectFilters";
+import SortToggle from "@/components/SortToggle";
 import Pagination from "@/components/Pagination";
 import ActivityPulse from "@/components/ActivityPulse";
 import HeroCards from "@/components/HeroCards";
 import HomeStatsWidget from "@/components/HomeStatsWidget";
+import ImpactStatsWidget from "@/components/ImpactStatsWidget";
+import LeaderboardWidget from "@/components/LeaderboardWidget";
+import NewMembersWidget from "@/components/NewMembersWidget";
+import SdgCoverageWidget from "@/components/SdgCoverageWidget";
 
 const PAGE_SIZE = 12;
+
+async function getLeaderboard() {
+  const tokenGroups = await prisma.tokenLedger.groupBy({
+    by: ["userId"],
+    _sum: { tokens: true },
+    orderBy: { _sum: { tokens: "desc" } },
+    take: 20,
+  });
+  const users = await prisma.user.findMany({
+    where: { id: { in: tokenGroups.map((g) => g.userId) }, showProfile: true, name: { not: null as null } },
+    select: { id: true, name: true, image: true },
+  });
+  const userMap = new Map(users.map((u) => [u.id, u]));
+
+  return tokenGroups
+    .map((g) => {
+      const user = userMap.get(g.userId);
+      return user ? { id: user.id, name: user.name!, image: user.image, tokens: g._sum.tokens ?? 0 } : null;
+    })
+    .filter((entry): entry is { id: string; name: string; image: string | null; tokens: number } => !!entry)
+    .slice(0, 5);
+}
 
 export default async function HomePage({
   searchParams,
@@ -46,11 +71,33 @@ export default async function HomePage({
     : sort === "trending" ? { updatedAt: "desc" as const }
     : { createdAt: "desc" as const };
 
-  const [session, projectCount, orgCount, memberCount, totalFiltered, projects] = await Promise.all([
-    auth(),
+  const [
+    projectCount,
+    orgCount,
+    memberCount,
+    pledgeSum,
+    hoursSum,
+    completedTasks,
+    leaderboard,
+    newMembers,
+    sdgProjects,
+    totalFiltered,
+    projects,
+  ] = await Promise.all([
     prisma.project.count({ where: { visibility: "public" } }),
     prisma.organisation.count({ where: { isPublic: true } }),
     prisma.user.count({ where: { showProfile: true } }),
+    prisma.fundingPledge.aggregate({ where: { pledgeStatus: "confirmed" }, _sum: { amount: true } }),
+    prisma.timeLog.aggregate({ where: { status: "approved" }, _sum: { loggedHours: true } }),
+    prisma.kanbanCard.count({ where: { column: "DONE" } }),
+    getLeaderboard(),
+    prisma.user.findMany({
+      where: { showProfile: true, name: { not: null as null } },
+      orderBy: { id: "desc" }, // User has no createdAt; cuid ids are chronologically sortable
+      take: 6,
+      select: { id: true, name: true, image: true },
+    }),
+    prisma.project.findMany({ where: { visibility: "public" }, select: { sdgGoals: true } }),
     prisma.project.count({ where }),
     prisma.project.findMany({
       where,
@@ -64,6 +111,10 @@ export default async function HomePage({
       },
     }),
   ]);
+
+  const totalRaised = pledgeSum._sum.amount ?? 0;
+  const totalHours = Math.round(hoursSum._sum.loggedHours ?? 0);
+  const coveredGoals = Array.from(new Set(sdgProjects.flatMap((p) => p.sdgGoals)));
 
   const rawParams = { sort: sortParam, q, status, category, sdg, page: pageStr };
 
@@ -92,37 +143,40 @@ export default async function HomePage({
             </div>
             <ActivityPulse />
           </div>
-          <HomeStatsWidget
-            projectCount={projectCount}
-            orgCount={orgCount}
-            memberCount={memberCount}
-            isLoggedIn={!!session}
-          />
+          <div className="flex flex-col gap-6">
+            <HomeStatsWidget
+              projectCount={projectCount}
+              orgCount={orgCount}
+              memberCount={memberCount}
+            />
+            <ImpactStatsWidget
+              totalRaised={totalRaised}
+              totalHours={totalHours}
+              completedTasks={completedTasks}
+            />
+            <LeaderboardWidget entries={leaderboard} />
+            <NewMembersWidget
+              members={newMembers.map((m) => ({ id: m.id, name: m.name!, image: m.image }))}
+            />
+            <SdgCoverageWidget coveredGoals={coveredGoals} />
+          </div>
         </div>
       </section>
 
       {/* Del 3 — Project Browser */}
       <section id="projects">
         <div className="flex items-center justify-between mb-4">
-          <div>
+          <div className="flex items-center gap-3">
             <h2 className="text-lg font-bold text-dark-slate">
               Utforska projekt{" "}
               <span className="text-dark-slate/40 font-normal">({totalFiltered})</span>
             </h2>
+            <SortToggle sort={sort} q={q} status={status} category={category} sdg={sdg} basePath="/" />
           </div>
           <Link href="/projects" className="text-xs text-coral hover:underline">
             Se alla projekt →
           </Link>
         </div>
-        <ProjectFilters
-          sort={sort}
-          q={q}
-          status={status}
-          category={category}
-          sdg={sdg}
-          total={totalFiltered}
-          basePath="/"
-        />
         {projects.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <p className="text-dark-slate/50 mb-4">Inga projekt matchar dina filter.</p>

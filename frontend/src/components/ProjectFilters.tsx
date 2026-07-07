@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import SortToggle from "./SortToggle";
 
 const STAGES = [
   { value: "concept",    label: "Concept" },
@@ -74,25 +75,7 @@ export default function ProjectFilters({ sort, q, status, category, sdg, total, 
 
     <div className="flex flex-wrap items-center gap-3">
       {/* Sort */}
-      <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-        {[
-          { value: "new",      label: "New" },
-          { value: "top",      label: "Top" },
-          { value: "trending", label: "Trending" },
-        ].map((s) => (
-          <Link
-            key={s.value}
-            href={buildUrl({ sort: s.value, page: undefined })}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-              sort === s.value
-                ? "bg-white text-dark-slate shadow-sm"
-                : "text-dark-slate/60 hover:text-dark-slate"
-            }`}
-          >
-            {s.label}
-          </Link>
-        ))}
-      </div>
+      <SortToggle sort={sort} q={q} status={status} category={category} sdg={sdg} basePath={basePath} />
 
       {/* Stage */}
       <select

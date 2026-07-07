@@ -59,7 +59,7 @@ export default async function RootLayout({
                   className="object-contain"
                 />
               </Link>
-              <div className="shrink-0" style={{ marginLeft: "max(0px, calc(50vw - 48.5rem))" }}>
+              <div className="shrink-0">
                 <NavMenu />
               </div>
               <div className="flex-1" />
