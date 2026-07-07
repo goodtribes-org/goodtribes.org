@@ -10,6 +10,7 @@ import ProjectFilters from "@/components/ProjectFilters";
 import Pagination from "@/components/Pagination";
 import ActivityPulse from "@/components/ActivityPulse";
 import HeroCards from "@/components/HeroCards";
+import HomeStatsWidget from "@/components/HomeStatsWidget";
 
 const PAGE_SIZE = 12;
 
@@ -70,7 +71,7 @@ export default async function HomePage({
   return (
     <div className="space-y-16">
 
-      {/* Del 1 — Hero: full-bleed with blurred background + two tilted cards */}
+      {/* Del 1 — Hero: full-bleed with blurred background + flip cards */}
       <div
         className="relative -mt-8"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
@@ -98,97 +99,41 @@ export default async function HomePage({
                 color: "white",
                 textShadow:
                   "-1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999, 2px 4px 12px rgba(0,0,0,0.35)",
-                marginRight: "330px",
               }}
             >
               Crowdsourcing for Good
             </h1>
           </div>
 
-          {/* Two cards */}
+          {/* Hero cards */}
           <div className="flex justify-center px-4 pb-10">
-            <div className="flex flex-col md:flex-row gap-5 items-stretch">
-
-              <HeroCards />
-
-              {/* Card 2: stats + CTA */}
-              <div
-                className="shrink-0 bg-white rounded-2xl p-5 flex flex-col"
-                style={{
-                  width: "320px",
-                  minHeight: "460px",
-                  boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)",
-                  marginLeft: "8px",
-                  transform: "rotate(0deg)",
-                  position: "relative",
-                  zIndex: -1,
-                }}
-              >
-                <p className="text-seagrass text-xs font-semibold uppercase tracking-widest mb-4">
-                  Where good ideas become reality
-                </p>
-
-                {/* Stats */}
-                <div className="space-y-3 mb-4">
-                  <div className="bg-dry-sage/20 rounded-xl px-4 py-3 text-center">
-                    <p className="text-3xl font-bold text-dark-slate">{projectCount}</p>
-                    <p className="text-dark-slate/60 text-sm mt-0.5">Aktiva projekt</p>
-                  </div>
-                  <div className="bg-dry-sage/20 rounded-xl px-4 py-3 text-center">
-                    <p className="text-3xl font-bold text-dark-slate">{orgCount}</p>
-                    <p className="text-dark-slate/60 text-sm mt-0.5">Organisationer</p>
-                  </div>
-                  <div className="bg-dry-sage/20 rounded-xl px-4 py-3 text-center">
-                    <p className="text-3xl font-bold text-dark-slate">{memberCount}</p>
-                    <p className="text-dark-slate/60 text-sm mt-0.5">Volontärer</p>
-                  </div>
-                </div>
-
-                <div className="flex-1" />
-
-                {/* CTA buttons */}
-                <div className="space-y-2">
-                  {session ? (
-                    <Link
-                      href="/projects/new"
-                      className="block w-full text-center bg-coral text-white font-semibold px-4 py-3 rounded-xl hover:bg-watermelon transition-colors"
-                    >
-                      Starta ett projekt →
-                    </Link>
-                  ) : (
-                    <Link
-                      href="/login"
-                      className="block w-full text-center bg-coral text-white font-semibold px-4 py-3 rounded-xl hover:bg-watermelon transition-colors"
-                    >
-                      Kom igång gratis →
-                    </Link>
-                  )}
-                  <Link
-                    href="#projects"
-                    className="block w-full text-center bg-seagrass/10 text-dark-slate font-medium px-4 py-2.5 rounded-xl hover:bg-seagrass/20 transition-colors text-sm"
-                  >
-                    Utforska projekt
-                  </Link>
-                </div>
-              </div>
-
-            </div>
+            <HeroCards />
           </div>
         </div>
       </div>
 
       {/* Del 2 — Activity Pulse */}
       <section>
-        <div className="flex items-center justify-between mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
           <div>
-            <h2 className="text-lg font-bold text-dark-slate">Händer just nu</h2>
-            <p className="text-xs text-dark-slate/50 mt-0.5">Senaste aktivitet på plattformen</p>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-bold text-dark-slate">Händer just nu</h2>
+                <p className="text-xs text-dark-slate/50 mt-0.5">Senaste aktivitet på plattformen</p>
+              </div>
+              <Link href="/feed" className="text-xs text-coral hover:underline">
+                Se all aktivitet →
+              </Link>
+            </div>
+            <ActivityPulse />
           </div>
-          <Link href="/feed" className="text-xs text-coral hover:underline">
-            Se all aktivitet →
-          </Link>
+          <HomeStatsWidget
+            projectCount={projectCount}
+            orgCount={orgCount}
+            memberCount={memberCount}
+            isLoggedIn={!!session}
+          />
         </div>
-        <ActivityPulse />
       </section>
 
       {/* Del 3 — Project Browser */}
