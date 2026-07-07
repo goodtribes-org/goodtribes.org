@@ -5,6 +5,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { createMilestone, toggleMilestone, deleteMilestone } from "./actions";
+import ScrollToHash from "@/components/ScrollToHash";
 import type { Metadata } from "next";
 
 
@@ -47,6 +48,7 @@ export default async function MilestonesPage({ params }: { params: Promise<{ slu
 
   return (
     <div>
+      <ScrollToHash />
       <div className="mb-4">
         <Link href={`/projects/${slug}`} className="text-xs text-dark-slate/40 hover:text-dark-slate">
           ← {project.title}
@@ -77,6 +79,7 @@ export default async function MilestonesPage({ params }: { params: Promise<{ slu
           return (
             <div
               key={m.id}
+              id={`milestone-${m.id}`}
               className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
                 m.status === "done"
                   ? "border-seagrass/30 bg-seagrass/5"

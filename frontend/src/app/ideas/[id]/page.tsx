@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { IdeaSidebar, CommentForm } from "./IdeaInteractions";
+import ScrollToHash from "@/components/ScrollToHash";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_LABELS_EN } from "@/lib/sdg";
 
@@ -94,6 +95,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="max-w-4xl mx-auto">
+      <ScrollToHash />
       {/* Breadcrumb */}
       <nav className="mb-6 text-sm text-dark-slate/50 flex items-center gap-2">
         <Link href="/ideas" className="hover:text-dark-slate transition-colors">Ideas</Link>
@@ -298,7 +300,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ id:
 
             <div className="flex flex-col gap-5 mb-6">
               {idea.comments.map((comment) => (
-                <div key={comment.id} className="flex gap-3">
+                <div key={comment.id} id={`comment-${comment.id}`} className="flex gap-3">
                   {comment.author.image ? (
                     <img src={comment.author.image} alt={comment.author.name ?? ""} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
                   ) : (

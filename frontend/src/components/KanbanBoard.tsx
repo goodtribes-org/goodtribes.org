@@ -1127,6 +1127,7 @@ export default function KanbanBoard({
   members,
   requestAddColumn,
   onRequestAddDone,
+  requestOpenCardId,
   viewToggle,
 }: {
   projectSlug: string;
@@ -1136,6 +1137,7 @@ export default function KanbanBoard({
   members: Member[];
   requestAddColumn?: string | null;
   onRequestAddDone?: () => void;
+  requestOpenCardId?: string | null;
   viewToggle?: React.ReactNode;
 }) {
   const [columns, setColumns] = useState<Columns>(initialColumns);
@@ -1179,6 +1181,13 @@ export default function KanbanBoard({
       onRequestAddDone?.();
     }
   }, [requestAddColumn]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!requestOpenCardId) return;
+    const found = Object.values(columns).flat().find((c) => c.id === requestOpenCardId);
+    if (found) setEditingCard(found);
+  }, [requestOpenCardId]);
 
   const hasFilters = !!(filterQuery || filterCategory || filterPriority || filterAssignee);
 

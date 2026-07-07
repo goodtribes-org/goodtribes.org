@@ -49,21 +49,27 @@ export default function TasksPage({
   isLoggedIn,
   currentUserId,
   members,
+  openCardId,
 }: {
   projectSlug: string;
   initialColumns: Columns;
   isLoggedIn: boolean;
   currentUserId: string | null;
   members: Member[];
+  openCardId?: string | null;
 }) {
   const storageKey = `tasks-view-${projectSlug}`;
   const [view, setView] = useState<View>("board");
   const [addColKey, setAddColKey] = useState<string | null>(null);
 
   useEffect(() => {
+    if (openCardId) {
+      setView("board");
+      return;
+    }
     const saved = localStorage.getItem(storageKey);
     if (saved === "list" || saved === "board" || saved === "gantt") setView(saved);
-  }, [storageKey]);
+  }, [storageKey, openCardId]);
 
   function switchView(v: View) {
     setView(v);
@@ -116,6 +122,7 @@ export default function TasksPage({
           members={members}
           requestAddColumn={addColKey}
           onRequestAddDone={() => setAddColKey(null)}
+          requestOpenCardId={openCardId}
           viewToggle={viewToggle}
         />
       )}

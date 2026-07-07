@@ -12,8 +12,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return { title: `${project.title} — Uppgifter — GoodTribes.org` };
 }
 
-export default async function TasksRoutePage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function TasksRoutePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ card?: string }>;
+}) {
   const { slug } = await params;
+  const { card: openCardId } = await searchParams;
   const project = await prisma.project.findUnique({
     where: { slug },
     select: {
@@ -71,6 +78,7 @@ export default async function TasksRoutePage({ params }: { params: Promise<{ slu
           isLoggedIn={!!session?.user?.id}
           currentUserId={session?.user?.id ?? null}
           members={members}
+          openCardId={openCardId ?? null}
         />
       </div>
     </>

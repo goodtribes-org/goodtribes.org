@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import ScrollToHash from "@/components/ScrollToHash";
 
 
 function timeAgo(date: Date): string {
@@ -43,6 +44,7 @@ export default async function UpdatesPage({
 
   return (
     <div className="max-w-2xl mx-auto">
+      <ScrollToHash />
       <div className="flex items-center justify-between mb-8">
         <div>
           <Link href={`/projects/${slug}`} className="text-sm text-dark-slate/50 hover:text-seagrass">
@@ -72,7 +74,7 @@ export default async function UpdatesPage({
       ) : (
         <div className="space-y-8">
           {project.blogPosts.map((post) => (
-            <article key={post.id} className="border border-muted-teal rounded-lg p-6">
+            <article key={post.id} id={`post-${post.id}`} className="border border-muted-teal rounded-lg p-6">
               <div className="flex items-center gap-2 mb-3 text-sm text-dark-slate/50">
                 {post.author.image && (
                   <img src={post.author.image} alt="" className="w-6 h-6 rounded-full" />

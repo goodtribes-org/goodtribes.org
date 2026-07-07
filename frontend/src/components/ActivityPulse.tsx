@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { auth } from "@/auth";
 import { timeAgo } from "@/lib/timeAgo";
+import { htmlToPreviewText } from "@/lib/renderBody";
 import PostComposer from "@/components/PostComposer";
 import FeedItemActions from "@/components/FeedItemActions";
 
@@ -70,7 +71,7 @@ export default async function ActivityPulse() {
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
-          id: true, title: true, createdAt: true,
+          id: true, title: true, problem: true, solution: true, createdAt: true,
           author: { select: { name: true, image: true } },
         },
       }),
@@ -82,7 +83,7 @@ export default async function ActivityPulse() {
         orderBy: { createdAt: "desc" },
         take: LIMIT * 2,
         select: {
-          id: true, type: true, createdAt: true,
+          id: true, type: true, payload: true, createdAt: true,
           user: { select: { name: true, image: true } },
           project: { select: { id: true, title: true, slug: true, imageUrl: true } },
         },
@@ -95,7 +96,7 @@ export default async function ActivityPulse() {
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
-          id: true, createdAt: true,
+          id: true, body: true, channelId: true, createdAt: true,
           author: { select: { name: true, image: true } },
           channel: { select: { project: { select: { id: true, title: true, slug: true, imageUrl: true } } } },
         },
@@ -105,11 +106,11 @@ export default async function ActivityPulse() {
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
-          id: true, createdAt: true,
+          id: true, body: true, createdAt: true,
           author: { select: { name: true, image: true } },
           card: {
             select: {
-              title: true, projectSlug: true,
+              id: true, title: true, projectSlug: true,
               project: { select: { id: true, title: true, imageUrl: true } },
             },
           },
@@ -119,7 +120,7 @@ export default async function ActivityPulse() {
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
-          id: true, createdAt: true,
+          id: true, content: true, createdAt: true,
           author: { select: { name: true, image: true } },
           idea: { select: { id: true, title: true } },
         },
@@ -147,14 +148,14 @@ export default async function ActivityPulse() {
       avatarName: p.author.name, avatarImage: p.author.image, projectImage: p.project.imageUrl,
       projectName: p.project.title, projectHref: `/projects/${p.projectSlug}`, projectId: p.project.id,
       action: "postade en uppdatering",
-      href: `/projects/${p.projectSlug}/updates`, date: p.createdAt,
+      href: `/projects/${p.projectSlug}/updates#post-${p.id}`, date: p.createdAt,
     })),
     ...milestones.map((m) => ({
       id: `milestone-${m.id}`, targetType: "milestone", targetId: m.id,
       avatarName: m.createdBy.name, avatarImage: m.createdBy.image, projectImage: m.project.imageUrl,
       projectName: m.project.title, projectHref: `/projects/${m.project.slug}`, projectId: m.project.id,
       action: `Milstolpe klar: ${m.title}`,
-      href: `/projects/${m.project.slug}/milestones`, date: m.updatedAt,
+      href: `/projects/${m.project.slug}/milestones#milestone-${m.id}`, date: m.updatedAt,
     })),
     ...projects.map((p) => ({
       id: `project-${p.id}`, targetType: "project", targetId: p.id,
@@ -163,40 +164,60 @@ export default async function ActivityPulse() {
       action: "Nytt projekt skapat",
       href: `/projects/${p.slug}`, date: p.createdAt,
     })),
-    ...ideas.map((i) => ({
-      id: `idea-${i.id}`, targetType: "idea", targetId: i.id,
-      avatarName: i.author.name, avatarImage: i.author.image,
-      projectName: "Idéer", projectHref: null, projectId: null,
-      action: `Ny idé: ${i.title}`,
-      href: `/ideas/${i.id}`, date: i.createdAt,
-    })),
-    ...activities.map((a) => ({
-      id: `activity-${a.id}`, targetType: "activityEvent", targetId: a.id,
-      avatarName: a.user.name, avatarImage: a.user.image, projectImage: a.project.imageUrl,
-      projectName: a.project.title, projectHref: `/projects/${a.project.slug}`, projectId: a.project.id,
-      action: activityLabel[a.type] ?? "aktivitet",
-      href: `/projects/${a.project.slug}`, date: a.createdAt,
-    })),
+    ...ideas.map((i) => {
+      const parts = [];
+      if (i.problem) parts.push(`Problem: ${i.problem}`);
+      if (i.solution) parts.push(`Lösning: ${i.solution}`);
+      return {
+        id: `idea-${i.id}`, targetType: "idea", targetId: i.id,
+        avatarName: i.author.name, avatarImage: i.author.image,
+        projectName: "Idéer", projectHref: "/ideas", projectId: null,
+        action: `Ny idé: ${i.title}`,
+        body: parts.length > 0 ? parts.join(" ") : undefined,
+        href: `/ideas/${i.id}`, date: i.createdAt,
+      };
+    }),
+    ...activities.map((a) => {
+      const payload = a.payload as unknown as { title?: string; cardId?: string } | null;
+      const action =
+        a.type === "task_completed" && payload?.title
+          ? `slutförde uppgiften "${payload.title}"`
+          : activityLabel[a.type] ?? "aktivitet";
+      const href =
+        a.type === "task_completed" && payload?.cardId
+          ? `/projects/${a.project.slug}/tasks?card=${payload.cardId}`
+          : `/projects/${a.project.slug}`;
+      return {
+        id: `activity-${a.id}`, targetType: "activityEvent", targetId: a.id,
+        avatarName: a.user.name, avatarImage: a.user.image, projectImage: a.project.imageUrl,
+        projectName: a.project.title, projectHref: `/projects/${a.project.slug}`, projectId: a.project.id,
+        action,
+        href, date: a.createdAt,
+      };
+    }),
     ...channelMessages.map((m) => ({
       id: `msg-${m.id}`, targetType: "channelMessage", targetId: m.id,
       avatarName: m.author.name, avatarImage: m.author.image, projectImage: m.channel.project.imageUrl,
       projectName: m.channel.project.title, projectHref: `/projects/${m.channel.project.slug}`, projectId: m.channel.project.id,
       action: "skickade ett meddelande",
-      href: `/projects/${m.channel.project.slug}`, date: m.createdAt,
+      body: htmlToPreviewText(m.body),
+      href: `/projects/${m.channel.project.slug}/kanaler/${m.channelId}#message-${m.id}`, date: m.createdAt,
     })),
     ...kanbanComments.map((c) => ({
       id: `kcomment-${c.id}`, targetType: "kanbanCardComment", targetId: c.id,
       avatarName: c.author.name, avatarImage: c.author.image, projectImage: c.card.project.imageUrl,
       projectName: c.card.project.title, projectHref: `/projects/${c.card.projectSlug}`, projectId: c.card.project.id,
       action: `kommenterade på "${c.card.title}"`,
-      href: `/projects/${c.card.projectSlug}`, date: c.createdAt,
+      body: htmlToPreviewText(c.body),
+      href: `/projects/${c.card.projectSlug}/tasks?card=${c.card.id}`, date: c.createdAt,
     })),
     ...ideaComments.map((c) => ({
       id: `icomment-${c.id}`, targetType: "ideaComment", targetId: c.id,
       avatarName: c.author.name, avatarImage: c.author.image,
-      projectName: "Idéer", projectHref: null, projectId: null,
+      projectName: "Idéer", projectHref: "/ideas", projectId: null,
       action: `kommenterade på idén "${c.idea.title}"`,
-      href: `/ideas/${c.idea.id}`, date: c.createdAt,
+      body: c.content,
+      href: `/ideas/${c.idea.id}#comment-${c.id}`, date: c.createdAt,
     })),
   ];
 
@@ -259,22 +280,6 @@ export default async function ActivityPulse() {
             key={item.id}
             className="rounded-xl border border-muted-teal/40 bg-white p-3"
           >
-            {/* Row 1 — project/function name + join link */}
-            <div className="flex items-center justify-between gap-2 mb-1.5">
-              {item.projectHref ? (
-                <Link href={item.projectHref} className="text-xs font-semibold text-dark-slate hover:underline truncate">
-                  {item.projectName}
-                </Link>
-              ) : (
-                <p className="text-xs font-semibold text-dark-slate/60 truncate">{item.projectName}</p>
-              )}
-              {canJoin && item.projectHref && (
-                <Link href={item.projectHref} className="text-xs text-seagrass hover:underline shrink-0">
-                  Gå med →
-                </Link>
-              )}
-            </div>
-
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-dry-sage flex items-center justify-center text-xs font-semibold text-dark-slate overflow-hidden relative shrink-0">
                 {iconImage ? (
@@ -284,21 +289,43 @@ export default async function ActivityPulse() {
                 )}
               </div>
               <div className="flex-1 min-w-0">
+                {/* Row 1 — project name links to the project, action links to the actual thing + join link */}
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs truncate min-w-0">
+                    {item.projectHref ? (
+                      <Link href={item.projectHref} className="font-semibold text-dark-slate hover:underline">
+                        {item.projectName}
+                      </Link>
+                    ) : (
+                      <span className="font-semibold text-dark-slate/60">{item.projectName}</span>
+                    )}
+                    {" - "}
+                    {item.href ? (
+                      <Link href={item.href} className="font-normal text-dark-slate/70 hover:underline">
+                        {item.action}
+                      </Link>
+                    ) : (
+                      <span className="font-normal text-dark-slate/70">{item.action}</span>
+                    )}
+                  </p>
+                  {canJoin && item.projectHref && (
+                    <Link href={item.projectHref} className="text-xs text-seagrass hover:underline shrink-0">
+                      Gå med →
+                    </Link>
+                  )}
+                </div>
                 {/* Row 2 — author name + date */}
                 <p className="text-xs text-dark-slate/70">
                   {item.avatarName ?? "Någon"} <span className="text-dark-slate/40">· {timeAgo(item.date)}</span>
                 </p>
-                {/* Row 3 — what happened + link */}
-                {item.href ? (
-                  <Link href={item.href} className="text-xs font-medium text-dark-slate leading-snug line-clamp-2 hover:underline">
-                    {item.action}
-                  </Link>
-                ) : (
-                  <p className="text-xs font-medium text-dark-slate leading-snug">{item.action}</p>
-                )}
-                {item.body && <p className="text-xs text-dark-slate/80 leading-snug mt-1">{item.body}</p>}
               </div>
             </div>
+            {/* Row 3 — actual content preview, full width below icon */}
+            {item.body && (
+              <div className="mt-1.5">
+                <p className="text-xs text-dark-slate/80 leading-snug line-clamp-3">{item.body}</p>
+              </div>
+            )}
             {item.imageUrl && (
               <div className="relative w-full h-48 rounded-lg overflow-hidden mt-2">
                 <Image src={item.imageUrl} alt="" fill unoptimized className="object-cover" />

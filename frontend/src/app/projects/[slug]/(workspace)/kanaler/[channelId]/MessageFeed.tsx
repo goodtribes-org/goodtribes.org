@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { ReactionBar } from "@/components/ReactionBar";
 import { renderBody } from "@/lib/renderBody";
@@ -61,10 +61,24 @@ export function MessageFeed({
 }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [, startTransition] = useTransition();
+  const [deepLinkHash] = useState(() =>
+    typeof window !== "undefined" ? window.location.hash.slice(1) : ""
+  );
 
   useEffect(() => {
+    if (deepLinkHash) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+  }, [messages.length, deepLinkHash]);
+
+  useEffect(() => {
+    if (!deepLinkHash) return;
+    const el = document.getElementById(deepLinkHash);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("bg-coral/10");
+    const timeout = setTimeout(() => el.classList.remove("bg-coral/10"), 2500);
+    return () => clearTimeout(timeout);
+  }, [deepLinkHash]);
 
   const canPost = isMember && (channelType !== "announcement" || isAdmin);
   const grouped = buildGrouped(messages);
@@ -108,6 +122,7 @@ export function MessageFeed({
             return (
               <div
                 key={m.id}
+                id={`message-${m.id}`}
                 className={`relative group flex items-start gap-0 px-4 py-0.5 hover:bg-gray-50 transition-colors ${
                   isActiveThread ? "bg-blue-50" : ""
                 } ${m.isGrouped ? "" : "mt-2"}`}
