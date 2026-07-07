@@ -91,22 +91,8 @@ export default async function HomePage({
 
         {/* Content layer */}
         <div className="relative z-10">
-          {/* Title above cards */}
-          <div className="flex justify-center pt-5 pb-2 px-6">
-            <h1
-              className="text-5xl md:text-6xl font-bold text-center leading-tight"
-              style={{
-                color: "white",
-                textShadow:
-                  "-1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999, 2px 4px 12px rgba(0,0,0,0.35)",
-              }}
-            >
-              Crowdsourcing for Good
-            </h1>
-          </div>
-
           {/* Hero cards */}
-          <div className="flex justify-center px-4 pb-10">
+          <div className="flex justify-center px-4 pt-8 pb-10">
             <HeroCards />
           </div>
         </div>
