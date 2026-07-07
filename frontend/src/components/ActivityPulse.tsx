@@ -77,7 +77,7 @@ export default async function ActivityPulse() {
       }),
       prisma.activityEvent.findMany({
         where: {
-          type: { in: ["task_completed", "todo_completed", "member_joined"] },
+          type: { in: ["task_completed", "task_created", "task_moved", "todo_completed", "member_joined"] },
           project: { visibility: "public" },
         },
         orderBy: { createdAt: "desc" },
@@ -130,7 +130,17 @@ export default async function ActivityPulse() {
   const activityLabel: Record<string, string> = {
     member_joined:  "gick med i projektet",
     task_completed: "slutförde en uppgift",
+    task_created:   "skapade en uppgift",
+    task_moved:     "flyttade en uppgift",
     todo_completed: "checkade av en punkt",
+  };
+
+  const columnLabel: Record<string, string> = {
+    BACKLOG: "Backlog",
+    TODO: "Att göra",
+    DOING: "Pågår",
+    REVIEW: "Granskning",
+    DONE: "Klart",
   };
 
   const items: PulseItem[] = [
@@ -178,17 +188,25 @@ export default async function ActivityPulse() {
       };
     }),
     ...activities.map((a) => {
-      const payload = a.payload as unknown as { title?: string; cardId?: string; description?: string | null } | null;
+      const payload = a.payload as unknown as {
+        title?: string; cardId?: string; description?: string | null;
+        fromColumn?: string; toColumn?: string;
+      } | null;
+      const isCardActivity = a.type === "task_completed" || a.type === "task_created" || a.type === "task_moved";
       const action =
         a.type === "task_completed" && payload?.title
           ? `slutförde uppgiften "${payload.title}"`
+          : a.type === "task_created" && payload?.title
+          ? `skapade uppgiften "${payload.title}"`
+          : a.type === "task_moved" && payload?.title
+          ? `flyttade uppgiften "${payload.title}" till ${columnLabel[payload.toColumn ?? ""] ?? payload.toColumn}`
           : activityLabel[a.type] ?? "aktivitet";
       const href =
-        a.type === "task_completed" && payload?.cardId
+        isCardActivity && payload?.cardId
           ? `/projects/${a.project.slug}/tasks?card=${payload.cardId}`
           : `/projects/${a.project.slug}`;
       const body =
-        a.type === "task_completed" && payload?.description
+        a.type !== "task_moved" && payload?.description
           ? htmlToPreviewText(payload.description)
           : undefined;
       return {

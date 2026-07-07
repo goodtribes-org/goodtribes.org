@@ -17,7 +17,7 @@ type FeedItem =
   | { kind: "project";         id: string; title: string; slug: string; category: string | null; memberCount: number; date: Date }
   | { kind: "milestone";       id: string; title: string; projectTitle: string; projectSlug: string; date: Date }
   | { kind: "idea";            id: string; title: string; category: string | null; authorName: string | null; date: Date }
-  | { kind: "activity";        id: string; activityType: "task_completed" | "todo_completed" | "member_joined"; projectTitle: string; projectSlug: string; userName: string | null; date: Date; cardId?: string; taskTitle?: string }
+  | { kind: "activity";        id: string; activityType: "task_completed" | "task_created" | "task_moved" | "todo_completed" | "member_joined"; projectTitle: string; projectSlug: string; userName: string | null; date: Date; cardId?: string; taskTitle?: string; toColumn?: string }
   | { kind: "channel_message"; id: string; projectTitle: string; projectSlug: string; userName: string | null; date: Date }
   | { kind: "kanban_comment";  id: string; cardTitle: string; projectTitle: string; projectSlug: string; userName: string | null; date: Date }
   | { kind: "idea_comment";    id: string; ideaId: string; ideaTitle: string; userName: string | null; date: Date };
@@ -48,7 +48,17 @@ const ICON_CONFIG = {
 const ACTIVITY_ICON: Record<string, { emoji: string; bg: string }> = {
   member_joined:  { emoji: "👤", bg: "bg-indigo-100" },
   task_completed: { emoji: "✅", bg: "bg-teal-100"   },
+  task_created:   { emoji: "📝", bg: "bg-lime-100"   },
+  task_moved:     { emoji: "↔️", bg: "bg-fuchsia-100" },
   todo_completed: { emoji: "☑️", bg: "bg-cyan-100"   },
+};
+
+const COLUMN_LABEL: Record<string, string> = {
+  BACKLOG: "Backlog",
+  TODO: "Att göra",
+  DOING: "Pågår",
+  REVIEW: "Granskning",
+  DONE: "Klart",
 };
 
 function itemIcon(item: FeedItem): { emoji: string; bg: string } {
@@ -71,6 +81,12 @@ function itemTitle(item: FeedItem): string {
         case "task_completed": return item.taskTitle
           ? `${item.userName ?? "Någon"} slutförde uppgiften "${item.taskTitle}" i ${item.projectTitle}`
           : `${item.userName ?? "Någon"} slutförde en uppgift i ${item.projectTitle}`;
+        case "task_created": return item.taskTitle
+          ? `${item.userName ?? "Någon"} skapade uppgiften "${item.taskTitle}" i ${item.projectTitle}`
+          : `${item.userName ?? "Någon"} skapade en uppgift i ${item.projectTitle}`;
+        case "task_moved": return item.taskTitle
+          ? `${item.userName ?? "Någon"} flyttade uppgiften "${item.taskTitle}" till ${COLUMN_LABEL[item.toColumn ?? ""] ?? item.toColumn} i ${item.projectTitle}`
+          : `${item.userName ?? "Någon"} flyttade en uppgift i ${item.projectTitle}`;
         case "todo_completed": return `${item.userName ?? "Någon"} checkade av en punkt i ${item.projectTitle}`;
       }
   }
@@ -85,7 +101,7 @@ function itemHref(item: FeedItem): string {
     case "channel_message": return `/projects/${item.projectSlug}`;
     case "kanban_comment":  return `/projects/${item.projectSlug}`;
     case "idea_comment":    return `/ideas/${item.ideaId}`;
-    case "activity":        return item.activityType === "task_completed" && item.cardId
+    case "activity":        return (item.activityType === "task_completed" || item.activityType === "task_created" || item.activityType === "task_moved") && item.cardId
       ? `/projects/${item.projectSlug}/tasks?card=${item.cardId}`
       : `/projects/${item.projectSlug}`;
   }
@@ -159,7 +175,7 @@ export default async function FeedPage({
     prisma.activityEvent.findMany({
       take: FETCH_LIMIT * 3,
       where: {
-        type: { in: ["task_completed", "todo_completed", "member_joined"] },
+        type: { in: ["task_completed", "task_created", "task_moved", "todo_completed", "member_joined"] },
         project: { visibility: "public" },
       },
       orderBy: { createdAt: "desc" },
@@ -227,13 +243,13 @@ export default async function FeedPage({
       authorName: i.author.name, date: i.createdAt,
     })),
     ...rawActivities.map((a): FeedItem => {
-      const payload = a.payload as unknown as { title?: string; cardId?: string } | null;
+      const payload = a.payload as unknown as { title?: string; cardId?: string; toColumn?: string } | null;
       return {
         kind: "activity", id: a.id,
-        activityType: a.type as "task_completed" | "todo_completed" | "member_joined",
+        activityType: a.type as "task_completed" | "task_created" | "task_moved" | "todo_completed" | "member_joined",
         projectTitle: a.project.title, projectSlug: a.project.slug,
         userName: a.user.name, date: a.createdAt,
-        cardId: payload?.cardId, taskTitle: payload?.title,
+        cardId: payload?.cardId, taskTitle: payload?.title, toColumn: payload?.toColumn,
       };
     }),
     ...rawChannelMessages.map((m): FeedItem => ({

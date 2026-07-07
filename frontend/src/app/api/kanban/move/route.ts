@@ -61,12 +61,18 @@ export async function POST(req: NextRequest) {
 
   await updateStreak(session.user.id, card.projectSlug);
 
-  if (newColumn === "DONE") {
+  if (newColumn !== card.column) {
     const project = await prisma.project.findUnique({
       where: { slug: card.projectSlug },
       select: { id: true },
     });
-    if (project) await logActivity(project.id, session.user.id, "task_completed", { title: card.title, cardId: card.id, description: card.description });
+    if (project) {
+      if (newColumn === "DONE") {
+        await logActivity(project.id, session.user.id, "task_completed", { title: card.title, cardId: card.id, description: card.description });
+      } else {
+        await logActivity(project.id, session.user.id, "task_moved", { title: card.title, cardId: card.id, fromColumn: card.column, toColumn: newColumn });
+      }
+    }
   }
 
   revalidatePath(`/projects/${card.projectSlug}/kanban`);
