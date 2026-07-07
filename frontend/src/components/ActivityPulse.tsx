@@ -303,7 +303,7 @@ export default async function ActivityPulse() {
         const initials = item.avatarName
           ? item.avatarName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
           : "?";
-        const iconImage = item.projectImage || item.avatarImage;
+        const iconImage = item.avatarImage || item.projectImage;
         const canJoin = isLoggedIn && !!item.projectId && !memberProjectIds.has(item.projectId);
         return (
           <div
@@ -345,7 +345,7 @@ export default async function ActivityPulse() {
                   )}
                 </div>
                 {/* Row 2 — author name + date */}
-                <p className="text-xs text-dark-slate/70">
+                <p className="text-[11px] text-dark-slate/70">
                   {item.avatarName ?? "Någon"} <span className="text-dark-slate/40">· {timeAgo(item.date)}</span>
                 </p>
               </div>
