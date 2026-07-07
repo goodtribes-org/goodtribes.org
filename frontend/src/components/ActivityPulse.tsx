@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import Image from "next/image";
 import { auth } from "@/auth";
 import { timeAgo } from "@/lib/timeAgo";
 import PostComposer from "@/components/PostComposer";
@@ -13,6 +14,7 @@ type PulseItem = {
   bgClass: string;
   title: string;
   body?: string;
+  imageUrl?: string | null;
   href: string | null;
   date: Date;
 };
@@ -27,7 +29,7 @@ export default async function ActivityPulse() {
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
-          id: true, body: true, createdAt: true,
+          id: true, body: true, imageUrl: true, createdAt: true,
           author: { select: { name: true } },
         },
       }),
@@ -134,6 +136,7 @@ export default async function ActivityPulse() {
       emoji: "📝", bgClass: "bg-rose-100",
       title: p.author.name ?? "Någon",
       body: p.body,
+      imageUrl: p.imageUrl,
       href: null, date: p.createdAt,
     })),
     ...blogPosts.map((p) => ({
@@ -250,6 +253,11 @@ export default async function ActivityPulse() {
                 <p className="text-[10px] text-dark-slate/40 mt-0.5">{timeAgo(item.date)}</p>
               </div>
             </div>
+            {item.imageUrl && (
+              <div className="relative w-full h-48 rounded-lg overflow-hidden mt-2">
+                <Image src={item.imageUrl} alt="" fill unoptimized className="object-cover" />
+              </div>
+            )}
             <FeedItemActions
               targetType={item.targetType}
               targetId={item.targetId}

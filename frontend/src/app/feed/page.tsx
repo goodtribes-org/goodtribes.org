@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "Senaste aktivitet från hela GoodTribes",
 };
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 const FETCH_LIMIT = 10;
 
 type FeedItem =

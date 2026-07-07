@@ -4,14 +4,14 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-export async function createFeedPost(body: string) {
+export async function createFeedPost(body: string, imageUrl?: string | null) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
   const trimmed = body.trim();
-  if (!trimmed) return { error: "Post is empty" };
+  if (!trimmed && !imageUrl) return { error: "Post is empty" };
 
   await prisma.feedPost.create({
-    data: { authorId: session.user.id, body: trimmed },
+    data: { authorId: session.user.id, body: trimmed, imageUrl: imageUrl || null },
   });
 
   revalidatePath("/");
