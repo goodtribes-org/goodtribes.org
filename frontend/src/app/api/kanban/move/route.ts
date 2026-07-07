@@ -68,7 +68,10 @@ export async function POST(req: NextRequest) {
     });
     if (project) {
       if (newColumn === "DONE") {
-        await logActivity(project.id, session.user.id, "task_completed", { title: card.title, cardId: card.id, description: card.description });
+        const subtasks = await prisma.kanbanCardSubtask.findMany({
+          where: { cardId: card.id }, orderBy: { order: "asc" }, select: { title: true, done: true },
+        });
+        await logActivity(project.id, session.user.id, "task_completed", { title: card.title, cardId: card.id, description: card.description, subtasks });
       } else {
         await logActivity(project.id, session.user.id, "task_moved", { title: card.title, cardId: card.id, fromColumn: card.column, toColumn: newColumn });
       }

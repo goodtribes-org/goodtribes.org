@@ -43,18 +43,22 @@ export async function createCard(
     },
   });
 
-  if (subtasks && subtasks.length > 0) {
+  const cleanedSubtasks = subtasks?.map((t) => t.trim()).filter(Boolean) ?? [];
+  if (cleanedSubtasks.length > 0) {
     await prisma.kanbanCardSubtask.createMany({
-      data: subtasks.filter((t) => t.trim()).map((t, i) => ({
+      data: cleanedSubtasks.map((t, i) => ({
         cardId: card.id,
-        title: t.trim(),
+        title: t,
         order: i,
       })),
     });
   }
 
   const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
-  if (project) await logActivity(project.id, session.user.id, "task_created", { title: card.title, cardId: card.id, description: card.description });
+  if (project) await logActivity(project.id, session.user.id, "task_created", {
+    title: card.title, cardId: card.id, description: card.description,
+    subtasks: cleanedSubtasks.map((title) => ({ title, done: false })),
+  });
 
   const est = await estimateTask(card.title, card.description);
   if (est) {
@@ -298,7 +302,10 @@ export async function moveCard(cardId: string, newColumn: string) {
     const project = await prisma.project.findUnique({ where: { slug: card.projectSlug }, select: { id: true } });
     if (project) {
       if (newColumn === "DONE") {
-        await logActivity(project.id, session.user.id, "task_completed", { title: card.title, cardId: card.id, description: card.description });
+        const subtasks = await prisma.kanbanCardSubtask.findMany({
+          where: { cardId: card.id }, orderBy: { order: "asc" }, select: { title: true, done: true },
+        });
+        await logActivity(project.id, session.user.id, "task_completed", { title: card.title, cardId: card.id, description: card.description, subtasks });
       } else {
         await logActivity(project.id, session.user.id, "task_moved", { title: card.title, cardId: card.id, fromColumn: card.column, toColumn: newColumn });
       }

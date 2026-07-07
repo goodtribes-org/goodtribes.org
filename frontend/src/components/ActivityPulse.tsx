@@ -19,6 +19,7 @@ type PulseItem = {
   projectHref?: string | null;
   action: string;
   body?: string;
+  subtasks?: { title: string; done: boolean }[];
   imageUrl?: string | null;
   href: string | null;
   date: Date;
@@ -191,6 +192,7 @@ export default async function ActivityPulse() {
       const payload = a.payload as unknown as {
         title?: string; cardId?: string; description?: string | null;
         fromColumn?: string; toColumn?: string;
+        subtasks?: { title: string; done: boolean }[];
       } | null;
       const isCardActivity = a.type === "task_completed" || a.type === "task_created" || a.type === "task_moved";
       const action =
@@ -209,12 +211,17 @@ export default async function ActivityPulse() {
         a.type !== "task_moved" && payload?.description
           ? htmlToPreviewText(payload.description)
           : undefined;
+      const subtasks =
+        a.type !== "task_moved" && payload?.subtasks && payload.subtasks.length > 0
+          ? payload.subtasks
+          : undefined;
       return {
         id: `activity-${a.id}`, targetType: "activityEvent", targetId: a.id,
         avatarName: a.user.name, avatarImage: a.user.image, projectImage: a.project.imageUrl,
         projectName: a.project.title, projectHref: `/projects/${a.project.slug}`, projectId: a.project.id,
         action,
         body,
+        subtasks,
         href, date: a.createdAt,
       };
     }),
@@ -348,6 +355,16 @@ export default async function ActivityPulse() {
               <div className="mt-1.5">
                 <p className="text-xs text-dark-slate/80 leading-snug line-clamp-3">{item.body}</p>
               </div>
+            )}
+            {item.subtasks && item.subtasks.length > 0 && (
+              <ul className="mt-1.5 space-y-0.5">
+                {item.subtasks.map((s, i) => (
+                  <li key={i} className="text-xs text-dark-slate/80 leading-snug flex items-center gap-1.5">
+                    <span>{s.done ? "☑" : "☐"}</span>
+                    <span className={s.done ? "line-through text-dark-slate/50" : ""}>{s.title}</span>
+                  </li>
+                ))}
+              </ul>
             )}
             {item.imageUrl && (
               <div className="relative w-full h-48 rounded-lg overflow-hidden mt-2">
