@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition, useEffect, useMemo } from "react";
+import React, { useState, useTransition, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   DndContext,
@@ -732,6 +732,7 @@ function KanbanCardItem({
   onAddCard,
   runningAI,
   onRunAI,
+  onSubtasksChanged,
 }: {
   card: Card;
   currentUserId: string | null;
@@ -741,6 +742,7 @@ function KanbanCardItem({
   onAddCard?: (card: Card) => void;
   runningAI: Set<string>;
   onRunAI: (cardId: string, agentType: string, additionalContext: string) => void;
+  onSubtasksChanged?: (cardId: string, subtasks: Subtask[]) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: card.id });
@@ -749,6 +751,16 @@ function KanbanCardItem({
   const [selectedAgent, setSelectedAgent] = useState("writer");
   const [additionalContext, setAdditionalContext] = useState("");
   const [localSubtasks, setLocalSubtasks] = useState(card.subtasks ?? []);
+  const subtasksMountedRef = useRef(false);
+
+  useEffect(() => {
+    setLocalSubtasks(card.subtasks ?? []);
+  }, [card.subtasks]);
+
+  useEffect(() => {
+    if (!subtasksMountedRef.current) { subtasksMountedRef.current = true; return; }
+    onSubtasksChanged?.(card.id, localSubtasks);
+  }, [localSubtasks, card.id, onSubtasksChanged]);
   const [addingSubtask, setAddingSubtask] = useState(false);
   const [newSubtaskInput, setNewSubtaskInput] = useState("");
   const [subtaskMenuPos, setSubtaskMenuPos] = useState<{ id: string; x: number; y: number } | null>(null);
@@ -1047,6 +1059,7 @@ function DroppableColumn({
   onAddCard,
   runningAI,
   onRunAI,
+  onSubtasksChanged,
 }: {
   col: { key: string; label: string; color: string };
   cards: Card[];
@@ -1059,6 +1072,7 @@ function DroppableColumn({
   onAddCard: (card: Card) => void;
   runningAI: Set<string>;
   onRunAI: (cardId: string, agentType: string, additionalContext: string) => void;
+  onSubtasksChanged: (cardId: string, subtasks: Subtask[]) => void;
 })
  {
   const { setNodeRef, isOver } = useDroppable({ id: col.key });
@@ -1115,6 +1129,7 @@ function DroppableColumn({
               onAddCard={onAddCard}
               runningAI={runningAI}
               onRunAI={onRunAI}
+              onSubtasksChanged={onSubtasksChanged}
             />
           ))}
         </div>
@@ -1328,6 +1343,22 @@ export default function KanbanBoard({
     });
   }
 
+  function handleCardSubtasksSynced(cardId: string, subtasks: Subtask[]) {
+    setColumns((prev) => {
+      for (const key of COLUMN_ORDER) {
+        const col = key as keyof Columns;
+        const idx = (prev[col] as Card[]).findIndex((c) => c.id === cardId);
+        if (idx !== -1) {
+          if ((prev[col] as Card[])[idx].subtasks === subtasks) return prev;
+          const cards = [...(prev[col] as Card[])];
+          cards[idx] = { ...cards[idx], subtasks };
+          return { ...prev, [col]: cards };
+        }
+      }
+      return prev;
+    });
+  }
+
   function handleTempCardResolved(tempId: string, cardId: string) {
     setColumns((prev) => {
       const updated = { ...prev };
@@ -1442,6 +1473,7 @@ export default function KanbanBoard({
                 onAddCard={handleAdd}
                 runningAI={runningAI}
                 onRunAI={handleRunAI}
+                onSubtasksChanged={handleCardSubtasksSynced}
               />
             ))}
           </div>
