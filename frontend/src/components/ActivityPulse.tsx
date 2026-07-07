@@ -10,8 +10,8 @@ type PulseItem = {
   id: string;
   targetType: string;
   targetId: string;
-  emoji: string;
-  bgClass: string;
+  avatarName: string | null;
+  avatarImage: string | null;
   title: string;
   body?: string;
   imageUrl?: string | null;
@@ -30,7 +30,7 @@ export default async function ActivityPulse() {
         take: LIMIT,
         select: {
           id: true, body: true, imageUrl: true, createdAt: true,
-          author: { select: { name: true } },
+          author: { select: { name: true, image: true } },
         },
       }),
       prisma.blogPost.findMany({
@@ -39,7 +39,7 @@ export default async function ActivityPulse() {
         take: LIMIT,
         select: {
           id: true, title: true, projectSlug: true, createdAt: true,
-          author: { select: { name: true } },
+          author: { select: { name: true, image: true } },
           project: { select: { title: true } },
         },
       }),
@@ -49,6 +49,7 @@ export default async function ActivityPulse() {
         take: LIMIT,
         select: {
           id: true, title: true, updatedAt: true,
+          createdBy: { select: { name: true, image: true } },
           project: { select: { title: true, slug: true } },
         },
       }),
@@ -56,14 +57,17 @@ export default async function ActivityPulse() {
         where: { visibility: "public" },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
-        select: { id: true, title: true, slug: true, createdAt: true },
+        select: {
+          id: true, title: true, slug: true, createdAt: true,
+          owner: { select: { name: true, image: true } },
+        },
       }),
       prisma.idea.findMany({
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
           id: true, title: true, createdAt: true,
-          author: { select: { name: true } },
+          author: { select: { name: true, image: true } },
         },
       }),
       prisma.activityEvent.findMany({
@@ -75,7 +79,7 @@ export default async function ActivityPulse() {
         take: LIMIT * 2,
         select: {
           id: true, type: true, createdAt: true,
-          user: { select: { name: true } },
+          user: { select: { name: true, image: true } },
           project: { select: { title: true, slug: true } },
         },
       }),
@@ -88,7 +92,7 @@ export default async function ActivityPulse() {
         take: LIMIT,
         select: {
           id: true, createdAt: true,
-          author: { select: { name: true } },
+          author: { select: { name: true, image: true } },
           channel: { select: { project: { select: { title: true, slug: true } } } },
         },
       }),
@@ -98,7 +102,7 @@ export default async function ActivityPulse() {
         take: LIMIT,
         select: {
           id: true, createdAt: true,
-          author: { select: { name: true } },
+          author: { select: { name: true, image: true } },
           card: {
             select: {
               title: true, projectSlug: true,
@@ -112,17 +116,11 @@ export default async function ActivityPulse() {
         take: LIMIT,
         select: {
           id: true, createdAt: true,
-          author: { select: { name: true } },
+          author: { select: { name: true, image: true } },
           idea: { select: { id: true, title: true } },
         },
       }),
     ]);
-
-  const activityIcon: Record<string, { emoji: string; bg: string }> = {
-    member_joined:  { emoji: "👤", bg: "bg-indigo-100" },
-    task_completed: { emoji: "✅", bg: "bg-teal-100"   },
-    todo_completed: { emoji: "☑️", bg: "bg-cyan-100"   },
-  };
 
   const activityLabel: Record<string, (u: string, p: string) => string> = {
     member_joined:  (u, p) => `${u} gick med i ${p}`,
@@ -133,7 +131,7 @@ export default async function ActivityPulse() {
   const items: PulseItem[] = [
     ...feedPosts.map((p) => ({
       id: `post-${p.id}`, targetType: "feedPost", targetId: p.id,
-      emoji: "📝", bgClass: "bg-rose-100",
+      avatarName: p.author.name, avatarImage: p.author.image,
       title: p.author.name ?? "Någon",
       body: p.body,
       imageUrl: p.imageUrl,
@@ -141,53 +139,52 @@ export default async function ActivityPulse() {
     })),
     ...blogPosts.map((p) => ({
       id: `blog-${p.id}`, targetType: "blogPost", targetId: p.id,
-      emoji: "✍️", bgClass: "bg-blue-100",
+      avatarName: p.author.name, avatarImage: p.author.image,
       title: `${p.author.name ?? "Någon"} postade en uppdatering i ${p.project.title}`,
       href: `/projects/${p.projectSlug}/updates`, date: p.createdAt,
     })),
     ...milestones.map((m) => ({
       id: `milestone-${m.id}`, targetType: "milestone", targetId: m.id,
-      emoji: "🎯", bgClass: "bg-purple-100",
+      avatarName: m.createdBy.name, avatarImage: m.createdBy.image,
       title: `Milstolpe klar: ${m.title} i ${m.project.title}`,
       href: `/projects/${m.project.slug}/milestones`, date: m.updatedAt,
     })),
     ...projects.map((p) => ({
       id: `project-${p.id}`, targetType: "project", targetId: p.id,
-      emoji: "🚀", bgClass: "bg-green-100",
+      avatarName: p.owner.name, avatarImage: p.owner.image,
       title: `Nytt projekt: ${p.title}`,
       href: `/projects/${p.slug}`, date: p.createdAt,
     })),
     ...ideas.map((i) => ({
       id: `idea-${i.id}`, targetType: "idea", targetId: i.id,
-      emoji: "💡", bgClass: "bg-yellow-100",
+      avatarName: i.author.name, avatarImage: i.author.image,
       title: `Ny idé: ${i.title}`,
       href: `/ideas/${i.id}`, date: i.createdAt,
     })),
     ...activities.map((a) => {
-      const icon = activityIcon[a.type] ?? { emoji: "⚡", bg: "bg-orange-100" };
       const label = activityLabel[a.type];
       return {
         id: `activity-${a.id}`, targetType: "activityEvent", targetId: a.id,
-        emoji: icon.emoji, bgClass: icon.bg,
+        avatarName: a.user.name, avatarImage: a.user.image,
         title: label ? label(a.user.name ?? "Någon", a.project.title) : `Aktivitet i ${a.project.title}`,
         href: `/projects/${a.project.slug}`, date: a.createdAt,
       };
     }),
     ...channelMessages.map((m) => ({
       id: `msg-${m.id}`, targetType: "channelMessage", targetId: m.id,
-      emoji: "💬", bgClass: "bg-sky-100",
+      avatarName: m.author.name, avatarImage: m.author.image,
       title: `${m.author.name ?? "Någon"} skickade ett meddelande i ${m.channel.project.title}`,
       href: `/projects/${m.channel.project.slug}`, date: m.createdAt,
     })),
     ...kanbanComments.map((c) => ({
       id: `kcomment-${c.id}`, targetType: "kanbanCardComment", targetId: c.id,
-      emoji: "💬", bgClass: "bg-slate-100",
+      avatarName: c.author.name, avatarImage: c.author.image,
       title: `${c.author.name ?? "Någon"} kommenterade på "${c.card.title}"`,
       href: `/projects/${c.card.projectSlug}`, date: c.createdAt,
     })),
     ...ideaComments.map((c) => ({
       id: `icomment-${c.id}`, targetType: "ideaComment", targetId: c.id,
-      emoji: "💬", bgClass: "bg-amber-100",
+      avatarName: c.author.name, avatarImage: c.author.image,
       title: `${c.author.name ?? "Någon"} kommenterade på idén "${c.idea.title}"`,
       href: `/ideas/${c.idea.id}`, date: c.createdAt,
     })),
@@ -232,14 +229,21 @@ export default async function ActivityPulse() {
 
       {displayed.map((item) => {
         const key = `${item.targetType}:${item.targetId}`;
+        const initials = item.avatarName
+          ? item.avatarName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+          : "?";
         return (
           <div
             key={item.id}
             className="rounded-xl border border-muted-teal/40 bg-white p-3"
           >
             <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 ${item.bgClass}`}>
-                {item.emoji}
+              <div className="w-8 h-8 rounded-full bg-dry-sage flex items-center justify-center text-xs font-semibold text-dark-slate overflow-hidden relative shrink-0">
+                {item.avatarImage ? (
+                  <Image src={item.avatarImage} alt={item.avatarName ?? ""} fill className="object-cover" unoptimized />
+                ) : (
+                  initials
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 {item.href ? (
