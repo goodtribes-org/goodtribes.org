@@ -237,9 +237,13 @@ function CardDetailModal({
   function save() {
     if (!title.trim()) return;
     if (isNew) {
-      const subtaskTitles = localSubtasks.map((s) => s.title).filter(Boolean);
+      const pendingSubtask = newSubtaskInput.trim();
+      const allSubtasks = pendingSubtask
+        ? [...localSubtasks, { id: `temp-${Date.now()}`, title: pendingSubtask, done: false, order: localSubtasks.length }]
+        : localSubtasks;
+      const subtaskTitles = allSubtasks.map((s) => s.title).filter(Boolean);
       const assignee = members.find((m) => m.id === assigneeId) ?? null;
-      onAdd?.({ ...card, title: title.trim(), description: description.trim() || null, priority, category: category || null, assigneeId: assigneeId || null, assignee, subtasks: localSubtasks });
+      onAdd?.({ ...card, title: title.trim(), description: description.trim() || null, priority, category: category || null, assigneeId: assigneeId || null, assignee, subtasks: allSubtasks });
       createCard(
         card.projectSlug,
         title.trim(),
