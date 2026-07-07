@@ -905,7 +905,7 @@ function KanbanCardItem({
                 onMouseEnter={() => setDetailsExpanded(true)}
                 onClick={(e) => { e.stopPropagation(); setDetailsExpanded(false); }}
                 onPointerDown={(e) => e.stopPropagation()}
-                className="flex items-center justify-center w-5 h-5 rounded bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
+                className="flex items-center justify-center w-5 h-5 rounded bg-gray-100 text-gray-500 transition-colors"
                 title="Visa detaljer"
               >
                 <svg className={`w-3.5 h-3.5 transition-transform ${detailsExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
