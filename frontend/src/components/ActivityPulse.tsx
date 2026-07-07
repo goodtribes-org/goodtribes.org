@@ -166,18 +166,20 @@ export default async function ActivityPulse() {
   if (displayed.length === 0) return null;
 
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+    <div className="flex flex-col gap-2">
       {displayed.map((item) => (
         <Link
           key={item.id}
           href={item.href}
-          className="flex-shrink-0 w-52 rounded-xl border border-muted-teal/40 bg-white hover:shadow-md hover:border-muted-teal transition-all p-3 flex flex-col gap-2"
+          className="rounded-xl border border-muted-teal/40 bg-white hover:shadow-md hover:border-muted-teal transition-all p-3 flex items-center gap-3"
         >
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${item.bgClass}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 ${item.bgClass}`}>
             {item.emoji}
           </div>
-          <p className="text-xs font-medium text-dark-slate leading-snug line-clamp-3 flex-1">{item.title}</p>
-          <p className="text-[10px] text-dark-slate/40">{timeAgo(item.date)}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-dark-slate leading-snug line-clamp-2">{item.title}</p>
+            <p className="text-[10px] text-dark-slate/40 mt-0.5">{timeAgo(item.date)}</p>
+          </div>
         </Link>
       ))}
     </div>
