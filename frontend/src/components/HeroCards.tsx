@@ -44,8 +44,8 @@ const CARDS = [
   },
 ];
 
-const CARD_W = 404;
-const CARD_H = 224;
+const CARD_W = 820;
+const CARD_H = 460;
 const GRID_W = 820;
 const GRID_H = 460;
 
