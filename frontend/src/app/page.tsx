@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -71,30 +70,10 @@ export default async function HomePage({
   return (
     <div className="space-y-16">
 
-      {/* Del 1 — Hero: full-bleed with blurred background + flip cards */}
-      <div
-        className="relative -mt-8"
-        style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
-      >
-        {/* Background — blurred hero image, clipped to 490 px */}
-        <div className="absolute top-0 left-0 right-0 overflow-hidden" style={{ height: "490px" }}>
-          <Image
-            src="/img/hero-banner.png"
-            alt=""
-            fill
-            unoptimized
-            className="object-cover blur-2xl scale-110"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-dark-slate/30" />
-        </div>
-
-        {/* Content layer */}
-        <div className="relative z-10">
-          {/* Hero cards */}
-          <div className="flex justify-center px-4 pt-8 pb-10">
-            <HeroCards />
-          </div>
+      {/* Del 1 — Hero: flip cards */}
+      <div className="-mt-8">
+        <div className="flex justify-center px-4 pt-8 pb-10">
+          <HeroCards />
         </div>
       </div>
 
