@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ReactionBar } from "@/components/ReactionBar";
 import { renderBody } from "@/lib/renderBody";
 import { toggleReaction } from "../actions";
+import { FEED_LIKE_EMOJI } from "@/lib/feedLikeEmoji";
 import { MessageInput } from "./MessageInput";
 import type { MessageRow } from "./KanalerShell";
 
@@ -19,6 +20,10 @@ function timeLabel(iso: string) {
 
 function timeShort(iso: string) {
   return new Date(iso).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
+}
+
+function getInitials(name: string | null) {
+  return (name ?? "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 }
 
 function buildGrouped(messages: MessageRow[]) {
@@ -64,6 +69,31 @@ export function MessageFeed({
   const [deepLinkHash] = useState(() =>
     typeof window !== "undefined" ? window.location.hash.slice(1) : ""
   );
+  const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
+  const [inlineReplies, setInlineReplies] = useState<Record<string, MessageRow[]>>({});
+
+  function loadInlineReplies(messageId: string) {
+    fetch(`/api/projects/${slug}/kanaler/${channelId}/thread/${messageId}`)
+      .then((r) => r.json())
+      .then((data) => setInlineReplies((prev) => ({ ...prev, [messageId]: data })))
+      .catch(() => {});
+  }
+
+  function toggleInlineThread(messageId: string) {
+    setExpandedThreads((prev) => {
+      const next = new Set(prev);
+      if (next.has(messageId)) {
+        next.delete(messageId);
+      } else {
+        next.add(messageId);
+        if (!inlineReplies[messageId]) loadInlineReplies(messageId);
+        setTimeout(() => {
+          document.getElementById(`message-${messageId}`)?.scrollIntoView({ block: "end", behavior: "smooth" });
+        }, 50);
+      }
+      return next;
+    });
+  }
 
   useEffect(() => {
     if (deepLinkHash) return;
@@ -107,7 +137,7 @@ export function MessageFeed({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto py-2 flex flex-col">
+      <div className="flex-1 min-h-0 overflow-y-auto py-2 flex flex-col">
         {messages.length === 0 ? (
           <p className="text-sm text-gray-400 italic text-center py-8">
             Inga meddelanden ännu.{" "}
@@ -117,7 +147,7 @@ export function MessageFeed({
           grouped.map((m) => {
             const initials = (m.author.name ?? "?")
               .split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
-            const isActiveThread = m.id === openThreadId;
+            const isActiveThread = m.id === openThreadId || expandedThreads.has(m.id);
 
             return (
               <div
@@ -125,7 +155,7 @@ export function MessageFeed({
                 id={`message-${m.id}`}
                 className={`relative group flex items-start gap-0 px-4 py-0.5 hover:bg-gray-50 transition-colors ${
                   isActiveThread ? "bg-blue-50" : ""
-                } ${m.isGrouped ? "" : "mt-2"}`}
+                } ${m.isGrouped ? "" : "mt-2"} ${expandedThreads.has(m.id) ? "pb-2" : ""}`}
               >
                 {/* Hover action bar */}
                 <div className="absolute right-4 -top-3 hidden group-hover:flex items-center bg-white border border-gray-200 rounded-lg shadow-md z-10 overflow-hidden">
@@ -181,22 +211,74 @@ export function MessageFeed({
                   )}
                   {renderBody(m.body)}
 
-                  {/* Thread reply link */}
-                  {m._count.threadReplies > 0 && (
-                    <button
-                      onClick={() => onOpenThread(m.id)}
-                      className="mt-1 text-xs text-seagrass hover:underline font-medium flex items-center gap-1"
-                    >
-                      {m._count.threadReplies} {m._count.threadReplies === 1 ? "svar" : "svar"} i tråd →
-                    </button>
-                  )}
+                  {(() => {
+                    const likeCount = m.reactions.filter((r) => r.emoji === FEED_LIKE_EMOJI).length;
+                    const likedByMe = !!currentUserId && m.reactions.some(
+                      (r) => r.emoji === FEED_LIKE_EMOJI && r.userId === currentUserId
+                    );
+                    return (
+                      <div className="mt-1 flex items-center gap-4">
+                        <button
+                          onClick={() => handleReaction(m.id, FEED_LIKE_EMOJI)}
+                          disabled={!isMember}
+                          title={isMember ? (likedByMe ? "Ta bort gillning" : "Gilla") : "Bli medlem för att gilla"}
+                          className={`flex items-center gap-1 text-xs font-medium transition-colors ${
+                            likedByMe ? "text-coral" : "text-gray-400 hover:text-coral"
+                          } ${!isMember ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                        >
+                          👍 Gilla{likeCount > 0 ? ` (${likeCount})` : ""}
+                        </button>
+                        <button
+                          onClick={() => toggleInlineThread(m.id)}
+                          className="text-xs text-seagrass hover:underline font-medium flex items-center gap-1"
+                        >
+                          💬 {m._count.threadReplies > 0 ? `Kommentera (${m._count.threadReplies})` : "Kommentera"}
+                        </button>
+                      </div>
+                    );
+                  })()}
 
                   <ReactionBar
-                    reactions={m.reactions}
+                    reactions={m.reactions.filter((r) => r.emoji !== FEED_LIKE_EMOJI)}
                     currentUserId={currentUserId}
                     canAdd={isMember}
                     onToggle={(emoji) => handleReaction(m.id, emoji)}
                   />
+
+                  {expandedThreads.has(m.id) && (
+                    <div className="mt-2 pl-3 border-l-2 border-muted-teal/20 space-y-2">
+                      {(inlineReplies[m.id] ?? []).map((r) => (
+                        <div key={r.id} className="flex items-start gap-2">
+                          <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-semibold text-gray-600 shrink-0 overflow-hidden relative">
+                            {r.author.image ? (
+                              <Image src={r.author.image} fill className="object-cover" alt="" unoptimized />
+                            ) : (
+                              getInitials(r.author.name)
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-xs font-semibold text-gray-900">
+                                {r.author.name ?? "Okänd"}
+                              </span>
+                              <span className="text-[10px] text-gray-400">{timeLabel(r.createdAt)}</span>
+                            </div>
+                            <div className="text-sm">{renderBody(r.body)}</div>
+                          </div>
+                        </div>
+                      ))}
+                      {isMember ? (
+                        <MessageInput
+                          channelId={channelId}
+                          projectSlug={slug}
+                          threadParentId={m.id}
+                          onSent={() => loadInlineReplies(m.id)}
+                        />
+                      ) : (
+                        <p className="text-xs text-gray-400">Gå med i projektet för att kommentera.</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             );

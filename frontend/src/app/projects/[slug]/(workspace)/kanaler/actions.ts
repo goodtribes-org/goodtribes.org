@@ -43,6 +43,9 @@ export async function sendMessage(channelId: string, projectSlug: string, body: 
     data: { channelId, authorId: session.user.id, body },
   });
 
+  revalidatePath("/");
+  revalidatePath("/feed");
+
   // Notify all other project members
   const members = await prisma.projectMember.findMany({
     where: { projectId: project.id, userId: { not: session.user.id } },
@@ -86,6 +89,9 @@ export async function sendThreadReply(
   await prisma.channelMessage.create({
     data: { channelId, authorId: session.user.id, body, threadParentId },
   });
+
+  revalidatePath("/");
+  revalidatePath("/feed");
 
   // Notify thread participants
   const parentMsg = await prisma.channelMessage.findUnique({
@@ -131,6 +137,15 @@ export async function toggleReaction(
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
+  const project = await prisma.project.findUnique({
+    where: { slug: projectSlug },
+    select: { id: true },
+  });
+  if (!project) throw new Error("Project not found");
+
+  const role = await getMemberRole(project.id, session.user.id);
+  if (!role) throw new Error("Not a member");
+
   const existing = await prisma.channelMessageReaction.findUnique({
     where: { messageId_userId_emoji: { messageId, userId: session.user.id, emoji } },
   });
@@ -144,6 +159,8 @@ export async function toggleReaction(
   }
 
   revalidatePath(`/projects/${projectSlug}/kanaler/${channelId}`);
+  revalidatePath("/");
+  revalidatePath("/feed");
 }
 
 export async function createChannel(

@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { htmlToPreviewText } from "@/lib/renderBody";
+import { timeAgo } from "@/lib/timeAgo";
+import { FEED_LIKE_EMOJI } from "@/lib/feedLikeEmoji";
+
+export { FEED_LIKE_EMOJI };
 
 export type PulseItem = {
   id: string;
@@ -17,6 +21,8 @@ export type PulseItem = {
   imageUrl?: string | null;
   href: string | null;
   date: Date;
+  cardId?: string;
+  projectSlug?: string;
 };
 
 const activityLabel: Record<string, string> = {
@@ -139,6 +145,15 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
       }),
     ]);
 
+  // Only the most recent comment per card becomes its own activity item — further replies
+  // (whether added on the card itself or via the feed's reply box) update that same item's
+  // preview/timestamp instead of spawning a new post; the full thread is still shown when expanded.
+  const latestKanbanCommentByCard = new Map<string, (typeof kanbanComments)[number]>();
+  for (const c of kanbanComments) {
+    if (!latestKanbanCommentByCard.has(c.card.id)) latestKanbanCommentByCard.set(c.card.id, c);
+  }
+  const dedupedKanbanComments = [...latestKanbanCommentByCard.values()];
+
   const items: PulseItem[] = [
     ...feedPosts.map((p) => ({
       id: `post-${p.id}`, targetType: "feedPost", targetId: p.id,
@@ -222,14 +237,17 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
     }),
     ...channelMessages.map((m) => ({
       id: `msg-${m.id}`, targetType: "channelMessage", targetId: m.id,
+      projectSlug: m.channel.project.slug,
       avatarName: m.author.name, avatarImage: m.author.image, projectImage: m.channel.project.imageUrl,
       projectName: m.channel.project.title, projectHref: `/projects/${m.channel.project.slug}`, projectId: m.channel.project.id,
       action: "skickade ett meddelande",
       body: htmlToPreviewText(m.body),
       href: `/projects/${m.channel.project.slug}/kanaler/${m.channelId}#message-${m.id}`, date: m.createdAt,
     })),
-    ...kanbanComments.map((c) => ({
+    ...dedupedKanbanComments.map((c) => ({
       id: `kcomment-${c.id}`, targetType: "kanbanCardComment", targetId: c.id,
+      cardId: c.card.id,
+      projectSlug: c.card.projectSlug,
       avatarName: c.author.name, avatarImage: c.author.image, projectImage: c.card.project.imageUrl,
       projectName: c.card.project.title, projectHref: `/projects/${c.card.projectSlug}`, projectId: c.card.project.id,
       action: `kommenterade på "${c.card.title}"`,
@@ -248,4 +266,129 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
 
   items.sort((a, b) => b.date.getTime() - a.date.getTime());
   return items;
+}
+
+export type FeedComment = { id: string; author: string; body: string; timeAgo: string };
+
+export type FeedInteractionData = {
+  likeCountByTarget: Map<string, number>;
+  likedByMe: Set<string>;
+  commentsByTarget: Map<string, FeedComment[]>;
+  memberProjectIds: Set<string>;
+  pendingJoinProjectIds: Set<string>;
+};
+
+// Activity item types whose comments/likes write into a project-scoped table (KanbanCardComment,
+// ChannelMessage/ChannelMessageReaction) and therefore require ProjectMember to interact with —
+// all other types (feedPost, blogPost, milestone, project, idea, activityEvent, ideaComment) are
+// unrestricted.
+export const MEMBERSHIP_GATED_TARGET_TYPES = new Set(["kanbanCardComment", "channelMessage"]);
+
+// Comments for kanbanCardComment items are sourced from KanbanCardComment (keyed by cardId),
+// and comments for channelMessage items are sourced from ChannelMessage thread replies (keyed
+// by threadParentId) — rather than FeedComment/FeedLike — so a comment or like made from the
+// feed and one made on the card/channel itself are the same row and always show identically
+// on both surfaces.
+export async function getFeedInteractionData(items: PulseItem[], userId: string | null): Promise<FeedInteractionData> {
+  const kanbanItems = items.filter((i) => i.targetType === "kanbanCardComment" && i.cardId);
+  const channelItems = items.filter((i) => i.targetType === "channelMessage");
+  const otherItems = items.filter((i) => i.targetType !== "kanbanCardComment" && i.targetType !== "channelMessage");
+  const otherTargetsOr = otherItems.map((i) => ({ targetType: i.targetType, targetId: i.targetId }));
+  const genericLikeTargetsOr = items
+    .filter((i) => i.targetType !== "channelMessage")
+    .map((i) => ({ targetType: i.targetType, targetId: i.targetId }));
+  const distinctCardIds = [...new Set(kanbanItems.map((i) => i.cardId!))];
+  const distinctChannelMessageIds = [...new Set(channelItems.map((i) => i.targetId))];
+  const distinctProjectIds = [...new Set(items.map((i) => i.projectId).filter((id): id is string => !!id))];
+
+  const [likes, otherComments, cardComments, channelReplies, channelReactions, memberRows, pendingRows] = await Promise.all([
+    genericLikeTargetsOr.length > 0 ? prisma.feedLike.findMany({ where: { OR: genericLikeTargetsOr } }) : Promise.resolve([]),
+    otherTargetsOr.length > 0
+      ? prisma.feedComment.findMany({
+          where: { OR: otherTargetsOr },
+          orderBy: { createdAt: "asc" },
+          include: { author: { select: { name: true } } },
+        })
+      : Promise.resolve([]),
+    distinctCardIds.length > 0
+      ? prisma.kanbanCardComment.findMany({
+          where: { cardId: { in: distinctCardIds } },
+          orderBy: { createdAt: "asc" },
+          include: { author: { select: { name: true } } },
+        })
+      : Promise.resolve([]),
+    distinctChannelMessageIds.length > 0
+      ? prisma.channelMessage.findMany({
+          where: { threadParentId: { in: distinctChannelMessageIds } },
+          orderBy: { createdAt: "asc" },
+          include: { author: { select: { name: true } } },
+        })
+      : Promise.resolve([]),
+    distinctChannelMessageIds.length > 0
+      ? prisma.channelMessageReaction.findMany({
+          where: { messageId: { in: distinctChannelMessageIds }, emoji: FEED_LIKE_EMOJI },
+        })
+      : Promise.resolve([]),
+    userId && distinctProjectIds.length > 0
+      ? prisma.projectMember.findMany({
+          where: { userId, projectId: { in: distinctProjectIds } },
+          select: { projectId: true },
+        })
+      : Promise.resolve([]),
+    userId && distinctProjectIds.length > 0
+      ? prisma.projectJoinRequest.findMany({
+          where: { userId, projectId: { in: distinctProjectIds }, status: "pending" },
+          select: { projectId: true },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const likeCountByTarget = new Map<string, number>();
+  const likedByMe = new Set<string>();
+  for (const l of likes) {
+    const key = `${l.targetType}:${l.targetId}`;
+    likeCountByTarget.set(key, (likeCountByTarget.get(key) ?? 0) + 1);
+    if (userId && l.userId === userId) likedByMe.add(key);
+  }
+  for (const r of channelReactions) {
+    const key = `channelMessage:${r.messageId}`;
+    likeCountByTarget.set(key, (likeCountByTarget.get(key) ?? 0) + 1);
+    if (userId && r.userId === userId) likedByMe.add(key);
+  }
+
+  const commentsByTarget = new Map<string, FeedComment[]>();
+  for (const c of otherComments) {
+    const key = `${c.targetType}:${c.targetId}`;
+    const arr = commentsByTarget.get(key) ?? [];
+    arr.push({ id: c.id, author: c.author.name ?? "Någon", body: c.body, timeAgo: timeAgo(c.createdAt) });
+    commentsByTarget.set(key, arr);
+  }
+
+  const commentsByCardId = new Map<string, FeedComment[]>();
+  for (const c of cardComments) {
+    const arr = commentsByCardId.get(c.cardId) ?? [];
+    arr.push({ id: c.id, author: c.author.name ?? "Någon", body: htmlToPreviewText(c.body), timeAgo: timeAgo(c.createdAt) });
+    commentsByCardId.set(c.cardId, arr);
+  }
+  for (const item of kanbanItems) {
+    commentsByTarget.set(`${item.targetType}:${item.targetId}`, commentsByCardId.get(item.cardId!) ?? []);
+  }
+
+  const commentsByThreadParent = new Map<string, FeedComment[]>();
+  for (const c of channelReplies) {
+    const arr = commentsByThreadParent.get(c.threadParentId!) ?? [];
+    arr.push({ id: c.id, author: c.author.name ?? "Någon", body: htmlToPreviewText(c.body), timeAgo: timeAgo(c.createdAt) });
+    commentsByThreadParent.set(c.threadParentId!, arr);
+  }
+  for (const item of channelItems) {
+    commentsByTarget.set(`${item.targetType}:${item.targetId}`, commentsByThreadParent.get(item.targetId) ?? []);
+  }
+
+  return {
+    likeCountByTarget,
+    likedByMe,
+    commentsByTarget,
+    memberProjectIds: new Set(memberRows.map((m) => m.projectId)),
+    pendingJoinProjectIds: new Set(pendingRows.map((r) => r.projectId)),
+  };
 }

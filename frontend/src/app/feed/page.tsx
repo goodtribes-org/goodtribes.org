@@ -1,13 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
-import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { timeAgo } from "@/lib/timeAgo";
 import PostComposer from "@/components/PostComposer";
 import ActivityPulseItem from "@/components/ActivityPulseItem";
 import Pagination from "@/components/Pagination";
-import { fetchActivityItems } from "@/lib/activityFeed";
+import { fetchActivityItems, getFeedInteractionData, MEMBERSHIP_GATED_TARGET_TYPES } from "@/lib/activityFeed";
 
 export const metadata: Metadata = {
   title: "Plattformsflöde — GoodTribes.org",
@@ -31,45 +29,9 @@ export default async function FeedPage({
   const total = allItems.length;
   const pageItems = allItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const targetsOr = pageItems.map((i) => ({ targetType: i.targetType, targetId: i.targetId }));
-  const [likes, comments] = targetsOr.length > 0
-    ? await Promise.all([
-        prisma.feedLike.findMany({ where: { OR: targetsOr } }),
-        prisma.feedComment.findMany({
-          where: { OR: targetsOr },
-          orderBy: { createdAt: "asc" },
-          include: { author: { select: { name: true } } },
-        }),
-      ])
-    : [[], []];
-
-  const likeCountByTarget = new Map<string, number>();
-  const likedByMe = new Set<string>();
-  for (const l of likes) {
-    const key = `${l.targetType}:${l.targetId}`;
-    likeCountByTarget.set(key, (likeCountByTarget.get(key) ?? 0) + 1);
-    if (session?.user?.id && l.userId === session.user.id) likedByMe.add(key);
-  }
-
-  const commentsByTarget = new Map<string, { id: string; author: string; body: string; timeAgo: string }[]>();
-  for (const c of comments) {
-    const key = `${c.targetType}:${c.targetId}`;
-    const arr = commentsByTarget.get(key) ?? [];
-    arr.push({ id: c.id, author: c.author.name ?? "Någon", body: c.body, timeAgo: timeAgo(c.createdAt) });
-    commentsByTarget.set(key, arr);
-  }
-
   const isLoggedIn = !!session?.user?.id;
-
-  const distinctProjectIds = [...new Set(pageItems.map((i) => i.projectId).filter((id): id is string => !!id))];
-  const memberProjectIds = isLoggedIn && distinctProjectIds.length > 0
-    ? new Set(
-        (await prisma.projectMember.findMany({
-          where: { userId: session!.user!.id, projectId: { in: distinctProjectIds } },
-          select: { projectId: true },
-        })).map((m) => m.projectId)
-      )
-    : new Set<string>();
+  const { likeCountByTarget, likedByMe, commentsByTarget, memberProjectIds, pendingJoinProjectIds } =
+    await getFeedInteractionData(pageItems, session?.user?.id ?? null);
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -88,13 +50,26 @@ export default async function FeedPage({
         <div className="flex flex-col gap-3">
           {pageItems.map((item) => {
             const key = `${item.targetType}:${item.targetId}`;
-            const canJoin = isLoggedIn && !!item.projectId && !memberProjectIds.has(item.projectId);
+            const isMemberOfProject = !!item.projectId && memberProjectIds.has(item.projectId);
+            const canJoin = isLoggedIn && !!item.projectId && !isMemberOfProject;
+            const requiresMembership = MEMBERSHIP_GATED_TARGET_TYPES.has(item.targetType);
+            const joinCta =
+              requiresMembership && !isMemberOfProject && item.projectId && item.projectSlug
+                ? {
+                    projectId: item.projectId,
+                    slug: item.projectSlug,
+                    existingStatus: pendingJoinProjectIds.has(item.projectId) ? "pending" : null,
+                  }
+                : null;
             return (
               <ActivityPulseItem
                 key={item.id}
                 item={item}
                 isLoggedIn={isLoggedIn}
                 canJoin={canJoin}
+                requiresMembership={requiresMembership}
+                isProjectMember={isMemberOfProject}
+                joinCta={joinCta}
                 initialLikeCount={likeCountByTarget.get(key) ?? 0}
                 initialLiked={likedByMe.has(key)}
                 initialComments={commentsByTarget.get(key) ?? []}

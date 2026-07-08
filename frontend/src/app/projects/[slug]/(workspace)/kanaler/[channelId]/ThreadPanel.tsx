@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ReactionBar } from "@/components/ReactionBar";
 import { renderBody } from "@/lib/renderBody";
 import { toggleReaction } from "../actions";
+import { FEED_LIKE_EMOJI } from "@/lib/feedLikeEmoji";
 import { MessageInput } from "./MessageInput";
 import type { MessageRow } from "./KanalerShell";
 
@@ -164,8 +165,26 @@ function MessageItem({
           <span className="text-[10px] text-dark-slate/40">{timeLabel(m.createdAt)}</span>
         </div>
         <div className="text-sm">{renderBody(m.body)}</div>
+        {(() => {
+          const likeCount = m.reactions.filter((r) => r.emoji === FEED_LIKE_EMOJI).length;
+          const likedByMe = !!currentUserId && m.reactions.some(
+            (r) => r.emoji === FEED_LIKE_EMOJI && r.userId === currentUserId
+          );
+          return (
+            <button
+              onClick={() => startTransition(() => toggleReaction(m.id, channelId, slug, FEED_LIKE_EMOJI))}
+              disabled={!isMember}
+              title={isMember ? (likedByMe ? "Ta bort gillning" : "Gilla") : "Bli medlem för att gilla"}
+              className={`mt-1 flex items-center gap-1 text-xs font-medium transition-colors ${
+                likedByMe ? "text-coral" : "text-gray-400 hover:text-coral"
+              } ${!isMember ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+            >
+              👍 Gilla{likeCount > 0 ? ` (${likeCount})` : ""}
+            </button>
+          );
+        })()}
         <ReactionBar
-          reactions={m.reactions}
+          reactions={m.reactions.filter((r) => r.emoji !== FEED_LIKE_EMOJI)}
           currentUserId={currentUserId}
           canAdd={isMember}
           onToggle={(emoji) =>

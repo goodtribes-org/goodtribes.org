@@ -48,6 +48,7 @@ export default function TasksPage({
   initialColumns,
   isLoggedIn,
   currentUserId,
+  isMember,
   members,
   openCardId,
 }: {
@@ -55,6 +56,7 @@ export default function TasksPage({
   initialColumns: Columns;
   isLoggedIn: boolean;
   currentUserId: string | null;
+  isMember: boolean;
   members: Member[];
   openCardId?: string | null;
 }) {
@@ -119,6 +121,7 @@ export default function TasksPage({
           initialColumns={initialColumns}
           isLoggedIn={isLoggedIn}
           currentUserId={currentUserId}
+          isMember={isMember}
           members={members}
           requestAddColumn={addColKey}
           onRequestAddDone={() => setAddColKey(null)}

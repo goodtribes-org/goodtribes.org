@@ -14,7 +14,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask, addComment, deleteComment, promoteSubtaskToCard, deleteSubtask, updateSubtaskTitle } from "@/app/projects/[slug]/(workspace)/kanban/actions";
+import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask, addComment, deleteComment, toggleCardCommentLike, promoteSubtaskToCard, deleteSubtask, updateSubtaskTitle } from "@/app/projects/[slug]/(workspace)/kanban/actions";
 import dynamic from "next/dynamic";
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
@@ -36,6 +36,8 @@ type Comment = {
   author: { id: string; name: string | null };
   body: string;
   createdAt: Date | string;
+  likeCount?: number;
+  likedByMe?: boolean;
 };
 
 type Card = {
@@ -186,6 +188,7 @@ function CardDetailModal({
   members,
   isLoggedIn,
   currentUserId,
+  isMember,
   onClose,
   onSaved,
   onDelete,
@@ -198,6 +201,7 @@ function CardDetailModal({
   members: Member[];
   isLoggedIn: boolean;
   currentUserId: string | null;
+  isMember: boolean;
   onClose: () => void;
   onSaved: (cardId: string, patch: Partial<Card>) => void;
   onDelete: (cardId: string) => void;
@@ -222,6 +226,7 @@ function CardDetailModal({
   const [comments, setComments] = useState<Comment[]>(card.comments ?? []);
   const [commentBody, setCommentBody] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [commentError, setCommentError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
   const canDelete = currentUserId === card.createdById;
@@ -360,10 +365,17 @@ function CardDetailModal({
   async function handleSubmitComment() {
     if (!commentBody.trim() || commentBody === "<p></p>") return;
     setSubmittingComment(true);
+    setCommentError(null);
     const result = await addComment(card.id, commentBody);
     if (result && "comment" in result && result.comment) {
       setComments((prev) => [...prev, result.comment as Comment]);
       setCommentBody("");
+    } else if (result && "error" in result) {
+      setCommentError(
+        result.error === "Not a project member"
+          ? "Du måste vara medlem i projektet för att kommentera."
+          : result.error
+      );
     }
     setSubmittingComment(false);
   }
@@ -371,6 +383,18 @@ function CardDetailModal({
   async function handleDeleteComment(commentId: string) {
     setComments((prev) => prev.filter((c) => c.id !== commentId));
     await deleteComment(commentId);
+  }
+
+  function handleToggleCommentLike(commentId: string) {
+    if (!isMember) return;
+    setComments((prev) =>
+      prev.map((c) =>
+        c.id === commentId
+          ? { ...c, likeCount: (c.likeCount ?? 0) + (c.likedByMe ? -1 : 1), likedByMe: !c.likedByMe }
+          : c
+      )
+    );
+    startTransition(async () => { await toggleCardCommentLike(commentId); });
   }
 
   return (
@@ -642,14 +666,25 @@ function CardDetailModal({
                       className="prose prose-sm max-w-none pl-8 text-gray-700"
                       dangerouslySetInnerHTML={{ __html: c.body }}
                     />
+                    <button
+                      onClick={() => handleToggleCommentLike(c.id)}
+                      disabled={!isMember}
+                      title={isMember ? (c.likedByMe ? "Ta bort gillning" : "Gilla") : "Bli medlem för att gilla"}
+                      className={`ml-8 mt-1 flex items-center gap-1 text-xs font-medium transition-colors ${
+                        c.likedByMe ? "text-coral" : "text-gray-400 hover:text-coral"
+                      } ${!isMember ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                    >
+                      👍 Gilla{(c.likeCount ?? 0) > 0 ? ` (${c.likeCount})` : ""}
+                    </button>
                   </div>
                 ))}
               </div>
             )}
 
-            {isLoggedIn && (
+            {isLoggedIn && isMember && (
               <div className="space-y-2">
                 <RichTextEditor content={commentBody} onChange={setCommentBody} />
+                {commentError && <p className="text-xs text-red-500">{commentError}</p>}
                 <button
                   onClick={handleSubmitComment}
                   disabled={submittingComment || !commentBody.trim() || commentBody === "<p></p>"}
@@ -658,6 +693,11 @@ function CardDetailModal({
                   {submittingComment ? "Skickar..." : "Skicka kommentar"}
                 </button>
               </div>
+            )}
+            {isLoggedIn && !isMember && (
+              <p className="text-xs text-gray-400">
+                Bli medlem i projektet för att kommentera.
+              </p>
             )}
           </div>}
         </div>
@@ -1143,6 +1183,7 @@ export default function KanbanBoard({
   initialColumns,
   isLoggedIn,
   currentUserId,
+  isMember,
   members,
   requestAddColumn,
   onRequestAddDone,
@@ -1153,6 +1194,7 @@ export default function KanbanBoard({
   initialColumns: Columns;
   isLoggedIn: boolean;
   currentUserId: string | null;
+  isMember: boolean;
   members: Member[];
   requestAddColumn?: string | null;
   onRequestAddDone?: () => void;
@@ -1494,6 +1536,7 @@ export default function KanbanBoard({
             members={members}
             isLoggedIn={isLoggedIn}
             currentUserId={currentUserId}
+            isMember={isMember}
             onClose={() => { setEditingCard(null); setIsNewCard(false); }}
             onSaved={handleCardSaved}
             onDelete={(cardId) => { handleDelete(cardId); setEditingCard(null); setIsNewCard(false); }}

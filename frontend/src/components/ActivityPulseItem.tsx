@@ -10,6 +10,9 @@ export default function ActivityPulseItem({
   item,
   isLoggedIn,
   canJoin,
+  requiresMembership,
+  isProjectMember,
+  joinCta,
   initialLikeCount,
   initialLiked,
   initialComments,
@@ -17,6 +20,9 @@ export default function ActivityPulseItem({
   item: PulseItem;
   isLoggedIn: boolean;
   canJoin: boolean;
+  requiresMembership?: boolean;
+  isProjectMember?: boolean;
+  joinCta?: { projectId: string; slug: string; existingStatus: string | null } | null;
   initialLikeCount: number;
   initialLiked: boolean;
   initialComments: Comment[];
@@ -93,6 +99,9 @@ export default function ActivityPulseItem({
         targetType={item.targetType}
         targetId={item.targetId}
         isLoggedIn={isLoggedIn}
+        requiresMembership={requiresMembership}
+        isProjectMember={isProjectMember}
+        joinCta={joinCta}
         initialLikeCount={initialLikeCount}
         initialLiked={initialLiked}
         initialComments={initialComments}

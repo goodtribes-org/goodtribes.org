@@ -59,12 +59,36 @@ export default async function TasksRoutePage({
     },
   });
 
+  const isMember = !!(session?.user?.id && project.members.some((m) => m.userId === session.user!.id));
+
+  const allCommentIds = cards.flatMap((c) => c.comments.map((cm) => cm.id));
+  const likes = allCommentIds.length > 0
+    ? await prisma.feedLike.findMany({
+        where: { targetType: "kanbanCardComment", targetId: { in: allCommentIds } },
+      })
+    : [];
+  const likeCountByCommentId = new Map<string, number>();
+  const likedByMeCommentIds = new Set<string>();
+  for (const l of likes) {
+    likeCountByCommentId.set(l.targetId, (likeCountByCommentId.get(l.targetId) ?? 0) + 1);
+    if (session?.user?.id && l.userId === session.user.id) likedByMeCommentIds.add(l.targetId);
+  }
+
+  const cardsWithLikes = cards.map((c) => ({
+    ...c,
+    comments: c.comments.map((cm) => ({
+      ...cm,
+      likeCount: likeCountByCommentId.get(cm.id) ?? 0,
+      likedByMe: likedByMeCommentIds.has(cm.id),
+    })),
+  }));
+
   const columns = {
-    BACKLOG: cards.filter((c) => c.column === "BACKLOG"),
-    TODO:    cards.filter((c) => c.column === "TODO"),
-    DOING:   cards.filter((c) => c.column === "DOING"),
-    REVIEW:  cards.filter((c) => c.column === "REVIEW"),
-    DONE:    cards.filter((c) => c.column === "DONE"),
+    BACKLOG: cardsWithLikes.filter((c) => c.column === "BACKLOG"),
+    TODO:    cardsWithLikes.filter((c) => c.column === "TODO"),
+    DOING:   cardsWithLikes.filter((c) => c.column === "DOING"),
+    REVIEW:  cardsWithLikes.filter((c) => c.column === "REVIEW"),
+    DONE:    cardsWithLikes.filter((c) => c.column === "DONE"),
   };
 
   const members = project.members.map((m) => ({ id: m.user.id, name: m.user.name, image: m.user.image }));
@@ -77,6 +101,7 @@ export default async function TasksRoutePage({
           initialColumns={columns}
           isLoggedIn={!!session?.user?.id}
           currentUserId={session?.user?.id ?? null}
+          isMember={isMember}
           members={members}
           openCardId={openCardId ?? null}
         />

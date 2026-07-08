@@ -44,6 +44,7 @@ export function MessageInput({ channelId, projectSlug, threadParentId, onSent }:
           key={editorKey}
           content={body}
           onChange={setBody}
+          compact={!!threadParentId}
         />
       </div>
       <div className="flex justify-end">

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { estimateTask } from "@/lib/taskEstimate";
 import { logActivity } from "@/lib/activity";
+import { isProjectMember } from "@/lib/projectMembership";
 
 
 export async function createCard(
@@ -174,9 +175,12 @@ export async function addComment(cardId: string, body: string) {
 
   const card = await prisma.kanbanCard.findUnique({
     where: { id: cardId },
-    select: { projectSlug: true },
+    select: { projectSlug: true, project: { select: { id: true } } },
   });
   if (!card) return { error: "Card not found" };
+
+  const member = await isProjectMember(card.project.id, session.user.id);
+  if (!member) return { error: "Not a project member" };
 
   const comment = await prisma.kanbanCardComment.create({
     data: { cardId, authorId: session.user.id, body },
@@ -185,7 +189,47 @@ export async function addComment(cardId: string, body: string) {
 
   revalidatePath(`/projects/${card.projectSlug}/kanban`);
   revalidatePath(`/projects/${card.projectSlug}/tasks`);
+  revalidatePath("/");
+  revalidatePath("/feed");
   return { comment };
+}
+
+export async function toggleCardCommentLike(commentId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+
+  const comment = await prisma.kanbanCardComment.findUnique({
+    where: { id: commentId },
+    select: { card: { select: { projectSlug: true, project: { select: { id: true } } } } },
+  });
+  if (!comment) return { error: "Comment not found" };
+
+  const member = await isProjectMember(comment.card.project.id, session.user.id);
+  if (!member) return { error: "Not a project member" };
+
+  const existing = await prisma.feedLike.findUnique({
+    where: {
+      userId_targetType_targetId: {
+        userId: session.user.id,
+        targetType: "kanbanCardComment",
+        targetId: commentId,
+      },
+    },
+  });
+
+  if (existing) {
+    await prisma.feedLike.delete({ where: { id: existing.id } });
+  } else {
+    await prisma.feedLike.create({
+      data: { userId: session.user.id, targetType: "kanbanCardComment", targetId: commentId },
+    });
+  }
+
+  revalidatePath(`/projects/${comment.card.projectSlug}/kanban`);
+  revalidatePath(`/projects/${comment.card.projectSlug}/tasks`);
+  revalidatePath("/");
+  revalidatePath("/feed");
+  return { ok: true };
 }
 
 export async function deleteComment(commentId: string) {
@@ -202,6 +246,8 @@ export async function deleteComment(commentId: string) {
   await prisma.kanbanCardComment.delete({ where: { id: commentId } });
   revalidatePath(`/projects/${comment.card.projectSlug}/kanban`);
   revalidatePath(`/projects/${comment.card.projectSlug}/tasks`);
+  revalidatePath("/");
+  revalidatePath("/feed");
 }
 
 export async function toggleSubtask(subtaskId: string, done: boolean) {
