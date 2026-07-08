@@ -232,6 +232,42 @@ export async function toggleCardCommentLike(commentId: string) {
   return { ok: true };
 }
 
+export async function toggleCardLike(cardId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+
+  const card = await prisma.kanbanCard.findUnique({
+    where: { id: cardId },
+    select: { projectSlug: true, project: { select: { id: true } } },
+  });
+  if (!card) return { error: "Card not found" };
+
+  const member = await isProjectMember(card.project.id, session.user.id);
+  if (!member) return { error: "Not a project member" };
+
+  const existing = await prisma.feedLike.findUnique({
+    where: {
+      userId_targetType_targetId: {
+        userId: session.user.id,
+        targetType: "kanbanCard",
+        targetId: cardId,
+      },
+    },
+  });
+
+  if (existing) {
+    await prisma.feedLike.delete({ where: { id: existing.id } });
+  } else {
+    await prisma.feedLike.create({
+      data: { userId: session.user.id, targetType: "kanbanCard", targetId: cardId },
+    });
+  }
+
+  revalidatePath(`/projects/${card.projectSlug}/kanban`);
+  revalidatePath(`/projects/${card.projectSlug}/tasks`);
+  return { ok: true };
+}
+
 export async function deleteComment(commentId: string) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };

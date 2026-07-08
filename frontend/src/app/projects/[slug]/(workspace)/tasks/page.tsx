@@ -74,8 +74,23 @@ export default async function TasksRoutePage({
     if (session?.user?.id && l.userId === session.user.id) likedByMeCommentIds.add(l.targetId);
   }
 
+  const allCardIds = cards.map((c) => c.id);
+  const cardLikes = allCardIds.length > 0
+    ? await prisma.feedLike.findMany({
+        where: { targetType: "kanbanCard", targetId: { in: allCardIds } },
+      })
+    : [];
+  const likeCountByCardId = new Map<string, number>();
+  const likedByMeCardIds = new Set<string>();
+  for (const l of cardLikes) {
+    likeCountByCardId.set(l.targetId, (likeCountByCardId.get(l.targetId) ?? 0) + 1);
+    if (session?.user?.id && l.userId === session.user.id) likedByMeCardIds.add(l.targetId);
+  }
+
   const cardsWithLikes = cards.map((c) => ({
     ...c,
+    likeCount: likeCountByCardId.get(c.id) ?? 0,
+    likedByMe: likedByMeCardIds.has(c.id),
     comments: c.comments.map((cm) => ({
       ...cm,
       likeCount: likeCountByCommentId.get(cm.id) ?? 0,

@@ -14,7 +14,8 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask, addComment, deleteComment, toggleCardCommentLike, promoteSubtaskToCard, deleteSubtask, updateSubtaskTitle } from "@/app/projects/[slug]/(workspace)/kanban/actions";
+import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask, addComment, deleteComment, toggleCardLike, promoteSubtaskToCard, deleteSubtask, updateSubtaskTitle } from "@/app/projects/[slug]/(workspace)/kanban/actions";
+import { htmlToPreviewText } from "@/lib/renderBody";
 import dynamic from "next/dynamic";
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
@@ -60,6 +61,8 @@ type Card = {
   estimate?: TaskEstimate;
   subtasks?: Subtask[];
   comments?: Comment[];
+  likeCount?: number;
+  likedByMe?: boolean;
   aiTaskRuns?: Array<{
     id: string;
     agentType: string;
@@ -227,6 +230,8 @@ function CardDetailModal({
   const [commentBody, setCommentBody] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
   const [commentError, setCommentError] = useState<string | null>(null);
+  const [cardLiked, setCardLiked] = useState(!!card.likedByMe);
+  const [cardLikeCount, setCardLikeCount] = useState(card.likeCount ?? 0);
   const [, startTransition] = useTransition();
 
   const canDelete = currentUserId === card.createdById;
@@ -363,7 +368,7 @@ function CardDetailModal({
     : 0;
 
   async function handleSubmitComment() {
-    if (!commentBody.trim() || commentBody === "<p></p>") return;
+    if (!commentBody.trim()) return;
     setSubmittingComment(true);
     setCommentError(null);
     const result = await addComment(card.id, commentBody);
@@ -385,16 +390,11 @@ function CardDetailModal({
     await deleteComment(commentId);
   }
 
-  function handleToggleCommentLike(commentId: string) {
-    if (!isMember) return;
-    setComments((prev) =>
-      prev.map((c) =>
-        c.id === commentId
-          ? { ...c, likeCount: (c.likeCount ?? 0) + (c.likedByMe ? -1 : 1), likedByMe: !c.likedByMe }
-          : c
-      )
-    );
-    startTransition(async () => { await toggleCardCommentLike(commentId); });
+  function handleToggleCardLike() {
+    if (!isLoggedIn || !isMember) return;
+    setCardLikeCount((n) => (cardLiked ? n - 1 : n + 1));
+    setCardLiked((v) => !v);
+    startTransition(async () => { await toggleCardLike(card.id); });
   }
 
   return (
@@ -639,66 +639,78 @@ function CardDetailModal({
 
           {/* Comments */}
           {!isNew && <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-              Kommentarer{comments.length > 0 ? ` (${comments.length})` : ""}
-            </p>
+            <div className="flex items-center gap-3 mb-3">
+              <button
+                onClick={handleToggleCardLike}
+                disabled={!isLoggedIn || !isMember}
+                title={
+                  !isLoggedIn
+                    ? "Logga in för att gilla"
+                    : !isMember
+                    ? "Bli medlem i projektet för att gilla"
+                    : cardLiked
+                    ? "Ta bort gillning"
+                    : "Gilla"
+                }
+                className={`flex items-center gap-1 text-xs font-medium transition-colors ${
+                  cardLiked ? "text-coral" : "text-gray-400 hover:text-coral"
+                } ${!isLoggedIn || !isMember ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+              >
+                <svg className="w-4 h-4" fill={cardLiked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-8.53a2 2 0 01-2-2v-7a2 2 0 012-2h2.5m4-6l-1 5h6a1 1 0 011 1v1m-7-7v7m0-7L9 4" />
+                </svg>
+                Gilla{cardLikeCount > 0 ? ` (${cardLikeCount})` : ""}
+              </button>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Kommentarer{comments.length > 0 ? ` (${comments.length})` : ""}
+              </p>
+            </div>
 
             {comments.length > 0 && (
-              <div className="space-y-4 mb-4">
+              <div className="space-y-2 mb-3">
                 {comments.map((c) => (
-                  <div key={c.id} className="group">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-6 h-6 rounded-full bg-seagrass flex items-center justify-center text-white text-xs font-bold shrink-0">
-                        {(c.author.name ?? "?").charAt(0).toUpperCase()}
-                      </div>
-                      <span className="text-sm font-medium text-gray-700">{c.author.name ?? "Okänd"}</span>
-                      <span className="text-xs text-gray-400">{timeAgo(c.createdAt)}</span>
+                  <div key={c.id} className="group bg-gray-50 rounded-lg px-3 py-2">
+                    <p className="text-xs">
+                      <span className="font-semibold text-gray-700">{c.author.name ?? "Okänd"}</span>{" "}
+                      <span className="text-gray-400">· {timeAgo(c.createdAt)}</span>
                       {c.authorId === currentUserId && (
                         <button
                           onClick={() => handleDeleteComment(c.id)}
-                          className="ml-auto text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                          className="ml-2 text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           Ta bort
                         </button>
                       )}
-                    </div>
-                    <div
-                      className="prose prose-sm max-w-none pl-8 text-gray-700"
-                      dangerouslySetInnerHTML={{ __html: c.body }}
-                    />
-                    <button
-                      onClick={() => handleToggleCommentLike(c.id)}
-                      disabled={!isMember}
-                      title={isMember ? (c.likedByMe ? "Ta bort gillning" : "Gilla") : "Bli medlem för att gilla"}
-                      className={`ml-8 mt-1 flex items-center gap-1 text-xs font-medium transition-colors ${
-                        c.likedByMe ? "text-coral" : "text-gray-400 hover:text-coral"
-                      } ${!isMember ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
-                    >
-                      👍 Gilla{(c.likeCount ?? 0) > 0 ? ` (${c.likeCount})` : ""}
-                    </button>
+                    </p>
+                    <p className="text-xs text-gray-700 mt-1">{htmlToPreviewText(c.body)}</p>
                   </div>
                 ))}
               </div>
             )}
 
-            {isLoggedIn && isMember && (
-              <div className="space-y-2">
-                <RichTextEditor content={commentBody} onChange={setCommentBody} />
-                {commentError && <p className="text-xs text-red-500">{commentError}</p>}
+            {isLoggedIn && isMember ? (
+              <form onSubmit={(e) => { e.preventDefault(); handleSubmitComment(); }} className="flex gap-2">
+                <textarea
+                  value={commentBody}
+                  onChange={(e) => setCommentBody(e.target.value)}
+                  rows={1}
+                  placeholder="Skriv en kommentar..."
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral resize-none"
+                />
                 <button
-                  onClick={handleSubmitComment}
-                  disabled={submittingComment || !commentBody.trim() || commentBody === "<p></p>"}
-                  className="text-sm font-medium bg-seagrass text-white px-4 py-1.5 rounded-lg hover:bg-seagrass/80 disabled:opacity-40 transition-colors"
+                  type="submit"
+                  disabled={submittingComment || !commentBody.trim()}
+                  className="px-4 py-2 bg-coral text-white text-sm font-medium rounded-lg hover:bg-watermelon transition-colors disabled:opacity-50"
                 >
-                  {submittingComment ? "Skickar..." : "Skicka kommentar"}
+                  {submittingComment ? "Skickar..." : "Skicka"}
                 </button>
-              </div>
+              </form>
+            ) : !isLoggedIn ? (
+              <p className="text-xs text-gray-400">Logga in för att kommentera.</p>
+            ) : (
+              <p className="text-xs text-gray-400">Bli medlem i projektet för att kommentera.</p>
             )}
-            {isLoggedIn && !isMember && (
-              <p className="text-xs text-gray-400">
-                Bli medlem i projektet för att kommentera.
-              </p>
-            )}
+            {commentError && <p className="text-xs text-red-500 mt-1">{commentError}</p>}
           </div>}
         </div>
 
@@ -763,10 +775,121 @@ const AGENT_OPTIONS = [
   { value: "researcher", label: "🔍 Researcher — söker och sammanställer information" },
 ];
 
+function KanbanCardComments({ card, isLoggedIn, isMember }: { card: Card; isLoggedIn: boolean; isMember: boolean }) {
+  const [comments, setComments] = useState<Comment[]>(card.comments ?? []);
+  const [showComments, setShowComments] = useState(false);
+  const [pendingComment, setPendingComment] = useState(false);
+  const [liked, setLiked] = useState(!!card.likedByMe);
+  const [likeCount, setLikeCount] = useState(card.likeCount ?? 0);
+  const [, startTransition] = useTransition();
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => { setComments(card.comments ?? []); }, [card.comments]);
+  useEffect(() => { setLiked(!!card.likedByMe); setLikeCount(card.likeCount ?? 0); }, [card.likedByMe, card.likeCount]);
+
+  const canInteract = isLoggedIn && isMember;
+
+  function handleLike() {
+    if (!canInteract) return;
+    setLikeCount((n) => (liked ? n - 1 : n + 1));
+    setLiked((v) => !v);
+    startTransition(async () => { await toggleCardLike(card.id); });
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const body = ref.current?.value.trim() ?? "";
+    if (!body || !canInteract) return;
+    if (ref.current) ref.current.value = "";
+    setPendingComment(true);
+    startTransition(async () => {
+      const result = await addComment(card.id, body);
+      if (result && "comment" in result && result.comment) {
+        setComments((cs) => [...cs, result.comment as Comment]);
+      }
+      setPendingComment(false);
+    });
+  }
+
+  return (
+    <div
+      className="mt-1 pt-1 border-t border-gray-100"
+      onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleLike}
+          disabled={!canInteract}
+          title={
+            !isLoggedIn
+              ? "Logga in för att gilla"
+              : !isMember
+              ? "Bli medlem i projektet för att gilla"
+              : liked
+              ? "Ta bort gillning"
+              : "Gilla"
+          }
+          className={`flex items-center gap-1 text-[10px] font-medium transition-colors ${
+            liked ? "text-coral" : "text-gray-400 hover:text-coral"
+          } ${!canInteract ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+        >
+          <svg className="w-3 h-3" fill={liked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-8.53a2 2 0 01-2-2v-7a2 2 0 012-2h2.5m4-6l-1 5h6a1 1 0 011 1v1m-7-7v7m0-7L9 4" />
+          </svg>
+          Gilla{likeCount > 0 ? ` (${likeCount})` : ""}
+        </button>
+        <button
+          onClick={() => setShowComments((v) => !v)}
+          className="flex items-center gap-1 text-[10px] font-medium text-gray-400 hover:text-seagrass transition-colors cursor-pointer"
+        >
+          💬 Kommentera{comments.length > 0 ? ` (${comments.length})` : ""}
+        </button>
+      </div>
+
+      {showComments && (
+        <div className="mt-1.5 space-y-1.5">
+          {comments.map((c) => (
+            <div key={c.id} className="bg-gray-50 rounded-md px-2 py-1">
+              <p className="text-[10px]">
+                <span className="font-semibold text-gray-700">{c.author.name ?? "Okänd"}</span>{" "}
+                <span className="text-gray-400">· {timeAgo(c.createdAt)}</span>
+              </p>
+              <p className="text-[10px] text-gray-600 mt-0.5">{htmlToPreviewText(c.body)}</p>
+            </div>
+          ))}
+          {canInteract ? (
+            <form onSubmit={handleSubmit} className="flex gap-1.5">
+              <textarea
+                ref={ref}
+                rows={1}
+                placeholder="Skriv en kommentar..."
+                className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-coral resize-none"
+              />
+              <button
+                type="submit"
+                disabled={pendingComment}
+                className="px-2 py-1 bg-coral text-white text-[10px] font-medium rounded-md hover:bg-watermelon transition-colors disabled:opacity-50"
+              >
+                Skicka
+              </button>
+            </form>
+          ) : !isLoggedIn ? (
+            <p className="text-[10px] text-gray-400">Logga in för att kommentera.</p>
+          ) : (
+            <p className="text-[10px] text-gray-400">Bli medlem i projektet för att kommentera.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function KanbanCardItem({
   card,
   currentUserId,
   isLoggedIn,
+  isMember,
   onDelete,
   onOpenCard,
   onAddCard,
@@ -777,6 +900,7 @@ function KanbanCardItem({
   card: Card;
   currentUserId: string | null;
   isLoggedIn: boolean;
+  isMember: boolean;
   onDelete: (id: string) => void;
   onOpenCard: (card: Card) => void;
   onAddCard?: (card: Card) => void;
@@ -913,11 +1037,6 @@ function KanbanCardItem({
                   {localSubtasks.filter((s) => s.done).length}/{localSubtasks.length} klara
                 </span>
               )}
-              {(card.comments?.length ?? 0) > 0 && (
-                <span className="w-4 h-4 rounded-full bg-coral flex items-center justify-center text-white text-[9px] font-bold shrink-0">
-                  {card.comments!.length}
-                </span>
-              )}
             </div>
           </div>
 
@@ -955,6 +1074,8 @@ function KanbanCardItem({
             </div>
           </div>
         </div>
+
+        <KanbanCardComments card={card} isLoggedIn={isLoggedIn} isMember={isMember} />
 
         {/* Expanderat block */}
         <div>
@@ -1091,6 +1212,7 @@ function DroppableColumn({
   col,
   cards,
   isLoggedIn,
+  isMember,
   projectSlug: _projectSlug,
   currentUserId,
   onOpenModal,
@@ -1104,6 +1226,7 @@ function DroppableColumn({
   col: { key: string; label: string; color: string };
   cards: Card[];
   isLoggedIn: boolean;
+  isMember: boolean;
   projectSlug: string;
   currentUserId: string | null;
   onOpenModal: (colKey: string) => void;
@@ -1164,6 +1287,7 @@ function DroppableColumn({
               card={card}
               currentUserId={currentUserId}
               isLoggedIn={isLoggedIn}
+              isMember={isMember}
               onDelete={onDelete}
               onOpenCard={onOpenCard}
               onAddCard={onAddCard}
@@ -1507,6 +1631,7 @@ export default function KanbanBoard({
                 col={col}
                 cards={filteredColumns[col.key as keyof Columns] as Card[]}
                 isLoggedIn={isLoggedIn}
+                isMember={isMember}
                 projectSlug={projectSlug}
                 currentUserId={currentUserId}
                 onOpenModal={openNewCard}
