@@ -373,7 +373,12 @@ function CardDetailModal({
     setCommentError(null);
     const result = await addComment(card.id, commentBody);
     if (result && "comment" in result && result.comment) {
-      setComments((prev) => [...prev, result.comment as Comment]);
+      const newComment = result.comment as Comment;
+      setComments((prev) => {
+        const next = [...prev, newComment];
+        onSaved(card.id, { comments: next });
+        return next;
+      });
       setCommentBody("");
     } else if (result && "error" in result) {
       setCommentError(
@@ -386,14 +391,21 @@ function CardDetailModal({
   }
 
   async function handleDeleteComment(commentId: string) {
-    setComments((prev) => prev.filter((c) => c.id !== commentId));
+    setComments((prev) => {
+      const next = prev.filter((c) => c.id !== commentId);
+      onSaved(card.id, { comments: next });
+      return next;
+    });
     await deleteComment(commentId);
   }
 
   function handleToggleCardLike() {
     if (!isLoggedIn || !isMember) return;
-    setCardLikeCount((n) => (cardLiked ? n - 1 : n + 1));
-    setCardLiked((v) => !v);
+    const nextLiked = !cardLiked;
+    const nextCount = cardLikeCount + (cardLiked ? -1 : 1);
+    setCardLikeCount(nextCount);
+    setCardLiked(nextLiked);
+    onSaved(card.id, { likedByMe: nextLiked, likeCount: nextCount });
     startTransition(async () => { await toggleCardLike(card.id); });
   }
 
@@ -775,7 +787,17 @@ const AGENT_OPTIONS = [
   { value: "researcher", label: "🔍 Researcher — söker och sammanställer information" },
 ];
 
-function KanbanCardComments({ card, isLoggedIn, isMember }: { card: Card; isLoggedIn: boolean; isMember: boolean }) {
+function KanbanCardComments({
+  card,
+  isLoggedIn,
+  isMember,
+  onSaved,
+}: {
+  card: Card;
+  isLoggedIn: boolean;
+  isMember: boolean;
+  onSaved: (cardId: string, patch: Partial<Card>) => void;
+}) {
   const [comments, setComments] = useState<Comment[]>(card.comments ?? []);
   const [showComments, setShowComments] = useState(false);
   const [pendingComment, setPendingComment] = useState(false);
@@ -791,8 +813,11 @@ function KanbanCardComments({ card, isLoggedIn, isMember }: { card: Card; isLogg
 
   function handleLike() {
     if (!canInteract) return;
-    setLikeCount((n) => (liked ? n - 1 : n + 1));
-    setLiked((v) => !v);
+    const nextLiked = !liked;
+    const nextCount = likeCount + (liked ? -1 : 1);
+    setLikeCount(nextCount);
+    setLiked(nextLiked);
+    onSaved(card.id, { likedByMe: nextLiked, likeCount: nextCount });
     startTransition(async () => { await toggleCardLike(card.id); });
   }
 
@@ -805,7 +830,12 @@ function KanbanCardComments({ card, isLoggedIn, isMember }: { card: Card; isLogg
     startTransition(async () => {
       const result = await addComment(card.id, body);
       if (result && "comment" in result && result.comment) {
-        setComments((cs) => [...cs, result.comment as Comment]);
+        const newComment = result.comment as Comment;
+        setComments((cs) => {
+          const next = [...cs, newComment];
+          onSaved(card.id, { comments: next });
+          return next;
+        });
       }
       setPendingComment(false);
     });
@@ -896,6 +926,7 @@ function KanbanCardItem({
   runningAI,
   onRunAI,
   onSubtasksChanged,
+  onSaved,
 }: {
   card: Card;
   currentUserId: string | null;
@@ -907,6 +938,7 @@ function KanbanCardItem({
   runningAI: Set<string>;
   onRunAI: (cardId: string, agentType: string, additionalContext: string) => void;
   onSubtasksChanged?: (cardId: string, subtasks: Subtask[]) => void;
+  onSaved: (cardId: string, patch: Partial<Card>) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: card.id });
@@ -1075,7 +1107,7 @@ function KanbanCardItem({
           </div>
         </div>
 
-        <KanbanCardComments card={card} isLoggedIn={isLoggedIn} isMember={isMember} />
+        <KanbanCardComments card={card} isLoggedIn={isLoggedIn} isMember={isMember} onSaved={onSaved} />
 
         {/* Expanderat block */}
         <div>
@@ -1222,6 +1254,7 @@ function DroppableColumn({
   runningAI,
   onRunAI,
   onSubtasksChanged,
+  onSaved,
 }: {
   col: { key: string; label: string; color: string };
   cards: Card[];
@@ -1236,6 +1269,7 @@ function DroppableColumn({
   runningAI: Set<string>;
   onRunAI: (cardId: string, agentType: string, additionalContext: string) => void;
   onSubtasksChanged: (cardId: string, subtasks: Subtask[]) => void;
+  onSaved: (cardId: string, patch: Partial<Card>) => void;
 })
  {
   const { setNodeRef, isOver } = useDroppable({ id: col.key });
@@ -1294,6 +1328,7 @@ function DroppableColumn({
               runningAI={runningAI}
               onRunAI={onRunAI}
               onSubtasksChanged={onSubtasksChanged}
+              onSaved={onSaved}
             />
           ))}
         </div>
@@ -1641,6 +1676,7 @@ export default function KanbanBoard({
                 runningAI={runningAI}
                 onRunAI={handleRunAI}
                 onSubtasksChanged={handleCardSubtasksSynced}
+                onSaved={handleCardSaved}
               />
             ))}
           </div>
