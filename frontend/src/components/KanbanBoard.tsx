@@ -374,11 +374,9 @@ function CardDetailModal({
     const result = await addComment(card.id, commentBody);
     if (result && "comment" in result && result.comment) {
       const newComment = result.comment as Comment;
-      setComments((prev) => {
-        const next = [...prev, newComment];
-        onSaved(card.id, { comments: next });
-        return next;
-      });
+      const next = [...comments, newComment];
+      setComments(next);
+      onSaved(card.id, { comments: next });
       setCommentBody("");
     } else if (result && "error" in result) {
       setCommentError(
@@ -391,11 +389,9 @@ function CardDetailModal({
   }
 
   async function handleDeleteComment(commentId: string) {
-    setComments((prev) => {
-      const next = prev.filter((c) => c.id !== commentId);
-      onSaved(card.id, { comments: next });
-      return next;
-    });
+    const next = comments.filter((c) => c.id !== commentId);
+    setComments(next);
+    onSaved(card.id, { comments: next });
     await deleteComment(commentId);
   }
 
@@ -831,11 +827,9 @@ function KanbanCardComments({
       const result = await addComment(card.id, body);
       if (result && "comment" in result && result.comment) {
         const newComment = result.comment as Comment;
-        setComments((cs) => {
-          const next = [...cs, newComment];
-          onSaved(card.id, { comments: next });
-          return next;
-        });
+        const next = [...comments, newComment];
+        setComments(next);
+        onSaved(card.id, { comments: next });
       }
       setPendingComment(false);
     });
