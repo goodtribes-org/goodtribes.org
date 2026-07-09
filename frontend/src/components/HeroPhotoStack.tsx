@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 const STACK_MAX_W = 680;
 const CARD_SHADOW =
@@ -16,16 +18,6 @@ const PHOTO_TILT = [
   { rotate: 1, x: 4, y: 6 },
   { rotate: -2, x: -6, y: -3 },
   { rotate: 2, x: 8, y: 2 },
-];
-
-// One cheerful color per card back, all bright enough for white text on top.
-const BACK_STYLES = [
-  { bg: "bg-[#f97316]", heading: "text-white", body: "text-white/85" },
-  { bg: "bg-[#ef4444]", heading: "text-white", body: "text-white/85" },
-  { bg: "bg-seagrass", heading: "text-white", body: "text-white/85" },
-  { bg: "bg-[#0ea5e9]", heading: "text-white", body: "text-white/85" },
-  { bg: "bg-[#65a30d]", heading: "text-white", body: "text-white/85" },
-  { bg: "bg-[#f59e0b]", heading: "text-white", body: "text-white/85" },
 ];
 
 type Photo = { src: string; alt: string; heading: string; body: string; menuLabel: string };
@@ -75,18 +67,12 @@ const PHOTOS: Photo[] = [
   },
 ];
 
-const FLIP_DELAY_MS = 2500;
-
-export default function HeroPhotoStack({ children }: { children?: ReactNode }) {
+export default function HeroPhotoStack() {
+  const { status } = useSession();
   const [active, setActive] = useState(0);
-  const [flipped, setFlipped] = useState(false);
+  const [closed, setClosed] = useState(() => status === "authenticated");
   const current = PHOTOS[active];
-
-  useEffect(() => {
-    setFlipped(false);
-    const timer = setTimeout(() => setFlipped(true), FLIP_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [active]);
+  const isIntro = active === 0;
 
   return (
     <>
@@ -103,7 +89,7 @@ export default function HeroPhotoStack({ children }: { children?: ReactNode }) {
         ))}
       </div>
 
-      <div className="relative z-10 flex justify-center px-4 pt-8 pb-10">
+      <div className="relative z-10 flex justify-center px-4 pt-8 pb-6">
         <div className="flex w-full max-w-3xl flex-col items-center gap-5">
           <style>{`
             @keyframes heroCaptionIn {
@@ -122,62 +108,129 @@ export default function HeroPhotoStack({ children }: { children?: ReactNode }) {
             style={{
               maxWidth: STACK_MAX_W,
               aspectRatio: "16 / 9",
-              perspective: "1500px",
               transform: `rotate(${PHOTO_TILT[active].rotate}deg) translate(${PHOTO_TILT[active].x}px, ${PHOTO_TILT[active].y}px)`,
             }}
           >
             <div
               key={current.src}
-              className="hero-caption-in absolute inset-0 transition-transform duration-700 ease-in-out"
-              style={{
-                transformStyle: "preserve-3d",
-                transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
-              }}
+              className={`hero-caption-in absolute inset-0 overflow-hidden bg-white p-4 ${CARD_SHADOW}`}
             >
-              {/* Framsida — fotot */}
-              <div
-                className={`absolute inset-0 overflow-hidden bg-white p-4 ${CARD_SHADOW}`}
-                style={{ backfaceVisibility: "hidden" }}
-              >
-                <div className="relative h-full w-full overflow-hidden">
-                  <Image src={current.src} alt={current.alt} fill unoptimized className="object-cover" />
-                </div>
-              </div>
-
-              {/* Baksida — texten, egen färg per bild, med vit ram */}
-              <div
-                className={`absolute inset-0 overflow-hidden bg-white p-4 ${CARD_SHADOW}`}
-                style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
-              >
-                <div className={`h-full w-full flex flex-col items-center justify-center text-center p-6 ${BACK_STYLES[active].bg}`}>
-                  <p className={`font-bold text-lg leading-tight ${BACK_STYLES[active].heading}`}>{current.heading}</p>
-                  <p className={`mt-2 text-sm leading-snug ${BACK_STYLES[active].body}`}>{current.body}</p>
-                </div>
+              <div className="relative h-full w-full overflow-hidden">
+                <Image src={current.src} alt={current.alt} fill unoptimized className="object-cover" />
               </div>
             </div>
           </div>
 
-          <nav className="flex flex-wrap items-center justify-center gap-2">
-            {PHOTOS.map((photo, i) => (
-              <button
-                key={photo.src}
-                type="button"
-                onClick={() => setActive(i)}
-                aria-current={active === i}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  active === i
-                    ? "bg-coral text-white"
-                    : "bg-white/80 text-dark-slate/70 hover:bg-white"
-                }`}
+          <div className="relative flex w-full max-w-3xl flex-col items-center">
+            <nav className="flex flex-wrap items-center justify-center gap-1 rounded-full bg-white/80 backdrop-blur-sm p-1.5 shadow-sm ring-1 ring-black/5">
+              {PHOTOS.map((photo, i) => {
+                const isActive = active === i;
+                const isOpen = isActive && !closed;
+                return (
+                  <button
+                    key={photo.src}
+                    type="button"
+                    onClick={() => {
+                      if (isActive) {
+                        setClosed((c) => !c);
+                      } else {
+                        setActive(i);
+                        setClosed(false);
+                      }
+                    }}
+                    aria-current={isActive}
+                    aria-expanded={isOpen}
+                    className={`flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? "bg-coral text-white shadow-sm"
+                        : "text-dark-slate/60 hover:text-dark-slate hover:bg-black/5"
+                    }`}
+                  >
+                    {photo.menuLabel}
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 10 10"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                    >
+                      <path d="M2 3.5L5 6.5L8 3.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                );
+              })}
+            </nav>
+
+            {!closed && (
+              <div
+                className={`absolute left-1/2 top-full mt-4 w-full -translate-x-1/2 rounded-3xl bg-white/95 z-20 ${CARD_SHADOW}`}
               >
-                {i + 1}. {photo.menuLabel}
-              </button>
-            ))}
-          </nav>
+                <button
+                  type="button"
+                  onClick={() => setClosed(true)}
+                  aria-label="Stäng"
+                  className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full text-dark-slate/40 transition-colors hover:bg-black/5 hover:text-dark-slate"
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <path d="M1 1l12 12M13 1L1 13" />
+                  </svg>
+                </button>
+
+                <div
+                  key={`float-${current.src}`}
+                  className={`hero-caption-in text-center ${
+                    isIntro ? "px-6 pt-8 pb-8 flex flex-col items-center" : "mx-auto max-w-md px-4 pt-6 pb-6"
+                  }`}
+                >
+                  {isIntro ? (
+                    <>
+                      <h1 className="text-3xl md:text-4xl font-bold text-dark-slate">
+                        Tillsammans gör vi bra idéer till verklighet
+                      </h1>
+                      <p className="mt-4 text-dark-slate/80">
+                        Runt om i världen bubblar det av fantastiska idéer — projekt som vill rädda bin, städa hav
+                        eller skapa tryggare kvarter. Samtidigt finns det tusentals människor som vill hjälpa till
+                        och göra skillnad, men som inte vet var de ska börja.
+                      </p>
+                      <p className="mt-3 text-dark-slate/80">
+                        GoodTribes är mötesplatsen däremellan. Vi kopplar ihop visionära projekt med engagerade
+                        volontärer, så att goda idéer inte stannar vid en dröm utan faktiskt blir verklighet.
+                      </p>
+                      <p className="mt-4 text-sm text-dark-slate/70">
+                        <strong className="text-dark-slate">Har du ett projekt?</strong> Beskriv vad du behöver.
+                        <span className="mx-1.5">·</span>
+                        <strong className="text-dark-slate">Vill du hjälpa till?</strong> Dela med dig av din tid
+                        eller kunskap.
+                      </p>
+                      <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                        <Link
+                          href="/projects/new"
+                          className="bg-coral text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-watermelon transition-colors"
+                        >
+                          Skapa ett projekt
+                        </Link>
+                        <Link
+                          href="/projects"
+                          className="text-coral text-sm font-medium px-5 py-2.5 rounded-lg border border-coral hover:bg-coral/5 transition-colors"
+                        >
+                          Utforska projekt
+                        </Link>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-bold text-base text-dark-slate">{current.heading}</p>
+                      <p className="mt-1 text-sm text-dark-slate/80">{current.body}</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-      <div className="relative z-10 flex justify-center px-4 py-10">{children}</div>
     </>
   );
 }
