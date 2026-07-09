@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Image from "next/image";
 
 const STACK_MAX_W = 680;
@@ -82,7 +82,7 @@ function ArrowButton({
   );
 }
 
-export default function HeroPhotoStack() {
+export default function HeroPhotoStack({ children }: { children?: ReactNode }) {
   const [order, setOrder] = useState(PHOTOS.map((_, i) => i));
 
   const next = () => setOrder((o) => [...o.slice(1), o[0]]);
@@ -91,45 +91,64 @@ export default function HeroPhotoStack() {
   const front = PHOTOS[order[0]];
 
   return (
-    <div className="flex w-full max-w-3xl flex-col items-center gap-6">
-      <style>{`
-        @keyframes heroCaptionIn {
-          from { opacity: 0; transform: translateY(4px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .hero-caption-in { animation: heroCaptionIn 0.3s ease-out; }
-      `}</style>
-      <div key={front.src} className="hero-caption-in max-w-lg text-center">
-        <p className="font-bold text-lg text-dark-slate leading-tight">{front.heading}</p>
-        <p className="mt-1 text-sm text-dark-slate/60 leading-snug">{front.body}</p>
+    <>
+      {/* Bakgrund: samma bild som den som visas överst i högen just nu, crossfadeas vid byte */}
+      <div className="absolute top-0 left-0 right-0 overflow-hidden" style={{ height: "490px" }}>
+        {PHOTOS.map((photo, i) => (
+          <div
+            key={photo.src}
+            className="absolute inset-0 transition-opacity duration-700 ease-out"
+            style={{ opacity: order[0] === i ? 1 : 0 }}
+          >
+            <Image src={photo.src} alt="" fill unoptimized className="object-cover blur-2xl scale-110" sizes="100vw" />
+          </div>
+        ))}
       </div>
-      <div className="flex w-full items-center justify-center gap-3 sm:gap-5">
-        <ArrowButton direction="prev" onClick={prev} />
-        <div
-          className="relative w-full min-w-0"
-          style={{ maxWidth: STACK_MAX_W, aspectRatio: "16 / 9" }}
-        >
-          {order.map((photoIdx, position) => {
-            const photo = PHOTOS[photoIdx];
-            const t = PILE_TRANSFORMS[position];
-            return (
-              <div
-                key={photo.src}
-                className={`absolute inset-0 overflow-hidden rounded-xl bg-white p-4 transition-transform duration-500 ease-out ${CARD_SHADOW}`}
-                style={{
-                  transform: `translate(${t.x}px, ${t.y}px) rotate(${t.rotate}deg)`,
-                  zIndex: t.z,
-                }}
-              >
-                <div className="relative h-full w-full overflow-hidden rounded-md">
-                  <Image src={photo.src} alt={photo.alt} fill unoptimized className="object-cover" />
-                </div>
-              </div>
-            );
-          })}
+
+      <div className="relative z-10 flex justify-center px-4 pt-8 pb-10">
+        <div className="flex w-full max-w-3xl flex-col items-center gap-6">
+          <style>{`
+            @keyframes heroCaptionIn {
+              from { opacity: 0; transform: translateY(4px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+            .hero-caption-in { animation: heroCaptionIn 0.3s ease-out; }
+          `}</style>
+          <div key={front.src} className="hero-caption-in max-w-lg text-center">
+            <p className="font-bold text-lg text-dark-slate leading-tight">{front.heading}</p>
+            <p className="mt-1 text-sm text-dark-slate/60 leading-snug">{front.body}</p>
+          </div>
+          <div className="flex w-full items-center justify-center gap-3 sm:gap-5">
+            <ArrowButton direction="prev" onClick={prev} />
+            <div
+              className="relative w-full min-w-0"
+              style={{ maxWidth: STACK_MAX_W, aspectRatio: "16 / 9" }}
+            >
+              {order.map((photoIdx, position) => {
+                const photo = PHOTOS[photoIdx];
+                const t = PILE_TRANSFORMS[position];
+                return (
+                  <div
+                    key={photo.src}
+                    className={`absolute inset-0 overflow-hidden rounded-xl bg-white p-4 transition-transform duration-500 ease-out ${CARD_SHADOW}`}
+                    style={{
+                      transform: `translate(${t.x}px, ${t.y}px) rotate(${t.rotate}deg)`,
+                      zIndex: t.z,
+                    }}
+                  >
+                    <div className="relative h-full w-full overflow-hidden rounded-md">
+                      <Image src={photo.src} alt={photo.alt} fill unoptimized className="object-cover" />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <ArrowButton direction="next" onClick={next} />
+          </div>
         </div>
-        <ArrowButton direction="next" onClick={next} />
       </div>
-    </div>
+
+      <div className="relative z-10 flex justify-center px-4 py-10">{children}</div>
+    </>
   );
 }
