@@ -10,22 +10,22 @@ const CARD_SHADOW =
 // Per-photo tilt/offset so the photo looks like a physical print set down a little carelessly,
 // rather than a perfectly centered, perfectly straight image.
 const PHOTO_TILT = [
-  { rotate: -2, x: 0, y: 0 },
-  { rotate: 3, x: 6, y: -4 },
-  { rotate: -3, x: -8, y: 5 },
-  { rotate: 2, x: 4, y: 6 },
-  { rotate: -4, x: -6, y: -3 },
-  { rotate: 4, x: 8, y: 2 },
+  { rotate: -1, x: 0, y: 0 },
+  { rotate: 1.5, x: 6, y: -4 },
+  { rotate: -1.5, x: -8, y: 5 },
+  { rotate: 1, x: 4, y: 6 },
+  { rotate: -2, x: -6, y: -3 },
+  { rotate: 2, x: 8, y: 2 },
 ];
 
 // One cheerful color per card back, all bright enough for white text on top.
 const BACK_STYLES = [
-  { bg: "bg-coral", heading: "text-white", body: "text-white/85" },
-  { bg: "bg-[#d97706]", heading: "text-white", body: "text-white/85" },
+  { bg: "bg-[#f97316]", heading: "text-white", body: "text-white/85" },
+  { bg: "bg-[#ef4444]", heading: "text-white", body: "text-white/85" },
   { bg: "bg-seagrass", heading: "text-white", body: "text-white/85" },
-  { bg: "bg-watermelon", heading: "text-white", body: "text-white/85" },
-  { bg: "bg-[#2563eb]", heading: "text-white", body: "text-white/85" },
-  { bg: "bg-[#7c3aed]", heading: "text-white", body: "text-white/85" },
+  { bg: "bg-[#0ea5e9]", heading: "text-white", body: "text-white/85" },
+  { bg: "bg-[#65a30d]", heading: "text-white", body: "text-white/85" },
+  { bg: "bg-[#f59e0b]", heading: "text-white", body: "text-white/85" },
 ];
 
 type Photo = { src: string; alt: string; heading: string; body: string; menuLabel: string };
@@ -91,7 +91,7 @@ export default function HeroPhotoStack({ children }: { children?: ReactNode }) {
   return (
     <>
       {/* Bakgrund: samma bild som den som visas just nu, crossfadeas vid byte */}
-      <div className="absolute top-0 left-0 right-0 overflow-hidden" style={{ height: "460px" }}>
+      <div className="absolute top-0 left-0 right-0 overflow-hidden" style={{ height: "400px" }}>
         {PHOTOS.map((photo, i) => (
           <div
             key={photo.src}
@@ -112,6 +112,10 @@ export default function HeroPhotoStack({ children }: { children?: ReactNode }) {
             }
             .hero-caption-in { animation: heroCaptionIn 0.3s ease-out; }
           `}</style>
+
+          <span className="inline-block text-sm font-semibold text-dark-slate bg-white/95 shadow-sm rounded-full px-4 py-1.5">
+            GoodTribes.org är i Beta och under kraftig utveckling
+          </span>
 
           <div
             className="relative w-full min-w-0 transition-transform duration-500 ease-out"
@@ -140,13 +144,15 @@ export default function HeroPhotoStack({ children }: { children?: ReactNode }) {
                 </div>
               </div>
 
-              {/* Baksida — texten, egen färg per bild */}
+              {/* Baksida — texten, egen färg per bild, med vit ram */}
               <div
-                className={`absolute inset-0 overflow-hidden p-6 flex flex-col items-center justify-center text-center ${BACK_STYLES[active].bg} ${CARD_SHADOW}`}
+                className={`absolute inset-0 overflow-hidden bg-white p-4 ${CARD_SHADOW}`}
                 style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
               >
-                <p className={`font-bold text-lg leading-tight ${BACK_STYLES[active].heading}`}>{current.heading}</p>
-                <p className={`mt-2 text-sm leading-snug ${BACK_STYLES[active].body}`}>{current.body}</p>
+                <div className={`h-full w-full flex flex-col items-center justify-center text-center p-6 ${BACK_STYLES[active].bg}`}>
+                  <p className={`font-bold text-lg leading-tight ${BACK_STYLES[active].heading}`}>{current.heading}</p>
+                  <p className={`mt-2 text-sm leading-snug ${BACK_STYLES[active].body}`}>{current.body}</p>
+                </div>
               </div>
             </div>
           </div>

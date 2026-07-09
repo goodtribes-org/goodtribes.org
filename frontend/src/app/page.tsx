@@ -125,9 +125,6 @@ export default async function HomePage({
       <div className="relative -mt-8" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
         <HeroPhotoStack>
           <section className="flex flex-col items-center text-center max-w-3xl bg-white/95 rounded-2xl shadow-lg px-6 py-8">
-            <span className="inline-block text-xs font-medium text-dark-slate/60 bg-dry-sage/20 rounded-full px-3 py-1 mb-4">
-              Sidan är i Beta och under kraftig utveckling
-            </span>
             <h1 className="text-3xl md:text-4xl font-bold text-dark-slate">
               Tillsammans gör vi bra idéer till verklighet
             </h1>
