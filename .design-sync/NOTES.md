@@ -31,22 +31,52 @@ auto-discovery for this repo.** `cfg.srcDir` is set to
 has a root to resolve from; it is NOT used for entry generation because the
 `--entry` flag is always supplied.
 
-## v1 scope: 6 components only
+## Scope: 7 components (v1's 6 + GanttView)
 
 Verified via a transitive import-graph trace (direct-import grepping was not
 enough — e.g. `SdgCoverageWidget` looks clean on direct imports but pulls in
-`next/image` through `SdgIcon`). Safe set for v1:
+`next/image` through `SdgIcon`). Safe set:
 
 `Tooltip`, `StreakBadge`, `KudosButton`, `FileUpload`, `FlagProjectButton`,
-`ImpactStatsWidget`.
+`ImpactStatsWidget`, `GanttView`.
 
-Everything else in `frontend/src/components/` (35 files) transitively imports
-one of: a `"use server"` Server Action file (which imports `@/lib/prisma`
-and/or `next/cache`), `@/auth` / `next-auth`, `next/link`, `next/image`, or
+`GanttView` was originally excluded because it imported `updateCard` directly
+from the kanban `"use server"` actions file (which imports `@/lib/prisma`
+and `next/cache`). Fixed by inverting the dependency: `GanttView` now takes
+an `onUpdateCard` callback prop instead of importing the action itself — a
+standard container/presentational split, and passing a Server Action as a
+prop into a client component is normal, idiomatic Next.js (no runtime
+behavior change). Call sites
+(`app/projects/[slug]/(workspace)/calendar/page.tsx`,
+`components/TasksPage.tsx`) now import `updateCard` themselves and pass it
+in. Same pattern is the template for decoupling more components later.
+
+Everything else in `frontend/src/components/` (34 files) still transitively
+imports one of: a `"use server"` Server Action file (`@/lib/prisma` and/or
+`next/cache`), `@/auth` / `next-auth`, `next/link`, `next/image`, or
 `next/navigation` (router hooks need an App Router context this bundle
 doesn't have). Adding any of them to `.design-sync/entry.mjs` risks crashing
 the whole bundle — re-verify with a transitive trace (not just direct
 imports) before adding anything.
+
+### `next/link` empirically confirmed unsafe — do not add without a fix
+
+Tested directly (2026-07-10): added a throwaway component that only rendered
+`<Link href="/">` from `next/link` to the entry, rebuilt, validated. Result:
+**every single component's `window.GoodTribesUI.*` export broke**
+(`[BUNDLE_EXPORT] not a component`), with `ReferenceError: process is not
+defined` thrown from Next's internals during bundle evaluation — confirming
+the single-IIFE blast-radius risk described above empirically, not just
+theoretically. `NavMenu` and `WorkspaceTabNav` both render several
+`next/link` `<Link>`s internally and are therefore blocked from this design
+system until one of:
+- a `process` shim is added (no supported config knob for this today — would
+  require forking `lib/bundle.mjs`, which the skill explicitly discourages), or
+- the `<Link>` usage inside the presentational split is replaced with a
+  plain `<a href>` (changes real markup/prefetch behavior, needs sign-off), or
+- design-sync ships a `next/link`/`next/image` shim upstream in a future
+  skill version.
+Re-test with the same throwaway-entry method before attempting either again.
 
 ## CSS: compiled Tailwind output, not the raw source
 
