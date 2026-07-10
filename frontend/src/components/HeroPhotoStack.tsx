@@ -99,28 +99,6 @@ export default function HeroPhotoStack() {
             .hero-caption-in { animation: heroCaptionIn 0.3s ease-out; }
           `}</style>
 
-          <span className="inline-block text-sm font-semibold text-dark-slate bg-white/95 shadow-sm rounded-full px-4 py-1.5">
-            GoodTribes.org är i Beta och under kraftig utveckling
-          </span>
-
-          <div
-            className="relative w-full min-w-0 transition-transform duration-500 ease-out"
-            style={{
-              maxWidth: STACK_MAX_W,
-              aspectRatio: "16 / 9",
-              transform: `rotate(${PHOTO_TILT[active].rotate}deg) translate(${PHOTO_TILT[active].x}px, ${PHOTO_TILT[active].y}px)`,
-            }}
-          >
-            <div
-              key={current.src}
-              className={`hero-caption-in absolute inset-0 overflow-hidden bg-white p-4 ${CARD_SHADOW}`}
-            >
-              <div className="relative h-full w-full overflow-hidden">
-                <Image src={current.src} alt={current.alt} fill unoptimized className="object-cover" />
-              </div>
-            </div>
-          </div>
-
           <div className="relative flex w-full max-w-3xl flex-col items-center">
             <nav className="flex flex-wrap items-center justify-center gap-1 rounded-full bg-white/80 backdrop-blur-sm p-1.5 shadow-sm ring-1 ring-black/5">
               {PHOTOS.map((photo, i) => {
@@ -229,6 +207,28 @@ export default function HeroPhotoStack() {
               </div>
             )}
           </div>
+
+          <div
+            className="relative w-full min-w-0 transition-transform duration-500 ease-out"
+            style={{
+              maxWidth: STACK_MAX_W,
+              aspectRatio: "16 / 9",
+              transform: `rotate(${PHOTO_TILT[active].rotate}deg) translate(${PHOTO_TILT[active].x}px, ${PHOTO_TILT[active].y}px)`,
+            }}
+          >
+            <div
+              key={current.src}
+              className={`hero-caption-in absolute inset-0 overflow-hidden bg-white p-4 ${CARD_SHADOW}`}
+            >
+              <div className="relative h-full w-full overflow-hidden">
+                <Image src={current.src} alt={current.alt} fill unoptimized className="object-cover" />
+              </div>
+            </div>
+          </div>
+
+          <span className="inline-block text-sm font-semibold text-dark-slate bg-white/95 shadow-sm rounded-full px-4 py-1.5">
+            GoodTribes.org är i Beta och under kraftig utveckling
+          </span>
         </div>
       </div>
     </>
