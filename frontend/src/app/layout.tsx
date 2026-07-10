@@ -49,7 +49,7 @@ export default async function RootLayout({
       <body className="min-h-screen bg-white text-dark-slate">
         <SessionProvider session={session}>
           <header className="border-b border-muted-teal">
-            <nav className="w-full px-6 py-3 flex items-center gap-6">
+            <nav className="w-full pl-3 pr-6 py-3 flex items-center gap-6">
               <Link href="/" className="shrink-0">
                 <Image
                   src="/img/GoodTribes1.png"
