@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import GanttView from "@/components/GanttView";
 import Tooltip from "@/components/Tooltip";
 import { toggleMilestone, deleteMilestone } from "../milestones/actions";
+import { updateCard } from "../kanban/actions";
 
 
 export async function generateMetadata({
@@ -542,6 +543,7 @@ export default async function CalendarPage({
                 }))}
                 projectSlug={slug}
                 isOwnerOrAdmin={isOwnerOrAdmin}
+                onUpdateCard={updateCard}
               />
             </div>
           )}

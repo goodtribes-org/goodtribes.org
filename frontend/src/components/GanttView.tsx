@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateCard } from "@/app/projects/[slug]/(workspace)/kanban/actions";
 import Tooltip from "@/components/Tooltip";
 
 type GanttCard = {
@@ -35,6 +34,7 @@ interface GanttViewProps {
   milestones: GanttMilestone[];
   projectSlug: string;
   isOwnerOrAdmin: boolean;
+  onUpdateCard: (cardId: string, updates: { startDate: string | null; dueDate: string | null }) => unknown;
 }
 
 const DAY_WIDTH = 24;
@@ -84,7 +84,7 @@ function fmtDate(d: Date | string | null): string | null {
   return date.toLocaleDateString("sv-SE", { day: "numeric", month: "short", year: "numeric" });
 }
 
-export default function GanttView({ cards, todos = [], milestones, isOwnerOrAdmin }: GanttViewProps) {
+export default function GanttView({ cards, todos = [], milestones, isOwnerOrAdmin, onUpdateCard }: GanttViewProps) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [unscheduledOpen, setUnscheduledOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<string | null>(null);
@@ -174,7 +174,7 @@ export default function GanttView({ cards, todos = [], milestones, isOwnerOrAdmi
 
   function saveEdit(cardId: string) {
     startTransition(async () => {
-      await updateCard(cardId, {
+      await onUpdateCard(cardId, {
         startDate: editStart || null,
         dueDate: editEnd || null,
       });
