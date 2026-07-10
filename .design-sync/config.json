@@ -1,0 +1,18 @@
+{
+  "projectId": "ebf482e8-78a6-461c-9e70-549dc816807f",
+  "shape": "package",
+  "pkg": "goodtribes-frontend",
+  "globalName": "GoodTribesUI",
+  "srcDir": "frontend/src/components",
+  "tsconfig": "frontend/tsconfig.json",
+  "componentSrcMap": {
+    "Tooltip": "frontend/src/components/Tooltip.tsx",
+    "StreakBadge": "frontend/src/components/StreakBadge.tsx",
+    "KudosButton": "frontend/src/components/KudosButton.tsx",
+    "FileUpload": "frontend/src/components/FileUpload.tsx",
+    "FlagProjectButton": "frontend/src/components/FlagProjectButton.tsx",
+    "ImpactStatsWidget": "frontend/src/components/ImpactStatsWidget.tsx"
+  },
+  "cssEntry": ".design-sync/.cache/compiled-globals.css",
+  "readmeHeader": ".design-sync/conventions.md"
+}

@@ -1,0 +1,114 @@
+# design-sync notes for goodtribes.org
+
+## Why this repo uses a hand-authored `--entry` override
+
+`goodtribes.org/frontend` is a Next.js App Router application, not a published
+component library — there is no `dist/`, no library build, and most files
+under `frontend/src/components/` are tightly coupled to the app (Next.js
+Server Actions, `next-auth`, Prisma, `next/link`, `next/image`).
+
+Crucially: the converter bundles everything into **one IIFE script**
+(`_ds_bundle.js`). Any module in that bundle whose import chain reaches
+`@/lib/prisma` throws immediately at script-load time (Prisma's client
+detects the browser environment and throws on construction) — which would
+break every preview card, not just the offending component's. There is no
+supported way to stub/alias those imports (forking `lib/bundle.mjs` is
+explicitly discouraged by the skill).
+
+So instead of `cfg.srcDir` + synth-entry (which would `export *` from every
+`.tsx` under `frontend/src/components/`, including the risky ones), this repo
+uses a hand-written entry file at `.design-sync/entry.mjs` that explicitly
+re-exports ONLY the verified-safe components:
+
+```
+node .ds-sync/package-build.mjs --config .design-sync/config.json \
+  --node-modules frontend/node_modules --entry .design-sync/entry.mjs --out ./ds-bundle
+```
+
+**Always pass `--entry .design-sync/entry.mjs` — never rely on synth-entry
+auto-discovery for this repo.** `cfg.srcDir` is set to
+`frontend/src/components` only so `componentSrcMap`'s enrichment (JSDoc/group)
+has a root to resolve from; it is NOT used for entry generation because the
+`--entry` flag is always supplied.
+
+## v1 scope: 6 components only
+
+Verified via a transitive import-graph trace (direct-import grepping was not
+enough — e.g. `SdgCoverageWidget` looks clean on direct imports but pulls in
+`next/image` through `SdgIcon`). Safe set for v1:
+
+`Tooltip`, `StreakBadge`, `KudosButton`, `FileUpload`, `FlagProjectButton`,
+`ImpactStatsWidget`.
+
+Everything else in `frontend/src/components/` (35 files) transitively imports
+one of: a `"use server"` Server Action file (which imports `@/lib/prisma`
+and/or `next/cache`), `@/auth` / `next-auth`, `next/link`, `next/image`, or
+`next/navigation` (router hooks need an App Router context this bundle
+doesn't have). Adding any of them to `.design-sync/entry.mjs` risks crashing
+the whole bundle — re-verify with a transitive trace (not just direct
+imports) before adding anything.
+
+## CSS: compiled Tailwind output, not the raw source
+
+`cfg.cssEntry` points at `.design-sync/.cache/compiled-globals.css`, NOT
+`frontend/src/app/globals.css` directly. Tailwind v4 needs its
+`@tailwindcss/postcss` build step to turn `@theme` tokens + utility classes
+actually used in the source into real CSS — the raw `globals.css` just
+contains `@import "tailwindcss";`, which the converter can't resolve
+(`[CSS_IMPORT_MISSING]`).
+
+Regenerate before every build with:
+
+```
+cd frontend && node -e "
+import('postcss').then(async ({default: postcss}) => {
+  const tailwindcss = (await import('@tailwindcss/postcss')).default;
+  const { readFileSync, writeFileSync } = await import('node:fs');
+  const css = readFileSync('./src/app/globals.css', 'utf8');
+  const result = await postcss([tailwindcss()]).process(css, { from: './src/app/globals.css' });
+  writeFileSync('../.design-sync/.cache/compiled-globals.css', result.css);
+});
+"
+```
+(Written as a temp `.mjs` file inside `frontend/` when actually run, so
+Node's ESM resolution finds `postcss`/`@tailwindcss/postcss` in
+`frontend/node_modules` — a script outside `frontend/` fails to resolve
+them.) This scans the whole frontend project for used classes (not just the
+6 synced components), so it's larger than strictly necessary but always
+correct and deterministic from source.
+
+## Known render warns
+
+- `KudosButton`: `WithoutProject` variant renders identical to `Default`
+  ([RENDER_THIN] "variants render identically" is expected). The prop
+  difference (`toUserName`, `projectId`) is only visible inside the popover,
+  which opens on click and can't be captured in a static render. Triaged as
+  benign — not a bug.
+- `Tooltip`, `KudosButton`, `FlagProjectButton`: all show only their
+  closed/idle visual state. The hover-revealed tooltip bubble and the
+  click-opened popovers/forms can't be forced open via props — no prop
+  exists to control that internal state, and per the skill's rules previews
+  must compose the real component, never a reimplementation. Accepted as the
+  correct scope for a props-driven preview of these components.
+
+## Re-sync risks
+
+- If a future re-sync widens scope, re-verify each new candidate's full
+  transitive import closure for `@/lib/prisma`, `@/auth`, `next-auth`,
+  `next/cache`, `next/link`, `next/image`, `next/navigation`, and any
+  `"use server"` file. A component can look clean on a direct-import grep
+  and still be unsafe.
+- If a candidate is presentational but its file also exports non-visual
+  helpers (types, server actions) from the same module, that's fine — only
+  the *import graph reachable from the default/named export we re-export*
+  matters, but esbuild bundles the whole file (and everything it imports) at
+  the module level, not just the referenced binding, so any top-level import
+  in that file's siblings still ships.
+- Growing this design system likely requires the app team to extract
+  presentational, Prisma-free versions of components (props-only, no
+  server-action imports) — worth a note back to the team rather than fighting
+  the coupling from the sync side.
+- `frontend/tsconfig.json`'s `@/*` path alias is configured in
+  `.design-sync/config.json` (`tsconfig`) but none of the 6 v1 components
+  actually use `@/` imports — harmless if unused, but stays as a forward
+  compat setting in case a future addition needs it.
