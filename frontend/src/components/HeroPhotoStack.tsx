@@ -189,8 +189,8 @@ export default function HeroPhotoStack() {
                     </>
                   ) : (
                     <>
-                      <p className="font-bold text-base text-dark-slate">{current.heading}</p>
-                      <p className="mt-1 text-sm text-dark-slate/80">{current.body}</p>
+                      <h1 className="text-3xl md:text-4xl font-bold text-dark-slate">{current.heading}</h1>
+                      <p className="mt-4 text-dark-slate/80">{current.body}</p>
                     </>
                   )}
                 </div>
