@@ -49,7 +49,7 @@ export default async function RootLayout({
       <body className="min-h-screen bg-white text-dark-slate">
         <SessionProvider session={session}>
           <header className="border-b border-muted-teal">
-            <nav className="w-full px-6 py-3 flex items-center gap-6">
+            <nav className="w-full pl-3 pr-6 py-3 flex items-center gap-6">
               <Link href="/" className="shrink-0">
                 <Image
                   src="/img/GoodTribes1.png"
@@ -64,7 +64,7 @@ export default async function RootLayout({
               </div>
               <div className="flex-1" />
               <SearchButton />
-              <NotificationBell />
+              {session?.user && <NotificationBell />}
               <AuthNav />
             </nav>
           </header>
@@ -73,6 +73,9 @@ export default async function RootLayout({
             <div className="max-w-6xl mx-auto px-6 py-8 flex flex-wrap items-center justify-between gap-4 text-xs text-dark-slate/40">
               <span>© {new Date().getFullYear()} GoodTribes Foundation</span>
               <div className="flex gap-5">
+                <Link href="/hall-of-impact" className="hover:text-dark-slate transition-colors">Hall of Impact</Link>
+                <Link href="/academy" className="hover:text-dark-slate transition-colors">Academy</Link>
+                <Link href="/dream-wall" className="hover:text-dark-slate transition-colors">Drömväggen</Link>
                 <Link href="/about" className="hover:text-dark-slate transition-colors">About</Link>
                 <Link href="/privacy" className="hover:text-dark-slate transition-colors">Privacy</Link>
                 <Link href="/terms" className="hover:text-dark-slate transition-colors">Terms</Link>
