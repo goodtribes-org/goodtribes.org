@@ -4,3 +4,4 @@ export { default as KudosButton } from "../frontend/src/components/KudosButton.t
 export { default as FileUpload } from "../frontend/src/components/FileUpload.tsx";
 export { default as FlagProjectButton } from "../frontend/src/components/FlagProjectButton.tsx";
 export { default as ImpactStatsWidget } from "../frontend/src/components/ImpactStatsWidget.tsx";
+export { default as GanttView } from "../frontend/src/components/GanttView.tsx";
