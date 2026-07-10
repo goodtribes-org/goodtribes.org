@@ -91,12 +91,6 @@ export default function AuthNav() {
       <Link href="/login" className="text-dark-slate/70 hover:text-seagrass text-sm whitespace-nowrap">
         Log in
       </Link>
-      <Link
-        href="/signup"
-        className="bg-coral text-white text-sm font-semibold px-4 py-2 rounded hover:bg-watermelon transition-colors whitespace-nowrap"
-      >
-        Create account
-      </Link>
     </div>
   );
 }
