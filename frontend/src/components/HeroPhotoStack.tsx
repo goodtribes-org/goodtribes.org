@@ -33,35 +33,35 @@ const PHOTOS: Photo[] = [
     src: "/img/Slide2.png",
     alt: "Har du en dröm? — en man kedjad till sitt skrivbord drömmer om att förverkliga sin idé",
     heading: "Alla har idéer — få vågar följa dem",
-    body: "Vi bär alla på tankar om hur vi kan göra något bättre, men det är lätt att skjuta upp dem eller tro att man inte kan göra skillnad.",
+    body: "Privatpersoner, ideella organisationer, företag och forskare bär alla på tankar om hur vi kan göra något bättre — men det är lätt att skjuta upp dem. Hos GoodTribes får din idé en trygg plats att växa.",
     menuLabel: "Today",
   },
   {
     src: "/img/do-you-have-a-dream.png",
     alt: "En person lyfts av en ballong format som en glödlampa — en idé som lyfter",
     heading: "Våga följa din dröm",
-    body: "Stora förändringar börjar med modet att ta första steget. GoodTribes hjälper dig att förverkliga din idé, hur stor eller liten den än är.",
+    body: "Stora förändringar börjar med modet att ta första steget. Genom GoodTribes får du stöd och rätt kompetens för att förverkliga din idé — hur stor eller liten den än är.",
     menuLabel: "Dream",
   },
   {
     src: "/img/want-a-change.png",
     alt: "Vill du förändra?",
     heading: "Våga gå din egen väg",
-    body: "Du behöver inte följa mallen för att göra skillnad. Lita på din egen väg och ta steget mot det du tror på.",
+    body: "Du behöver inte följa mallen för att göra skillnad. Med GoodTribes i ryggen vågar du lita på din egen väg och ta steget mot det du tror på.",
     menuLabel: "Run",
   },
   {
     src: "/img/what-is-goodtribes.png",
     alt: "Vad är GoodTribes?",
     heading: "Tillsammans når vi längre",
-    body: "Verklig förändring kommer när vi samverkar med andra mot gemensamma mål — ingen gör det bättre helt ensam.",
+    body: "Verklig förändring kommer när privatpersoner, ideell sektor, näringsliv och forskarvärlden samverkar mot gemensamma mål. På GoodTribes möts ni i trygga, meningsfulla samarbeten.",
     menuLabel: "Teamwork",
   },
   {
     src: "/img/want-to-be-a-winner.png",
     alt: "Vill du bidra?",
     heading: "Vinn på att göra gott",
-    body: "GoodTribes vill ge dig möjlighet att leva gott och tjäna på dina insatser, må gott genom att göra det du älskar med andra goda människor, göra gott genom att förverkliga idéer som gör världen bättre — och uppnå dina och andras drömmar.",
+    body: "GoodTribes ger dig och din organisation möjlighet att leva gott och skapa värde av era insatser, må gott genom att göra det ni brinner för tillsammans med andra goda krafter, göra gott genom att förverkliga idéer som gör världen bättre — och uppnå era och andras drömmar.",
     menuLabel: "Win-Win-Win",
   },
 ];
@@ -157,14 +157,14 @@ export default function HeroPhotoStack() {
                         Vinn på att göra gott — tillsammans med GoodTribes
                       </h1>
                       <p className="mt-4 text-dark-slate/80">
-                        Som volontär hos GoodTribes får du utveckla dina kompetenser, bygga ditt nätverk och göra
-                        verklig skillnad i projekt som betyder något — samtidigt som du blir en del av en engagerad
-                        gemenskap av likasinnade.
+                        Oavsett om du är privatperson, ideell organisation, företag eller forskare ger GoodTribes
+                        dig möjligheten att utveckla dig själv, bygga värdefulla samarbeten och göra verklig
+                        skillnad i projekt som betyder något.
                       </p>
                       <p className="mt-3 text-dark-slate/80">
-                        GoodTribes är en ideell stiftelse som kopplar ihop skickliga volontärer med
-                        samhällsdrivna organisationer och projekt, så att goda idéer inte stannar vid en dröm
-                        utan faktiskt blir verklighet.
+                        GoodTribes är en etablerad ideell stiftelse som professionellt kopplar ihop engagerade
+                        volontärer, organisationer, näringsliv och forskarvärlden, så att goda idéer inte stannar
+                        vid en dröm utan faktiskt blir verklighet.
                       </p>
                       <p className="mt-4 text-sm text-dark-slate/70">
                         <strong className="text-dark-slate">Har du ett projekt?</strong> Beskriv vad du behöver.
