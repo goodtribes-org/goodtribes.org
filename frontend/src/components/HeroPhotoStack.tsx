@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 
 const STACK_MAX_W = 680;
 const CARD_SHADOW =
@@ -68,9 +67,9 @@ const PHOTOS: Photo[] = [
 ];
 
 export default function HeroPhotoStack() {
-  const { status } = useSession();
   const [active, setActive] = useState(0);
-  const [closed, setClosed] = useState(() => status === "authenticated");
+  const [closed, setClosed] = useState(true);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const current = PHOTOS[active];
   const isIntro = active === 0;
 
@@ -102,7 +101,7 @@ export default function HeroPhotoStack() {
           <div className="relative flex w-full max-w-3xl flex-col items-center">
             <nav className="flex flex-wrap items-center justify-center gap-1 rounded-full bg-white/80 backdrop-blur-sm p-1.5 shadow-sm ring-1 ring-black/5">
               {PHOTOS.map((photo, i) => {
-                const isActive = active === i;
+                const isActive = hasInteracted && active === i;
                 const isOpen = isActive && !closed;
                 return (
                   <button
@@ -114,6 +113,7 @@ export default function HeroPhotoStack() {
                       } else {
                         setActive(i);
                         setClosed(false);
+                        setHasInteracted(true);
                       }
                     }}
                     aria-current={isActive}
