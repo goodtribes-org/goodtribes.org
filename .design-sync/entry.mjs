@@ -5,3 +5,5 @@ export { default as FileUpload } from "../frontend/src/components/FileUpload.tsx
 export { default as FlagProjectButton } from "../frontend/src/components/FlagProjectButton.tsx";
 export { default as ImpactStatsWidget } from "../frontend/src/components/ImpactStatsWidget.tsx";
 export { default as GanttView } from "../frontend/src/components/GanttView.tsx";
+export { default as NavMenu } from "../frontend/src/components/NavMenu.tsx";
+export { default as WorkspaceTabNav } from "../frontend/src/components/WorkspaceTabNav.tsx";
