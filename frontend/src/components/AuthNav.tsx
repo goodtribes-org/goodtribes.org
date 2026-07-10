@@ -88,7 +88,7 @@ export default function AuthNav() {
 
   return (
     <div className="hidden md:flex items-center gap-3">
-      <Link href="/login" className="text-dark-slate/70 hover:text-seagrass text-sm whitespace-nowrap">
+      <Link href="/login" className="font-bold text-dark-slate/70 hover:text-seagrass text-sm whitespace-nowrap">
         Sign in
       </Link>
     </div>
