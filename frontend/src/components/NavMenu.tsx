@@ -1,14 +1,18 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
-import { useSession, signOut } from "next-auth/react";
 
-export default function NavMenu() {
+type Session = { user?: { name?: string | null } | null } | null;
+
+interface Props {
+  session: Session;
+  onSignOut: () => void;
+}
+
+export default function NavMenu({ session, onSignOut }: Props) {
   const [open, setOpen] = useState(false);
   const [osorterat, setOsorterat] = useState(false);
   const osorteratRef = useRef<HTMLDivElement>(null);
-  const { data: session } = useSession();
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -24,12 +28,12 @@ export default function NavMenu() {
     <>
       {/* Desktop links */}
       <div className="hidden md:flex items-center gap-4 text-base">
-        <Link href="/projects" className="font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
+        <a href="/projects" className="font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
           Projects
-        </Link>
-        <Link href="/ideas" className="font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
+        </a>
+        <a href="/ideas" className="font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
           Ideas
-        </Link>
+        </a>
 
         {/* Osorterat dropdown */}
         <div ref={osorteratRef} className="relative">
@@ -45,20 +49,20 @@ export default function NavMenu() {
 
           {osorterat && (
             <div className="absolute top-full left-0 mt-1 bg-white border border-muted-teal rounded-xl shadow-lg py-1.5 min-w-48 z-50">
-              <Link href="/feed" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Flöde</Link>
-              <Link href="/dream-wall" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Drömväggen</Link>
-              <Link href="/hall-of-impact" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Hall of Impact</Link>
-              <Link href="/academy" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Academy</Link>
+              <a href="/feed" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Flöde</a>
+              <a href="/dream-wall" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Drömväggen</a>
+              <a href="/hall-of-impact" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Hall of Impact</a>
+              <a href="/academy" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Academy</a>
               {session?.user && (
-                <Link href="/match" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Hitta projekt</Link>
+                <a href="/match" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Hitta projekt</a>
               )}
               <div className="my-1 border-t border-muted-teal/20" />
-              <Link href="/members" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Members</Link>
-              <Link href="/org" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Organisations</Link>
-              <Link href="/skill" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Skills</Link>
-              <Link href="/mentors" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Mentorer</Link>
+              <a href="/members" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Members</a>
+              <a href="/org" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Organisations</a>
+              <a href="/skill" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Skills</a>
+              <a href="/mentors" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Mentorer</a>
               <div className="my-1 border-t border-muted-teal/20" />
-              <Link href="/about" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">About</Link>
+              <a href="/about" onClick={() => setOsorterat(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">About</a>
             </div>
           )}
         </div>
@@ -85,32 +89,32 @@ export default function NavMenu() {
       {open && (
         <div className="absolute top-full left-0 right-0 bg-white border-b border-muted-teal md:hidden z-50 shadow-md">
           <nav className="max-w-6xl mx-auto px-6 py-3 flex flex-col">
-            <Link href="/projects" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Projects</Link>
-            <Link href="/ideas" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Ideas</Link>
+            <a href="/projects" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Projects</a>
+            <a href="/ideas" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Ideas</a>
             <p className="pt-3 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">Osorterat</p>
-            <Link href="/feed" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Flöde</Link>
-            <Link href="/dream-wall" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Drömväggen</Link>
-            <Link href="/hall-of-impact" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Hall of Impact</Link>
-            <Link href="/academy" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Academy</Link>
+            <a href="/feed" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Flöde</a>
+            <a href="/dream-wall" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Drömväggen</a>
+            <a href="/hall-of-impact" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Hall of Impact</a>
+            <a href="/academy" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Academy</a>
             {session?.user && (
-              <Link href="/match" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Hitta projekt</Link>
+              <a href="/match" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Hitta projekt</a>
             )}
-            <Link href="/members" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Members</Link>
-            <Link href="/org" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Organisations</Link>
-            <Link href="/skill" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Skills</Link>
-            <Link href="/mentors" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Mentorer</Link>
-            <Link href="/about" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">About</Link>
+            <a href="/members" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Members</a>
+            <a href="/org" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Organisations</a>
+            <a href="/skill" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Skills</a>
+            <a href="/mentors" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Mentorer</a>
+            <a href="/about" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">About</a>
 
             {session?.user ? (
               <>
                 <p className="pt-3 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">My account</p>
-                <Link href="/workplace" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Workplace</Link>
-                <Link href="/dashboard" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Dashboard</Link>
-                <Link href="/profile" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Profile</Link>
-                <Link href="/settings" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Settings</Link>
-                <Link href="/projects/new" onClick={() => setOpen(false)} className="py-3 text-coral font-semibold hover:text-watermelon border-b border-muted-teal/20">+ New project</Link>
+                <a href="/workplace" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Workplace</a>
+                <a href="/dashboard" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Dashboard</a>
+                <a href="/profile" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Profile</a>
+                <a href="/settings" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Settings</a>
+                <a href="/projects/new" onClick={() => setOpen(false)} className="py-3 text-coral font-semibold hover:text-watermelon border-b border-muted-teal/20">+ New project</a>
                 <button
-                  onClick={() => { setOpen(false); signOut({ callbackUrl: "/" }); }}
+                  onClick={() => { setOpen(false); onSignOut(); }}
                   className="py-3 text-left text-dark-slate/50 hover:text-dark-slate text-sm"
                 >
                   Log out
@@ -118,8 +122,8 @@ export default function NavMenu() {
               </>
             ) : (
               <>
-                <Link href="/login" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Log in</Link>
-                <Link href="/signup" onClick={() => setOpen(false)} className="py-3 text-coral font-semibold hover:text-watermelon">Create account</Link>
+                <a href="/login" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Log in</a>
+                <a href="/signup" onClick={() => setOpen(false)} className="py-3 text-coral font-semibold hover:text-watermelon">Create account</a>
               </>
             )}
           </nav>

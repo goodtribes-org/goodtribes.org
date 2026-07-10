@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { notFound, redirect } from "next/navigation";
-import WorkspaceTabNav from "@/components/WorkspaceTabNav";
+import WorkspaceTabNavContainer from "@/components/WorkspaceTabNavContainer";
 
 
 export default async function WorkspaceLayout({
@@ -39,7 +39,7 @@ export default async function WorkspaceLayout({
         <p className="text-sm text-dark-slate/50 mb-1">Workspace</p>
         <h1 className="text-3xl font-bold">{org.name}</h1>
       </div>
-      <WorkspaceTabNav slug={slug} isAdmin={!!isAdmin} />
+      <WorkspaceTabNavContainer slug={slug} isAdmin={!!isAdmin} />
       {children}
     </div>
   );

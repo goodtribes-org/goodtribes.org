@@ -31,14 +31,14 @@ auto-discovery for this repo.** `cfg.srcDir` is set to
 has a root to resolve from; it is NOT used for entry generation because the
 `--entry` flag is always supplied.
 
-## Scope: 7 components (v1's 6 + GanttView)
+## Scope: 9 components
 
 Verified via a transitive import-graph trace (direct-import grepping was not
 enough — e.g. `SdgCoverageWidget` looks clean on direct imports but pulls in
 `next/image` through `SdgIcon`). Safe set:
 
 `Tooltip`, `StreakBadge`, `KudosButton`, `FileUpload`, `FlagProjectButton`,
-`ImpactStatsWidget`, `GanttView`.
+`ImpactStatsWidget`, `GanttView`, `NavMenu`, `WorkspaceTabNav`.
 
 `GanttView` was originally excluded because it imported `updateCard` directly
 from the kanban `"use server"` actions file (which imports `@/lib/prisma`
@@ -51,7 +51,7 @@ behavior change). Call sites
 `components/TasksPage.tsx`) now import `updateCard` themselves and pass it
 in. Same pattern is the template for decoupling more components later.
 
-Everything else in `frontend/src/components/` (34 files) still transitively
+Everything else in `frontend/src/components/` (32 files) still transitively
 imports one of: a `"use server"` Server Action file (`@/lib/prisma` and/or
 `next/cache`), `@/auth` / `next-auth`, `next/link`, `next/image`, or
 `next/navigation` (router hooks need an App Router context this bundle
@@ -59,7 +59,7 @@ doesn't have). Adding any of them to `.design-sync/entry.mjs` risks crashing
 the whole bundle — re-verify with a transitive trace (not just direct
 imports) before adding anything.
 
-### `next/link` empirically confirmed unsafe — do not add without a fix
+### `next/link` empirically confirmed unsafe — fixed for NavMenu/WorkspaceTabNav by removing it
 
 Tested directly (2026-07-10): added a throwaway component that only rendered
 `<Link href="/">` from `next/link` to the entry, rebuilt, validated. Result:
@@ -67,16 +67,17 @@ Tested directly (2026-07-10): added a throwaway component that only rendered
 (`[BUNDLE_EXPORT] not a component`), with `ReferenceError: process is not
 defined` thrown from Next's internals during bundle evaluation — confirming
 the single-IIFE blast-radius risk described above empirically, not just
-theoretically. `NavMenu` and `WorkspaceTabNav` both render several
-`next/link` `<Link>`s internally and are therefore blocked from this design
-system until one of:
-- a `process` shim is added (no supported config knob for this today — would
-  require forking `lib/bundle.mjs`, which the skill explicitly discourages), or
-- the `<Link>` usage inside the presentational split is replaced with a
-  plain `<a href>` (changes real markup/prefetch behavior, needs sign-off), or
-- design-sync ships a `next/link`/`next/image` shim upstream in a future
-  skill version.
-Re-test with the same throwaway-entry method before attempting either again.
+theoretically. There is still no supported shim for this (forking
+`lib/bundle.mjs` is discouraged) — the fix applied instead: `NavMenu` and
+`WorkspaceTabNav` had every internal `<Link>` replaced with a plain
+`<a href>` (accepted trade-off: loses Next's automatic prefetch-on-hover for
+these specific nav links; routes still code-split/stream normally on click).
+Combined with the same container/presentational split used for `GanttView`
+(session/pathname moved to props, real hooks live in
+`NavMenuContainer.tsx`/`WorkspaceTabNavContainer.tsx`, which are
+intentionally NOT synced). Any *future* component that still needs
+`next/link`/`next/image` must get the same `<a>`/`<img>` treatment before it
+can be added — re-test with the same throwaway-entry method if in doubt.
 
 ## CSS: compiled Tailwind output, not the raw source
 
@@ -114,12 +115,16 @@ correct and deterministic from source.
   difference (`toUserName`, `projectId`) is only visible inside the popover,
   which opens on click and can't be captured in a static render. Triaged as
   benign — not a bug.
-- `Tooltip`, `KudosButton`, `FlagProjectButton`: all show only their
-  closed/idle visual state. The hover-revealed tooltip bubble and the
-  click-opened popovers/forms can't be forced open via props — no prop
-  exists to control that internal state, and per the skill's rules previews
-  must compose the real component, never a reimplementation. Accepted as the
-  correct scope for a props-driven preview of these components.
+- `Tooltip`, `KudosButton`, `FlagProjectButton`, `NavMenu`: all show only
+  their closed/idle visual state. The hover-revealed tooltip bubble and the
+  click-opened popovers/dropdowns/drawers can't be forced open via props —
+  no prop exists to control that internal state, and per the skill's rules
+  previews must compose the real component, never a reimplementation.
+  Accepted as the correct scope for a props-driven preview of these
+  components. For `NavMenu` specifically this also means the `LoggedIn`/
+  `LoggedOut` preview variants render identically ([RENDER_THIN] "variants
+  render identically") — the session-dependent items only show inside the
+  closed dropdown/drawer.
 
 ## Re-sync risks
 

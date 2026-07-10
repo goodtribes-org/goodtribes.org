@@ -12,7 +12,9 @@
     "FileUpload": "frontend/src/components/FileUpload.tsx",
     "FlagProjectButton": "frontend/src/components/FlagProjectButton.tsx",
     "ImpactStatsWidget": "frontend/src/components/ImpactStatsWidget.tsx",
-    "GanttView": "frontend/src/components/GanttView.tsx"
+    "GanttView": "frontend/src/components/GanttView.tsx",
+    "NavMenu": "frontend/src/components/NavMenu.tsx",
+    "WorkspaceTabNav": "frontend/src/components/WorkspaceTabNav.tsx"
   },
   "cssEntry": ".design-sync/.cache/compiled-globals.css",
   "readmeHeader": ".design-sync/conventions.md"
