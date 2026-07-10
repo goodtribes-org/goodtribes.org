@@ -128,7 +128,7 @@ export default function NavMenu({ session, onSignOut }: Props) {
                 </button>
               </>
             ) : (
-              <a href="/login" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Log in</a>
+              <a href="/login" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Sign in</a>
             )}
           </nav>
         </div>

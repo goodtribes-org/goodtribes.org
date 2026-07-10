@@ -64,7 +64,7 @@ export default async function RootLayout({
               </div>
               <div className="flex-1" />
               <SearchButton />
-              <NotificationBell />
+              {session?.user && <NotificationBell />}
               <AuthNav />
             </nav>
           </header>
