@@ -68,14 +68,12 @@ export default function NavMenu({ session, onSignOut }: Props) {
 
           {discover && (
             <div className="absolute top-full left-0 mt-1 bg-white border border-muted-teal rounded-xl shadow-lg py-1.5 min-w-48 z-50">
-              <a href="/projects" onClick={() => setDiscover(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Project</a>
+              <a href="/projects" onClick={() => setDiscover(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Projects</a>
               <a href="/ideas" onClick={() => setDiscover(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Ideas</a>
-              <a href="/org" onClick={() => setDiscover(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Organization</a>
+              <a href="/org" onClick={() => setDiscover(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Organizations</a>
               <div className="my-1 border-t border-muted-teal/20" />
               <a href="/skill" onClick={() => setDiscover(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Skills</a>
-              <a href="/mentors" onClick={() => setDiscover(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Mentorer</a>
-              <div className="my-1 border-t border-muted-teal/20" />
-              <a href="/dream-wall" onClick={() => setDiscover(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Drömväggen</a>
+              <a href="/mentors" onClick={() => setDiscover(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Mentors</a>
             </div>
           )}
         </div>
@@ -108,12 +106,11 @@ export default function NavMenu({ session, onSignOut }: Props) {
             <a href="/org/new" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">New organisation</a>
 
             <p className="pt-3 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">Discover</p>
-            <a href="/projects" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Project</a>
+            <a href="/projects" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Projects</a>
             <a href="/ideas" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Ideas</a>
-            <a href="/org" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Organization</a>
+            <a href="/org" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Organizations</a>
             <a href="/skill" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Skills</a>
-            <a href="/mentors" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Mentorer</a>
-            <a href="/dream-wall" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Drömväggen</a>
+            <a href="/mentors" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Mentors</a>
 
             {session?.user ? (
               <>

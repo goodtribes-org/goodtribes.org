@@ -75,6 +75,7 @@ export default async function RootLayout({
               <div className="flex gap-5">
                 <Link href="/hall-of-impact" className="hover:text-dark-slate transition-colors">Hall of Impact</Link>
                 <Link href="/academy" className="hover:text-dark-slate transition-colors">Academy</Link>
+                <Link href="/dream-wall" className="hover:text-dark-slate transition-colors">Drömväggen</Link>
                 <Link href="/about" className="hover:text-dark-slate transition-colors">About</Link>
                 <Link href="/privacy" className="hover:text-dark-slate transition-colors">Privacy</Link>
                 <Link href="/terms" className="hover:text-dark-slate transition-colors">Terms</Link>
