@@ -12,12 +12,17 @@ interface Props {
 export default function NavMenu({ session, onSignOut }: Props) {
   const [open, setOpen] = useState(false);
   const [osorterat, setOsorterat] = useState(false);
+  const [create, setCreate] = useState(false);
   const osorteratRef = useRef<HTMLDivElement>(null);
+  const createRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
       if (osorteratRef.current && !osorteratRef.current.contains(e.target as Node)) {
         setOsorterat(false);
+      }
+      if (createRef.current && !createRef.current.contains(e.target as Node)) {
+        setCreate(false);
       }
     }
     document.addEventListener("mousedown", onClickOutside);
@@ -28,6 +33,27 @@ export default function NavMenu({ session, onSignOut }: Props) {
     <>
       {/* Desktop links */}
       <div className="hidden md:flex items-center gap-4 text-base">
+        {/* Create dropdown */}
+        <div ref={createRef} className="relative">
+          <button
+            onClick={() => setCreate((v) => !v)}
+            className="flex items-center gap-1 font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap"
+          >
+            Create
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`w-3 h-3 mt-0.5 transition-transform ${create ? "rotate-180" : ""}`}>
+              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+            </svg>
+          </button>
+
+          {create && (
+            <div className="absolute top-full left-0 mt-1 bg-white border border-muted-teal rounded-xl shadow-lg py-1.5 min-w-48 z-50">
+              <a href="/projects/new" onClick={() => setCreate(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Project</a>
+              <a href="/ideas/new" onClick={() => setCreate(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Ideas</a>
+              <a href="/org/new" onClick={() => setCreate(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Organization</a>
+            </div>
+          )}
+        </div>
+
         <a href="/projects" className="font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap">
           Projects
         </a>
@@ -89,6 +115,11 @@ export default function NavMenu({ session, onSignOut }: Props) {
       {open && (
         <div className="absolute top-full left-0 right-0 bg-white border-b border-muted-teal md:hidden z-50 shadow-md">
           <nav className="max-w-6xl mx-auto px-6 py-3 flex flex-col">
+            <p className="pt-1 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">Create</p>
+            <a href="/projects/new" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Project</a>
+            <a href="/ideas/new" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Ideas</a>
+            <a href="/org/new" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Organization</a>
+
             <a href="/projects" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Projects</a>
             <a href="/ideas" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Ideas</a>
             <p className="pt-3 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">Osorterat</p>
