@@ -27,41 +27,41 @@ const PHOTOS: Photo[] = [
     alt: "GoodTribes — Crowdsourcing for Good",
     heading: "GoodTribes",
     body: "Crowdsourcing for good — gå med och gör skillnad!",
-    menuLabel: "GoodTribes",
+    menuLabel: "Intro",
   },
   {
     src: "/img/Slide2.png",
     alt: "Har du en dröm? — en man kedjad till sitt skrivbord drömmer om att förverkliga sin idé",
-    heading: "Har du en dröm?",
-    body: "Oavsett hur stor eller liten din idé är — GoodTribes hjälper dig att förverkliga den.",
+    heading: "Alla har idéer — få vågar följa dem",
+    body: "Vi bär alla på tankar om hur vi kan göra något bättre, men det är lätt att skjuta upp dem eller tro att man inte kan göra skillnad.",
     menuLabel: "Today",
   },
   {
     src: "/img/do-you-have-a-dream.png",
     alt: "En person lyfts av en ballong format som en glödlampa — en idé som lyfter",
-    heading: "Låt din idé lyfta",
-    body: "Stora förändringar börjar ofta med en enkel tanke. Vi hjälper dig ta första steget mot att förverkliga den.",
+    heading: "Våga följa din dröm",
+    body: "Stora förändringar börjar med modet att ta första steget. GoodTribes hjälper dig att förverkliga din idé, hur stor eller liten den än är.",
     menuLabel: "Dream",
   },
   {
     src: "/img/want-a-change.png",
     alt: "Vill du förändra?",
-    heading: "Vill du förändra?",
-    body: "Hitta likasinnade och organisationer som vill göra världen lite bättre — tillsammans.",
+    heading: "Våga gå din egen väg",
+    body: "Du behöver inte följa mallen för att göra skillnad. Lita på din egen väg och ta steget mot det du tror på.",
     menuLabel: "Run",
   },
   {
     src: "/img/what-is-goodtribes.png",
     alt: "Vad är GoodTribes?",
-    heading: "Vad är GoodTribes?",
-    body: "En plattform som kopplar ihop skickliga volontärer med samhällsdrivna organisationer.",
-    menuLabel: "Together",
+    heading: "Tillsammans når vi längre",
+    body: "Verklig förändring kommer när vi samverkar med andra mot gemensamma mål — ingen gör det bättre helt ensam.",
+    menuLabel: "Teamwork",
   },
   {
     src: "/img/want-to-be-a-winner.png",
     alt: "Vill du bidra?",
-    heading: "Vill du bidra?",
-    body: "Bidra med dina kompetenser och gör verklig skillnad i projekt som betyder något.",
+    heading: "Vinn på att göra gott",
+    body: "GoodTribes vill ge dig möjlighet att leva gott och tjäna på dina insatser, må gott genom att göra det du älskar med andra goda människor, göra gott genom att förverkliga idéer som gör världen bättre — och uppnå dina och andras drömmar.",
     menuLabel: "Win-Win-Win",
   },
 ];
@@ -154,16 +154,17 @@ export default function HeroPhotoStack() {
                   {isIntro ? (
                     <>
                       <h1 className="text-3xl md:text-4xl font-bold text-dark-slate">
-                        Tillsammans gör vi bra idéer till verklighet
+                        Vinn på att göra gott — tillsammans med GoodTribes
                       </h1>
                       <p className="mt-4 text-dark-slate/80">
-                        Runt om i världen bubblar det av fantastiska idéer — projekt som vill rädda bin, städa hav
-                        eller skapa tryggare kvarter. Samtidigt finns det tusentals människor som vill hjälpa till
-                        och göra skillnad, men som inte vet var de ska börja.
+                        Som volontär hos GoodTribes får du utveckla dina kompetenser, bygga ditt nätverk och göra
+                        verklig skillnad i projekt som betyder något — samtidigt som du blir en del av en engagerad
+                        gemenskap av likasinnade.
                       </p>
                       <p className="mt-3 text-dark-slate/80">
-                        GoodTribes är mötesplatsen däremellan. Vi kopplar ihop visionära projekt med engagerade
-                        volontärer, så att goda idéer inte stannar vid en dröm utan faktiskt blir verklighet.
+                        GoodTribes är en ideell stiftelse som kopplar ihop skickliga volontärer med
+                        samhällsdrivna organisationer och projekt, så att goda idéer inte stannar vid en dröm
+                        utan faktiskt blir verklighet.
                       </p>
                       <p className="mt-4 text-sm text-dark-slate/70">
                         <strong className="text-dark-slate">Har du ett projekt?</strong> Beskriv vad du behöver.
