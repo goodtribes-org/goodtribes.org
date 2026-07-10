@@ -32,7 +32,7 @@ export default function NavMenu({ session, onSignOut }: Props) {
   return (
     <>
       {/* Desktop links */}
-      <div className="hidden md:flex items-center gap-4 text-base">
+      <div className="hidden md:flex items-center gap-4 text-sm">
         {/* Create dropdown */}
         <div ref={createRef} className="relative">
           <button
