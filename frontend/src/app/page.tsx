@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import ProjectCard from "@/components/ProjectCard";
+import IdeaCard from "@/components/IdeaCard";
 import SortToggle from "@/components/SortToggle";
 import Pagination from "@/components/Pagination";
 import ActivityPulse from "@/components/ActivityPulse";
@@ -15,6 +16,7 @@ import NewMembersWidget from "@/components/NewMembersWidget";
 import SdgCoverageWidget from "@/components/SdgCoverageWidget";
 
 const PAGE_SIZE = 12;
+const IDEA_PREVIEW_SIZE = 8;
 
 async function getLeaderboard() {
   const tokenGroups = await prisma.tokenLedger.groupBy({
@@ -83,6 +85,8 @@ export default async function HomePage({
     sdgProjects,
     totalFiltered,
     projects,
+    ideaCount,
+    ideas,
   ] = await Promise.all([
     prisma.project.count({ where: { visibility: "public" } }),
     prisma.organisation.count({ where: { isPublic: true } }),
@@ -108,6 +112,16 @@ export default async function HomePage({
         owner: { select: { name: true } },
         members: { select: { id: true } },
         _count: { select: { kanbanCards: true, todoItems: true } },
+      },
+    }),
+    prisma.idea.count({ where: { status: { not: "draft" } } }),
+    prisma.idea.findMany({
+      where: { status: { not: "draft" } },
+      orderBy: { createdAt: "desc" },
+      take: IDEA_PREVIEW_SIZE,
+      include: {
+        author: { select: { name: true } },
+        _count: { select: { votes: true, comments: true, endorsements: true } },
       },
     }),
   ]);
@@ -197,6 +211,31 @@ export default async function HomePage({
               basePath="/"
             />
           </>
+        )}
+      </section>
+
+      {/* Del 4 — Idea Browser */}
+      <section id="ideas">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-dark-slate">
+            Utforska idéer{" "}
+            <span className="text-dark-slate/40 font-normal">({ideaCount})</span>
+          </h2>
+          <Link href="/ideas" className="text-xs text-coral hover:underline">
+            Se alla idéer →
+          </Link>
+        </div>
+        {ideas.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <p className="text-dark-slate/50 mb-4">Inga idéer ännu.</p>
+            <Link href="/ideas/new" className="text-coral hover:underline text-sm">
+              Dela den första idén
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {ideas.map((idea) => <IdeaCard key={idea.id} idea={idea} />)}
+          </div>
         )}
       </section>
 
