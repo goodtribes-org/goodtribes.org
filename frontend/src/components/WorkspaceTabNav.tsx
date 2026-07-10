@@ -1,16 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-
 interface Props {
   slug: string;
   isAdmin: boolean;
+  pathname: string;
 }
 
-export default function WorkspaceTabNav({ slug, isAdmin }: Props) {
-  const pathname = usePathname();
-
+export default function WorkspaceTabNav({ slug, isAdmin, pathname }: Props) {
   const tabs = [
     { label: "Messages", href: `/work/${slug}/messages` },
     { label: "Tasks", href: `/work/${slug}/tasks` },
@@ -22,7 +18,7 @@ export default function WorkspaceTabNav({ slug, isAdmin }: Props) {
       {tabs.map((tab) => {
         const active = pathname.startsWith(tab.href);
         return (
-          <Link
+          <a
             key={tab.href}
             href={tab.href}
             className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
@@ -32,7 +28,7 @@ export default function WorkspaceTabNav({ slug, isAdmin }: Props) {
             }`}
           >
             {tab.label}
-          </Link>
+          </a>
         );
       })}
     </nav>

@@ -9,7 +9,7 @@ import SessionProvider from "@/components/SessionProvider";
 import AuthNav from "@/components/AuthNav";
 import SearchButton from "@/components/SearchButton";
 import NotificationBell from "@/components/NotificationBell";
-import NavMenu from "@/components/NavMenu";
+import NavMenuContainer from "@/components/NavMenuContainer";
 import { auth } from "@/auth";
 
 const APP_URL = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
@@ -60,7 +60,7 @@ export default async function RootLayout({
                 />
               </Link>
               <div className="shrink-0">
-                <NavMenu />
+                <NavMenuContainer />
               </div>
               <div className="flex-1" />
               <SearchButton />
