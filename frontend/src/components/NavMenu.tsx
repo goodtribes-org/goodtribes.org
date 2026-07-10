@@ -47,9 +47,9 @@ export default function NavMenu({ session, onSignOut }: Props) {
 
           {create && (
             <div className="absolute top-full left-0 mt-1 bg-white border border-muted-teal rounded-xl shadow-lg py-1.5 min-w-48 z-50">
-              <a href="/projects/new" onClick={() => setCreate(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Project</a>
-              <a href="/ideas/new" onClick={() => setCreate(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Ideas</a>
-              <a href="/org/new" onClick={() => setCreate(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">Organization</a>
+              <a href="/projects/new" onClick={() => setCreate(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">New project</a>
+              <a href="/ideas/new" onClick={() => setCreate(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">New idea</a>
+              <a href="/org/new" onClick={() => setCreate(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">New organisation</a>
             </div>
           )}
         </div>
@@ -103,9 +103,9 @@ export default function NavMenu({ session, onSignOut }: Props) {
         <div className="absolute top-full left-0 right-0 bg-white border-b border-muted-teal md:hidden z-50 shadow-md">
           <nav className="max-w-6xl mx-auto px-6 py-3 flex flex-col">
             <p className="pt-1 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">Create</p>
-            <a href="/projects/new" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Project</a>
-            <a href="/ideas/new" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Ideas</a>
-            <a href="/org/new" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Organization</a>
+            <a href="/projects/new" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">New project</a>
+            <a href="/ideas/new" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">New idea</a>
+            <a href="/org/new" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">New organisation</a>
 
             <p className="pt-3 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">Discover</p>
             <a href="/projects" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">Project</a>
