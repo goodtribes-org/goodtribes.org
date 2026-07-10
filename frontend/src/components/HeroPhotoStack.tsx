@@ -62,7 +62,7 @@ const PHOTOS: Photo[] = [
     alt: "Vill du bidra?",
     heading: "Vinn på att göra gott",
     body: "GoodTribes ger dig och din organisation möjlighet att leva gott och skapa värde av era insatser, må gott genom att göra det ni brinner för tillsammans med andra goda krafter, göra gott genom att förverkliga idéer som gör världen bättre — och uppnå era och andras drömmar.",
-    menuLabel: "Expansion",
+    menuLabel: "Realization",
   },
 ];
 
