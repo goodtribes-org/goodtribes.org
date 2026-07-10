@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -68,10 +68,24 @@ const PHOTOS: Photo[] = [
 
 export default function HeroPhotoStack() {
   const [active, setActive] = useState(0);
-  const [closed, setClosed] = useState(true);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const current = PHOTOS[active];
   const isIntro = active === 0;
+  const panelOpen = hasInteracted && hoveredIndex === active;
+
+  function cancelClose() {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }
+
+  function scheduleClose() {
+    cancelClose();
+    closeTimerRef.current = setTimeout(() => setHoveredIndex(null), 200);
+  }
 
   return (
     <>
@@ -102,22 +116,21 @@ export default function HeroPhotoStack() {
             <nav className="flex flex-wrap items-center justify-center gap-1 rounded-full bg-white/80 backdrop-blur-sm p-1.5 shadow-sm ring-1 ring-black/5">
               {PHOTOS.map((photo, i) => {
                 const isActive = hasInteracted && active === i;
-                const isOpen = isActive && !closed;
                 return (
                   <button
                     key={photo.src}
                     type="button"
                     onClick={() => {
-                      if (isActive) {
-                        setClosed((c) => !c);
-                      } else {
-                        setActive(i);
-                        setClosed(false);
-                        setHasInteracted(true);
-                      }
+                      setActive(i);
+                      setHasInteracted(true);
                     }}
+                    onMouseEnter={() => {
+                      cancelClose();
+                      setHoveredIndex(i);
+                    }}
+                    onMouseLeave={scheduleClose}
                     aria-current={isActive}
-                    aria-expanded={isOpen}
+                    aria-expanded={isActive && panelOpen}
                     className={`flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
                       isActive
                         ? "bg-coral text-white shadow-sm"
@@ -130,26 +143,15 @@ export default function HeroPhotoStack() {
               })}
             </nav>
 
-            {!closed && (
+            {panelOpen && (
               <div
+                onMouseEnter={cancelClose}
+                onMouseLeave={scheduleClose}
                 className={`absolute left-1/2 top-full mt-4 w-full -translate-x-1/2 rounded-3xl bg-white/95 z-20 ${CARD_SHADOW}`}
               >
-                <button
-                  type="button"
-                  onClick={() => setClosed(true)}
-                  aria-label="Stäng"
-                  className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full text-dark-slate/40 transition-colors hover:bg-black/5 hover:text-dark-slate"
-                >
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                    <path d="M1 1l12 12M13 1L1 13" />
-                  </svg>
-                </button>
-
                 <div
                   key={`float-${current.src}`}
-                  className={`hero-caption-in text-center ${
-                    isIntro ? "px-6 pt-8 pb-8 flex flex-col items-center" : "mx-auto max-w-md px-4 pt-6 pb-6"
-                  }`}
+                  className="hero-caption-in text-center px-6 pt-8 pb-8 flex flex-col items-center"
                 >
                   {isIntro ? (
                     <>
