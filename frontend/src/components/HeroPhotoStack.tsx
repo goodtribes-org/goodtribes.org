@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 
 const STACK_MAX_W = 680;
 const CARD_SHADOW =
@@ -28,51 +27,65 @@ const PHOTOS: Photo[] = [
     alt: "GoodTribes — Crowdsourcing for Good",
     heading: "GoodTribes",
     body: "Crowdsourcing for good — gå med och gör skillnad!",
-    menuLabel: "GoodTribes",
+    menuLabel: "Introduction",
   },
   {
     src: "/img/Slide2.png",
     alt: "Har du en dröm? — en man kedjad till sitt skrivbord drömmer om att förverkliga sin idé",
-    heading: "Har du en dröm?",
-    body: "Oavsett hur stor eller liten din idé är — GoodTribes hjälper dig att förverkliga den.",
-    menuLabel: "Today",
+    heading: "Alla har idéer — få vågar följa dem",
+    body: "Privatpersoner, ideella organisationer, företag och forskare bär alla på tankar om hur vi kan göra något bättre — men det är lätt att skjuta upp dem. Hos GoodTribes får din idé en trygg plats att växa.",
+    menuLabel: "Ideation",
   },
   {
     src: "/img/do-you-have-a-dream.png",
     alt: "En person lyfts av en ballong format som en glödlampa — en idé som lyfter",
-    heading: "Låt din idé lyfta",
-    body: "Stora förändringar börjar ofta med en enkel tanke. Vi hjälper dig ta första steget mot att förverkliga den.",
-    menuLabel: "Dream",
+    heading: "Våga följa din dröm",
+    body: "Stora förändringar börjar med modet att ta första steget. Genom GoodTribes får du stöd och rätt kompetens för att förverkliga din idé — hur stor eller liten den än är.",
+    menuLabel: "Validation",
   },
   {
     src: "/img/want-a-change.png",
     alt: "Vill du förändra?",
-    heading: "Vill du förändra?",
-    body: "Hitta likasinnade och organisationer som vill göra världen lite bättre — tillsammans.",
-    menuLabel: "Run",
+    heading: "Våga gå din egen väg",
+    body: "Du behöver inte följa mallen för att göra skillnad. Med GoodTribes i ryggen vågar du lita på din egen väg och ta steget mot det du tror på.",
+    menuLabel: "Traction",
   },
   {
     src: "/img/what-is-goodtribes.png",
     alt: "Vad är GoodTribes?",
-    heading: "Vad är GoodTribes?",
-    body: "En plattform som kopplar ihop skickliga volontärer med samhällsdrivna organisationer.",
-    menuLabel: "Together",
+    heading: "Tillsammans når vi längre",
+    body: "Verklig förändring kommer när privatpersoner, ideell sektor, näringsliv och forskarvärlden samverkar mot gemensamma mål. På GoodTribes möts ni i trygga, meningsfulla samarbeten.",
+    menuLabel: "Building",
   },
   {
     src: "/img/want-to-be-a-winner.png",
     alt: "Vill du bidra?",
-    heading: "Vill du bidra?",
-    body: "Bidra med dina kompetenser och gör verklig skillnad i projekt som betyder något.",
-    menuLabel: "Win-Win-Win",
+    heading: "Alla vinner på att göra gott",
+    body: "GoodTribes ger dig och din organisation möjlighet att leva gott och skapa värde av era insatser, må gott genom att göra det ni brinner för tillsammans med andra goda krafter, göra gott genom att förverkliga idéer som gör världen bättre — och uppnå era och andras drömmar.",
+    menuLabel: "Realization",
   },
 ];
 
 export default function HeroPhotoStack() {
-  const { status } = useSession();
   const [active, setActive] = useState(0);
-  const [closed, setClosed] = useState(() => status === "authenticated");
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const current = PHOTOS[active];
   const isIntro = active === 0;
+  const panelOpen = hasInteracted && hoveredIndex === active;
+
+  function cancelClose() {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }
+
+  function scheduleClose() {
+    cancelClose();
+    closeTimerRef.current = setTimeout(() => setHoveredIndex(null), 200);
+  }
 
   return (
     <>
@@ -102,79 +115,58 @@ export default function HeroPhotoStack() {
           <div className="relative flex w-full max-w-3xl flex-col items-center">
             <nav className="flex flex-wrap items-center justify-center gap-1 rounded-full bg-white/80 backdrop-blur-sm p-1.5 shadow-sm ring-1 ring-black/5">
               {PHOTOS.map((photo, i) => {
-                const isActive = active === i;
-                const isOpen = isActive && !closed;
+                const isActive = hasInteracted && active === i;
                 return (
                   <button
                     key={photo.src}
                     type="button"
                     onClick={() => {
-                      if (isActive) {
-                        setClosed((c) => !c);
-                      } else {
-                        setActive(i);
-                        setClosed(false);
-                      }
+                      setActive(i);
+                      setHasInteracted(true);
                     }}
+                    onMouseEnter={() => {
+                      cancelClose();
+                      setHoveredIndex(i);
+                    }}
+                    onMouseLeave={scheduleClose}
                     aria-current={isActive}
-                    aria-expanded={isOpen}
+                    aria-expanded={isActive && panelOpen}
                     className={`flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
                       isActive
                         ? "bg-coral text-white shadow-sm"
                         : "text-dark-slate/60 hover:text-dark-slate hover:bg-black/5"
                     }`}
                   >
-                    {photo.menuLabel}
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 10 10"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-                    >
-                      <path d="M2 3.5L5 6.5L8 3.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    {i + 1}. {photo.menuLabel}
                   </button>
                 );
               })}
             </nav>
 
-            {!closed && (
+            {panelOpen && (
               <div
+                onMouseEnter={cancelClose}
+                onMouseLeave={scheduleClose}
                 className={`absolute left-1/2 top-full mt-4 w-full -translate-x-1/2 rounded-3xl bg-white/95 z-20 ${CARD_SHADOW}`}
               >
-                <button
-                  type="button"
-                  onClick={() => setClosed(true)}
-                  aria-label="Stäng"
-                  className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full text-dark-slate/40 transition-colors hover:bg-black/5 hover:text-dark-slate"
-                >
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                    <path d="M1 1l12 12M13 1L1 13" />
-                  </svg>
-                </button>
-
                 <div
                   key={`float-${current.src}`}
-                  className={`hero-caption-in text-center ${
-                    isIntro ? "px-6 pt-8 pb-8 flex flex-col items-center" : "mx-auto max-w-md px-4 pt-6 pb-6"
-                  }`}
+                  className="hero-caption-in text-center px-6 pt-8 pb-8 flex flex-col items-center"
                 >
                   {isIntro ? (
                     <>
                       <h1 className="text-3xl md:text-4xl font-bold text-dark-slate">
-                        Tillsammans gör vi bra idéer till verklighet
+                        Vinn på att göra gott — tillsammans med GoodTribes
                       </h1>
                       <p className="mt-4 text-dark-slate/80">
-                        Runt om i världen bubblar det av fantastiska idéer — projekt som vill rädda bin, städa hav
-                        eller skapa tryggare kvarter. Samtidigt finns det tusentals människor som vill hjälpa till
-                        och göra skillnad, men som inte vet var de ska börja.
+                        Oavsett om du är privatperson, ideell organisation, företag eller forskare ger GoodTribes
+                        dig möjligheten att utveckla dig själv, bygga värdefulla samarbeten och göra verklig
+                        skillnad i projekt som betyder något.
                       </p>
                       <p className="mt-3 text-dark-slate/80">
-                        GoodTribes är mötesplatsen däremellan. Vi kopplar ihop visionära projekt med engagerade
-                        volontärer, så att goda idéer inte stannar vid en dröm utan faktiskt blir verklighet.
+                        GoodTribes är en etablerad ideell stiftelse som professionellt kopplar ihop engagerade
+                        volontärer, organisationer, näringsliv och forskarvärlden, så att goda idéer inte stannar
+                        vid en dröm utan faktiskt blir verklighet.
                       </p>
                       <p className="mt-4 text-sm text-dark-slate/70">
                         <strong className="text-dark-slate">Har du ett projekt?</strong> Beskriv vad du behöver.
@@ -199,8 +191,8 @@ export default function HeroPhotoStack() {
                     </>
                   ) : (
                     <>
-                      <p className="font-bold text-base text-dark-slate">{current.heading}</p>
-                      <p className="mt-1 text-sm text-dark-slate/80">{current.body}</p>
+                      <h1 className="text-3xl md:text-4xl font-bold text-dark-slate">{current.heading}</h1>
+                      <p className="mt-4 text-dark-slate/80">{current.body}</p>
                     </>
                   )}
                 </div>
