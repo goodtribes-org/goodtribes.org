@@ -16,6 +16,7 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-
 import { CSS } from "@dnd-kit/utilities";
 import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask, addComment, deleteComment, toggleCardLike, promoteSubtaskToCard, deleteSubtask, updateSubtaskTitle } from "@/app/projects/[slug]/(workspace)/kanban/actions";
 import { htmlToPreviewText } from "@/lib/renderBody";
+import { toProxyUrl } from "@/lib/storageUrl";
 import dynamic from "next/dynamic";
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
@@ -120,22 +121,6 @@ function formatDate(date: Date | string | null): string | null {
   if (!date) return null;
   const d = typeof date === "string" ? new Date(date) : date;
   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
-}
-
-// Convert any stored image URL (http://localhost:9000/... or https://goodtribes.org/storage/...)
-// to a /storage/{key} relative path that routes through the Next.js proxy in both dev and prod.
-function toProxyUrl(url: string): string {
-  const knownBases = [
-    process.env.NEXT_PUBLIC_STORAGE_URL,
-    "http://localhost:9000/goodtribes-public",
-    "https://goodtribes.org/storage",
-  ].filter(Boolean) as string[];
-  for (const base of knownBases) {
-    if (url.startsWith(base + "/")) {
-      return `/storage/${url.slice(base.length + 1)}`;
-    }
-  }
-  return url;
 }
 
 function Avatar({ name, image }: { name: string | null; image?: string | null }) {

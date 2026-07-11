@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { toProxyUrl } from "@/lib/storageUrl";
 
 export default function AuthNav() {
   const { data: session } = useSession();
@@ -32,7 +33,7 @@ export default function AuthNav() {
         >
           <div className="w-8 h-8 rounded-full bg-dry-sage flex items-center justify-center text-xs font-semibold text-dark-slate overflow-hidden relative ring-2 ring-transparent hover:ring-seagrass transition-all">
             {session.user.image ? (
-              <Image src={session.user.image} alt={name} fill className="object-cover" unoptimized />
+              <Image src={toProxyUrl(session.user.image)} alt={name} fill className="object-cover" unoptimized />
             ) : (
               initials
             )}
