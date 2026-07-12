@@ -6,6 +6,8 @@ import Image from "next/image";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import Pagination from "@/components/Pagination";
+import CountryMap from "@/components/CountryMap";
+import { countByCountry } from "@/lib/geo";
 
 export const metadata: Metadata = {
   title: "Organisations — GoodTribes.org",
@@ -23,7 +25,7 @@ export default async function OrgListPage({
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
   const session = await auth();
 
-  const [total, orgs] = await Promise.all([
+  const [total, orgs, ownerCountries] = await Promise.all([
     prisma.organisation.count({ where: { isPublic: true } }),
     prisma.organisation.findMany({
       where: { isPublic: true },
@@ -35,7 +37,10 @@ export default async function OrgListPage({
         _count: { select: { members: true, projects: true } },
       },
     }),
+    prisma.organisation.findMany({ where: { isPublic: true }, select: { owner: { select: { country: true } } } }),
   ]);
+
+  const countryCounts = countByCountry(ownerCountries.map((o) => o.owner.country));
 
   return (
     <div>
@@ -52,6 +57,12 @@ export default async function OrgListPage({
           </Link>
         )}
       </div>
+
+      {Object.keys(countryCounts).length > 0 && (
+        <div className="mb-6">
+          <CountryMap counts={countryCounts} unitLabel="organisations" />
+        </div>
+      )}
 
       {orgs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">

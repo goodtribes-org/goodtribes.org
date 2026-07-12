@@ -9,6 +9,8 @@ import { auth } from "@/auth";
 import ProjectFilters from "@/components/ProjectFilters";
 import Pagination from "@/components/Pagination";
 import ProjectCard from "@/components/ProjectCard";
+import CountryMap from "@/components/CountryMap";
+import { countByCountry } from "@/lib/geo";
 
 export const metadata: Metadata = {
   title: "Projects — GoodTribes.org",
@@ -43,7 +45,7 @@ export default async function ProjectsPage({
     : sort === "trending" ? { updatedAt: "desc" as const }
     : { createdAt: "desc" as const };
 
-  const [session, total, projects] = await Promise.all([
+  const [session, total, projects, ownerCountries] = await Promise.all([
     auth(),
     prisma.project.count({ where }),
     prisma.project.findMany({
@@ -57,7 +59,10 @@ export default async function ProjectsPage({
         _count: { select: { kanbanCards: true } },
       },
     }),
+    prisma.project.findMany({ where, select: { owner: { select: { country: true } } } }),
   ]);
+
+  const countryCounts = countByCountry(ownerCountries.map((p) => p.owner.country));
 
   const rawParams = { sort: sortParam, q, status, category, sdg, page: pageStr };
 
@@ -77,6 +82,12 @@ export default async function ProjectsPage({
           </Link>
         )}
       </div>
+
+      {Object.keys(countryCounts).length > 0 && (
+        <div className="mb-6">
+          <CountryMap counts={countryCounts} unitLabel="projects" />
+        </div>
+      )}
 
       <ProjectFilters sort={sort} q={q} status={status} category={category} sdg={sdg} total={total} />
 
