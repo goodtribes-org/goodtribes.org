@@ -1,0 +1,59 @@
+{
+  "Metadata": {
+    "title": "GoodTribes.org",
+    "description": "Connecting skilled volunteers with impact-driven organisations to build a better world together."
+  },
+  "Nav": {
+    "create": "Create",
+    "createNewProject": "New project",
+    "createNewIdea": "New idea",
+    "createNewOrg": "New organisation",
+    "discover": "Discover",
+    "discoverProjects": "Projects",
+    "discoverIdeas": "Ideas",
+    "discoverOrgs": "Organizations",
+    "discoverSkills": "Skills",
+    "discoverMentors": "Mentors",
+    "myAccount": "My account",
+    "signIn": "Sign in",
+    "logOut": "Log out",
+    "toggleMenu": "Toggle menu"
+  },
+  "Account": {
+    "profile": "Profile",
+    "workplace": "Workplace",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "admin": "Admin"
+  },
+  "Footer": {
+    "hallOfImpact": "Hall of Impact",
+    "academy": "Academy",
+    "dreamWall": "Dream Wall",
+    "about": "About",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "Contact"
+  },
+  "Install": {
+    "prompt": "Install GoodTribes for quicker access, even offline.",
+    "install": "Install",
+    "dismiss": "Dismiss"
+  },
+  "Search": {
+    "ariaLabel": "Search",
+    "placeholder": "Search…",
+    "searching": "Searching…",
+    "noResults": "No results for “{query}”",
+    "typeProject": "Project",
+    "typeIdea": "Idea",
+    "typeOrg": "Org",
+    "typeMember": "Member"
+  },
+  "Notifications": {
+    "ariaLabel": "Notifications",
+    "title": "Notifications",
+    "viewAll": "View all",
+    "empty": "No notifications yet."
+  }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteProject } from "@/app/projects/[slug]/leave-actions";
+import { deleteProject } from "@/app/[locale]/projects/[slug]/leave-actions";
 
 export default function DeleteProjectButton({ slug }: { slug: string }) {
   return (

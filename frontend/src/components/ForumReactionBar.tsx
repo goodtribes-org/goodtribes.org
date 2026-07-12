@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { ReactionBar } from "./ReactionBar";
-import { togglePostReaction, toggleReplyReaction } from "@/app/projects/[slug]/(workspace)/forum/actions";
+import { togglePostReaction, toggleReplyReaction } from "@/app/[locale]/projects/[slug]/(workspace)/forum/actions";
 
 type Reaction = { emoji: string; userId: string };
 

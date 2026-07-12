@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
+import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
 
 export async function POST(req: Request) {
@@ -18,12 +19,7 @@ export async function POST(req: Request) {
     where: { slug: projectSlug },
     select: { id: true },
   });
-  const membership = projectForAuth
-    ? await prisma.projectMember.findFirst({
-        where: { projectId: projectForAuth.id, userId: session.user.id, role: { in: ["owner", "admin"] } },
-      })
-    : null;
-  if (!membership) {
+  if (!projectForAuth || !(await hasProjectRole(projectForAuth.id, session.user.id, PROJECT_LEAD_ROLES))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

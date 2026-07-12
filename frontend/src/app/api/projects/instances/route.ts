@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     data: {
       projectId: child.id,
       userId: session.user!.id,
-      role: "owner",
+      role: "FOUNDER",
     },
   });
 

@@ -1,0 +1,59 @@
+{
+  "Metadata": {
+    "title": "GoodTribes.org",
+    "description": "Vi kopplar samman kompetenta volontärer med organisationer som gör skillnad — tillsammans bygger vi en bättre värld."
+  },
+  "Nav": {
+    "create": "Skapa",
+    "createNewProject": "Nytt projekt",
+    "createNewIdea": "Ny idé",
+    "createNewOrg": "Ny organisation",
+    "discover": "Utforska",
+    "discoverProjects": "Projekt",
+    "discoverIdeas": "Idéer",
+    "discoverOrgs": "Organisationer",
+    "discoverSkills": "Kompetenser",
+    "discoverMentors": "Mentorer",
+    "myAccount": "Mitt konto",
+    "signIn": "Logga in",
+    "logOut": "Logga ut",
+    "toggleMenu": "Öppna/stäng meny"
+  },
+  "Account": {
+    "profile": "Profil",
+    "workplace": "Arbetsrum",
+    "dashboard": "Dashboard",
+    "settings": "Inställningar",
+    "admin": "Admin"
+  },
+  "Footer": {
+    "hallOfImpact": "Hall of Impact",
+    "academy": "Academy",
+    "dreamWall": "Drömväggen",
+    "about": "Om oss",
+    "privacy": "Integritet",
+    "terms": "Villkor",
+    "contact": "Kontakt"
+  },
+  "Install": {
+    "prompt": "Installera GoodTribes för snabbare åtkomst, även offline.",
+    "install": "Installera",
+    "dismiss": "Stäng"
+  },
+  "Search": {
+    "ariaLabel": "Sök",
+    "placeholder": "Sök…",
+    "searching": "Söker…",
+    "noResults": "Inga resultat för ”{query}”",
+    "typeProject": "Projekt",
+    "typeIdea": "Idé",
+    "typeOrg": "Org",
+    "typeMember": "Medlem"
+  },
+  "Notifications": {
+    "ariaLabel": "Notiser",
+    "title": "Notiser",
+    "viewAll": "Visa alla",
+    "empty": "Inga notiser än."
+  }
+}

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useTransition } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 
 interface Notification {
   id: string;
@@ -14,6 +15,7 @@ interface Notification {
 }
 
 export default function NotificationBell() {
+  const t = useTranslations("Notifications");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
   const [, startTransition] = useTransition();
@@ -54,7 +56,7 @@ export default function NotificationBell() {
       <button
         onClick={() => { setOpen((v) => !v); if (!open && unread > 0) markAllRead(); }}
         className="relative p-1 text-dark-slate/60 hover:text-dark-slate transition-colors"
-        aria-label="Notifications"
+        aria-label={t("ariaLabel")}
       >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
           <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
@@ -69,13 +71,13 @@ export default function NotificationBell() {
       {open && (
         <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-muted-teal rounded-lg shadow-lg z-50 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-muted-teal/40">
-            <span className="text-sm font-semibold">Notifications</span>
+            <span className="text-sm font-semibold">{t("title")}</span>
             <Link href="/notifications" onClick={() => setOpen(false)} className="text-xs text-seagrass hover:underline">
-              View all
+              {t("viewAll")}
             </Link>
           </div>
           {notifications.length === 0 ? (
-            <p className="px-4 py-6 text-sm text-dark-slate/50 text-center">No notifications yet.</p>
+            <p className="px-4 py-6 text-sm text-dark-slate/50 text-center">{t("empty")}</p>
           ) : (
             <ul className="max-h-80 overflow-y-auto divide-y divide-muted-teal/30">
               {notifications.slice(0, 8).map((n) => (

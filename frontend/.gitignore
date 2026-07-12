@@ -1,0 +1,11 @@
+# dependencies
+/node_modules
+
+# next.js build output
+/.next/
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# serwist-generated service worker (build artifact, only emitted for production builds)
+/public/sw.js
+/public/sw.js.map

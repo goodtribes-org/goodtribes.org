@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { toProxyUrl } from "@/lib/storageUrl";
 
 type LeaderboardEntry = {
   id: string;
@@ -38,7 +39,7 @@ export default function LeaderboardWidget({ entries }: { entries: LeaderboardEnt
                   <span className="w-5 text-center text-xs font-bold text-dark-slate/40">{i + 1}</span>
                   <div className="w-8 h-8 rounded-full bg-dry-sage flex-shrink-0 flex items-center justify-center text-xs font-semibold text-dark-slate overflow-hidden">
                     {entry.image ? (
-                      <img src={entry.image} alt={entry.name} className="w-8 h-8 rounded-full object-cover" />
+                      <img src={toProxyUrl(entry.image)} alt={entry.name} className="w-8 h-8 rounded-full object-cover" />
                     ) : (
                       initials
                     )}

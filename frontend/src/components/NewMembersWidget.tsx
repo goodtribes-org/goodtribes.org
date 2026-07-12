@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { toProxyUrl } from "@/lib/storageUrl";
 
 type NewMember = {
   id: string;
@@ -32,7 +33,7 @@ export default function NewMembersWidget({ members }: { members: NewMember[] }) 
               <Link key={member.id} href={`/members/${member.id}`} className="flex flex-col items-center gap-1 w-14 group">
                 <div className="w-10 h-10 rounded-full bg-dry-sage flex items-center justify-center text-xs font-semibold text-dark-slate overflow-hidden group-hover:ring-2 group-hover:ring-seagrass transition-all">
                   {member.image ? (
-                    <img src={member.image} alt={member.name} className="w-10 h-10 rounded-full object-cover" />
+                    <img src={toProxyUrl(member.image)} alt={member.name} className="w-10 h-10 rounded-full object-cover" />
                   ) : (
                     initials
                   )}

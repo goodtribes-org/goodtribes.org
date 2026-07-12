@@ -39,6 +39,7 @@ Copy `.env.example` to `.env` in the repo root. Required additions beyond the ex
 ```
 AUTH_SECRET=<any random string>
 RESEND_API_KEY=<from resend.com>
+STRAPI_APP_KEYS=<comma-separated random strings, e.g. two base64 values — required for Strapi to boot at all>
 STRAPI_API_TOKEN=<generate in Strapi admin after first run>
 NEXT_PUBLIC_MEILI_SEARCH_KEY=<public search key from Meilisearch>
 ```
@@ -47,7 +48,7 @@ NEXT_PUBLIC_MEILI_SEARCH_KEY=<public search key from Meilisearch>
 
 ### Frontend (`frontend/`)
 
-Next.js 16 App Router SPA. No i18n (content is Swedish). Key files:
+Next.js 16 App Router SPA. Internationalized via `next-intl` — all page routes live under `src/app/[locale]/` (`sv` default, `en` also supported); `src/app/api/**`, `manifest.ts`, `sw.ts`, `robots.ts`, `sitemap.ts`, and `storage/` stay outside `[locale]` since they aren't user-facing pages. Key files:
 
 - `src/auth.ts` — NextAuth v5 config; email magic-link via Resend, Prisma adapter for session storage
 - `src/app/api/auth/[...nextauth]/route.ts` — NextAuth route handler
@@ -66,9 +67,11 @@ Strapi 5 TypeScript CMS. Uses PostgreSQL in production, SQLite locally by defaul
 
 Content types are managed via the Strapi admin UI and stored under `src/api/`. Run `strapi develop` to auto-generate type definitions after schema changes.
 
+**Strapi's scope is strictly editorial/static copy — never product data.** It currently owns three single-type pages: `about`, `privacy-policy`, `terms-of-service` (see `src/api/*/content-types/*/schema.json`, each just a `title` + markdown `body`). All product entities (Project, Organisation, User, and everything else under real platform features) live in Prisma/Postgres, never in Strapi — don't model new product concepts as Strapi content-types.
+
 ### Data flow
 
-Frontend fetches CMS content from Strapi via `NEXT_PUBLIC_STRAPI_URL` using `STRAPI_API_TOKEN`. Full-text search goes directly to Meilisearch from the browser using `NEXT_PUBLIC_MEILI_SEARCH_KEY` (read-only). Auth sessions are stored in PostgreSQL via Prisma (separate from Strapi's own tables).
+Frontend fetches editorial page content (About/Privacy/Terms) from Strapi via `NEXT_PUBLIC_STRAPI_URL` using `STRAPI_API_TOKEN` (`frontend/src/lib/strapi.ts`), falling back to hardcoded copy in the page component if Strapi has no published entry yet or is unreachable — so a fresh Strapi instance with empty content-types doesn't break these pages. Full-text search goes directly to Meilisearch from the browser using `NEXT_PUBLIC_MEILI_SEARCH_KEY` (read-only). Auth sessions are stored in PostgreSQL via Prisma (separate from Strapi's own tables).
 
 ## Post-plan validation (run after every plan is implemented)
 

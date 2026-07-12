@@ -21,6 +21,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     session({ session, user }) {
       session.user.id = user.id;
       session.user.onboardingDone = (user as { onboardingDone?: boolean }).onboardingDone ?? false;
+      session.user.siteRole = user.siteRole ?? "USER";
       return session;
     },
   },
