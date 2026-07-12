@@ -1,4 +1,23 @@
-export default function AboutPage() {
+import ReactMarkdown from "react-markdown";
+import { getStrapiPage } from "@/lib/strapi";
+
+export default async function AboutPage() {
+  const strapiPage = await getStrapiPage("about");
+
+  if (strapiPage) {
+    return (
+      <div className="max-w-2xl">
+        <h1 className="text-4xl font-bold mb-6">{strapiPage.title}</h1>
+        <article className="prose max-w-none text-dark-slate leading-relaxed
+          prose-headings:text-dark-slate
+          prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
+          prose-strong:text-dark-slate prose-img:rounded-xl">
+          <ReactMarkdown>{strapiPage.body}</ReactMarkdown>
+        </article>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl">
       <h1 className="text-4xl font-bold mb-6">Who are GoodTribes?</h1>

@@ -1,9 +1,27 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import { getStrapiPage } from "@/lib/strapi";
 
 export const metadata: Metadata = { title: "Terms of Service — GoodTribes.org" };
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const strapiPage = await getStrapiPage("terms-of-service");
+
+  if (strapiPage) {
+    return (
+      <div className="max-w-2xl">
+        <h1 className="text-3xl font-bold text-dark-slate mb-6">{strapiPage.title}</h1>
+        <article className="prose prose-sm max-w-none text-dark-slate/80 leading-relaxed
+          prose-headings:text-dark-slate
+          prose-a:text-coral prose-a:no-underline hover:prose-a:underline
+          prose-strong:text-dark-slate">
+          <ReactMarkdown>{strapiPage.body}</ReactMarkdown>
+        </article>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl space-y-8">
       <div>

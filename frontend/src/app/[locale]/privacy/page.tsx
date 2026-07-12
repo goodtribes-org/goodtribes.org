@@ -1,9 +1,27 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
+import { getStrapiPage } from "@/lib/strapi";
 
 export const metadata: Metadata = { title: "Privacy Policy — GoodTribes.org" };
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const strapiPage = await getStrapiPage("privacy-policy");
+
+  if (strapiPage) {
+    return (
+      <div className="max-w-2xl">
+        <h1 className="text-3xl font-bold text-dark-slate mb-6">{strapiPage.title}</h1>
+        <article className="prose prose-sm max-w-none text-dark-slate/80 leading-relaxed
+          prose-headings:text-dark-slate
+          prose-a:text-coral prose-a:no-underline hover:prose-a:underline
+          prose-strong:text-dark-slate">
+          <ReactMarkdown>{strapiPage.body}</ReactMarkdown>
+        </article>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl space-y-8">
       <div>
