@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import type { Metadata } from "next";
 import { isStripeConfigured } from "@/lib/stripe";
+import { isLeadRole } from "@/lib/authz";
 import { formatCurrency, formatSecondaryConversion, suggestCurrencyForCountry } from "@/lib/currency";
 import { createCampaign, pledge, closeCampaign, addExpense } from "./actions";
 import PledgeForm from "./PledgeForm";
@@ -49,7 +50,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
   if (!project) notFound();
 
   const myRole = project.members[0]?.role ?? null;
-  const isOwnerOrAdmin = myRole === "owner" || myRole === "admin";
+  const isOwnerOrAdmin = isLeadRole(myRole);
   const isMember = !!myRole;
   const campaign = project.fundingCampaign;
   const stripeReady = isStripeConfigured();

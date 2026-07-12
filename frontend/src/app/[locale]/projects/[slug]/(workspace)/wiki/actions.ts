@@ -5,21 +5,21 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { slugify } from "@/lib/slugify";
+import { getProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
 
 async function requireMember(projectSlug: string, userId: string) {
-  const project = await prisma.project.findUnique({
-    where: { slug: projectSlug },
-    include: { members: { where: { userId } } },
-  });
-  return project?.members[0] ?? null;
+  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
+  if (!project) return null;
+  const role = await getProjectRole(project.id, userId);
+  return role ? { role } : null;
 }
 
 export async function createWikiPage(projectSlug: string, formData: FormData): Promise<void> {
   const session = await auth();
   if (!session?.user?.id) return;
   const member = await requireMember(projectSlug, session.user.id);
-  if (!member || !["owner", "admin"].includes(member.role)) return;
+  if (!member || !PROJECT_LEAD_ROLES.includes(member.role)) return;
 
   const title = (formData.get("title") as string).trim();
   if (!title) return;
@@ -64,7 +64,7 @@ export async function deleteWikiPage(id: string, projectSlug: string): Promise<v
   const session = await auth();
   if (!session?.user?.id) return;
   const member = await requireMember(projectSlug, session.user.id);
-  if (!member || !["owner", "admin"].includes(member.role)) return;
+  if (!member || !PROJECT_LEAD_ROLES.includes(member.role)) return;
 
   await prisma.wikiPage.delete({ where: { id } });
   revalidatePath(`/projects/${projectSlug}/wiki`);

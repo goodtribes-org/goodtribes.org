@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Image from "next/image";
 import { respondToJoinRequest } from "../../join-actions";
 import { removeMember, changeMemberRole } from "../../member-actions";
+import type { ProjectRole } from "@/lib/authz";
 
 type Member = {
   userId: string;
@@ -73,7 +74,7 @@ export default function MembersManager({
     });
   }
 
-  function handleRoleChange(userId: string, role: string) {
+  function handleRoleChange(userId: string, role: ProjectRole) {
     startTransition(async () => {
       await changeMemberRole(project.id, userId, role, project.slug);
       setMembers((prev) => prev.map((m) => m.userId === userId ? { ...m, role } : m));
@@ -159,7 +160,7 @@ export default function MembersManager({
                   <select
                     value={m.role === "admin" ? "admin" : "collaborator"}
                     disabled={isPending}
-                    onChange={(e) => handleRoleChange(m.userId, e.target.value)}
+                    onChange={(e) => handleRoleChange(m.userId, e.target.value as ProjectRole)}
                     className="text-xs border border-gray-200 rounded-md px-2 py-1 bg-white text-dark-slate/70 focus:outline-none focus:border-seagrass disabled:opacity-50"
                   >
                     <option value="admin">Admin</option>

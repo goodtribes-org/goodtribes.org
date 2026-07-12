@@ -6,6 +6,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
+import { PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { archiveProject } from "./actions";
 
 
@@ -39,7 +40,7 @@ export default async function AlumniPage({ params }: { params: Promise<{ slug: s
     : null;
   const membership = session?.user?.id && projectRec
     ? await prisma.projectMember.findFirst({
-        where: { projectId: projectRec.id, userId: session.user.id, role: { in: ["owner", "admin"] } },
+        where: { projectId: projectRec.id, userId: session.user.id, role: { in: PROJECT_LEAD_ROLES } },
       })
     : null;
   const isOwnerOrAdmin = !!membership;

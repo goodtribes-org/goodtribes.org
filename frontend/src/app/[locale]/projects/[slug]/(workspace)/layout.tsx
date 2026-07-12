@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import ProjectTabNav from "../ProjectTabNav";
+import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
 export default async function WorkspaceLayout({
   children,
@@ -17,12 +18,9 @@ export default async function WorkspaceLayout({
   ]);
   if (!project) notFound();
 
-  const isOwnerRecord = session?.user?.id
-    ? await prisma.projectMember.findFirst({
-        where: { project: { slug }, userId: session.user.id, role: { in: ["owner", "admin"] } },
-      })
-    : null;
-  const isOwner = !!isOwnerRecord;
+  const isOwner = session?.user?.id
+    ? await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES)
+    : false;
 
   return (
     <>

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import ScrollToHash from "@/components/ScrollToHash";
+import { isLeadRole } from "@/lib/authz";
 
 
 function timeAgo(date: Date): string {
@@ -40,7 +41,7 @@ export default async function UpdatesPage({
   if (!project) notFound();
 
   const userRole = project.members.find((m) => m.userId === session?.user?.id)?.role;
-  const canPost = userRole && ["owner", "admin"].includes(userRole);
+  const canPost = isLeadRole(userRole);
 
   return (
     <div className="max-w-2xl mx-auto">

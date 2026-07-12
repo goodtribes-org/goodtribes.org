@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
+import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
 
 export async function POST(req: NextRequest) {
@@ -15,11 +16,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "projectId and openForReplication required" }, { status: 400 });
   }
 
-  const project = await prisma.project.findUnique({ where: { id: projectId }, include: { members: { select: { userId: true, role: true } } } });
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { id: true } });
   if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const membership = project.members.find((m) => m.userId === session.user!.id);
-  if (!membership || !["owner", "admin"].includes(membership.role)) {
+  if (!(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { deleteDocument } from "@/lib/meili";
+import { isLastFounder } from "@/lib/authz";
 
 
 export async function leaveProject(projectId: string): Promise<void> {
@@ -13,7 +14,8 @@ export async function leaveProject(projectId: string): Promise<void> {
   const membership = await prisma.projectMember.findUnique({
     where: { projectId_userId: { projectId, userId: session.user.id } },
   });
-  if (!membership || membership.role === "owner") return;
+  if (!membership) return;
+  if (await isLastFounder(projectId, session.user.id)) return;
 
   await prisma.projectMember.delete({
     where: { projectId_userId: { projectId, userId: session.user.id } },

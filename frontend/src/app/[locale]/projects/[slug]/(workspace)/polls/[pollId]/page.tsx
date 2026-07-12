@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import VotingForm from "./VotingForm";
 import CloseButton from "./CloseButton";
+import { isLeadRole } from "@/lib/authz";
 
 
 function formatDate(date: Date): string {
@@ -134,7 +135,7 @@ export default async function PollDetailPage({
   const isMember = !!project.members[0];
   const canClose =
     poll.status === "open" &&
-    (isOwner || (memberRole && ["owner", "admin"].includes(memberRole)));
+    (isOwner || isLeadRole(memberRole));
 
   const isPollOpen =
     poll.status === "open" && (!poll.deadline || new Date() < poll.deadline);

@@ -14,6 +14,7 @@ import { SdgIcon } from "@/components/SdgIcon";
 import Tooltip from "@/components/Tooltip";
 import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import ProjectTabNav from "./ProjectTabNav";
+import { isLeadRole } from "@/lib/authz";
 
 function MemberAvatar({
   name,
@@ -186,8 +187,7 @@ export default async function ProjectDetailPage({
 
   const userId = session?.user?.id;
   const userMembership = project.members.find((m) => m.user.id === userId);
-  const isOwnerOrAdmin =
-    userMembership && ["owner", "admin"].includes(userMembership.role);
+  const isOwnerOrAdmin = isLeadRole(userMembership?.role);
   const isMember = !!userMembership;
 
   // Month bounds for calendar

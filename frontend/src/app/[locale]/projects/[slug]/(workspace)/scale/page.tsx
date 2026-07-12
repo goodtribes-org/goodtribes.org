@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import ReplicationToggle from "./ReplicationToggle";
 import StartInstanceForm from "./StartInstanceForm";
+import { isLeadRole } from "@/lib/authz";
 
 
 export default async function ScalePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -32,7 +33,7 @@ export default async function ScalePage({ params }: { params: Promise<{ slug: st
 
   const userId = session?.user?.id;
   const userMembership = project.members.find((m) => m.userId === userId);
-  const isOwnerOrAdmin = !!userMembership && ["owner", "admin"].includes(userMembership.role);
+  const isOwnerOrAdmin = isLeadRole(userMembership?.role);
 
   // Check if user already has a pending/active instance from this parent
   const existingInstance = userId

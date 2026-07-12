@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import Image from "next/image";
 import { removeMember, changeMemberRole } from "./member-actions";
+import type { ProjectRole } from "@/lib/authz";
 
 type Member = {
   userId: string;
@@ -10,7 +11,7 @@ type Member = {
   user: { id: string; name: string | null; image: string | null; showProfile: boolean };
 };
 
-const ROLES = ["admin", "collaborator", "follower"] as const;
+const ROLES: ProjectRole[] = ["admin", "collaborator", "follower"];
 
 export default function TeamManager({
   projectId,
@@ -51,7 +52,7 @@ export default function TeamManager({
                   disabled={isPending}
                   defaultValue={m.role}
                   onChange={(e) =>
-                    startTransition(() => changeMemberRole(projectId, m.user.id, e.target.value, slug))
+                    startTransition(() => changeMemberRole(projectId, m.user.id, e.target.value as ProjectRole, slug))
                   }
                   className="text-xs border border-muted-teal/50 rounded px-2 py-1 text-dark-slate/70 focus:outline-none focus:ring-1 focus:ring-seagrass disabled:opacity-50"
                 >

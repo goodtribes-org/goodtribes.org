@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import NewBlogPostForm from "./NewBlogPostForm";
+import { isLeadRole } from "@/lib/authz";
 
 
 export default async function NewUpdatePage({
@@ -20,7 +21,7 @@ export default async function NewUpdatePage({
   if (!project) redirect("/projects");
 
   const role = project.members[0]?.role;
-  if (!role || !["owner", "admin"].includes(role)) redirect(`/projects/${slug}/updates`);
+  if (!isLeadRole(role)) redirect(`/projects/${slug}/updates`);
 
   return (
     <div className="max-w-2xl mx-auto">
