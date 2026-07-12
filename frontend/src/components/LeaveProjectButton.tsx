@@ -1,6 +1,6 @@
 "use client";
 
-import { leaveProject } from "@/app/projects/[slug]/leave-actions";
+import { leaveProject } from "@/app/[locale]/projects/[slug]/leave-actions";
 
 export default function LeaveProjectButton({ projectId }: { projectId: string }) {
   return (

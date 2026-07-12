@@ -7,7 +7,7 @@ import {
   moveCard,
   deleteCard,
   toggleSubtask,
-} from "@/app/projects/[slug]/(workspace)/kanban/actions";
+} from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
 
 type Subtask = {
   id: string;

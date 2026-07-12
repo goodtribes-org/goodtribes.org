@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { acceptMentorship } from "@/app/mentors/actions";
+import { acceptMentorship } from "@/app/[locale]/mentors/actions";
 
 export const metadata: Metadata = { title: "Workplace — GoodTribes.org" };
 

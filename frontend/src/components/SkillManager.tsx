@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { addSkill, removeSkill } from "@/app/profile/skill-actions";
+import { addSkill, removeSkill } from "@/app/[locale]/profile/skill-actions";
 
 type Skill = {
   id: string;

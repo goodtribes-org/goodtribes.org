@@ -6,8 +6,8 @@ import { revalidatePath } from "next/cache";
 import {
   addComment as addKanbanCardComment,
   toggleCardCommentLike,
-} from "@/app/projects/[slug]/(workspace)/kanban/actions";
-import { sendThreadReply, toggleReaction } from "@/app/projects/[slug]/(workspace)/kanaler/actions";
+} from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
+import { sendThreadReply, toggleReaction } from "@/app/[locale]/projects/[slug]/(workspace)/kanaler/actions";
 import { FEED_LIKE_EMOJI } from "@/lib/activityFeed";
 
 export async function createFeedPost(body: string, imageUrl?: string | null) {

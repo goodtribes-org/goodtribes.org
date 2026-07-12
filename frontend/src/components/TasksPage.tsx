@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import KanbanBoard, { type Member } from "@/components/KanbanBoard";
 import TaskListView from "@/components/TaskListView";
 import GanttView from "@/components/GanttView";
-import { updateCard } from "@/app/projects/[slug]/(workspace)/kanban/actions";
+import { updateCard } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
 
 type Card = {
   id: string;

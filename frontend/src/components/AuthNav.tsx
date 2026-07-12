@@ -1,13 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { toProxyUrl } from "@/lib/storageUrl";
+import { ACCOUNT_NAV_ITEMS } from "@/lib/accountNav";
 
 export default function AuthNav() {
   const { data: session } = useSession();
+  const t = useTranslations("Nav");
+  const tAccount = useTranslations("Account");
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -45,40 +49,22 @@ export default function AuthNav() {
             <div className="px-4 py-2 border-b border-gray-100">
               <p className="text-xs font-semibold text-dark-slate truncate">{name}</p>
             </div>
-            <Link
-              href="/profile"
-              onClick={() => setOpen(false)}
-              className="block px-4 py-2 text-sm text-dark-slate/70 hover:bg-dry-sage/30 hover:text-seagrass"
-            >
-              Profile
-            </Link>
-            <Link
-              href="/workplace"
-              onClick={() => setOpen(false)}
-              className="block px-4 py-2 text-sm text-dark-slate/70 hover:bg-dry-sage/30 hover:text-seagrass"
-            >
-              Workplace
-            </Link>
-            <Link
-              href="/dashboard"
-              onClick={() => setOpen(false)}
-              className="block px-4 py-2 text-sm text-dark-slate/70 hover:bg-dry-sage/30 hover:text-seagrass"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/settings"
-              onClick={() => setOpen(false)}
-              className="block px-4 py-2 text-sm text-dark-slate/70 hover:bg-dry-sage/30 hover:text-seagrass"
-            >
-              Settings
-            </Link>
+            {ACCOUNT_NAV_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className="block px-4 py-2 text-sm text-dark-slate/70 hover:bg-dry-sage/30 hover:text-seagrass"
+              >
+                {tAccount(item.labelKey)}
+              </Link>
+            ))}
             <div className="border-t border-gray-100 mt-1">
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className="w-full text-left px-4 py-2 text-sm text-dark-slate/70 hover:bg-dry-sage/30 hover:text-seagrass"
               >
-                Log out
+                {t("logOut")}
               </button>
             </div>
           </div>
@@ -90,7 +76,7 @@ export default function AuthNav() {
   return (
     <div className="hidden md:flex items-center gap-3">
       <Link href="/login" className="font-bold text-dark-slate/70 hover:text-seagrass text-sm whitespace-nowrap">
-        Sign in
+        {t("signIn")}
       </Link>
     </div>
   );

@@ -14,7 +14,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask, addComment, deleteComment, toggleCardLike, promoteSubtaskToCard, deleteSubtask, updateSubtaskTitle } from "@/app/projects/[slug]/(workspace)/kanban/actions";
+import { createCard, deleteCard, toggleSubtask, updateCard, addSubtask, addComment, deleteComment, toggleCardLike, promoteSubtaskToCard, deleteSubtask, updateSubtaskTitle } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
 import { htmlToPreviewText } from "@/lib/renderBody";
 import { toProxyUrl } from "@/lib/storageUrl";
 import dynamic from "next/dynamic";

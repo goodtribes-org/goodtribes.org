@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link, useRouter } from "@/i18n/navigation";
 
 interface SearchResult {
   id: string;
@@ -12,13 +12,6 @@ interface SearchResult {
   url: string;
 }
 
-const TYPE_LABEL: Record<SearchResult["type"], string> = {
-  project: "Project",
-  idea: "Idea",
-  org: "Org",
-  member: "Member",
-};
-
 const TYPE_COLOR: Record<SearchResult["type"], string> = {
   project: "text-coral",
   idea: "text-seagrass",
@@ -27,6 +20,13 @@ const TYPE_COLOR: Record<SearchResult["type"], string> = {
 };
 
 export default function SearchButton() {
+  const t = useTranslations("Search");
+  const typeLabel: Record<SearchResult["type"], string> = {
+    project: t("typeProject"),
+    idea: t("typeIdea"),
+    org: t("typeOrg"),
+    member: t("typeMember"),
+  };
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -77,7 +77,7 @@ export default function SearchButton() {
       <button
         onClick={() => setOpen((v) => !v)}
         className="relative p-1 text-dark-slate/60 hover:text-dark-slate transition-colors"
-        aria-label="Sök"
+        aria-label={t("ariaLabel")}
       >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
@@ -99,16 +99,16 @@ export default function SearchButton() {
                   router.push(`/search?q=${encodeURIComponent(query.trim())}`);
                 }
               }}
-              placeholder="Sök…"
+              placeholder={t("placeholder")}
               className="w-full text-sm text-dark-slate/70 bg-transparent outline-none placeholder-dark-slate/30"
             />
           </div>
 
           {query.length >= 2 && (
             loading ? (
-              <p className="px-4 py-3 text-sm text-dark-slate/50">Söker…</p>
+              <p className="px-4 py-3 text-sm text-dark-slate/50">{t("searching")}</p>
             ) : results.length === 0 ? (
-              <p className="px-4 py-3 text-sm text-dark-slate/50">Inga resultat för &ldquo;{query}&rdquo;</p>
+              <p className="px-4 py-3 text-sm text-dark-slate/50">{t("noResults", { query })}</p>
             ) : (
               <ul>
                 {results.map((r) => (
@@ -119,7 +119,7 @@ export default function SearchButton() {
                       className="flex items-start gap-3 px-4 py-2.5 hover:bg-dry-sage/30 transition-colors"
                     >
                       <span className={`text-[10px] font-semibold uppercase tracking-wider mt-0.5 w-14 flex-shrink-0 ${TYPE_COLOR[r.type]}`}>
-                        {TYPE_LABEL[r.type]}
+                        {typeLabel[r.type]}
                       </span>
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-dark-slate truncate">{r.title}</p>

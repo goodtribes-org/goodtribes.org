@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useRef } from "react";
 import { updateProject, deleteProject } from "./actions";
-import { getSdgSuggestions } from "@/app/projects/new/actions";
+import { getSdgSuggestions } from "@/app/[locale]/projects/new/actions";
 import FileUpload from "@/components/FileUpload";
 import RichTextEditor from "@/components/RichTextEditor";
 import { SdgIcon } from "@/components/SdgIcon";

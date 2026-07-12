@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { toggleFeedLike, addFeedComment } from "@/app/actions";
-import { JoinButton } from "@/app/projects/[slug]/JoinSection";
+import { JoinButton } from "@/app/[locale]/projects/[slug]/JoinSection";
 
 type Comment = { id: string; author: string; body: string; timeAgo: string };
 type JoinCta = { projectId: string; slug: string; existingStatus: string | null };
