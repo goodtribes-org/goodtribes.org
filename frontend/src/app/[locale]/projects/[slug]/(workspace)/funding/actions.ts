@@ -1,10 +1,12 @@
 "use server";
 
+import { getLocale } from "next-intl/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sendEmail } from "@/lib/email";
+import { formatCurrency } from "@/lib/currency";
 
 const APP_URL = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
 
@@ -106,8 +108,8 @@ export async function pledge(campaignId: string, slug: string, formData: FormDat
     ]);
 
     if (campaign) {
-      const fmtCurrency = (n: number) =>
-        new Intl.NumberFormat("sv-SE", { style: "currency", currency: campaign.currency, maximumFractionDigits: 0 }).format(n);
+      const locale = await getLocale().catch(() => "en");
+      const fmtCurrency = (n: number) => formatCurrency(n, campaign.currency, locale);
 
       await Promise.all(
         campaign.project.members.map((m) =>

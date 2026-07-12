@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
+import { formatCurrency } from "@/lib/currency";
 
 type RewardTier = {
   id: string;
@@ -19,14 +21,6 @@ type Props = {
   existingPledgeAmount?: number;
 };
 
-function fmt(amount: number, currency: string) {
-  return new Intl.NumberFormat("sv-SE", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
 export default function PledgeForm({
   campaignId,
   currency,
@@ -34,6 +28,8 @@ export default function PledgeForm({
   platformFee,
   existingPledgeAmount,
 }: Props) {
+  const locale = useLocale();
+  const fmt = (amount: number, currency: string) => formatCurrency(amount, currency, locale);
   const [selectedAmount, setSelectedAmount] = useState<number>(
     existingPledgeAmount ?? 0
   );

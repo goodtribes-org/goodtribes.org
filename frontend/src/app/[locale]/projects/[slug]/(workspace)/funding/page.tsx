@@ -1,10 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import type { Metadata } from "next";
 import { isStripeConfigured } from "@/lib/stripe";
+import { formatCurrency, formatSecondaryConversion, suggestCurrencyForCountry } from "@/lib/currency";
 import { createCampaign, pledge, closeCampaign, addExpense } from "./actions";
 import PledgeForm from "./PledgeForm";
 
@@ -16,10 +18,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return { title: `${project.title} — Finansiering — GoodTribes.org` };
 }
 
-function fmt(amount: number, currency: string) {
-  return new Intl.NumberFormat("sv-SE", { style: "currency", currency, maximumFractionDigits: 0 }).format(amount);
-}
-
 function daysLeft(deadline: Date): number {
   const ms = deadline.getTime() - Date.now();
   return Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
@@ -29,6 +27,8 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const session = await auth();
   const userId = session?.user?.id ?? null;
+  const locale = await getLocale();
+  const fmt = (amount: number, currency: string) => formatCurrency(amount, currency, locale);
 
   const project = await prisma.project.findUnique({
     where: { slug },
@@ -74,6 +74,11 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
         </div>
       );
     }
+
+    const creator = userId
+      ? await prisma.user.findUnique({ where: { id: userId }, select: { country: true } })
+      : null;
+    const suggestedCurrency = suggestCurrencyForCountry(creator?.country);
 
     return (
       <div className="max-w-2xl">
@@ -123,12 +128,17 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                 <label className="block text-xs font-medium text-dark-slate/60 mb-1">Valuta</label>
                 <select
                   name="currency"
-                  defaultValue="SEK"
+                  defaultValue={suggestedCurrency}
                   className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass bg-white"
                 >
                   <option value="SEK">SEK</option>
                   <option value="EUR">EUR</option>
                   <option value="USD">USD</option>
+                  <option value="NOK">NOK</option>
+                  <option value="DKK">DKK</option>
+                  <option value="GBP">GBP</option>
+                  <option value="CAD">CAD</option>
+                  <option value="CHF">CHF</option>
                 </select>
               </div>
             </div>
@@ -230,6 +240,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
 
   // ── Campaign exists ──────────────────────────────────────────────────────────
   const remaining = campaign.deadline ? daysLeft(campaign.deadline) : null;
+  const raisedSecondary = await formatSecondaryConversion(raised, campaign.currency, locale);
 
   return (
     <div className="max-w-4xl">
@@ -282,7 +293,8 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
               {/* Stats row */}
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-dark-slate/50 mt-2">
                 <span>
-                  <span className="font-semibold text-dark-slate text-sm">{fmt(raised, campaign.currency)}</span>{" "}
+                  <span className="font-semibold text-dark-slate text-sm">{fmt(raised, campaign.currency)}</span>
+                  {raisedSecondary && <span className="text-dark-slate/40"> (≈ {raisedSecondary})</span>}{" "}
                   insamlat av {fmt(campaign.goal, campaign.currency)} ({pct}%)
                 </span>
                 <span>·</span>
