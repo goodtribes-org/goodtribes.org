@@ -59,6 +59,15 @@ export default function AuthNav() {
                 {tAccount(item.labelKey)}
               </Link>
             ))}
+            {session.user.siteRole !== "USER" && (
+              <Link
+                href="/admin"
+                onClick={() => setOpen(false)}
+                className="block px-4 py-2 text-sm text-dark-slate/70 hover:bg-dry-sage/30 hover:text-seagrass"
+              >
+                {tAccount("admin")}
+              </Link>
+            )}
             <div className="border-t border-gray-100 mt-1">
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}

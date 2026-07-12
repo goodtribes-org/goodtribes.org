@@ -1,7 +1,8 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { isSiteOwner } from "@/lib/authz";
-import { setSiteRole, setSuspended } from "./actions";
+import { setSuspended } from "./actions";
+import SiteRoleSelect from "./SiteRoleSelect";
 
 export default async function AdminUsersPage({
   searchParams,
@@ -58,23 +59,7 @@ export default async function AdminUsersPage({
               </span>
             )}
             {viewerIsOwner ? (
-              <form
-                action={async (formData: FormData) => {
-                  "use server";
-                  await setSiteRole(u.id, formData.get("siteRole") as "USER" | "ADMIN" | "OWNER");
-                }}
-              >
-                <select
-                  name="siteRole"
-                  defaultValue={u.siteRole}
-                  className="text-xs border border-gray-200 rounded-md px-2 py-1 bg-white text-dark-slate/70 focus:outline-none focus:border-seagrass"
-                  onChange={(e) => e.currentTarget.form?.requestSubmit()}
-                >
-                  <option value="USER">Användare</option>
-                  <option value="ADMIN">Admin</option>
-                  <option value="OWNER">Ägare</option>
-                </select>
-              </form>
+              <SiteRoleSelect userId={u.id} initialRole={u.siteRole} />
             ) : (
               <span className="text-xs text-dark-slate/50">{u.siteRole}</span>
             )}
