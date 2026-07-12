@@ -8,6 +8,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum SiteRole {
+  USER
+  ADMIN
+  OWNER
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -21,6 +27,8 @@ model User {
   availability String?
   showProfile   Boolean   @default(false)
   digestOptIn   Boolean   @default(true)
+  siteRole      SiteRole  @default(USER)
+  suspendedAt   DateTime?
   accounts      Account[]
   sessions      Session[]
 

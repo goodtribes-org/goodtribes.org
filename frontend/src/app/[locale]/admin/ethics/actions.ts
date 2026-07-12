@@ -3,17 +3,13 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
+import { requireSiteAdmin } from "@/lib/authz";
 
-
-const ADMIN_EMAIL =
-  process.env.ADMIN_EMAIL ?? "niklas.gunnas@goodtribes.org";
 
 async function requireAdmin() {
   const session = await auth();
-  if (!session?.user?.email || session.user.email !== ADMIN_EMAIL) {
-    throw new Error("Forbidden");
-  }
-  return session.user;
+  if (!session?.user?.id) throw new Error("Forbidden");
+  return requireSiteAdmin(session.user.id);
 }
 
 type Outcome = "dismissed" | "warned" | "removed";

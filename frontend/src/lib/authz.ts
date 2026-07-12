@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { SiteRole } from "@prisma/client";
 
 // Pre-enum string values, matching ProjectMember.role / ProjectInvite.role today.
 // Will become a real Prisma enum in a later migration; keep this union in sync
@@ -34,15 +35,47 @@ export async function hasProjectRole(
 
 // Throws for Server Actions/route handlers that should hard-stop on
 // unauthorized access. Prefer hasProjectRole() for page components deciding
-// what to render.
+// what to render. Site admins/owners bypass project-level checks by default,
+// since the site level exists to intervene when a project breaks the rules —
+// pass { allowSiteAdmin: false } to opt out for a specific call site.
 export async function requireProjectRole(
   projectId: string,
   userId: string,
-  allowed: ProjectRole[]
+  allowed: ProjectRole[],
+  opts: { allowSiteAdmin?: boolean } = {}
 ): Promise<void> {
-  if (!(await hasProjectRole(projectId, userId, allowed))) {
+  const { allowSiteAdmin = true } = opts;
+  if (await hasProjectRole(projectId, userId, allowed)) return;
+  if (allowSiteAdmin && (await isSiteAdmin(userId))) return;
+  throw new Error("Forbidden");
+}
+
+export function isSiteAdminRole(siteRole: SiteRole | null | undefined): boolean {
+  return siteRole === "ADMIN" || siteRole === "OWNER";
+}
+
+export function isSiteOwnerRole(siteRole: SiteRole | null | undefined): boolean {
+  return siteRole === "OWNER";
+}
+
+// Re-fetches the User row rather than trusting a possibly-stale session —
+// prefer this over session.user.siteRole for anything destructive.
+export async function isSiteAdmin(userId: string): Promise<boolean> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { siteRole: true } });
+  return isSiteAdminRole(user?.siteRole);
+}
+
+export async function isSiteOwner(userId: string): Promise<boolean> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { siteRole: true } });
+  return isSiteOwnerRole(user?.siteRole);
+}
+
+export async function requireSiteAdmin(userId: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user || !isSiteAdminRole(user.siteRole)) {
     throw new Error("Forbidden");
   }
+  return user;
 }
 
 // Real membership excludes "follower" — a lightweight, non-member

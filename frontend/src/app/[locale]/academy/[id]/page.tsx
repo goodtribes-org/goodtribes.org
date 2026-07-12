@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import CompleteGuideForm from "./CompleteGuideForm";
 import { publishGuide } from "../actions";
+import { isSiteAdmin } from "@/lib/authz";
 
 
 export async function generateMetadata({
@@ -56,8 +57,7 @@ export default async function AcademyGuidePage({
     }),
   ]);
 
-  const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "niklas.gunnas@goodtribes.org";
-  const isAdmin = session?.user?.email === ADMIN_EMAIL;
+  const isAdmin = !!session?.user?.id && (await isSiteAdmin(session.user.id));
   const isAuthor = !!session?.user?.id && guide?.authorId === session.user.id;
   const canManage = isAdmin || isAuthor;
 

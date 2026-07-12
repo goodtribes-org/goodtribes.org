@@ -3,14 +3,13 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { reviewFlag } from "./actions";
+import { isSiteAdmin } from "@/lib/authz";
 
-
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "niklas.gunnas@goodtribes.org";
 
 export default async function EthicsAdminPage() {
   const session = await auth();
 
-  if (!session?.user?.email || session.user.email !== ADMIN_EMAIL) {
+  if (!session?.user?.id || !(await isSiteAdmin(session.user.id))) {
     notFound();
   }
 

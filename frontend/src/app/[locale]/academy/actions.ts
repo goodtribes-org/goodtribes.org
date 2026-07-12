@@ -4,8 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "niklas.gunnas@goodtribes.org";
+import { isSiteAdmin } from "@/lib/authz";
 
 
 export async function publishGuide(guideId: string) {
@@ -19,8 +18,7 @@ export async function publishGuide(guideId: string) {
   if (!guide) return;
 
   const isAuthor = guide.authorId === session.user.id;
-  const isAdmin = session.user.email === ADMIN_EMAIL;
-  if (!isAuthor && !isAdmin) return;
+  if (!isAuthor && !(await isSiteAdmin(session.user.id))) return;
 
   await prisma.academyGuide.update({
     where: { id: guideId },
