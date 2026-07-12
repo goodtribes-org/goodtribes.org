@@ -27,7 +27,13 @@ export default function CountryMap({ counts, unitLabel }: Props) {
 
   return (
     <div className="relative border border-muted-teal/30 rounded-xl overflow-hidden bg-dry-sage/10">
-      <ComposableMap projection="geoEqualEarth" width={800} height={340} style={{ width: "100%", height: "auto" }}>
+      <ComposableMap
+        projection="geoEqualEarth"
+        projectionConfig={{ scale: 145 }}
+        width={800}
+        height={430}
+        style={{ width: "100%", height: "auto" }}
+      >
         <Geographies geography={GEO_URL}>
           {({ geographies }) =>
             geographies.map((geo) => {
