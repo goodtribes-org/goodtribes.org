@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import ApprovalButtons from "./ApprovalButtons";
+import { hasProjectRole } from "@/lib/authz";
 
 
 export async function generateMetadata({
@@ -30,11 +31,11 @@ export default async function TokensPage({
 
   const project = await prisma.project.findUnique({
     where: { slug },
-    select: { id: true, title: true, ownerId: true },
+    select: { id: true, title: true },
   });
   if (!project) notFound();
 
-  const isOwner = userId === project.ownerId;
+  const isOwner = !!userId && (await hasProjectRole(project.id, userId, ["FOUNDER"]));
 
   // Token leaderboard: group by userId for this project
   const ledgerEntries = await prisma.tokenLedger.findMany({

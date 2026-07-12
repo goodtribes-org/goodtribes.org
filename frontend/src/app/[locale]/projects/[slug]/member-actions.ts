@@ -38,7 +38,13 @@ export async function changeMemberRole(
   });
   if (!target) return;
   if (await isLastFounder(projectId, targetUserId)) return;
-  if (!(["ADMIN", "MEMBER", "FOLLOWER"] as ProjectRole[]).includes(role)) return;
+
+  if (role === "FOUNDER") {
+    // Promoting a peer to equal-authority founder is a founder-only privilege.
+    if (!(await hasProjectRole(projectId, session.user.id, ["FOUNDER"]))) return;
+  } else if (!(["ADMIN", "MEMBER", "FOLLOWER"] as ProjectRole[]).includes(role)) {
+    return;
+  }
 
   await prisma.projectMember.update({
     where: { projectId_userId: { projectId, userId: targetUserId } },

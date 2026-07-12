@@ -45,7 +45,7 @@ export default function TeamManager({
               {isSelf && <span className="text-dark-slate/40 ml-1">(you)</span>}
             </span>
             {isOwner ? (
-              <span className="text-xs text-coral font-semibold uppercase tracking-wide">Owner</span>
+              <span className="text-xs text-coral font-semibold uppercase tracking-wide">Founder</span>
             ) : (
               <>
                 <select

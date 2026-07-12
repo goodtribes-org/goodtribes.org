@@ -42,6 +42,7 @@ export default async function MembersPage({ params }: { params: Promise<{ slug: 
   return (
     <MembersManager
       project={{ id: project.id, slug, title: project.title }}
+      viewerRole={membership?.role ?? null}
       members={project.members.map((m) => ({
         userId: m.user.id,
         name: m.user.name,

@@ -52,7 +52,6 @@ export default async function PollDetailPage({
     where: { slug },
     select: {
       title: true,
-      ownerId: true,
       members: {
         where: { userId: userId ?? "__no_match__" },
         select: { role: true, userId: true },
@@ -130,12 +129,9 @@ export default async function PollDetailPage({
       : false;
 
   // Permissions
-  const isOwner = userId === project.ownerId;
   const memberRole = project.members[0]?.role;
   const isMember = !!project.members[0];
-  const canClose =
-    poll.status === "open" &&
-    (isOwner || isLeadRole(memberRole));
+  const canClose = poll.status === "open" && isLeadRole(memberRole);
 
   const isPollOpen =
     poll.status === "open" && (!poll.deadline || new Date() < poll.deadline);
