@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
 
 export async function createPoll(formData: FormData, projectSlug: string) {
@@ -120,16 +121,13 @@ export async function closePoll(pollId: string, projectSlug: string) {
 
   const project = await prisma.project.findUnique({
     where: { slug: projectSlug },
-    select: { ownerId: true, members: { where: { userId: session.user.id }, select: { role: true } } },
+    select: { id: true },
   });
 
   if (!project) return { error: "Project not found" };
-
-  const isProjectOwner = project.ownerId === session.user.id;
-  const memberRole = project.members[0]?.role;
-  const isAdmin = memberRole && ["owner", "admin"].includes(memberRole);
-
-  if (!isProjectOwner && !isAdmin) return { error: "Not authorized" };
+  if (!(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) {
+    return { error: "Not authorized" };
+  }
 
   await prisma.poll.update({
     where: { id: pollId },

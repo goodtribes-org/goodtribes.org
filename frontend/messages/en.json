@@ -23,7 +23,8 @@
     "profile": "Profile",
     "workplace": "Workplace",
     "dashboard": "Dashboard",
-    "settings": "Settings"
+    "settings": "Settings",
+    "admin": "Admin"
   },
   "Footer": {
     "hallOfImpact": "Hall of Impact",

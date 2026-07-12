@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import Image from "next/image";
 import { removeMember, changeMemberRole } from "./member-actions";
+import type { ProjectRole } from "@/lib/authz";
 
 type Member = {
   userId: string;
@@ -10,7 +11,7 @@ type Member = {
   user: { id: string; name: string | null; image: string | null; showProfile: boolean };
 };
 
-const ROLES = ["admin", "collaborator", "follower"] as const;
+const ROLES: ProjectRole[] = ["ADMIN", "MEMBER", "FOLLOWER"];
 
 export default function TeamManager({
   projectId,
@@ -28,7 +29,7 @@ export default function TeamManager({
   return (
     <div className="space-y-2">
       {members.map((m) => {
-        const isOwner = m.role === "owner";
+        const isOwner = m.role === "FOUNDER";
         const isSelf = m.user.id === currentUserId;
         const initials = (m.user.name ?? "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
@@ -44,14 +45,14 @@ export default function TeamManager({
               {isSelf && <span className="text-dark-slate/40 ml-1">(you)</span>}
             </span>
             {isOwner ? (
-              <span className="text-xs text-coral font-semibold uppercase tracking-wide">Owner</span>
+              <span className="text-xs text-coral font-semibold uppercase tracking-wide">Founder</span>
             ) : (
               <>
                 <select
                   disabled={isPending}
                   defaultValue={m.role}
                   onChange={(e) =>
-                    startTransition(() => changeMemberRole(projectId, m.user.id, e.target.value, slug))
+                    startTransition(() => changeMemberRole(projectId, m.user.id, e.target.value as ProjectRole, slug))
                   }
                   className="text-xs border border-muted-teal/50 rounded px-2 py-1 text-dark-slate/70 focus:outline-none focus:ring-1 focus:ring-seagrass disabled:opacity-50"
                 >

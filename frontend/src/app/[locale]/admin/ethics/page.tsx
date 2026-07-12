@@ -1,19 +1,9 @@
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import { reviewFlag } from "./actions";
 
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "niklas.gunnas@goodtribes.org";
-
 export default async function EthicsAdminPage() {
-  const session = await auth();
-
-  if (!session?.user?.email || session.user.email !== ADMIN_EMAIL) {
-    notFound();
-  }
-
   const flags = await prisma.projectFlag.findMany({
     where: { status: "pending" },
     orderBy: { createdAt: "asc" },

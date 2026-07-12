@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import EditProjectForm from "./EditProjectForm";
 import DeleteProjectButton from "@/components/DeleteProjectButton";
+import { isLeadRole } from "@/lib/authz";
 
 
 export default async function EditProjectPage({
@@ -32,9 +33,9 @@ export default async function EditProjectPage({
   if (!project) redirect("/projects");
 
   const role = project.members[0]?.role;
-  if (!role || !["owner", "admin"].includes(role)) redirect(`/projects/${slug}`);
+  if (!isLeadRole(role)) redirect(`/projects/${slug}`);
 
-  const isOwner = role === "owner";
+  const isOwner = role === "FOUNDER";
 
   return (
     <div className="max-w-2xl mx-auto">

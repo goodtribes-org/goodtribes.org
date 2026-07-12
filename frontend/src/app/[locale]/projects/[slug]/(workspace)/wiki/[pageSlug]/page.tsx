@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { updateWikiPage, deleteWikiPage, createWikiPage } from "../actions";
 import WikiEditor from "./WikiEditor";
 import type { Metadata } from "next";
+import { isLeadRole } from "@/lib/authz";
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string; pageSlug: string }> }): Promise<Metadata> {
@@ -52,7 +53,7 @@ export default async function WikiPageView({ params }: { params: Promise<{ slug:
       })
     : null;
   const isMember = !!member;
-  const isOwnerOrAdmin = member && ["owner", "admin"].includes(member.role);
+  const isOwnerOrAdmin = isLeadRole(member?.role);
 
   return (
     <div className="flex gap-8">

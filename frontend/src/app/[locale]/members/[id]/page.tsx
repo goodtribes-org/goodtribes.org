@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
 import KudosButton from "@/components/KudosButton";
+import { isLeadRole } from "@/lib/authz";
 
 export const dynamic = "force-dynamic";
 
@@ -144,7 +145,7 @@ export default async function MemberProfilePage({
                     <span className="text-xs bg-dry-sage text-dark-slate/60 px-2 py-0.5 rounded capitalize flex-shrink-0">
                       {STATUS_LABELS[project.status] ?? project.status}
                     </span>
-                    {(project.role === "owner" || project.role === "admin") && (
+                    {isLeadRole(project.role) && (
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-coral flex-shrink-0">
                         {project.role}
                       </span>

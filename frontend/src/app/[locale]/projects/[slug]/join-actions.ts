@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { createNotification } from "@/lib/notify";
 import { logActivity } from "@/lib/activity";
 import { sendEmail } from "@/lib/email";
+import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
 
 export async function requestToJoin(projectId: string, slug: string, message: string) {
@@ -21,7 +22,7 @@ export async function requestToJoin(projectId: string, slug: string, message: st
 
   const project = await prisma.project.findUnique({
     where: { id: projectId },
-    include: { members: { where: { role: { in: ["owner", "admin"] } } } },
+    include: { members: { where: { role: { in: PROJECT_LEAD_ROLES } } } },
   });
 
   if (project) {
@@ -42,7 +43,7 @@ export async function requestToJoin(projectId: string, slug: string, message: st
       )
     );
 
-    const owners = project.members.filter((m) => ["owner", "admin"].includes(m.role));
+    const owners = project.members.filter((m) => PROJECT_LEAD_ROLES.includes(m.role as typeof PROJECT_LEAD_ROLES[number]));
     const ownerUsers = await prisma.user.findMany({
       where: { id: { in: owners.map((m) => m.userId) } },
       select: { email: true, name: true },
@@ -72,6 +73,13 @@ export async function respondToJoinRequest(
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
+  const pending = await prisma.projectJoinRequest.findUnique({
+    where: { id: requestId },
+    select: { projectId: true },
+  });
+  if (!pending) return;
+  if (!(await hasProjectRole(pending.projectId, session.user.id, PROJECT_LEAD_ROLES))) return;
+
   const req = await prisma.projectJoinRequest.update({
     where: { id: requestId },
     data: { status: decision },
@@ -81,7 +89,7 @@ export async function respondToJoinRequest(
   if (decision === "approved") {
     await prisma.projectMember.upsert({
       where: { projectId_userId: { projectId: req.projectId, userId: req.userId } },
-      create: { projectId: req.projectId, userId: req.userId, role: "collaborator" },
+      create: { projectId: req.projectId, userId: req.userId, role: "MEMBER" },
       update: {},
     });
     await logActivity(req.projectId, req.userId, "member_joined");

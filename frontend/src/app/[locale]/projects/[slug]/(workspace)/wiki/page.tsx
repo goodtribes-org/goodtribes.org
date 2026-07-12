@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { createWikiPage } from "./actions";
 import type { Metadata } from "next";
+import { isLeadRole } from "@/lib/authz";
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -33,7 +34,7 @@ export default async function WikiIndexPage({ params }: { params: Promise<{ slug
         where: { projectId_userId: { projectId: project.id, userId: session.user.id } },
       })
     : null;
-  const isOwnerOrAdmin = member && ["owner", "admin"].includes(member.role);
+  const isOwnerOrAdmin = isLeadRole(member?.role);
 
   return (
     <div className="max-w-2xl">

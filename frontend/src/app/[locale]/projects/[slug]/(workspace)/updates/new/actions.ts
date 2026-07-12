@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { createNotification } from "@/lib/notify";
 import { logActivity } from "@/lib/activity";
 import { sendEmail } from "@/lib/email";
+import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
 
 export async function createBlogPost(slug: string, formData: FormData) {
@@ -19,10 +20,7 @@ export async function createBlogPost(slug: string, formData: FormData) {
   });
   if (!project) redirect("/projects");
 
-  const isMember = project.members.some(
-    (m) => m.userId === session.user!.id && ["owner", "admin"].includes(m.role)
-  );
-  if (!isMember) redirect(`/projects/${slug}`);
+  if (!(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) redirect(`/projects/${slug}`);
 
   const title = (formData.get("title") as string).trim();
   const body = (formData.get("body") as string).trim();

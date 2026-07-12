@@ -4,15 +4,15 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
 
 async function assertOwnerOrAdmin(projectSlug: string, userId: string) {
   const project = await prisma.project.findUnique({
     where: { slug: projectSlug },
-    select: { id: true, members: { where: { userId }, select: { role: true } } },
+    select: { id: true },
   });
-  const role = project?.members[0]?.role;
-  if (!role || !["owner", "admin"].includes(role)) {
+  if (!project || !(await hasProjectRole(project.id, userId, PROJECT_LEAD_ROLES))) {
     redirect(`/projects/${projectSlug}/impact`);
   }
 }

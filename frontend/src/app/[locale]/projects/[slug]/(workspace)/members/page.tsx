@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import MembersManager from "./MembersManager";
 import type { Metadata } from "next";
+import { isLeadRole } from "@/lib/authz";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -35,12 +36,13 @@ export default async function MembersPage({ params }: { params: Promise<{ slug: 
   if (!project) notFound();
 
   const membership = project.members.find((m) => m.user.id === session.user!.id);
-  const isOwnerOrAdmin = membership && ["owner", "admin"].includes(membership.role);
+  const isOwnerOrAdmin = isLeadRole(membership?.role);
   if (!isOwnerOrAdmin) redirect(`/projects/${slug}`);
 
   return (
     <MembersManager
       project={{ id: project.id, slug, title: project.title }}
+      viewerRole={membership?.role ?? null}
       members={project.members.map((m) => ({
         userId: m.user.id,
         name: m.user.name,

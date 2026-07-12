@@ -5,20 +5,16 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { indexDocuments, deleteDocument } from "@/lib/meili";
+import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
 
 export async function updateProject(slug: string, formData: FormData) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const project = await prisma.project.findUnique({
-    where: { slug },
-    include: { members: { where: { userId: session.user.id } } },
-  });
+  const project = await prisma.project.findUnique({ where: { slug } });
   if (!project) redirect("/projects");
-
-  const role = project.members[0]?.role;
-  if (!role || !["owner", "admin"].includes(role)) redirect(`/projects/${slug}`);
+  if (!(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) redirect(`/projects/${slug}`);
 
   const title = (formData.get("title") as string).trim();
   if (!title) return;
@@ -73,12 +69,9 @@ export async function deleteProject(slug: string) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const project = await prisma.project.findUnique({
-    where: { slug },
-    include: { members: { where: { userId: session.user.id } } },
-  });
+  const project = await prisma.project.findUnique({ where: { slug } });
   if (!project) redirect("/projects");
-  if (project.members[0]?.role !== "owner") redirect(`/projects/${slug}`);
+  if (!(await hasProjectRole(project.id, session.user.id, ["FOUNDER"]))) redirect(`/projects/${slug}`);
 
   await prisma.project.delete({ where: { slug } });
   await deleteDocument("projects", `project-${slug}`);

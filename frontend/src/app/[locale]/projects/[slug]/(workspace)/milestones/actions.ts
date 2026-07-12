@@ -4,14 +4,10 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { logActivity } from "@/lib/activity";
+import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
-
-async function requireOwnerOrAdmin(projectId: string, userId: string) {
-  const membership = await prisma.projectMember.findUnique({
-    where: { projectId_userId: { projectId, userId } },
-  });
-  return membership && ["owner", "admin"].includes(membership.role);
-}
+const requireOwnerOrAdmin = (projectId: string, userId: string) =>
+  hasProjectRole(projectId, userId, PROJECT_LEAD_ROLES);
 
 export async function createMilestone(projectId: string, slug: string, formData: FormData): Promise<void> {
   const session = await auth();

@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
+import { isLeadRole } from "@/lib/authz";
 
 export default async function KanalerIndexPage({
   params,
@@ -28,7 +29,7 @@ export default async function KanalerIndexPage({
         where: { projectId_userId: { projectId: project.id, userId: session.user.id } },
         select: { role: true },
       });
-      if (member?.role === "owner" || member?.role === "admin") {
+      if (isLeadRole(member?.role)) {
         await prisma.channel.createMany({
           data: [
             { projectId: project.id, name: "allmänt", type: "text",         order: 0 },

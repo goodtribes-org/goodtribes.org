@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import type { Metadata } from "next";
 import GanttView from "@/components/GanttView";
+import { isLeadRole } from "@/lib/authz";
 import Tooltip from "@/components/Tooltip";
 import { toggleMilestone, deleteMilestone } from "../milestones/actions";
 import { updateCard } from "../kanban/actions";
@@ -115,7 +116,7 @@ export default async function CalendarPage({
         select: { role: true },
       })
     : null;
-  const isOwnerOrAdmin = memberRow?.role === "owner" || memberRow?.role === "admin";
+  const isOwnerOrAdmin = isLeadRole(memberRow?.role);
 
   // Grid geometry — computed early so we can derive the visible date range
   const daysInMonth = getDaysInMonth(year, month);

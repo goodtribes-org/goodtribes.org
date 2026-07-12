@@ -14,6 +14,7 @@ import { SdgIcon } from "@/components/SdgIcon";
 import Tooltip from "@/components/Tooltip";
 import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import ProjectTabNav from "./ProjectTabNav";
+import { isLeadRole } from "@/lib/authz";
 
 function MemberAvatar({
   name,
@@ -186,8 +187,7 @@ export default async function ProjectDetailPage({
 
   const userId = session?.user?.id;
   const userMembership = project.members.find((m) => m.user.id === userId);
-  const isOwnerOrAdmin =
-    userMembership && ["owner", "admin"].includes(userMembership.role);
+  const isOwnerOrAdmin = isLeadRole(userMembership?.role);
   const isMember = !!userMembership;
 
   // Month bounds for calendar
@@ -276,8 +276,8 @@ export default async function ProjectDetailPage({
   const projectLinks: string[] = (project as typeof project & { links: string[] }).links ?? [];
 
   const sortedMembers = [...project.members].sort((a, b) =>
-    a.user.id === (project as typeof project & { ownerId: string }).ownerId ? -1
-    : b.user.id === (project as typeof project & { ownerId: string }).ownerId ? 1 : 0
+    a.role === "FOUNDER" && b.role !== "FOUNDER" ? -1
+    : b.role === "FOUNDER" && a.role !== "FOUNDER" ? 1 : 0
   );
 
   return (
@@ -337,7 +337,7 @@ export default async function ProjectDetailPage({
                     </p>
                     <div className="flex flex-wrap gap-3">
                       {sortedMembers.slice(0, 12).map((m, i) => {
-                        const isProjectOwner = m.user.id === (project as typeof project & { ownerId: string }).ownerId;
+                        const isProjectOwner = m.role === "FOUNDER";
                         const initials = (m.user.name ?? "?").charAt(0).toUpperCase();
                         const firstName = (m.user.name ?? "?").split(" ")[0];
                         const avatarClass = `w-14 h-14 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-base font-semibold text-dark-slate shrink-0 ring-2 transition-all duration-200 ease-in-out hover:scale-[1.3] hover:shadow-lg cursor-pointer ${isProjectOwner ? "ring-seagrass" : "ring-white"}`;

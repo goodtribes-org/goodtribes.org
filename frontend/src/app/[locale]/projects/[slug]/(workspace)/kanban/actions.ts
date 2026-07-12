@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { estimateTask } from "@/lib/taskEstimate";
 import { logActivity } from "@/lib/activity";
-import { isProjectMember } from "@/lib/projectMembership";
+import { isRealMember } from "@/lib/authz";
 
 
 export async function createCard(
@@ -179,7 +179,7 @@ export async function addComment(cardId: string, body: string) {
   });
   if (!card) return { error: "Card not found" };
 
-  const member = await isProjectMember(card.project.id, session.user.id);
+  const member = await isRealMember(card.project.id, session.user.id);
   if (!member) return { error: "Not a project member" };
 
   const comment = await prisma.kanbanCardComment.create({
@@ -204,7 +204,7 @@ export async function toggleCardCommentLike(commentId: string) {
   });
   if (!comment) return { error: "Comment not found" };
 
-  const member = await isProjectMember(comment.card.project.id, session.user.id);
+  const member = await isRealMember(comment.card.project.id, session.user.id);
   if (!member) return { error: "Not a project member" };
 
   const existing = await prisma.feedLike.findUnique({
@@ -242,7 +242,7 @@ export async function toggleCardLike(cardId: string) {
   });
   if (!card) return { error: "Card not found" };
 
-  const member = await isProjectMember(card.project.id, session.user.id);
+  const member = await isRealMember(card.project.id, session.user.id);
   if (!member) return { error: "Not a project member" };
 
   const existing = await prisma.feedLike.findUnique({

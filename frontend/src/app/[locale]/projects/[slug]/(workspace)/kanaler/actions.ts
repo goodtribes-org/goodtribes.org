@@ -4,14 +4,9 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notify";
+import { getProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
-async function getMemberRole(projectId: string, userId: string) {
-  const member = await prisma.projectMember.findUnique({
-    where: { projectId_userId: { projectId, userId } },
-    select: { role: true },
-  });
-  return member?.role ?? null;
-}
+const getMemberRole = getProjectRole;
 
 export async function sendMessage(channelId: string, projectSlug: string, body: string) {
   const session = await auth();
@@ -35,7 +30,7 @@ export async function sendMessage(channelId: string, projectSlug: string, body: 
   });
   if (!channel) throw new Error("Channel not found");
 
-  if (channel.type === "announcement" && role !== "owner" && role !== "admin") {
+  if (channel.type === "announcement" && !(role && PROJECT_LEAD_ROLES.includes(role))) {
     throw new Error("Only admins can post in announcement channels");
   }
 
@@ -174,7 +169,7 @@ export async function createChannel(
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const role = await getMemberRole(projectId, session.user.id);
-  if (role !== "owner" && role !== "admin") throw new Error("Only admins can create channels");
+  if (!(role && PROJECT_LEAD_ROLES.includes(role))) throw new Error("Only admins can create channels");
 
   const safeName = name.trim().toLowerCase().replace(/[^a-zåäö0-9-]/g, "-").replace(/-+/g, "-").slice(0, 40);
   if (!safeName) throw new Error("Invalid channel name");

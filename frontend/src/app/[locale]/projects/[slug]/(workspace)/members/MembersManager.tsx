@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Image from "next/image";
 import { respondToJoinRequest } from "../../join-actions";
 import { removeMember, changeMemberRole } from "../../member-actions";
+import type { ProjectRole } from "@/lib/authz";
 
 type Member = {
   userId: string;
@@ -22,10 +23,10 @@ type JoinRequest = {
 };
 
 const ROLE_LABELS: Record<string, string> = {
-  owner: "Ägare",
-  admin: "Admin",
-  collaborator: "Bidragsgivare",
-  follower: "Följare",
+  FOUNDER: "Grundare",
+  ADMIN: "Admin",
+  MEMBER: "Bidragsgivare",
+  FOLLOWER: "Följare",
 };
 
 function Avatar({ name, image }: { name: string | null; image: string | null }) {
@@ -46,12 +47,15 @@ export default function MembersManager({
   members: initialMembers,
   joinRequests: initialRequests,
   currentUserId,
+  viewerRole,
 }: {
   project: { id: string; slug: string; title: string };
   members: Member[];
   joinRequests: JoinRequest[];
   currentUserId: string;
+  viewerRole: ProjectRole | null;
 }) {
+  const viewerIsFounder = viewerRole === "FOUNDER";
   const [members, setMembers] = useState(initialMembers);
   const [requests, setRequests] = useState(initialRequests);
   const [isPending, startTransition] = useTransition();
@@ -73,11 +77,16 @@ export default function MembersManager({
     });
   }
 
-  function handleRoleChange(userId: string, role: string) {
+  function handleRoleChange(userId: string, role: ProjectRole) {
     startTransition(async () => {
       await changeMemberRole(project.id, userId, role, project.slug);
       setMembers((prev) => prev.map((m) => m.userId === userId ? { ...m, role } : m));
     });
+  }
+
+  function handlePromoteToFounder(userId: string, name: string | null) {
+    if (!confirm(`Gör ${name ?? "medlemmen"} till grundare? De får då samma befogenheter som du.`)) return;
+    handleRoleChange(userId, "FOUNDER");
   }
 
   return (
@@ -139,7 +148,7 @@ export default function MembersManager({
         </h2>
         <div className="border border-muted-teal/30 rounded-xl divide-y divide-muted-teal/15">
           {members.map((m) => {
-            const isOwner = m.role === "owner";
+            const isOwner = m.role === "FOUNDER";
             const isSelf = m.userId === currentUserId;
             return (
               <div key={m.userId} className="flex items-center gap-3 px-4 py-3">
@@ -153,18 +162,30 @@ export default function MembersManager({
                 </div>
                 {isOwner ? (
                   <span className="text-xs font-semibold text-seagrass/80 px-2 py-1 bg-seagrass/10 rounded-md">
-                    Founder
+                    Grundare
                   </span>
                 ) : (
-                  <select
-                    value={m.role === "admin" ? "admin" : "collaborator"}
-                    disabled={isPending}
-                    onChange={(e) => handleRoleChange(m.userId, e.target.value)}
-                    className="text-xs border border-gray-200 rounded-md px-2 py-1 bg-white text-dark-slate/70 focus:outline-none focus:border-seagrass disabled:opacity-50"
-                  >
-                    <option value="admin">Admin</option>
-                    <option value="collaborator">Medlem</option>
-                  </select>
+                  <>
+                    <select
+                      value={m.role === "ADMIN" ? "ADMIN" : "MEMBER"}
+                      disabled={isPending}
+                      onChange={(e) => handleRoleChange(m.userId, e.target.value as ProjectRole)}
+                      className="text-xs border border-gray-200 rounded-md px-2 py-1 bg-white text-dark-slate/70 focus:outline-none focus:border-seagrass disabled:opacity-50"
+                    >
+                      <option value="ADMIN">Admin</option>
+                      <option value="MEMBER">Medlem</option>
+                    </select>
+                    {viewerIsFounder && !isSelf && (
+                      <button
+                        disabled={isPending}
+                        onClick={() => handlePromoteToFounder(m.userId, m.name)}
+                        className="text-xs font-medium text-seagrass/80 hover:text-seagrass whitespace-nowrap disabled:opacity-50"
+                        title="Gör till grundare"
+                      >
+                        Gör till grundare
+                      </button>
+                    )}
+                  </>
                 )}
                 {!isOwner && !isSelf && (
                   <button

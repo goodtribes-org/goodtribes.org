@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sendEmail } from "@/lib/email";
 import { formatCurrency } from "@/lib/currency";
+import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
 const APP_URL = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
 
@@ -14,10 +15,7 @@ export async function createCampaign(projectId: string, slug: string, formData: 
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const member = await prisma.projectMember.findUnique({
-    where: { projectId_userId: { projectId, userId: session.user.id } },
-  });
-  if (!member || !["owner", "admin"].includes(member.role)) redirect(`/projects/${slug}/funding`);
+  if (!(await hasProjectRole(projectId, session.user.id, PROJECT_LEAD_ROLES))) redirect(`/projects/${slug}/funding`);
 
   const title = (formData.get("title") as string).trim();
   const description = (formData.get("description") as string | null)?.trim() || null;
@@ -98,7 +96,7 @@ export async function pledge(campaignId: string, slug: string, formData: FormDat
             select: {
               title: true,
               members: {
-                where: { role: { in: ["owner", "admin"] } },
+                where: { role: { in: PROJECT_LEAD_ROLES } },
                 include: { user: { select: { email: true, name: true } } },
               },
             },
@@ -146,10 +144,9 @@ export async function closeCampaign(campaignId: string, slug: string) {
 
   const campaign = await prisma.fundingCampaign.findUnique({
     where: { id: campaignId },
-    include: { project: { select: { members: { where: { userId: session.user.id } } } } },
+    include: { project: { select: { id: true } } },
   });
-  const role = campaign?.project.members[0]?.role;
-  if (!role || !["owner", "admin"].includes(role)) return;
+  if (!campaign || !(await hasProjectRole(campaign.project.id, session.user.id, PROJECT_LEAD_ROLES))) return;
 
   await prisma.fundingCampaign.update({ where: { id: campaignId }, data: { status: "closed" } });
   revalidatePath(`/projects/${slug}/funding`);
@@ -161,10 +158,9 @@ export async function addExpense(campaignId: string, slug: string, formData: For
 
   const campaign = await prisma.fundingCampaign.findUnique({
     where: { id: campaignId },
-    include: { project: { select: { members: { where: { userId: session.user.id } } } } },
+    include: { project: { select: { id: true } } },
   });
-  const role = campaign?.project.members[0]?.role;
-  if (!role || !["owner", "admin"].includes(role)) return;
+  if (!campaign || !(await hasProjectRole(campaign.project.id, session.user.id, PROJECT_LEAD_ROLES))) return;
 
   const title = (formData.get("title") as string).trim();
   const amount = parseInt(formData.get("amount") as string, 10);

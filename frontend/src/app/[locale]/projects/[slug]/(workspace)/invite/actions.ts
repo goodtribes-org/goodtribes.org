@@ -4,16 +4,14 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { sendEmail } from "@/lib/email";
+import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
 
 export async function sendInvite(projectId: string, slug: string, formData: FormData): Promise<void> {
   const session = await auth();
   if (!session?.user?.id) return;
 
-  const membership = await prisma.projectMember.findUnique({
-    where: { projectId_userId: { projectId, userId: session.user.id } },
-  });
-  if (!membership || !["owner", "admin"].includes(membership.role)) return;
+  if (!(await hasProjectRole(projectId, session.user.id, PROJECT_LEAD_ROLES))) return;
 
   const email = (formData.get("email") as string).trim().toLowerCase();
   if (!email) return;

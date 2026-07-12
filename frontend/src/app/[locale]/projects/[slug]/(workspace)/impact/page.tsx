@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { AddMetricForm, UpdateMetricForm } from "./ImpactForms";
+import { isLeadRole } from "@/lib/authz";
 
 
 export async function generateMetadata({
@@ -117,7 +118,7 @@ export default async function ImpactPage({
   if (!project) notFound();
 
   const role = ((project.members ?? []) as { role: string }[])[0]?.role;
-  const isOwnerOrAdmin = role === "owner" || role === "admin";
+  const isOwnerOrAdmin = isLeadRole(role);
 
   const metrics = project.impactMetrics;
   const totalMetrics = metrics.length;

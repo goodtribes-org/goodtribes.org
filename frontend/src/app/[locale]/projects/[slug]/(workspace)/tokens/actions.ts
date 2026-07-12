@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
+import { hasProjectRole } from "@/lib/authz";
 
 
 export async function logTime(
@@ -41,12 +42,10 @@ export async function logTime(
   return {};
 }
 
-async function getProjectOwnerIdBySlug(slug: string): Promise<string | null> {
-  const project = await prisma.project.findUnique({
-    where: { slug },
-    select: { ownerId: true },
-  });
-  return project?.ownerId ?? null;
+async function isProjectFounder(slug: string, userId: string): Promise<boolean> {
+  const project = await prisma.project.findUnique({ where: { slug }, select: { id: true } });
+  if (!project) return false;
+  return hasProjectRole(project.id, userId, ["FOUNDER"]);
 }
 
 export async function approveTimeLog(
@@ -57,8 +56,7 @@ export async function approveTimeLog(
   if (!session?.user?.id) return { error: "Not logged in" };
   const userId = session.user.id;
 
-  const ownerId = await getProjectOwnerIdBySlug(projectSlug);
-  if (ownerId !== userId) return { error: "Not authorized" };
+  if (!(await isProjectFounder(projectSlug, userId))) return { error: "Not authorized" };
 
   const timeLog = await prisma.timeLog.findUnique({
     where: { id: timeLogId },
@@ -98,8 +96,7 @@ export async function rejectTimeLog(
   if (!session?.user?.id) return { error: "Not logged in" };
   const userId = session.user.id;
 
-  const ownerId = await getProjectOwnerIdBySlug(projectSlug);
-  if (ownerId !== userId) return { error: "Not authorized" };
+  if (!(await isProjectFounder(projectSlug, userId))) return { error: "Not authorized" };
 
   const timeLog = await prisma.timeLog.findUnique({ where: { id: timeLogId } });
   if (!timeLog) return { error: "TimeLog not found" };

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { ACCOUNT_NAV_ITEMS } from "@/lib/accountNav";
 
-type Session = { user?: { name?: string | null } | null } | null;
+type Session = { user?: { name?: string | null; siteRole?: string } | null } | null;
 
 interface Props {
   session: Session;
@@ -130,6 +130,11 @@ export default function NavMenu({ session, onSignOut }: Props) {
                     {tAccount(item.labelKey)}
                   </Link>
                 ))}
+                {session.user.siteRole !== "USER" && (
+                  <Link href="/admin" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">
+                    {tAccount("admin")}
+                  </Link>
+                )}
                 <Link href="/projects/new" onClick={() => setOpen(false)} className="py-3 text-coral font-semibold hover:text-watermelon border-b border-muted-teal/20">+ {t("createNewProject")}</Link>
                 <button
                   onClick={() => { setOpen(false); onSignOut(); }}

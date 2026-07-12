@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { createMilestone, toggleMilestone, deleteMilestone } from "./actions";
 import ScrollToHash from "@/components/ScrollToHash";
+import { isLeadRole } from "@/lib/authz";
 import type { Metadata } from "next";
 
 
@@ -40,7 +41,7 @@ export default async function MilestonesPage({ params }: { params: Promise<{ slu
   if (!project) notFound();
 
   const role = ((project.members ?? []) as { role: string }[])[0]?.role;
-  const isOwnerOrAdmin = role === "owner" || role === "admin";
+  const isOwnerOrAdmin = isLeadRole(role);
 
   const done = project.milestones.filter((m) => m.status === "done").length;
   const total = project.milestones.length;

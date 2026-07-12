@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { KanalerShell } from "./KanalerShell";
+import { isLeadRole } from "@/lib/authz";
 
 export default async function ChannelPage({
   params,
@@ -46,7 +47,7 @@ export default async function ChannelPage({
     });
     if (member) {
       isMember = true;
-      isAdmin = member.role === "owner" || member.role === "admin";
+      isAdmin = isLeadRole(member.role);
     }
   }
 

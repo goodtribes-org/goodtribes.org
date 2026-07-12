@@ -46,7 +46,7 @@ export async function createProject(formData: FormData) {
         data: { slug: candidate, title, summary, description, visibility, category, tags, sdgGoals, ownerId: userId, ...(imageUrl ? { imageUrl } : {}), ...(orgId ? { orgId } : {}) },
       });
       await prisma.projectMember.create({
-        data: { projectId: project.id, userId, role: "owner" },
+        data: { projectId: project.id, userId, role: "FOUNDER" },
       });
       await prisma.channel.createMany({
         data: [

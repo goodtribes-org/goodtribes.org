@@ -8,6 +8,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum SiteRole {
+  USER
+  ADMIN
+  OWNER
+}
+
+enum ProjectRole {
+  FOUNDER
+  ADMIN
+  MEMBER
+  FOLLOWER
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -21,6 +34,8 @@ model User {
   availability String?
   showProfile   Boolean   @default(false)
   digestOptIn   Boolean   @default(true)
+  siteRole      SiteRole  @default(USER)
+  suspendedAt   DateTime?
   accounts      Account[]
   sessions      Session[]
 
@@ -375,11 +390,11 @@ model ProjectSkill {
 }
 
 model ProjectMember {
-  id        String   @id @default(cuid())
+  id        String      @id @default(cuid())
   projectId String
   userId    String
-  role      String   @default("collaborator")
-  joinedAt  DateTime @default(now())
+  role      ProjectRole @default(MEMBER)
+  joinedAt  DateTime    @default(now())
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user    User    @relation("ProjectMemberships", fields: [userId], references: [id], onDelete: Cascade)
@@ -517,11 +532,11 @@ model Milestone {
 }
 
 model ProjectInvite {
-  id          String    @id @default(cuid())
+  id          String      @id @default(cuid())
   projectId   String
   email       String?
-  token       String    @unique @default(cuid())
-  role        String    @default("collaborator")
+  token       String      @unique @default(cuid())
+  role        ProjectRole @default(MEMBER)
   createdById String
   expiresAt   DateTime
   usedAt      DateTime?

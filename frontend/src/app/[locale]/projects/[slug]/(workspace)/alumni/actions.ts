@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
+import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
 
 export async function archiveProject(projectSlug: string): Promise<{ error?: string }> {
@@ -15,10 +16,9 @@ export async function archiveProject(projectSlug: string): Promise<{ error?: str
   });
   if (!project) return { error: "Projekt hittades inte" };
 
-  const membership = await prisma.projectMember.findFirst({
-    where: { projectId: project.id, userId: session.user.id, role: { in: ["owner", "admin"] } },
-  });
-  if (!membership) return { error: "Endast ägare kan arkivera projekt" };
+  if (!(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) {
+    return { error: "Endast ägare kan arkivera projekt" };
+  }
 
   const members = await prisma.projectMember.findMany({
     where: { projectId: project.id },
