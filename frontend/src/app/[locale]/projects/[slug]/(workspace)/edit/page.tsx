@@ -35,7 +35,7 @@ export default async function EditProjectPage({
   const role = project.members[0]?.role;
   if (!isLeadRole(role)) redirect(`/projects/${slug}`);
 
-  const isOwner = role === "owner";
+  const isOwner = role === "FOUNDER";
 
   return (
     <div className="max-w-2xl mx-auto">

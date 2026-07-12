@@ -23,10 +23,10 @@ type JoinRequest = {
 };
 
 const ROLE_LABELS: Record<string, string> = {
-  owner: "Ägare",
-  admin: "Admin",
-  collaborator: "Bidragsgivare",
-  follower: "Följare",
+  FOUNDER: "Grundare",
+  ADMIN: "Admin",
+  MEMBER: "Bidragsgivare",
+  FOLLOWER: "Följare",
 };
 
 function Avatar({ name, image }: { name: string | null; image: string | null }) {
@@ -140,7 +140,7 @@ export default function MembersManager({
         </h2>
         <div className="border border-muted-teal/30 rounded-xl divide-y divide-muted-teal/15">
           {members.map((m) => {
-            const isOwner = m.role === "owner";
+            const isOwner = m.role === "FOUNDER";
             const isSelf = m.userId === currentUserId;
             return (
               <div key={m.userId} className="flex items-center gap-3 px-4 py-3">
@@ -158,13 +158,13 @@ export default function MembersManager({
                   </span>
                 ) : (
                   <select
-                    value={m.role === "admin" ? "admin" : "collaborator"}
+                    value={m.role === "ADMIN" ? "ADMIN" : "MEMBER"}
                     disabled={isPending}
                     onChange={(e) => handleRoleChange(m.userId, e.target.value as ProjectRole)}
                     className="text-xs border border-gray-200 rounded-md px-2 py-1 bg-white text-dark-slate/70 focus:outline-none focus:border-seagrass disabled:opacity-50"
                   >
-                    <option value="admin">Admin</option>
-                    <option value="collaborator">Medlem</option>
+                    <option value="ADMIN">Admin</option>
+                    <option value="MEMBER">Medlem</option>
                   </select>
                 )}
                 {!isOwner && !isSelf && (

@@ -1,12 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import type { SiteRole } from "@prisma/client";
+import type { SiteRole, ProjectRole } from "@prisma/client";
 
-// Pre-enum string values, matching ProjectMember.role / ProjectInvite.role today.
-// Will become a real Prisma enum in a later migration; keep this union in sync
-// with the schema until then.
-export type ProjectRole = "owner" | "admin" | "collaborator" | "follower";
+export type { ProjectRole };
 
-export const PROJECT_LEAD_ROLES: ProjectRole[] = ["owner", "admin"];
+export const PROJECT_LEAD_ROLES: ProjectRole[] = ["FOUNDER", "ADMIN"];
 
 // Plain-string convenience for display-only checks against a role value
 // already fetched from Prisma (typed `string`, not the ProjectRole union).
@@ -78,24 +75,25 @@ export async function requireSiteAdmin(userId: string) {
   return user;
 }
 
-// Real membership excludes "follower" — a lightweight, non-member
+// Real membership excludes FOLLOWER — a lightweight, non-member
 // following relationship that shouldn't grant write access to project
 // features (kanban comments, etc).
 export async function isRealMember(projectId: string, userId: string): Promise<boolean> {
   const role = await getProjectRole(projectId, userId);
-  return role !== null && role !== "follower";
+  return role !== null && role !== "FOLLOWER";
 }
 
-// True if userId is the sole remaining "owner" on this project — used to
-// block removing/demoting the last founder.
+// True if userId is the sole remaining founder on this project — used to
+// block removing/demoting the last founder (a project can have any number
+// of equal-authority founders; this only fires when exactly one remains).
 export async function isLastFounder(projectId: string, userId: string): Promise<boolean> {
   const member = await prisma.projectMember.findUnique({
     where: { projectId_userId: { projectId, userId } },
   });
-  if (!member || member.role !== "owner") return false;
+  if (!member || member.role !== "FOUNDER") return false;
 
   const founderCount = await prisma.projectMember.count({
-    where: { projectId, role: "owner" },
+    where: { projectId, role: "FOUNDER" },
   });
   return founderCount <= 1;
 }

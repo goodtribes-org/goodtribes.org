@@ -34,7 +34,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
   const project = await prisma.project.findUnique({
     where: { slug },
     include: {
-      members: userId ? { where: { userId } } : { where: { role: "owner" } },
+      members: userId ? { where: { userId } } : { where: { role: "FOUNDER" } },
       fundingCampaign: {
         include: {
           pledges: {

@@ -11,7 +11,7 @@ type Member = {
   user: { id: string; name: string | null; image: string | null; showProfile: boolean };
 };
 
-const ROLES: ProjectRole[] = ["admin", "collaborator", "follower"];
+const ROLES: ProjectRole[] = ["ADMIN", "MEMBER", "FOLLOWER"];
 
 export default function TeamManager({
   projectId,
@@ -29,7 +29,7 @@ export default function TeamManager({
   return (
     <div className="space-y-2">
       {members.map((m) => {
-        const isOwner = m.role === "owner";
+        const isOwner = m.role === "FOUNDER";
         const isSelf = m.user.id === currentUserId;
         const initials = (m.user.name ?? "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 

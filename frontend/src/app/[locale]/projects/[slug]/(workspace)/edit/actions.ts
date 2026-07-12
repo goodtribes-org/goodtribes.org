@@ -71,7 +71,7 @@ export async function deleteProject(slug: string) {
 
   const project = await prisma.project.findUnique({ where: { slug } });
   if (!project) redirect("/projects");
-  if (!(await hasProjectRole(project.id, session.user.id, ["owner"]))) redirect(`/projects/${slug}`);
+  if (!(await hasProjectRole(project.id, session.user.id, ["FOUNDER"]))) redirect(`/projects/${slug}`);
 
   await prisma.project.delete({ where: { slug } });
   await deleteDocument("projects", `project-${slug}`);

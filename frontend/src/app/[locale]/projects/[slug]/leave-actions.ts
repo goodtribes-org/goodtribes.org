@@ -30,7 +30,7 @@ export async function deleteProject(slug: string): Promise<void> {
 
   const project = await prisma.project.findUnique({
     where: { slug },
-    include: { members: { where: { userId: session.user.id, role: "owner" } } },
+    include: { members: { where: { userId: session.user.id, role: "FOUNDER" } } },
   });
   if (!project || project.members.length === 0) return;
 

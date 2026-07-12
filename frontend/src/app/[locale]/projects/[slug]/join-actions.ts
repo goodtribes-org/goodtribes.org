@@ -89,7 +89,7 @@ export async function respondToJoinRequest(
   if (decision === "approved") {
     await prisma.projectMember.upsert({
       where: { projectId_userId: { projectId: req.projectId, userId: req.userId } },
-      create: { projectId: req.projectId, userId: req.userId, role: "collaborator" },
+      create: { projectId: req.projectId, userId: req.userId, role: "MEMBER" },
       update: {},
     });
     await logActivity(req.projectId, req.userId, "member_joined");
