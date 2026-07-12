@@ -1,18 +1,9 @@
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import { reviewFlag } from "./actions";
-import { isSiteAdmin } from "@/lib/authz";
 
 
 export default async function EthicsAdminPage() {
-  const session = await auth();
-
-  if (!session?.user?.id || !(await isSiteAdmin(session.user.id))) {
-    notFound();
-  }
-
   const flags = await prisma.projectFlag.findMany({
     where: { status: "pending" },
     orderBy: { createdAt: "asc" },
