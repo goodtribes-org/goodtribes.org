@@ -61,7 +61,7 @@ export default function AuthNav() {
             ))}
             {session.user.siteRole !== "USER" && (
               <Link
-                href="/admin"
+                href="/site-admin"
                 onClick={() => setOpen(false)}
                 className="block px-4 py-2 text-sm text-dark-slate/70 hover:bg-dry-sage/30 hover:text-seagrass"
               >

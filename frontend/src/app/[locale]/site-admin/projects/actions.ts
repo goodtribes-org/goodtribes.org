@@ -13,7 +13,7 @@ export async function setProjectVisibility(slug: string, visibility: "public" | 
 
   await prisma.project.update({ where: { slug }, data: { visibility } });
   if (visibility === "private") await deleteDocument("projects", `project-${slug}`);
-  revalidatePath("/admin/projects");
+  revalidatePath("/site-admin/projects");
 }
 
 export async function deleteProjectAsAdmin(slug: string) {
@@ -23,5 +23,5 @@ export async function deleteProjectAsAdmin(slug: string) {
 
   await prisma.project.delete({ where: { slug } });
   await deleteDocument("projects", `project-${slug}`);
-  revalidatePath("/admin/projects");
+  revalidatePath("/site-admin/projects");
 }

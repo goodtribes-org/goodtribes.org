@@ -50,5 +50,5 @@ export async function reviewFlag(flagId: string, outcome: Outcome, note?: string
     await prisma.project.delete({ where: { id: flag.projectId } });
   }
 
-  revalidatePath("/admin/ethics");
+  revalidatePath("/site-admin/ethics");
 }

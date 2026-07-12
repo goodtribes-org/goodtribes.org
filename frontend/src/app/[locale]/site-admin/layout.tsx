@@ -4,9 +4,9 @@ import Link from "next/link";
 import { isSiteAdmin } from "@/lib/authz";
 
 const NAV = [
-  { href: "/admin/ethics", label: "Etikgranskning" },
-  { href: "/admin/users", label: "Användare" },
-  { href: "/admin/projects", label: "Projekt" },
+  { href: "/site-admin/ethics", label: "Etikgranskning" },
+  { href: "/site-admin/users", label: "Användare" },
+  { href: "/site-admin/projects", label: "Projekt" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

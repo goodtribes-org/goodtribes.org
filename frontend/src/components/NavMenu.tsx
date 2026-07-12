@@ -131,7 +131,7 @@ export default function NavMenu({ session, onSignOut }: Props) {
                   </Link>
                 ))}
                 {session.user.siteRole !== "USER" && (
-                  <Link href="/admin" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">
+                  <Link href="/site-admin" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">
                     {tAccount("admin")}
                   </Link>
                 )}
