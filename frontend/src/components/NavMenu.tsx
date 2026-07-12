@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import { ACCOUNT_NAV_ITEMS } from "@/lib/accountNav";
 
 type Session = { user?: { name?: string | null; siteRole?: string } | null } | null;
@@ -10,11 +8,13 @@ type Session = { user?: { name?: string | null; siteRole?: string } | null } | n
 interface Props {
   session: Session;
   onSignOut: () => void;
+  /** Called with an unprefixed path instead of navigating directly, so this component has no router/Link/i18n dependency. */
+  onNavigate: (href: string) => void;
+  t: (key: string) => string;
+  tAccount: (key: string) => string;
 }
 
-export default function NavMenu({ session, onSignOut }: Props) {
-  const t = useTranslations("Nav");
-  const tAccount = useTranslations("Account");
+export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }: Props) {
   const [open, setOpen] = useState(false);
   const [create, setCreate] = useState(false);
   const [discover, setDiscover] = useState(false);
@@ -34,6 +34,14 @@ export default function NavMenu({ session, onSignOut }: Props) {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
+  function navLink(href: string, onBeforeNavigate: () => void) {
+    return (e: React.MouseEvent) => {
+      e.preventDefault();
+      onBeforeNavigate();
+      onNavigate(href);
+    };
+  }
+
   return (
     <>
       {/* Desktop links */}
@@ -52,9 +60,9 @@ export default function NavMenu({ session, onSignOut }: Props) {
 
           {create && (
             <div className="absolute top-full left-0 mt-1 bg-white border border-muted-teal rounded-xl shadow-lg py-1.5 min-w-48 z-50">
-              <Link href="/projects/new" onClick={() => setCreate(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createNewProject")}</Link>
-              <Link href="/ideas/new" onClick={() => setCreate(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createNewIdea")}</Link>
-              <Link href="/org/new" onClick={() => setCreate(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createNewOrg")}</Link>
+              <a href="/projects/new" onClick={navLink("/projects/new", () => setCreate(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createNewProject")}</a>
+              <a href="/ideas/new" onClick={navLink("/ideas/new", () => setCreate(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createNewIdea")}</a>
+              <a href="/org/new" onClick={navLink("/org/new", () => setCreate(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createNewOrg")}</a>
             </div>
           )}
         </div>
@@ -73,12 +81,12 @@ export default function NavMenu({ session, onSignOut }: Props) {
 
           {discover && (
             <div className="absolute top-full left-0 mt-1 bg-white border border-muted-teal rounded-xl shadow-lg py-1.5 min-w-48 z-50">
-              <Link href="/projects" onClick={() => setDiscover(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverProjects")}</Link>
-              <Link href="/ideas" onClick={() => setDiscover(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverIdeas")}</Link>
-              <Link href="/org" onClick={() => setDiscover(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverOrgs")}</Link>
+              <a href="/projects" onClick={navLink("/projects", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverProjects")}</a>
+              <a href="/ideas" onClick={navLink("/ideas", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverIdeas")}</a>
+              <a href="/org" onClick={navLink("/org", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverOrgs")}</a>
               <div className="my-1 border-t border-muted-teal/20" />
-              <Link href="/skill" onClick={() => setDiscover(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverSkills")}</Link>
-              <Link href="/mentors" onClick={() => setDiscover(false)} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverMentors")}</Link>
+              <a href="/skill" onClick={navLink("/skill", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverSkills")}</a>
+              <a href="/mentors" onClick={navLink("/mentors", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverMentors")}</a>
             </div>
           )}
         </div>
@@ -106,36 +114,36 @@ export default function NavMenu({ session, onSignOut }: Props) {
         <div className="absolute top-full left-0 right-0 bg-white border-b border-muted-teal md:hidden z-50 shadow-md">
           <nav className="max-w-6xl mx-auto px-6 py-3 flex flex-col">
             <p className="pt-1 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">{t("create")}</p>
-            <Link href="/projects/new" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewProject")}</Link>
-            <Link href="/ideas/new" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewIdea")}</Link>
-            <Link href="/org/new" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewOrg")}</Link>
+            <a href="/projects/new" onClick={navLink("/projects/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewProject")}</a>
+            <a href="/ideas/new" onClick={navLink("/ideas/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewIdea")}</a>
+            <a href="/org/new" onClick={navLink("/org/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewOrg")}</a>
 
             <p className="pt-3 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">{t("discover")}</p>
-            <Link href="/projects" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverProjects")}</Link>
-            <Link href="/ideas" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverIdeas")}</Link>
-            <Link href="/org" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverOrgs")}</Link>
-            <Link href="/skill" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverSkills")}</Link>
-            <Link href="/mentors" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverMentors")}</Link>
+            <a href="/projects" onClick={navLink("/projects", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverProjects")}</a>
+            <a href="/ideas" onClick={navLink("/ideas", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverIdeas")}</a>
+            <a href="/org" onClick={navLink("/org", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverOrgs")}</a>
+            <a href="/skill" onClick={navLink("/skill", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverSkills")}</a>
+            <a href="/mentors" onClick={navLink("/mentors", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverMentors")}</a>
 
             {session?.user ? (
               <>
                 <p className="pt-3 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">{t("myAccount")}</p>
                 {ACCOUNT_NAV_ITEMS.map((item) => (
-                  <Link
+                  <a
                     key={item.href}
                     href={item.href}
-                    onClick={() => setOpen(false)}
+                    onClick={navLink(item.href, () => setOpen(false))}
                     className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20"
                   >
                     {tAccount(item.labelKey)}
-                  </Link>
+                  </a>
                 ))}
                 {session.user.siteRole !== "USER" && (
-                  <Link href="/site-admin" onClick={() => setOpen(false)} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">
+                  <a href="/site-admin" onClick={navLink("/site-admin", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">
                     {tAccount("admin")}
-                  </Link>
+                  </a>
                 )}
-                <Link href="/projects/new" onClick={() => setOpen(false)} className="py-3 text-coral font-semibold hover:text-watermelon border-b border-muted-teal/20">+ {t("createNewProject")}</Link>
+                <a href="/projects/new" onClick={navLink("/projects/new", () => setOpen(false))} className="py-3 text-coral font-semibold hover:text-watermelon border-b border-muted-teal/20">+ {t("createNewProject")}</a>
                 <button
                   onClick={() => { setOpen(false); onSignOut(); }}
                   className="py-3 text-left text-dark-slate/50 hover:text-dark-slate text-sm"
@@ -144,7 +152,7 @@ export default function NavMenu({ session, onSignOut }: Props) {
                 </button>
               </>
             ) : (
-              <Link href="/login" onClick={() => setOpen(false)} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("signIn")}</Link>
+              <a href="/login" onClick={navLink("/login", () => setOpen(false))} className="py-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("signIn")}</a>
             )}
           </nav>
         </div>

@@ -31,14 +31,15 @@ auto-discovery for this repo.** `cfg.srcDir` is set to
 has a root to resolve from; it is NOT used for entry generation because the
 `--entry` flag is always supplied.
 
-## Scope: 9 components
+## Scope: 11 components
 
 Verified via a transitive import-graph trace (direct-import grepping was not
 enough — e.g. `SdgCoverageWidget` looks clean on direct imports but pulls in
 `next/image` through `SdgIcon`). Safe set:
 
 `Tooltip`, `StreakBadge`, `KudosButton`, `FileUpload`, `FlagProjectButton`,
-`ImpactStatsWidget`, `GanttView`, `NavMenu`, `WorkspaceTabNav`.
+`ImpactStatsWidget`, `GanttView`, `NavMenu`, `WorkspaceTabNav`, `CountryMap`,
+`ProjectFilters`.
 
 `GanttView` was originally excluded because it imported `updateCard` directly
 from the kanban `"use server"` actions file (which imports `@/lib/prisma`
@@ -78,6 +79,72 @@ Combined with the same container/presentational split used for `GanttView`
 intentionally NOT synced). Any *future* component that still needs
 `next/link`/`next/image` must get the same `<a>`/`<img>` treatment before it
 can be added — re-test with the same throwaway-entry method if in doubt.
+
+### `next/navigation` (`useRouter`) is equally unsafe — same container/callback fix
+
+Confirmed 2026-07-12 when adding `ProjectFilters`: it (and its child
+`SortToggle`) called `useRouter()` from `next/navigation` directly and
+rendered `next/link`'s `<Link>`. Same fix pattern as above, generalized to
+router calls: the presentational component takes an `onNavigate: (url:
+string) => void` prop instead of importing the router; a new
+`ProjectFiltersContainer.tsx` (and `SortToggleContainer.tsx` for the
+home-page standalone usage), both intentionally NOT synced, hold the real
+`useRouter()` and pass `onNavigate={(url) => router.push(url)}` down. Unlike
+the `<a href>` trade-off above, this loses **nothing** — production still
+gets full client-side/soft navigation via the container's real
+`router.push`; only the presentational file becomes router-agnostic.
+Prefer this callback pattern over the plain-`<a>` fix whenever the component
+already needs JS-driven navigation (dropdowns, selects) rather than a bare
+link.
+
+### Regression found + fixed 2026-07-12: `NavMenu` had silently drifted back to unsafe
+
+`NavMenu.tsx` was fixed once (2026-07-10, above) but commit `18d8b7a0`
+("add PWA support and Swedish/English localization", landed *after* that
+fix) reintroduced `next-intl`'s locale-aware `Link` (`import { Link } from
+"@/i18n/navigation"`) plus `useTranslations`, unknowingly reverting the
+design-sync safety fix — next-intl's navigation wrapper is still built on
+`next/link` under the hood, so it re-triggers the exact same
+bundle-wide `ReferenceError: process is not defined` crash (confirmed:
+validate failed 11/11 components, not just the newly-added ones). **This
+class of regression has no automated guard** — a component can look correct
+in normal frontend review while silently breaking every synced component's
+export. Fixed the same way as `next/navigation` above: `NavMenu.tsx` is now
+purely presentational (`onNavigate`, `t`, `tAccount` props, no next-intl/
+next imports at all), and `NavMenuContainer.tsx` (not synced) holds the real
+`useTranslations`/`useRouter` (from `@/i18n/navigation`) and passes them
+down — `router.push` still auto-prefixes the locale exactly as `Link` did,
+so this is a zero-regression fix, not the `<a>` trade-off.
+**Whoever touches `NavMenu.tsx` or `WorkspaceTabNav.tsx` next must keep them
+free of `next/link`, `@/i18n/navigation`, `next/navigation`, and
+`next-intl` hooks — route real navigation/i18n through their `*Container.tsx`
+instead.** Re-verify with a full rebuild + validate after any edit to either
+file, even a seemingly unrelated one.
+
+### `CountryMap`: swapped the runtime GEO_URL fetch for a bundled import
+
+`CountryMap.tsx` originally fetched world-atlas topojson at runtime from a
+root-relative URL (`fetch("/geo/countries-110m.json")`, via
+`react-simple-maps`'s `<Geographies geography={url}>`). That resolves fine
+on the real site (same-origin), but inside the design-sync preview (served
+from wherever `ds-bundle`/claude.ai hosts it) the root-relative path 404s —
+confirmed empirically: both preview variants rendered as an empty bordered
+box, and validate flagged `[RENDER_THIN] variants render identically`
+because no countries ever painted. Fixed by importing the topojson file
+directly (`import worldAtlas from "../../public/geo/countries-110m.json"`,
+`resolveJsonModule` was already on) and passing the parsed object straight
+to `<Geographies geography={worldAtlas}>` — `react-simple-maps` skips its
+internal fetch whenever `geography` isn't a string (see
+`useGeographies` in `react-simple-maps/dist/index.js`), so this removes the
+network dependency entirely rather than working around it. Verified this
+doesn't regress the real site (screenshotted `/sv/projects` before and
+after — identical render, same Sweden highlight). Trade-off: the ~108KB
+topojson now ships inside whatever JS chunk includes `CountryMap` instead of
+being fetched lazily — acceptable, and arguably better (no network
+round-trip, works offline-cached). **Re-sync risk**: if
+`frontend/public/geo/countries-110m.json` is ever regenerated/replaced, the
+bundled copy goes stale until the next design-sync rebuild — there's no
+automatic re-check tying the two together.
 
 ## CSS: compiled Tailwind output, not the raw source
 
@@ -147,3 +214,22 @@ correct and deterministic from source.
   `.design-sync/config.json` (`tsconfig`) but none of the 6 v1 components
   actually use `@/` imports — harmless if unused, but stays as a forward
   compat setting in case a future addition needs it.
+- **Already-synced components can silently regress**, not just new
+  candidates — see the `NavMenu` regression entry above. Unrelated feature
+  work (i18n, routing changes) can reintroduce an unsafe import into a
+  component that was already fixed once, and nothing outside a design-sync
+  rebuild catches it (normal `tsc`/lint/tests all pass fine). If a future
+  re-sync's validate suddenly fails ALL components at once instead of just
+  the ones being added, suspect drift in one of the *existing* 11, not the
+  new candidate — bisect by temporarily removing existing components from
+  `entry.mjs` one at a time (or use `git log -- <file>` on each synced
+  component since the last successful sync) rather than assuming the new
+  addition is at fault.
+- `ProjectFilters`/`SortToggle`/`NavMenu` all depend on their `*Container.tsx`
+  wrapper (not synced) to supply `onNavigate`/`t`/`tAccount` — if one of
+  these presentational files is edited to add a feature that needs new
+  container-provided data, the container, its prop type, and every preview
+  in `.design-sync/previews/<Name>.tsx` all need updating together.
+- `CountryMap` now statically imports `frontend/public/geo/countries-110m.json`
+  instead of fetching it — see the dedicated entry above. A rebuild is
+  required if that file is ever replaced.

@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import ProjectCard from "@/components/ProjectCard";
 import IdeaCard from "@/components/IdeaCard";
-import SortToggle from "@/components/SortToggle";
+import SortToggle from "@/components/SortToggleContainer";
 import Pagination from "@/components/Pagination";
 import ActivityPulse from "@/components/ActivityPulse";
 import HeroPhotoStack from "@/components/HeroPhotoStack";

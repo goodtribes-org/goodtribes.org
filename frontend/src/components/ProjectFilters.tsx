@@ -1,8 +1,6 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import SortToggle from "./SortToggle";
 
 const STAGES = [
@@ -31,10 +29,11 @@ interface Props {
   category?: string;
   sdg?: string;
   basePath?: string;
+  /** Called with the built URL instead of navigating directly, so this component has no router/Link dependency. */
+  onNavigate: (url: string) => void;
 }
 
-export default function ProjectFilters({ sort, q, status, category, sdg, basePath }: Props) {
-  const router = useRouter();
+export default function ProjectFilters({ sort, q, status, category, sdg, basePath, onNavigate }: Props) {
   const [query, setQuery] = useState(q ?? "");
 
   function buildUrl(overrides: Record<string, string | undefined>) {
@@ -50,18 +49,20 @@ export default function ProjectFilters({ sort, q, status, category, sdg, basePat
 
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
-    router.push(buildUrl({ q: query.trim() || undefined, page: undefined }));
+    onNavigate(buildUrl({ q: query.trim() || undefined, page: undefined }));
   }
+
+  const clearFiltersHref = buildUrl({ status: undefined, category: undefined, sdg: undefined, page: undefined });
 
   return (
     <div className="flex flex-wrap items-center gap-3 mb-6">
       {/* Sort */}
-      <SortToggle sort={sort} q={q} status={status} category={category} sdg={sdg} basePath={basePath} />
+      <SortToggle sort={sort} q={q} status={status} category={category} sdg={sdg} basePath={basePath} onNavigate={onNavigate} />
 
       {/* Stage */}
       <select
         value={status ?? ""}
-        onChange={(e) => router.push(buildUrl({ status: e.target.value || undefined, page: undefined }))}
+        onChange={(e) => onNavigate(buildUrl({ status: e.target.value || undefined, page: undefined }))}
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
         <option value="">All stages</option>
@@ -71,7 +72,7 @@ export default function ProjectFilters({ sort, q, status, category, sdg, basePat
       {/* Category */}
       <select
         value={category ?? ""}
-        onChange={(e) => router.push(buildUrl({ category: e.target.value || undefined, page: undefined }))}
+        onChange={(e) => onNavigate(buildUrl({ category: e.target.value || undefined, page: undefined }))}
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
         <option value="">All categories</option>
@@ -81,7 +82,7 @@ export default function ProjectFilters({ sort, q, status, category, sdg, basePat
       {/* SDG */}
       <select
         value={sdg ?? ""}
-        onChange={(e) => router.push(buildUrl({ sdg: e.target.value || undefined, page: undefined }))}
+        onChange={(e) => onNavigate(buildUrl({ sdg: e.target.value || undefined, page: undefined }))}
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
         <option value="">All SDG goals</option>
@@ -108,12 +109,16 @@ export default function ProjectFilters({ sort, q, status, category, sdg, basePat
       </form>
 
       {(status || category || sdg) && (
-        <Link
-          href={buildUrl({ status: undefined, category: undefined, sdg: undefined, page: undefined })}
+        <a
+          href={clearFiltersHref}
+          onClick={(e) => {
+            e.preventDefault();
+            onNavigate(clearFiltersHref);
+          }}
           className="text-xs text-dark-slate/50 hover:text-dark-slate underline"
         >
           Clear filters
-        </Link>
+        </a>
       )}
     </div>
   );

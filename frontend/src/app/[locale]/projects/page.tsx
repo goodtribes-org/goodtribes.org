@@ -6,7 +6,7 @@ import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 
 import { auth } from "@/auth";
-import ProjectFilters from "@/components/ProjectFilters";
+import ProjectFilters from "@/components/ProjectFiltersContainer";
 import Pagination from "@/components/Pagination";
 import ProjectCard from "@/components/ProjectCard";
 import CountryMap from "@/components/CountryMap";

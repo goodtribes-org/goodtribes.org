@@ -14,7 +14,9 @@
     "ImpactStatsWidget": "frontend/src/components/ImpactStatsWidget.tsx",
     "GanttView": "frontend/src/components/GanttView.tsx",
     "NavMenu": "frontend/src/components/NavMenu.tsx",
-    "WorkspaceTabNav": "frontend/src/components/WorkspaceTabNav.tsx"
+    "WorkspaceTabNav": "frontend/src/components/WorkspaceTabNav.tsx",
+    "CountryMap": "frontend/src/components/CountryMap.tsx",
+    "ProjectFilters": "frontend/src/components/ProjectFilters.tsx"
   },
   "cssEntry": ".design-sync/.cache/compiled-globals.css",
   "readmeHeader": ".design-sync/conventions.md"

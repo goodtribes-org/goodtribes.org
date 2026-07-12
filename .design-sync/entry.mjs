@@ -7,3 +7,5 @@ export { default as ImpactStatsWidget } from "../frontend/src/components/ImpactS
 export { default as GanttView } from "../frontend/src/components/GanttView.tsx";
 export { default as NavMenu } from "../frontend/src/components/NavMenu.tsx";
 export { default as WorkspaceTabNav } from "../frontend/src/components/WorkspaceTabNav.tsx";
+export { default as CountryMap } from "../frontend/src/components/CountryMap.tsx";
+export { default as ProjectFilters } from "../frontend/src/components/ProjectFilters.tsx";

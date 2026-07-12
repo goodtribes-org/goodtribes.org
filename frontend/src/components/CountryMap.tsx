@@ -3,8 +3,7 @@
 import { useMemo, useState } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { scaleLinear } from "d3-scale";
-
-const GEO_URL = "/geo/countries-110m.json";
+import worldAtlas from "../../public/geo/countries-110m.json";
 
 interface Props {
   /** Normalized world-atlas country name -> count (see src/lib/geo.ts) */
@@ -34,7 +33,7 @@ export default function CountryMap({ counts, unitLabel }: Props) {
         height={430}
         style={{ width: "100%", height: "auto" }}
       >
-        <Geographies geography={GEO_URL}>
+        <Geographies geography={worldAtlas}>
           {({ geographies }) =>
             geographies.map((geo) => {
               const name = geo.properties.name as string;
