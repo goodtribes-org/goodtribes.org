@@ -89,7 +89,7 @@ export default async function ProjectsPage({
         </div>
       )}
 
-      <ProjectFilters sort={sort} q={q} status={status} category={category} sdg={sdg} total={total} />
+      <ProjectFilters sort={sort} q={q} status={status} category={category} sdg={sdg} />
 
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">

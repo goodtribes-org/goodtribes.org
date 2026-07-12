@@ -30,11 +30,10 @@ interface Props {
   status?: string;
   category?: string;
   sdg?: string;
-  total: number;
   basePath?: string;
 }
 
-export default function ProjectFilters({ sort, q, status, category, sdg, total, basePath }: Props) {
+export default function ProjectFilters({ sort, q, status, category, sdg, basePath }: Props) {
   const router = useRouter();
   const [query, setQuery] = useState(q ?? "");
 
@@ -55,25 +54,7 @@ export default function ProjectFilters({ sort, q, status, category, sdg, total, 
   }
 
   return (
-    <div className="flex flex-col gap-3 mb-6">
-      {/* Search */}
-      <form onSubmit={submitSearch} className="flex gap-2">
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search projects…"
-          className="flex-1 text-sm border border-muted-teal rounded-lg px-4 py-2 bg-white text-dark-slate placeholder-dark-slate/40 focus:outline-none focus:ring-2 focus:ring-coral"
-        />
-        <button
-          type="submit"
-          className="px-4 py-2 bg-coral text-white text-sm font-medium rounded-lg hover:bg-watermelon transition-colors"
-        >
-          Search
-        </button>
-      </form>
-
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3 mb-6">
       {/* Sort */}
       <SortToggle sort={sort} q={q} status={status} category={category} sdg={sdg} basePath={basePath} />
 
@@ -109,6 +90,23 @@ export default function ProjectFilters({ sort, q, status, category, sdg, total, 
         ))}
       </select>
 
+      {/* Search */}
+      <form onSubmit={submitSearch} className="flex gap-2">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search projects…"
+          className="w-48 text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate placeholder-dark-slate/40 focus:outline-none focus:ring-2 focus:ring-coral"
+        />
+        <button
+          type="submit"
+          className="px-3 py-1.5 bg-coral text-white text-xs font-medium rounded-lg hover:bg-watermelon transition-colors"
+        >
+          Search
+        </button>
+      </form>
+
       {(status || category || sdg) && (
         <Link
           href={buildUrl({ status: undefined, category: undefined, sdg: undefined, page: undefined })}
@@ -117,9 +115,6 @@ export default function ProjectFilters({ sort, q, status, category, sdg, total, 
           Clear filters
         </Link>
       )}
-
-      <span className="ml-auto text-xs text-dark-slate/40">{total} project{total !== 1 ? "s" : ""}</span>
-    </div>
     </div>
   );
 }
