@@ -25,10 +25,10 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 const ROLE_LABEL: Record<string, string> = {
-  owner: "Owner",
-  admin: "Admin",
-  collaborator: "Collaborator",
-  follower: "Follower",
+  FOUNDER: "Founder",
+  ADMIN: "Admin",
+  MEMBER: "Member",
+  FOLLOWER: "Follower",
 };
 
 function formatDue(date: Date | null): string {
