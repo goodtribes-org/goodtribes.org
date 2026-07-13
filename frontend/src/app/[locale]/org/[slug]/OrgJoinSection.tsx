@@ -2,10 +2,11 @@
 
 import { useTransition } from "react";
 import { respondToOrgJoinRequest } from "./actions";
+import MessageButton from "@/components/MessageButton";
 
 interface OrgJoinRequest {
   id: string;
-  user: { name: string | null; image: string | null };
+  user: { id: string; name: string | null; image: string | null };
 }
 
 export function OrgJoinRequestsPanel({
@@ -34,6 +35,7 @@ export function OrgJoinRequestsPanel({
               {req.user.name ?? "Unknown"}
             </p>
             <div className="flex gap-2 flex-shrink-0">
+              <MessageButton toUserId={req.user.id} toUserName={req.user.name ?? "this person"} />
               <button
                 disabled={isPending}
                 onClick={() =>

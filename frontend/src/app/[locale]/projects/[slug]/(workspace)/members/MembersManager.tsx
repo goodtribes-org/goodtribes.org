@@ -5,6 +5,7 @@ import Image from "next/image";
 import { respondToJoinRequest } from "../../join-actions";
 import { removeMember, changeMemberRole } from "../../member-actions";
 import type { ProjectRole } from "@/lib/authz";
+import MessageButton from "@/components/MessageButton";
 
 type Member = {
   userId: string;
@@ -116,6 +117,7 @@ export default function MembersManager({
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0">
+                  <MessageButton toUserId={req.user.id} toUserName={req.user.name ?? "denna person"} />
                   <button
                     disabled={isPending}
                     onClick={() => handleRespond(req.id, "approved")}
@@ -187,6 +189,7 @@ export default function MembersManager({
                     )}
                   </>
                 )}
+                {!isSelf && <MessageButton toUserId={m.userId} toUserName={m.name ?? "denna person"} />}
                 {!isOwner && !isSelf && (
                   <button
                     disabled={isPending}

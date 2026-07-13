@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
 import BookingForm from "./BookingForm";
+import MessageButton from "@/components/MessageButton";
 
 export const dynamic = "force-dynamic";
 
@@ -92,6 +93,11 @@ export default async function MentorProfilePage({
               </span>
             )}
           </div>
+          {session?.user?.id && session.user.id !== userId && (
+            <div className="mt-2">
+              <MessageButton toUserId={userId} toUserName={user.name ?? "denna person"} />
+            </div>
+          )}
         </div>
       </div>
 

@@ -103,7 +103,7 @@ export default async function OrgDetailPage({
     isOwner
       ? prisma.organisationJoinRequest.findMany({
           where: { organisationId: org.id, status: "pending" },
-          include: { user: { select: { name: true, image: true } } },
+          include: { user: { select: { id: true, name: true, image: true } } },
           orderBy: { createdAt: "asc" },
         })
       : Promise.resolve([]),

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { requestToJoin, respondToJoinRequest } from "./join-actions";
+import MessageButton from "@/components/MessageButton";
 
 interface JoinRequest {
   id: string;
@@ -107,6 +108,7 @@ export function JoinRequestsPanel({
               )}
             </div>
             <div className="flex gap-2 flex-shrink-0">
+              <MessageButton toUserId={req.user.id} toUserName={req.user.name ?? "this person"} />
               <button
                 disabled={isPending}
                 onClick={() =>

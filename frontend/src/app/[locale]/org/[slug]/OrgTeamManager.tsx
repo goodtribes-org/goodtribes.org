@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { removeOrgMember, changeOrgMemberRole } from "./member-actions";
+import MessageButton from "@/components/MessageButton";
 
 type OrgMember = {
   userId: string;
@@ -42,6 +43,7 @@ export default function OrgTeamManager({
               {m.user.name ?? "Unknown"}
               {isSelf && <span className="text-dark-slate/40 ml-1">(you)</span>}
             </span>
+            {!isSelf && <MessageButton toUserId={m.user.id} toUserName={m.user.name ?? "this person"} />}
             {isOwner ? (
               <span className="text-xs text-coral font-semibold uppercase tracking-wide">Owner</span>
             ) : (

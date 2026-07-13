@@ -55,5 +55,18 @@
     "title": "Notiser",
     "viewAll": "Visa alla",
     "empty": "Inga notiser än."
+  },
+  "Messages": {
+    "navAriaLabel": "Meddelanden",
+    "title": "Meddelanden",
+    "empty": "Inga konversationer än.",
+    "unreadAriaLabel": "Oläst",
+    "placeholder": "Skriv ett meddelande…",
+    "send": "Skicka",
+    "sending": "Skickar…",
+    "cta": "Meddelande",
+    "sendTo": "Skicka meddelande till {name}",
+    "cancel": "Avbryt",
+    "sendError": "Kunde inte skicka meddelandet. Försök igen."
   }
 }

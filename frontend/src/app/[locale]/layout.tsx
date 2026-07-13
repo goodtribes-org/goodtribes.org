@@ -12,6 +12,7 @@ import SessionProvider from "@/components/SessionProvider";
 import AuthNav from "@/components/AuthNav";
 import SearchButton from "@/components/SearchButton";
 import NotificationBell from "@/components/NotificationBell";
+import MessagesLink from "@/components/MessagesLink";
 import NavMenuContainer from "@/components/NavMenuContainer";
 import InstallPrompt from "@/components/InstallPrompt";
 import { auth } from "@/auth";
@@ -104,6 +105,7 @@ export default async function LocaleLayout({
                 </div>
                 <div className="flex-1" />
                 <SearchButton />
+                {session?.user && <MessagesLink />}
                 {session?.user && <NotificationBell />}
                 <AuthNav />
               </nav>

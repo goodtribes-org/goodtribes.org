@@ -55,5 +55,18 @@
     "title": "Notifications",
     "viewAll": "View all",
     "empty": "No notifications yet."
+  },
+  "Messages": {
+    "navAriaLabel": "Messages",
+    "title": "Messages",
+    "empty": "No conversations yet.",
+    "unreadAriaLabel": "Unread",
+    "placeholder": "Write a message…",
+    "send": "Send",
+    "sending": "Sending…",
+    "cta": "Message",
+    "sendTo": "Message {name}",
+    "cancel": "Cancel",
+    "sendError": "Could not send message. Try again."
   }
 }

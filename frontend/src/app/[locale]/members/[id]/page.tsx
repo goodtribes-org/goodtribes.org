@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
 import KudosButton from "@/components/KudosButton";
+import MessageButton from "@/components/MessageButton";
 import { isLeadRole } from "@/lib/authz";
 
 export const dynamic = "force-dynamic";
@@ -89,7 +90,11 @@ export default async function MemberProfilePage({
         <div className="flex-1 min-w-0">
           <h1 className="text-3xl font-bold mb-1">{member.name}</h1>
           {session?.user?.id && session.user.id !== id && (
-            <div className="mt-2">
+            <div className="mt-2 flex gap-2">
+              <MessageButton
+                toUserId={id}
+                toUserName={member.name ?? "denna person"}
+              />
               <KudosButton
                 toUserId={id}
                 toUserName={member.name ?? "denna person"}
