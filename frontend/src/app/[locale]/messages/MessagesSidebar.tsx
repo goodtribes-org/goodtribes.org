@@ -114,7 +114,7 @@ export function MessagesSidebar({ dmGroupRooms, projectGroups, orgGroups }: Prop
           return (
             <Link
               key={room.id}
-              href={`/messages/${room.id}`}
+              href={`/messages/${room.id}?section=chat`}
               className={`flex items-center gap-2 px-3 py-1.5 mx-1 my-0.5 rounded-md text-sm transition-colors ${
                 isActive(room.id) ? "bg-dry-sage/40 text-dark-slate font-semibold" : "text-dark-slate/70 hover:bg-dry-sage/20"
               }`}
@@ -138,7 +138,7 @@ export function MessagesSidebar({ dmGroupRooms, projectGroups, orgGroups }: Prop
           {project.rooms.map((room) => (
             <Link
               key={room.id}
-              href={`/messages/${room.id}`}
+              href={`/messages/${room.id}?section=channels&project=${project.slug}`}
               className={`flex items-center gap-2 px-3 py-1.5 mx-1 my-0.5 rounded-md text-sm transition-colors ${
                 isActive(room.id) ? "bg-dry-sage/40 text-dark-slate font-semibold" : "text-dark-slate/70 hover:bg-dry-sage/20"
               }`}
@@ -155,7 +155,7 @@ export function MessagesSidebar({ dmGroupRooms, projectGroups, orgGroups }: Prop
           {org.rooms.map((room) => (
             <Link
               key={room.id}
-              href={`/messages/${room.id}`}
+              href={`/messages/${room.id}?section=channels&org=${org.slug}`}
               className={`flex items-center gap-2 px-3 py-1.5 mx-1 my-0.5 rounded-md text-sm transition-colors ${
                 isActive(room.id) ? "bg-dry-sage/40 text-dark-slate font-semibold" : "text-dark-slate/70 hover:bg-dry-sage/20"
               }`}

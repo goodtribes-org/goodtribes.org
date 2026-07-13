@@ -216,14 +216,10 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                         </div>
                       )}
 
-                      <div
-                        className={`relative group/bubble ${
-                          m.reactions.length > 0 || (canReply && m._count.threadReplies > 0) ? "mb-6" : ""
-                        }`}
-                      >
+                      <div className="relative inline-grid max-w-full group/bubble">
                         {canPost && (
                           <div
-                            className={`absolute -top-4 ${isOwn ? "right-0" : "left-0"} hidden group-hover/bubble:flex items-center bg-white border border-gray-200 rounded-lg shadow-md z-10 overflow-hidden`}
+                            className={`absolute -top-4 ${isOwn ? "right-0" : "left-0"} hidden group-hover/bubble:flex items-center bg-white border border-gray-200 rounded-lg shadow-md z-20 overflow-hidden`}
                           >
                             {QUICK_REACTIONS.map((e) => (
                               <button
@@ -252,13 +248,17 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                           </div>
                         )}
 
-                        <div className={`rounded-2xl px-3 py-2 text-dark-slate ${isOwn ? "bg-gray-200" : "bg-gray-100"}`}>
+                        <div
+                          className={`[grid-area:1/1] rounded-2xl px-3 py-2 text-dark-slate ${isOwn ? "bg-gray-100" : "bg-gray-50"}`}
+                        >
                           {renderBody(m.body)}
                         </div>
 
                         {(m.reactions.length > 0 || (canReply && m._count.threadReplies > 0)) && (
                           <div
-                            className={`absolute -bottom-6 ${isOwn ? "right-2" : "left-2"} z-10 flex items-center gap-2`}
+                            className={`[grid-area:1/1] self-end -mb-2 ${
+                              isOwn ? "justify-self-end" : "justify-self-start"
+                            } z-10 flex flex-wrap max-w-full items-center gap-2`}
                           >
                             {canReply && m._count.threadReplies > 0 && (
                               <button
@@ -276,6 +276,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                                 currentUserId={currentUserId}
                                 canAdd={canPost}
                                 onToggle={(emoji) => handleReaction(m.id, emoji)}
+                                bare
                               />
                             )}
                           </div>

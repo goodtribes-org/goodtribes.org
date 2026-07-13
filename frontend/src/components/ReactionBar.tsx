@@ -35,11 +35,16 @@ export function ReactionBar({
   currentUserId,
   canAdd,
   onToggle,
+  bare,
 }: {
   reactions: Reaction[];
   currentUserId: string | null;
   canAdd: boolean;
   onToggle: (emoji: string) => Promise<void> | void;
+  // When true, renders without its own flex-wrap container so the pills
+  // become direct items of a parent flex-wrap row (e.g. to share a line
+  // with a sibling "N replies" button). Default renders self-contained.
+  bare?: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
   const [showPicker, setShowPicker] = useState(false);
@@ -88,7 +93,7 @@ export function ReactionBar({
   const groups = groupReactions(reactions);
 
   return (
-    <div className="flex flex-wrap items-center gap-1 mt-1.5">
+    <div className={bare ? "contents" : "flex flex-wrap items-center gap-1 mt-1.5"}>
       {groups.map(({ emoji, userIds }) => {
         const mine = currentUserId ? userIds.includes(currentUserId) : false;
         return (
