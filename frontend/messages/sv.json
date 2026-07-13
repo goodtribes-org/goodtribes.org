@@ -67,6 +67,8 @@
     "cta": "Meddelande",
     "sendTo": "Skicka meddelande till {name}",
     "cancel": "Avbryt",
-    "sendError": "Kunde inte skicka meddelandet. Försök igen."
+    "sendError": "Kunde inte skicka meddelandet. Försök igen.",
+    "directMessages": "Direktmeddelanden",
+    "selectRoom": "Välj en konversation till vänster."
   }
 }

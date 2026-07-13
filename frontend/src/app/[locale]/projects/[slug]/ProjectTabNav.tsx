@@ -8,7 +8,7 @@ const MAIN_TABS = [
   { label: "Projekt",      href: "" },
   { label: "Uppgifter",    href: "/tasks" },
   { label: "Planering",    href: "/calendar" },
-  { label: "Kanaler",      href: "/kanaler" },
+  { label: "Kanaler",      href: "/kanaler", absolute: true },
   { label: "Omröstningar", href: "/polls" },
 ];
 
@@ -50,6 +50,7 @@ export default function ProjectTabNav({ slug, isOwner }: { slug: string; isOwner
   }, [open, openAdmin]);
 
   function isActive(href: string) {
+    if (href === "/kanaler") return pathname.startsWith("/messages");
     const full = `${base}${href}`;
     return href === ""
       ? pathname === base
@@ -68,7 +69,7 @@ export default function ProjectTabNav({ slug, isOwner }: { slug: string; isOwner
         {MAIN_TABS.map((tab) => (
           <Link
             key={tab.href}
-            href={`${base}${tab.href}`}
+            href={tab.absolute ? `/messages?project=${slug}` : `${base}${tab.href}`}
             className={`px-4 pb-2.5 pt-1 text-sm font-bold whitespace-nowrap transition-colors -mb-px ${
               isActive(tab.href)
                 ? "border-b-4 border-coral text-dark-slate"

@@ -106,17 +106,17 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
           project: { select: { id: true, title: true, slug: true, imageUrl: true } },
         },
       }),
-      prisma.channelMessage.findMany({
+      prisma.message.findMany({
         where: {
           threadParentId: null,
-          channel: { project: { visibility: "public" } },
+          room: { type: "PROJECT_CHANNEL", project: { visibility: "public" } },
         },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
-          id: true, body: true, channelId: true, createdAt: true,
+          id: true, body: true, roomId: true, createdAt: true,
           author: { select: { name: true, image: true } },
-          channel: { select: { project: { select: { id: true, title: true, slug: true, imageUrl: true } } } },
+          room: { select: { project: { select: { id: true, title: true, slug: true, imageUrl: true } } } },
         },
       }),
       prisma.kanbanCardComment.findMany({
@@ -235,15 +235,18 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
         href, date: a.createdAt,
       };
     }),
-    ...channelMessages.map((m) => ({
-      id: `msg-${m.id}`, targetType: "channelMessage", targetId: m.id,
-      projectSlug: m.channel.project.slug,
-      avatarName: m.author.name, avatarImage: m.author.image, projectImage: m.channel.project.imageUrl,
-      projectName: m.channel.project.title, projectHref: `/projects/${m.channel.project.slug}`, projectId: m.channel.project.id,
-      action: "skickade ett meddelande",
-      body: htmlToPreviewText(m.body),
-      href: `/projects/${m.channel.project.slug}/kanaler/${m.channelId}#message-${m.id}`, date: m.createdAt,
-    })),
+    ...channelMessages.map((m) => {
+      const project = m.room.project!;
+      return {
+        id: `msg-${m.id}`, targetType: "channelMessage", targetId: m.id,
+        projectSlug: project.slug,
+        avatarName: m.author.name, avatarImage: m.author.image, projectImage: project.imageUrl,
+        projectName: project.title, projectHref: `/projects/${project.slug}`, projectId: project.id,
+        action: "skickade ett meddelande",
+        body: htmlToPreviewText(m.body),
+        href: `/messages/${m.roomId}`, date: m.createdAt,
+      };
+    }),
     ...dedupedKanbanComments.map((c) => ({
       id: `kcomment-${c.id}`, targetType: "kanbanCardComment", targetId: c.id,
       cardId: c.card.id,
@@ -279,13 +282,14 @@ export type FeedInteractionData = {
 };
 
 // Activity item types whose comments/likes write into a project-scoped table (KanbanCardComment,
-// ChannelMessage/ChannelMessageReaction) and therefore require ProjectMember to interact with —
-// all other types (feedPost, blogPost, milestone, project, idea, activityEvent, ideaComment) are
-// unrestricted.
+// Message/MessageReaction on a PROJECT_CHANNEL room) and therefore require ProjectMember to
+// interact with — all other types (feedPost, blogPost, milestone, project, idea, activityEvent,
+// ideaComment) are unrestricted. The "channelMessage" targetType string is kept as-is (rather
+// than renamed to "message") so historical FeedLike/FeedComment rows keep resolving correctly.
 export const MEMBERSHIP_GATED_TARGET_TYPES = new Set(["kanbanCardComment", "channelMessage"]);
 
 // Comments for kanbanCardComment items are sourced from KanbanCardComment (keyed by cardId),
-// and comments for channelMessage items are sourced from ChannelMessage thread replies (keyed
+// and comments for channelMessage items are sourced from Message thread replies (keyed
 // by threadParentId) — rather than FeedComment/FeedLike — so a comment or like made from the
 // feed and one made on the card/channel itself are the same row and always show identically
 // on both surfaces.
@@ -318,14 +322,14 @@ export async function getFeedInteractionData(items: PulseItem[], userId: string 
         })
       : Promise.resolve([]),
     distinctChannelMessageIds.length > 0
-      ? prisma.channelMessage.findMany({
+      ? prisma.message.findMany({
           where: { threadParentId: { in: distinctChannelMessageIds } },
           orderBy: { createdAt: "asc" },
           include: { author: { select: { name: true } } },
         })
       : Promise.resolve([]),
     distinctChannelMessageIds.length > 0
-      ? prisma.channelMessageReaction.findMany({
+      ? prisma.messageReaction.findMany({
           where: { messageId: { in: distinctChannelMessageIds }, emoji: FEED_LIKE_EMOJI },
         })
       : Promise.resolve([]),

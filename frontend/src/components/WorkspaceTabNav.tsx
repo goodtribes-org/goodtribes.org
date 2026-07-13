@@ -8,15 +8,15 @@ interface Props {
 
 export default function WorkspaceTabNav({ slug, isAdmin, pathname }: Props) {
   const tabs = [
-    { label: "Messages", href: `/work/${slug}/messages` },
-    { label: "Tasks", href: `/work/${slug}/tasks` },
-    ...(isAdmin ? [{ label: "Admin", href: `/work/${slug}/admin` }] : []),
+    { label: "Messages", href: `/messages?org=${slug}`, active: pathname.startsWith("/messages") },
+    { label: "Tasks", href: `/work/${slug}/tasks`, active: pathname.startsWith(`/work/${slug}/tasks`) },
+    ...(isAdmin ? [{ label: "Admin", href: `/work/${slug}/admin`, active: pathname.startsWith(`/work/${slug}/admin`) }] : []),
   ];
 
   return (
     <nav className="flex gap-1 border-b border-muted-teal mb-8">
       {tabs.map((tab) => {
-        const active = pathname.startsWith(tab.href);
+        const active = tab.active;
         return (
           <a
             key={tab.href}

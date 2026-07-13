@@ -7,7 +7,7 @@ import {
   addComment as addKanbanCardComment,
   toggleCardCommentLike,
 } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
-import { sendThreadReply, toggleReaction } from "@/app/[locale]/projects/[slug]/(workspace)/kanaler/actions";
+import { sendRoomMessage, toggleReaction } from "@/app/[locale]/messages/actions";
 import { FEED_LIKE_EMOJI } from "@/lib/activityFeed";
 
 export async function createFeedPost(body: string, imageUrl?: string | null) {
@@ -32,13 +32,13 @@ export async function toggleFeedLike(targetType: string, targetId: string) {
   }
 
   if (targetType === "channelMessage") {
-    const message = await prisma.channelMessage.findUnique({
+    const message = await prisma.message.findUnique({
       where: { id: targetId },
-      select: { channelId: true, channel: { select: { project: { select: { slug: true } } } } },
+      select: { roomId: true },
     });
     if (!message) return { error: "Message not found" };
     try {
-      await toggleReaction(targetId, message.channelId, message.channel.project.slug, FEED_LIKE_EMOJI);
+      await toggleReaction(targetId, message.roomId, FEED_LIKE_EMOJI);
     } catch (err) {
       return { error: err instanceof Error ? err.message : "Failed to toggle like" };
     }
@@ -82,13 +82,13 @@ export async function addFeedComment(targetType: string, targetId: string, body:
   }
 
   if (targetType === "channelMessage") {
-    const message = await prisma.channelMessage.findUnique({
+    const message = await prisma.message.findUnique({
       where: { id: targetId },
-      select: { channelId: true, channel: { select: { project: { select: { slug: true } } } } },
+      select: { roomId: true },
     });
     if (!message) return { error: "Message not found" };
     try {
-      await sendThreadReply(message.channelId, targetId, message.channel.project.slug, trimmed);
+      await sendRoomMessage(message.roomId, trimmed, targetId);
     } catch (err) {
       return { error: err instanceof Error ? err.message : "Failed to send reply" };
     }

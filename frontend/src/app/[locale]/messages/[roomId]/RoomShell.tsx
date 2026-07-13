@@ -2,12 +2,40 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ReactionBar } from "@/components/ReactionBar";
 import { renderBody } from "@/lib/renderBody";
-import { toggleReaction } from "../actions";
+import { toggleReaction, markRoomRead } from "../actions";
 import { FEED_LIKE_EMOJI } from "@/lib/feedLikeEmoji";
-import { MessageInput } from "./MessageInput";
-import type { MessageRow } from "./KanalerShell";
+import { MessageComposer } from "./MessageComposer";
+import PresenceDot from "@/components/PresenceDot";
+
+export type MessageRow = {
+  id: string;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+  threadParentId: string | null;
+  authorId: string;
+  author: { id: string; name: string | null; image: string | null };
+  reactions: { emoji: string; userId: string }[];
+  _count: { threadReplies: number };
+};
+
+type RoomInfo = {
+  id: string;
+  type: "DM" | "GROUP" | "PROJECT_CHANNEL" | "ORG_CHANNEL";
+  name: string | null;
+  postingPolicy: "ALL_MEMBERS" | "LEADS_ONLY";
+  otherUsers: { id: string; name: string | null; image: string | null }[];
+};
+
+type Props = {
+  room: RoomInfo;
+  initialMessages: MessageRow[];
+  currentUserId: string;
+  canPost: boolean;
+};
 
 function timeLabel(iso: string) {
   const d = new Date(iso);
@@ -18,12 +46,14 @@ function timeLabel(iso: string) {
   return d.toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
 }
 
-function timeShort(iso: string) {
-  return new Date(iso).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
+function initialsOf(name: string | null) {
+  return (name ?? "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 }
 
-function getInitials(name: string | null) {
-  return (name ?? "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+function roomTitle(room: RoomInfo) {
+  if (room.type === "DM") return room.otherUsers[0]?.name ?? "?";
+  if (room.type === "GROUP") return room.name ?? room.otherUsers.map((u) => u.name).join(", ");
+  return room.name ? `#${room.name}` : room.type === "ORG_CHANNEL" ? "Arbetsrum" : "Kanal";
 }
 
 function buildGrouped(messages: MessageRow[]) {
@@ -31,49 +61,57 @@ function buildGrouped(messages: MessageRow[]) {
     const prev = messages[i - 1];
     const isGrouped =
       !!prev &&
-      prev.author.id === m.author.id &&
+      prev.authorId === m.authorId &&
       new Date(m.createdAt).getTime() - new Date(prev.createdAt).getTime() < 5 * 60 * 1000;
     return { ...m, isGrouped };
   });
 }
 
-type Props = {
-  slug: string;
-  channelId: string;
-  channelName: string;
-  channelType: string;
-  messages: MessageRow[];
-  isMember: boolean;
-  isAdmin: boolean;
-  currentUserId: string | null;
-  openThreadId: string | null;
-  onOpenThread: (id: string) => void;
-  onSidebarToggle: () => void;
-};
-
-export function MessageFeed({
-  slug,
-  channelId,
-  channelName,
-  channelType,
-  messages,
-  isMember,
-  isAdmin,
-  currentUserId,
-  openThreadId,
-  onOpenThread,
-  onSidebarToggle,
-}: Props) {
-  const bottomRef = useRef<HTMLDivElement>(null);
+export function RoomShell({ room, initialMessages, currentUserId, canPost }: Props) {
+  const [messages, setMessages] = useState<MessageRow[]>(initialMessages);
   const [, startTransition] = useTransition();
-  const [deepLinkHash] = useState(() =>
-    typeof window !== "undefined" ? window.location.hash.slice(1) : ""
-  );
   const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
   const [inlineReplies, setInlineReplies] = useState<Record<string, MessageRow[]>>({});
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const esRef = useRef<EventSource | null>(null);
+
+  useEffect(() => {
+    markRoomRead(room.id).catch(() => {});
+  }, [room.id]);
+
+  useEffect(() => {
+    if (esRef.current) esRef.current.close();
+    const es = new EventSource(`/api/rooms/${room.id}/sse`);
+    esRef.current = es;
+
+    es.addEventListener("message", (e) => {
+      const msg: MessageRow = JSON.parse(e.data);
+      if (msg.threadParentId) {
+        setInlineReplies((prev) => {
+          if (!prev[msg.threadParentId!]) return prev;
+          if (prev[msg.threadParentId!].some((r) => r.id === msg.id)) return prev;
+          return { ...prev, [msg.threadParentId!]: [...prev[msg.threadParentId!], msg] };
+        });
+        return;
+      }
+      setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]));
+      markRoomRead(room.id).catch(() => {});
+    });
+
+    es.addEventListener("close", () => es.close());
+
+    return () => {
+      es.close();
+      esRef.current = null;
+    };
+  }, [room.id]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ block: "end" });
+  }, [messages.length]);
 
   function loadInlineReplies(messageId: string) {
-    fetch(`/api/projects/${slug}/kanaler/${channelId}/thread/${messageId}`)
+    fetch(`/api/rooms/${room.id}/thread/${messageId}`)
       .then((r) => r.json())
       .then((data) => setInlineReplies((prev) => ({ ...prev, [messageId]: data })))
       .catch(() => {});
@@ -87,77 +125,59 @@ export function MessageFeed({
       } else {
         next.add(messageId);
         if (!inlineReplies[messageId]) loadInlineReplies(messageId);
-        setTimeout(() => {
-          document.getElementById(`message-${messageId}`)?.scrollIntoView({ block: "end", behavior: "smooth" });
-        }, 50);
       }
       return next;
     });
   }
 
-  useEffect(() => {
-    if (deepLinkHash) return;
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length, deepLinkHash]);
-
-  useEffect(() => {
-    if (!deepLinkHash) return;
-    const el = document.getElementById(deepLinkHash);
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-    el.classList.add("bg-coral/10");
-    const timeout = setTimeout(() => el.classList.remove("bg-coral/10"), 2500);
-    return () => clearTimeout(timeout);
-  }, [deepLinkHash]);
-
-  const canPost = isMember && (channelType !== "announcement" || isAdmin);
-  const grouped = buildGrouped(messages);
-
   function handleReaction(messageId: string, emoji: string) {
-    startTransition(() => toggleReaction(messageId, channelId, slug, emoji));
+    startTransition(() => toggleReaction(messageId, room.id, emoji));
   }
 
+  const grouped = buildGrouped(messages);
+  const title = roomTitle(room);
+
   return (
-    <div className="flex flex-col flex-1 min-w-0 h-full bg-white">
-      {/* Channel header */}
-      <div className="flex items-center gap-2 px-5 py-3 border-b border-gray-200 shrink-0 bg-white">
-        <button
-          className="md:hidden mr-1 text-gray-400 hover:text-gray-700"
-          onClick={onSidebarToggle}
-        >
-          ☰
-        </button>
-        <span className="text-gray-400 font-normal text-base mr-0.5">#</span>
-        <span className="font-bold text-base text-gray-900">{channelName}</span>
-        {channelType === "announcement" && (
+    <div className="flex flex-col h-[calc(100dvh-220px)] bg-white">
+      <div className="flex items-center gap-2 px-5 py-3 border-b border-gray-200 shrink-0">
+        <Link href="/messages" className="md:hidden text-sm text-dark-slate/50 hover:text-seagrass mr-1">
+          ←
+        </Link>
+        {room.type === "DM" && room.otherUsers[0] && (
+          <>
+            {room.otherUsers[0].image ? (
+              <Image src={room.otherUsers[0].image} alt="" width={28} height={28} className="rounded-full object-cover" unoptimized />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-dry-sage flex items-center justify-center text-xs font-semibold text-dark-slate">
+                {initialsOf(room.otherUsers[0].name)}
+              </div>
+            )}
+            <PresenceDot userId={room.otherUsers[0].id} />
+          </>
+        )}
+        <span className="font-bold text-base text-gray-900">{title}</span>
+        {room.postingPolicy === "LEADS_ONLY" && (
           <span className="text-xs bg-coral/10 text-coral px-2 py-0.5 rounded-full ml-1">
             Tillkännagivanden
           </span>
         )}
       </div>
 
-      {/* Messages */}
       <div className="flex-1 min-h-0 overflow-y-auto py-2 flex flex-col">
         {messages.length === 0 ? (
           <p className="text-sm text-gray-400 italic text-center py-8">
-            Inga meddelanden ännu.{" "}
-            {canPost ? "Starta diskussionen!" : "Gå med i projektet för att skriva."}
+            Inga meddelanden ännu. {canPost ? "Starta diskussionen!" : ""}
           </p>
         ) : (
           grouped.map((m) => {
-            const initials = (m.author.name ?? "?")
-              .split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
-            const isActiveThread = m.id === openThreadId || expandedThreads.has(m.id);
-
+            const isActiveThread = expandedThreads.has(m.id);
             return (
               <div
                 key={m.id}
-                id={`message-${m.id}`}
                 className={`relative group flex items-start gap-0 px-4 py-0.5 hover:bg-gray-50 transition-colors ${
-                  isActiveThread ? "bg-blue-50" : ""
-                } ${m.isGrouped ? "" : "mt-2"} ${expandedThreads.has(m.id) ? "pb-2" : ""}`}
+                  m.isGrouped ? "" : "mt-2"
+                } ${isActiveThread ? "pb-2" : ""}`}
               >
-                {/* Hover action bar */}
                 <div className="absolute right-4 -top-3 hidden group-hover:flex items-center bg-white border border-gray-200 rounded-lg shadow-md z-10 overflow-hidden">
                   {["👍", "❤️", "😄", "🎉", "😮"].map((e) => (
                     <button
@@ -169,33 +189,20 @@ export function MessageFeed({
                       {e}
                     </button>
                   ))}
-                  <div className="w-px h-5 bg-gray-200 mx-0.5" />
-                  <button
-                    type="button"
-                    onClick={() => onOpenThread(m.id)}
-                    className="px-2 py-1.5 hover:bg-gray-100 text-gray-500 transition-colors"
-                    title="Svara i tråd"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 12.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                  </button>
                 </div>
 
                 {m.isGrouped ? (
-                  /* Grouped: show time on hover instead of avatar */
                   <div className="w-9 shrink-0 self-start mt-1 text-right pr-1">
                     <span className="opacity-0 group-hover:opacity-100 text-[10px] text-gray-400 leading-none">
-                      {timeShort(m.createdAt)}
+                      {new Date(m.createdAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}
                     </span>
                   </div>
                 ) : (
-                  /* First in group: show avatar */
                   <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600 shrink-0 mt-0.5 overflow-hidden relative">
                     {m.author.image ? (
                       <Image src={m.author.image} fill className="object-cover" alt="" unoptimized />
                     ) : (
-                      initials
+                      initialsOf(m.author.name)
                     )}
                   </div>
                 )}
@@ -203,9 +210,7 @@ export function MessageFeed({
                 <div className="flex-1 min-w-0 ml-3">
                   {!m.isGrouped && (
                     <div className="flex items-baseline gap-2 mb-0.5">
-                      <span className="text-sm font-bold text-gray-900">
-                        {m.author.name ?? "Okänd"}
-                      </span>
+                      <span className="text-sm font-bold text-gray-900">{m.author.name ?? "Okänd"}</span>
                       <span className="text-xs text-gray-400">{timeLabel(m.createdAt)}</span>
                     </div>
                   )}
@@ -213,18 +218,14 @@ export function MessageFeed({
 
                   {(() => {
                     const likeCount = m.reactions.filter((r) => r.emoji === FEED_LIKE_EMOJI).length;
-                    const likedByMe = !!currentUserId && m.reactions.some(
-                      (r) => r.emoji === FEED_LIKE_EMOJI && r.userId === currentUserId
-                    );
+                    const likedByMe = m.reactions.some((r) => r.emoji === FEED_LIKE_EMOJI && r.userId === currentUserId);
                     return (
                       <div className="mt-1 flex items-center gap-4">
                         <button
                           onClick={() => handleReaction(m.id, FEED_LIKE_EMOJI)}
-                          disabled={!isMember}
-                          title={isMember ? (likedByMe ? "Ta bort gillning" : "Gilla") : "Bli medlem för att gilla"}
-                          className={`flex items-center gap-1 text-xs font-medium transition-colors ${
+                          className={`flex items-center gap-1 text-xs font-medium transition-colors cursor-pointer ${
                             likedByMe ? "text-coral" : "text-gray-400 hover:text-coral"
-                          } ${!isMember ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                          }`}
                         >
                           👍 Gilla{likeCount > 0 ? ` (${likeCount})` : ""}
                         </button>
@@ -241,7 +242,7 @@ export function MessageFeed({
                   <ReactionBar
                     reactions={m.reactions.filter((r) => r.emoji !== FEED_LIKE_EMOJI)}
                     currentUserId={currentUserId}
-                    canAdd={isMember}
+                    canAdd={canPost}
                     onToggle={(emoji) => handleReaction(m.id, emoji)}
                   />
 
@@ -253,29 +254,24 @@ export function MessageFeed({
                             {r.author.image ? (
                               <Image src={r.author.image} fill className="object-cover" alt="" unoptimized />
                             ) : (
-                              getInitials(r.author.name)
+                              initialsOf(r.author.name)
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-baseline gap-1.5">
-                              <span className="text-xs font-semibold text-gray-900">
-                                {r.author.name ?? "Okänd"}
-                              </span>
+                              <span className="text-xs font-semibold text-gray-900">{r.author.name ?? "Okänd"}</span>
                               <span className="text-[10px] text-gray-400">{timeLabel(r.createdAt)}</span>
                             </div>
                             <div className="text-sm">{renderBody(r.body)}</div>
                           </div>
                         </div>
                       ))}
-                      {isMember ? (
-                        <MessageInput
-                          channelId={channelId}
-                          projectSlug={slug}
+                      {canPost && (
+                        <MessageComposer
+                          roomId={room.id}
                           threadParentId={m.id}
                           onSent={() => loadInlineReplies(m.id)}
                         />
-                      ) : (
-                        <p className="text-xs text-gray-400">Gå med i projektet för att kommentera.</p>
                       )}
                     </div>
                   )}
@@ -287,18 +283,11 @@ export function MessageFeed({
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      {canPost ? (
+      {canPost && (
         <div className="border-t border-gray-200 px-4 py-3 bg-white shrink-0">
-          <MessageInput channelId={channelId} projectSlug={slug} />
+          <MessageComposer roomId={room.id} />
         </div>
-      ) : !isMember ? (
-        <div className="border-t border-gray-200 px-4 py-3 bg-white shrink-0">
-          <p className="text-sm text-gray-400 text-center">
-            Gå med i projektet för att skriva.
-          </p>
-        </div>
-      ) : null}
+      )}
     </div>
   );
 }

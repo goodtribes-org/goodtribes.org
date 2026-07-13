@@ -5,32 +5,6 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 
 
-export async function postMessage(formData: FormData) {
-  const session = await auth();
-  if (!session?.user?.id) return;
-  const userId = session.user.id;
-
-  const orgId = formData.get("orgId") as string;
-  const slug = formData.get("slug") as string;
-  const content = (formData.get("content") as string)?.trim();
-  if (!content) return;
-
-  const member = await prisma.organisationMember.findUnique({
-    where: { organisationId_userId: { organisationId: orgId, userId } },
-  });
-  const org = await prisma.organisation.findUnique({
-    where: { id: orgId },
-    select: { ownerId: true },
-  });
-  if (!member && org?.ownerId !== userId) return;
-
-  await prisma.workspaceMessage.create({
-    data: { organisationId: orgId, authorId: userId, content },
-  });
-
-  revalidatePath(`/work/${slug}/messages`);
-}
-
 export async function createTask(formData: FormData) {
   const session = await auth();
   if (!session?.user?.id) return;

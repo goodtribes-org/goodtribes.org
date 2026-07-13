@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { startConversation } from "@/app/[locale]/messages/actions";
+import { startDirectMessage } from "@/app/[locale]/messages/actions";
 
 interface MessageButtonProps {
   toUserId: string;
@@ -37,8 +37,8 @@ export default function MessageButton({ toUserId, toUserName }: MessageButtonPro
     setLoading(true);
     setError(null);
     try {
-      const { conversationId } = await startConversation(toUserId, message.trim());
-      router.push(`/messages/${conversationId}`);
+      const { roomId } = await startDirectMessage(toUserId, message.trim());
+      router.push(`/messages/${roomId}`);
     } catch {
       setError(t("sendError"));
       setLoading(false);

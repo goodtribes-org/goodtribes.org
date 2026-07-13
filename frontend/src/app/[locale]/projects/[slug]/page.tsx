@@ -241,16 +241,17 @@ export default async function ProjectDetailPage({
         },
         orderBy: [{ column: "asc" }, { order: "asc" }],
       }),
-      prisma.channelMessage.findMany({
-        where: { channel: { projectId: project.id }, threadParentId: null },
+      prisma.message.findMany({
+        where: { room: { type: "PROJECT_CHANNEL", projectId: project.id }, threadParentId: null },
         orderBy: { createdAt: "desc" },
         take: 5,
         select: {
           id: true,
+          roomId: true,
           body: true,
           createdAt: true,
           author: { select: { name: true, image: true } },
-          channel: { select: { id: true, name: true } },
+          room: { select: { id: true, name: true } },
         },
       }),
     ]);
@@ -650,7 +651,7 @@ export default async function ProjectDetailPage({
             <section className="border border-muted-teal/30 rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-dark-slate">Kanaler</h2>
-                <Link href={`/projects/${slug}/kanaler`} className="text-xs text-seagrass hover:underline">
+                <Link href={`/messages?project=${slug}`} className="text-xs text-seagrass hover:underline">
                   Öppna →
                 </Link>
               </div>
@@ -670,7 +671,7 @@ export default async function ProjectDetailPage({
                             {msg.author.name?.split(" ")[0] ?? "?"}
                           </span>
                           <span className="text-[10px] text-dark-slate/40 shrink-0">
-                            #{msg.channel.name} · {relativeTime(msg.createdAt)}
+                            #{msg.room.name} · {relativeTime(msg.createdAt)}
                           </span>
                         </div>
                         <p className="text-xs text-dark-slate/70 leading-snug line-clamp-2">
@@ -682,7 +683,7 @@ export default async function ProjectDetailPage({
                 })}
               </ul>
               <Link
-                href={`/projects/${slug}/kanaler`}
+                href={`/messages?project=${slug}`}
                 className="mt-3 block text-center text-xs text-white bg-seagrass hover:bg-seagrass/90 rounded-lg py-1.5 transition-colors"
               >
                 Öppna kanaler

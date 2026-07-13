@@ -13,6 +13,7 @@ import AuthNav from "@/components/AuthNav";
 import SearchButton from "@/components/SearchButton";
 import NotificationBell from "@/components/NotificationBell";
 import MessagesLink from "@/components/MessagesLink";
+import PresenceHeartbeat from "@/components/PresenceHeartbeat";
 import NavMenuContainer from "@/components/NavMenuContainer";
 import InstallPrompt from "@/components/InstallPrompt";
 import { auth } from "@/auth";
@@ -107,6 +108,7 @@ export default async function LocaleLayout({
                 <SearchButton />
                 {session?.user && <MessagesLink />}
                 {session?.user && <NotificationBell />}
+                {session?.user && <PresenceHeartbeat />}
                 <AuthNav />
               </nav>
             </header>

@@ -30,8 +30,8 @@ model User {
   country       String?
   bio           String?
   socialLinks   Json?     @default("{}")
-  interests    Int[]    @default([])
-  availability String?
+  interests     Int[]     @default([])
+  availability  String?
   showProfile   Boolean   @default(false)
   digestOptIn   Boolean   @default(true)
   siteRole      SiteRole  @default(USER)
@@ -43,8 +43,7 @@ model User {
   organisationMemberships OrganisationMember[]      @relation("OrganisationMemberships")
   joinRequests            OrganisationJoinRequest[] @relation("JoinRequests")
   skills                  UserSkill[]
-  authoredMessages        WorkspaceMessage[]        @relation("AuthoredMessages")
-  createdTasks            WorkspaceTask[]            @relation("CreatedTasks")
+  createdTasks            WorkspaceTask[]           @relation("CreatedTasks")
   files                   File[]                    @relation("OwnedFiles")
   createdKanbanCards      KanbanCard[]              @relation("CreatedKanbanCards")
   createdTodoLists        TodoList[]                @relation("CreatedTodoLists")
@@ -67,38 +66,36 @@ model User {
   updatedWikiPages        WikiPage[]                @relation("WikiPageUpdatedBy")
   createdOrgInvites       OrgInvite[]               @relation("CreatedOrgInvites")
   fundingPledges          FundingPledge[]           @relation("FundingPledges")
-  calendarEvents   CalendarEvent[] @relation("CreatedCalendarEvents")
-  timeLogs         TimeLog[]       @relation("UserTimeLogs")
-  timeLogReviews   TimeLog[]       @relation("ReviewedTimeLogs")
-  tokenLedger      TokenLedger[]   @relation("TokenLedger")
-  aiTaskReviews    AiTaskReview[]  @relation("AiTaskReviews")
-  createdPolls     Poll[]          @relation("CreatedPolls")
-  pollVotes        PollVote[]      @relation("UserPollVotes")
-  impactUpdates    ImpactUpdate[]    @relation("ImpactUpdates")
-  approvedInstances ProjectInstance[] @relation("ApprovedInstances")
-  alumni           ProjectAlumni[]   @relation("AlumniUsers")
-  mentorProfile    Mentor?               @relation("MentorProfile")
-  authoredGuides   AcademyGuide[]        @relation("GuideAuthor")
-  reviewedGuides   AcademyGuide[]        @relation("GuideReviewer")
-  guideCompletions UserGuideCompletion[] @relation("GuideCompletions")
-  kudosSent        Kudos[]               @relation("KudosSent")
-  kudosReceived    Kudos[]               @relation("KudosReceived")
-  streaks          UserStreak[]          @relation("UserStreaks")
-  dreamPosts       DreamWallPost[]       @relation("DreamPosts")
-  dreamReactions   DreamWallReaction[]   @relation("DreamReactions")
-  projectFlags     ProjectFlag[]         @relation("FlaggedBy")
-  flagReviews      ProjectFlag[]         @relation("FlagReviewer")
-  ethicsReviews      EthicsReview[]        @relation("EthicsReviewer")
-  channelMessages    ChannelMessage[]         @relation("ChannelMessages")
-  channelReactions   ChannelMessageReaction[] @relation("ChannelReactions")
-  channelReadMarkers ChannelReadMarker[]      @relation("ChannelReadMarkers")
-  kanbanComments     KanbanCardComment[]     @relation("KanbanComments")
-  onboardingDone       Boolean               @default(false)
-  feedPosts        FeedPost[]    @relation("AuthoredFeedPosts")
-  feedLikes        FeedLike[]    @relation("FeedLikes")
-  feedComments     FeedComment[] @relation("AuthoredFeedComments")
-  conversationParticipations ConversationParticipant[] @relation("ConversationParticipant")
-  sentDirectMessages         DirectMessage[]            @relation("SentDirectMessages")
+  calendarEvents          CalendarEvent[]           @relation("CreatedCalendarEvents")
+  timeLogs                TimeLog[]                 @relation("UserTimeLogs")
+  timeLogReviews          TimeLog[]                 @relation("ReviewedTimeLogs")
+  tokenLedger             TokenLedger[]             @relation("TokenLedger")
+  aiTaskReviews           AiTaskReview[]            @relation("AiTaskReviews")
+  createdPolls            Poll[]                    @relation("CreatedPolls")
+  pollVotes               PollVote[]                @relation("UserPollVotes")
+  impactUpdates           ImpactUpdate[]            @relation("ImpactUpdates")
+  approvedInstances       ProjectInstance[]         @relation("ApprovedInstances")
+  alumni                  ProjectAlumni[]           @relation("AlumniUsers")
+  mentorProfile           Mentor?                   @relation("MentorProfile")
+  authoredGuides          AcademyGuide[]            @relation("GuideAuthor")
+  reviewedGuides          AcademyGuide[]            @relation("GuideReviewer")
+  guideCompletions        UserGuideCompletion[]     @relation("GuideCompletions")
+  kudosSent               Kudos[]                   @relation("KudosSent")
+  kudosReceived           Kudos[]                   @relation("KudosReceived")
+  streaks                 UserStreak[]              @relation("UserStreaks")
+  dreamPosts              DreamWallPost[]           @relation("DreamPosts")
+  dreamReactions          DreamWallReaction[]       @relation("DreamReactions")
+  projectFlags            ProjectFlag[]             @relation("FlaggedBy")
+  flagReviews             ProjectFlag[]             @relation("FlagReviewer")
+  ethicsReviews           EthicsReview[]            @relation("EthicsReviewer")
+  kanbanComments          KanbanCardComment[]       @relation("KanbanComments")
+  onboardingDone          Boolean                   @default(false)
+  feedPosts               FeedPost[]                @relation("AuthoredFeedPosts")
+  feedLikes               FeedLike[]                @relation("FeedLikes")
+  feedComments            FeedComment[]             @relation("AuthoredFeedComments")
+  roomParticipations      RoomParticipant[]         @relation("RoomParticipant")
+  sentMessages            Message[]                 @relation("SentMessages")
+  messageReactions        MessageReaction[]         @relation("MessageReactions")
 }
 
 model Skill {
@@ -135,13 +132,13 @@ model Organisation {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner             User                      @relation("OwnedOrganisations", fields: [ownerId], references: [id], onDelete: Cascade)
-  members           OrganisationMember[]
-  joinRequests      OrganisationJoinRequest[]
-  workspaceMessages WorkspaceMessage[]        @relation("OrgMessages")
-  workspaceTasks    WorkspaceTask[]            @relation("OrgTasks")
-  projects          Project[]
-  invites           OrgInvite[]
+  owner          User                      @relation("OwnedOrganisations", fields: [ownerId], references: [id], onDelete: Cascade)
+  members        OrganisationMember[]
+  joinRequests   OrganisationJoinRequest[]
+  rooms          Room[]                    @relation("OrgRooms")
+  workspaceTasks WorkspaceTask[]           @relation("OrgTasks")
+  projects       Project[]
+  invites        OrgInvite[]
 }
 
 model OrganisationMember {
@@ -204,17 +201,6 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model WorkspaceMessage {
-  id             String   @id @default(cuid())
-  organisationId String
-  authorId       String
-  content        String
-  createdAt      DateTime @default(now())
-
-  organisation Organisation @relation("OrgMessages", fields: [organisationId], references: [id], onDelete: Cascade)
-  author       User         @relation("AuthoredMessages", fields: [authorId], references: [id], onDelete: Cascade)
-}
-
 model WorkspaceTask {
   id             String   @id @default(cuid())
   organisationId String
@@ -241,7 +227,7 @@ model File {
 }
 
 model KanbanCard {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   projectSlug String
   title       String
   description String?
@@ -256,15 +242,15 @@ model KanbanCard {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  createdBy User    @relation("CreatedKanbanCards", fields: [createdById], references: [id], onDelete: Cascade)
-  assignee  User?   @relation("AssignedKanbanCards", fields: [assigneeId], references: [id], onDelete: SetNull)
-  project   Project @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
-  estimate         TaskEstimate?
-  timeLogs         TimeLog[]       @relation("KanbanTimeLogs")
-  tokenLedger      TokenLedger[]   @relation("KanbanTokens")
-  aiTaskRuns       AiTaskRun[]     @relation("KanbanAiRuns")
-  subtasks         KanbanCardSubtask[]
-  comments         KanbanCardComment[]
+  createdBy   User                @relation("CreatedKanbanCards", fields: [createdById], references: [id], onDelete: Cascade)
+  assignee    User?               @relation("AssignedKanbanCards", fields: [assigneeId], references: [id], onDelete: SetNull)
+  project     Project             @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
+  estimate    TaskEstimate?
+  timeLogs    TimeLog[]           @relation("KanbanTimeLogs")
+  tokenLedger TokenLedger[]       @relation("KanbanTokens")
+  aiTaskRuns  AiTaskRun[]         @relation("KanbanAiRuns")
+  subtasks    KanbanCardSubtask[]
+  comments    KanbanCardComment[]
 
   @@index([projectSlug, column])
 }
@@ -295,13 +281,13 @@ model KanbanCardComment {
 }
 
 model TodoList {
-  id          String     @id @default(cuid())
+  id          String   @id @default(cuid())
   projectSlug String
   name        String
-  order       Int        @default(0)
+  order       Int      @default(0)
   createdById String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   createdBy User       @relation("CreatedTodoLists", fields: [createdById], references: [id], onDelete: Cascade)
   project   Project    @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
@@ -348,35 +334,35 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner          User                 @relation("OwnedProjects", fields: [ownerId], references: [id], onDelete: Cascade)
-  org            Organisation?        @relation(fields: [orgId], references: [id])
-  members        ProjectMember[]
-  joinRequests   ProjectJoinRequest[]
-  kanbanCards    KanbanCard[]
-  todoLists      TodoList[]
-  todoItems      TodoItem[]
-  blogPosts      BlogPost[]
-  milestones     Milestone[]
-  activityEvents ActivityEvent[]
-  invites        ProjectInvite[]
-  wikiPages      WikiPage[]
-  neededSkills     ProjectSkill[]
-  fundingCampaign  FundingCampaign?
-  channels         Channel[]       @relation("ProjectChannels")
-  calendarEvents   CalendarEvent[] @relation("ProjectCalendarEvents")
-  tokenLedger      TokenLedger[]   @relation("ProjectTokenLedger")
-  polls            Poll[]          @relation("ProjectPolls")
-  impactMetrics    ImpactMetric[]    @relation("ProjectImpactMetrics")
-  maturity         ProjectMaturity?  @relation("ProjectMaturity")
-  parentInstances  ProjectInstance[] @relation("ParentInstances")
-  childInstance    ProjectInstance?  @relation("ChildInstance")
-  alumni           ProjectAlumni[]   @relation("ProjectAlumni")
-  openForReplication Boolean         @default(false)
-  mentorships   MentorshipRequest[] @relation("ProjectMentorships")
-  kudos         Kudos[]             @relation("ProjectKudos")
-  streaks       UserStreak[]        @relation("ProjectStreaks")
-  flags         ProjectFlag[]       @relation("ProjectFlags")
-  ethicsReviews EthicsReview[]      @relation("EthicsReviews")
+  owner              User                 @relation("OwnedProjects", fields: [ownerId], references: [id], onDelete: Cascade)
+  org                Organisation?        @relation(fields: [orgId], references: [id])
+  members            ProjectMember[]
+  joinRequests       ProjectJoinRequest[]
+  kanbanCards        KanbanCard[]
+  todoLists          TodoList[]
+  todoItems          TodoItem[]
+  blogPosts          BlogPost[]
+  milestones         Milestone[]
+  activityEvents     ActivityEvent[]
+  invites            ProjectInvite[]
+  wikiPages          WikiPage[]
+  neededSkills       ProjectSkill[]
+  fundingCampaign    FundingCampaign?
+  rooms              Room[]               @relation("ProjectRooms")
+  calendarEvents     CalendarEvent[]      @relation("ProjectCalendarEvents")
+  tokenLedger        TokenLedger[]        @relation("ProjectTokenLedger")
+  polls              Poll[]               @relation("ProjectPolls")
+  impactMetrics      ImpactMetric[]       @relation("ProjectImpactMetrics")
+  maturity           ProjectMaturity?     @relation("ProjectMaturity")
+  parentInstances    ProjectInstance[]    @relation("ParentInstances")
+  childInstance      ProjectInstance?     @relation("ChildInstance")
+  alumni             ProjectAlumni[]      @relation("ProjectAlumni")
+  openForReplication Boolean              @default(false)
+  mentorships        MentorshipRequest[]  @relation("ProjectMentorships")
+  kudos              Kudos[]              @relation("ProjectKudos")
+  streaks            UserStreak[]         @relation("ProjectStreaks")
+  flags              ProjectFlag[]        @relation("ProjectFlags")
+  ethicsReviews      EthicsReview[]       @relation("EthicsReviews")
 }
 
 model ProjectSkill {
@@ -405,22 +391,22 @@ model ProjectMember {
 }
 
 model Idea {
-  id              String   @id @default(cuid())
-  title           String
-  description     String?
-  problem         String?
-  solution        String?
-  sdgGoals        Int[]
-  category        String?
-  tags            String[]
-  imageUrl        String?
-  targetRegion    String   @default("global")
-  estimatedReach  Int?
-  status          String   @default("open")
-  viewCount       Int      @default(0)
-  authorId        String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  title          String
+  description    String?
+  problem        String?
+  solution       String?
+  sdgGoals       Int[]
+  category       String?
+  tags           String[]
+  imageUrl       String?
+  targetRegion   String   @default("global")
+  estimatedReach Int?
+  status         String   @default("open")
+  viewCount      Int      @default(0)
+  authorId       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   author       User              @relation("AuthoredIdeas", fields: [authorId], references: [id], onDelete: Cascade)
   votes        IdeaVote[]
@@ -542,7 +528,7 @@ model ProjectInvite {
   createdById String
   expiresAt   DateTime
   usedAt      DateTime?
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime    @default(now())
 
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdBy User    @relation("CreatedProjectInvites", fields: [createdById], references: [id])
@@ -594,20 +580,19 @@ model ActivityEvent {
   user    User    @relation("ActivityEvents", fields: [userId], references: [id])
 }
 
-
 model FundingCampaign {
-  id          String   @id @default(cuid())
-  projectId   String   @unique
-  title       String
-  description String?
-  goal        Int
-  currency    String   @default("SEK")
-  status          String   @default("active")
-  campaignType    String   @default("donation")
+  id              String    @id @default(cuid())
+  projectId       String    @unique
+  title           String
+  description     String?
+  goal            Int
+  currency        String    @default("SEK")
+  status          String    @default("active")
+  campaignType    String    @default("donation")
   deadline        DateTime?
-  platformFee     Float    @default(5)
+  platformFee     Float     @default(5)
   stripeAccountId String?
-  createdAt       DateTime @default(now())
+  createdAt       DateTime  @default(now())
 
   project     Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   pledges     FundingPledge[]
@@ -616,23 +601,22 @@ model FundingCampaign {
 }
 
 model FundingPledge {
-  id         String   @id @default(cuid())
-  campaignId String
-  userId     String
-  amount     Int
-  message          String?
-  stripeSessionId  String?
-  pledgeStatus     String  @default("confirmed")
-  rewardTierId     String?
-  createdAt        DateTime @default(now())
+  id              String   @id @default(cuid())
+  campaignId      String
+  userId          String
+  amount          Int
+  message         String?
+  stripeSessionId String?
+  pledgeStatus    String   @default("confirmed")
+  rewardTierId    String?
+  createdAt       DateTime @default(now())
 
-  campaign    FundingCampaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  user        User               @relation("FundingPledges", fields: [userId], references: [id], onDelete: Cascade)
-  rewardTier  FundingRewardTier? @relation(fields: [rewardTierId], references: [id], onDelete: SetNull)
+  campaign   FundingCampaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user       User               @relation("FundingPledges", fields: [userId], references: [id], onDelete: Cascade)
+  rewardTier FundingRewardTier? @relation(fields: [rewardTierId], references: [id], onDelete: SetNull)
 
   @@unique([campaignId, userId])
 }
-
 
 model CalendarEvent {
   id          String    @id @default(cuid())
@@ -713,15 +697,15 @@ model AiTaskRun {
 }
 
 model AiTaskReview {
-  id            String     @id @default(cuid())
+  id            String    @id @default(cuid())
   aiTaskRunId   String
-  aiTaskRun     AiTaskRun  @relation(fields: [aiTaskRunId], references: [id], onDelete: Cascade)
+  aiTaskRun     AiTaskRun @relation(fields: [aiTaskRunId], references: [id], onDelete: Cascade)
   reviewerId    String
-  reviewer      User       @relation("AiTaskReviews", fields: [reviewerId], references: [id])
+  reviewer      User      @relation("AiTaskReviews", fields: [reviewerId], references: [id])
   decision      String
-  feedback      String?    @db.Text
+  feedback      String?   @db.Text
   tokensAwarded Float?
-  createdAt     DateTime   @default(now())
+  createdAt     DateTime  @default(now())
 }
 
 model Poll {
@@ -802,98 +786,98 @@ model FundingExpense {
 }
 
 model ImpactMetric {
-  id           String          @id @default(cuid())
+  id           String         @id @default(cuid())
   projectSlug  String
-  project      Project         @relation("ProjectImpactMetrics", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  project      Project        @relation("ProjectImpactMetrics", fields: [projectSlug], references: [slug], onDelete: Cascade)
   label        String
   unit         String
   targetValue  Float?
-  currentValue Float           @default(0)
+  currentValue Float          @default(0)
   description  String?
   updates      ImpactUpdate[]
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
   @@index([projectSlug])
 }
 
 model ImpactUpdate {
-  id              String       @id @default(cuid())
-  impactMetricId  String
-  impactMetric    ImpactMetric @relation(fields: [impactMetricId], references: [id], onDelete: Cascade)
-  value           Float
-  note            String?
-  updatedById     String
-  updatedBy       User         @relation("ImpactUpdates", fields: [updatedById], references: [id])
-  createdAt       DateTime     @default(now())
+  id             String       @id @default(cuid())
+  impactMetricId String
+  impactMetric   ImpactMetric @relation(fields: [impactMetricId], references: [id], onDelete: Cascade)
+  value          Float
+  note           String?
+  updatedById    String
+  updatedBy      User         @relation("ImpactUpdates", fields: [updatedById], references: [id])
+  createdAt      DateTime     @default(now())
 
   @@index([impactMetricId])
 }
 
 model ProjectMaturity {
-  id               String   @id @default(cuid())
-  projectSlug      String   @unique
-  project          Project  @relation("ProjectMaturity", fields: [projectSlug], references: [slug], onDelete: Cascade)
-  score            Int      @default(0)
+  id               String    @id @default(cuid())
+  projectSlug      String    @unique
+  project          Project   @relation("ProjectMaturity", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  score            Int       @default(0)
   scoreBreakdown   Json?
   scaleInitiatedAt DateTime?
-  scalingPlan      String?  @db.Text
-  finalReport      String?  @db.Text
-  calculatedAt     DateTime @default(now())
+  scalingPlan      String?   @db.Text
+  finalReport      String?   @db.Text
+  calculatedAt     DateTime  @default(now())
 }
 
 model ProjectInstance {
-  id              String   @id @default(cuid())
-  parentSlug      String
-  parent          Project  @relation("ParentInstances", fields: [parentSlug], references: [slug], onDelete: Cascade)
-  childSlug       String   @unique
-  child           Project  @relation("ChildInstance", fields: [childSlug], references: [slug], onDelete: Cascade)
-  region          String
-  status          String   @default("pending")
-  approvedById    String?
-  approvedBy      User?    @relation("ApprovedInstances", fields: [approvedById], references: [id])
-  createdAt       DateTime @default(now())
+  id           String   @id @default(cuid())
+  parentSlug   String
+  parent       Project  @relation("ParentInstances", fields: [parentSlug], references: [slug], onDelete: Cascade)
+  childSlug    String   @unique
+  child        Project  @relation("ChildInstance", fields: [childSlug], references: [slug], onDelete: Cascade)
+  region       String
+  status       String   @default("pending")
+  approvedById String?
+  approvedBy   User?    @relation("ApprovedInstances", fields: [approvedById], references: [id])
+  createdAt    DateTime @default(now())
 
   @@unique([parentSlug, childSlug])
 }
 
 model ProjectAlumni {
-  id             String   @id @default(cuid())
-  projectSlug    String
-  project        Project  @relation("ProjectAlumni", fields: [projectSlug], references: [slug], onDelete: Cascade)
-  userId         String
-  user           User     @relation("AlumniUsers", fields: [userId], references: [id])
-  tokensEarned   Float    @default(0)
-  badgeIssuedAt  DateTime @default(now())
-  finalReport    String?  @db.Text
+  id            String   @id @default(cuid())
+  projectSlug   String
+  project       Project  @relation("ProjectAlumni", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  userId        String
+  user          User     @relation("AlumniUsers", fields: [userId], references: [id])
+  tokensEarned  Float    @default(0)
+  badgeIssuedAt DateTime @default(now())
+  finalReport   String?  @db.Text
 
   @@unique([projectSlug, userId])
   @@index([projectSlug])
 }
 
 model Mentor {
-  id          String               @id @default(cuid())
-  userId      String               @unique
-  user        User                 @relation("MentorProfile", fields: [userId], references: [id], onDelete: Cascade)
-  categories  String[]
-  bio         String?
-  verified    Boolean              @default(false)
-  requests    MentorshipRequest[]
-  createdAt   DateTime             @default(now())
+  id         String              @id @default(cuid())
+  userId     String              @unique
+  user       User                @relation("MentorProfile", fields: [userId], references: [id], onDelete: Cascade)
+  categories String[]
+  bio        String?
+  verified   Boolean             @default(false)
+  requests   MentorshipRequest[]
+  createdAt  DateTime            @default(now())
 }
 
 model MentorshipRequest {
-  id          String              @id @default(cuid())
-  projectId   String
-  project     Project             @relation("ProjectMentorships", fields: [projectId], references: [id], onDelete: Cascade)
-  mentorId    String
-  mentor      Mentor              @relation(fields: [mentorId], references: [id], onDelete: Cascade)
-  status      String              @default("pending")
-  message     String?
-  sessionAt   DateTime?
+  id            String              @id @default(cuid())
+  projectId     String
+  project       Project             @relation("ProjectMentorships", fields: [projectId], references: [id], onDelete: Cascade)
+  mentorId      String
+  mentor        Mentor              @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  status        String              @default("pending")
+  message       String?
+  sessionAt     DateTime?
   tokensAwarded Float?
-  feedback    MentorshipFeedback?
-  createdAt   DateTime            @default(now())
+  feedback      MentorshipFeedback?
+  createdAt     DateTime            @default(now())
 
   @@index([projectId])
   @@index([mentorId])
@@ -909,20 +893,20 @@ model MentorshipFeedback {
 }
 
 model AcademyGuide {
-  id               String                @id @default(cuid())
-  title            String
-  bodyMarkdown     String                @db.Text
-  category         String
-  authorId         String
-  author           User                  @relation("GuideAuthor", fields: [authorId], references: [id])
-  reviewedById     String?
-  reviewedBy       User?                 @relation("GuideReviewer", fields: [reviewedById], references: [id])
-  difficulty       String                @default("beginner")
-  readTimeMinutes  Int                   @default(5)
-  published        Boolean               @default(false)
-  completions      UserGuideCompletion[]
-  createdAt        DateTime              @default(now())
-  updatedAt        DateTime              @updatedAt
+  id              String                @id @default(cuid())
+  title           String
+  bodyMarkdown    String                @db.Text
+  category        String
+  authorId        String
+  author          User                  @relation("GuideAuthor", fields: [authorId], references: [id])
+  reviewedById    String?
+  reviewedBy      User?                 @relation("GuideReviewer", fields: [reviewedById], references: [id])
+  difficulty      String                @default("beginner")
+  readTimeMinutes Int                   @default(5)
+  published       Boolean               @default(false)
+  completions     UserGuideCompletion[]
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
 
   @@index([category])
 }
@@ -939,15 +923,15 @@ model UserGuideCompletion {
 }
 
 model Kudos {
-  id          String   @id @default(cuid())
-  fromUserId  String
-  fromUser    User     @relation("KudosSent", fields: [fromUserId], references: [id], onDelete: Cascade)
-  toUserId    String
-  toUser      User     @relation("KudosReceived", fields: [toUserId], references: [id], onDelete: Cascade)
-  projectId   String?
-  project     Project? @relation("ProjectKudos", fields: [projectId], references: [id], onDelete: SetNull)
-  message     String
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  fromUserId String
+  fromUser   User     @relation("KudosSent", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId   String
+  toUser     User     @relation("KudosReceived", fields: [toUserId], references: [id], onDelete: Cascade)
+  projectId  String?
+  project    Project? @relation("ProjectKudos", fields: [projectId], references: [id], onDelete: SetNull)
+  message    String
+  createdAt  DateTime @default(now())
 
   @@index([toUserId])
 }
@@ -966,12 +950,12 @@ model UserStreak {
 }
 
 model DreamWallPost {
-  id        String               @id @default(cuid())
+  id        String              @id @default(cuid())
   userId    String
-  user      User                 @relation("DreamPosts", fields: [userId], references: [id], onDelete: Cascade)
+  user      User                @relation("DreamPosts", fields: [userId], references: [id], onDelete: Cascade)
   dreamText String
   reactions DreamWallReaction[]
-  createdAt DateTime             @default(now())
+  createdAt DateTime            @default(now())
 }
 
 model DreamWallReaction {
@@ -1004,114 +988,106 @@ model ProjectFlag {
 }
 
 model EthicsReview {
-  id            String      @id @default(cuid())
+  id            String       @id @default(cuid())
   projectId     String
-  project       Project     @relation("EthicsReviews", fields: [projectId], references: [id], onDelete: Cascade)
+  project       Project      @relation("EthicsReviews", fields: [projectId], references: [id], onDelete: Cascade)
   reviewerId    String
-  reviewer      User        @relation("EthicsReviewer", fields: [reviewerId], references: [id])
-  projectFlagId String?     @unique
+  reviewer      User         @relation("EthicsReviewer", fields: [reviewerId], references: [id])
+  projectFlagId String?      @unique
   projectFlag   ProjectFlag? @relation(fields: [projectFlagId], references: [id])
   outcome       String
   note          String?
-  createdAt     DateTime    @default(now())
+  createdAt     DateTime     @default(now())
 
   @@index([projectId])
 }
 
-model Channel {
-  id          String   @id @default(cuid())
-  projectId   String
-  project     Project  @relation("ProjectChannels", fields: [projectId], references: [id], onDelete: Cascade)
-  name        String
-  description String?
-  type        String   @default("text")
-  order       Int      @default(0)
-  pinned      Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  messages    ChannelMessage[]
-  readMarkers ChannelReadMarker[]
+enum RoomType {
+  DM
+  GROUP
+  PROJECT_CHANNEL
+  ORG_CHANNEL
+}
 
-  @@index([projectId])
+enum RoomPostingPolicy {
+  ALL_MEMBERS
+  LEADS_ONLY
+}
+
+enum RoomParticipantRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model Room {
+  id             String            @id @default(cuid())
+  type           RoomType
+  name           String?
+  description    String?
+  pairKey        String?           @unique
+  projectId      String?
+  project        Project?          @relation("ProjectRooms", fields: [projectId], references: [id], onDelete: Cascade)
+  organisationId String?
+  organisation   Organisation?     @relation("OrgRooms", fields: [organisationId], references: [id], onDelete: Cascade)
+  postingPolicy  RoomPostingPolicy @default(ALL_MEMBERS)
+  order          Int               @default(0)
+  pinned         Boolean           @default(false)
+  createdAt      DateTime          @default(now())
+  lastMessageAt  DateTime          @default(now())
+
+  participants RoomParticipant[]
+  messages     Message[]
+
   @@unique([projectId, name])
-}
-
-model ChannelMessage {
-  id             String   @id @default(cuid())
-  channelId      String
-  channel        Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  authorId       String
-  author         User     @relation("ChannelMessages", fields: [authorId], references: [id], onDelete: Cascade)
-  body           String   @db.Text
-  threadParentId String?
-  threadParent   ChannelMessage?  @relation("MessageThread", fields: [threadParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  threadReplies  ChannelMessage[] @relation("MessageThread")
-  reactions      ChannelMessageReaction[]
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  @@index([channelId, createdAt])
-  @@index([threadParentId])
-}
-
-model ChannelMessageReaction {
-  id        String         @id @default(cuid())
-  messageId String
-  message   ChannelMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User           @relation("ChannelReactions", fields: [userId], references: [id], onDelete: Cascade)
-  emoji     String
-  createdAt DateTime       @default(now())
-
-  @@unique([messageId, userId, emoji])
-}
-
-model ChannelReadMarker {
-  id         String   @id @default(cuid())
-  channelId  String
-  channel    Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  userId     String
-  user       User     @relation("ChannelReadMarkers", fields: [userId], references: [id], onDelete: Cascade)
-  lastReadAt DateTime @default(now())
-
-  @@unique([channelId, userId])
-  @@index([userId])
-}
-
-model Conversation {
-  id            String   @id @default(cuid())
-  pairKey       String?  @unique
-  createdAt     DateTime @default(now())
-  lastMessageAt DateTime @default(now())
-
-  participants ConversationParticipant[]
-  messages     DirectMessage[]
-
+  @@unique([organisationId, name])
+  @@index([projectId])
+  @@index([organisationId])
   @@index([lastMessageAt])
 }
 
-model ConversationParticipant {
-  id             String       @id @default(cuid())
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  userId         String
-  user           User         @relation("ConversationParticipant", fields: [userId], references: [id], onDelete: Cascade)
-  lastReadAt     DateTime     @default(now())
-  createdAt      DateTime     @default(now())
+model RoomParticipant {
+  id         String              @id @default(cuid())
+  roomId     String
+  room       Room                @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User                @relation("RoomParticipant", fields: [userId], references: [id], onDelete: Cascade)
+  role       RoomParticipantRole @default(MEMBER)
+  lastReadAt DateTime            @default(now())
+  createdAt  DateTime            @default(now())
 
-  @@unique([conversationId, userId])
+  @@unique([roomId, userId])
   @@index([userId])
 }
 
-model DirectMessage {
-  id             String       @id @default(cuid())
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  senderId       String
-  sender         User         @relation("SentDirectMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  body           String       @db.Text
-  createdAt      DateTime     @default(now())
+model Message {
+  id             String            @id @default(cuid())
+  roomId         String
+  room           Room              @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  authorId       String
+  author         User              @relation("SentMessages", fields: [authorId], references: [id], onDelete: Cascade)
+  body           String            @db.Text
+  threadParentId String?
+  threadParent   Message?          @relation("MessageThread", fields: [threadParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  threadReplies  Message[]         @relation("MessageThread")
+  reactions      MessageReaction[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 
-  @@index([conversationId, createdAt])
+  @@index([roomId, createdAt])
+  @@index([threadParentId])
+}
+
+model MessageReaction {
+  id        String   @id @default(cuid())
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation("MessageReactions", fields: [userId], references: [id], onDelete: Cascade)
+  emoji     String
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, userId, emoji])
 }
 
 model FeedPost {
@@ -1127,7 +1103,7 @@ model FeedPost {
 }
 
 // Likes on any feed item (FeedPost, BlogPost, Milestone, Project, Idea,
-// ActivityEvent, ChannelMessage, KanbanCardComment, IdeaComment). Not a
+// ActivityEvent, Message, KanbanCardComment, IdeaComment). Not a
 // Prisma relation to the target — targetType/targetId is looked up by the
 // app layer, matching how the feed already treats these as a loose union.
 model FeedLike {

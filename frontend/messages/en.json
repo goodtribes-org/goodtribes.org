@@ -67,6 +67,8 @@
     "cta": "Message",
     "sendTo": "Message {name}",
     "cancel": "Cancel",
-    "sendError": "Could not send message. Try again."
+    "sendError": "Could not send message. Try again.",
+    "directMessages": "Direct messages",
+    "selectRoom": "Select a conversation on the left."
   }
 }

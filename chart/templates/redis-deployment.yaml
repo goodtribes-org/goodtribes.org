@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goodtribes-redis
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "goodtribes.labels" . | nindent 4 }}
+    app.kubernetes.io/name: redis
+spec:
+  replicas: {{ .Values.redis.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "goodtribes.selectorLabels" "redis" | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "goodtribes.selectorLabels" "redis" | nindent 8 }}
+    spec:
+      containers:
+        - name: redis
+          image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
+          imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+          command: ["redis-server", "--requirepass", "$(REDIS_PASSWORD)", "--save", "", "--appendonly", "no"]
+          ports:
+            - containerPort: 6379
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: goodtribes-secret
+          env:
+            {{- range $key, $value := .Values.redis.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "-a", "$(REDIS_PASSWORD)", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["redis-cli", "-a", "$(REDIS_PASSWORD)", "ping"]
+            initialDelaySeconds: 15
+            periodSeconds: 20

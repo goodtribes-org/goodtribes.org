@@ -3,76 +3,244 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { createNotification } from "@/lib/notify";
-import { findOrCreateConversation } from "@/lib/conversations";
-
-async function requireParticipant(conversationId: string, userId: string) {
-  const participant = await prisma.conversationParticipant.findUnique({
-    where: { conversationId_userId: { conversationId, userId } },
-  });
-  if (!participant) throw new Error("Forbidden");
-}
+import { getProjectRole, isLeadRole } from "@/lib/authz";
+import { getRoomAccess } from "@/lib/roomAuth";
+import { publishToRoom } from "@/lib/redis";
+import {
+  findOrCreateDmRoom,
+  createGroupRoom,
+  markRoomRead as markRoomReadDb,
+} from "@/lib/rooms";
+import type { Room, RoomPostingPolicy } from "@prisma/client";
 
 function assertValidBody(body: string) {
   const stripped = body.replace(/<[^>]*>/g, "").trim();
   if (!stripped || body.length > 10_000) throw new Error("Invalid message");
 }
 
-export async function sendDirectMessage(conversationId: string, body: string) {
+async function getNotificationRecipients(room: Room, senderId: string, threadParentId?: string): Promise<string[]> {
+  if (threadParentId) {
+    const [parent, repliers] = await Promise.all([
+      prisma.message.findUnique({ where: { id: threadParentId }, select: { authorId: true } }),
+      prisma.message.findMany({ where: { threadParentId }, select: { authorId: true }, distinct: ["authorId"] }),
+    ]);
+    return [
+      ...new Set(
+        [parent?.authorId, ...repliers.map((r) => r.authorId)].filter(
+          (id): id is string => !!id && id !== senderId
+        )
+      ),
+    ];
+  }
+
+  if (room.type === "DM" || room.type === "GROUP") {
+    const participants = await prisma.roomParticipant.findMany({
+      where: { roomId: room.id, userId: { not: senderId } },
+      select: { userId: true },
+    });
+    return participants.map((p) => p.userId);
+  }
+
+  if (room.type === "PROJECT_CHANNEL" && room.projectId) {
+    const members = await prisma.projectMember.findMany({
+      where: { projectId: room.projectId, userId: { not: senderId } },
+      select: { userId: true },
+    });
+    return members.map((m) => m.userId);
+  }
+
+  if (room.type === "ORG_CHANNEL" && room.organisationId) {
+    const [members, org] = await Promise.all([
+      prisma.organisationMember.findMany({
+        where: { organisationId: room.organisationId, userId: { not: senderId } },
+        select: { userId: true },
+      }),
+      prisma.organisation.findUnique({ where: { id: room.organisationId }, select: { ownerId: true } }),
+    ]);
+    const ids = new Set(members.map((m) => m.userId));
+    if (org && org.ownerId !== senderId) ids.add(org.ownerId);
+    return [...ids];
+  }
+
+  return [];
+}
+
+function buildNotificationCopy(room: Room, senderName: string, body: string, isThread: boolean) {
+  const preview = body.replace(/<[^>]*>/g, "").trim();
+  const trimmed = preview.length > 120 ? `${preview.slice(0, 120)}…` : preview;
+
+  if (room.type === "DM") {
+    return { title: `Nytt meddelande från ${senderName}`, body: trimmed };
+  }
+  if (room.type === "GROUP") {
+    return { title: `Nytt meddelande i ${room.name ?? "gruppen"}`, body: `${senderName}: ${trimmed}` };
+  }
+  const label = room.name ? `#${room.name}` : room.type === "ORG_CHANNEL" ? "arbetsrummet" : "kanalen";
+  return {
+    title: isThread ? `Nytt svar i tråd i ${label}` : `Nytt meddelande i ${label}`,
+    body: `${senderName} skrev ett meddelande`,
+  };
+}
+
+export async function sendRoomMessage(roomId: string, body: string, threadParentId?: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
-  await requireParticipant(conversationId, session.user.id);
+  const userId = session.user.id;
+
+  const access = await getRoomAccess(roomId, userId);
+  if (!access?.canPost) throw new Error("Forbidden");
   assertValidBody(body);
 
-  await prisma.directMessage.create({
-    data: { conversationId, senderId: session.user.id, body },
-  });
-  await prisma.conversation.update({
-    where: { id: conversationId },
-    data: { lastMessageAt: new Date() },
+  const message = await prisma.message.create({
+    data: { roomId, authorId: userId, body, threadParentId },
+    include: {
+      author: { select: { id: true, name: true, image: true } },
+      reactions: { select: { emoji: true, userId: true } },
+      _count: { select: { threadReplies: true } },
+    },
   });
 
-  const recipients = await prisma.conversationParticipant.findMany({
-    where: { conversationId, userId: { not: session.user.id } },
-    select: { userId: true },
-  });
-  const senderName = session.user.name ?? "Någon";
-  await Promise.allSettled(
-    recipients.map((r) =>
-      createNotification({
-        userId: r.userId,
-        type: "direct_message",
-        title: `Nytt meddelande från ${senderName}`,
-        body: body.length > 120 ? `${body.slice(0, 120)}…` : body,
-        url: `/messages/${conversationId}`,
+  await prisma.room.update({ where: { id: roomId }, data: { lastMessageAt: new Date() } });
+
+  // Lazily create/refresh the sender's own roster row for channel types so
+  // they never see their own just-sent message flagged unread.
+  if (access.room.type === "PROJECT_CHANNEL" || access.room.type === "ORG_CHANNEL") {
+    await markRoomReadDb(roomId, userId);
+  }
+
+  publishToRoom(roomId, message);
+
+  const recipients = await getNotificationRecipients(access.room, userId, threadParentId);
+  if (recipients.length > 0) {
+    const senderName = session.user.name ?? "Någon";
+    const { title, body: notifBody } = buildNotificationCopy(access.room, senderName, body, !!threadParentId);
+    await prisma.notification
+      .createMany({
+        data: recipients.map((recipientId) => ({
+          userId: recipientId,
+          type: threadParentId ? "room_thread_reply" : "room_message",
+          title,
+          body: notifBody,
+          url: `/messages/${roomId}`,
+        })),
       })
-    )
-  );
+      .catch(() => {});
+  }
 
   revalidatePath("/messages");
-  revalidatePath(`/messages/${conversationId}`);
+  revalidatePath(`/messages/${roomId}`);
+  revalidatePath("/feed");
+
+  return message;
 }
 
-export async function startConversation(
-  recipientUserId: string,
-  firstMessage: string
-): Promise<{ conversationId: string }> {
+export async function startDirectMessage(recipientUserId: string, firstMessage: string): Promise<{ roomId: string }> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  const conversationId = await findOrCreateConversation(session.user.id, recipientUserId);
-  await sendDirectMessage(conversationId, firstMessage);
-
-  return { conversationId };
+  const roomId = await findOrCreateDmRoom(session.user.id, recipientUserId);
+  await sendRoomMessage(roomId, firstMessage);
+  return { roomId };
 }
 
-export async function markConversationRead(conversationId: string) {
+export async function createGroupChat(
+  memberIds: string[],
+  name?: string,
+  firstMessage?: string
+): Promise<{ roomId: string }> {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+  if (memberIds.length === 0) throw new Error("A group needs at least one other member");
+
+  const roomId = await createGroupRoom(session.user.id, memberIds, name);
+  if (firstMessage?.trim()) {
+    await sendRoomMessage(roomId, firstMessage.trim());
+  }
+  revalidatePath("/messages");
+  return { roomId };
+}
+
+export async function createChannelRoom(params: {
+  projectId?: string;
+  organisationId?: string;
+  name: string;
+  description?: string;
+  postingPolicy?: RoomPostingPolicy;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+  const userId = session.user.id;
+
+  if (params.projectId) {
+    const role = await getProjectRole(params.projectId, userId);
+    if (!(role && isLeadRole(role))) throw new Error("Only admins can create channels");
+  } else if (params.organisationId) {
+    const [member, org] = await Promise.all([
+      prisma.organisationMember.findUnique({
+        where: { organisationId_userId: { organisationId: params.organisationId, userId } },
+      }),
+      prisma.organisation.findUnique({ where: { id: params.organisationId }, select: { ownerId: true } }),
+    ]);
+    const isLead = org?.ownerId === userId || member?.role === "admin";
+    if (!isLead) throw new Error("Only admins can create channels");
+  } else {
+    throw new Error("Channel must belong to a project or organisation");
+  }
+
+  const safeName = params.name
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-zåäö0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 40);
+  if (!safeName) throw new Error("Invalid channel name");
+
+  const maxOrder = await prisma.room.aggregate({
+    where: { projectId: params.projectId, organisationId: params.organisationId },
+    _max: { order: true },
+  });
+
+  const room = await prisma.room.create({
+    data: {
+      type: params.projectId ? "PROJECT_CHANNEL" : "ORG_CHANNEL",
+      projectId: params.projectId,
+      organisationId: params.organisationId,
+      name: safeName,
+      description: params.description,
+      postingPolicy: params.postingPolicy ?? "ALL_MEMBERS",
+      order: (maxOrder._max.order ?? 0) + 1,
+    },
+  });
+
+  revalidatePath("/messages");
+  return room;
+}
+
+export async function toggleReaction(messageId: string, roomId: string, emoji: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const access = await getRoomAccess(roomId, session.user.id);
+  if (!access?.canRead) throw new Error("Forbidden");
+
+  const existing = await prisma.messageReaction.findUnique({
+    where: { messageId_userId_emoji: { messageId, userId: session.user.id, emoji } },
+  });
+
+  if (existing) {
+    await prisma.messageReaction.delete({ where: { id: existing.id } });
+  } else {
+    await prisma.messageReaction.create({ data: { messageId, userId: session.user.id, emoji } });
+  }
+
+  revalidatePath(`/messages/${roomId}`);
+  revalidatePath("/feed");
+}
+
+export async function markRoomRead(roomId: string) {
   const session = await auth();
   if (!session?.user?.id) return;
 
-  await prisma.conversationParticipant.updateMany({
-    where: { conversationId, userId: session.user.id },
-    data: { lastReadAt: new Date() },
-  });
+  await markRoomReadDb(roomId, session.user.id);
   revalidatePath("/messages");
 }

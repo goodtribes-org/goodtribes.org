@@ -6,5 +6,5 @@ export default async function ChatRedirect({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  redirect(`/projects/${slug}/kanaler`);
+  redirect(`/messages?project=${slug}`);
 }

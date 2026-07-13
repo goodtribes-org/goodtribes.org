@@ -2,7 +2,7 @@
 
 import { useTransition, useState } from "react";
 import dynamic from "next/dynamic";
-import { sendMessage, sendThreadReply } from "../actions";
+import { sendRoomMessage } from "../actions";
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
@@ -11,13 +11,12 @@ function isEmpty(html: string) {
 }
 
 type Props = {
-  channelId: string;
-  projectSlug: string;
+  roomId: string;
   threadParentId?: string;
   onSent?: () => void;
 };
 
-export function MessageInput({ channelId, projectSlug, threadParentId, onSent }: Props) {
+export function MessageComposer({ roomId, threadParentId, onSent }: Props) {
   const [body, setBody] = useState("");
   const [editorKey, setEditorKey] = useState(0);
   const [isPending, startTransition] = useTransition();
@@ -26,11 +25,7 @@ export function MessageInput({ channelId, projectSlug, threadParentId, onSent }:
     e.preventDefault();
     if (isEmpty(body)) return;
     startTransition(async () => {
-      if (threadParentId) {
-        await sendThreadReply(channelId, threadParentId, projectSlug, body);
-      } else {
-        await sendMessage(channelId, projectSlug, body);
-      }
+      await sendRoomMessage(roomId, body, threadParentId);
       setBody("");
       setEditorKey((k) => k + 1);
       onSent?.();
@@ -40,12 +35,7 @@ export function MessageInput({ channelId, projectSlug, threadParentId, onSent }:
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2">
       <div className="border border-gray-300 rounded-xl overflow-hidden focus-within:border-seagrass focus-within:ring-1 focus-within:ring-seagrass/30 transition-all bg-white">
-        <RichTextEditor
-          key={editorKey}
-          content={body}
-          onChange={setBody}
-          compact={!!threadParentId}
-        />
+        <RichTextEditor key={editorKey} content={body} onChange={setBody} compact={!!threadParentId} />
       </div>
       <div className="flex justify-end">
         <button
