@@ -109,3 +109,9 @@ CI/CD chain on push to `main`:
 Sensitive production secrets live in a `goodtribes-secret` Kubernetes Secret in the `goodtribes` namespace — not in `chart/values.yaml`.
 
 The Helm chart deploys: frontend, backend (Strapi), postgres, meilisearch, ingress for `goodtribes.org` / `www.goodtribes.org` via Traefik.
+
+## Known issues
+
+- **Live chat updates don't appear in production (`REDIS_URL` missing from `goodtribes-secret`).** The messaging feature uses Redis pub/sub (`frontend/src/lib/redis.ts`) so a sent message is pushed live over SSE (`frontend/src/app/api/rooms/[roomId]/sse/route.ts`) to everyone with that room open. Redis itself (`chart/templates/redis-deployment.yaml`/`redis-service.yaml`) was added to the chart, and `frontend-deployment.yaml` already does `envFrom: secretRef: goodtribes-secret` (same pattern as `DATABASE_URL`, `AUTH_SECRET`, etc.), but **no one has added a `REDIS_URL` key to the actual `goodtribes-secret` object in the cluster yet.** Until that's done, `process.env.REDIS_URL` is `undefined` in the frontend pods, so `publishToRoom()`/`subscribeToRoom()` fail silently (`.catch(() => {})`) — messages still save to Postgres, but nobody gets a live update; only a manual page reload shows new messages.
+  - **Fix** (requires cluster access neither the agent nor the user had when this was found): add `REDIS_URL=redis://:<value of REDIS_PASSWORD>@goodtribes-redis:6379` to `goodtribes-secret` in the `goodtribes` namespace, then roll the frontend deployment (`kubectl rollout restart deployment/goodtribes-frontend -n goodtribes`, or trigger an ArgoCD sync).
+  - There's no git-managed path for this (no Sealed Secrets / External Secrets Operator in the chart) — `goodtribes-secret` is a plain, manually-managed k8s Secret, so this can only be fixed by whoever provisioned the cluster/secret originally.
