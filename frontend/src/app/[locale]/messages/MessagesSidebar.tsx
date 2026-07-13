@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import PresenceDot from "@/components/PresenceDot";
+import { useMessagesSection, type MessagesSection } from "./useMessagesSection";
 
 type DmGroupRoom = {
   id: string;
@@ -47,12 +48,48 @@ function Section({ title, defaultOpen = true, children }: { title: string; defau
   );
 }
 
+const TABS: { key: MessagesSection; labelKey: "unread" | "channelsTab" | "chatsTab" }[] = [
+  { key: "unread", labelKey: "unread" },
+  { key: "channels", labelKey: "channelsTab" },
+  { key: "chat", labelKey: "chatsTab" },
+];
+
+function TabRow({ active }: { active: MessagesSection }) {
+  const t = useTranslations("Messages");
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  function hrefFor(key: MessagesSection) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("section", key);
+    return `${pathname}?${params.toString()}`;
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 px-2 py-2 border-b border-muted-teal/20 overflow-x-auto">
+      {TABS.map((tab) => (
+        <Link
+          key={tab.key}
+          href={hrefFor(tab.key)}
+          className={`shrink-0 px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+            active === tab.key ? "bg-coral text-white" : "text-dark-slate/60 border border-muted-teal/30 hover:bg-dry-sage/20"
+          }`}
+        >
+          {t(tab.labelKey)}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 export function MessagesSidebar({ dmGroupRooms, projectGroups, orgGroups }: Props) {
   const t = useTranslations("Messages");
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const focusProjectSlug = searchParams.get("project");
   const focusOrgSlug = searchParams.get("org");
+  const section = useMessagesSection();
+  const visibleDmGroupRooms = section === "unread" ? dmGroupRooms.filter((r) => r.unread) : dmGroupRooms;
 
   const isIndex = pathname === "/messages" || pathname.endsWith("/messages");
 
@@ -64,11 +101,14 @@ export function MessagesSidebar({ dmGroupRooms, projectGroups, orgGroups }: Prop
     <aside
       className={`${isIndex ? "flex" : "hidden md:flex"} flex-col w-full md:w-64 shrink-0 border-r border-muted-teal/20 max-h-[calc(100dvh-160px)] overflow-y-auto`}
     >
+      <TabRow active={section} />
+
+      {(section === "chat" || section === "unread") && (
       <Section title={t("directMessages")}>
-        {dmGroupRooms.length === 0 && (
+        {visibleDmGroupRooms.length === 0 && (
           <p className="px-3 py-2 text-xs text-dark-slate/40 italic">{t("empty")}</p>
         )}
-        {dmGroupRooms.map((room) => {
+        {visibleDmGroupRooms.map((room) => {
           const title = room.type === "GROUP" ? room.name ?? room.otherUsers.map((u) => u.name).join(", ") : room.otherUsers[0]?.name ?? "?";
           const other = room.otherUsers[0];
           return (
@@ -89,7 +129,10 @@ export function MessagesSidebar({ dmGroupRooms, projectGroups, orgGroups }: Prop
           );
         })}
       </Section>
+      )}
 
+      {section === "channels" && (
+      <>
       {projectGroups.map((project) => (
         <Section key={project.id} title={project.title} defaultOpen={!focusProjectSlug || focusProjectSlug === project.slug}>
           {project.rooms.map((room) => (
@@ -123,6 +166,8 @@ export function MessagesSidebar({ dmGroupRooms, projectGroups, orgGroups }: Prop
           ))}
         </Section>
       ))}
+      </>
+      )}
     </aside>
   );
 }

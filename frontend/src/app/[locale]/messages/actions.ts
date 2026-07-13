@@ -10,12 +10,29 @@ import {
   findOrCreateDmRoom,
   createGroupRoom,
   markRoomRead as markRoomReadDb,
+  getRoomMentionables,
 } from "@/lib/rooms";
 import type { Room, RoomPostingPolicy } from "@prisma/client";
 
 function assertValidBody(body: string) {
   const stripped = body.replace(/<[^>]*>/g, "").trim();
   if (!stripped || body.length > 10_000) throw new Error("Invalid message");
+}
+
+// Mention nodes are serialized by RichTextEditor's Mention extension as
+// <span data-type="mention" data-id="...">@Name</span>. Extracted IDs are
+// never trusted as-is — the caller must intersect them with the room's
+// actual mentionable users before notifying anyone.
+function extractMentionedUserIds(body: string): string[] {
+  const ids = new Set<string>();
+  const re = /<span[^>]*data-type="mention"[^>]*>/g;
+  const idRe = /data-id="([^"]+)"/;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(body))) {
+    const idMatch = idRe.exec(match[0]);
+    if (idMatch) ids.add(idMatch[1]);
+  }
+  return [...ids];
 }
 
 async function getNotificationRecipients(room: Room, senderId: string, threadParentId?: string): Promise<string[]> {
@@ -110,9 +127,19 @@ export async function sendRoomMessage(roomId: string, body: string, threadParent
 
   publishToRoom(roomId, message);
 
-  const recipients = await getNotificationRecipients(access.room, userId, threadParentId);
+  const senderName = session.user.name ?? "Någon";
+  const rawMentionIds = extractMentionedUserIds(body);
+  let mentionedIds: string[] = [];
+  if (rawMentionIds.length > 0) {
+    const mentionables = await getRoomMentionables(access.room, userId);
+    const validIds = new Set(mentionables.map((u) => u.id));
+    mentionedIds = rawMentionIds.filter((id) => validIds.has(id));
+  }
+
+  const recipients = (await getNotificationRecipients(access.room, userId, threadParentId)).filter(
+    (id) => !mentionedIds.includes(id)
+  );
   if (recipients.length > 0) {
-    const senderName = session.user.name ?? "Någon";
     const { title, body: notifBody } = buildNotificationCopy(access.room, senderName, body, !!threadParentId);
     await prisma.notification
       .createMany({
@@ -121,6 +148,22 @@ export async function sendRoomMessage(roomId: string, body: string, threadParent
           type: threadParentId ? "room_thread_reply" : "room_message",
           title,
           body: notifBody,
+          url: `/messages/${roomId}`,
+        })),
+      })
+      .catch(() => {});
+  }
+
+  if (mentionedIds.length > 0) {
+    const preview = body.replace(/<[^>]*>/g, "").trim();
+    const trimmed = preview.length > 120 ? `${preview.slice(0, 120)}…` : preview;
+    await prisma.notification
+      .createMany({
+        data: mentionedIds.map((recipientId) => ({
+          userId: recipientId,
+          type: "room_mention",
+          title: `${senderName} nämnde dig`,
+          body: trimmed,
           url: `/messages/${roomId}`,
         })),
       })

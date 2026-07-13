@@ -69,6 +69,12 @@
     "cancel": "Avbryt",
     "sendError": "Kunde inte skicka meddelandet. Försök igen.",
     "directMessages": "Direktmeddelanden",
-    "selectRoom": "Välj en konversation till vänster."
+    "selectRoom": "Välj en konversation till vänster.",
+    "unread": "Olästa",
+    "channelsTab": "Kanaler",
+    "chatsTab": "Chattar",
+    "reply": "Svara",
+    "replies": "Svar",
+    "closeThread": "Stäng tråden"
   }
 }

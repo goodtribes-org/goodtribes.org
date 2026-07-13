@@ -3,12 +3,16 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { ReactionBar } from "@/components/ReactionBar";
 import { renderBody } from "@/lib/renderBody";
 import { toggleReaction, markRoomRead } from "../actions";
 import { FEED_LIKE_EMOJI } from "@/lib/feedLikeEmoji";
 import { MessageComposer } from "./MessageComposer";
+import { ThreadPanel } from "./ThreadPanel";
+import { timeLabel, initialsOf } from "./format";
 import PresenceDot from "@/components/PresenceDot";
+import type { MentionItem } from "@/components/mentionSuggestion";
 
 export type MessageRow = {
   id: string;
@@ -35,25 +39,17 @@ type Props = {
   initialMessages: MessageRow[];
   currentUserId: string;
   canPost: boolean;
+  mentionables?: MentionItem[];
 };
-
-function timeLabel(iso: string) {
-  const d = new Date(iso);
-  const s = Math.floor((Date.now() - d.getTime()) / 1000);
-  if (s < 60) return "just nu";
-  if (s < 3600) return `${Math.floor(s / 60)}m`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h`;
-  return d.toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
-}
-
-function initialsOf(name: string | null) {
-  return (name ?? "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-}
 
 function roomTitle(room: RoomInfo) {
   if (room.type === "DM") return room.otherUsers[0]?.name ?? "?";
   if (room.type === "GROUP") return room.name ?? room.otherUsers.map((u) => u.name).join(", ");
   return room.name ? `#${room.name}` : room.type === "ORG_CHANNEL" ? "Arbetsrum" : "Kanal";
+}
+
+function dateLabel(iso: string) {
+  return new Date(iso).toLocaleDateString("sv-SE", { day: "numeric", month: "long" });
 }
 
 function buildGrouped(messages: MessageRow[]) {
@@ -63,21 +59,37 @@ function buildGrouped(messages: MessageRow[]) {
       !!prev &&
       prev.authorId === m.authorId &&
       new Date(m.createdAt).getTime() - new Date(prev.createdAt).getTime() < 5 * 60 * 1000;
-    return { ...m, isGrouped };
+    const isNewDay = !prev || dateLabel(prev.createdAt) !== dateLabel(m.createdAt);
+    return { ...m, isGrouped: isGrouped && !isNewDay, isNewDay };
   });
 }
 
-export function RoomShell({ room, initialMessages, currentUserId, canPost }: Props) {
+const QUICK_REACTIONS = [FEED_LIKE_EMOJI, "❤️", "😄", "🎉", "😮"];
+
+export function RoomShell({ room, initialMessages, currentUserId, canPost, mentionables }: Props) {
+  const t = useTranslations("Messages");
   const [messages, setMessages] = useState<MessageRow[]>(initialMessages);
   const [, startTransition] = useTransition();
-  const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
-  const [inlineReplies, setInlineReplies] = useState<Record<string, MessageRow[]>>({});
+  const [activeThread, setActiveThread] = useState<MessageRow | null>(null);
+  const [threadReplies, setThreadReplies] = useState<MessageRow[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
     markRoomRead(room.id).catch(() => {});
   }, [room.id]);
+
+  function loadThreadReplies(messageId: string) {
+    fetch(`/api/rooms/${room.id}/thread/${messageId}`)
+      .then((r) => r.json())
+      .then((data) => setThreadReplies(data))
+      .catch(() => {});
+  }
+
+  function openThread(message: MessageRow) {
+    setActiveThread(message);
+    loadThreadReplies(message.id);
+  }
 
   useEffect(() => {
     if (esRef.current) esRef.current.close();
@@ -87,10 +99,15 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost }: Pro
     es.addEventListener("message", (e) => {
       const msg: MessageRow = JSON.parse(e.data);
       if (msg.threadParentId) {
-        setInlineReplies((prev) => {
-          if (!prev[msg.threadParentId!]) return prev;
-          if (prev[msg.threadParentId!].some((r) => r.id === msg.id)) return prev;
-          return { ...prev, [msg.threadParentId!]: [...prev[msg.threadParentId!], msg] };
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === msg.threadParentId ? { ...m, _count: { threadReplies: m._count.threadReplies + 1 } } : m
+          )
+        );
+        setActiveThread((current) => {
+          if (current?.id !== msg.threadParentId) return current;
+          setThreadReplies((prev) => (prev.some((r) => r.id === msg.id) ? prev : [...prev, msg]));
+          return current;
         });
         return;
       }
@@ -110,183 +127,188 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost }: Pro
     bottomRef.current?.scrollIntoView({ block: "end" });
   }, [messages.length]);
 
-  function loadInlineReplies(messageId: string) {
-    fetch(`/api/rooms/${room.id}/thread/${messageId}`)
-      .then((r) => r.json())
-      .then((data) => setInlineReplies((prev) => ({ ...prev, [messageId]: data })))
-      .catch(() => {});
-  }
-
-  function toggleInlineThread(messageId: string) {
-    setExpandedThreads((prev) => {
-      const next = new Set(prev);
-      if (next.has(messageId)) {
-        next.delete(messageId);
-      } else {
-        next.add(messageId);
-        if (!inlineReplies[messageId]) loadInlineReplies(messageId);
-      }
-      return next;
-    });
-  }
-
   function handleReaction(messageId: string, emoji: string) {
     startTransition(() => toggleReaction(messageId, room.id, emoji));
+    setMessages((prev) => prev.map((m) => (m.id === messageId ? optimisticToggle(m, messageId, emoji, currentUserId) : m)));
+    setActiveThread((current) => (current && current.id === messageId ? optimisticToggle(current, messageId, emoji, currentUserId) : current));
+    setThreadReplies((prev) => prev.map((r) => (r.id === messageId ? optimisticToggle(r, messageId, emoji, currentUserId) : r)));
+  }
+
+  function optimisticToggle(m: MessageRow, messageId: string, emoji: string, userId: string): MessageRow {
+    if (m.id !== messageId) return m;
+    const already = m.reactions.some((r) => r.emoji === emoji && r.userId === userId);
+    return {
+      ...m,
+      reactions: already
+        ? m.reactions.filter((r) => !(r.emoji === emoji && r.userId === userId))
+        : [...m.reactions, { emoji, userId }],
+    };
   }
 
   const grouped = buildGrouped(messages);
   const title = roomTitle(room);
+  const canReply = room.type === "PROJECT_CHANNEL" || room.type === "ORG_CHANNEL";
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-220px)] bg-white">
-      <div className="flex items-center gap-2 px-5 py-3 border-b border-gray-200 shrink-0">
-        <Link href="/messages" className="md:hidden text-sm text-dark-slate/50 hover:text-seagrass mr-1">
-          ←
-        </Link>
-        {room.type === "DM" && room.otherUsers[0] && (
-          <>
-            {room.otherUsers[0].image ? (
-              <Image src={room.otherUsers[0].image} alt="" width={28} height={28} className="rounded-full object-cover" unoptimized />
-            ) : (
-              <div className="w-7 h-7 rounded-full bg-dry-sage flex items-center justify-center text-xs font-semibold text-dark-slate">
-                {initialsOf(room.otherUsers[0].name)}
-              </div>
-            )}
-            <PresenceDot userId={room.otherUsers[0].id} />
-          </>
-        )}
-        <span className="font-bold text-base text-gray-900">{title}</span>
-        {room.postingPolicy === "LEADS_ONLY" && (
-          <span className="text-xs bg-coral/10 text-coral px-2 py-0.5 rounded-full ml-1">
-            Tillkännagivanden
-          </span>
-        )}
-      </div>
-
-      <div className="flex-1 min-h-0 overflow-y-auto py-2 flex flex-col">
-        {messages.length === 0 ? (
-          <p className="text-sm text-gray-400 italic text-center py-8">
-            Inga meddelanden ännu. {canPost ? "Starta diskussionen!" : ""}
-          </p>
-        ) : (
-          grouped.map((m) => {
-            const isActiveThread = expandedThreads.has(m.id);
-            return (
-              <div
-                key={m.id}
-                className={`relative group flex items-start gap-0 px-4 py-0.5 hover:bg-gray-50 transition-colors ${
-                  m.isGrouped ? "" : "mt-2"
-                } ${isActiveThread ? "pb-2" : ""}`}
-              >
-                <div className="absolute right-4 -top-3 hidden group-hover:flex items-center bg-white border border-gray-200 rounded-lg shadow-md z-10 overflow-hidden">
-                  {["👍", "❤️", "😄", "🎉", "😮"].map((e) => (
-                    <button
-                      key={e}
-                      type="button"
-                      onClick={() => handleReaction(m.id, e)}
-                      className="px-2 py-1.5 hover:bg-gray-100 text-base transition-colors"
-                    >
-                      {e}
-                    </button>
-                  ))}
+    <div className="flex">
+      <div className="flex flex-col h-[calc(100dvh-220px)] bg-white flex-1 min-w-0">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-gray-200 shrink-0">
+          <Link href="/messages" className="md:hidden text-sm text-dark-slate/50 hover:text-seagrass mr-1">
+            ←
+          </Link>
+          {room.type === "DM" && room.otherUsers[0] && (
+            <>
+              {room.otherUsers[0].image ? (
+                <Image src={room.otherUsers[0].image} alt="" width={28} height={28} className="rounded-full object-cover" unoptimized />
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-dry-sage flex items-center justify-center text-xs font-semibold text-dark-slate">
+                  {initialsOf(room.otherUsers[0].name)}
                 </div>
+              )}
+              <PresenceDot userId={room.otherUsers[0].id} />
+            </>
+          )}
+          <span className="font-bold text-base text-gray-900">{title}</span>
+          {room.postingPolicy === "LEADS_ONLY" && (
+            <span className="text-xs bg-coral/10 text-coral px-2 py-0.5 rounded-full ml-1">
+              Tillkännagivanden
+            </span>
+          )}
+        </div>
 
-                {m.isGrouped ? (
-                  <div className="w-9 shrink-0 self-start mt-1 text-right pr-1">
-                    <span className="opacity-0 group-hover:opacity-100 text-[10px] text-gray-400 leading-none">
-                      {new Date(m.createdAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600 shrink-0 mt-0.5 overflow-hidden relative">
-                    {m.author.image ? (
-                      <Image src={m.author.image} fill className="object-cover" alt="" unoptimized />
-                    ) : (
-                      initialsOf(m.author.name)
-                    )}
-                  </div>
-                )}
-
-                <div className="flex-1 min-w-0 ml-3">
-                  {!m.isGrouped && (
-                    <div className="flex items-baseline gap-2 mb-0.5">
-                      <span className="text-sm font-bold text-gray-900">{m.author.name ?? "Okänd"}</span>
-                      <span className="text-xs text-gray-400">{timeLabel(m.createdAt)}</span>
+        <div className="flex-1 min-h-0 overflow-y-auto py-2 flex flex-col">
+          {messages.length === 0 ? (
+            <p className="text-sm text-gray-400 italic text-center py-8">
+              Inga meddelanden ännu. {canPost ? "Starta diskussionen!" : ""}
+            </p>
+          ) : (
+            grouped.map((m) => {
+              const isOwn = m.authorId === currentUserId;
+              return (
+                <div key={m.id}>
+                  {m.isNewDay && (
+                    <div className="flex justify-center my-3">
+                      <span className="text-[11px] font-medium text-dark-slate/40 bg-gray-50 px-3 py-1 rounded-full">
+                        {dateLabel(m.createdAt)}
+                      </span>
                     </div>
                   )}
-                  {renderBody(m.body)}
-
-                  {(() => {
-                    const likeCount = m.reactions.filter((r) => r.emoji === FEED_LIKE_EMOJI).length;
-                    const likedByMe = m.reactions.some((r) => r.emoji === FEED_LIKE_EMOJI && r.userId === currentUserId);
-                    return (
-                      <div className="mt-1 flex items-center gap-4">
-                        <button
-                          onClick={() => handleReaction(m.id, FEED_LIKE_EMOJI)}
-                          className={`flex items-center gap-1 text-xs font-medium transition-colors cursor-pointer ${
-                            likedByMe ? "text-coral" : "text-gray-400 hover:text-coral"
-                          }`}
-                        >
-                          👍 Gilla{likeCount > 0 ? ` (${likeCount})` : ""}
-                        </button>
-                        <button
-                          onClick={() => toggleInlineThread(m.id)}
-                          className="text-xs text-seagrass hover:underline font-medium flex items-center gap-1"
-                        >
-                          💬 {m._count.threadReplies > 0 ? `Kommentera (${m._count.threadReplies})` : "Kommentera"}
-                        </button>
-                      </div>
-                    );
-                  })()}
-
-                  <ReactionBar
-                    reactions={m.reactions.filter((r) => r.emoji !== FEED_LIKE_EMOJI)}
-                    currentUserId={currentUserId}
-                    canAdd={canPost}
-                    onToggle={(emoji) => handleReaction(m.id, emoji)}
-                  />
-
-                  {expandedThreads.has(m.id) && (
-                    <div className="mt-2 pl-3 border-l-2 border-muted-teal/20 space-y-2">
-                      {(inlineReplies[m.id] ?? []).map((r) => (
-                        <div key={r.id} className="flex items-start gap-2">
-                          <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-semibold text-gray-600 shrink-0 overflow-hidden relative">
-                            {r.author.image ? (
-                              <Image src={r.author.image} fill className="object-cover" alt="" unoptimized />
+                  <div className={`flex px-4 ${isOwn ? "justify-end" : "justify-start"} ${m.isGrouped ? "mt-0.5" : "mt-3"}`}>
+                    {!isOwn && (
+                      <div className="w-9 shrink-0 mr-2 self-end">
+                        {!m.isGrouped ? (
+                          <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-600 overflow-hidden relative">
+                            {m.author.image ? (
+                              <Image src={m.author.image} fill className="object-cover" alt="" unoptimized />
                             ) : (
-                              initialsOf(r.author.name)
+                              initialsOf(m.author.name)
                             )}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-baseline gap-1.5">
-                              <span className="text-xs font-semibold text-gray-900">{r.author.name ?? "Okänd"}</span>
-                              <span className="text-[10px] text-gray-400">{timeLabel(r.createdAt)}</span>
-                            </div>
-                            <div className="text-sm">{renderBody(r.body)}</div>
-                          </div>
+                        ) : null}
+                      </div>
+                    )}
+
+                    <div className={`flex flex-col max-w-[70%] ${isOwn ? "items-end" : "items-start"}`}>
+                      {!m.isGrouped && (
+                        <div className="flex items-baseline gap-2 mb-0.5 px-1">
+                          {!isOwn && <span className="text-sm font-bold text-gray-900">{m.author.name ?? "Okänd"}</span>}
+                          <span className="text-xs text-gray-400">{timeLabel(m.createdAt)}</span>
                         </div>
-                      ))}
-                      {canPost && (
-                        <MessageComposer
-                          roomId={room.id}
-                          threadParentId={m.id}
-                          onSent={() => loadInlineReplies(m.id)}
-                        />
                       )}
+
+                      <div
+                        className={`relative group/bubble ${
+                          m.reactions.length > 0 || (canReply && m._count.threadReplies > 0) ? "mb-6" : ""
+                        }`}
+                      >
+                        {canPost && (
+                          <div
+                            className={`absolute -top-4 ${isOwn ? "right-0" : "left-0"} hidden group-hover/bubble:flex items-center bg-white border border-gray-200 rounded-lg shadow-md z-10 overflow-hidden`}
+                          >
+                            {QUICK_REACTIONS.map((e) => (
+                              <button
+                                key={e}
+                                type="button"
+                                onClick={() => handleReaction(m.id, e)}
+                                className="px-2 py-1.5 hover:bg-gray-100 text-base transition-colors"
+                                title={e === FEED_LIKE_EMOJI ? "Gilla" : "Reagera"}
+                              >
+                                {e}
+                              </button>
+                            ))}
+                            {canReply && (
+                              <>
+                                <span className="w-px h-5 bg-gray-200 mx-0.5" />
+                                <button
+                                  type="button"
+                                  onClick={() => openThread(m)}
+                                  className="px-2 py-1.5 hover:bg-gray-100 text-sm text-dark-slate/60 hover:text-seagrass transition-colors"
+                                  title={t("reply")}
+                                >
+                                  💬
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        )}
+
+                        <div className={`rounded-2xl px-3 py-2 text-dark-slate ${isOwn ? "bg-gray-200" : "bg-gray-100"}`}>
+                          {renderBody(m.body)}
+                        </div>
+
+                        {(m.reactions.length > 0 || (canReply && m._count.threadReplies > 0)) && (
+                          <div
+                            className={`absolute -bottom-6 ${isOwn ? "right-2" : "left-2"} z-10 flex items-center gap-2`}
+                          >
+                            {canReply && m._count.threadReplies > 0 && (
+                              <button
+                                onClick={() => openThread(m)}
+                                className={`text-xs font-medium hover:underline bg-white rounded-full px-2 shadow-sm border border-muted-teal/20 ${
+                                  activeThread?.id === m.id ? "text-seagrass font-semibold" : "text-seagrass/80"
+                                }`}
+                              >
+                                {m._count.threadReplies} {t("replies").toLowerCase()}
+                              </button>
+                            )}
+                            {m.reactions.length > 0 && (
+                              <ReactionBar
+                                reactions={m.reactions}
+                                currentUserId={currentUserId}
+                                canAdd={canPost}
+                                onToggle={(emoji) => handleReaction(m.id, emoji)}
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })
+          )}
+          <div ref={bottomRef} />
+        </div>
+
+        {canPost && (
+          <div className="px-4 py-3 bg-white shrink-0">
+            <MessageComposer roomId={room.id} mentionables={mentionables} />
+          </div>
         )}
-        <div ref={bottomRef} />
       </div>
 
-      {canPost && (
-        <div className="border-t border-gray-200 px-4 py-3 bg-white shrink-0">
-          <MessageComposer roomId={room.id} />
-        </div>
+      {activeThread && (
+        <ThreadPanel
+          roomId={room.id}
+          parent={messages.find((m) => m.id === activeThread.id) ?? activeThread}
+          replies={threadReplies}
+          currentUserId={currentUserId}
+          canPost={canPost}
+          mentionables={mentionables}
+          onClose={() => setActiveThread(null)}
+          onReaction={handleReaction}
+          onReplySent={() => loadThreadReplies(activeThread.id)}
+        />
       )}
     </div>
   );

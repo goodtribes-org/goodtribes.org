@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { Room } from "@prisma/client";
 
 export async function findOrCreateDmRoom(userIdA: string, userIdB: string): Promise<string> {
   if (userIdA === userIdB) throw new Error("Cannot message yourself");
@@ -133,6 +134,46 @@ export async function getOrgChannelGroups(userId: string) {
   memberships.forEach((m) => byId.set(m.organisation.id, m.organisation));
   ownedOrgs.forEach((o) => byId.set(o.id, o));
   return [...byId.values()].filter((o) => o.rooms.length > 0);
+}
+
+// Users that can be @mentioned in a room, sourced from the same membership
+// records that drive notification fan-out (see getNotificationRecipients in
+// messages/actions.ts): RoomParticipant for DM/GROUP, ProjectMember/
+// OrganisationMember for channels.
+export async function getRoomMentionables(room: Room, excludeUserId: string): Promise<{ id: string; name: string | null }[]> {
+  if (room.type === "DM" || room.type === "GROUP") {
+    const participants = await prisma.roomParticipant.findMany({
+      where: { roomId: room.id, userId: { not: excludeUserId } },
+      select: { user: { select: { id: true, name: true } } },
+    });
+    return participants.map((p) => p.user);
+  }
+
+  if (room.type === "PROJECT_CHANNEL" && room.projectId) {
+    const members = await prisma.projectMember.findMany({
+      where: { projectId: room.projectId, userId: { not: excludeUserId }, role: { not: "FOLLOWER" } },
+      select: { user: { select: { id: true, name: true } } },
+    });
+    return members.map((m) => m.user);
+  }
+
+  if (room.type === "ORG_CHANNEL" && room.organisationId) {
+    const [members, org] = await Promise.all([
+      prisma.organisationMember.findMany({
+        where: { organisationId: room.organisationId, userId: { not: excludeUserId } },
+        select: { user: { select: { id: true, name: true } } },
+      }),
+      prisma.organisation.findUnique({
+        where: { id: room.organisationId },
+        select: { ownerId: true, owner: { select: { id: true, name: true } } },
+      }),
+    ]);
+    const byId = new Map(members.map((m) => [m.user.id, m.user]));
+    if (org && org.ownerId !== excludeUserId) byId.set(org.ownerId, org.owner);
+    return [...byId.values()];
+  }
+
+  return [];
 }
 
 export async function getDirectAndGroupRooms(userId: string) {

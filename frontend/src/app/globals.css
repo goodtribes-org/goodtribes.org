@@ -107,3 +107,11 @@ body {
   vertical-align: -0.15em;
   display: inline-block;
 }
+
+.mention {
+  background-color: color-mix(in srgb, var(--color-seagrass, #43aa8b) 12%, transparent);
+  color: var(--color-seagrass, #43aa8b);
+  font-weight: 600;
+  border-radius: 0.25rem;
+  padding: 0 0.2em;
+}

@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
 import { getRoomAccess } from "@/lib/roomAuth";
+import { getRoomMentionables } from "@/lib/rooms";
 import { RoomShell } from "./RoomShell";
 
 export default async function RoomPage({
@@ -18,7 +19,7 @@ export default async function RoomPage({
   const access = await getRoomAccess(roomId, session.user.id);
   if (!access?.canRead) notFound();
 
-  const [messages, otherUsers] = await Promise.all([
+  const [messages, otherUsers, mentionables] = await Promise.all([
     prisma.message.findMany({
       where: { roomId, threadParentId: null },
       include: {
@@ -35,6 +36,7 @@ export default async function RoomPage({
           select: { user: { select: { id: true, name: true, image: true } } },
         })
       : Promise.resolve([]),
+    getRoomMentionables(access.room, session.user.id),
   ]);
 
   return (
@@ -53,6 +55,7 @@ export default async function RoomPage({
       }))}
       currentUserId={session.user.id}
       canPost={access.canPost}
+      mentionables={mentionables}
     />
   );
 }

@@ -69,6 +69,12 @@
     "cancel": "Cancel",
     "sendError": "Could not send message. Try again.",
     "directMessages": "Direct messages",
-    "selectRoom": "Select a conversation on the left."
+    "selectRoom": "Select a conversation on the left.",
+    "unread": "Unread",
+    "channelsTab": "Channels",
+    "chatsTab": "Chats",
+    "reply": "Reply",
+    "replies": "Replies",
+    "closeThread": "Close thread"
   }
 }
