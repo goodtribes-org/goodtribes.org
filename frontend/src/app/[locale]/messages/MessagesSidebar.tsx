@@ -56,13 +56,13 @@ const TABS: { key: MessagesSection; labelKey: "unread" | "channelsTab" | "chatsT
 
 function TabRow({ active }: { active: MessagesSection }) {
   const t = useTranslations("Messages");
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
 
+  // Switching tabs always goes back to the messages index — staying on
+  // the currently open room's URL would leave its conversation showing
+  // in the main pane even though the sidebar now lists a different set
+  // of rooms.
   function hrefFor(key: MessagesSection) {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("section", key);
-    return `${pathname}?${params.toString()}`;
+    return `/messages?section=${key}`;
   }
 
   return (
