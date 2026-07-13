@@ -186,6 +186,37 @@ export async function startDirectMessage(recipientUserId: string, firstMessage: 
   return { roomId };
 }
 
+// Opens (or creates) a DM room without requiring a first message, for
+// starting a conversation directly from the messages sidebar — the room
+// is empty until the user actually sends something from the composer.
+export async function openDirectMessage(recipientUserId: string): Promise<{ roomId: string }> {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const roomId = await findOrCreateDmRoom(session.user.id, recipientUserId);
+  revalidatePath("/messages");
+  return { roomId };
+}
+
+export async function searchUsersForDm(query: string): Promise<{ id: string; name: string | null; image: string | null }[]> {
+  const session = await auth();
+  if (!session?.user?.id) return [];
+
+  const trimmed = query.trim();
+  if (!trimmed) return [];
+
+  return prisma.user.findMany({
+    where: {
+      id: { not: session.user.id },
+      showProfile: true,
+      name: { contains: trimmed, mode: "insensitive" },
+    },
+    select: { id: true, name: true, image: true },
+    take: 8,
+    orderBy: { name: "asc" },
+  });
+}
+
 export async function createGroupChat(
   memberIds: string[],
   name?: string,

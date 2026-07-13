@@ -75,6 +75,9 @@
     "chatsTab": "Chats",
     "reply": "Reply",
     "replies": "Replies",
-    "closeThread": "Close thread"
+    "closeThread": "Close thread",
+    "newMessage": "New message",
+    "searchPeople": "Search people…",
+    "noResults": "No matches"
   }
 }

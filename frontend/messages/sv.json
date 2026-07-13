@@ -75,6 +75,9 @@
     "chatsTab": "Chattar",
     "reply": "Svara",
     "replies": "Svar",
-    "closeThread": "Stäng tråden"
+    "closeThread": "Stäng tråden",
+    "newMessage": "Nytt meddelande",
+    "searchPeople": "Sök personer…",
+    "noResults": "Inga träffar"
   }
 }

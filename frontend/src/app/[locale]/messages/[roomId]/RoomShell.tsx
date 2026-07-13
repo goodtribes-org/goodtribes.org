@@ -249,21 +249,21 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                         )}
 
                         <div
-                          className={`[grid-area:1/1] rounded-2xl px-3 py-2 text-dark-slate ${isOwn ? "bg-gray-100" : "bg-gray-50"}`}
+                          className={`rounded-2xl px-3 py-2 text-dark-slate ${isOwn ? "bg-seagrass/10" : "bg-gray-50"}`}
                         >
                           {renderBody(m.body)}
                         </div>
 
                         {(m.reactions.length > 0 || (canReply && m._count.threadReplies > 0)) && (
                           <div
-                            className={`[grid-area:1/1] self-end -mb-2 ${
+                            className={`-mt-[3px] ${
                               isOwn ? "justify-self-end" : "justify-self-start"
                             } z-10 flex flex-wrap max-w-full items-center gap-2`}
                           >
                             {canReply && m._count.threadReplies > 0 && (
                               <button
                                 onClick={() => openThread(m)}
-                                className={`text-xs font-medium hover:underline bg-white rounded-full px-2 shadow-sm border border-muted-teal/20 ${
+                                className={`inline-flex items-center -translate-y-0.5 px-2.5 py-1 rounded-full text-xs font-medium hover:underline bg-white border border-muted-teal/20 ${
                                   activeThread?.id === m.id ? "text-seagrass font-semibold" : "text-seagrass/80"
                                 }`}
                               >

@@ -120,7 +120,7 @@ export function ReactionBar({
             ref={buttonRef}
             type="button"
             onClick={openPicker}
-            className="inline-flex items-center px-2.5 py-1 rounded-full text-sm border border-dashed bg-white border-muted-teal/40 text-dark-slate/40 hover:text-dark-slate/70 hover:border-muted-teal transition-colors"
+            className="inline-flex items-center -translate-y-0.5 px-2.5 py-1 rounded-full text-xs border border-dashed bg-white border-muted-teal/40 text-dark-slate/40 hover:text-dark-slate/70 hover:border-muted-teal transition-colors"
             title="Lägg till reaktion"
           >
             +

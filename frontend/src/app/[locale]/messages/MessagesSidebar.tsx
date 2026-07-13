@@ -7,6 +7,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import PresenceDot from "@/components/PresenceDot";
 import { useMessagesSection, type MessagesSection } from "./useMessagesSection";
+import { NewMessageButton } from "./NewMessageButton";
 
 type DmGroupRoom = {
   id: string;
@@ -66,18 +67,23 @@ function TabRow({ active }: { active: MessagesSection }) {
   }
 
   return (
-    <div className="flex items-center gap-1.5 px-2 py-2 border-b border-muted-teal/20 overflow-x-auto">
-      {TABS.map((tab) => (
-        <Link
-          key={tab.key}
-          href={hrefFor(tab.key)}
-          className={`shrink-0 px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
-            active === tab.key ? "bg-coral text-white" : "text-dark-slate/60 border border-muted-teal/30 hover:bg-dry-sage/20"
-          }`}
-        >
-          {t(tab.labelKey)}
-        </Link>
-      ))}
+    <div className="border-b border-muted-teal/20">
+      <div className="flex items-center justify-end px-2 pt-2">
+        <NewMessageButton />
+      </div>
+      <div className="flex items-center gap-1.5 px-2 pb-2 overflow-x-auto">
+        {TABS.map((tab) => (
+          <Link
+            key={tab.key}
+            href={hrefFor(tab.key)}
+            className={`shrink-0 px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+              active === tab.key ? "bg-coral text-white" : "text-dark-slate/60 border border-muted-teal/30 hover:bg-dry-sage/20"
+            }`}
+          >
+            {t(tab.labelKey)}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
