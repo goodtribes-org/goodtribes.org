@@ -21,6 +21,20 @@ enum ProjectRole {
   FOLLOWER
 }
 
+enum ProjectStatus {
+  CONCEPT
+  PROTOTYPE
+  PRODUCTION
+  DELIVERY
+  ARCHIVED
+}
+
+enum OrganisationRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -145,7 +159,7 @@ model OrganisationMember {
   id             String   @id @default(cuid())
   organisationId String
   userId         String
-  role           String   @default("member")
+  role           OrganisationRole @default(MEMBER)
   joinedAt       DateTime @default(now())
 
   organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
@@ -322,7 +336,7 @@ model Project {
   title       String
   summary     String?
   description String?
-  status      String   @default("concept")
+  status      ProjectStatus @default(CONCEPT)
   visibility  String   @default("public")
   category    String?
   tags        String[]
@@ -558,7 +572,7 @@ model OrgInvite {
   orgId       String
   email       String
   token       String    @unique @default(cuid())
-  role        String    @default("member")
+  role        OrganisationRole @default(MEMBER)
   createdById String
   expiresAt   DateTime
   usedAt      DateTime?

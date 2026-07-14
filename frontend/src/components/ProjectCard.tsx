@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { SdgIcon } from "@/components/SdgIcon";
+import { PROJECT_STATUS_LABEL } from "@/lib/projectStatus";
 
 export type ProjectCardData = {
   slug: string;
@@ -36,8 +37,8 @@ export default function ProjectCard({ project }: { project: ProjectCardData }) {
             <p className="text-xs font-semibold text-dark-slate/70 text-center leading-tight line-clamp-3">{project.title}</p>
           </div>
         )}
-        <span className="absolute top-2 left-2 bg-white/90 rounded px-1.5 py-0.5 text-xs font-semibold text-dark-slate capitalize">
-          {project.status}
+        <span className="absolute top-2 left-2 bg-white/90 rounded px-1.5 py-0.5 text-xs font-semibold text-dark-slate">
+          {PROJECT_STATUS_LABEL[project.status] ?? project.status}
         </span>
       </div>
       <div className="p-3 flex flex-col flex-1">
@@ -68,7 +69,7 @@ export default function ProjectCard({ project }: { project: ProjectCardData }) {
             <p className="text-[10px] text-dark-slate/50 leading-tight">Tasks</p>
           </div>
           <div className="px-1">
-            <p className="text-xs font-semibold text-dark-slate capitalize">{project.status}</p>
+            <p className="text-xs font-semibold text-dark-slate">{PROJECT_STATUS_LABEL[project.status] ?? project.status}</p>
             <p className="text-[10px] text-dark-slate/50 leading-tight">Stage</p>
           </div>
         </div>

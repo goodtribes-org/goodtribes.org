@@ -62,7 +62,7 @@ export default async function AlumniPage({ params }: { params: Promise<{ slug: s
           </p>
         </div>
 
-        {isOwnerOrAdmin && project.status === "active" && (
+        {isOwnerOrAdmin && project.status !== "ARCHIVED" && (
           <ArchiveButton projectSlug={slug} />
         )}
       </div>
@@ -79,7 +79,7 @@ export default async function AlumniPage({ params }: { params: Promise<{ slug: s
         </section>
       )}
 
-      {isOwnerOrAdmin && !maturity?.finalReport && project.status === "archived" && (
+      {isOwnerOrAdmin && !maturity?.finalReport && project.status === "ARCHIVED" && (
         <GenerateReportButton projectSlug={slug} />
       )}
 
@@ -88,7 +88,7 @@ export default async function AlumniPage({ params }: { params: Promise<{ slug: s
         <div className="border border-dashed border-muted-teal/40 rounded-xl p-12 text-center">
           <p className="text-dark-slate/40 text-sm">
             Inga alumni ännu.{" "}
-            {project.status === "active"
+            {project.status !== "ARCHIVED"
               ? "Arkivera projektet för att skapa alumni-badges."
               : ""}
           </p>

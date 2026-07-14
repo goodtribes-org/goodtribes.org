@@ -11,6 +11,7 @@ import Pagination from "@/components/Pagination";
 import ProjectCard from "@/components/ProjectCard";
 import CountryMap from "@/components/CountryMap";
 import { countByCountry } from "@/lib/geo";
+import { isValidProjectStatus } from "@/lib/projectStatus";
 
 export const metadata: Metadata = {
   title: "Projects — GoodTribes.org",
@@ -35,7 +36,7 @@ export default async function ProjectsPage({
       { title: { contains: q, mode: "insensitive" } },
       { description: { contains: q, mode: "insensitive" } },
     ]} : {}),
-    ...(status ? { status } : {}),
+    ...(status && isValidProjectStatus(status) ? { status } : {}),
     ...(category ? { category } : {}),
     ...(sdgNum && !isNaN(sdgNum) ? { sdgGoals: { has: sdgNum } } : {}),
   };

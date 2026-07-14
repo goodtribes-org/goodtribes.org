@@ -124,7 +124,7 @@ export default async function MatchPage({
       },
     }),
     prisma.skill.findMany({
-      where: { projects: { some: { project: { visibility: "public", status: { not: "delivery" } } } } },
+      where: { projects: { some: { project: { visibility: "public", status: { not: "DELIVERY" } } } } },
       select: { id: true, name: true, slug: true },
       orderBy: { name: "asc" },
     }),
@@ -154,7 +154,7 @@ export default async function MatchPage({
     userSkillIds.length > 0
       ? prisma.project.findMany({
           where: {
-            status: { not: "delivery" },
+            status: { not: "DELIVERY" },
             visibility: "public",
             neededSkills: { some: { skillId: { in: userSkillIds } } },
             members: { none: { userId } },
@@ -169,7 +169,7 @@ export default async function MatchPage({
     userInterests.length > 0
       ? prisma.project.findMany({
           where: {
-            status: { not: "delivery" },
+            status: { not: "DELIVERY" },
             visibility: "public",
             sdgGoals: { hasSome: userInterests },
             members: { none: { userId } },
@@ -183,7 +183,7 @@ export default async function MatchPage({
     // Section 3: explore by skill filter (URL param)
     prisma.project.findMany({
       where: {
-        status: { not: "delivery" },
+        status: { not: "DELIVERY" },
         visibility: "public",
         ...(skillSlug ? { neededSkills: { some: { skill: { slug: skillSlug } } } } : {}),
       },

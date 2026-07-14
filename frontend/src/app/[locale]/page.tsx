@@ -14,6 +14,7 @@ import ImpactStatsWidget from "@/components/ImpactStatsWidget";
 import LeaderboardWidget from "@/components/LeaderboardWidget";
 import NewMembersWidget from "@/components/NewMembersWidget";
 import SdgCoverageWidget from "@/components/SdgCoverageWidget";
+import { isValidProjectStatus } from "@/lib/projectStatus";
 
 const PAGE_SIZE = 12;
 const IDEA_PREVIEW_SIZE = 8;
@@ -63,7 +64,7 @@ export default async function HomePage({
       { title: { contains: q, mode: "insensitive" } },
       { description: { contains: q, mode: "insensitive" } },
     ]} : {}),
-    ...(status ? { status } : {}),
+    ...(status && isValidProjectStatus(status) ? { status } : {}),
     ...(category ? { category } : {}),
     ...(sdgNum && !isNaN(sdgNum) ? { sdgGoals: { has: sdgNum } } : {}),
   };

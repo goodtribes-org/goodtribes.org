@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default async function HallOfImpactPage() {
   const projects = await prisma.project.findMany({
-    where: { status: { in: ["completed", "archived"] } },
+    where: { status: { in: ["DELIVERY", "ARCHIVED"] } },
     include: {
       alumni: { select: { id: true } },
       impactMetrics: {

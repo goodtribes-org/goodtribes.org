@@ -86,7 +86,7 @@ export async function approveJoinRequest(formData: FormData) {
     where: { organisationId_userId: { organisationId: request.organisationId, userId } },
     select: { role: true },
   });
-  if (org?.ownerId !== userId && callerMember?.role !== "admin") return;
+  if (org?.ownerId !== userId && callerMember?.role !== "ADMIN") return;
 
   await prisma.$transaction([
     prisma.organisationJoinRequest.update({
@@ -130,7 +130,7 @@ export async function rejectJoinRequest(formData: FormData) {
     where: { organisationId_userId: { organisationId: request.organisationId, userId } },
     select: { role: true },
   });
-  if (org?.ownerId !== userId && callerMember?.role !== "admin") return;
+  if (org?.ownerId !== userId && callerMember?.role !== "ADMIN") return;
 
   await prisma.organisationJoinRequest.update({
     where: { id: requestId },

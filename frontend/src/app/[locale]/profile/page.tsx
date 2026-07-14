@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_LABELS_SV } from "@/lib/sdg";
+import { PROJECT_STATUS_LABEL } from "@/lib/projectStatus";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -213,7 +214,7 @@ export default async function ProfilePage() {
                         <p className="text-xs text-dark-slate/50 line-clamp-1 mt-0.5">{project.description}</p>
                       )}
                     </div>
-                    <span className="text-xs text-dark-slate/40 capitalize shrink-0 mt-0.5">{project.status}</span>
+                    <span className="text-xs text-dark-slate/40 shrink-0 mt-0.5">{PROJECT_STATUS_LABEL[project.status] ?? project.status}</span>
                   </Link>
                 ))}
               </div>

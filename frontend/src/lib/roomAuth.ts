@@ -43,7 +43,7 @@ export async function getRoomAccess(roomId: string, userId: string): Promise<Roo
   ]);
   const isOwner = org?.ownerId === userId;
   if (!member && !isOwner) return { room, canRead: false, canPost: false };
-  const isLead = isOwner || member?.role === "admin";
+  const isLead = isOwner || member?.role === "ADMIN";
   const canPost = room.postingPolicy === "LEADS_ONLY" ? isLead : true;
   return { room, canRead: true, canPost };
 }

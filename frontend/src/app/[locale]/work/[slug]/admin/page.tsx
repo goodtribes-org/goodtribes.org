@@ -25,7 +25,7 @@ export default async function AdminPage({
     select: { role: true },
   });
 
-  const isAdmin = org.ownerId === userId || member?.role === "admin";
+  const isAdmin = org.ownerId === userId || member?.role === "ADMIN";
   if (!isAdmin) notFound();
 
   const requests = await prisma.organisationJoinRequest.findMany({

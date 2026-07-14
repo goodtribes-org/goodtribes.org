@@ -29,7 +29,7 @@ export async function createOrg(formData: FormData) {
         data: { name, slug: candidate, description, imageUrl, isPublic, ownerId: userId },
       });
       await prisma.organisationMember.create({
-        data: { organisationId: org.id, userId, role: "owner" },
+        data: { organisationId: org.id, userId, role: "OWNER" },
       });
       slug = org.slug;
       if (isPublic) {

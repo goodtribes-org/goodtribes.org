@@ -5,17 +5,10 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { PROJECT_STATUS_LABEL as STATUS_LABELS } from "@/lib/projectStatus";
 
 export const metadata: Metadata = {
   title: "Dashboard — GoodTribes.org",
-};
-
-
-const STATUS_LABELS: Record<string, string> = {
-  concept: "Concept",
-  prototype: "Prototype",
-  production: "In Production",
-  delivery: "Delivered",
 };
 
 export default async function DashboardPage() {

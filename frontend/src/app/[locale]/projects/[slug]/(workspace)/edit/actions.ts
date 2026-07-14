@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { indexDocuments, deleteDocument } from "@/lib/meili";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { isValidProjectStatus } from "@/lib/projectStatus";
 
 
 export async function updateProject(slug: string, formData: FormData) {
@@ -21,7 +22,8 @@ export async function updateProject(slug: string, formData: FormData) {
 
   const summary = (formData.get("summary") as string | null)?.trim() || null;
   const description = (formData.get("description") as string | null)?.trim() || null;
-  const status = (formData.get("status") as string) || "concept";
+  const statusRaw = (formData.get("status") as string) || "CONCEPT";
+  const status = isValidProjectStatus(statusRaw) ? statusRaw : "CONCEPT";
   const visibility = (formData.get("visibility") as string) || "public";
   const category = (formData.get("category") as string | null)?.trim() || null;
   const tagsRaw = (formData.get("tags") as string | null)?.trim() || "";

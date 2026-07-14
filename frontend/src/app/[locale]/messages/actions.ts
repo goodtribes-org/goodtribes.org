@@ -255,7 +255,7 @@ export async function createChannelRoom(params: {
       }),
       prisma.organisation.findUnique({ where: { id: params.organisationId }, select: { ownerId: true } }),
     ]);
-    const isLead = org?.ownerId === userId || member?.role === "admin";
+    const isLead = org?.ownerId === userId || member?.role === "ADMIN";
     if (!isLead) throw new Error("Only admins can create channels");
   } else {
     throw new Error("Channel must belong to a project or organisation");

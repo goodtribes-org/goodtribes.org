@@ -31,7 +31,7 @@ export default async function WorkspaceLayout({
     redirect(`/org/${slug}`);
   }
 
-  const isAdmin = org.ownerId === userId || member?.role === "admin";
+  const isAdmin = org.ownerId === userId || member?.role === "ADMIN";
 
   return (
     <div>

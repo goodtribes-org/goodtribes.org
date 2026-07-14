@@ -10,7 +10,7 @@ type OrgMember = {
   user: { id: string; name: string | null; showProfile: boolean };
 };
 
-const ORG_ROLES = ["admin", "member"] as const;
+const ORG_ROLES = ["ADMIN", "MEMBER"] as const;
 
 export default function OrgTeamManager({
   orgId,
@@ -57,7 +57,7 @@ export default function OrgTeamManager({
                   className="text-xs border border-muted-teal/50 rounded px-2 py-1 text-dark-slate/70 focus:outline-none focus:ring-1 focus:ring-seagrass disabled:opacity-50"
                 >
                   {ORG_ROLES.map((r) => (
-                    <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
+                    <option key={r} value={r}>{r.charAt(0) + r.slice(1).toLowerCase()}</option>
                   ))}
                 </select>
                 <button
