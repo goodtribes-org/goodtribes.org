@@ -24,7 +24,7 @@ export async function saveOnboarding(formData: FormData) {
   if (goal === "start") {
     redirect("/projects/new");
   } else if (goal === "join") {
-    redirect("/match");
+    redirect("/dashboard#match");
   } else {
     redirect("/workplace");
   }

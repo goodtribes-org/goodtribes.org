@@ -6,63 +6,260 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { PROJECT_STATUS_LABEL as STATUS_LABELS } from "@/lib/projectStatus";
+import { SdgIcon } from "@/components/SdgIcon";
 
 export const metadata: Metadata = {
   title: "Dashboard — GoodTribes.org",
 };
 
-export default async function DashboardPage() {
-  const session = await auth();
+type MatchProjectCard = {
+  slug: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  status: string;
+  _count: { members: number };
+  sdgGoals: number[];
+  neededSkills: { skill: { id: string; name: string; slug: string } }[];
+};
+
+function MatchCard({
+  project,
+  matchingSkillIds,
+  showSdgs,
+}: {
+  project: MatchProjectCard;
+  matchingSkillIds?: Set<string>;
+  showSdgs?: boolean;
+}) {
+  const desc = project.description
+    ? project.description.slice(0, 100) + (project.description.length > 100 ? "…" : "")
+    : null;
+
+  return (
+    <Link
+      href={`/projects/${project.slug}`}
+      className="flex flex-col gap-2 border border-muted-teal/40 rounded-lg p-4 hover:shadow-md hover:border-muted-teal transition-all bg-white"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <p className="font-semibold text-dark-slate text-sm leading-snug">{project.title}</p>
+        {project.category && (
+          <span className="text-[10px] font-semibold uppercase tracking-wide bg-dry-sage/40 text-dark-slate/60 rounded px-1.5 py-0.5 flex-shrink-0">
+            {project.category}
+          </span>
+        )}
+      </div>
+
+      {desc && (
+        <p className="text-xs text-dark-slate/60 leading-snug">{desc}</p>
+      )}
+
+      <div className="flex flex-wrap items-center gap-1 mt-auto pt-1">
+        {matchingSkillIds && project.neededSkills.map(({ skill }) =>
+          matchingSkillIds.has(skill.id) ? (
+            <span
+              key={skill.id}
+              className="text-[10px] bg-seagrass/15 text-seagrass border border-seagrass/30 rounded px-1.5 py-0.5 font-medium"
+            >
+              {skill.name}
+            </span>
+          ) : null
+        )}
+
+        {showSdgs && (
+          <>
+            <span className="text-[9px] font-medium text-dark-slate/40">Agenda 2030:</span>
+            {project.sdgGoals.slice(0, 7).map((n) => (
+              <SdgIcon key={n} n={n} size={20} />
+            ))}
+          </>
+        )}
+
+        <span className="ml-auto text-[10px] text-dark-slate/40 flex-shrink-0">
+          {project._count.members} {project._count.members === 1 ? "medlem" : "medlemmar"}
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+type OrgMatchCardData = {
+  slug: string;
+  name: string;
+  description: string | null;
+  _count: { members: number };
+  neededSkills: { skill: { id: string; name: string; slug: string } }[];
+};
+
+function OrgMatchCard({
+  org,
+  matchingSkillIds,
+}: {
+  org: OrgMatchCardData;
+  matchingSkillIds: Set<string>;
+}) {
+  const desc = org.description
+    ? org.description.slice(0, 100) + (org.description.length > 100 ? "…" : "")
+    : null;
+
+  return (
+    <Link
+      href={`/org/${org.slug}`}
+      className="flex flex-col gap-2 border border-muted-teal/40 rounded-lg p-4 hover:shadow-md hover:border-muted-teal transition-all bg-white"
+    >
+      <p className="font-semibold text-dark-slate text-sm leading-snug">{org.name}</p>
+
+      {desc && (
+        <p className="text-xs text-dark-slate/60 leading-snug">{desc}</p>
+      )}
+
+      <div className="flex flex-wrap items-center gap-1 mt-auto pt-1">
+        {org.neededSkills.map(({ skill }) =>
+          matchingSkillIds.has(skill.id) ? (
+            <span
+              key={skill.id}
+              className="text-[10px] bg-seagrass/15 text-seagrass border border-seagrass/30 rounded px-1.5 py-0.5 font-medium"
+            >
+              {skill.name}
+            </span>
+          ) : null
+        )}
+
+        <span className="ml-auto text-[10px] text-dark-slate/40 flex-shrink-0">
+          {org._count.members} {org._count.members === 1 ? "medlem" : "medlemmar"}
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ skill?: string }>;
+}) {
+  const [session, { skill: skillSlug }] = await Promise.all([auth(), searchParams]);
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
 
-  const [myMemberships, myOrgs, pendingProjectRequests, pendingOrgRequests, recommended] = await Promise.all([
-    prisma.projectMember.findMany({
-      where: { userId },
-      include: {
-        project: { select: { slug: true, title: true, status: true, description: true } },
-      },
-      orderBy: { joinedAt: "desc" },
-    }),
-    prisma.organisation.findMany({
-      where: { OR: [{ ownerId: userId }, { members: { some: { userId } } }] },
-      select: { id: true, name: true, slug: true, imageUrl: true, ownerId: true },
-      orderBy: { name: "asc" },
-    }),
-    prisma.projectJoinRequest.findMany({
-      where: { userId, status: "pending" },
-      include: { project: { select: { slug: true, title: true } } },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.organisationJoinRequest.findMany({
-      where: { userId, status: "pending" },
-      include: { organisation: { select: { slug: true, name: true } } },
-      orderBy: { createdAt: "asc" },
-    }),
-    prisma.project.findMany({
-      where: {
-        visibility: "public",
-        neededSkills: { some: { skill: { users: { some: { userId } } } } },
-        members: { none: { userId } },
-      },
-      take: 4,
-      select: {
-        slug: true,
-        title: true,
-        status: true,
-        description: true,
-        neededSkills: {
-          where: { skill: { users: { some: { userId } } } },
-          include: { skill: { select: { name: true } } },
-          take: 3,
+  const [myMemberships, myOrgs, pendingProjectRequests, pendingOrgRequests, user, allSkills] =
+    await Promise.all([
+      prisma.projectMember.findMany({
+        where: { userId },
+        include: {
+          project: { select: { slug: true, title: true, status: true, description: true } },
         },
-      },
-      orderBy: { createdAt: "desc" },
-    }),
-  ]);
+        orderBy: { joinedAt: "desc" },
+      }),
+      prisma.organisation.findMany({
+        where: { OR: [{ ownerId: userId }, { members: { some: { userId } } }] },
+        select: { id: true, name: true, slug: true, imageUrl: true, ownerId: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.projectJoinRequest.findMany({
+        where: { userId, status: "pending" },
+        include: { project: { select: { slug: true, title: true } } },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.organisationJoinRequest.findMany({
+        where: { userId, status: "pending" },
+        include: { organisation: { select: { slug: true, name: true } } },
+        orderBy: { createdAt: "asc" },
+      }),
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { interests: true, skills: { select: { skillId: true } } },
+      }),
+      prisma.skill.findMany({
+        where: { projects: { some: { project: { visibility: "public", status: { not: "DELIVERY" } } } } },
+        select: { id: true, name: true, slug: true },
+        orderBy: { name: "asc" },
+      }),
+    ]);
 
   const myProjects = myMemberships.map((m) => ({ ...m.project, role: m.role }));
   const pendingCount = pendingProjectRequests.length + pendingOrgRequests.length;
+
+  const userSkillIds = (user?.skills ?? []).map((s) => s.skillId);
+  const userInterests = user?.interests ?? [];
+  const matchingSkillIdSet = new Set(userSkillIds);
+  const hasSkills = userSkillIds.length > 0;
+  const hasInterests = userInterests.length > 0;
+
+  const matchProjectSelect = {
+    slug: true,
+    title: true,
+    description: true,
+    category: true,
+    status: true,
+    sdgGoals: true,
+    _count: { select: { members: true } },
+    neededSkills: {
+      include: { skill: { select: { id: true, name: true, slug: true } } },
+    },
+  } as const;
+
+  const [skillMatches, orgMatches, interestMatches, exploreProjects] = await Promise.all([
+    hasSkills
+      ? prisma.project.findMany({
+          where: {
+            status: { not: "DELIVERY" },
+            visibility: "public",
+            neededSkills: { some: { skillId: { in: userSkillIds } } },
+            members: { none: { userId } },
+          },
+          select: matchProjectSelect,
+          orderBy: { createdAt: "desc" },
+          take: 8,
+        })
+      : Promise.resolve([] as MatchProjectCard[]),
+
+    hasSkills
+      ? prisma.organisation.findMany({
+          where: {
+            isPublic: true,
+            neededSkills: { some: { skillId: { in: userSkillIds } } },
+            members: { none: { userId } },
+          },
+          select: {
+            slug: true,
+            name: true,
+            description: true,
+            _count: { select: { members: true } },
+            neededSkills: {
+              include: { skill: { select: { id: true, name: true, slug: true } } },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 8,
+        })
+      : Promise.resolve([] as OrgMatchCardData[]),
+
+    hasInterests
+      ? prisma.project.findMany({
+          where: {
+            status: { not: "DELIVERY" },
+            visibility: "public",
+            sdgGoals: { hasSome: userInterests },
+            members: { none: { userId } },
+          },
+          select: matchProjectSelect,
+          orderBy: { createdAt: "desc" },
+          take: 8,
+        })
+      : Promise.resolve([] as MatchProjectCard[]),
+
+    prisma.project.findMany({
+      where: {
+        status: { not: "DELIVERY" },
+        visibility: "public",
+        ...(skillSlug ? { neededSkills: { some: { skill: { slug: skillSlug } } } } : {}),
+      },
+      select: matchProjectSelect,
+      orderBy: { createdAt: "desc" },
+      take: 12,
+    }),
+  ]);
 
   return (
     <div className="max-w-4xl space-y-10">
@@ -201,42 +398,169 @@ export default async function DashboardPage() {
         </section>
       )}
 
-      {/* Recommended projects */}
-      {recommended.length > 0 && (
+      {/* Hitta en match — merged from the old standalone /match page */}
+      <div id="match" className="space-y-10 scroll-mt-6">
+        <div>
+          <h2 className="text-lg font-bold text-dark-slate">Hitta en match</h2>
+          <p className="text-sm text-dark-slate/50 mt-1">
+            Projekt och organisationer som matchar dina kompetenser och intressen.
+          </p>
+        </div>
+
+        {/* Skill-matched projects */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">Recommended for you</h2>
-              <p className="text-xs text-dark-slate/40 mt-0.5">Projects looking for your skills</p>
+              <h3 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">
+                Projekt som söker din kompetens
+              </h3>
+              {!hasSkills && (
+                <p className="text-xs text-dark-slate/40 mt-0.5">
+                  Lägg till kompetenser i din{" "}
+                  <Link href="/profile/setup" className="text-coral hover:underline">
+                    profil
+                  </Link>{" "}
+                  för att se matchade projekt.
+                </p>
+              )}
             </div>
-            <Link href="/projects" className="text-xs text-coral hover:underline">See all →</Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {recommended.map((p) => (
+
+          {hasSkills && skillMatches.length === 0 && (
+            <div className="border border-dashed border-muted-teal/40 rounded-lg p-8 text-center">
+              <p className="text-dark-slate/40 text-sm">
+                Inga aktiva projekt söker dina kompetenser just nu.
+              </p>
+            </div>
+          )}
+
+          {skillMatches.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {skillMatches.map((p) => (
+                <MatchCard key={p.slug} project={p} matchingSkillIds={matchingSkillIdSet} />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Organisations seeking the user's skills */}
+        {hasSkills && (
+          <section>
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">
+                Organisationer som söker din kompetens
+              </h3>
+              <p className="text-xs text-dark-slate/40 mt-0.5">
+                Organisationer som letar efter volontärer med dina kompetenser.
+              </p>
+            </div>
+
+            {orgMatches.length === 0 ? (
+              <div className="border border-dashed border-muted-teal/40 rounded-lg p-8 text-center">
+                <p className="text-dark-slate/40 text-sm">
+                  Inga organisationer söker dina kompetenser just nu.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {orgMatches.map((o) => (
+                  <OrgMatchCard key={o.slug} org={o} matchingSkillIds={matchingSkillIdSet} />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Interest-based projects */}
+        {hasInterests && (
+          <section>
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">
+                Baserat på dina intressen
+              </h3>
+              <p className="text-xs text-dark-slate/40 mt-0.5">
+                Projekt kopplade till de globala målen du bryr dig om.
+              </p>
+            </div>
+
+            {interestMatches.length === 0 ? (
+              <div className="border border-dashed border-muted-teal/40 rounded-lg p-8 text-center">
+                <p className="text-dark-slate/40 text-sm">
+                  Inga aktiva projekt matchar dina intresseområden just nu.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {interestMatches.map((p) => (
+                  <MatchCard key={p.slug} project={p} showSdgs />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Explore by skill */}
+        <section>
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">
+              Utforska efter kompetens
+            </h3>
+            <p className="text-xs text-dark-slate/40 mt-0.5">
+              Filtrera aktiva projekt efter den kompetens de söker.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-5">
+            <Link
+              href="/dashboard#match"
+              className={`text-xs rounded-full px-3 py-1 border transition-colors ${
+                !skillSlug
+                  ? "bg-dark-slate text-white border-dark-slate"
+                  : "border-muted-teal/50 text-dark-slate/60 hover:border-muted-teal hover:text-dark-slate"
+              }`}
+            >
+              Alla
+            </Link>
+            {allSkills.map((s) => (
               <Link
-                key={p.slug}
-                href={`/projects/${p.slug}`}
-                className="flex flex-col gap-2 border border-muted-teal/40 rounded-lg p-4 hover:shadow-md hover:border-muted-teal transition-all bg-white"
+                key={s.id}
+                href={`/dashboard?skill=${s.slug}#match`}
+                className={`text-xs rounded-full px-3 py-1 border transition-colors ${
+                  skillSlug === s.slug
+                    ? "bg-seagrass text-white border-seagrass"
+                    : "border-muted-teal/50 text-dark-slate/60 hover:border-muted-teal hover:text-dark-slate"
+                }`}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <p className="font-medium text-dark-slate text-sm leading-snug">{p.title}</p>
-                  <span className="text-xs text-dark-slate/40 capitalize flex-shrink-0">{STATUS_LABELS[p.status] ?? p.status}</span>
-                </div>
-                {p.description && (
-                  <p className="text-xs text-dark-slate/50 line-clamp-2">{p.description}</p>
-                )}
-                <div className="flex flex-wrap gap-1 mt-auto pt-1">
-                  {p.neededSkills.map(({ skill }) => (
-                    <span key={skill.name} className="text-[10px] bg-seagrass/10 text-seagrass border border-seagrass/20 rounded px-1.5 py-0.5 font-medium">
-                      {skill.name}
-                    </span>
-                  ))}
-                </div>
+                {s.name}
               </Link>
             ))}
           </div>
+
+          {exploreProjects.length === 0 ? (
+            <div className="border border-dashed border-muted-teal/40 rounded-lg p-8 text-center">
+              <p className="text-dark-slate/40 text-sm">Inga projekt matchar filtret.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {exploreProjects.map((p) => (
+                <MatchCard
+                  key={p.slug}
+                  project={p}
+                  matchingSkillIds={
+                    skillSlug
+                      ? new Set(
+                          p.neededSkills
+                            .filter((ns) => ns.skill.slug === skillSlug)
+                            .map((ns) => ns.skill.id)
+                        )
+                      : undefined
+                  }
+                />
+              ))}
+            </div>
+          )}
         </section>
-      )}
+      </div>
 
       {/* Pending join requests */}
       {(pendingProjectRequests.length > 0 || pendingOrgRequests.length > 0) && (
