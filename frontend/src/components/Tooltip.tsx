@@ -14,7 +14,7 @@ export default function Tooltip({ lines, children, className, style }: Props) {
   const [visible, setVisible] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
 
-  if (!lines.length) return <>{children}</>;
+  if (!lines.length) return <div className={className} style={style}>{children}</div>;
 
   return (
     <>
