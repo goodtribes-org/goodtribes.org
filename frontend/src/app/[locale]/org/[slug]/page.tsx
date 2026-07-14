@@ -12,6 +12,7 @@ import FlagOrgButton from "@/components/FlagOrgButton";
 import OrgReviewButton from "@/components/OrgReviewButton";
 import ResourceLibrary from "@/components/ResourceLibrary";
 import ActivityTimeline, { type EventMeta } from "@/components/ActivityTimeline";
+import OrgTourGate from "@/components/OrgTourGate";
 import { PROJECT_STATUS_LABEL } from "@/lib/projectStatus";
 
 const ORG_EVENT_META: EventMeta = {
@@ -170,6 +171,8 @@ export default async function OrgDetailPage({
 
   return (
     <div className="max-w-5xl">
+      <OrgTourGate organisationId={org.id} show={isOwner && !org.tourDismissedAt} />
+
       {/* Breadcrumb */}
       <nav className="mb-6 text-sm text-dark-slate/50">
         <Link href="/org" className="hover:text-dark-slate transition-colors">Organisations</Link>
@@ -272,9 +275,19 @@ export default async function OrgDetailPage({
             {isOwner && (
               <Link
                 href={`/org/${slug}/edit`}
+                data-tour="org-edit"
                 className="px-3 py-1.5 rounded border border-muted-teal text-xs font-medium text-dark-slate/70 hover:text-dark-slate hover:border-dark-slate/40 transition-colors"
               >
                 Edit
+              </Link>
+            )}
+            {isMemberOrOwner && (
+              <Link
+                href={`/work/${slug}`}
+                data-tour="org-workspace"
+                className="px-3 py-1.5 rounded border border-muted-teal text-xs font-medium text-dark-slate/70 hover:text-dark-slate hover:border-dark-slate/40 transition-colors"
+              >
+                Workspace
               </Link>
             )}
             {userId && !isOwner && (
@@ -325,6 +338,7 @@ export default async function OrgDetailPage({
               </Link>
               <Link
                 href={`/org/${slug}?tab=projects`}
+                data-tour="org-projects-tab"
                 className={`pb-3 text-sm font-medium border-b-2 whitespace-nowrap ${activeTab === "projects" ? "border-coral text-coral" : "border-transparent text-dark-slate/50 hover:text-dark-slate"}`}
               >
                 Projects ({org._count.projects})
@@ -333,6 +347,7 @@ export default async function OrgDetailPage({
                 <>
                   <Link
                     href={`/org/${slug}?tab=resources`}
+                    data-tour="org-resources-tab"
                     className={`pb-3 text-sm font-medium border-b-2 whitespace-nowrap ${activeTab === "resources" ? "border-coral text-coral" : "border-transparent text-dark-slate/50 hover:text-dark-slate"}`}
                   >
                     Resources
@@ -446,7 +461,11 @@ export default async function OrgDetailPage({
             ) : (
               <p className="text-xs text-dark-slate/40">No members yet.</p>
             )}
-            {isOwner && <OrgInviteForm orgId={org.id} slug={slug} />}
+            {isOwner && (
+              <div data-tour="org-invite">
+                <OrgInviteForm orgId={org.id} slug={slug} />
+              </div>
+            )}
           </section>
         </div>
       </div>
