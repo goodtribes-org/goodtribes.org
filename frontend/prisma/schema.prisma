@@ -110,6 +110,10 @@ model User {
   roomParticipations      RoomParticipant[]         @relation("RoomParticipant")
   sentMessages            Message[]                 @relation("SentMessages")
   messageReactions        MessageReaction[]         @relation("MessageReactions")
+  orgFlagsRaised          OrganisationFlag[]         @relation("OrgFlaggedBy")
+  orgFlagReviews          OrganisationFlag[]         @relation("OrgFlagReviewer")
+  orgEthicsReviews        OrganisationEthicsReview[] @relation("OrgEthicsReviewer")
+  orgReviewsAuthored      OrganisationReview[]       @relation("OrgReviewAuthor")
 }
 
 model Skill {
@@ -144,6 +148,7 @@ model Organisation {
   category    String?
   imageUrl    String?
   isPublic    Boolean  @default(true)
+  verified    Boolean  @default(false)
   ownerId     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -156,6 +161,56 @@ model Organisation {
   projects       Project[]
   invites        OrgInvite[]
   neededSkills   OrganisationSkill[]
+  flags          OrganisationFlag[]        @relation("OrganisationFlags")
+  ethicsReviews  OrganisationEthicsReview[] @relation("OrganisationEthicsReviews")
+  reviews        OrganisationReview[]      @relation("OrganisationReviews")
+}
+
+model OrganisationFlag {
+  id             String                    @id @default(cuid())
+  organisationId String
+  organisation   Organisation              @relation("OrganisationFlags", fields: [organisationId], references: [id], onDelete: Cascade)
+  flaggedById    String
+  flaggedBy      User                      @relation("OrgFlaggedBy", fields: [flaggedById], references: [id])
+  reason         String
+  status         String                    @default("pending")
+  reviewedById   String?
+  reviewedBy     User?                     @relation("OrgFlagReviewer", fields: [reviewedById], references: [id])
+  decisionNote   String?
+  ethicsReview   OrganisationEthicsReview?
+  createdAt      DateTime                  @default(now())
+
+  @@index([organisationId])
+}
+
+model OrganisationEthicsReview {
+  id                 String            @id @default(cuid())
+  organisationId     String
+  organisation       Organisation      @relation("OrganisationEthicsReviews", fields: [organisationId], references: [id], onDelete: Cascade)
+  reviewerId         String
+  reviewer           User              @relation("OrgEthicsReviewer", fields: [reviewerId], references: [id])
+  organisationFlagId String?           @unique
+  organisationFlag   OrganisationFlag? @relation(fields: [organisationFlagId], references: [id])
+  outcome            String
+  note               String?
+  createdAt          DateTime          @default(now())
+
+  @@index([organisationId])
+}
+
+model OrganisationReview {
+  id             String       @id @default(cuid())
+  organisationId String
+  organisation   Organisation @relation("OrganisationReviews", fields: [organisationId], references: [id], onDelete: Cascade)
+  authorId       String
+  author         User         @relation("OrgReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  rating         Int
+  comment        String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organisationId, authorId])
+  @@index([organisationId])
 }
 
 model OrganisationSkill {

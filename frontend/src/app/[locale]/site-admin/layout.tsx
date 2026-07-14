@@ -7,6 +7,7 @@ const NAV = [
   { href: "/site-admin/ethics", label: "Etikgranskning" },
   { href: "/site-admin/users", label: "Användare" },
   { href: "/site-admin/projects", label: "Projekt" },
+  { href: "/site-admin/organisations", label: "Organisationer" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

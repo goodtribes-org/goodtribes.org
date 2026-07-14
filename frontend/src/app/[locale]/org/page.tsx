@@ -119,7 +119,12 @@ export default async function OrgListPage({
                   )}
                 </div>
                 <div className="p-3 flex flex-col flex-1">
-                  <p className="font-bold text-dark-slate text-sm leading-tight mb-0.5">{org.name}</p>
+                  <div className="flex items-center gap-1 mb-0.5">
+                    <p className="font-bold text-dark-slate text-sm leading-tight">{org.name}</p>
+                    {org.verified && (
+                      <span title="Verifierad av GoodTribes" className="text-seagrass text-xs flex-shrink-0" aria-hidden="true">✓</span>
+                    )}
+                  </div>
                   <p className="text-xs text-dark-slate/50 mb-2">
                     by <span className="text-coral">{org.owner.name ?? "Unknown"}</span>
                   </p>

@@ -7,6 +7,9 @@ import { requestToJoin } from "./actions";
 import OrgInviteForm from "./invite/OrgInviteForm";
 import { OrgJoinRequestsPanel } from "./OrgJoinSection";
 import OrgTeamManager from "./OrgTeamManager";
+import OrgVerifiedBadge from "@/components/OrgVerifiedBadge";
+import FlagOrgButton from "@/components/FlagOrgButton";
+import OrgReviewButton from "@/components/OrgReviewButton";
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -100,7 +103,7 @@ export default async function OrgDetailPage({
         })
       : null;
 
-  const [pendingJoinRequests, orgProjects] = await Promise.all([
+  const [pendingJoinRequests, orgProjects, reviewAgg, recentReviews] = await Promise.all([
     isOwner
       ? prisma.organisationJoinRequest.findMany({
           where: { organisationId: org.id, status: "pending" },
@@ -115,6 +118,17 @@ export default async function OrgDetailPage({
           orderBy: { createdAt: "desc" },
         })
       : Promise.resolve([]),
+    prisma.organisationReview.aggregate({
+      where: { organisationId: org.id },
+      _avg: { rating: true },
+      _count: true,
+    }),
+    prisma.organisationReview.findMany({
+      where: { organisationId: org.id },
+      include: { author: { select: { name: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
   ]);
 
   const ownerName = org.owner.name ?? org.owner.email;
@@ -152,9 +166,18 @@ export default async function OrgDetailPage({
         {/* Right: info */}
         <div className="md:col-span-2 flex flex-col gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-dark-slate mb-1">{org.name}</h1>
+            <div className="flex items-center gap-2 mb-1">
+              <h1 className="text-2xl font-bold text-dark-slate">{org.name}</h1>
+              {org.verified && <OrgVerifiedBadge />}
+            </div>
             {!org.isPublic && (
               <span className="text-xs bg-dry-sage text-dark-slate px-2 py-1 rounded">Private</span>
+            )}
+            {reviewAgg._count > 0 && (
+              <p className="text-sm text-dark-slate/60 mt-1">
+                <span className="text-amber-400">★</span>{" "}
+                {reviewAgg._avg.rating?.toFixed(1)} ({reviewAgg._count} {reviewAgg._count === 1 ? "recension" : "recensioner"})
+              </p>
             )}
           </div>
 
@@ -225,12 +248,38 @@ export default async function OrgDetailPage({
                 Edit
               </Link>
             )}
+            {userId && !isOwner && (
+              <OrgReviewButton organisationId={org.id} orgName={org.name} />
+            )}
           </div>
+
+          {userId && !isOwner && (
+            <div>
+              <FlagOrgButton organisationId={org.id} />
+            </div>
+          )}
         </div>
       </div>
 
       {pendingJoinRequests.length > 0 && (
         <OrgJoinRequestsPanel requests={pendingJoinRequests} slug={slug} />
+      )}
+
+      {recentReviews.length > 0 && (
+        <div className="mb-10 border border-muted-teal/30 rounded-lg p-5 bg-white">
+          <h2 className="text-sm font-semibold text-dark-slate mb-3">Recensioner</h2>
+          <div className="flex flex-col gap-3">
+            {recentReviews.map((r) => (
+              <div key={r.id} className="text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-amber-400 text-xs">{"★".repeat(r.rating)}<span className="text-muted-teal/40">{"★".repeat(5 - r.rating)}</span></span>
+                  <span className="font-medium text-dark-slate">{r.author.name ?? "Anonym"}</span>
+                </div>
+                {r.comment && <p className="text-dark-slate/70 mt-0.5">{r.comment}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* BOTTOM SECTION */}
