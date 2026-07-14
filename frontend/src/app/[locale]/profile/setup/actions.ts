@@ -97,5 +97,5 @@ export async function saveProfile(formData: FormData) {
     });
   }
 
-  redirect("/profile");
+  redirect(isFirstSetup ? "/onboarding" : "/profile");
 }

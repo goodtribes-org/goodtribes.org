@@ -183,8 +183,8 @@ export default async function DashboardPage() {
             {[
               { label: "Create your account", done: true },
               { label: "Complete your profile", href: "/profile/setup", done: !!session.user.name },
-              { label: "Browse projects and ideas", href: "/projects", done: false },
-              { label: "Join or create a project", href: "/projects/new", done: false },
+              { label: "Browse projects and ideas", href: "/projects" },
+              { label: "Join or create a project", href: "/projects/new", done: myProjects.length > 0 },
             ].map((step, i) => (
               <li key={i} className="flex items-center gap-3">
                 <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${step.done ? "bg-seagrass text-white" : "border-2 border-muted-teal/40 text-dark-slate/30"}`}>

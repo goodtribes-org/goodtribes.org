@@ -17,25 +17,18 @@ export default async function OnboardingPage() {
 
   if (user?.onboardingDone) redirect("/workplace");
 
-  // Fetch top 20 skills ordered by popularity (userCount), then name
-  const skills = await prisma.skill.findMany({
-    take: 20,
-    orderBy: [{ name: "asc" }],
-    select: { id: true, name: true, tag: true },
-  });
-
   return (
     <main className="min-h-screen bg-warm-white py-16 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="mb-12 text-center">
           <h1 className="text-3xl font-extrabold tracking-tight text-dark-slate mb-2">
-            Välkommen till GoodTribes
+            Vad vill du göra?
           </h1>
           <p className="text-dark-slate/60">
-            Tre snabba frågor — sedan är du redo att göra skillnad.
+            En sista fråga — sedan är du redo att göra skillnad.
           </p>
         </div>
-        <OnboardingWizard skills={skills} />
+        <OnboardingWizard />
       </div>
     </main>
   );
