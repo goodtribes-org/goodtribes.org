@@ -104,6 +104,7 @@ model User {
   ethicsReviews           EthicsReview[]            @relation("EthicsReviewer")
   kanbanComments          KanbanCardComment[]       @relation("KanbanComments")
   onboardingDone          Boolean                   @default(false)
+  tourDismissedAt         DateTime?
   feedPosts               FeedPost[]                @relation("AuthoredFeedPosts")
   feedLikes               FeedLike[]                @relation("FeedLikes")
   feedComments            FeedComment[]             @relation("AuthoredFeedComments")
@@ -149,6 +150,7 @@ model Organisation {
   imageUrl    String?
   isPublic    Boolean  @default(true)
   verified    Boolean  @default(false)
+  tourDismissedAt DateTime?
   ownerId     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
