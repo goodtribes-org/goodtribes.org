@@ -15,6 +15,7 @@ const MAIN_TABS = [
 const MENU_TABS = [
   { label: "Uppdateringar", href: "/updates" },
   { label: "Resurser",      href: "/wiki" },
+  { label: "Filer",         href: "/files" },
   { label: "Bidrag",        href: "/funding" },
   { label: "Tokens",        href: "/tokens" },
   { label: "Impact",        href: "/impact" },
