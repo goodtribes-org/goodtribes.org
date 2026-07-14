@@ -14,6 +14,7 @@ const MAIN_TABS = [
 
 const MENU_TABS = [
   { label: "Uppdateringar", href: "/updates" },
+  { label: "Lean Canvas",   href: "/lean-canvas" },
   { label: "Resurser",      href: "/wiki" },
   { label: "Filer",         href: "/files" },
   { label: "Bidrag",        href: "/funding" },

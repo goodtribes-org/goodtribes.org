@@ -115,6 +115,7 @@ model User {
   orgFlagReviews          OrganisationFlag[]         @relation("OrgFlagReviewer")
   orgEthicsReviews        OrganisationEthicsReview[] @relation("OrgEthicsReviewer")
   orgReviewsAuthored      OrganisationReview[]       @relation("OrgReviewAuthor")
+  leanCanvasEdits         LeanCanvas[]               @relation("LeanCanvasUpdatedBy")
 }
 
 model Skill {
@@ -450,6 +451,7 @@ model Project {
   polls              Poll[]               @relation("ProjectPolls")
   impactMetrics      ImpactMetric[]       @relation("ProjectImpactMetrics")
   maturity           ProjectMaturity?     @relation("ProjectMaturity")
+  leanCanvas         LeanCanvas?          @relation("ProjectLeanCanvas")
   parentInstances    ProjectInstance[]    @relation("ParentInstances")
   childInstance      ProjectInstance?     @relation("ChildInstance")
   alumni             ProjectAlumni[]      @relation("ProjectAlumni")
@@ -924,6 +926,25 @@ model ProjectMaturity {
   scalingPlan      String?   @db.Text
   finalReport      String?   @db.Text
   calculatedAt     DateTime  @default(now())
+}
+
+model LeanCanvas {
+  id                     String    @id @default(cuid())
+  projectSlug            String    @unique
+  project                Project   @relation("ProjectLeanCanvas", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  problem                String?   @db.Text
+  customerSegments       String?   @db.Text
+  uniqueValueProposition String?   @db.Text
+  solution               String?   @db.Text
+  channels               String?   @db.Text
+  revenueStreams         String?   @db.Text
+  costStructure          String?   @db.Text
+  keyMetrics             String?   @db.Text
+  unfairAdvantage        String?   @db.Text
+  updatedById            String?
+  updatedBy              User?     @relation("LeanCanvasUpdatedBy", fields: [updatedById], references: [id])
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 }
 
 model ProjectInstance {
