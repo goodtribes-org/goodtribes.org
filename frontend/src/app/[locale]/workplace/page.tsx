@@ -7,6 +7,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { acceptMentorship } from "@/app/[locale]/mentors/actions";
 import { PROJECT_STATUS_LABEL as STATUS_LABEL, PROJECT_STATUS_COLOR as STATUS_COLOR } from "@/lib/projectStatus";
+import VolunteerTourGate from "@/components/VolunteerTourGate";
 
 export const metadata: Metadata = { title: "Workplace — GoodTribes.org" };
 
@@ -115,6 +116,11 @@ export default async function WorkplacePage({
   const mentorProfile = await prisma.mentor.findUnique({
     where: { userId },
     select: { id: true, verified: true },
+  });
+
+  const tourUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { tourDismissedAt: true },
   });
 
   // Data needed for both tabs (overview header always visible)
@@ -317,6 +323,8 @@ export default async function WorkplacePage({
 
   return (
     <div className="space-y-8">
+      <VolunteerTourGate show={!tourUser?.tourDismissedAt} />
+
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
@@ -360,7 +368,7 @@ export default async function WorkplacePage({
       {activeTab === "overview" && (
         <div className="space-y-12">
           {/* My Projects */}
-          <section>
+          <section data-tour="workplace-projects">
             <h2 className="text-xl font-semibold mb-4">My projects</h2>
             {memberships.length === 0 ? (
               <div className="border border-dashed border-muted-teal rounded-lg p-10 text-center">

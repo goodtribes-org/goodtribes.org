@@ -104,7 +104,7 @@ export default function SpotlightTour({
               <span
                 key={i}
                 className={`w-1.5 h-1.5 rounded-full transition-all ${
-                  i === stepIndex ? "bg-forest-green w-4" : "bg-dark-slate/20"
+                  i === stepIndex ? "bg-seagrass w-4" : "bg-dark-slate/20"
                 }`}
               />
             ))}
@@ -120,7 +120,7 @@ export default function SpotlightTour({
             <button
               type="button"
               onClick={() => (isLast ? onDismiss() : setStepIndex((i) => i + 1))}
-              className="px-3 py-1.5 rounded-lg bg-forest-green text-white text-xs font-semibold hover:bg-forest-green/90 transition-colors"
+              className="px-3 py-1.5 rounded-lg bg-seagrass text-white text-xs font-semibold hover:bg-seagrass/90 transition-colors"
             >
               {isLast ? "Klart" : "Nästa"}
             </button>

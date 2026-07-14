@@ -23,6 +23,7 @@ export default function MessagesLink() {
   return (
     <Link
       href="/messages"
+      data-tour="nav-messages"
       className="relative p-1 text-dark-slate/60 hover:text-dark-slate transition-colors"
       aria-label={t("navAriaLabel")}
     >

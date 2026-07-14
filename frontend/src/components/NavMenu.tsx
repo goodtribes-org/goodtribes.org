@@ -67,10 +67,21 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
           )}
         </div>
 
+        {/* Match — always-visible, not nested in a dropdown */}
+        <a
+          href="/match"
+          onClick={navLink("/match", () => {})}
+          data-tour="nav-match"
+          className="font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap"
+        >
+          {t("discoverMatch")}
+        </a>
+
         {/* Discover dropdown */}
         <div ref={discoverRef} className="relative">
           <button
             onClick={() => setDiscover((v) => !v)}
+            data-tour="nav-discover"
             className="flex items-center gap-1 font-bold text-dark-slate/70 hover:text-seagrass whitespace-nowrap"
           >
             {t("discover")}
@@ -117,6 +128,8 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
             <a href="/projects/new" onClick={navLink("/projects/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewProject")}</a>
             <a href="/ideas/new" onClick={navLink("/ideas/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewIdea")}</a>
             <a href="/org/new" onClick={navLink("/org/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewOrg")}</a>
+
+            <a href="/match" onClick={navLink("/match", () => setOpen(false))} className="py-2.5 pl-3 text-coral font-semibold border-b border-muted-teal/20">{t("discoverMatch")}</a>
 
             <p className="pt-3 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">{t("discover")}</p>
             <a href="/projects" onClick={navLink("/projects", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverProjects")}</a>

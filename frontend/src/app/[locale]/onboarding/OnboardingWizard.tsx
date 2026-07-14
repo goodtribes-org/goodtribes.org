@@ -46,7 +46,7 @@ export default function OnboardingWizard() {
             className={[
               "flex items-start gap-4 rounded-xl border-2 p-4 cursor-pointer transition-all duration-150",
               goal === opt.value
-                ? "border-forest-green bg-forest-green/5"
+                ? "border-seagrass bg-seagrass/5"
                 : "border-dark-slate/15 hover:border-dark-slate/35",
             ].join(" ")}
           >
@@ -67,7 +67,7 @@ export default function OnboardingWizard() {
               className={[
                 "ml-auto mt-1 w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors",
                 goal === opt.value
-                  ? "border-forest-green bg-forest-green"
+                  ? "border-seagrass bg-seagrass"
                   : "border-dark-slate/30",
               ].join(" ")}
             >
@@ -84,7 +84,7 @@ export default function OnboardingWizard() {
           type="button"
           onClick={handleSubmit}
           disabled={pending}
-          className="px-6 py-2.5 rounded-lg bg-forest-green text-white text-sm font-semibold hover:bg-forest-green/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          className="px-6 py-2.5 rounded-lg bg-seagrass text-white text-sm font-semibold hover:bg-seagrass/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {pending ? "Sparar…" : "Kom igång →"}
         </button>

@@ -33,6 +33,7 @@ export default function AuthNav() {
         <button
           onClick={() => setOpen((v) => !v)}
           title={name}
+          data-tour="nav-account"
           className="block"
         >
           <div className="w-8 h-8 rounded-full bg-dry-sage flex items-center justify-center text-xs font-semibold text-dark-slate overflow-hidden relative ring-2 ring-transparent hover:ring-seagrass transition-all">
