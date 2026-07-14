@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import SortToggle from "./SortToggle";
-
-const STAGES = [
-  { value: "concept",    label: "Concept" },
-  { value: "prototype",  label: "Prototype" },
-  { value: "production", label: "In Production" },
-  { value: "delivery",   label: "Delivered" },
-];
+import { PROJECT_STATUSES as STAGES } from "@/lib/projectStatus";
 
 const CATEGORIES = [
   "Technology", "Environment", "Education", "Arts", "Community", "Health", "Other",

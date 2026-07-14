@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import KudosButton from "@/components/KudosButton";
 import MessageButton from "@/components/MessageButton";
 import { isLeadRole } from "@/lib/authz";
+import { PROJECT_STATUS_LABEL as STATUS_LABELS } from "@/lib/projectStatus";
 
 export const dynamic = "force-dynamic";
 
@@ -14,13 +15,6 @@ const SOCIAL_LABELS: Record<string, string> = {
   linkedin: "LinkedIn",
   github: "GitHub",
   twitter: "Twitter / X",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  concept: "Concept",
-  prototype: "Prototype",
-  production: "In Production",
-  delivery: "Delivered",
 };
 
 export default async function MemberProfilePage({

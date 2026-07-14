@@ -6,23 +6,9 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { acceptMentorship } from "@/app/[locale]/mentors/actions";
+import { PROJECT_STATUS_LABEL as STATUS_LABEL, PROJECT_STATUS_COLOR as STATUS_COLOR } from "@/lib/projectStatus";
 
 export const metadata: Metadata = { title: "Workplace — GoodTribes.org" };
-
-
-const STATUS_LABEL: Record<string, string> = {
-  concept: "Concept",
-  prototype: "Prototype",
-  production: "In Production",
-  delivery: "Delivered",
-};
-
-const STATUS_COLOR: Record<string, string> = {
-  concept: "bg-dry-sage/40 text-dark-slate/70",
-  prototype: "bg-yellow-100 text-yellow-800",
-  production: "bg-blue-100 text-blue-800",
-  delivery: "bg-green-100 text-green-800",
-};
 
 const ROLE_LABEL: Record<string, string> = {
   FOUNDER: "Founder",
