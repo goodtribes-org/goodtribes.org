@@ -69,7 +69,7 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-muted-teal rounded-lg shadow-lg z-50 overflow-hidden">
+        <div className="fixed left-4 right-4 top-16 md:absolute md:left-auto md:right-0 md:top-full md:mt-2 md:w-80 bg-white border border-muted-teal rounded-lg shadow-lg z-50 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-muted-teal/40">
             <span className="text-sm font-semibold">{t("title")}</span>
             <Link href="/notifications" onClick={() => setOpen(false)} className="text-xs text-seagrass hover:underline">

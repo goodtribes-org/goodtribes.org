@@ -38,17 +38,17 @@ export default async function HallOfImpactPage() {
         <h1 className="text-3xl font-bold text-dark-slate mb-2">Hall of Impact</h1>
         <p className="text-dark-slate/50 text-sm mb-6">Projekt som förändrat världen</p>
 
-        <div className="inline-flex gap-8 bg-dry-sage/30 rounded-xl px-8 py-4">
+        <div className="grid grid-cols-3 gap-3 sm:inline-flex sm:gap-8 bg-dry-sage/30 rounded-xl px-4 sm:px-8 py-4">
           <div className="text-center">
             <p className="text-2xl font-bold text-seagrass">{projects.length}</p>
             <p className="text-xs text-dark-slate/50 mt-0.5">Avslutade projekt</p>
           </div>
-          <div className="w-px bg-muted-teal/30" />
+          <div className="hidden sm:block w-px bg-muted-teal/30" />
           <div className="text-center">
             <p className="text-2xl font-bold text-seagrass">{totalAlumni}</p>
             <p className="text-xs text-dark-slate/50 mt-0.5">Bidragsgivare totalt</p>
           </div>
-          <div className="w-px bg-muted-teal/30" />
+          <div className="hidden sm:block w-px bg-muted-teal/30" />
           <div className="text-center">
             <p className="text-2xl font-bold text-seagrass">
               {projects.reduce((sum, p) => sum + p.impactMetrics.length, 0)}

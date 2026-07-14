@@ -113,7 +113,7 @@ export default async function IdeasPage({
       </div>
 
       {/* Status tabs */}
-      <div className="flex gap-1 mb-5 border-b border-muted-teal/30 pb-0">
+      <div className="flex gap-1 mb-5 border-b border-muted-teal/30 pb-0 flex-nowrap overflow-x-auto scrollbar-none" style={{ scrollbarWidth: "none" }}>
         {STATUS_TABS.map((tab) => {
           const active = (status ?? "") === tab.value;
           const params = new URLSearchParams();

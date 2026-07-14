@@ -85,7 +85,7 @@ export default function SearchButton() {
       </button>
 
       {open && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-muted-teal/30 rounded-xl shadow-xl z-50 overflow-hidden">
+        <div className="fixed left-4 right-4 top-16 md:absolute md:left-auto md:right-0 md:top-full md:mt-2 md:w-80 bg-white border border-muted-teal/30 rounded-xl shadow-xl z-50 overflow-hidden">
           <div className="px-3 py-2 border-b border-muted-teal/20">
             <input
               ref={inputRef}

@@ -298,12 +298,11 @@ export default async function ProjectDetailPage({
         <div className="relative z-10">
           <div className="flex justify-center pt-5 pb-2 px-6">
             <h1
-              className="text-5xl md:text-6xl font-bold text-center leading-tight"
+              className="text-5xl md:text-6xl font-bold text-center leading-tight md:mr-[330px]"
               style={{
                 color: "white",
                 textShadow: "-1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999, 2px 4px 12px rgba(0,0,0,0.35)",
                 transform: "rotate(-3deg)",
-                marginRight: "330px",
               }}
             >
               {project.title}
@@ -313,8 +312,8 @@ export default async function ProjectDetailPage({
             <div className="flex flex-col md:flex-row gap-5 items-stretch">
               {/* Card 1: project image */}
               <div
-                className="shrink-0 bg-white overflow-hidden"
-                style={{ width: "820px", height: "460px", border: "24px solid white", boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)", transform: "rotate(-3deg)", position: "relative", zIndex: 1 }}
+                className="shrink-0 bg-white overflow-hidden w-full h-64 sm:h-80 md:w-[820px] md:h-[460px]"
+                style={{ border: "24px solid white", boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)", transform: "rotate(-3deg)", position: "relative", zIndex: 1 }}
               >
                 {project.imageUrl ? (
                   <div className="relative w-full h-full">
@@ -328,8 +327,8 @@ export default async function ProjectDetailPage({
               </div>
               {/* Card 2: team + SDG + join */}
               <div
-                className="shrink-0 bg-white rounded-2xl p-5 flex flex-col"
-                style={{ width: "320px", minHeight: "460px", boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)", marginLeft: "-10px", transform: "rotate(3deg)" }}
+                className="shrink-0 bg-white rounded-2xl p-5 flex flex-col w-full min-h-0 md:w-[320px] md:min-h-[460px]"
+                style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)", marginLeft: "-10px", transform: "rotate(3deg)" }}
               >
                 {project.members.length > 0 && (
                   <div className="mb-4">

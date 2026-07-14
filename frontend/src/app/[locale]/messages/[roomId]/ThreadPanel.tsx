@@ -25,7 +25,7 @@ export function ThreadPanel({ roomId, parent, replies, currentUserId, canPost, m
   const t = useTranslations("Messages");
 
   return (
-    <div className="w-96 shrink-0 border-l border-gray-200 flex flex-col h-[calc(100dvh-220px)] bg-white">
+    <div className="w-full md:w-96 shrink-0 border-l border-gray-200 flex flex-col h-[calc(100dvh-220px)] bg-white">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 shrink-0">
         <span className="font-bold text-base text-gray-900">{t("reply")}</span>
         <button

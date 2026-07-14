@@ -347,7 +347,7 @@ export default async function WorkplacePage({
 
       {/* Tab navigation */}
       <div className="border-b border-muted-teal">
-        <nav className="-mb-px flex gap-6">
+        <nav className="-mb-px flex gap-6 flex-nowrap overflow-x-auto scrollbar-none" style={{ scrollbarWidth: "none" }}>
           {[...TABS_BASE, ...(mentorProfile?.verified ? [MENTOR_TAB] : [])].map((tab) => (
             <Link
               key={tab.key}

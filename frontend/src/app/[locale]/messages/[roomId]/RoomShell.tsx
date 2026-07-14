@@ -151,7 +151,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
 
   return (
     <div className="flex">
-      <div className="flex flex-col h-[calc(100dvh-220px)] bg-white flex-1 min-w-0">
+      <div className={`${activeThread ? "hidden md:flex" : "flex"} flex-col h-[calc(100dvh-220px)] bg-white flex-1 min-w-0`}>
         <div className="flex items-center gap-2 px-5 py-3 border-b border-gray-200 shrink-0">
           <Link href="/messages" className="md:hidden text-sm text-dark-slate/50 hover:text-seagrass mr-1">
             ←

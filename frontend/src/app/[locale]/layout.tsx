@@ -116,7 +116,7 @@ export default async function LocaleLayout({
             <footer className="border-t border-muted-teal/30 mt-16">
               <div className="max-w-6xl mx-auto px-6 py-8 flex flex-wrap items-center justify-between gap-4 text-xs text-dark-slate/40">
                 <span>© {new Date().getFullYear()} GoodTribes Foundation</span>
-                <div className="flex gap-5">
+                <div className="flex flex-wrap gap-5">
                   <Link href="/hall-of-impact" className="hover:text-dark-slate transition-colors">{t("hallOfImpact")}</Link>
                   <Link href="/academy" className="hover:text-dark-slate transition-colors">{t("academy")}</Link>
                   <Link href="/dream-wall" className="hover:text-dark-slate transition-colors">{t("dreamWall")}</Link>

@@ -36,7 +36,7 @@ export default function SpotlightTour({
 
     function measure() {
       const el = document.querySelector(`[data-tour="${step.target}"]`);
-      if (!el) return false;
+      if (!el || (el as HTMLElement).offsetParent === null) return false;
       const r = el.getBoundingClientRect();
       setRect({
         top: r.top - PADDING,
