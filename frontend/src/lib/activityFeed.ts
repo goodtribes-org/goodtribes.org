@@ -204,6 +204,7 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
         fromColumn?: string; toColumn?: string;
         subtasks?: { title: string; done: boolean }[];
       } | null;
+      const project = a.project!;
       const isCardActivity = a.type === "task_completed" || a.type === "task_created" || a.type === "task_moved";
       const action =
         a.type === "task_completed" && payload?.title
@@ -215,8 +216,8 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
           : activityLabel[a.type] ?? "aktivitet";
       const href =
         isCardActivity && payload?.cardId
-          ? `/projects/${a.project.slug}/tasks?card=${payload.cardId}`
-          : `/projects/${a.project.slug}`;
+          ? `/projects/${project.slug}/tasks?card=${payload.cardId}`
+          : `/projects/${project.slug}`;
       const body =
         a.type !== "task_moved" && payload?.description
           ? htmlToPreviewText(payload.description)
@@ -227,8 +228,8 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
           : undefined;
       return {
         id: `activity-${a.id}`, targetType: "activityEvent", targetId: a.id,
-        avatarName: a.user.name, avatarImage: a.user.image, projectImage: a.project.imageUrl,
-        projectName: a.project.title, projectHref: `/projects/${a.project.slug}`, projectId: a.project.id,
+        avatarName: a.user.name, avatarImage: a.user.image, projectImage: project.imageUrl,
+        projectName: project.title, projectHref: `/projects/${project.slug}`, projectId: project.id,
         action,
         body,
         subtasks,

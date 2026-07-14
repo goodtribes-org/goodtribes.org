@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { slugify } from "@/lib/slugify";
 import { indexDocuments } from "@/lib/meili";
 import { suggestSdgGoals } from "@/lib/claude";
+import { logOrgActivity } from "@/lib/activity";
 
 export async function getSdgSuggestions(
   description: string
@@ -63,6 +64,10 @@ export async function createProject(formData: FormData) {
         });
       }
       slug = project.slug;
+
+      if (orgId) {
+        await logOrgActivity(orgId, userId, "project_added", { title: project.title, slug: project.slug });
+      }
 
       if (ideaId) {
         await prisma.idea.update({ where: { id: ideaId }, data: { status: "converted" } }).catch(() => {});

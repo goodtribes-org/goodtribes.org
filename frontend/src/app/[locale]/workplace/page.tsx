@@ -272,13 +272,13 @@ export default async function WorkplacePage({
     const [events, projectCountResult, monthCountResult, ideasCountResult] =
       await Promise.all([
         prisma.activityEvent.findMany({
-          where: { userId },
+          where: { userId, projectId: { not: null } },
           orderBy: { createdAt: "desc" },
           take: 50,
           include: { project: { select: { title: true, slug: true } } },
         }),
         prisma.activityEvent.findMany({
-          where: { userId },
+          where: { userId, projectId: { not: null } },
           select: { projectId: true },
           distinct: ["projectId"],
         }),
@@ -288,7 +288,7 @@ export default async function WorkplacePage({
         prisma.idea.count({ where: { authorId: userId } }),
       ]);
 
-    activityEvents = events;
+    activityEvents = events.map((e) => ({ ...e, project: e.project! }));
     distinctProjectCount = projectCountResult.length;
     activitiesThisMonth = monthCountResult;
     ideasCount = ideasCountResult;

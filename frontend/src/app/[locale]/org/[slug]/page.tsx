@@ -10,6 +10,14 @@ import OrgTeamManager from "./OrgTeamManager";
 import OrgVerifiedBadge from "@/components/OrgVerifiedBadge";
 import FlagOrgButton from "@/components/FlagOrgButton";
 import OrgReviewButton from "@/components/OrgReviewButton";
+import ResourceLibrary from "@/components/ResourceLibrary";
+import ActivityTimeline, { type EventMeta } from "@/components/ActivityTimeline";
+import { PROJECT_STATUS_LABEL } from "@/lib/projectStatus";
+
+const ORG_EVENT_META: EventMeta = {
+  member_joined:  { icon: "👤", label: (_, a) => `${a} joined the organisation` },
+  project_added:  { icon: "📁", label: (p, a) => `${a} added a project: "${p.title}"` },
+};
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -73,7 +81,11 @@ export default async function OrgDetailPage({
 }) {
   const { slug } = await params;
   const { tab } = await searchParams;
-  const activeTab = tab === "projects" ? "projects" : "story";
+  const activeTab =
+    tab === "projects" ? "projects" :
+    tab === "resources" ? "resources" :
+    tab === "activity" ? "activity" :
+    "story";
   const session = await auth();
   const userId = session?.user?.id;
 
@@ -103,7 +115,9 @@ export default async function OrgDetailPage({
         })
       : null;
 
-  const [pendingJoinRequests, orgProjects, reviewAgg, recentReviews] = await Promise.all([
+  const isMemberOrOwner = isOwner || isMember;
+
+  const [pendingJoinRequests, orgProjects, reviewAgg, recentReviews, orgFiles, orgActivity] = await Promise.all([
     isOwner
       ? prisma.organisationJoinRequest.findMany({
           where: { organisationId: org.id, status: "pending" },
@@ -129,6 +143,21 @@ export default async function OrgDetailPage({
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
+    activeTab === "resources" && isMemberOrOwner
+      ? prisma.file.findMany({
+          where: { organisationId: org.id },
+          select: { id: true, key: true, name: true, size: true, mimeType: true, createdAt: true },
+          orderBy: { createdAt: "desc" },
+        })
+      : Promise.resolve([]),
+    activeTab === "activity" && isMemberOrOwner
+      ? prisma.activityEvent.findMany({
+          where: { organisationId: org.id },
+          orderBy: { createdAt: "desc" },
+          take: 50,
+          include: { user: { select: { name: true } } },
+        })
+      : Promise.resolve([]),
   ]);
 
   const ownerName = org.owner.name ?? org.owner.email;
@@ -300,6 +329,22 @@ export default async function OrgDetailPage({
               >
                 Projects ({org._count.projects})
               </Link>
+              {isMemberOrOwner && (
+                <>
+                  <Link
+                    href={`/org/${slug}?tab=resources`}
+                    className={`pb-3 text-sm font-medium border-b-2 whitespace-nowrap ${activeTab === "resources" ? "border-coral text-coral" : "border-transparent text-dark-slate/50 hover:text-dark-slate"}`}
+                  >
+                    Resources
+                  </Link>
+                  <Link
+                    href={`/org/${slug}?tab=activity`}
+                    className={`pb-3 text-sm font-medium border-b-2 whitespace-nowrap ${activeTab === "activity" ? "border-coral text-coral" : "border-transparent text-dark-slate/50 hover:text-dark-slate"}`}
+                  >
+                    Activity
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 
@@ -337,8 +382,8 @@ export default async function OrgDetailPage({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="font-medium text-dark-slate truncate">{p.title}</p>
-                        <span className="text-xs bg-dry-sage text-dark-slate/60 px-2 py-0.5 rounded capitalize flex-shrink-0">
-                          {p.status}
+                        <span className="text-xs bg-dry-sage text-dark-slate/60 px-2 py-0.5 rounded flex-shrink-0">
+                          {PROJECT_STATUS_LABEL[p.status] ?? p.status}
                         </span>
                       </div>
                       {p.description && (
@@ -355,6 +400,18 @@ export default async function OrgDetailPage({
             ) : (
               <p className="text-dark-slate/40 italic text-sm">No public projects yet.</p>
             )
+          )}
+
+          {activeTab === "resources" && isMemberOrOwner && (
+            <ResourceLibrary
+              organisationId={org.id}
+              files={orgFiles.map((f) => ({ ...f, createdAt: f.createdAt.toISOString() }))}
+              canUpload={isMemberOrOwner}
+            />
+          )}
+
+          {activeTab === "activity" && isMemberOrOwner && (
+            <ActivityTimeline events={orgActivity} eventMeta={ORG_EVENT_META} />
           )}
         </div>
 

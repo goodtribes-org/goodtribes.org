@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
+import { getProjectRole } from "@/lib/authz";
+import { getOrgRole } from "@/lib/org-authz";
 import { PRIVATE_BUCKET, getObjectStream } from "@/lib/storage";
 
 
@@ -21,7 +23,12 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  if (file.ownerId !== session.user.id) {
+  const userId = session.user.id;
+  const isOwner = file.ownerId === userId;
+  const isProjectMember = file.projectId ? !!(await getProjectRole(file.projectId, userId)) : false;
+  const isOrgMember = file.organisationId ? !!(await getOrgRole(file.organisationId, userId)) : false;
+
+  if (!isOwner && !isProjectMember && !isOrgMember) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

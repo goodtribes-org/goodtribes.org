@@ -164,6 +164,8 @@ model Organisation {
   flags          OrganisationFlag[]        @relation("OrganisationFlags")
   ethicsReviews  OrganisationEthicsReview[] @relation("OrganisationEthicsReviews")
   reviews        OrganisationReview[]      @relation("OrganisationReviews")
+  files          File[]                    @relation("OrganisationFiles")
+  activityEvents ActivityEvent[]
 }
 
 model OrganisationFlag {
@@ -299,15 +301,22 @@ model WorkspaceTask {
 }
 
 model File {
-  id        String   @id @default(cuid())
-  key       String   @unique
-  bucket    String
-  name      String
-  size      Int
-  mimeType  String
-  ownerId   String
-  owner     User     @relation("OwnedFiles", fields: [ownerId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  id             String        @id @default(cuid())
+  key            String        @unique
+  bucket         String
+  name           String
+  size           Int
+  mimeType       String
+  ownerId        String
+  owner          User          @relation("OwnedFiles", fields: [ownerId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project?      @relation("ProjectFiles", fields: [projectId], references: [id], onDelete: Cascade)
+  organisationId String?
+  organisation   Organisation? @relation("OrganisationFiles", fields: [organisationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now())
+
+  @@index([projectId])
+  @@index([organisationId])
 }
 
 model KanbanCard {
@@ -431,6 +440,7 @@ model Project {
   invites            ProjectInvite[]
   wikiPages          WikiPage[]
   neededSkills       ProjectSkill[]
+  files              File[]               @relation("ProjectFiles")
   fundingCampaign    FundingCampaign?
   rooms              Room[]               @relation("ProjectRooms")
   calendarEvents     CalendarEvent[]      @relation("ProjectCalendarEvents")
@@ -653,15 +663,19 @@ model OrgInvite {
 }
 
 model ActivityEvent {
-  id        String   @id @default(cuid())
-  projectId String
-  userId    String
-  type      String
-  payload   Json?
-  createdAt DateTime @default(now())
+  id             String        @id @default(cuid())
+  projectId      String?
+  organisationId String?
+  userId         String
+  type           String
+  payload        Json?
+  createdAt      DateTime      @default(now())
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user    User    @relation("ActivityEvents", fields: [userId], references: [id])
+  project      Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  organisation Organisation? @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  user         User          @relation("ActivityEvents", fields: [userId], references: [id])
+
+  @@index([organisationId])
 }
 
 model FundingCampaign {

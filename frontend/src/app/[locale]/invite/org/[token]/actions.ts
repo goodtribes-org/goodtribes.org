@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
+import { logOrgActivity } from "@/lib/activity";
 
 
 export async function acceptOrgInvite(token: string): Promise<void> {
@@ -29,6 +30,8 @@ export async function acceptOrgInvite(token: string): Promise<void> {
       data: { usedAt: new Date() },
     }),
   ]);
+
+  await logOrgActivity(invite.orgId, session.user.id, "member_joined", { via: "invite" });
 
   redirect(`/org/${invite.org.slug}`);
 }

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notify";
 import { sendEmail } from "@/lib/email";
+import { logOrgActivity } from "@/lib/activity";
 
 
 export async function requestToJoin(formData: FormData) {
@@ -96,6 +97,7 @@ export async function respondToOrgJoinRequest(
       create: { organisationId: req.organisationId, userId: req.userId },
       update: {},
     });
+    await logOrgActivity(req.organisationId, req.userId, "member_joined", { via: "request" });
   }
 
   try {

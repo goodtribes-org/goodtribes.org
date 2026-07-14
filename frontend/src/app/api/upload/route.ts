@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
+import { getProjectRole } from "@/lib/authz";
+import { getOrgRole } from "@/lib/org-authz";
 import {
   ALLOWED_TYPES,
   IMAGE_SIZE_LIMIT,
@@ -23,7 +25,9 @@ export async function POST(request: Request): Promise<Response> {
 
   const formData = await request.formData();
   const file = formData.get("file");
-  const visibility = formData.get("visibility") as string;
+  let visibility = formData.get("visibility") as string;
+  const projectId = (formData.get("projectId") as string | null) || null;
+  const organisationId = (formData.get("organisationId") as string | null) || null;
 
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -31,6 +35,22 @@ export async function POST(request: Request): Promise<Response> {
 
   if (!["public", "private"].includes(visibility)) {
     return NextResponse.json({ error: "Invalid visibility" }, { status: 400 });
+  }
+
+  if (projectId) {
+    const role = await getProjectRole(projectId, session.user.id);
+    if (!role) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    visibility = "private";
+  }
+
+  if (organisationId) {
+    const role = await getOrgRole(organisationId, session.user.id);
+    if (!role) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    visibility = "private";
   }
 
   const mimeType = file.type;
@@ -68,6 +88,8 @@ export async function POST(request: Request): Promise<Response> {
       size: body.byteLength,
       mimeType: finalMimeType,
       ownerId: userId,
+      ...(projectId ? { projectId } : {}),
+      ...(organisationId ? { organisationId } : {}),
     },
   });
 
