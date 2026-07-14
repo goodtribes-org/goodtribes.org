@@ -17,6 +17,8 @@ export async function updateOrg(formData: FormData) {
   const description = (formData.get("description") as string | null)?.trim() || null;
   const imageUrl = (formData.get("imageUrl") as string | null)?.trim() || null;
   const isPublic = formData.get("isPublic") === "on";
+  const category = (formData.get("category") as string | null)?.trim() || null;
+  const skillIds = formData.getAll("skillIds") as string[];
 
   const existing = await prisma.organisation.findUnique({
     where: { id: orgId },
@@ -40,8 +42,18 @@ export async function updateOrg(formData: FormData) {
 
   await prisma.organisation.update({
     where: { id: orgId },
-    data: { name, slug, description, imageUrl, isPublic },
+    data: { name, slug, description, imageUrl, isPublic, category },
   });
+
+  await prisma.$transaction([
+    prisma.organisationSkill.deleteMany({ where: { organisationId: orgId } }),
+    ...(skillIds.length > 0
+      ? [prisma.organisationSkill.createMany({
+          data: skillIds.map((skillId) => ({ organisationId: orgId, skillId })),
+          skipDuplicates: true,
+        })]
+      : []),
+  ]);
 
   // Keep Meilisearch in sync — remove old slug entry if slug changed
   if (existing.slug !== slug) {

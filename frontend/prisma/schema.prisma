@@ -121,6 +121,7 @@ model Skill {
   createdAt   DateTime       @default(now())
   users       UserSkill[]
   projects    ProjectSkill[]
+  organisations OrganisationSkill[]
 }
 
 model UserSkill {
@@ -140,6 +141,7 @@ model Organisation {
   name        String
   slug        String   @unique
   description String?
+  category    String?
   imageUrl    String?
   isPublic    Boolean  @default(true)
   ownerId     String
@@ -153,6 +155,19 @@ model Organisation {
   workspaceTasks WorkspaceTask[]           @relation("OrgTasks")
   projects       Project[]
   invites        OrgInvite[]
+  neededSkills   OrganisationSkill[]
+}
+
+model OrganisationSkill {
+  id             String   @id @default(cuid())
+  organisationId String
+  skillId        String
+  addedAt        DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  skill        Skill        @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([organisationId, skillId])
 }
 
 model OrganisationMember {

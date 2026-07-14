@@ -8,8 +8,7 @@ import RichTextEditor from "@/components/RichTextEditor";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_NUMBERS, SDG_LABELS_EN } from "@/lib/sdg";
 import { PROJECT_STATUSES as STATUSES } from "@/lib/projectStatus";
-
-const CATEGORIES = ["Technology", "Environment", "Education", "Arts", "Community", "Health", "Other"];
+import { CATEGORIES } from "@/lib/categories";
 
 interface Props {
   slug: string;

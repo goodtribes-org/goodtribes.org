@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import FileUpload from "@/components/FileUpload";
 import { updateOrg, deleteOrg } from "./actions";
+import { CATEGORIES } from "@/lib/categories";
 
 type Props = {
   orgId: string;
@@ -11,9 +12,21 @@ type Props = {
   description: string;
   imageUrl: string | null;
   isPublic: boolean;
+  category: string | null;
+  skills: { id: string; name: string; slug: string }[];
+  currentSkillIds: string[];
 };
 
-export default function EditOrgForm({ orgId, orgName, description, imageUrl, isPublic }: Props) {
+export default function EditOrgForm({
+  orgId,
+  orgName,
+  description,
+  imageUrl,
+  isPublic,
+  category,
+  skills,
+  currentSkillIds,
+}: Props) {
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -60,6 +73,45 @@ export default function EditOrgForm({ orgId, orgName, description, imageUrl, isP
           />
           <input type="hidden" name="imageUrl" ref={imageInputRef} defaultValue={imageUrl ?? ""} />
         </div>
+
+        <div>
+          <label htmlFor="category" className="block text-sm font-medium text-dark-slate mb-1">
+            Category <span className="text-dark-slate/50 font-normal">(optional)</span>
+          </label>
+          <select
+            id="category"
+            name="category"
+            defaultValue={category ?? ""}
+            className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral bg-white"
+          >
+            <option value="">— none —</option>
+            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+
+        {skills.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-dark-slate mb-2">
+              Skills sought <span className="text-dark-slate/50 font-normal">(optional)</span>
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {skills.map((s) => (
+                <label key={s.id} className="cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="skillIds"
+                    value={s.id}
+                    defaultChecked={currentSkillIds.includes(s.id)}
+                    className="sr-only peer"
+                  />
+                  <span className="inline-block px-3 py-1 rounded-full border border-muted-teal text-sm text-dark-slate/70 transition-all peer-checked:border-seagrass peer-checked:bg-seagrass/10 peer-checked:text-seagrass hover:border-dark-slate/40">
+                    {s.name}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center gap-3">
           <input

@@ -83,6 +83,56 @@ function MatchCard({
   );
 }
 
+type OrgCard = {
+  slug: string;
+  name: string;
+  description: string | null;
+  _count: { members: number };
+  neededSkills: { skill: { id: string; name: string; slug: string } }[];
+};
+
+function OrgMatchCard({
+  org,
+  matchingSkillIds,
+}: {
+  org: OrgCard;
+  matchingSkillIds: Set<string>;
+}) {
+  const desc = org.description
+    ? org.description.slice(0, 100) + (org.description.length > 100 ? "…" : "")
+    : null;
+
+  return (
+    <Link
+      href={`/org/${org.slug}`}
+      className="flex flex-col gap-2 border border-muted-teal/40 rounded-lg p-4 hover:shadow-md hover:border-muted-teal transition-all bg-white"
+    >
+      <p className="font-semibold text-dark-slate text-sm leading-snug">{org.name}</p>
+
+      {desc && (
+        <p className="text-xs text-dark-slate/60 leading-snug">{desc}</p>
+      )}
+
+      <div className="flex flex-wrap items-center gap-1 mt-auto pt-1">
+        {org.neededSkills.map(({ skill }) =>
+          matchingSkillIds.has(skill.id) ? (
+            <span
+              key={skill.id}
+              className="text-[10px] bg-seagrass/15 text-seagrass border border-seagrass/30 rounded px-1.5 py-0.5 font-medium"
+            >
+              {skill.name}
+            </span>
+          ) : null
+        )}
+
+        <span className="ml-auto text-[10px] text-dark-slate/40 flex-shrink-0">
+          {org._count.members} {org._count.members === 1 ? "medlem" : "medlemmar"}
+        </span>
+      </div>
+    </Link>
+  );
+}
+
 export default async function MatchPage({
   searchParams,
 }: {
@@ -193,6 +243,27 @@ export default async function MatchPage({
     }),
   ]);
 
+  const orgMatches = userSkillIds.length > 0
+    ? await prisma.organisation.findMany({
+        where: {
+          isPublic: true,
+          neededSkills: { some: { skillId: { in: userSkillIds } } },
+          members: { none: { userId } },
+        },
+        select: {
+          slug: true,
+          name: true,
+          description: true,
+          _count: { select: { members: true } },
+          neededSkills: {
+            include: { skill: { select: { id: true, name: true, slug: true } } },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+      })
+    : [];
+
   const hasSkills = userSkillIds.length > 0;
   const hasInterests = userInterests.length > 0;
 
@@ -240,6 +311,34 @@ export default async function MatchPage({
           </div>
         )}
       </section>
+
+      {/* Section: organisations seeking the user's skills */}
+      {hasSkills && (
+        <section>
+          <div className="mb-4">
+            <h2 className="text-base font-semibold text-dark-slate">
+              Organisationer som söker din kompetens
+            </h2>
+            <p className="text-xs text-dark-slate/40 mt-0.5">
+              Organisationer som letar efter volontärer med dina kompetenser.
+            </p>
+          </div>
+
+          {orgMatches.length === 0 ? (
+            <div className="border border-dashed border-muted-teal/40 rounded-lg p-8 text-center">
+              <p className="text-dark-slate/40 text-sm">
+                Inga organisationer söker dina kompetenser just nu.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {orgMatches.map((o) => (
+                <OrgMatchCard key={o.slug} org={o} matchingSkillIds={matchingSkillIdSet} />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Section 2: interest-based projects */}
       {hasInterests && (

@@ -83,6 +83,7 @@ export default async function OrgDetailPage({
         orderBy: { joinedAt: "asc" },
       },
       _count: { select: { projects: true } },
+      neededSkills: { include: { skill: { select: { id: true, name: true, slug: true } } } },
     },
   });
 
@@ -179,6 +180,20 @@ export default async function OrgDetailPage({
               <p className="text-xs text-dark-slate/50 mt-0.5">Projects</p>
             </div>
           </div>
+
+          {org.neededSkills.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              <span className="text-[10px] font-medium text-dark-slate/40 mr-0.5 self-center">Seeking:</span>
+              {org.neededSkills.map(({ skill: s }) => (
+                <span
+                  key={s.id}
+                  className="text-[10px] bg-seagrass/15 text-seagrass border border-seagrass/30 rounded px-1.5 py-0.5 font-medium"
+                >
+                  {s.name}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Action buttons */}
           <div className="flex flex-wrap items-center gap-3 mt-1">

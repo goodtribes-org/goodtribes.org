@@ -11,18 +11,23 @@ export default async function EditOrgPage({ params }: { params: Promise<{ slug: 
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const org = await prisma.organisation.findUnique({
-    where: { slug },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      description: true,
-      imageUrl: true,
-      isPublic: true,
-      ownerId: true,
-    },
-  });
+  const [org, skills] = await Promise.all([
+    prisma.organisation.findUnique({
+      where: { slug },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        imageUrl: true,
+        isPublic: true,
+        ownerId: true,
+        category: true,
+        neededSkills: { select: { skillId: true } },
+      },
+    }),
+    prisma.skill.findMany({ select: { id: true, name: true, slug: true }, orderBy: { name: "asc" } }),
+  ]);
 
   if (!org || org.ownerId !== session.user.id) notFound();
 
@@ -38,6 +43,9 @@ export default async function EditOrgPage({ params }: { params: Promise<{ slug: 
         description={org.description ?? ""}
         imageUrl={org.imageUrl}
         isPublic={org.isPublic}
+        category={org.category}
+        skills={skills}
+        currentSkillIds={org.neededSkills.map((s) => s.skillId)}
       />
     </div>
   );

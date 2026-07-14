@@ -3,11 +3,13 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import Pagination from "@/components/Pagination";
 import CountryMap from "@/components/CountryMap";
 import { countByCountry } from "@/lib/geo";
+import OrgFilters from "@/components/OrgFiltersContainer";
 
 export const metadata: Metadata = {
   title: "Organisations — GoodTribes.org",
@@ -19,25 +21,41 @@ const PAGE_SIZE = 12;
 export default async function OrgListPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ q?: string; category?: string; skill?: string; page?: string }>;
 }) {
-  const { page: pageStr } = await searchParams;
+  const { q, category, skill, page: pageStr } = await searchParams;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
   const session = await auth();
 
-  const [total, orgs, ownerCountries] = await Promise.all([
-    prisma.organisation.count({ where: { isPublic: true } }),
+  const where: Prisma.OrganisationWhereInput = {
+    isPublic: true,
+    ...(q ? { OR: [
+      { name: { contains: q, mode: "insensitive" } },
+      { description: { contains: q, mode: "insensitive" } },
+    ]} : {}),
+    ...(category ? { category } : {}),
+    ...(skill ? { neededSkills: { some: { skill: { slug: skill } } } } : {}),
+  };
+
+  const [total, orgs, ownerCountries, skillsSought] = await Promise.all([
+    prisma.organisation.count({ where }),
     prisma.organisation.findMany({
-      where: { isPublic: true },
+      where,
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
       include: {
         owner: { select: { name: true } },
         _count: { select: { members: true, projects: true } },
+        neededSkills: { include: { skill: { select: { id: true, name: true, slug: true } } } },
       },
     }),
-    prisma.organisation.findMany({ where: { isPublic: true }, select: { owner: { select: { country: true } } } }),
+    prisma.organisation.findMany({ where, select: { owner: { select: { country: true } } } }),
+    prisma.skill.findMany({
+      where: { organisations: { some: { organisation: { isPublic: true } } } },
+      select: { slug: true, name: true },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   const countryCounts = countByCountry(ownerCountries.map((o) => o.owner.country));
@@ -63,6 +81,8 @@ export default async function OrgListPage({
           <CountryMap counts={countryCounts} unitLabel="organisations" />
         </div>
       )}
+
+      <OrgFilters q={q} category={category} skill={skill} skills={skillsSought} />
 
       {orgs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -108,6 +128,18 @@ export default async function OrgListPage({
                       {org.description}
                     </p>
                   )}
+                  {org.neededSkills.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {org.neededSkills.slice(0, 3).map(({ skill: s }) => (
+                        <span
+                          key={s.id}
+                          className="text-[10px] bg-seagrass/15 text-seagrass border border-seagrass/30 rounded px-1.5 py-0.5 font-medium"
+                        >
+                          {s.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 divide-x divide-muted-teal/30 text-center border-t border-muted-teal/20 pt-2 mt-auto">
                     <div className="px-1">
                       <p className="text-xs font-semibold text-dark-slate">{org._count.members}</p>
@@ -122,7 +154,7 @@ export default async function OrgListPage({
               </Link>
             ))}
           </div>
-          <Pagination page={page} total={total} perPage={PAGE_SIZE} searchParams={{ page: pageStr }} basePath="/org" />
+          <Pagination page={page} total={total} perPage={PAGE_SIZE} searchParams={{ q, category, skill, page: pageStr }} basePath="/org" />
         </>
       )}
     </div>
