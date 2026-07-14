@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
@@ -130,10 +131,10 @@ export default async function AcademyGuidePage({
       <hr className="border-muted-teal/30 mb-8" />
 
       {/* Guide body */}
-      <div className="prose prose-slate max-w-none mb-10">
-        <pre className="whitespace-pre-wrap font-sans text-base leading-relaxed text-dark-slate/80">
-          {guide.bodyMarkdown}
-        </pre>
+      <div className="prose prose-slate max-w-none mb-10
+        prose-headings:text-dark-slate prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
+        prose-strong:text-dark-slate">
+        <ReactMarkdown>{guide.bodyMarkdown}</ReactMarkdown>
       </div>
 
       {/* Complete action */}
