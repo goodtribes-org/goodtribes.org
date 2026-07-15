@@ -116,6 +116,7 @@ model User {
   orgEthicsReviews        OrganisationEthicsReview[] @relation("OrgEthicsReviewer")
   orgReviewsAuthored      OrganisationReview[]       @relation("OrgReviewAuthor")
   leanCanvasEdits         LeanCanvas[]               @relation("LeanCanvasUpdatedBy")
+  leanCanvasComments      LeanCanvasComment[]        @relation("LeanCanvasCommentAuthor")
 }
 
 model Skill {
@@ -452,6 +453,7 @@ model Project {
   impactMetrics      ImpactMetric[]       @relation("ProjectImpactMetrics")
   maturity           ProjectMaturity?     @relation("ProjectMaturity")
   leanCanvas         LeanCanvas?          @relation("ProjectLeanCanvas")
+  leanCanvasComments LeanCanvasComment[]  @relation("ProjectLeanCanvasComments")
   parentInstances    ProjectInstance[]    @relation("ParentInstances")
   childInstance      ProjectInstance?     @relation("ChildInstance")
   alumni             ProjectAlumni[]      @relation("ProjectAlumni")
@@ -933,18 +935,35 @@ model LeanCanvas {
   projectSlug            String    @unique
   project                Project   @relation("ProjectLeanCanvas", fields: [projectSlug], references: [slug], onDelete: Cascade)
   problem                String?   @db.Text
+  alternatives           String?   @db.Text
   customerSegments       String?   @db.Text
+  earlyAdopters          String?   @db.Text
   uniqueValueProposition String?   @db.Text
+  concept                String?   @db.Text
   solution               String?   @db.Text
   channels               String?   @db.Text
   revenueStreams         String?   @db.Text
   costStructure          String?   @db.Text
+  impact                 String?   @db.Text
   keyMetrics             String?   @db.Text
   unfairAdvantage        String?   @db.Text
   updatedById            String?
   updatedBy              User?     @relation("LeanCanvasUpdatedBy", fields: [updatedById], references: [id])
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
+}
+
+model LeanCanvasComment {
+  id          String   @id @default(cuid())
+  projectSlug String
+  project     Project  @relation("ProjectLeanCanvasComments", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  authorId    String
+  author      User     @relation("LeanCanvasCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  body        String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([projectSlug])
 }
 
 model ProjectInstance {
