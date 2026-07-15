@@ -6,11 +6,6 @@ import { dismissTour } from "@/lib/tourActions";
 
 const STEPS: TourStep[] = [
   {
-    target: "nav-match",
-    title: "Hitta en match",
-    body: "Här ser du projekt och organisationer som söker just dina kompetenser.",
-  },
-  {
     target: "nav-discover",
     title: "Utforska",
     body: "Bläddra bland alla projekt, idéer, organisationer och kompetenser på plattformen.",
