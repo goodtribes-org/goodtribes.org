@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { PostDreamForm, ReactionButtons } from "./DreamWallClient";
+import FlagContentButton from "@/components/FlagContentButton";
 
 export const metadata: Metadata = {
   title: "Drömväggen — GoodTribes.org",
@@ -34,6 +35,7 @@ export default async function DreamWallPage() {
   const [session, dreams] = await Promise.all([
     auth(),
     prisma.dreamWallPost.findMany({
+      where: { hiddenAt: null },
       include: {
         user: { select: { name: true, image: true } },
         reactions: { select: { emoji: true, userId: true } },
@@ -104,6 +106,7 @@ export default async function DreamWallPage() {
                 initialReactions={dream.reactions}
                 currentUserId={currentUserId}
               />
+              {currentUserId && <FlagContentButton targetType="DreamWallPost" targetId={dream.id} />}
             </div>
           ))}
         </div>

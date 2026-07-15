@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { addLeanCanvasComment, deleteLeanCanvasComment } from "./actions";
 import { timeAgo } from "@/components/kanbanShared";
+import FlagContentButton from "@/components/FlagContentButton";
 
 interface CommentItem {
   id: string;
@@ -70,6 +71,7 @@ export default function LeanCanvasComments({ projectSlug, comments: initialComme
               )}
             </div>
             <p className="text-xs text-dark-slate/80 whitespace-pre-wrap leading-relaxed mt-1">{c.body}</p>
+            {currentUserId && <FlagContentButton targetType="LeanCanvasComment" targetId={c.id} />}
           </div>
         ))}
         {comments.length === 0 && (

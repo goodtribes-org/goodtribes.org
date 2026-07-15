@@ -8,6 +8,7 @@ import { MessageComposer } from "./MessageComposer";
 import { timeLabel, initialsOf } from "./format";
 import type { MessageRow } from "./RoomShell";
 import type { MentionItem } from "@/components/mentionSuggestion";
+import FlagContentButton from "@/components/FlagContentButton";
 
 type Props = {
   roomId: string;
@@ -59,6 +60,7 @@ export function ThreadPanel({ roomId, parent, replies, currentUserId, canPost, m
               canAdd={canPost}
               onToggle={(emoji) => onReaction(parent.id, emoji)}
             />
+            <FlagContentButton targetType="Message" targetId={parent.id} />
           </div>
         </div>
 
@@ -82,6 +84,7 @@ export function ThreadPanel({ roomId, parent, replies, currentUserId, canPost, m
                     <span className="text-[10px] text-gray-400">{timeLabel(r.createdAt)}</span>
                   </div>
                   <div className="text-sm">{renderBody(r.body)}</div>
+                  <FlagContentButton targetType="Message" targetId={r.id} />
                 </div>
               </div>
             ))}

@@ -41,6 +41,7 @@ export default async function TasksRoutePage({
       estimate: true,
       subtasks: { orderBy: { order: "asc" } },
       comments: {
+        where: { hiddenAt: null },
         orderBy: { createdAt: "asc" },
         include: { author: { select: { id: true, name: true } } },
       },

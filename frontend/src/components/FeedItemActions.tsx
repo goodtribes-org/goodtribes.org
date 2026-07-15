@@ -3,9 +3,34 @@
 import { useRef, useState, useTransition } from "react";
 import { toggleFeedLike, addFeedComment } from "@/app/actions";
 import { JoinButton } from "@/app/[locale]/projects/[slug]/JoinSection";
+import FlagContentButton from "@/components/FlagContentButton";
 
 type Comment = { id: string; author: string; body: string; timeAgo: string };
 type JoinCta = { projectId: string; slug: string; existingStatus: string | null };
+
+// The feed mixes several underlying models behind one loose targetType
+// vocabulary — only map the ones that actually have a hiddenAt/ContentFlag
+// target type; everything else (blogPost, milestone, project, idea,
+// activityEvent) isn't flaggable here.
+function itemModelTargetType(itemTargetType: string) {
+  switch (itemTargetType) {
+    case "feedPost": return "FeedPost" as const;
+    case "channelMessage": return "Message" as const;
+    case "kanbanCardComment": return "KanbanCardComment" as const;
+    case "ideaComment": return "IdeaComment" as const;
+    default: return null;
+  }
+}
+
+// Nested replies shown in the feed's comment thread are sourced from
+// FeedComment, except for kanbanCardComment/channelMessage items where they're
+// the same KanbanCardComment/Message rows shown on the card/channel itself
+// (see activityFeed.ts's getFeedInteractionData comment).
+function commentModelTargetType(itemTargetType: string) {
+  if (itemTargetType === "kanbanCardComment") return "KanbanCardComment" as const;
+  if (itemTargetType === "channelMessage") return "Message" as const;
+  return "FeedComment" as const;
+}
 
 export default function FeedItemActions({
   targetType,
@@ -37,6 +62,7 @@ export default function FeedItemActions({
   const ref = useRef<HTMLTextAreaElement>(null);
 
   const canInteract = isLoggedIn && (!requiresMembership || !!isProjectMember);
+  const itemFlagTargetType = itemModelTargetType(targetType);
 
   function handleLike() {
     if (!canInteract) return;
@@ -88,6 +114,9 @@ export default function FeedItemActions({
         >
           💬 Kommentera{comments.length > 0 ? ` (${comments.length})` : ""}
         </button>
+        {isLoggedIn && itemFlagTargetType && (
+          <FlagContentButton targetType={itemFlagTargetType} targetId={targetId} />
+        )}
       </div>
 
       {showComments && (
@@ -99,6 +128,9 @@ export default function FeedItemActions({
                 <span className="text-dark-slate/40">· {c.timeAgo}</span>
               </p>
               <p className="text-xs text-dark-slate/80 mt-0.5">{c.body}</p>
+              {isLoggedIn && !c.id.startsWith("tmp-") && (
+                <FlagContentButton targetType={commentModelTargetType(targetType)} targetId={c.id} />
+              )}
             </div>
           ))}
           {canInteract ? (

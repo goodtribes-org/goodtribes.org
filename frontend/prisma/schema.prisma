@@ -35,6 +35,25 @@ enum OrganisationRole {
   MEMBER
 }
 
+enum FlagReason {
+  SPAM
+  HARASSMENT
+  OFFENSIVE
+  OFF_TOPIC
+  OTHER
+}
+
+enum FlagStatus {
+  PENDING
+  ACTIONED
+  DISMISSED
+}
+
+enum ContentHideReason {
+  AUTO_FLAG_THRESHOLD
+  ADMIN_ACTION
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -117,6 +136,8 @@ model User {
   orgReviewsAuthored      OrganisationReview[]       @relation("OrgReviewAuthor")
   leanCanvasEdits         LeanCanvas[]               @relation("LeanCanvasUpdatedBy")
   leanCanvasComments      LeanCanvasComment[]        @relation("LeanCanvasCommentAuthor")
+  contentFlagsRaised     ContentFlag[]               @relation("ContentFlaggedBy")
+  contentFlagReviews     ContentFlag[]               @relation("ContentFlagReviewer")
 }
 
 model Skill {
@@ -365,14 +386,17 @@ model KanbanCardSubtask {
 }
 
 model KanbanCardComment {
-  id        String     @id @default(cuid())
-  cardId    String
-  card      KanbanCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  authorId  String
-  author    User       @relation("KanbanComments", fields: [authorId], references: [id], onDelete: Cascade)
-  body      String     @db.Text
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id           String     @id @default(cuid())
+  cardId       String
+  card         KanbanCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  authorId     String
+  author       User       @relation("KanbanComments", fields: [authorId], references: [id], onDelete: Cascade)
+  body         String     @db.Text
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  hiddenAt     DateTime?
+  hiddenById   String?
+  hiddenReason ContentHideReason?
 
   @@index([cardId])
 }
@@ -594,11 +618,14 @@ model Notification {
 }
 
 model IdeaComment {
-  id        String   @id @default(cuid())
-  ideaId    String
-  authorId  String
-  content   String
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  ideaId       String
+  authorId     String
+  content      String
+  createdAt    DateTime @default(now())
+  hiddenAt     DateTime?
+  hiddenById   String?
+  hiddenReason ContentHideReason?
 
   idea   Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
   author User @relation("AuthoredIdeaComments", fields: [authorId], references: [id], onDelete: Cascade)
@@ -954,14 +981,17 @@ model LeanCanvas {
 }
 
 model LeanCanvasComment {
-  id          String   @id @default(cuid())
-  projectSlug String
-  project     Project  @relation("ProjectLeanCanvasComments", fields: [projectSlug], references: [slug], onDelete: Cascade)
-  authorId    String
-  author      User     @relation("LeanCanvasCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  body        String   @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  projectSlug  String
+  project      Project  @relation("ProjectLeanCanvasComments", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  authorId     String
+  author       User     @relation("LeanCanvasCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  body         String   @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  hiddenAt     DateTime?
+  hiddenById   String?
+  hiddenReason ContentHideReason?
 
   @@index([projectSlug])
 }
@@ -1090,12 +1120,15 @@ model UserStreak {
 }
 
 model DreamWallPost {
-  id        String              @id @default(cuid())
-  userId    String
-  user      User                @relation("DreamPosts", fields: [userId], references: [id], onDelete: Cascade)
-  dreamText String
-  reactions DreamWallReaction[]
-  createdAt DateTime            @default(now())
+  id           String              @id @default(cuid())
+  userId       String
+  user         User                @relation("DreamPosts", fields: [userId], references: [id], onDelete: Cascade)
+  dreamText    String
+  reactions    DreamWallReaction[]
+  createdAt    DateTime            @default(now())
+  hiddenAt     DateTime?
+  hiddenById   String?
+  hiddenReason ContentHideReason?
 }
 
 model DreamWallReaction {
@@ -1140,6 +1173,30 @@ model EthicsReview {
   createdAt     DateTime     @default(now())
 
   @@index([projectId])
+}
+
+// Generic moderation flag for individual comments/posts/messages, as opposed
+// to ProjectFlag/OrganisationFlag which flag an entire project/org and drive
+// a dedicated ethics-review workflow. targetType/targetId is the same loose
+// union pairing FeedComment/FeedLike already use.
+model ContentFlag {
+  id           String     @id @default(cuid())
+  targetType   String
+  targetId     String
+  flaggedById  String
+  flaggedBy    User       @relation("ContentFlaggedBy", fields: [flaggedById], references: [id], onDelete: Cascade)
+  reason       FlagReason
+  note         String?
+  status       FlagStatus @default(PENDING)
+  reviewedById String?
+  reviewedBy   User?      @relation("ContentFlagReviewer", fields: [reviewedById], references: [id])
+  decisionNote String?
+  createdAt    DateTime   @default(now())
+  reviewedAt   DateTime?
+
+  @@unique([targetType, targetId, flaggedById])
+  @@index([targetType, targetId])
+  @@index([status])
 }
 
 enum RoomType {
@@ -1213,6 +1270,9 @@ model Message {
   reactions      MessageReaction[]
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
+  hiddenAt       DateTime?
+  hiddenById     String?
+  hiddenReason   ContentHideReason?
 
   @@index([roomId, createdAt])
   @@index([threadParentId])
@@ -1231,13 +1291,16 @@ model MessageReaction {
 }
 
 model FeedPost {
-  id        String   @id @default(cuid())
-  authorId  String
-  author    User     @relation("AuthoredFeedPosts", fields: [authorId], references: [id], onDelete: Cascade)
-  body      String
-  imageUrl  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  authorId     String
+  author       User     @relation("AuthoredFeedPosts", fields: [authorId], references: [id], onDelete: Cascade)
+  body         String
+  imageUrl     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  hiddenAt     DateTime?
+  hiddenById   String?
+  hiddenReason ContentHideReason?
 
   @@index([createdAt])
 }
@@ -1260,13 +1323,16 @@ model FeedLike {
 
 // Comments on any feed item — same loose targetType/targetId pairing as FeedLike.
 model FeedComment {
-  id         String   @id @default(cuid())
-  authorId   String
-  author     User     @relation("AuthoredFeedComments", fields: [authorId], references: [id], onDelete: Cascade)
-  targetType String
-  targetId   String
-  body       String
-  createdAt  DateTime @default(now())
+  id           String   @id @default(cuid())
+  authorId     String
+  author       User     @relation("AuthoredFeedComments", fields: [authorId], references: [id], onDelete: Cascade)
+  targetType   String
+  targetId     String
+  body         String
+  createdAt    DateTime @default(now())
+  hiddenAt     DateTime?
+  hiddenById   String?
+  hiddenReason ContentHideReason?
 
   @@index([targetType, targetId])
 }

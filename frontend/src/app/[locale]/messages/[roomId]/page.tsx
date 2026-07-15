@@ -21,7 +21,7 @@ export default async function RoomPage({
 
   const [messages, otherUsers, mentionables] = await Promise.all([
     prisma.message.findMany({
-      where: { roomId, threadParentId: null },
+      where: { roomId, threadParentId: null, hiddenAt: null },
       include: {
         author: { select: { id: true, name: true, image: true } },
         reactions: { select: { emoji: true, userId: true } },

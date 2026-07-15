@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { IdeaSidebar, CommentForm } from "./IdeaInteractions";
 import ScrollToHash from "@/components/ScrollToHash";
+import FlagContentButton from "@/components/FlagContentButton";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_LABELS_EN } from "@/lib/sdg";
 
@@ -67,6 +68,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ id:
         endorsements: { select: { userId: true } },
         followers: { select: { userId: true } },
         comments: {
+          where: { hiddenAt: null },
           orderBy: { createdAt: "asc" },
           include: { author: { select: { name: true, image: true } } },
         },
@@ -314,6 +316,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ id:
                       <span className="text-xs text-dark-slate/40">{timeAgo(comment.createdAt)}</span>
                     </div>
                     <p className="text-sm text-dark-slate/80 leading-relaxed">{comment.content}</p>
+                    {userId && <FlagContentButton targetType="IdeaComment" targetId={comment.id} />}
                   </div>
                 </div>
               ))}

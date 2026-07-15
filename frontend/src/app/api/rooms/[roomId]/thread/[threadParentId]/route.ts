@@ -16,7 +16,7 @@ export async function GET(
   if (!access?.canRead) return NextResponse.json([], { status: 403 });
 
   const replies = await prisma.message.findMany({
-    where: { roomId, threadParentId },
+    where: { roomId, threadParentId, hiddenAt: null },
     include: {
       author: { select: { id: true, name: true, image: true } },
       reactions: { select: { emoji: true, userId: true } },

@@ -16,6 +16,7 @@ import {
 } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
 import { htmlToPreviewText } from "@/lib/renderBody";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
+import FlagContentButton from "@/components/FlagContentButton";
 import {
   CATEGORY_META,
   PRIORITY_META,
@@ -538,6 +539,7 @@ function CardDetailModalImpl({
                       )}
                     </p>
                     <p className="text-xs text-gray-700 mt-1">{htmlToPreviewText(c.body)}</p>
+                    {isLoggedIn && <FlagContentButton targetType="KanbanCardComment" targetId={c.id} />}
                   </div>
                 ))}
               </div>

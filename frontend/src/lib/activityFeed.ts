@@ -49,6 +49,7 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
   const [feedPosts, blogPosts, milestones, projects, ideas, activities, channelMessages, kanbanComments, ideaComments] =
     await Promise.all([
       prisma.feedPost.findMany({
+        where: { hiddenAt: null },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
@@ -109,6 +110,7 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
       prisma.message.findMany({
         where: {
           threadParentId: null,
+          hiddenAt: null,
           room: { type: "PROJECT_CHANNEL", project: { visibility: "public" } },
         },
         orderBy: { createdAt: "desc" },
@@ -120,7 +122,7 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
         },
       }),
       prisma.kanbanCardComment.findMany({
-        where: { card: { project: { visibility: "public" } } },
+        where: { hiddenAt: null, card: { project: { visibility: "public" } } },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
@@ -135,6 +137,7 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
         },
       }),
       prisma.ideaComment.findMany({
+        where: { hiddenAt: null },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
@@ -310,21 +313,21 @@ export async function getFeedInteractionData(items: PulseItem[], userId: string 
     genericLikeTargetsOr.length > 0 ? prisma.feedLike.findMany({ where: { OR: genericLikeTargetsOr } }) : Promise.resolve([]),
     otherTargetsOr.length > 0
       ? prisma.feedComment.findMany({
-          where: { OR: otherTargetsOr },
+          where: { OR: otherTargetsOr, hiddenAt: null },
           orderBy: { createdAt: "asc" },
           include: { author: { select: { name: true } } },
         })
       : Promise.resolve([]),
     distinctCardIds.length > 0
       ? prisma.kanbanCardComment.findMany({
-          where: { cardId: { in: distinctCardIds } },
+          where: { cardId: { in: distinctCardIds }, hiddenAt: null },
           orderBy: { createdAt: "asc" },
           include: { author: { select: { name: true } } },
         })
       : Promise.resolve([]),
     distinctChannelMessageIds.length > 0
       ? prisma.message.findMany({
-          where: { threadParentId: { in: distinctChannelMessageIds } },
+          where: { threadParentId: { in: distinctChannelMessageIds }, hiddenAt: null },
           orderBy: { createdAt: "asc" },
           include: { author: { select: { name: true } } },
         })

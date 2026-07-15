@@ -13,6 +13,7 @@ import { ThreadPanel } from "./ThreadPanel";
 import { timeLabel, initialsOf } from "./format";
 import PresenceDot from "@/components/PresenceDot";
 import type { MentionItem } from "@/components/mentionSuggestion";
+import FlagContentButton from "@/components/FlagContentButton";
 
 export type MessageRow = {
   id: string;
@@ -281,6 +282,9 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                             )}
                           </div>
                         )}
+                      </div>
+                      <div className={isOwn ? "self-end" : "self-start"}>
+                        <FlagContentButton targetType="Message" targetId={m.id} />
                       </div>
                     </div>
                   </div>

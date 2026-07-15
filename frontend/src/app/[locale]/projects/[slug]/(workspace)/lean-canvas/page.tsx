@@ -61,7 +61,7 @@ export default async function LeanCanvasPage({
   const canvas = project.leanCanvas;
 
   const comments = await prisma.leanCanvasComment.findMany({
-    where: { projectSlug: slug },
+    where: { projectSlug: slug, hiddenAt: null },
     orderBy: { createdAt: "asc" },
     include: { author: { select: { id: true, name: true } } },
   });

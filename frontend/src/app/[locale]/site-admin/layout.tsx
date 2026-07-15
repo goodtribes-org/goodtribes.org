@@ -5,6 +5,7 @@ import { isSiteAdmin } from "@/lib/authz";
 
 const NAV = [
   { href: "/site-admin/ethics", label: "Etikgranskning" },
+  { href: "/site-admin/content-flags", label: "Innehållsflaggor" },
   { href: "/site-admin/users", label: "Användare" },
   { href: "/site-admin/projects", label: "Projekt" },
   { href: "/site-admin/organisations", label: "Organisationer" },
