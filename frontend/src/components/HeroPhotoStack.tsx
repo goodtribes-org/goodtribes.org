@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
 
 const CARD_SHADOW =
   "shadow-[0_15px_30px_-10px_rgba(0,0,0,0.4),0_2px_8px_rgba(0,0,0,0.15)] ring-1 ring-black/5";
@@ -139,7 +137,7 @@ export default function HeroPhotoStack() {
             className="absolute inset-0 transition-opacity duration-700 ease-out"
             style={{ opacity: active === i ? 1 : 0 }}
           >
-            <Image src={photo.src} alt="" fill unoptimized className="object-cover blur-2xl scale-110" sizes="100vw" />
+            <img src={photo.src} alt="" className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110" />
           </div>
         ))}
       </div>
@@ -203,7 +201,7 @@ export default function HeroPhotoStack() {
                         <ol className="mt-5 flex flex-col gap-3">
                           {ONBOARDING_STEPS.map((s) => (
                             <li key={s.n}>
-                              <Link href={s.href} className="group flex items-center gap-3">
+                              <a href={s.href} className="group flex items-center gap-3">
                                 <span className="w-7 h-7 rounded-full bg-seagrass text-white text-sm font-bold flex items-center justify-center shrink-0">
                                   {s.n}
                                 </span>
@@ -215,7 +213,7 @@ export default function HeroPhotoStack() {
                                     Sign in
                                   </span>
                                 )}
-                              </Link>
+                              </a>
                             </li>
                           ))}
                         </ol>
@@ -262,7 +260,7 @@ export default function HeroPhotoStack() {
                   className={`hero-caption-in absolute inset-0 overflow-hidden bg-white p-3 ${CARD_SHADOW}`}
                 >
                   <div className="relative h-full w-full overflow-hidden">
-                    <Image src={current.src} alt={current.alt} fill unoptimized className="object-cover" />
+                    <img src={current.src} alt={current.alt} className="absolute inset-0 w-full h-full object-cover" />
                   </div>
                 </div>
               </div>
