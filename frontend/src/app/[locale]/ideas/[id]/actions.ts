@@ -33,6 +33,7 @@ export async function toggleVote(ideaId: string) {
 
   revalidatePath(`/ideas/${ideaId}`);
   revalidatePath("/ideas");
+  revalidatePath("/");
 }
 
 export async function toggleEndorsement(ideaId: string) {

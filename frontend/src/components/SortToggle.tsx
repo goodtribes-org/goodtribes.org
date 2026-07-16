@@ -1,9 +1,9 @@
 "use client";
 
 const SORT_OPTIONS = [
-  { value: "new",      label: "New" },
-  { value: "top",      label: "Top" },
-  { value: "trending", label: "Trending" },
+  { value: "new",      label: "Nya" },
+  { value: "top",      label: "Topp" },
+  { value: "trending", label: "Trendar" },
 ];
 
 interface Props {

@@ -30,10 +30,18 @@
     "hallOfImpact": "Hall of Impact",
     "academy": "Academy",
     "dreamWall": "Dream Wall",
-    "about": "About",
+    "about": "About GoodTribes",
     "privacy": "Privacy",
     "terms": "Terms",
-    "contact": "Contact"
+    "contact": "Contact",
+    "exploreTitle": "Explore",
+    "foundationBlurb": "GoodTribes is a nonprofit foundation connecting volunteers, organisations, businesses and researchers — so good ideas become reality.",
+    "feeTitle": "Platform fee",
+    "feeNonprofit": "Nonprofits & foundations",
+    "feePrivate": "Individuals",
+    "feeCompany": "Companies",
+    "feeNote": "Fees are only taken on funds raised — core features are always free.",
+    "copyrightNote": "Every project contributes to the 2030 Agenda"
   },
   "Install": {
     "prompt": "Install GoodTribes for quicker access, even offline.",

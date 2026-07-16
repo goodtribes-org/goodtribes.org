@@ -450,6 +450,7 @@ model Project {
   imageUrl    String?
   links       String[] @default([])
   sdgGoals    Int[]
+  commercial  Boolean  @default(false)
   ownerId     String
   orgId       String?
   createdAt   DateTime @default(now())

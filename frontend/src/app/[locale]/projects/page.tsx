@@ -65,6 +65,16 @@ export default async function ProjectsPage({
 
   const countryCounts = countByCountry(ownerCountries.map((p) => p.owner.country));
 
+  const projectLikeCounts = projects.length
+    ? await prisma.feedLike.groupBy({
+        by: ["targetId"],
+        where: { targetType: "project", targetId: { in: projects.map((p) => p.id) } },
+        _count: true,
+      })
+    : [];
+  const likesByProjectId = new Map(projectLikeCounts.map((g) => [g.targetId, g._count]));
+  const projectsWithLikes = projects.map((p) => ({ ...p, likes: likesByProjectId.get(p.id) ?? 0 }));
+
   const rawParams = { sort: sortParam, q, status, category, sdg, page: pageStr };
 
   return (
@@ -105,7 +115,7 @@ export default async function ProjectsPage({
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
-            {projects.map((project) => (
+            {projectsWithLikes.map((project) => (
               <ProjectCard key={project.slug} project={project} />
             ))}
           </div>

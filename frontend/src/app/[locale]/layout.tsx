@@ -92,7 +92,7 @@ export default async function LocaleLayout({
           <SessionProvider session={session}>
             <header className="border-b border-muted-teal">
               <nav className="w-full pl-3 pr-6 py-3 flex items-center gap-6">
-                <Link href="/" className="shrink-0">
+                <Link href="/" className="shrink-0 flex items-center gap-2.5">
                   <Image
                     src="/img/GoodTribes1.png"
                     alt="GoodTribes.org"
@@ -100,6 +100,9 @@ export default async function LocaleLayout({
                     width={176}
                     className="object-contain"
                   />
+                  <span className="hidden lg:inline text-[10px] font-bold uppercase tracking-wider text-seagrass border border-seagrass/40 rounded-full px-2 py-0.5">
+                    Beta
+                  </span>
                 </Link>
                 <div className="shrink-0">
                   <NavMenuContainer />
@@ -113,18 +116,41 @@ export default async function LocaleLayout({
               </nav>
             </header>
             <main className="max-w-6xl mx-auto px-6 pt-8 pb-12">{children}</main>
-            <footer className="border-t border-muted-teal/30 mt-16">
-              <div className="max-w-6xl mx-auto px-6 py-8 flex flex-wrap items-center justify-between gap-4 text-xs text-dark-slate/40">
-                <span>© {new Date().getFullYear()} GoodTribes Foundation</span>
-                <div className="flex flex-wrap gap-5">
+            <footer className="border-t border-muted-teal/30 mt-16 bg-dry-sage/10">
+              <div className="max-w-6xl mx-auto px-6 py-10 grid gap-8 md:grid-cols-3 text-sm">
+                <div>
+                  <Image
+                    src="/img/GoodTribes1.png"
+                    alt="GoodTribes.org"
+                    height={36}
+                    width={144}
+                    className="object-contain mb-3"
+                  />
+                  <p className="text-dark-slate/60 leading-relaxed text-xs">{t("foundationBlurb")}</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-dark-slate mb-2 text-xs uppercase tracking-wider">{t("feeTitle")}</p>
+                  <div className="flex flex-col gap-1 text-xs text-dark-slate/60">
+                    <span className="flex justify-between max-w-[240px]"><span>{t("feeNonprofit")}</span><strong className="text-coral">3%</strong></span>
+                    <span className="flex justify-between max-w-[240px]"><span>{t("feePrivate")}</span><strong className="text-coral">5%</strong></span>
+                    <span className="flex justify-between max-w-[240px]"><span>{t("feeCompany")}</span><strong className="text-coral">7%</strong></span>
+                  </div>
+                  <p className="text-[11px] text-dark-slate/40 mt-2">{t("feeNote")}</p>
+                </div>
+                <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
+                  <p className="font-semibold text-dark-slate mb-1 uppercase tracking-wider">{t("exploreTitle")}</p>
                   <Link href="/hall-of-impact" className="hover:text-dark-slate transition-colors">{t("hallOfImpact")}</Link>
                   <Link href="/academy" className="hover:text-dark-slate transition-colors">{t("academy")}</Link>
                   <Link href="/dream-wall" className="hover:text-dark-slate transition-colors">{t("dreamWall")}</Link>
                   <Link href="/about" className="hover:text-dark-slate transition-colors">{t("about")}</Link>
                   <Link href="/privacy" className="hover:text-dark-slate transition-colors">{t("privacy")}</Link>
-                  <Link href="/terms" className="hover:text-dark-slate transition-colors">{t("terms")}</Link>
                   <a href="mailto:hej@goodtribes.org" className="hover:text-dark-slate transition-colors">{t("contact")}</a>
-                </div>
+                </nav>
+              </div>
+              <div className="border-t border-muted-teal/20">
+                <p className="max-w-6xl mx-auto px-6 py-3 text-[11px] text-dark-slate/40">
+                  © {new Date().getFullYear()} GoodTribes Foundation · {t("copyrightNote")}
+                </p>
               </div>
             </footer>
             <InstallPrompt />

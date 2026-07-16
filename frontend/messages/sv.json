@@ -30,10 +30,18 @@
     "hallOfImpact": "Hall of Impact",
     "academy": "Academy",
     "dreamWall": "Drömväggen",
-    "about": "Om oss",
+    "about": "Om GoodTribes",
     "privacy": "Integritet",
     "terms": "Villkor",
-    "contact": "Kontakt"
+    "contact": "Kontakt",
+    "exploreTitle": "Utforska",
+    "foundationBlurb": "GoodTribes är en ideell stiftelse som kopplar ihop volontärer, organisationer, näringsliv och forskarvärlden — så att goda idéer blir verklighet.",
+    "feeTitle": "Plattformsavgift",
+    "feeNonprofit": "Ideella föreningar & stiftelser",
+    "feePrivate": "Privatpersoner",
+    "feeCompany": "Företag",
+    "feeNote": "Avgift tas endast på insamlade medel — grundfunktioner är alltid gratis.",
+    "copyrightNote": "Alla projekt bidrar till Agenda 2030"
   },
   "Install": {
     "prompt": "Installera GoodTribes för snabbare åtkomst, även offline.",

@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 import ProjectCard from "@/components/ProjectCard";
 import IdeaCard from "@/components/IdeaCard";
 import SortToggle from "@/components/SortToggleContainer";
@@ -57,6 +58,9 @@ export default async function HomePage({
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const sdgNum = sdg ? parseInt(sdg) : undefined;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
+
+  const session = await auth();
+  const userId = session?.user?.id;
 
   const where: Prisma.ProjectWhereInput = {
     visibility: "public",
@@ -123,6 +127,7 @@ export default async function HomePage({
       include: {
         author: { select: { name: true } },
         _count: { select: { votes: true, comments: true, endorsements: true } },
+        votes: userId ? { where: { userId }, select: { id: true } } : false,
       },
     }),
   ]);
@@ -130,6 +135,18 @@ export default async function HomePage({
   const totalRaised = pledgeSum._sum.amount ?? 0;
   const totalHours = Math.round(hoursSum._sum.loggedHours ?? 0);
   const coveredGoals = Array.from(new Set(sdgProjects.flatMap((p) => p.sdgGoals)));
+
+  const projectLikeCounts = projects.length
+    ? await prisma.feedLike.groupBy({
+        by: ["targetId"],
+        where: { targetType: "project", targetId: { in: projects.map((p) => p.id) } },
+        _count: true,
+      })
+    : [];
+  const likesByProjectId = new Map(projectLikeCounts.map((g) => [g.targetId, g._count]));
+  const projectsWithLikes = projects.map((p) => ({ ...p, likes: likesByProjectId.get(p.id) ?? 0 }));
+
+  const ideasWithVote = ideas.map((idea) => ({ ...idea, myVoteId: idea.votes?.[0]?.id ?? null }));
 
   const rawParams = { sort: sortParam, q, status, category, sdg, page: pageStr };
 
@@ -143,42 +160,7 @@ export default async function HomePage({
 
       <div className="space-y-16">
 
-      {/* Del 2 — Activity Pulse */}
-      <section>
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-lg font-bold text-dark-slate">Händer just nu</h2>
-                <p className="text-xs text-dark-slate/50 mt-0.5">Senaste aktivitet på plattformen</p>
-              </div>
-              <Link href="/feed" className="text-xs text-coral hover:underline">
-                Se all aktivitet →
-              </Link>
-            </div>
-            <ActivityPulse />
-          </div>
-          <div className="flex flex-col gap-6">
-            <LeaderboardWidget entries={leaderboard} />
-            <NewMembersWidget
-              members={newMembers.map((m) => ({ id: m.id, name: m.name!, image: m.image }))}
-            />
-            <ImpactStatsWidget
-              totalRaised={totalRaised}
-              totalHours={totalHours}
-              completedTasks={completedTasks}
-            />
-            <SdgCoverageWidget coveredGoals={coveredGoals} />
-            <HomeStatsWidget
-              projectCount={projectCount}
-              orgCount={orgCount}
-              memberCount={memberCount}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Del 3 — Project Browser */}
+      {/* Del 2 — Project Browser */}
       <section id="projects">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -202,7 +184,7 @@ export default async function HomePage({
         ) : (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
-              {projects.map((p) => <ProjectCard key={p.slug} project={p} />)}
+              {projectsWithLikes.map((p) => <ProjectCard key={p.slug} project={p} />)}
             </div>
             <Pagination
               page={page}
@@ -215,7 +197,7 @@ export default async function HomePage({
         )}
       </section>
 
-      {/* Del 4 — Idea Browser */}
+      {/* Del 3 — Idea Browser */}
       <section id="ideas">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-dark-slate">
@@ -235,9 +217,48 @@ export default async function HomePage({
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {ideas.map((idea) => <IdeaCard key={idea.id} idea={idea} />)}
+            {ideasWithVote.map((idea) => <IdeaCard key={idea.id} idea={idea} isLoggedIn={!!userId} />)}
           </div>
         )}
+      </section>
+
+      {/* Del 4 — Activity Pulse */}
+      <section>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-bold text-dark-slate">Händer just nu</h2>
+                <p className="text-xs text-dark-slate/50 mt-0.5">Senaste aktivitet på plattformen</p>
+              </div>
+              <Link href="/feed" className="text-xs text-coral hover:underline">
+                Se all aktivitet →
+              </Link>
+            </div>
+            <ActivityPulse />
+          </div>
+          <div className="flex flex-col gap-6">
+            <HomeStatsWidget
+              projectCount={projectCount}
+              orgCount={orgCount}
+              memberCount={memberCount}
+            />
+            <SdgCoverageWidget coveredGoals={coveredGoals} />
+            {userId && (
+              <>
+                <ImpactStatsWidget
+                  totalRaised={totalRaised}
+                  totalHours={totalHours}
+                  completedTasks={completedTasks}
+                />
+                <LeaderboardWidget entries={leaderboard} />
+                <NewMembersWidget
+                  members={newMembers.map((m) => ({ id: m.id, name: m.name!, image: m.image }))}
+                />
+              </>
+            )}
+          </div>
+        </div>
       </section>
 
       </div>
