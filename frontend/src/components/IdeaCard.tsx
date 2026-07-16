@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { SdgIcon } from "@/components/SdgIcon";
-import IdeaVoteButton from "@/components/IdeaVoteButton";
+import IdeaVoteButtonContainer from "@/components/IdeaVoteButtonContainer";
 
 export type IdeaCardData = {
   id: string;
@@ -28,7 +27,7 @@ export default function IdeaCard({ idea, isLoggedIn }: { idea: IdeaCardData; isL
   const status = STATUS_LABELS[idea.status] ?? STATUS_LABELS.open;
 
   return (
-    <Link
+    <a
       href={`/ideas/${idea.id}`}
       className="rounded-lg overflow-hidden border border-seagrass/40 hover:shadow-md transition-shadow bg-seagrass/5 flex flex-col"
     >
@@ -54,7 +53,7 @@ export default function IdeaCard({ idea, isLoggedIn }: { idea: IdeaCardData; isL
           </div>
         )}
         <div className="flex items-center gap-2 mt-auto">
-          <IdeaVoteButton
+          <IdeaVoteButtonContainer
             ideaId={idea.id}
             voteCount={idea._count.votes}
             hasVoted={!!idea.myVoteId}
@@ -63,6 +62,6 @@ export default function IdeaCard({ idea, isLoggedIn }: { idea: IdeaCardData; isL
           <span className="text-[11px] text-dark-slate/50">{idea._count.comments} kommentarer</span>
         </div>
       </div>
-    </Link>
+    </a>
   );
 }

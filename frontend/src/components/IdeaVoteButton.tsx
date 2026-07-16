@@ -1,20 +1,20 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { toggleVote } from "@/app/[locale]/ideas/[id]/actions";
+import { useState } from "react";
 
 export default function IdeaVoteButton({
-  ideaId,
   voteCount,
   hasVoted,
   isLoggedIn,
+  pending,
+  onVote,
 }: {
-  ideaId: string;
   voteCount: number;
   hasVoted: boolean;
   isLoggedIn: boolean;
+  pending?: boolean;
+  onVote: () => void;
 }) {
-  const [pending, startTransition] = useTransition();
   const [votes, setVotes] = useState(voteCount);
   const [voted, setVoted] = useState(hasVoted);
 
@@ -24,7 +24,7 @@ export default function IdeaVoteButton({
     if (!isLoggedIn) return;
     setVotes((c) => (voted ? c - 1 : c + 1));
     setVoted((v) => !v);
-    startTransition(async () => { await toggleVote(ideaId); });
+    onVote();
   }
 
   return (
