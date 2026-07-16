@@ -28,6 +28,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 ];
 
 type Obstacle = { lead: string; text: string };
+type PercentPoint = { pct: string; text: string };
 
 type Photo = {
   src: string;
@@ -36,6 +37,7 @@ type Photo = {
   body?: string;
   body2?: string;
   obstacles?: Obstacle[];
+  points?: PercentPoint[];
   closing?: string;
   menuLabel: string;
   tint: string;
@@ -67,15 +69,15 @@ const PHOTOS: Photo[] = [
     src: "/img/do-you-have-a-dream.png",
     alt: "En person lyfts av en ballong format som en glödlampa — en idé som lyfter",
     heading: "Våga följa din dröm",
-    body: "En bättre värld kräver mer än goda avsikter – abstrakta drömmar måste omvandlas till konkreta, mätbara delmål.",
-    body2: "Fyra byggstenar krävs för att lyckas och behålla motivationen:",
-    obstacles: [
-      { lead: "Inre drivkraft", text: "– prosociala mål ger störst långsiktig mening." },
-      { lead: "Mentalt kapital", text: "– hopp, optimism, resiliens och tro på egen förmåga." },
-      { lead: "Gemenskap", text: "– samarbete i nätverk motverkar apati och skapar verklig förändring." },
-      { lead: "Reflektion", text: "– regelbunden utvärdering håller riktningen stabil." },
+    body: "En bättre värld kräver mer än goda avsikter – drömmar måste bli konkreta, mätbara delmål styrda av dina värderingar. Fyra byggstenar avgör om du lyckas: inre drivkraft, där prosociala mål ger mest mening; mentalt kapital, i form av hopp, optimism, resiliens och självtillit; gemenskap, där nätverk motverkar apati och skapar förändring; samt reflektion, där regelbunden utvärdering håller riktningen.",
+    body2: "Sannolikheten att du faktiskt förverkligar din dröm ökar för varje steg du tar:",
+    points: [
+      { pct: "10 %", text: "Du har bara en idé eller dröm i huvudet." },
+      { pct: "25 %", text: "Du bestämmer dig medvetet för att göra det." },
+      { pct: "50 %", text: "Du planerar hur du ska göra det." },
+      { pct: "65 %", text: "Du berättar för någon annan att du ska göra det." },
+      { pct: "95 %", text: "Om du samverkar med andra." },
     ],
-    closing: "Genom att kombinera personlig utveckling med kollektiv handling förvandlas stora visioner till mätbar verklighet.",
     menuLabel: "Dröm",
     tint: "bg-muted-teal/15",
   },
@@ -231,6 +233,16 @@ export default function HeroPhotoStack() {
                             {current.obstacles.map((o) => (
                               <li key={o.lead} className="text-sm text-dark-slate/80">
                                 <span className="font-bold text-seagrass">{o.lead}</span> {o.text}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        {current.points && (
+                          <ul className="mt-5 flex flex-col gap-2">
+                            {current.points.map((p) => (
+                              <li key={p.pct} className="flex items-center gap-3">
+                                <span className="w-14 shrink-0 text-right text-sm font-bold text-seagrass">{p.pct}</span>
+                                <span className="text-sm text-dark-slate/80">{p.text}</span>
                               </li>
                             ))}
                           </ul>
