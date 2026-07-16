@@ -194,8 +194,8 @@ export default function HeroPhotoStack() {
                   <div key={`text-${current.src}`} className="hero-caption-in flex flex-col items-start text-left">
                     {isIntro ? (
                       <>
-                        <h1 className="text-3xl md:text-4xl font-bold text-dark-slate" style={{ textWrap: "balance" }}>
-                          <span style={{ fontSize: 30 }}>Välkommen till GoodTribes</span>
+                        <h1 className="font-bold text-dark-slate" style={{ textWrap: "balance", fontSize: 30 }}>
+                          Välkommen till GoodTribes
                         </h1>
                         <ol className="mt-5 flex flex-col gap-3">
                           {ONBOARDING_STEPS.map((s) => (
@@ -219,7 +219,7 @@ export default function HeroPhotoStack() {
                       </>
                     ) : (
                       <>
-                        <h1 className="text-3xl md:text-4xl font-bold text-dark-slate" style={{ textWrap: "balance" }}>
+                        <h1 className="font-bold text-dark-slate" style={{ textWrap: "balance", fontSize: 30 }}>
                           {current.heading}
                         </h1>
                         <p className="mt-4 text-dark-slate/80">{current.body}</p>
