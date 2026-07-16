@@ -18,14 +18,15 @@ const PHOTO_TILT = [
   { rotate: 2, x: 8, y: 2 },
 ];
 
-type PercentPoint = { pct: string; text: string };
+type Obstacle = { lead: string; text: string };
 
 type Photo = {
   src: string;
   alt: string;
   heading: string;
   body?: string;
-  points?: PercentPoint[];
+  obstacles?: Obstacle[];
+  closing?: string;
   menuLabel: string;
   tint: string;
 };
@@ -42,14 +43,13 @@ const PHOTOS: Photo[] = [
     src: "/img/Slide2.png",
     alt: "Har du en dröm? — en man kedjad till sitt skrivbord drömmer om att förverkliga sin idé",
     heading: "Följ din dröm",
-    body: "Forskningen visar att över 92 % av alla människor aldrig når sina mål och drömmar. Detta beror inte på bristande ambition utan på att vi underskattar hur förändringar blir till.",
-    points: [
-      { pct: "10 %", text: "Du har bara en idé eller dröm i huvudet." },
-      { pct: "25 %", text: "Du bestämmer dig medvetet för att göra det." },
-      { pct: "50 %", text: "Du planerar hur du ska göra det." },
-      { pct: "65 %", text: "Du berättar för någon annan att du ska göra det." },
-      { pct: "95 %", text: "Om du samverkar med andra." },
+    body: "Alla människor har idéer och drömmar kan göra världen bättre för dem och andra. Problemet är att de flesta aldrig genomför sina ideer eller drömmar. Forskningen visar att över 92 % av alla människor aldrig når sina mål och drömmar. Forskningen visar på att tre stora hinder stoppar människor från att förverkliga sina livsdrömmar:",
+    obstacles: [
+      { lead: "Rädsla för misslyckande:", text: "Den evolutionära rädslan för att förlora status eller resurser är oftast starkare än drivkraften att vinna, vilket gör att vi väljer trygghet framför förändring." },
+      { lead: "Mentala blockeringar:", text: "Många intalar sig själva att de saknar rätt talang eller förutsättningar, vilket leder till att de aldrig tar det första steget." },
+      { lead: "Vaga målsättningar:", text: "Drömmar förblir ofta abstrakta tankar. Utan konkreta, mätbara delmål i vardagen är det svårt att omsätta visioner till verklig handling." },
     ],
+    closing: "GoodTribes är utformad för att hjälpa dig förbi alla hinder…",
     menuLabel: "Våga",
     tint: "bg-seagrass/10",
   },
@@ -177,15 +177,17 @@ export default function HeroPhotoStack() {
                           {current.heading}
                         </h1>
                         <p className="mt-4 text-dark-slate/80">{current.body}</p>
-                        {current.points && (
-                          <ul className="mt-5 flex flex-col gap-2">
-                            {current.points.map((p) => (
-                              <li key={p.pct} className="flex items-center gap-3">
-                                <span className="w-14 shrink-0 text-right text-sm font-bold text-seagrass">{p.pct}</span>
-                                <span className="text-sm text-dark-slate/80">{p.text}</span>
+                        {current.obstacles && (
+                          <ul className="mt-4 flex flex-col gap-2">
+                            {current.obstacles.map((o) => (
+                              <li key={o.lead} className="text-sm text-dark-slate/80">
+                                <span className="font-bold text-seagrass">{o.lead}</span> {o.text}
                               </li>
                             ))}
                           </ul>
+                        )}
+                        {current.closing && (
+                          <p className="mt-4 text-dark-slate/80">{current.closing}</p>
                         )}
                       </>
                     )}
