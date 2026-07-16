@@ -192,6 +192,60 @@ correct and deterministic from source.
   `LoggedOut` preview variants render identically ([RENDER_THIN] "variants
   render identically") — the session-dependent items only show inside the
   closed dropdown/drawer.
+- `HeroPhotoStack`, `ProjectCard`, `IdeaCard`: reference images via
+  root-relative paths (`/img/Slide1.jpg`, `/img/SDG/sdg-XX.png`, an
+  uploaded `project.imageUrl`) — same class of issue as `CountryMap`'s
+  original `GEO_URL` fetch (see below), but for plain `<img src>` tags
+  instead of a JS fetch. These 404 in the design-sync preview's hosting
+  context (not same-origin with the real site), so previews for these
+  three show broken-image icons where a real photo/SDG icon/project
+  photo would be. Everything else (layout, copy, colors, data, the
+  likes/commercial badges, vote button) renders correctly — confirmed
+  via `_screenshots/`. Unlike `CountryMap`'s topojson (one file, swapped
+  for a static import), these components reference a dozen-plus distinct
+  images across arbitrary user-uploaded URLs (`ProjectCard.imageUrl`) —
+  there's no single static import to swap in, and base64-inlining all of
+  them would bloat the bundle substantially for a preview-only cosmetic
+  fix. Accepted as a real, understood limitation: the actual site is
+  completely unaffected (same-origin `/img/*` resolves fine there); only
+  the Claude Design preview thumbnail shows a broken-image glyph in the
+  image slot.
+
+## Why `HeroPhotoStack`/`ProjectCard`/`IdeaCard`/`SortToggle` needed the
+## same next/link + next/image + Prisma-action fixes as NavMenu et al.
+
+Added 2026-07-16, same fixes as the existing entries above:
+- `HeroPhotoStack.tsx` and `ProjectCard.tsx` used `next/image`
+  (`fill`/`unoptimized`) and, for the onboarding list / card link,
+  `next/link`. Both already used `unoptimized` everywhere, so swapping
+  to plain `<img>`/`<a>` is a no-op behavior change on the real site
+  (confirmed via before/after screenshots of `/` and `/projects`).
+  `SdgIcon.tsx` (a shared leaf component both `ProjectCard` and
+  `IdeaCard` render) had the same `next/image` issue — fixed once there
+  rather than duplicated per caller.
+- `IdeaCard.tsx` rendered `IdeaVoteButton`, which imported the real
+  `toggleVote` **Server Action** directly (`@/app/[locale]/ideas/[id]/actions`,
+  which imports `@/lib/prisma` and `next/cache`) — the single most
+  dangerous class of unsafe import per this doc. Fixed with the
+  container/presentational split: `IdeaVoteButton.tsx` now takes an
+  `onVote` callback, `IdeaCard.tsx` takes `onVote`/`votePending` and
+  passes them straight to `IdeaVoteButton` (fully presentational, no
+  Prisma/action import anywhere in its transitive graph), and the new
+  `IdeaCardContainer.tsx` (NOT synced — not in `componentSrcMap`/
+  `entry.mjs`) is what real pages (the homepage) actually import; it
+  owns the `useTransition`/`toggleVote` call and passes `onVote` down.
+  **First attempt at this split put the container one level too low**
+  (`IdeaVoteButtonContainer.tsx` wrapping just the button) — `IdeaCard`
+  still imported that container internally, so `IdeaCard` itself stayed
+  Prisma-coupled. Fixed by moving the container boundary up to wrap
+  `IdeaCard` as a whole; the lesson generalizes: when splitting a
+  container out for sync-safety, the container must wrap the *synced*
+  component, not some component nested inside it.
+- `SortToggle.tsx` already took `onNavigate` (no `useRouter`/`next/link`)
+  from the earlier `ProjectFilters` fix — no changes needed, just added
+  to `componentSrcMap`/`entry.mjs` as its own top-level synced component
+  (it was already bundled transitively inside `ProjectFilters`, but
+  wasn't independently browsable in the Design System pane before this).
 
 ## Re-sync risks
 

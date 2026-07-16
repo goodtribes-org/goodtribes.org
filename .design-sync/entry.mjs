@@ -9,3 +9,7 @@ export { default as NavMenu } from "../frontend/src/components/NavMenu.tsx";
 export { default as WorkspaceTabNav } from "../frontend/src/components/WorkspaceTabNav.tsx";
 export { default as CountryMap } from "../frontend/src/components/CountryMap.tsx";
 export { default as ProjectFilters } from "../frontend/src/components/ProjectFilters.tsx";
+export { default as HeroPhotoStack } from "../frontend/src/components/HeroPhotoStack.tsx";
+export { default as ProjectCard } from "../frontend/src/components/ProjectCard.tsx";
+export { default as IdeaCard } from "../frontend/src/components/IdeaCard.tsx";
+export { default as SortToggle } from "../frontend/src/components/SortToggle.tsx";

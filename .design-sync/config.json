@@ -16,7 +16,11 @@
     "NavMenu": "frontend/src/components/NavMenu.tsx",
     "WorkspaceTabNav": "frontend/src/components/WorkspaceTabNav.tsx",
     "CountryMap": "frontend/src/components/CountryMap.tsx",
-    "ProjectFilters": "frontend/src/components/ProjectFilters.tsx"
+    "ProjectFilters": "frontend/src/components/ProjectFilters.tsx",
+    "HeroPhotoStack": "frontend/src/components/HeroPhotoStack.tsx",
+    "ProjectCard": "frontend/src/components/ProjectCard.tsx",
+    "IdeaCard": "frontend/src/components/IdeaCard.tsx",
+    "SortToggle": "frontend/src/components/SortToggle.tsx"
   },
   "cssEntry": ".design-sync/.cache/compiled-globals.css",
   "readmeHeader": ".design-sync/conventions.md"
