@@ -21,10 +21,10 @@ type OnboardingStep = { n: string; text: string; href: string };
 const ONBOARDING_STEPS: OnboardingStep[] = [
   { n: "1", text: "Skapa ett konto", href: "/login" },
   { n: "2", text: "Hitta projekt som är rätt för dig", href: "/projects" },
-  { n: "3", text: "Lägg upp en egen idé eller projekt", href: "/ideas/new" },
-  { n: "4", text: "Bygg en tribe med människor som brinner för samma som du", href: "/projects/new" },
+  { n: "3", text: "\"Joina\" din Tribe som brinner för samma saker som du", href: "/projects/new" },
+  { n: "4", text: "Vidareutveckla eller lägg upp en egen idé/projekt", href: "/ideas/new" },
   { n: "5", text: "Förändra världen genom små och stora insatser", href: "/hall-of-impact" },
-  { n: "6", text: "Lev gott, Må gott, Gör gott och förverkliga dina och andras drömmar", href: "/about" },
+  { n: "6", text: "Lev gott, Må gott, Gör gott och förverkliga idéer och drömmar", href: "/about" },
 ];
 
 type Obstacle = { lead: string; text: string };
@@ -35,10 +35,11 @@ type Photo = {
   alt: string;
   heading: string;
   body?: string;
+  bodyLine2?: string;
   body2?: string;
   obstacles?: Obstacle[];
+  outro?: string;
   points?: PercentPoint[];
-  closing?: string;
   menuLabel: string;
   tint: string;
 };
@@ -47,21 +48,23 @@ const PHOTOS: Photo[] = [
   {
     src: "/img/Slide1.jpg",
     alt: "GoodTribes — Crowdsourcing for Good",
-    heading: "Välkommen till GoodTribes",
+    heading: "GoodTribes",
+    body: "Crowdsourcing for good — gå med och gör skillnad!",
     menuLabel: "Kom igång",
     tint: "bg-coral/10",
   },
   {
     src: "/img/Slide2.png",
     alt: "Har du en dröm? — en man kedjad till sitt skrivbord drömmer om att förverkliga sin idé",
-    heading: "Följ din dröm",
-    body: "Alla har idéer och drömmar som kan göra världen bättre – men forskning visar att över 92 % aldrig når sina mål. Tre hinder stoppar oss:",
+    heading: "Följ din livsdröm",
+    body: "Alla har idéer och livsdrömmar som kan göra världen bättre – men forskning visar att över 92 % aldrig uppnår sina mål.",
+    bodyLine2: "Tre hinder stoppar oss:",
     obstacles: [
-      { lead: "Rädsla för misslyckande", text: "– rädslan att förlora status väger tyngre än viljan att vinna, så vi väljer trygghet framför förändring." },
+      { lead: "Rädsla för misslyckande", text: "– rädslan att förlora väger tyngre än viljan att vinna, så vi väljer trygghet framför förändring." },
       { lead: "Mentala blockeringar", text: "– vi intalar oss att vi saknar rätt talang, vilket hindrar första steget." },
       { lead: "Vaga målsättningar", text: "– utan konkreta, mätbara delmål blir drömmar bara abstrakta tankar." },
     ],
-    closing: "GoodTribes är utformad för att hjälpa dig förbi alla dessa hinder…",
+    outro: "GoodTribes är utformad för att hjälpa dig förbi alla hinder…",
     menuLabel: "Våga",
     tint: "bg-seagrass/10",
   },
@@ -69,14 +72,13 @@ const PHOTOS: Photo[] = [
     src: "/img/do-you-have-a-dream.png",
     alt: "En person lyfts av en ballong format som en glödlampa — en idé som lyfter",
     heading: "Våga följa din dröm",
-    body: "En bättre värld kräver mer än goda avsikter – drömmar måste bli konkreta, mätbara delmål styrda av dina värderingar. Fyra byggstenar avgör om du lyckas: inre drivkraft, där prosociala mål ger mest mening; mentalt kapital, i form av hopp, optimism, resiliens och självtillit; gemenskap, där nätverk motverkar apati och skapar förändring; samt reflektion, där regelbunden utvärdering håller riktningen.",
-    body2: "Sannolikheten att du faktiskt förverkligar din dröm ökar för varje steg du tar:",
+    body: "En bättre värld kräver mer än goda avsikter – drömmar måste bli konkreta, mätbara mål och delmål som involverar andra. Vetenskapen visar att sannolikheten att du faktiskt förverkligar din livsdröm ökar för varje steg du tar:",
     points: [
       { pct: "10 %", text: "Du har bara en idé eller dröm i huvudet." },
       { pct: "25 %", text: "Du bestämmer dig medvetet för att göra det." },
       { pct: "50 %", text: "Du planerar hur du ska göra det." },
       { pct: "65 %", text: "Du berättar för någon annan att du ska göra det." },
-      { pct: "95 %", text: "Om du samverkar med andra." },
+      { pct: "95 %", text: "Om du samverkar med andra med liknade mål." },
     ],
     menuLabel: "Dröm",
     tint: "bg-muted-teal/15",
@@ -84,23 +86,23 @@ const PHOTOS: Photo[] = [
   {
     src: "/img/want-a-change.png",
     alt: "Vill du förändra?",
-    heading: "Våga gå din egen väg",
-    body: "Forskning inom socialt entreprenörskap och effektiv altruism visar att en vetenskaplig, småskalig ansats är avgörande för att lyckas göra världen bättre. Att börja med mikroprojekt skyddar mot altruistisk utbrändhet, eftersom gapet mellan insats och globalt problem annars blir för stort – småskalig testning säkrar din långsiktiga uthållighet.",
-    body2: "Pilottester mäter projektets faktiska genomslagskraft innan stora resurser satsas, och tvingar fram direkt kontakt med målgruppen så att lösningen bygger på verkliga behov snarare än antaganden. De mest framgångsrika initiativen använder just denna datadrivna, flexibla metodik som ständigt anpassas efter resultat.",
+    heading: "Testa din dröm...",
+    body: "Forskning inom socialt entreprenörskap och effektiv altruism visar att en vetenskaplig, småskalig ansats är avgörande för att lyckas göra världen bättre. Att börja med mikroprojekt i samverkan med andra skyddar mot altruistisk utbrändhet, eftersom gapet mellan insats och globalt problem annars blir för stort – småskalig testning säkrar din och andras långsiktiga framgång.",
+    body2: "Pilottester mäter projektets faktiska genomslagskraft innan stora resurser satsas, och tvingar fram direkt kontakt med användarna så att lösningen bygger på verkliga behov snarare än antaganden. De mest framgångsrika initiativen använder just denna datadrivna, flexibla metodik som ständigt anpassas efter resultat.",
     menuLabel: "Testa",
     tint: "bg-dry-sage/20",
   },
   {
     src: "/img/what-is-goodtribes.png",
     alt: "Vad är GoodTribes?",
-    heading: "Tillsammans når vi längre",
-    body: "Att förverkliga en livsdröm tillsammans med andra ger stora fördelar enligt forskning inom socialpsykologi och organisationsteori:",
+    heading: "Hitta din tribe...",
+    body: "Att förverkliga idéer och livsdrömmar tillsammans med andra ger stora fördelar enligt forskning inom socialpsykologi och organisationsteori:",
     obstacles: [
-      { lead: "Motverkar utbrändhet", text: "– delat ansvar minskar emotionell tyngd och empatitrötthet." },
-      { lead: "Ökar handlingskraften", text: "– kollektiv effektivitet höjer motivationen och modet att ta risker." },
+      { lead: "Ökar handlingskraften", text: "– samverkan höjer effektiviteten, motivationen och modet." },
       { lead: "Breddar kompetensen", text: "– olika perspektiv behövs för att lösa komplexa problem." },
-      { lead: "Skapar sund press", text: "– att redovisa framsteg för gruppen (accountability) gör att man fullföljer sina mikrotester." },
-      { lead: "Ger direkt feedback", text: "– gruppen synar felaktiga antaganden innan idén möter verkligheten." },
+      { lead: "Skapar sund press", text: "– vilket ger bättre resultat." },
+      { lead: "Ger direkt feedback", text: "– ger dig möjlighet att utvecklas och snabbare nå dina mål." },
+      { lead: "Motverkar utbrändhet", text: "– samverkan och delat ansvar minskar tyngden att bära" },
     ],
     menuLabel: "Utveckla",
     tint: "bg-watermelon/10",
@@ -109,8 +111,8 @@ const PHOTOS: Photo[] = [
     src: "/img/want-to-be-a-winner.png",
     alt: "Vill du bidra?",
     heading: "Alla vinner på att göra gott",
-    body: "Positiv forskning visar att människan mår som bäst när hedonistisk lycka (att leva gott och må gott) balanseras med eudaimonisk lycka (att göra gott och följa sina drömmar). Enbart materiell njutning ger kortvarig lycka medan enbart uppoffringar utan återhämtning leder till utbrändhet – det är i symbiosen som långsiktigt välbefinnande skapas.",
-    body2: "Enligt självbestämmandeteorin drivs vi av autonomi, kompetens och samhörighet. Att följa sina livsdrömmar ger skydd mot psykisk ohälsa, medan att göra gott för andra utlöser ett \"helper's high\" (oxytocin och dopamin) som sänker stress och förlänger livet. Att väva samman personlig livskvalitet med att göra skillnad är därför receptet för ett hållbart, meningsfullt liv.",
+    body: "Forskningen visar att människan mår som bäst när hedonistisk lycka (att leva gott och må gott) balanseras med eudaimonisk lycka (att göra gott och följa sina drömmar). Enbart materiell njutning ger kortvarig lycka medan enbart uppoffringar utan återhämtning leder till utbrändhet – det är i symbiosen som långsiktigt välbefinnande skapas.",
+    body2: "Enligt självbestämmandeteorin drivs vi av autonomi, kompetens och samhörighet. Att följa sina livsdrömmar ger mening och skyddar mot psykisk ohälsa, medan att göra gott för andra utlöser ett \"helper's high\" (oxytocin och dopamin) som sänker stress och förlänger livet. Att väva samman personlig livskvalitet med att göra skillnad är därför receptet för ett hållbart, meningsfullt liv.",
     menuLabel: "Alla vinner",
     tint: "bg-coral/15",
   },
@@ -120,13 +122,6 @@ export default function HeroPhotoStack() {
   const [active, setActive] = useState(0);
   const current = PHOTOS[active];
   const isIntro = active === 0;
-
-  function goToPrev() {
-    setActive((i) => (i - 1 + PHOTOS.length) % PHOTOS.length);
-  }
-  function goToNext() {
-    setActive((i) => (i + 1) % PHOTOS.length);
-  }
 
   return (
     <>
@@ -143,8 +138,8 @@ export default function HeroPhotoStack() {
         ))}
       </div>
 
-      <div className="relative z-10 flex justify-center px-4 pt-8 pb-6">
-        <div className="flex w-full max-w-6xl flex-col items-center gap-6">
+      <div className="relative z-10 flex justify-center px-4 pt-0 pb-6">
+        <div className="flex w-full max-w-6xl flex-col items-center gap-3">
           <style>{`
             @keyframes heroCaptionIn {
               from { opacity: 0; transform: translateY(4px); }
@@ -153,37 +148,35 @@ export default function HeroPhotoStack() {
             .hero-caption-in { animation: heroCaptionIn 0.3s ease-out; }
           `}</style>
 
-          <nav className="flex flex-wrap items-center justify-center gap-1 rounded-full bg-white/80 backdrop-blur-sm p-1.5 shadow-sm ring-1 ring-black/5">
-            {PHOTOS.map((photo, i) => (
-              <button
-                key={photo.src}
-                type="button"
-                onClick={() => setActive(i)}
-                aria-current={active === i}
-                className={`flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                  active === i
-                    ? "bg-coral text-white shadow-sm"
-                    : "text-dark-slate/60 hover:text-dark-slate hover:bg-black/5"
-                }`}
-              >
-                {i + 1}. {photo.menuLabel}
-              </button>
-            ))}
-          </nav>
+          <h1
+            className="text-5xl md:text-6xl font-bold text-center leading-tight"
+            style={{ color: "white", textShadow: "0 3px 8px rgba(0,0,0,0.25)", marginTop: 0 }}
+          >
+            <span style={{ fontSize: 60 }}>Välkommen till GoodTribes</span>
+          </h1>
 
-          <div className="relative w-full">
+          <div className="relative grid w-full gap-8 items-center md:grid-cols-2">
             <button
               type="button"
-              onClick={goToPrev}
+              onClick={() => setActive((active - 1 + PHOTOS.length) % PHOTOS.length)}
               aria-label="Föregående"
-              className="hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm shadow-sm ring-1 ring-black/5 text-dark-slate/60 hover:text-dark-slate hover:bg-white transition-colors absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-20"
+              className="absolute -left-2 md:-left-14 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md ring-1 ring-black/5 flex items-center justify-center text-dark-slate/70 hover:text-dark-slate hover:bg-white transition-colors"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActive((active + 1) % PHOTOS.length)}
+              aria-label="Nästa"
+              className="absolute -right-2 md:-right-14 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md ring-1 ring-black/5 flex items-center justify-center text-dark-slate/70 hover:text-dark-slate hover:bg-white transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
               </svg>
             </button>
 
-            <div className="grid w-full gap-8 items-stretch md:grid-cols-2">
             {/* Text — alltid synlig, till vänster, samma polaroid-form som bilden */}
             <div
               className="transition-transform duration-500 ease-out"
@@ -191,51 +184,68 @@ export default function HeroPhotoStack() {
                 transform: `rotate(${-PHOTO_TILT[active].rotate}deg) translate(${-PHOTO_TILT[active].x}px, ${-PHOTO_TILT[active].y}px)`,
               }}
             >
-              <div className={`min-h-full bg-white p-3 ${CARD_SHADOW}`}>
-                <div className={`min-h-full border border-muted-teal/20 px-6 py-6 flex flex-col justify-start ${current.tint}`}>
+              <div className={`h-full bg-white p-3 ${CARD_SHADOW}`}>
+                <div className={`h-full border border-muted-teal/20 px-6 pt-3 pb-6 flex flex-col justify-start ${current.tint}`}>
                   <div key={`text-${current.src}`} className="hero-caption-in flex flex-col items-start text-left">
                     {isIntro ? (
                       <>
-                        <h1 className="font-bold text-dark-slate" style={{ textWrap: "balance", fontSize: 30 }}>
-                          Välkommen till GoodTribes
+                        <h1 className="text-3xl md:text-4xl font-bold text-dark-slate" style={{ textWrap: "balance", fontSize: 30 }}>
+                          Kom igång...
                         </h1>
-                        <ol className="mt-5 flex flex-col gap-3">
+                        <ol className="mt-4 flex flex-col gap-1.5">
                           {ONBOARDING_STEPS.map((s) => (
-                            <li key={s.n}>
-                              <a href={s.href} className="group flex items-center gap-3">
-                                <span className="w-7 h-7 rounded-full bg-seagrass text-white text-sm font-bold flex items-center justify-center shrink-0">
-                                  {s.n}
-                                </span>
-                                <span className="text-dark-slate/80 group-hover:text-seagrass group-hover:underline transition-colors">
-                                  {s.text}
-                                </span>
-                                {s.n === "1" && (
-                                  <span className="text-coral text-xs font-bold px-3 py-1 rounded-full border border-coral group-hover:bg-coral/5 transition-colors whitespace-nowrap">
-                                    Sign in
-                                  </span>
-                                )}
-                              </a>
+                            <li key={s.n} className="flex items-center gap-3">
+                              <span
+                                className="w-7 h-7 rounded-full bg-seagrass text-white text-sm font-bold flex items-center justify-center shrink-0"
+                                style={{ width: 35, height: 35, fontSize: 16 }}
+                              >
+                                {s.n}
+                              </span>
+                              <span
+                                className={`text-dark-slate/80 ${s.n === "6" ? "whitespace-nowrap" : ""}`}
+                                style={{ fontSize: s.n === "6" ? 13.5 : 16 }}
+                              >
+                                {s.text}
+                              </span>
+                              {s.n === "1" && (
+                                <a href="/login" className="text-coral text-xs font-bold px-3 py-1 rounded-full border border-coral hover:bg-coral/5 transition-colors whitespace-nowrap">
+                                  Sign in
+                                </a>
+                              )}
                             </li>
                           ))}
                         </ol>
                       </>
                     ) : (
                       <>
-                        <h1 className="font-bold text-dark-slate" style={{ textWrap: "balance", fontSize: 30 }}>
+                        <h1 className="text-3xl md:text-4xl font-bold text-dark-slate" style={{ textWrap: "balance", fontSize: 30 }}>
                           {current.heading}
                         </h1>
-                        <p className="mt-4 text-dark-slate/80">{current.body}</p>
+                        <p className="mt-2 text-dark-slate/80" style={{ fontSize: 15 }}>
+                          {current.body}
+                          {current.bodyLine2 && (
+                            <>
+                              <br />
+                              {current.bodyLine2}
+                            </>
+                          )}
+                        </p>
                         {current.body2 && (
-                          <p className="mt-3 text-dark-slate/80">{current.body2}</p>
+                          <p className="mt-3 text-dark-slate/80" style={{ fontSize: 15 }}>{current.body2}</p>
                         )}
                         {current.obstacles && (
-                          <ul className="mt-4 flex flex-col gap-2">
-                            {current.obstacles.map((o) => (
-                              <li key={o.lead} className="text-sm text-dark-slate/80">
-                                <span className="font-bold text-seagrass">{o.lead}</span> {o.text}
-                              </li>
-                            ))}
-                          </ul>
+                          <>
+                            <ul className="mt-4 flex flex-col gap-3.5">
+                              {current.obstacles.map((o) => (
+                                <li key={o.lead} className="text-sm text-dark-slate/80">
+                                  <span className="font-bold text-seagrass">{o.lead}</span> {o.text}
+                                </li>
+                              ))}
+                            </ul>
+                            {current.outro && (
+                              <p className="mt-4 text-dark-slate/80" style={{ fontSize: 15 }}>{current.outro}</p>
+                            )}
+                          </>
                         )}
                         {current.points && (
                           <ul className="mt-5 flex flex-col gap-2">
@@ -247,9 +257,6 @@ export default function HeroPhotoStack() {
                             ))}
                           </ul>
                         )}
-                        {current.closing && (
-                          <p className="mt-4 text-dark-slate/80">{current.closing}</p>
-                        )}
                       </>
                     )}
                   </div>
@@ -257,7 +264,7 @@ export default function HeroPhotoStack() {
               </div>
             </div>
 
-            {/* Foto — till höger */}
+            {/* Foto — mindre, till höger */}
             <div className="hidden md:flex items-center justify-self-center w-full" style={{ maxWidth: 620 }}>
               <div
                 className="relative w-full min-w-0 transition-transform duration-500 ease-out"
@@ -276,18 +283,6 @@ export default function HeroPhotoStack() {
                 </div>
               </div>
             </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={goToNext}
-              aria-label="Nästa"
-              className="hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm shadow-sm ring-1 ring-black/5 text-dark-slate/60 hover:text-dark-slate hover:bg-white transition-colors absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-20"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
           </div>
         </div>
       </div>
