@@ -18,6 +18,17 @@ const PHOTO_TILT = [
   { rotate: 2, x: 8, y: 2 },
 ];
 
+type OnboardingStep = { n: string; text: string; href: string };
+
+const ONBOARDING_STEPS: OnboardingStep[] = [
+  { n: "1", text: "Skapa ett konto", href: "/login" },
+  { n: "2", text: "Hitta projekt som är rätt för dig", href: "/projects" },
+  { n: "3", text: "Lägg upp en egen idé eller projekt", href: "/ideas/new" },
+  { n: "4", text: "Bygg en tribe med människor som brinner för samma som du", href: "/projects/new" },
+  { n: "5", text: "Förändra världen genom små och stora insatser", href: "/hall-of-impact" },
+  { n: "6", text: "Lev gott, Må gott, Gör gott och förverkliga dina och andras drömmar", href: "/about" },
+];
+
 type Obstacle = { lead: string; text: string };
 
 type Photo = {
@@ -189,25 +200,25 @@ export default function HeroPhotoStack() {
                         <h1 className="text-3xl md:text-4xl font-bold text-dark-slate" style={{ textWrap: "balance" }}>
                           <span style={{ fontSize: 30 }}>Välkommen till GoodTribes</span>
                         </h1>
-                        <p className="mt-4 text-dark-slate/80">
-                          GoodTribes.org är en öppen &rdquo;drömfabrik&rdquo; där människor och organisationer kan
-                          samverka för att förverkligar idéer och drömmar som medverkar till en långsiktigt hållbar
-                          miljö- och samhällsutveckling.
-                        </p>
-                        <p className="mt-3 text-dark-slate/80">
-                          GoodTribes är en ideell, opolitisk, oreligiös stiftelse som har som mål att hjälpa
-                          människor och organisationer att göra världen bättre. GoodTribes vision är en
-                          långsiktigt hållbar miljö- och samhällsutveckling, där alla människor ges möjlighet att
-                          förverkliga sina idéer/drömmar, sin fulla potential och samtidigt Leva Gott, Må Gott och
-                          Göra Gott för sig själv och andra.
-                        </p>
-                        <p className="mt-3 text-dark-slate/80">
-                          Har du några minuter över för att göra världen bättre för dig och andra så{" "}
-                          <Link href="/login" className="text-coral font-semibold hover:underline">
-                            logga in
-                          </Link>{" "}
-                          och bli en del av GoodTribes community.
-                        </p>
+                        <ol className="mt-5 flex flex-col gap-3">
+                          {ONBOARDING_STEPS.map((s) => (
+                            <li key={s.n}>
+                              <Link href={s.href} className="group flex items-center gap-3">
+                                <span className="w-7 h-7 rounded-full bg-seagrass text-white text-sm font-bold flex items-center justify-center shrink-0">
+                                  {s.n}
+                                </span>
+                                <span className="text-dark-slate/80 group-hover:text-seagrass group-hover:underline transition-colors">
+                                  {s.text}
+                                </span>
+                                {s.n === "1" && (
+                                  <span className="text-coral text-xs font-bold px-3 py-1 rounded-full border border-coral group-hover:bg-coral/5 transition-colors whitespace-nowrap">
+                                    Sign in
+                                  </span>
+                                )}
+                              </Link>
+                            </li>
+                          ))}
+                        </ol>
                       </>
                     ) : (
                       <>
