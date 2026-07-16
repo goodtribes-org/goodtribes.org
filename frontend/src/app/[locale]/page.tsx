@@ -84,7 +84,8 @@ export default async function HomePage({
     memberCount,
     pledgeSum,
     hoursSum,
-    completedTasks,
+    completedCards,
+    completedSubtasks,
     leaderboard,
     newMembers,
     sdgProjects,
@@ -99,6 +100,7 @@ export default async function HomePage({
     prisma.fundingPledge.aggregate({ where: { pledgeStatus: "confirmed" }, _sum: { amount: true } }),
     prisma.timeLog.aggregate({ where: { status: "approved" }, _sum: { loggedHours: true } }),
     prisma.kanbanCard.count({ where: { column: "DONE" } }),
+    prisma.kanbanCardSubtask.count({ where: { done: true } }),
     getLeaderboard(),
     prisma.user.findMany({
       where: { showProfile: true, name: { not: null as null } },
@@ -133,6 +135,7 @@ export default async function HomePage({
   ]);
 
   const totalRaised = pledgeSum._sum.amount ?? 0;
+  const completedTasks = completedCards + completedSubtasks;
   const totalHours = Math.round(hoursSum._sum.loggedHours ?? 0);
   const coveredGoals = Array.from(new Set(sdgProjects.flatMap((p) => p.sdgGoals)));
 
