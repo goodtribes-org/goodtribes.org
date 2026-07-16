@@ -203,7 +203,7 @@ export default function HeroPhotoStack() {
                               </span>
                               <span
                                 className={`text-dark-slate/80 ${s.n === "6" ? "whitespace-nowrap" : ""}`}
-                                style={{ fontSize: s.n === "6" ? 13.5 : 16 }}
+                                style={{ fontSize: 16 }}
                               >
                                 {s.text}
                               </span>
