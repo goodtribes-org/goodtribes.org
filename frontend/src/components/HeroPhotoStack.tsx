@@ -25,6 +25,7 @@ type Photo = {
   alt: string;
   heading: string;
   body?: string;
+  body2?: string;
   obstacles?: Obstacle[];
   closing?: string;
   menuLabel: string;
@@ -57,7 +58,15 @@ const PHOTOS: Photo[] = [
     src: "/img/do-you-have-a-dream.png",
     alt: "En person lyfts av en ballong format som en glödlampa — en idé som lyfter",
     heading: "Våga följa din dröm",
-    body: "Stora förändringar börjar med modet att ta första steget. Genom GoodTribes får du stöd och rätt kompetens för att förverkliga din idé — hur stor eller liten den än är.",
+    body: "Forskningen visar att drömmen om en bättre värld kräver mer än bara goda avsikter. Det handlar om att omvandla abstrakta drömmar till konkreta, mätbara delmål styrda av personliga värderingar.",
+    body2: "För att lyckas och behålla motivationen över tid krävs fyra vetenskapligt bevisade byggstenar:",
+    obstacles: [
+      { lead: "Inre drivkraft:", text: "Mål som gynnar andra (prosociala mål) ger störst långsiktig meningsfullhet." },
+      { lead: "Mentalt kapital:", text: "Du behöver odla hopp, optimism, resiliens och tro på din egen förmåga." },
+      { lead: "Gemenskap:", text: "Samarbete i nätverk motverkar apati och skapar verklig samhällsförändring." },
+      { lead: "Reflektion:", text: "Att regelbundet utvärdera dina vägval håller riktningen stabil över tid." },
+    ],
+    closing: "Genom att kombinera personlig utveckling med kollektiv handling förvandlas stora visioner till mätbar verklighet.",
     menuLabel: "Dröm",
     tint: "bg-muted-teal/15",
   },
@@ -65,7 +74,8 @@ const PHOTOS: Photo[] = [
     src: "/img/want-a-change.png",
     alt: "Vill du förändra?",
     heading: "Våga gå din egen väg",
-    body: "Du behöver inte följa mallen för att göra skillnad. Med GoodTribes i ryggen vågar du lita på din egen väg och ta steget mot det du tror på.",
+    body: "Forskning inom socialt entreprenörskap och effektiv altruism visar att drömmen om att göra världen bättre kräver ett vetenskapligt och småskaligt tillvägagångssätt för att lyckas. Att starta med mikroprojekt skyddar dig mot altruistisk utbrändhet och emotionell utmattning, eftersom klyftan mellan din insats och det globala problemet annars blir för stor. Genom att testa idén i liten skala säkrar du din egen långsiktiga ork.",
+    body2: "Små pilottester fungerar som ett effektivt verktyg för att mäta projektets faktiska genomslagskraft innan du satsar stora resurser. Det tvingar dig också att interagera direkt med målgruppen, vilket minskar risken för att du bygger en lösning baserad på egna antaganden i stället för på människors verkliga behov. Forskningen betonar att de mest framgångsrika initiativen bygger på just denna datadrivna och flexibla metodik, där metoden hela tiden anpassas efter verkliga resultat.",
     menuLabel: "Testa",
     tint: "bg-dry-sage/20",
   },
@@ -73,7 +83,15 @@ const PHOTOS: Photo[] = [
     src: "/img/what-is-goodtribes.png",
     alt: "Vad är GoodTribes?",
     heading: "Tillsammans når vi längre",
-    body: "Verklig förändring kommer när privatpersoner, ideell sektor, näringsliv och forskarvärlden samverkar mot gemensamma mål. På GoodTribes möts ni i trygga, meningsfulla samarbeten.",
+    body: "Att testa och förverkliga en livsdröm tillsammans med andra ger enorma fördelar enligt forskning inom socialpsykologi och organisationsteori.",
+    body2: "Här är de främsta vetenskapliga fördelarna med att dela resan:",
+    obstacles: [
+      { lead: "Hjälper mot utbrändhet:", text: "Delat ansvar minskar den emotionella tyngden i altruistiskt arbete och motverkar empatitrötthet genom socialt stöd." },
+      { lead: "Ökar handlingskraften:", text: "Kollektiv effektivitet (collective efficacy) – tron på att man kan förändra saker tillsammans – höjer motivationen och gör att gruppen vågar ta större risker än individen." },
+      { lead: "Breddar kompetensen:", text: "Olika människor bidrar med olika kognitiva perspektiv, vilket behövs för att lösa komplexa samhällsproblem." },
+      { lead: "Skapar sund social press:", text: "Att redovisa sina framsteg för en grupp (accountability) gör att man faktiskt slutför sina mikrotester i stället för att ge upp vid första hinder." },
+      { lead: "Ger direkt feedback:", text: "Gruppen fungerar som ett inbyggt bollplank som kan syna felaktiga antaganden innan idén möter verkligheten." },
+    ],
     menuLabel: "Utveckla",
     tint: "bg-watermelon/10",
   },
@@ -81,7 +99,8 @@ const PHOTOS: Photo[] = [
     src: "/img/want-to-be-a-winner.png",
     alt: "Vill du bidra?",
     heading: "Alla vinner på att göra gott",
-    body: "GoodTribes ger dig och din organisation möjlighet att leva gott och skapa värde av era insatser, må gott genom att göra det ni brinner för tillsammans med andra goda krafter, göra gott genom att förverkliga idéer som gör världen bättre — och uppnå era och andras drömmar.",
+    body: "Forskning inom positiv psykologi visar att människan blomstrar som bäst när hedonistisk lycka (att leva och må gott) balanseras med eudaimonisk lycka (att göra gott och följa sina livsdrömmar). Att enbart fokusera på materiell trygghet och njutning leder snabbt till att vi vänjer oss, vilket ger en kortvarig lycka. Samtidigt visar studier att enbart uppoffringar för andra utan egen återhämtning leder till utbrändhet. Det är i symbiosen mellan njutning och mening som långsiktigt välbefinnande skapas.",
+    body2: "Enligt självbestämmandeteorin drivs vi av behoven av autonomi, kompetens och samhörighet. Att följa sina livsdrömmar ger en känsla av sammanhang (KASAM), vilket skyddar mot psykisk ohälsa. När vi dessutom gör gott för andra reagerar hjärnan med ett så kallat ”helper's high” – en frisättning av oxytocin och dopamin som sänker stress och förlänger livet. Att väva samman personlig livskvalitet med att göra skillnad är därför det mest effektiva receptet för ett hållbart och meningsfullt liv enligt forskningen.",
     menuLabel: "Alla vinner",
     tint: "bg-coral/15",
   },
@@ -143,8 +162,8 @@ export default function HeroPhotoStack() {
                 transform: `rotate(${-PHOTO_TILT[active].rotate}deg) translate(${-PHOTO_TILT[active].x}px, ${-PHOTO_TILT[active].y}px)`,
               }}
             >
-              <div className={`h-full overflow-hidden bg-white p-3 ${CARD_SHADOW}`}>
-                <div className={`h-full border border-muted-teal/20 px-6 py-6 flex flex-col justify-start ${current.tint}`}>
+              <div className={`min-h-full bg-white p-3 ${CARD_SHADOW}`}>
+                <div className={`min-h-full border border-muted-teal/20 px-6 py-6 flex flex-col justify-start ${current.tint}`}>
                   <div key={`text-${current.src}`} className="hero-caption-in flex flex-col items-start text-left">
                     {isIntro ? (
                       <>
@@ -177,6 +196,9 @@ export default function HeroPhotoStack() {
                           {current.heading}
                         </h1>
                         <p className="mt-4 text-dark-slate/80">{current.body}</p>
+                        {current.body2 && (
+                          <p className="mt-3 text-dark-slate/80">{current.body2}</p>
+                        )}
                         {current.obstacles && (
                           <ul className="mt-4 flex flex-col gap-2">
                             {current.obstacles.map((o) => (
