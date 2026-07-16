@@ -62,7 +62,7 @@ const PHOTOS: Photo[] = [
     obstacles: [
       { lead: "Rädsla för misslyckande", text: "– rädslan att förlora väger tyngre än viljan att vinna, så vi väljer trygghet framför förändring." },
       { lead: "Mentala blockeringar", text: "– vi intalar oss att vi saknar rätt talang, vilket hindrar första steget." },
-      { lead: "Vaga målsättningar", text: "– utan konkreta, mätbara delmål blir drömmar bara abstrakta tankar." },
+      { lead: "Vaga målsättningar", text: "– utan konkreta, mätbara delmål blir drömmar bara abstrakta fantasier." },
     ],
     outro: "GoodTribes är utformad för att hjälpa dig förbi alla hinder…",
     menuLabel: "Våga",
