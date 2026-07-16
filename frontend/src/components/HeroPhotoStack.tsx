@@ -111,6 +111,13 @@ export default function HeroPhotoStack() {
   const current = PHOTOS[active];
   const isIntro = active === 0;
 
+  function goToPrev() {
+    setActive((i) => (i - 1 + PHOTOS.length) % PHOTOS.length);
+  }
+  function goToNext() {
+    setActive((i) => (i + 1) % PHOTOS.length);
+  }
+
   return (
     <>
       {/* Bakgrund: samma bild som visas, crossfadeas vid byte */}
@@ -154,7 +161,19 @@ export default function HeroPhotoStack() {
             ))}
           </nav>
 
-          <div className="grid w-full gap-8 items-stretch md:grid-cols-2">
+          <div className="relative w-full">
+            <button
+              type="button"
+              onClick={goToPrev}
+              aria-label="Föregående"
+              className="hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm shadow-sm ring-1 ring-black/5 text-dark-slate/60 hover:text-dark-slate hover:bg-white transition-colors absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-20"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <div className="grid w-full gap-8 items-stretch md:grid-cols-2">
             {/* Text — alltid synlig, till vänster, samma polaroid-form som bilden */}
             <div
               className="transition-transform duration-500 ease-out"
@@ -237,6 +256,18 @@ export default function HeroPhotoStack() {
                 </div>
               </div>
             </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={goToNext}
+              aria-label="Nästa"
+              className="hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm shadow-sm ring-1 ring-black/5 text-dark-slate/60 hover:text-dark-slate hover:bg-white transition-colors absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-20"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
