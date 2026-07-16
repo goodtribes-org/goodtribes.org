@@ -56,8 +56,8 @@ const PHOTOS: Photo[] = [
   {
     src: "/img/Slide2.png",
     alt: "Har du en dröm? — en man kedjad till sitt skrivbord drömmer om att förverkliga sin idé",
-    heading: "Följ din livsdröm",
-    body: "Alla har idéer och livsdrömmar som kan göra världen bättre – men forskning visar att över 92 % aldrig uppnår sina mål.",
+    heading: "Följ din dröm...",
+    body: "Alla har idéer och drömmar som kan göra världen bättre – men forskning visar att över 92 % aldrig uppnår sina mål.",
     bodyLine2: "Tre hinder stoppar oss:",
     obstacles: [
       { lead: "Rädsla för misslyckande", text: "– rädslan att förlora väger tyngre än viljan att vinna, så vi väljer trygghet framför förändring." },
@@ -71,14 +71,14 @@ const PHOTOS: Photo[] = [
   {
     src: "/img/do-you-have-a-dream.png",
     alt: "En person lyfts av en ballong format som en glödlampa — en idé som lyfter",
-    heading: "Våga följa din dröm",
+    heading: "Släpp inte taget...",
     body: "En bättre värld kräver mer än goda avsikter – drömmar måste bli konkreta, mätbara mål och delmål som involverar andra. Vetenskapen visar att sannolikheten att du faktiskt förverkligar din livsdröm ökar för varje steg du tar:",
     points: [
       { pct: "10 %", text: "Du har bara en idé eller dröm i huvudet." },
       { pct: "25 %", text: "Du bestämmer dig medvetet för att göra det." },
       { pct: "50 %", text: "Du planerar hur du ska göra det." },
       { pct: "65 %", text: "Du berättar för någon annan att du ska göra det." },
-      { pct: "95 %", text: "Om du samverkar med andra med liknade mål." },
+      { pct: "95 %", text: "Om du samverkar med andra med liknande mål." },
     ],
     menuLabel: "Dröm",
     tint: "bg-muted-teal/15",
@@ -110,7 +110,7 @@ const PHOTOS: Photo[] = [
   {
     src: "/img/want-to-be-a-winner.png",
     alt: "Vill du bidra?",
-    heading: "Alla vinner på att göra gott",
+    heading: "Alla vinner...",
     body: "Forskningen visar att människan mår som bäst när hedonistisk lycka (att leva gott och må gott) balanseras med eudaimonisk lycka (att göra gott och följa sina drömmar). Enbart materiell njutning ger kortvarig lycka medan enbart uppoffringar utan återhämtning leder till utbrändhet – det är i symbiosen som långsiktigt välbefinnande skapas.",
     body2: "Enligt självbestämmandeteorin drivs vi av autonomi, kompetens och samhörighet. Att följa sina livsdrömmar ger mening och skyddar mot psykisk ohälsa, medan att göra gott för andra utlöser ett \"helper's high\" (oxytocin och dopamin) som sänker stress och förlänger livet. Att väva samman personlig livskvalitet med att göra skillnad är därför receptet för ett hållbart, meningsfullt liv.",
     menuLabel: "Alla vinner",
