@@ -1,5 +1,3 @@
-import Link from "next/link";
-import Image from "next/image";
 import { SdgIcon } from "@/components/SdgIcon";
 import { sdgIconPath, SDG_COLORS } from "@/lib/sdg";
 
@@ -34,19 +32,16 @@ export default function ProjectCard({ project }: { project: ProjectCardData }) {
   const stageLabel = STATUS_LABEL_SV[project.status] ?? project.status;
 
   return (
-    <Link
+    <a
       href={`/projects/${project.slug}`}
       className="rounded-lg overflow-hidden border border-muted-teal/40 hover:shadow-md transition-shadow bg-white flex flex-col"
     >
       <div className="relative aspect-[4/3] w-full">
         {project.imageUrl ? (
-          <Image
+          <img
             src={project.imageUrl}
             alt={project.title}
-            fill
-            unoptimized
-            className="object-cover"
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
           <div
@@ -54,7 +49,7 @@ export default function ProjectCard({ project }: { project: ProjectCardData }) {
             style={{ backgroundColor: `color-mix(in oklab, ${tint} 18%, white)` }}
           >
             {primarySdg && (
-              <Image src={sdgIconPath(primarySdg)} alt="" width={72} height={72} unoptimized className="rounded shadow-sm" />
+              <img src={sdgIconPath(primarySdg)} alt="" width={72} height={72} className="rounded shadow-sm" />
             )}
           </div>
         )}
@@ -110,6 +105,6 @@ export default function ProjectCard({ project }: { project: ProjectCardData }) {
           </div>
         </div>
       </div>
-    </Link>
+    </a>
   );
 }
