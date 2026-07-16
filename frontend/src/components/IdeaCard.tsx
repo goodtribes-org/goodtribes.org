@@ -1,5 +1,5 @@
 import { SdgIcon } from "@/components/SdgIcon";
-import IdeaVoteButtonContainer from "@/components/IdeaVoteButtonContainer";
+import IdeaVoteButton from "@/components/IdeaVoteButton";
 
 export type IdeaCardData = {
   id: string;
@@ -23,7 +23,17 @@ const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
   converted: { label: "Blev projekt", cls: "bg-coral/10 text-coral" },
 };
 
-export default function IdeaCard({ idea, isLoggedIn }: { idea: IdeaCardData; isLoggedIn: boolean }) {
+export default function IdeaCard({
+  idea,
+  isLoggedIn,
+  onVote,
+  votePending,
+}: {
+  idea: IdeaCardData;
+  isLoggedIn: boolean;
+  onVote: (ideaId: string) => void;
+  votePending?: boolean;
+}) {
   const status = STATUS_LABELS[idea.status] ?? STATUS_LABELS.open;
 
   return (
@@ -53,11 +63,12 @@ export default function IdeaCard({ idea, isLoggedIn }: { idea: IdeaCardData; isL
           </div>
         )}
         <div className="flex items-center gap-2 mt-auto">
-          <IdeaVoteButtonContainer
-            ideaId={idea.id}
+          <IdeaVoteButton
             voteCount={idea._count.votes}
             hasVoted={!!idea.myVoteId}
             isLoggedIn={isLoggedIn}
+            pending={votePending}
+            onVote={() => onVote(idea.id)}
           />
           <span className="text-[11px] text-dark-slate/50">{idea._count.comments} kommentarer</span>
         </div>
