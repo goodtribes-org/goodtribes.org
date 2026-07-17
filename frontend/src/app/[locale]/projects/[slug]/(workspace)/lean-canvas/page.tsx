@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -60,6 +61,12 @@ export default async function LeanCanvasPage({
   const canComment = session?.user?.id ? await isRealMember(project.id, session.user.id) : false;
   const canvas = project.leanCanvas;
 
+  const helpGuide = await prisma.academyGuide.findFirst({
+    where: { title: "Så använder du Lean Canvas", published: true },
+    select: { id: true },
+  });
+  const helpHref = helpGuide ? `/academy/${helpGuide.id}` : "/academy?category=Projektledning";
+
   const comments = await prisma.leanCanvasComment.findMany({
     where: { projectSlug: slug, hiddenAt: null },
     orderBy: { createdAt: "asc" },
@@ -68,8 +75,15 @@ export default async function LeanCanvasPage({
 
   return (
     <div>
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-bold text-dark-slate">Lean Canvas</h1>
+        <Link
+          href={helpHref}
+          className="flex items-center gap-1 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors"
+        >
+          <span className="flex items-center justify-center w-4 h-4 rounded-full border border-current text-[10px]">?</span>
+          Hjälp
+        </Link>
       </div>
 
       <style>{`
