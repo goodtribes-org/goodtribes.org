@@ -263,7 +263,7 @@ function KanbanCardItemImpl({
                           className="flex-1 text-xs border-b border-blue-400 outline-none bg-transparent text-gray-700 py-0"
                           value={editingSubtaskTitle}
                           onChange={(e) => setEditingSubtaskTitle(e.target.value)}
-                          onKeyDown={(e) => { if (e.key === "Enter") handleCardSaveSubtaskEdit(s); if (e.key === "Escape") setEditingSubtaskId(null); }}
+                          onKeyDown={(e) => { e.stopPropagation(); if (e.key === "Enter") handleCardSaveSubtaskEdit(s); if (e.key === "Escape") setEditingSubtaskId(null); }}
                           onBlur={() => handleCardSaveSubtaskEdit(s)}
                         />
                       ) : (
@@ -308,6 +308,7 @@ function KanbanCardItemImpl({
                     value={newSubtaskInput}
                     onChange={(e) => setNewSubtaskInput(e.target.value)}
                     onKeyDown={(e) => {
+                      e.stopPropagation();
                       if (e.key === "Enter") { handleQuickAddSubtask(); }
                       if (e.key === "Escape") { setAddingSubtask(false); setNewSubtaskInput(""); }
                     }}
