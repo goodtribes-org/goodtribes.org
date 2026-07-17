@@ -68,13 +68,6 @@ export default async function AcademyPage({
     }),
   ]);
 
-  const isAdmin =
-    session?.user?.id
-      ? await prisma.user
-          .findUnique({ where: { id: session.user.id }, select: { authoredGuides: { take: 1 } } })
-          .then((u) => (u?.authoredGuides?.length ?? 0) > 0)
-      : false;
-
   return (
     <div>
       {/* Header */}
@@ -85,7 +78,7 @@ export default async function AcademyPage({
             Lär dig allt du behöver för att förändra världen
           </p>
         </div>
-        {(session?.user?.id && isAdmin) && (
+        {session?.user?.id && (
           <Link
             href="/academy/new"
             className="flex-shrink-0 px-4 py-2 bg-coral text-white text-sm font-medium rounded-lg hover:bg-watermelon transition-colors"
