@@ -45,6 +45,10 @@ function KanbanColumnImpl({
  {
   const { setNodeRef, isOver } = useDroppable({ id: col.key });
   const [menuOpen, setMenuOpen] = useState(false);
+  const openSubtaskCount = cards.reduce(
+    (sum, c) => sum + (c.subtasks?.filter((s) => !s.done).length ?? 0),
+    0
+  );
 
   function handleClearColumn() {
     setMenuOpen(false);
@@ -65,7 +69,8 @@ function KanbanColumnImpl({
       >
         <span className="text-sm font-semibold text-gray-700">
           {col.label}{" "}
-          <span className="font-normal text-gray-400">({cards.length})</span>
+          <span className="font-normal text-gray-400" title="Antal kort">({cards.length})</span>{" "}
+          <span className="font-normal text-gray-400" title="Ej avklarade deluppgifter">({openSubtaskCount})</span>
         </span>
         <div className="flex items-center gap-1 relative">
           {isLoggedIn && (
