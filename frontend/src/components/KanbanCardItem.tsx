@@ -58,6 +58,7 @@ function KanbanCardItemImpl({
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: card.id });
+  const canInteract = isLoggedIn && isMember;
 
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState("writer");
@@ -155,8 +156,8 @@ function KanbanCardItemImpl({
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1, borderBottomColor: priorityMeta.bottomHex }}
-      {...attributes}
-      {...listeners}
+      {...(canInteract ? attributes : {})}
+      {...(canInteract ? listeners : {})}
       suppressHydrationWarning
       className="bg-white border border-b-2 border-gray-200 rounded-lg shadow-[0_2px_6px_rgba(0,0,0,0.25)] group hover:shadow-[0_4px_12px_rgba(0,0,0,0.35)] hover:border-gray-300 transition-all overflow-hidden"
     >
@@ -244,7 +245,9 @@ function KanbanCardItemImpl({
                     <div key={s.id} className="relative flex items-center gap-1.5 group/sub py-0.5">
                       <button
                         type="button"
+                        disabled={!canInteract}
                         onClick={() => {
+                          if (!canInteract) return;
                           setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: !t.done } : t));
                           if (!s.id.startsWith("temp-")) startTransition(async () => {
                             try { await toggleSubtask(s.id, !s.done); }
@@ -252,7 +255,7 @@ function KanbanCardItemImpl({
                           });
                         }}
                         aria-label={s.done ? "Markera som inte klar" : "Markera som klar"}
-                        className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"}`}
+                        className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"} ${!canInteract ? "cursor-default opacity-60" : ""}`}
                       >
                         {s.done && <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                       </button>
