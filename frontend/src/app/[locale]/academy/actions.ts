@@ -55,7 +55,7 @@ export async function createGuide(formData: FormData) {
   const readTimeMinutesRaw = formData.get("readTimeMinutes") as string | null;
   const readTimeMinutes = readTimeMinutesRaw ? parseInt(readTimeMinutesRaw) || 5 : 5;
 
-  await prisma.academyGuide.create({
+  const guide = await prisma.academyGuide.create({
     data: {
       title,
       bodyMarkdown,
@@ -67,5 +67,9 @@ export async function createGuide(formData: FormData) {
     },
   });
 
-  redirect("/academy");
+  // New guides start unpublished and the /academy listing only shows
+  // published ones — redirect straight to the guide's own page, where the
+  // author sees a "Publicera guide" banner, instead of dropping them on a
+  // listing where their own draft is invisible.
+  redirect(`/academy/${guide.id}`);
 }
