@@ -37,6 +37,7 @@ function CardDetailModalImpl({
   isLoggedIn,
   currentUserId,
   isMember,
+  isLead,
   onClose,
   onSaved,
   onDelete,
@@ -50,6 +51,7 @@ function CardDetailModalImpl({
   isLoggedIn: boolean;
   currentUserId: string | null;
   isMember: boolean;
+  isLead: boolean;
   onClose: () => void;
   onSaved: (cardId: string, patch: Partial<Card>) => void;
   onDelete: (cardId: string) => void;
@@ -79,7 +81,8 @@ function CardDetailModalImpl({
   const [cardLikeCount, setCardLikeCount] = useState(card.likeCount ?? 0);
   const [, startTransition] = useTransition();
 
-  const canDelete = currentUserId === card.createdById;
+  const canDelete = currentUserId === card.createdById || isLead;
+  const canDeleteSubtask = (s: Subtask) => currentUserId === card.createdById || isLead || s.id.startsWith("temp-");
 
   const columnLabel = COLUMNS.find((c) => c.key === card.column)?.label ?? card.column;
 
@@ -181,7 +184,13 @@ function CardDetailModalImpl({
 
   async function handleDeleteSubtask(s: Subtask) {
     setLocalSubtasks((prev) => prev.filter((t) => t.id !== s.id));
-    if (!s.id.startsWith("temp-")) await deleteSubtask(s.id);
+    if (!s.id.startsWith("temp-")) {
+      const result = await deleteSubtask(s.id);
+      if (result && "error" in result) {
+        setLocalSubtasks((prev) => [...prev, s]);
+        alert("Kunde inte ta bort deluppgiften. Du måste vara den som skapade kortet, admin eller founder.");
+      }
+    }
   }
 
   async function handleSaveSubtaskEdit(s: Subtask) {
@@ -447,13 +456,15 @@ function CardDetailModalImpl({
                             >
                               Ändra
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => { handleDeleteSubtask(s); setSubtaskMenuOpen(null); }}
-                              className="w-full text-left text-sm px-3 py-1.5 text-red-500 hover:bg-red-50 transition-colors"
-                            >
-                              Ta bort
-                            </button>
+                            {canDeleteSubtask(s) && (
+                              <button
+                                type="button"
+                                onClick={() => { handleDeleteSubtask(s); setSubtaskMenuOpen(null); }}
+                                className="w-full text-left text-sm px-3 py-1.5 text-red-500 hover:bg-red-50 transition-colors"
+                              >
+                                Ta bort
+                              </button>
+                            )}
                             {!isNew && !s.id.startsWith("temp-") && (
                               <button
                                 type="button"

@@ -125,6 +125,7 @@ function KanbanColumnImpl({
               currentUserId={currentUserId}
               isLoggedIn={isLoggedIn}
               isMember={isMember}
+              isLead={isLead}
               onDelete={onDelete}
               onOpenCard={onOpenCard}
               onAddCard={onAddCard}

@@ -467,6 +467,7 @@ export default function KanbanBoard({
             isLoggedIn={isLoggedIn}
             currentUserId={currentUserId}
             isMember={isMember}
+            isLead={isLead}
             onClose={() => { setEditingCard(null); setIsNewCard(false); }}
             onSaved={handleCardSaved}
             onDelete={(cardId) => { handleDelete(cardId); setEditingCard(null); setIsNewCard(false); }}

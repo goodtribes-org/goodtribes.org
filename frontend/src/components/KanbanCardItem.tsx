@@ -36,6 +36,7 @@ function KanbanCardItemImpl({
   currentUserId,
   isLoggedIn,
   isMember,
+  isLead,
   onDelete,
   onOpenCard,
   onAddCard,
@@ -48,6 +49,7 @@ function KanbanCardItemImpl({
   currentUserId: string | null;
   isLoggedIn: boolean;
   isMember: boolean;
+  isLead: boolean;
   onDelete: (id: string) => void;
   onOpenCard: (card: Card) => void;
   onAddCard?: (card: Card) => void;
@@ -59,6 +61,7 @@ function KanbanCardItemImpl({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: card.id });
   const canInteract = isLoggedIn && isMember;
+  const canDeleteSubtask = (s: Subtask) => currentUserId === card.createdById || isLead || s.id.startsWith("temp-");
 
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState("writer");
@@ -123,7 +126,13 @@ function KanbanCardItemImpl({
 
   async function handleCardDeleteSubtask(s: Subtask) {
     setLocalSubtasks((prev) => prev.filter((t) => t.id !== s.id));
-    if (!s.id.startsWith("temp-")) await deleteSubtask(s.id);
+    if (!s.id.startsWith("temp-")) {
+      const result = await deleteSubtask(s.id);
+      if (result && "error" in result) {
+        setLocalSubtasks((prev) => [...prev, s]);
+        alert("Kunde inte ta bort deluppgiften. Du måste vara den som skapade kortet, admin eller founder.");
+      }
+    }
   }
 
   async function handleCardSaveSubtaskEdit(s: Subtask) {
@@ -337,7 +346,9 @@ function KanbanCardItemImpl({
             style={{ right: window.innerWidth - subtaskMenuPos.x, top: subtaskMenuPos.y + 4 }}
           >
             <button type="button" onClick={() => { setEditingSubtaskId(s.id); setEditingSubtaskTitle(s.title); setSubtaskMenuPos(null); }} className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50">Ändra</button>
-            <button type="button" onClick={() => { handleCardDeleteSubtask(s); setSubtaskMenuPos(null); }} className="w-full text-left text-xs px-3 py-1.5 text-red-500 hover:bg-red-50">Ta bort</button>
+            {canDeleteSubtask(s) && (
+              <button type="button" onClick={() => { handleCardDeleteSubtask(s); setSubtaskMenuPos(null); }} className="w-full text-left text-xs px-3 py-1.5 text-red-500 hover:bg-red-50">Ta bort</button>
+            )}
             {!s.id.startsWith("temp-") && (
               <button type="button" onClick={() => { handleCardPromoteSubtask(s); setSubtaskMenuPos(null); }} className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50">Eget kort</button>
             )}

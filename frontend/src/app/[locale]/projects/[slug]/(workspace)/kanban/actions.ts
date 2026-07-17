@@ -9,6 +9,11 @@ import { isRealMember, hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { publishToKanban } from "@/lib/redis";
 import { moveKanbanCard } from "@/lib/kanbanMove";
 
+async function isProjectLead(projectSlug: string, userId: string): Promise<boolean> {
+  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
+  if (!project) return false;
+  return hasProjectRole(project.id, userId, PROJECT_LEAD_ROLES);
+}
 
 export async function createCard(
   projectSlug: string,
@@ -122,9 +127,12 @@ export async function deleteSubtask(subtaskId: string) {
 
   const subtask = await prisma.kanbanCardSubtask.findUnique({
     where: { id: subtaskId },
-    include: { card: { select: { projectSlug: true } } },
+    include: { card: { select: { projectSlug: true, createdById: true } } },
   });
   if (!subtask) return { error: "Subtask not found" };
+  if (subtask.card.createdById !== session.user.id && !(await isProjectLead(subtask.card.projectSlug, session.user.id))) {
+    return { error: "Not authorized" };
+  }
 
   await prisma.kanbanCardSubtask.delete({ where: { id: subtaskId } });
   revalidatePath(`/projects/${subtask.card.projectSlug}/kanban`);
@@ -351,7 +359,9 @@ export async function deleteCard(cardId: string) {
 
   const card = await prisma.kanbanCard.findUnique({ where: { id: cardId } });
   if (!card) return { error: "Card not found" };
-  if (card.createdById !== session.user.id) return { error: "Not authorized" };
+  if (card.createdById !== session.user.id && !(await isProjectLead(card.projectSlug, session.user.id))) {
+    return { error: "Not authorized" };
+  }
 
   await prisma.kanbanCard.delete({ where: { id: cardId } });
   publishToKanban(card.projectSlug, { action: "deleted", cardId });
