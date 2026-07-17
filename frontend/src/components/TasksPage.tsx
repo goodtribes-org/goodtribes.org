@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import KanbanBoard, { type Member } from "@/components/KanbanBoard";
 import TaskListView from "@/components/TaskListView";
 import GanttView from "@/components/GanttView";
@@ -53,6 +54,7 @@ export default function TasksPage({
   isLead,
   members,
   openCardId,
+  helpHref,
 }: {
   projectSlug: string;
   initialColumns: Columns;
@@ -62,6 +64,7 @@ export default function TasksPage({
   isLead: boolean;
   members: Member[];
   openCardId?: string | null;
+  helpHref: string;
 }) {
   const storageKey = `tasks-view-${projectSlug}`;
   const [view, setView] = useState<View>("board");
@@ -82,37 +85,46 @@ export default function TasksPage({
   }
 
   const viewToggle = (
-    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-      <button
-        onClick={() => switchView("board")}
-        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-          view === "board"
-            ? "bg-white text-dark-slate shadow-sm"
-            : "text-dark-slate/50 hover:text-dark-slate"
-        }`}
+    <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+        <button
+          onClick={() => switchView("board")}
+          className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+            view === "board"
+              ? "bg-white text-dark-slate shadow-sm"
+              : "text-dark-slate/50 hover:text-dark-slate"
+          }`}
+        >
+          Tavla
+        </button>
+        <button
+          onClick={() => switchView("list")}
+          className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+            view === "list"
+              ? "bg-white text-dark-slate shadow-sm"
+              : "text-dark-slate/50 hover:text-dark-slate"
+          }`}
+        >
+          Lista
+        </button>
+        <button
+          onClick={() => switchView("gantt")}
+          className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+            view === "gantt"
+              ? "bg-white text-dark-slate shadow-sm"
+              : "text-dark-slate/50 hover:text-dark-slate"
+          }`}
+        >
+          Gantt
+        </button>
+      </div>
+      <Link
+        href={helpHref}
+        className="flex items-center gap-1 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors"
       >
-        Tavla
-      </button>
-      <button
-        onClick={() => switchView("list")}
-        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-          view === "list"
-            ? "bg-white text-dark-slate shadow-sm"
-            : "text-dark-slate/50 hover:text-dark-slate"
-        }`}
-      >
-        Lista
-      </button>
-      <button
-        onClick={() => switchView("gantt")}
-        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-          view === "gantt"
-            ? "bg-white text-dark-slate shadow-sm"
-            : "text-dark-slate/50 hover:text-dark-slate"
-        }`}
-      >
-        Gantt
-      </button>
+        <span className="flex items-center justify-center w-4 h-4 rounded-full border border-current text-[10px]">?</span>
+        Hjälp
+      </Link>
     </div>
   );
 

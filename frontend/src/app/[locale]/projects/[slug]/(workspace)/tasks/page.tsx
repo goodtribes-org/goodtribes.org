@@ -111,6 +111,12 @@ export default async function TasksRoutePage({
 
   const members = project.members.map((m) => ({ id: m.user.id, name: m.user.name, image: m.user.image }));
 
+  const helpGuide = await prisma.academyGuide.findFirst({
+    where: { title: "Så använder du Kanban", published: true },
+    select: { id: true },
+  });
+  const helpHref = helpGuide ? `/academy/${helpGuide.id}` : "/academy?category=Projektledning";
+
   return (
     <>
       <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
@@ -123,6 +129,7 @@ export default async function TasksRoutePage({
           isLead={isLead}
           members={members}
           openCardId={openCardId ?? null}
+          helpHref={helpHref}
         />
       </div>
     </>
