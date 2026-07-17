@@ -15,7 +15,6 @@ import NotificationBell from "@/components/NotificationBell";
 import MessagesLink from "@/components/MessagesLink";
 import PresenceHeartbeat from "@/components/PresenceHeartbeat";
 import NavMenuContainer from "@/components/NavMenuContainer";
-import InstallPrompt from "@/components/InstallPrompt";
 import { auth } from "@/auth";
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
@@ -153,7 +152,6 @@ export default async function LocaleLayout({
                 </p>
               </div>
             </footer>
-            <InstallPrompt />
           </SessionProvider>
         </NextIntlClientProvider>
       </body>
