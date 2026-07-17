@@ -379,7 +379,7 @@ export default async function ProjectDetailPage({
                       />
                     ) : (
                       <Link
-                        href="/auth/signin"
+                        href={`/login?callbackUrl=${encodeURIComponent(`/projects/${slug}`)}`}
                         className="flex justify-center w-full py-2.5 bg-coral text-white rounded-xl font-bold text-base hover:bg-coral/90 transition-colors shadow-md"
                       >
                         Join GoodTribes
@@ -755,7 +755,10 @@ export default async function ProjectDetailPage({
               <p className="text-sm text-dark-slate/60 mb-3">
                 Logga in för att gå med i projektet
               </p>
-              <Link href="/auth/signin" className="text-sm text-coral font-medium hover:underline">
+              <Link
+                href={`/login?callbackUrl=${encodeURIComponent(`/projects/${slug}`)}`}
+                className="text-sm text-coral font-medium hover:underline"
+              >
                 Logga in →
               </Link>
             </div>
