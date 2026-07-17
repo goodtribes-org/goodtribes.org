@@ -241,19 +241,15 @@ export default async function HomePage({
             <ActivityPulse />
           </div>
           <div className="flex flex-col gap-6">
-            {userId && (
-              <>
-                <LeaderboardWidget entries={leaderboard} />
-                <NewMembersWidget
-                  members={newMembers.map((m) => ({ id: m.id, name: m.name!, image: m.image }))}
-                />
-                <ImpactStatsWidget
-                  totalRaised={totalRaised}
-                  totalHours={totalHours}
-                  completedTasks={completedTasks}
-                />
-              </>
-            )}
+            <LeaderboardWidget entries={leaderboard} />
+            <NewMembersWidget
+              members={newMembers.map((m) => ({ id: m.id, name: m.name!, image: m.image }))}
+            />
+            <ImpactStatsWidget
+              totalRaised={totalRaised}
+              totalHours={totalHours}
+              completedTasks={completedTasks}
+            />
             <SdgCoverageWidget coveredGoals={coveredGoals} />
             <HomeStatsWidget
               projectCount={projectCount}
