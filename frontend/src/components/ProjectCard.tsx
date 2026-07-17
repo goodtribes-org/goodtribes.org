@@ -14,6 +14,7 @@ export type ProjectCardData = {
   owner: { name: string | null };
   members: { id: string }[];
   _count: { kanbanCards: number };
+  kanbanCardsDone: number;
 };
 
 // Card-only Swedish stage bucket — the real ProjectStatus enum has 5 lifecycle
@@ -95,7 +96,7 @@ export default function ProjectCard({ project }: { project: ProjectCardData }) {
           </div>
           <div className="px-1">
             <p className="text-xs font-semibold text-dark-slate">
-              {project._count.kanbanCards}
+              {project.kanbanCardsDone}/{project._count.kanbanCards}
             </p>
             <p className="text-[10px] text-dark-slate/50 leading-tight">Uppgifter</p>
           </div>
