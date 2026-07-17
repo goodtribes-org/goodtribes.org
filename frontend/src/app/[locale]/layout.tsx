@@ -116,7 +116,7 @@ export default async function LocaleLayout({
             </header>
             <main className="max-w-6xl mx-auto px-6 pt-8 pb-12">{children}</main>
             <footer className="border-t border-muted-teal/30 mt-16 bg-dry-sage/10">
-              <div className="max-w-6xl mx-auto px-6 py-10 grid gap-8 md:grid-cols-3 text-sm">
+              <div className="max-w-6xl mx-auto px-6 py-10 grid gap-8 md:grid-cols-2 text-sm">
                 <div>
                   <Image
                     src="/img/GoodTribes1.png"
@@ -126,15 +126,6 @@ export default async function LocaleLayout({
                     className="object-contain mb-3"
                   />
                   <p className="text-dark-slate/60 leading-relaxed text-xs">{t("foundationBlurb")}</p>
-                </div>
-                <div>
-                  <p className="font-semibold text-dark-slate mb-2 text-xs uppercase tracking-wider">{t("feeTitle")}</p>
-                  <div className="flex flex-col gap-1 text-xs text-dark-slate/60">
-                    <span className="flex justify-between max-w-[240px]"><span>{t("feeNonprofit")}</span><strong className="text-coral">3%</strong></span>
-                    <span className="flex justify-between max-w-[240px]"><span>{t("feePrivate")}</span><strong className="text-coral">5%</strong></span>
-                    <span className="flex justify-between max-w-[240px]"><span>{t("feeCompany")}</span><strong className="text-coral">7%</strong></span>
-                  </div>
-                  <p className="text-[11px] text-dark-slate/40 mt-2">{t("feeNote")}</p>
                 </div>
                 <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
                   <p className="font-semibold text-dark-slate mb-1 uppercase tracking-wider">{t("exploreTitle")}</p>
