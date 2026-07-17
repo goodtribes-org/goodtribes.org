@@ -8,12 +8,16 @@ import OrgInviteForm from "./invite/OrgInviteForm";
 import { OrgJoinRequestsPanel } from "./OrgJoinSection";
 import OrgTeamManager from "./OrgTeamManager";
 import OrgVerifiedBadge from "@/components/OrgVerifiedBadge";
-import FlagOrgButton from "@/components/FlagOrgButton";
+import FlagContentButton from "@/components/FlagContentButton";
 import OrgReviewButton from "@/components/OrgReviewButton";
 import ResourceLibrary from "@/components/ResourceLibrary";
 import ActivityTimeline, { type EventMeta } from "@/components/ActivityTimeline";
 import OrgTourGate from "@/components/OrgTourGate";
 import { PROJECT_STATUS_LABEL } from "@/lib/projectStatus";
+import { buildMetadata, APP_URL } from "@/lib/metadata";
+import ShareButton from "@/components/ShareButton";
+import LikeCommentBlock from "@/components/LikeCommentBlock";
+import { getLikeCommentData } from "@/lib/socialInteractions";
 
 const ORG_EVENT_META: EventMeta = {
   member_joined:  { icon: "👤", label: (_, a) => `${a} joined the organisation` },
@@ -21,29 +25,20 @@ const ORG_EVENT_META: EventMeta = {
 };
 
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
+  const { locale, slug } = await params;
   const org = await prisma.organisation.findUnique({
     where: { slug },
-    select: { name: true, description: true, imageUrl: true },
+    select: { name: true, description: true, imageUrl: true, isPublic: true },
   });
-  if (!org) return {};
-  return {
+  if (!org || !org.isPublic) return {};
+  return buildMetadata({
+    locale,
+    path: `/org/${slug}`,
     title: org.name,
-    description: org.description ?? undefined,
-    openGraph: {
-      title: `${org.name} — GoodTribes.org`,
-      description: org.description ?? "An organisation on GoodTribes.org",
-      url: `/org/${slug}`,
-      ...(org.imageUrl ? { images: [{ url: org.imageUrl, alt: org.name }] } : {}),
-    },
-    twitter: {
-      card: org.imageUrl ? "summary_large_image" : "summary",
-      title: org.name,
-      description: org.description ?? "An organisation on GoodTribes.org",
-      ...(org.imageUrl ? { images: [org.imageUrl] } : {}),
-    },
-  };
+    description: org.description ?? "An organisation on GoodTribes.org",
+    imageUrl: org.imageUrl,
+  });
 }
 
 function MemberAvatar({ name, href }: { name: string; href?: string }) {
@@ -77,10 +72,10 @@ export default async function OrgDetailPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
   searchParams: Promise<{ tab?: string }>;
 }) {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const { tab } = await searchParams;
   const activeTab =
     tab === "projects" ? "projects" :
@@ -160,6 +155,8 @@ export default async function OrgDetailPage({
         })
       : Promise.resolve([]),
   ]);
+
+  const { likeCount, liked, comments } = await getLikeCommentData("organisation", org.id, userId ?? null);
 
   const ownerName = org.owner.name ?? org.owner.email;
   const ownerInitials = ownerName
@@ -293,11 +290,18 @@ export default async function OrgDetailPage({
             {userId && !isOwner && (
               <OrgReviewButton organisationId={org.id} orgName={org.name} />
             )}
+            {org.isPublic && (
+              <ShareButton
+                url={`${APP_URL}/${locale}/org/${slug}`}
+                title={org.name}
+                text={org.description ?? undefined}
+              />
+            )}
           </div>
 
           {userId && !isOwner && (
             <div>
-              <FlagOrgButton organisationId={org.id} />
+              <FlagContentButton targetType="Organisation" targetId={org.id} />
             </div>
           )}
         </div>
@@ -323,6 +327,17 @@ export default async function OrgDetailPage({
           </div>
         </div>
       )}
+
+      <div className="mb-10 border border-muted-teal/30 rounded-lg p-5 bg-white">
+        <LikeCommentBlock
+          targetType="organisation"
+          targetId={org.id}
+          isLoggedIn={!!userId}
+          initialLikeCount={likeCount}
+          initialLiked={liked}
+          initialComments={comments}
+        />
+      </div>
 
       {/* BOTTOM SECTION */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-8">

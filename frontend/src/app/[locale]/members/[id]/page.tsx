@@ -1,11 +1,15 @@
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { auth } from "@/auth";
 import KudosButton from "@/components/KudosButton";
 import MessageButton from "@/components/MessageButton";
+import ShareButton from "@/components/ShareButton";
+import FlagContentButton from "@/components/FlagContentButton";
 import { isLeadRole } from "@/lib/authz";
 import { PROJECT_STATUS_LABEL as STATUS_LABELS } from "@/lib/projectStatus";
+import { buildMetadata, APP_URL } from "@/lib/metadata";
 
 export const dynamic = "force-dynamic";
 
@@ -17,12 +21,32 @@ const SOCIAL_LABELS: Record<string, string> = {
   twitter: "Twitter / X",
 };
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string }>;
+}): Promise<Metadata> {
+  const { locale, id } = await params;
+  const member = await prisma.user.findFirst({
+    where: { id, showProfile: true },
+    select: { name: true, bio: true, image: true },
+  });
+  if (!member) return {};
+  return buildMetadata({
+    locale,
+    path: `/members/${id}`,
+    title: member.name ?? "Medlem",
+    description: member.bio ?? "En medlem på GoodTribes.org",
+    imageUrl: member.image,
+  });
+}
+
 export default async function MemberProfilePage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ locale: string; id: string }>;
 }) {
-  const { id } = await params;
+  const { locale, id } = await params;
   const session = await auth();
 
   const member = await prisma.user.findFirst({
@@ -82,7 +106,19 @@ export default async function MemberProfilePage({
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h1 className="text-3xl font-bold mb-1">{member.name}</h1>
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-3xl font-bold mb-1">{member.name}</h1>
+            <div className="flex items-center gap-3">
+              <ShareButton
+                url={`${APP_URL}/${locale}/members/${id}`}
+                title={member.name ?? "Medlem"}
+                variant="icon"
+              />
+              {session?.user?.id && session.user.id !== id && (
+                <FlagContentButton targetType="User" targetId={id} />
+              )}
+            </div>
+          </div>
           {session?.user?.id && session.user.id !== id && (
             <div className="mt-2 flex gap-2">
               <MessageButton

@@ -87,6 +87,7 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
         },
       }),
       prisma.idea.findMany({
+        where: { hiddenAt: null },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
@@ -179,7 +180,7 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
       avatarName: m.createdBy.name, avatarImage: m.createdBy.image, projectImage: m.project.imageUrl,
       projectName: m.project.title, projectHref: `/projects/${m.project.slug}`, projectId: m.project.id,
       action: `Milstolpe klar: ${m.title}`,
-      href: `/projects/${m.project.slug}/milestones#milestone-${m.id}`, date: m.updatedAt,
+      href: `/projects/${m.project.slug}/calendar#milestone-${m.id}`, date: m.updatedAt,
     })),
     ...projects.map((p) => ({
       id: `project-${p.id}`, targetType: "project", targetId: p.id,

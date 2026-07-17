@@ -32,6 +32,12 @@ export default function ActivityPulseItem({
     : "?";
   const iconImage = item.avatarImage || item.projectImage;
 
+  // channelMessage's target (/messages/{roomId}) is readable by anyone for a
+  // public project's channel (see roomAuth.ts) — requiresMembership/
+  // isProjectMember below only gate *replying/reacting* via FeedItemActions,
+  // not the read-only link itself.
+  const href = item.href;
+
   return (
     <div className="rounded-xl border border-muted-teal/40 bg-white p-3">
       <div className="flex items-center gap-3">
@@ -54,8 +60,8 @@ export default function ActivityPulseItem({
                 <span className="font-semibold text-dark-slate/60">{item.projectName}</span>
               )}
               {" - "}
-              {item.href ? (
-                <Link href={item.href} className="font-normal text-dark-slate/70 hover:underline">
+              {href ? (
+                <Link href={href} className="font-normal text-dark-slate/70 hover:underline">
                   {item.action}
                 </Link>
               ) : (

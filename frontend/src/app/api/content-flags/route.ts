@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import type { FlagReason } from "@prisma/client";
 import { isContentTargetType, targetExists, autoHoldIfThresholdReached } from "@/lib/contentModeration";
+import { guardSocialAction } from "@/lib/socialActionGuard";
 
 const FLAG_REASONS: FlagReason[] = ["SPAM", "HARASSMENT", "OFFENSIVE", "OFF_TOPIC", "OTHER"];
 
@@ -13,6 +14,12 @@ export async function POST(request: Request) {
   }
 
   const userId = session.user.id;
+
+  const guard = await guardSocialAction(userId, "flag");
+  if (!guard.ok) {
+    const status = guard.code === "RATE_LIMITED" ? 429 : 403;
+    return NextResponse.json({ error: guard.error, code: guard.code }, { status });
+  }
 
   let body: { targetType?: string; targetId?: string; reason?: string; note?: string };
   try {

@@ -2,6 +2,8 @@
 
 import { useRef, useState, useTransition } from "react";
 import { toggleVote, toggleEndorsement, toggleFollow, setIdeaStatus, addComment } from "./actions";
+import ShareButton from "@/components/ShareButton";
+import FlagContentButton from "@/components/FlagContentButton";
 
 const STATUSES = [
   { value: "draft", label: "Draft" },
@@ -24,11 +26,14 @@ interface SidebarProps {
   isAuthor: boolean;
   isModerator: boolean;
   currentStatus: string;
+  shareUrl: string;
+  shareTitle: string;
 }
 
 export function IdeaSidebar({
   ideaId, voteCount, hasVoted, endorseCount, hasEndorsed,
   followCount, hasFollowed, isLoggedIn, isAuthor, isModerator, currentStatus,
+  shareUrl, shareTitle,
 }: SidebarProps) {
   const [pending, startTransition] = useTransition();
   const [votes, setVotes] = useState(voteCount);
@@ -136,6 +141,16 @@ export function IdeaSidebar({
               <option key={s.value} value={s.value}>{s.label}</option>
             ))}
           </select>
+        </div>
+      )}
+
+      <div className="flex justify-center mt-1">
+        <ShareButton url={shareUrl} title={shareTitle} variant="icon" />
+      </div>
+
+      {isLoggedIn && !isAuthor && (
+        <div className="flex justify-center">
+          <FlagContentButton targetType="Idea" targetId={ideaId} />
         </div>
       )}
     </div>

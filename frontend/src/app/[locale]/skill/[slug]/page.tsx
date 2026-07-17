@@ -3,25 +3,32 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PROJECT_STATUS_LABEL } from "@/lib/projectStatus";
+import { buildMetadata, APP_URL } from "@/lib/metadata";
+import ShareButton from "@/components/ShareButton";
 
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
-  const skill = await prisma.skill.findUnique({ where: { slug }, select: { name: true } });
+  const { locale, slug } = await params;
+  const skill = await prisma.skill.findUnique({ where: { slug }, select: { name: true, description: true } });
   if (!skill) return { title: "Skill not found" };
-  return { title: `${skill.name} — GoodTribes.org` };
+  return buildMetadata({
+    locale,
+    path: `/skill/${slug}`,
+    title: skill.name,
+    description: skill.description,
+  });
 }
 
 export default async function SkillDetailPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }) {
-  const { slug } = await params;
+  const { locale, slug } = await params;
 
   const skill = await prisma.skill.findUnique({
     where: { slug },
@@ -59,11 +66,14 @@ export default async function SkillDetailPage({
         ← All skills
       </Link>
 
-      <div className="flex items-start gap-4 mb-4">
-        <h1 className="text-3xl font-bold">{skill.name}</h1>
-        <span className="text-sm bg-dry-sage text-dark-slate px-3 py-1 rounded-full mt-1 flex-shrink-0">
-          #{skill.tag}
-        </span>
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="flex items-start gap-4">
+          <h1 className="text-3xl font-bold">{skill.name}</h1>
+          <span className="text-sm bg-dry-sage text-dark-slate px-3 py-1 rounded-full mt-1 flex-shrink-0">
+            #{skill.tag}
+          </span>
+        </div>
+        <ShareButton url={`${APP_URL}/${locale}/skill/${slug}`} title={skill.name} variant="icon" />
       </div>
 
       <p className="text-dark-slate/70 mb-10">{skill.description}</p>

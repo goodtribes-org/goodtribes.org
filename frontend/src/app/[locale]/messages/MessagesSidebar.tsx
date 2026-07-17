@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -8,6 +8,8 @@ import { useTranslations } from "next-intl";
 import PresenceDot from "@/components/PresenceDot";
 import { useMessagesSection, type MessagesSection } from "./useMessagesSection";
 import { NewMessageButton } from "./NewMessageButton";
+import { getPublicProjectChannels } from "./actions";
+import type { PublicProjectChannelGroup } from "@/lib/rooms";
 
 type DmGroupRoom = {
   id: string;
@@ -24,6 +26,7 @@ type ProjectGroup = { id: string; slug: string; title: string; rooms: RoomRow[] 
 type OrgGroup = { id: string; slug: string; name: string; rooms: RoomRow[] };
 
 type Props = {
+  isLoggedIn: boolean;
   dmGroupRooms: DmGroupRoom[];
   projectGroups: ProjectGroup[];
   orgGroups: OrgGroup[];
@@ -88,7 +91,7 @@ function TabRow({ active }: { active: MessagesSection }) {
   );
 }
 
-export function MessagesSidebar({ dmGroupRooms, projectGroups, orgGroups }: Props) {
+export function MessagesSidebar({ isLoggedIn, dmGroupRooms, projectGroups, orgGroups }: Props) {
   const t = useTranslations("Messages");
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -98,15 +101,72 @@ export function MessagesSidebar({ dmGroupRooms, projectGroups, orgGroups }: Prop
   const visibleDmGroupRooms = section === "unread" ? dmGroupRooms.filter((r) => r.unread) : dmGroupRooms;
 
   const isIndex = pathname === "/messages" || pathname.endsWith("/messages");
+  const currentRoomId = pathname.match(/\/messages\/([^/?]+)/)?.[1] ?? null;
 
   function isActive(roomId: string) {
     return pathname.endsWith(`/messages/${roomId}`);
   }
 
+  // Personal channel groups (getProjectChannelGroups) only include projects
+  // the viewer is a member of — for a public project's channel reached via a
+  // direct link (activity feed) or the "Kommunikation" tab, that list won't
+  // include it even though the room itself is readable (see roomAuth.ts).
+  // This looks the project up independently so it's still discoverable.
+  const alreadyListed = focusProjectSlug
+    ? projectGroups.some((p) => p.slug === focusProjectSlug)
+    : currentRoomId
+    ? projectGroups.some((p) => p.rooms.some((r) => r.id === currentRoomId))
+    : true;
+
+  const [publicChannelGroup, setPublicChannelGroup] = useState<PublicProjectChannelGroup | null>(null);
+
+  useEffect(() => {
+    if (alreadyListed) {
+      setPublicChannelGroup(null);
+      return;
+    }
+    let cancelled = false;
+    const lookup = focusProjectSlug
+      ? getPublicProjectChannels({ slug: focusProjectSlug })
+      : currentRoomId
+      ? getPublicProjectChannels({ roomId: currentRoomId })
+      : Promise.resolve(null);
+    lookup
+      .then((group) => { if (!cancelled) setPublicChannelGroup(group); })
+      .catch(() => { if (!cancelled) setPublicChannelGroup(null); });
+    return () => { cancelled = true; };
+  }, [alreadyListed, focusProjectSlug, currentRoomId]);
+
   return (
     <aside
       className={`${isIndex ? "flex" : "hidden md:flex"} flex-col w-full md:w-64 shrink-0 border-r border-muted-teal/20 max-h-[calc(100dvh-160px)] overflow-y-auto`}
     >
+      {publicChannelGroup && (
+        <Section title={publicChannelGroup.title} defaultOpen>
+          {publicChannelGroup.rooms.map((room) => (
+            <Link
+              key={room.id}
+              href={`/messages/${room.id}?project=${publicChannelGroup.slug}`}
+              className={`flex items-center gap-2 px-3 py-1.5 mx-1 my-0.5 rounded-md text-sm transition-colors ${
+                isActive(room.id) ? "bg-dry-sage/40 text-dark-slate font-semibold" : "text-dark-slate/70 hover:bg-dry-sage/20"
+              }`}
+            >
+              <span className="text-dark-slate/30 text-xs">#</span>
+              <span className="flex-1 truncate">{room.name}</span>
+            </Link>
+          ))}
+        </Section>
+      )}
+
+      {!isLoggedIn ? (
+        <p className="text-sm text-dark-slate/50 p-4">
+          <Link href="/login" className="text-coral hover:underline font-medium">
+            Logga in
+          </Link>{" "}
+          för att se dina egna meddelanden och kanaler.
+        </p>
+      ) : (
+        <>
       <TabRow active={section} />
 
       {(section === "chat" || section === "unread") && (
@@ -173,6 +233,8 @@ export function MessagesSidebar({ dmGroupRooms, projectGroups, orgGroups }: Prop
         </Section>
       ))}
       </>
+      )}
+        </>
       )}
     </aside>
   );

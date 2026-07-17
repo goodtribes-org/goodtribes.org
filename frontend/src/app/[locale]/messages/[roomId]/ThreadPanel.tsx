@@ -14,7 +14,7 @@ type Props = {
   roomId: string;
   parent: MessageRow;
   replies: MessageRow[];
-  currentUserId: string;
+  currentUserId: string | null;
   canPost: boolean;
   mentionables?: MentionItem[];
   onClose: () => void;
@@ -60,7 +60,7 @@ export function ThreadPanel({ roomId, parent, replies, currentUserId, canPost, m
               canAdd={canPost}
               onToggle={(emoji) => onReaction(parent.id, emoji)}
             />
-            <FlagContentButton targetType="Message" targetId={parent.id} />
+            {currentUserId && <FlagContentButton targetType="Message" targetId={parent.id} />}
           </div>
         </div>
 
@@ -84,7 +84,7 @@ export function ThreadPanel({ roomId, parent, replies, currentUserId, canPost, m
                     <span className="text-[10px] text-gray-400">{timeLabel(r.createdAt)}</span>
                   </div>
                   <div className="text-sm">{renderBody(r.body)}</div>
-                  <FlagContentButton targetType="Message" targetId={r.id} />
+                  {currentUserId && <FlagContentButton targetType="Message" targetId={r.id} />}
                 </div>
               </div>
             ))}

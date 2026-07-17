@@ -9,21 +9,30 @@ import { auth } from "@/auth";
 import CompleteGuideForm from "./CompleteGuideForm";
 import { publishGuide } from "../actions";
 import { isSiteAdmin } from "@/lib/authz";
+import { buildMetadata, APP_URL } from "@/lib/metadata";
+import ShareButton from "@/components/ShareButton";
+import FlagContentButton from "@/components/FlagContentButton";
+import LikeCommentBlock from "@/components/LikeCommentBlock";
+import { getLikeCommentData } from "@/lib/socialInteractions";
 
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ locale: string; id: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
+  const { locale, id } = await params;
   const guide = await prisma.academyGuide.findUnique({
     where: { id },
-    select: { title: true },
+    select: { title: true, bodyMarkdown: true, published: true, hiddenAt: true },
   });
-  return {
-    title: guide ? `${guide.title} — GoodTribes Academy` : "Guide — GoodTribes Academy",
-  };
+  if (!guide || !guide.published || guide.hiddenAt) return {};
+  return buildMetadata({
+    locale,
+    path: `/academy/${id}`,
+    title: guide.title,
+    description: guide.bodyMarkdown.slice(0, 160),
+  });
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -43,9 +52,9 @@ const DIFFICULTY_BADGES: Record<string, { label: string; cls: string }> = {
 export default async function AcademyGuidePage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ locale: string; id: string }>;
 }) {
-  const { id } = await params;
+  const { locale, id } = await params;
 
   const [session, guide] = await Promise.all([
     auth(),
@@ -62,7 +71,9 @@ export default async function AcademyGuidePage({
   const isAuthor = !!session?.user?.id && guide?.authorId === session.user.id;
   const canManage = isAdmin || isAuthor;
 
-  if (!guide || (!guide.published && !canManage)) notFound();
+  if (!guide || (!guide.published && !canManage) || (guide.hiddenAt && !canManage)) notFound();
+
+  const { likeCount, liked, comments } = await getLikeCommentData("academyGuide", guide.id, session?.user?.id ?? null);
 
   const hasCompleted = session?.user?.id
     ? !!(await prisma.userGuideCompletion.findUnique({
@@ -104,10 +115,24 @@ export default async function AcademyGuidePage({
 
         <h1 className="text-3xl font-bold text-dark-slate mb-3">{guide.title}</h1>
 
-        <div className="flex items-center gap-4 text-sm text-dark-slate/50">
-          <span>av {guide.author.name ?? "Okänd"}</span>
-          <span>~{guide.readTimeMinutes} min</span>
-          <span>{guide._count.completions} avklarade</span>
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-4 text-sm text-dark-slate/50">
+            <span>av {guide.author.name ?? "Okänd"}</span>
+            <span>~{guide.readTimeMinutes} min</span>
+            <span>{guide._count.completions} avklarade</span>
+          </div>
+          <div className="flex items-center gap-3">
+            {guide.published && (
+              <ShareButton
+                url={`${APP_URL}/${locale}/academy/${id}`}
+                title={guide.title}
+                variant="icon"
+              />
+            )}
+            {session?.user?.id && (
+              <FlagContentButton targetType="AcademyGuide" targetId={guide.id} />
+            )}
+          </div>
         </div>
       </div>
 
@@ -152,6 +177,17 @@ export default async function AcademyGuidePage({
           )}
         </div>
       )}
+
+      <div className="border-t border-muted-teal/30 pt-6 mt-8">
+        <LikeCommentBlock
+          targetType="academyGuide"
+          targetId={guide.id}
+          isLoggedIn={!!session?.user?.id}
+          initialLikeCount={likeCount}
+          initialLiked={liked}
+          initialComments={comments}
+        />
+      </div>
     </div>
   );
 }

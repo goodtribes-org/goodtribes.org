@@ -9,6 +9,7 @@ import {
 } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
 import { sendRoomMessage, toggleReaction } from "@/app/[locale]/messages/actions";
 import { FEED_LIKE_EMOJI } from "@/lib/activityFeed";
+import { guardSocialAction } from "@/lib/socialActionGuard";
 
 export async function createFeedPost(body: string, imageUrl?: string | null) {
   const session = await auth();
@@ -26,6 +27,9 @@ export async function createFeedPost(body: string, imageUrl?: string | null) {
 export async function toggleFeedLike(targetType: string, targetId: string) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
+
+  const guard = await guardSocialAction(session.user.id, "like");
+  if (!guard.ok) return { error: guard.error, code: guard.code };
 
   if (targetType === "kanbanCardComment") {
     return toggleCardCommentLike(targetId);
@@ -67,6 +71,9 @@ export async function addFeedComment(targetType: string, targetId: string, body:
   if (!session?.user?.id) return { error: "Not logged in" };
   const trimmed = body.trim();
   if (!trimmed) return { error: "Comment is empty" };
+
+  const guard = await guardSocialAction(session.user.id, "comment");
+  if (!guard.ok) return { error: guard.error, code: guard.code };
 
   if (targetType === "kanbanCardComment") {
     const target = await prisma.kanbanCardComment.findUnique({

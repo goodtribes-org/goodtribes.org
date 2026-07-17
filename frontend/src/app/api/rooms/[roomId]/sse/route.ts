@@ -15,9 +15,8 @@ export async function GET(
   const { roomId } = await params;
 
   const session = await auth();
-  if (!session?.user?.id) return new Response("Unauthorized", { status: 401 });
 
-  const access = await getRoomAccess(roomId, session.user.id);
+  const access = await getRoomAccess(roomId, session?.user?.id ?? null);
   if (!access?.canRead) return new Response("Forbidden", { status: 403 });
 
   const lastEventId = request.headers.get("last-event-id");

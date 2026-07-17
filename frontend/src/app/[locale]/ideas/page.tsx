@@ -66,6 +66,7 @@ export default async function IdeasPage({
   const sdgNum = sdg ? parseInt(sdg) : undefined;
 
   const where = {
+    hiddenAt: null,
     ...(status ? { status } : { status: { not: "draft" } }),
     ...(category ? { category } : {}),
     ...(sdgNum && !isNaN(sdgNum) ? { sdgGoals: { has: sdgNum } } : {}),

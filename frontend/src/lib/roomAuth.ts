@@ -13,11 +13,18 @@ export type RoomAccess = {
 // types are a lazily-upserted roster/read-marker cache, never the source
 // of truth for who can read/post. DM/GROUP rooms have no external
 // membership source, so RoomParticipant IS authoritative there.
-export async function getRoomAccess(roomId: string, userId: string): Promise<RoomAccess | null> {
+//
+// userId is nullable so logged-out visitors can be checked too: a
+// PROJECT_CHANNEL on a public project is readable by anyone (matching every
+// other project workspace surface — updates, wiki, tasks, etc. — which are
+// already public-viewable), but posting/reacting always requires an actual
+// membership role, which in turn requires being logged in.
+export async function getRoomAccess(roomId: string, userId: string | null): Promise<RoomAccess | null> {
   const room = await prisma.room.findUnique({ where: { id: roomId } });
   if (!room) return null;
 
   if (room.type === "DM" || room.type === "GROUP") {
+    if (!userId) return { room, canRead: false, canPost: false };
     const participant = await prisma.roomParticipant.findUnique({
       where: { roomId_userId: { roomId, userId } },
     });
@@ -26,15 +33,23 @@ export async function getRoomAccess(roomId: string, userId: string): Promise<Roo
 
   if (room.type === "PROJECT_CHANNEL") {
     if (!room.projectId) return { room, canRead: false, canPost: false };
-    const role = await getProjectRole(room.projectId, userId);
-    if (!role) return { room, canRead: false, canPost: false };
+    const [role, project] = await Promise.all([
+      userId ? getProjectRole(room.projectId, userId) : Promise.resolve(null),
+      prisma.project.findUnique({ where: { id: room.projectId }, select: { visibility: true } }),
+    ]);
+    if (!role) {
+      // Not a member (or not logged in at all) — still readable if the
+      // project itself is public, but never postable.
+      return { room, canRead: project?.visibility === "public", canPost: false };
+    }
     const isLead = isLeadRole(role);
     const canPost = room.postingPolicy === "LEADS_ONLY" ? isLead : role !== "FOLLOWER";
     return { room, canRead: true, canPost };
   }
 
-  // ORG_CHANNEL
-  if (!room.organisationId) return { room, canRead: false, canPost: false };
+  // ORG_CHANNEL — unchanged, membership-gated for reading too (not part of
+  // the public activity feed, unlike PROJECT_CHANNEL).
+  if (!userId || !room.organisationId) return { room, canRead: false, canPost: false };
   const [member, org] = await Promise.all([
     prisma.organisationMember.findUnique({
       where: { organisationId_userId: { organisationId: room.organisationId, userId } },

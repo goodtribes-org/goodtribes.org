@@ -40,6 +40,8 @@ enum FlagReason {
   HARASSMENT
   OFFENSIVE
   OFF_TOPIC
+  FRAUD
+  ETHICS_VIOLATION
   OTHER
 }
 
@@ -218,6 +220,8 @@ model OrganisationEthicsReview {
   reviewer           User              @relation("OrgEthicsReviewer", fields: [reviewerId], references: [id])
   organisationFlagId String?           @unique
   organisationFlag   OrganisationFlag? @relation(fields: [organisationFlagId], references: [id])
+  contentFlagId      String?           @unique
+  contentFlag        ContentFlag?      @relation("OrgContentFlagEthicsReview", fields: [contentFlagId], references: [id])
   outcome            String
   note               String?
   createdAt          DateTime          @default(now())
@@ -532,6 +536,9 @@ model Idea {
   authorId       String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  hiddenAt       DateTime?
+  hiddenById     String?
+  hiddenReason   ContentHideReason?
 
   author       User              @relation("AuthoredIdeas", fields: [authorId], references: [id], onDelete: Cascade)
   votes        IdeaVote[]
@@ -663,16 +670,19 @@ model ProjectInvite {
 }
 
 model WikiPage {
-  id          String   @id @default(cuid())
-  projectSlug String
-  slug        String
-  title       String
-  content     String   @default("")
-  order       Int      @default(0)
-  createdById String
-  updatedById String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  projectSlug  String
+  slug         String
+  title        String
+  content      String   @default("")
+  order        Int      @default(0)
+  createdById  String
+  updatedById  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  hiddenAt     DateTime?
+  hiddenById   String?
+  hiddenReason ContentHideReason?
 
   project   Project @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
   createdBy User    @relation("WikiPageCreatedBy", fields: [createdById], references: [id])
@@ -1078,6 +1088,9 @@ model AcademyGuide {
   completions     UserGuideCompletion[]
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
+  hiddenAt        DateTime?
+  hiddenById      String?
+  hiddenReason    ContentHideReason?
 
   @@index([category])
 }
@@ -1169,6 +1182,8 @@ model EthicsReview {
   reviewer      User         @relation("EthicsReviewer", fields: [reviewerId], references: [id])
   projectFlagId String?      @unique
   projectFlag   ProjectFlag? @relation(fields: [projectFlagId], references: [id])
+  contentFlagId String?      @unique
+  contentFlag   ContentFlag? @relation("ProjectContentFlagEthicsReview", fields: [contentFlagId], references: [id])
   outcome       String
   note          String?
   createdAt     DateTime     @default(now())
@@ -1194,6 +1209,9 @@ model ContentFlag {
   decisionNote String?
   createdAt    DateTime   @default(now())
   reviewedAt   DateTime?
+
+  ethicsReview    EthicsReview?             @relation("ProjectContentFlagEthicsReview")
+  orgEthicsReview OrganisationEthicsReview? @relation("OrgContentFlagEthicsReview")
 
   @@unique([targetType, targetId, flaggedById])
   @@index([targetType, targetId])

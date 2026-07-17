@@ -14,10 +14,17 @@ export default async function RoomPage({
 }) {
   const { roomId } = await params;
   const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  const userId = session?.user?.id ?? null;
 
-  const access = await getRoomAccess(roomId, session.user.id);
-  if (!access?.canRead) notFound();
+  const access = await getRoomAccess(roomId, userId);
+  if (!access) notFound();
+  if (!access.canRead) {
+    // DM/GROUP/ORG_CHANNEL and private-project channels stay fully gated —
+    // prompt login for a logged-out visitor, 404 for a logged-in non-member
+    // (same as visiting someone else's private content elsewhere in the app).
+    if (!userId) redirect("/login");
+    notFound();
+  }
 
   const [messages, otherUsers, mentionables] = await Promise.all([
     prisma.message.findMany({
@@ -30,13 +37,13 @@ export default async function RoomPage({
       orderBy: { createdAt: "asc" },
       take: 200,
     }),
-    access.room.type === "DM" || access.room.type === "GROUP"
+    (access.room.type === "DM" || access.room.type === "GROUP") && userId
       ? prisma.roomParticipant.findMany({
-          where: { roomId, userId: { not: session.user.id } },
+          where: { roomId, userId: { not: userId } },
           select: { user: { select: { id: true, name: true, image: true } } },
         })
       : Promise.resolve([]),
-    getRoomMentionables(access.room, session.user.id),
+    userId ? getRoomMentionables(access.room, userId) : Promise.resolve([]),
   ]);
 
   return (
@@ -53,8 +60,8 @@ export default async function RoomPage({
         createdAt: m.createdAt.toISOString(),
         updatedAt: m.updatedAt.toISOString(),
       }))}
-      currentUserId={session.user.id}
-      canPost={access.canPost}
+      currentUserId={userId}
+      canPost={!!userId && access.canPost}
       mentionables={mentionables}
     />
   );

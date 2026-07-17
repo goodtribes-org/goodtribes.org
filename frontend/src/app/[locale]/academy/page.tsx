@@ -52,6 +52,7 @@ export default async function AcademyPage({
 
   const where = {
     published: true,
+    hiddenAt: null,
     ...(category ? { category } : {}),
   };
 

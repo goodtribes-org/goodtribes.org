@@ -1,10 +1,22 @@
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
-import { reviewOrgFlag, setOrganisationVerified } from "./actions";
+import { reviewOrgFlag, reviewOrgContentFlag, setOrganisationVerified } from "./actions";
 
+type PendingOrgFlagRow = {
+  id: string;
+  source: "legacy" | "contentFlag";
+  name: string;
+  slug: string;
+  reason: string;
+  flaggedByLabel: string;
+  createdAt: Date;
+};
 
 export default async function OrganisationsAdminPage() {
-  const [flags, orgs] = await Promise.all([
+  const [legacyFlags, contentFlags, orgs] = await Promise.all([
+    // Legacy OrganisationFlag rows — kept as a frozen audit trail; new flags
+    // no longer get created here (see FlagContentButton), so this queue
+    // drains naturally as pending stragglers are worked through.
     prisma.organisationFlag.findMany({
       where: { status: "pending" },
       orderBy: { createdAt: "asc" },
@@ -13,12 +25,49 @@ export default async function OrganisationsAdminPage() {
         flaggedBy: { select: { name: true, email: true } },
       },
     }),
+    prisma.contentFlag.findMany({
+      where: { targetType: "Organisation", status: "PENDING" },
+      orderBy: { createdAt: "asc" },
+      include: { flaggedBy: { select: { name: true, email: true } } },
+    }),
     prisma.organisation.findMany({
       where: { isPublic: true },
       orderBy: { name: "asc" },
       select: { id: true, name: true, slug: true, verified: true },
     }),
   ]);
+
+  const contentFlagOrgs = await prisma.organisation.findMany({
+    where: { id: { in: contentFlags.map((f) => f.targetId) } },
+    select: { id: true, name: true, slug: true },
+  });
+  const orgById = new Map(contentFlagOrgs.map((o) => [o.id, o]));
+
+  const flags: PendingOrgFlagRow[] = [
+    ...legacyFlags.map((f) => ({
+      id: f.id,
+      source: "legacy" as const,
+      name: f.organisation.name,
+      slug: f.organisation.slug,
+      reason: f.reason,
+      flaggedByLabel: f.flaggedBy.name ?? f.flaggedBy.email,
+      createdAt: f.createdAt,
+    })),
+    ...contentFlags
+      .filter((f) => orgById.has(f.targetId))
+      .map((f) => {
+        const org = orgById.get(f.targetId)!;
+        return {
+          id: f.id,
+          source: "contentFlag" as const,
+          name: org.name,
+          slug: org.slug,
+          reason: f.reason,
+          flaggedByLabel: f.flaggedBy.name ?? f.flaggedBy.email,
+          createdAt: f.createdAt,
+        };
+      }),
+  ].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 space-y-12">
@@ -44,10 +93,10 @@ export default async function OrganisationsAdminPage() {
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <div>
                     <Link
-                      href={`/org/${flag.organisation.slug}`}
+                      href={`/org/${flag.slug}`}
                       className="font-semibold text-dark-slate hover:text-coral transition-colors"
                     >
-                      {flag.organisation.name}
+                      {flag.name}
                     </Link>
                     <p className="text-sm text-dark-slate/60 mt-0.5">
                       {flag.reason}
@@ -61,7 +110,7 @@ export default async function OrganisationsAdminPage() {
                 <div className="text-xs text-dark-slate/50 mb-4">
                   Flaggad av{" "}
                   <span className="font-medium text-dark-slate/70">
-                    {flag.flaggedBy.name ?? flag.flaggedBy.email}
+                    {flag.flaggedByLabel}
                   </span>{" "}
                   · {flag.createdAt.toLocaleDateString("sv-SE")}
                 </div>
@@ -70,7 +119,8 @@ export default async function OrganisationsAdminPage() {
                   <form
                     action={async () => {
                       "use server";
-                      await reviewOrgFlag(flag.id, "dismissed");
+                      if (flag.source === "legacy") await reviewOrgFlag(flag.id, "dismissed");
+                      else await reviewOrgContentFlag(flag.id, "dismissed");
                     }}
                   >
                     <button
@@ -84,7 +134,8 @@ export default async function OrganisationsAdminPage() {
                   <form
                     action={async () => {
                       "use server";
-                      await reviewOrgFlag(flag.id, "warned", "Organisationen har fått en varning från administratören.");
+                      if (flag.source === "legacy") await reviewOrgFlag(flag.id, "warned", "Organisationen har fått en varning från administratören.");
+                      else await reviewOrgContentFlag(flag.id, "warned", "Organisationen har fått en varning från administratören.");
                     }}
                   >
                     <button
@@ -98,7 +149,8 @@ export default async function OrganisationsAdminPage() {
                   <form
                     action={async () => {
                       "use server";
-                      await reviewOrgFlag(flag.id, "removed", "Organisationen har avpublicerats av administratören.");
+                      if (flag.source === "legacy") await reviewOrgFlag(flag.id, "removed", "Organisationen har avpublicerats av administratören.");
+                      else await reviewOrgContentFlag(flag.id, "removed", "Organisationen har avpublicerats av administratören.");
                     }}
                   >
                     <button

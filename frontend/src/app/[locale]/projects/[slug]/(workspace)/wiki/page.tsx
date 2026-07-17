@@ -19,7 +19,7 @@ export default async function WikiIndexPage({ params }: { params: Promise<{ slug
 
   const project = await prisma.project.findUnique({
     where: { slug },
-    include: { wikiPages: { orderBy: { order: "asc" } } },
+    include: { wikiPages: { where: { hiddenAt: null }, orderBy: { order: "asc" } } },
   });
   if (!project) notFound();
 

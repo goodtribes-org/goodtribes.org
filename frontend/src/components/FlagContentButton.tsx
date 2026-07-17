@@ -2,23 +2,52 @@
 
 import { useState } from "react";
 
-type Reason = "SPAM" | "HARASSMENT" | "OFFENSIVE" | "OFF_TOPIC" | "OTHER";
+type Reason = "SPAM" | "HARASSMENT" | "OFFENSIVE" | "OFF_TOPIC" | "FRAUD" | "ETHICS_VIOLATION" | "OTHER";
 
 const REASONS: { value: Reason; label: string }[] = [
   { value: "OFFENSIVE", label: "Stötande innehåll" },
   { value: "HARASSMENT", label: "Trakasserier" },
   { value: "SPAM", label: "Spam" },
   { value: "OFF_TOPIC", label: "Off-topic" },
+  { value: "FRAUD", label: "Bedrägeri" },
+  { value: "ETHICS_VIOLATION", label: "Bryter mot SDG/etik" },
   { value: "OTHER", label: "Övrigt" },
 ];
+
+export type FlagContentTargetType =
+  | "FeedPost"
+  | "FeedComment"
+  | "IdeaComment"
+  | "Message"
+  | "DreamWallPost"
+  | "KanbanCardComment"
+  | "LeanCanvasComment"
+  | "Project"
+  | "Organisation"
+  | "WikiPage"
+  | "AcademyGuide"
+  | "User"
+  | "Idea";
+
+const DEFAULT_LABELS: Partial<Record<FlagContentTargetType, string>> = {
+  Project: "Flagga projekt",
+  Organisation: "Flagga organisation",
+  WikiPage: "Flagga sida",
+  AcademyGuide: "Flagga guide",
+  User: "Flagga profil",
+  Idea: "Flagga idé",
+};
 
 export default function FlagContentButton({
   targetType,
   targetId,
+  label,
 }: {
-  targetType: "FeedPost" | "FeedComment" | "IdeaComment" | "Message" | "DreamWallPost" | "KanbanCardComment" | "LeanCanvasComment";
+  targetType: FlagContentTargetType;
   targetId: string;
+  label?: string;
 }) {
+  const buttonLabel = label ?? DEFAULT_LABELS[targetType] ?? "Flagga";
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<Reason>("OFFENSIVE");
   const [motivering, setMotivering] = useState("");
@@ -59,7 +88,7 @@ export default function FlagContentButton({
         className="text-xs text-dark-slate/40 hover:text-coral transition-colors flex items-center gap-1"
         title="Flagga detta innehåll för granskning"
       >
-        <span aria-hidden>⚑</span> Flagga
+        <span aria-hidden>⚑</span> {buttonLabel}
       </button>
     );
   }
@@ -67,7 +96,7 @@ export default function FlagContentButton({
   return (
     <div className="mt-2 border border-muted-teal/40 rounded-lg p-4 bg-white max-w-sm">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-dark-slate">Flagga innehåll</h3>
+        <h3 className="text-sm font-semibold text-dark-slate">{buttonLabel}</h3>
         <button
           onClick={() => { setOpen(false); setDone(false); setError(null); setMotivering(""); }}
           className="text-dark-slate/40 hover:text-dark-slate text-lg leading-none"

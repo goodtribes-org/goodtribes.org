@@ -1,17 +1,68 @@
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
-import { reviewFlag } from "./actions";
+import { reviewFlag, reviewProjectContentFlag } from "./actions";
 
+type PendingFlagRow = {
+  id: string;
+  source: "legacy" | "contentFlag";
+  title: string;
+  slug: string;
+  reason: string;
+  flaggedByLabel: string;
+  createdAt: Date;
+};
 
 export default async function EthicsAdminPage() {
-  const flags = await prisma.projectFlag.findMany({
-    where: { status: "pending" },
-    orderBy: { createdAt: "asc" },
-    include: {
-      project: { select: { title: true, slug: true } },
-      flaggedBy: { select: { name: true, email: true } },
-    },
+  const [legacyFlags, contentFlags] = await Promise.all([
+    // Legacy ProjectFlag rows — kept as a frozen audit trail; new flags no
+    // longer get created here (see FlagContentButton), so this queue drains
+    // naturally as pending stragglers are worked through.
+    prisma.projectFlag.findMany({
+      where: { status: "pending" },
+      orderBy: { createdAt: "asc" },
+      include: {
+        project: { select: { title: true, slug: true } },
+        flaggedBy: { select: { name: true, email: true } },
+      },
+    }),
+    prisma.contentFlag.findMany({
+      where: { targetType: "Project", status: "PENDING" },
+      orderBy: { createdAt: "asc" },
+      include: { flaggedBy: { select: { name: true, email: true } } },
+    }),
+  ]);
+
+  const contentFlagProjects = await prisma.project.findMany({
+    where: { id: { in: contentFlags.map((f) => f.targetId) } },
+    select: { id: true, title: true, slug: true },
   });
+  const projectById = new Map(contentFlagProjects.map((p) => [p.id, p]));
+
+  const flags: PendingFlagRow[] = [
+    ...legacyFlags.map((f) => ({
+      id: f.id,
+      source: "legacy" as const,
+      title: f.project.title,
+      slug: f.project.slug,
+      reason: f.reason,
+      flaggedByLabel: f.flaggedBy.name ?? f.flaggedBy.email,
+      createdAt: f.createdAt,
+    })),
+    ...contentFlags
+      .filter((f) => projectById.has(f.targetId))
+      .map((f) => {
+        const project = projectById.get(f.targetId)!;
+        return {
+          id: f.id,
+          source: "contentFlag" as const,
+          title: project.title,
+          slug: project.slug,
+          reason: f.reason,
+          flaggedByLabel: f.flaggedBy.name ?? f.flaggedBy.email,
+          createdAt: f.createdAt,
+        };
+      }),
+  ].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
@@ -36,10 +87,10 @@ export default async function EthicsAdminPage() {
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
                   <Link
-                    href={`/projects/${flag.project.slug}`}
+                    href={`/projects/${flag.slug}`}
                     className="font-semibold text-dark-slate hover:text-coral transition-colors"
                   >
-                    {flag.project.title}
+                    {flag.title}
                   </Link>
                   <p className="text-sm text-dark-slate/60 mt-0.5">
                     {flag.reason}
@@ -53,7 +104,7 @@ export default async function EthicsAdminPage() {
               <div className="text-xs text-dark-slate/50 mb-4">
                 Flaggad av{" "}
                 <span className="font-medium text-dark-slate/70">
-                  {flag.flaggedBy.name ?? flag.flaggedBy.email}
+                  {flag.flaggedByLabel}
                 </span>{" "}
                 · {flag.createdAt.toLocaleDateString("sv-SE")}
               </div>
@@ -62,7 +113,8 @@ export default async function EthicsAdminPage() {
                 <form
                   action={async () => {
                     "use server";
-                    await reviewFlag(flag.id, "dismissed");
+                    if (flag.source === "legacy") await reviewFlag(flag.id, "dismissed");
+                    else await reviewProjectContentFlag(flag.id, "dismissed");
                   }}
                 >
                   <button
@@ -76,7 +128,8 @@ export default async function EthicsAdminPage() {
                 <form
                   action={async () => {
                     "use server";
-                    await reviewFlag(flag.id, "warned", "Projektet har fått en varning från administratören.");
+                    if (flag.source === "legacy") await reviewFlag(flag.id, "warned", "Projektet har fått en varning från administratören.");
+                    else await reviewProjectContentFlag(flag.id, "warned", "Projektet har fått en varning från administratören.");
                   }}
                 >
                   <button
@@ -90,7 +143,8 @@ export default async function EthicsAdminPage() {
                 <form
                   action={async () => {
                     "use server";
-                    await reviewFlag(flag.id, "removed", "Projektet har tagits bort av administratören.");
+                    if (flag.source === "legacy") await reviewFlag(flag.id, "removed", "Projektet har tagits bort av administratören.");
+                    else await reviewProjectContentFlag(flag.id, "removed", "Projektet har tagits bort av administratören.");
                   }}
                 >
                   <button

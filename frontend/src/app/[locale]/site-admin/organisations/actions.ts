@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { requireSiteAdmin } from "@/lib/authz";
+import { reviewEntityContentFlag, type EntityFlagOutcome } from "@/lib/entityFlagReview";
 
 
 async function requireAdmin() {
@@ -51,6 +52,22 @@ export async function reviewOrgFlag(flagId: string, outcome: Outcome, note?: str
       data: { isPublic: false, verified: false },
     });
   }
+
+  revalidatePath("/site-admin/organisations");
+}
+
+// Reviews an Organisation ContentFlag (the unified flagging pipeline) — the
+// counterpart to reviewOrgFlag above for legacy OrganisationFlag rows.
+export async function reviewOrgContentFlag(contentFlagId: string, outcome: EntityFlagOutcome, note?: string) {
+  const admin = await requireAdmin();
+
+  const flag = await prisma.contentFlag.findUnique({
+    where: { id: contentFlagId },
+    select: { id: true, targetId: true, targetType: true },
+  });
+  if (!flag || flag.targetType !== "Organisation") throw new Error("Flag not found");
+
+  await reviewEntityContentFlag(flag.id, "Organisation", flag.targetId, admin.id, outcome, note);
 
   revalidatePath("/site-admin/organisations");
 }

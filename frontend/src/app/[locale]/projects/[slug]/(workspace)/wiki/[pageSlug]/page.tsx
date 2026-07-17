@@ -6,14 +6,24 @@ import { updateWikiPage, deleteWikiPage, createWikiPage } from "../actions";
 import WikiEditor from "./WikiEditor";
 import type { Metadata } from "next";
 import { isLeadRole } from "@/lib/authz";
+import { buildMetadata, APP_URL } from "@/lib/metadata";
+import ShareButton from "@/components/ShareButton";
+import FlagContentButton from "@/components/FlagContentButton";
+import LikeCommentBlock from "@/components/LikeCommentBlock";
+import { getLikeCommentData } from "@/lib/socialInteractions";
 
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string; pageSlug: string }> }): Promise<Metadata> {
-  const { slug, pageSlug } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string; pageSlug: string }> }): Promise<Metadata> {
+  const { locale, slug, pageSlug } = await params;
   const page = await prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: pageSlug } } });
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!page || !project) return {};
-  return { title: `${page.title} — ${project.title} Wiki — GoodTribes.org` };
+  return buildMetadata({
+    locale,
+    path: `/projects/${slug}/wiki/${pageSlug}`,
+    title: `${page.title} — ${project.title} Wiki`,
+    description: page.content.slice(0, 160),
+  });
 }
 
 function renderMarkdown(content: string): string {
@@ -30,13 +40,13 @@ function renderMarkdown(content: string): string {
     .join("");
 }
 
-export default async function WikiPageView({ params }: { params: Promise<{ slug: string; pageSlug: string }> }) {
-  const { slug, pageSlug } = await params;
+export default async function WikiPageView({ params }: { params: Promise<{ locale: string; slug: string; pageSlug: string }> }) {
+  const { locale, slug, pageSlug } = await params;
 
   const [project, page, session] = await Promise.all([
     prisma.project.findUnique({
       where: { slug },
-      include: { wikiPages: { orderBy: { order: "asc" }, select: { slug: true, title: true } } },
+      include: { wikiPages: { where: { hiddenAt: null }, orderBy: { order: "asc" }, select: { slug: true, title: true } } },
     }),
     prisma.wikiPage.findUnique({
       where: { projectSlug_slug: { projectSlug: slug, slug: pageSlug } },
@@ -54,6 +64,12 @@ export default async function WikiPageView({ params }: { params: Promise<{ slug:
     : null;
   const isMember = !!member;
   const isOwnerOrAdmin = isLeadRole(member?.role);
+
+  // A moderation-hidden page (see ContentFlag/contentModeration.ts) stays
+  // visible to project leads, 404s for everyone else.
+  if (page.hiddenAt && !isOwnerOrAdmin) notFound();
+
+  const { comments } = await getLikeCommentData("wikiPage", page.id, session?.user?.id ?? null);
 
   return (
     <div className="flex gap-8">
@@ -93,6 +109,16 @@ export default async function WikiPageView({ params }: { params: Promise<{ slug:
 
       {/* Content */}
       <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-end gap-3 mb-2">
+          <ShareButton
+            url={`${APP_URL}/${locale}/projects/${slug}/wiki/${pageSlug}`}
+            title={`${page.title} — ${project.title} Wiki`}
+            variant="icon"
+          />
+          {session?.user?.id && (
+            <FlagContentButton targetType="WikiPage" targetId={page.id} />
+          )}
+        </div>
         <WikiEditor
           page={{ id: page.id, title: page.title, content: page.content }}
           projectSlug={slug}
@@ -107,6 +133,18 @@ export default async function WikiPageView({ params }: { params: Promise<{ slug:
             Last edited by {page.updatedBy.name}
           </p>
         )}
+
+        <div className="border-t border-muted-teal/30 pt-4 mt-6">
+          <LikeCommentBlock
+            targetType="wikiPage"
+            targetId={page.id}
+            hideLike
+            isLoggedIn={!!session?.user?.id}
+            initialLikeCount={0}
+            initialLiked={false}
+            initialComments={comments}
+          />
+        </div>
       </div>
     </div>
   );

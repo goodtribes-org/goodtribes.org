@@ -82,7 +82,7 @@ function KanbanCardCommentsImpl({
           } ${!canInteract ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
         >
           <svg className="w-3 h-3" fill={liked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-8.53a2 2 0 01-2-2v-7a2 2 0 012-2h2.5m4-6l-1 5h6a1 1 0 011 1v1m-7-7v7m0-7L9 4" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
           Gilla{likeCount > 0 ? ` (${likeCount})` : ""}
         </button>

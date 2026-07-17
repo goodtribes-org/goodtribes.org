@@ -11,6 +11,9 @@ import {
   createGroupRoom,
   markRoomRead as markRoomReadDb,
   getRoomMentionables,
+  getPublicProjectChannelsBySlug,
+  getPublicProjectChannelsForRoom,
+  type PublicProjectChannelGroup,
 } from "@/lib/rooms";
 import type { Room, RoomPostingPolicy } from "@prisma/client";
 
@@ -309,6 +312,16 @@ export async function toggleReaction(messageId: string, roomId: string, emoji: s
 
   revalidatePath(`/messages/${roomId}`);
   revalidatePath("/feed");
+}
+
+// No auth required — used by the sidebar to let a logged-out (or
+// logged-in-but-not-a-member) visitor discover a public project's channels
+// when they land on one directly, since their personal channel list
+// (getProjectChannelGroups) wouldn't otherwise include it.
+export async function getPublicProjectChannels(
+  by: { slug: string } | { roomId: string }
+): Promise<PublicProjectChannelGroup | null> {
+  return "slug" in by ? getPublicProjectChannelsBySlug(by.slug) : getPublicProjectChannelsForRoom(by.roomId);
 }
 
 export async function markRoomRead(roomId: string) {

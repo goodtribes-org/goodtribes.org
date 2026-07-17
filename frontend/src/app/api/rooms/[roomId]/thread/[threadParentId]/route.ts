@@ -10,9 +10,8 @@ export async function GET(
   const { roomId, threadParentId } = await params;
 
   const session = await auth();
-  if (!session?.user?.id) return NextResponse.json([], { status: 401 });
 
-  const access = await getRoomAccess(roomId, session.user.id);
+  const access = await getRoomAccess(roomId, session?.user?.id ?? null);
   if (!access?.canRead) return NextResponse.json([], { status: 403 });
 
   const replies = await prisma.message.findMany({

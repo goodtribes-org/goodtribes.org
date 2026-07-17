@@ -11,6 +11,8 @@ import ScrollToHash from "@/components/ScrollToHash";
 import FlagContentButton from "@/components/FlagContentButton";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_LABELS_EN } from "@/lib/sdg";
+import { buildMetadata, APP_URL } from "@/lib/metadata";
+import ShareButton from "@/components/ShareButton";
 
 const STATUS_STEPS = ["open", "review", "shortlisted", "approved", "converted"];
 
@@ -43,20 +45,16 @@ function formatReach(n: number): string {
   return `${n}`;
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id } = await params;
-  const idea = await prisma.idea.findUnique({ where: { id }, select: { title: true, problem: true, description: true } });
-  if (!idea) return {};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; id: string }> }): Promise<Metadata> {
+  const { locale, id } = await params;
+  const idea = await prisma.idea.findUnique({ where: { id }, select: { title: true, problem: true, description: true, hiddenAt: true } });
+  if (!idea || idea.hiddenAt) return {};
   const desc = idea.problem ?? idea.description ?? "An idea on GoodTribes.org";
-  return {
-    title: `${idea.title} — GoodTribes Ideas`,
-    description: desc,
-    openGraph: { title: idea.title, description: desc, url: `/ideas/${id}` },
-  };
+  return buildMetadata({ locale, path: `/ideas/${id}`, title: idea.title, description: desc });
 }
 
-export default async function IdeaDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function IdeaDetailPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+  const { locale, id } = await params;
 
   const [session, idea] = await Promise.all([
     auth(),
@@ -78,9 +76,6 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ id:
 
   if (!idea) notFound();
 
-  // Increment view count (best effort)
-  prisma.idea.update({ where: { id }, data: { viewCount: { increment: 1 } } }).catch(() => {});
-
   const userId = session?.user?.id;
   const hasVoted = userId ? idea.votes.some((v) => v.userId === userId) : false;
   const hasEndorsed = userId ? idea.endorsements.some((e) => e.userId === userId) : false;
@@ -91,6 +86,14 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ id:
     ? await prisma.user.findUnique({ where: { id: userId }, select: { email: true } })
     : null;
   const isModerator = userRecord?.email?.endsWith("@goodtribes.org") ?? false;
+
+  // A moderation-hidden idea (see ContentFlag/contentModeration.ts) stays
+  // visible to its author and moderators, 404s for everyone else — same
+  // as academy/[id]'s !published gate.
+  if (idea.hiddenAt && !isAuthor && !isModerator) notFound();
+
+  // Increment view count (best effort)
+  prisma.idea.update({ where: { id }, data: { viewCount: { increment: 1 } } }).catch(() => {});
 
   const statusInfo = STATUS_COLORS[idea.status] ?? STATUS_COLORS.open;
   const currentStep = STATUS_STEPS.indexOf(idea.status);
@@ -162,6 +165,8 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ id:
             isAuthor={isAuthor}
             isModerator={isModerator}
             currentStatus={idea.status}
+            shareUrl={`${APP_URL}/${locale}/ideas/${id}`}
+            shareTitle={idea.title}
           />
         </div>
 

@@ -422,6 +422,7 @@ export default async function CalendarPage({
                 return (
                   <div
                     key={m.id}
+                    id={`milestone-${m.id}`}
                     className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
                       m.status === "done"
                         ? "border-seagrass/30 bg-seagrass/5"

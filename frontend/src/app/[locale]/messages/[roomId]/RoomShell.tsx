@@ -38,7 +38,7 @@ type RoomInfo = {
 type Props = {
   room: RoomInfo;
   initialMessages: MessageRow[];
-  currentUserId: string;
+  currentUserId: string | null;
   canPost: boolean;
   mentionables?: MentionItem[];
 };
@@ -77,8 +77,8 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    markRoomRead(room.id).catch(() => {});
-  }, [room.id]);
+    if (currentUserId) markRoomRead(room.id).catch(() => {});
+  }, [room.id, currentUserId]);
 
   function loadThreadReplies(messageId: string) {
     fetch(`/api/rooms/${room.id}/thread/${messageId}`)
@@ -129,10 +129,12 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
   }, [messages.length]);
 
   function handleReaction(messageId: string, emoji: string) {
+    if (!currentUserId) return; // reaction controls are hidden for logged-out viewers anyway
+    const userId = currentUserId;
     startTransition(() => toggleReaction(messageId, room.id, emoji));
-    setMessages((prev) => prev.map((m) => (m.id === messageId ? optimisticToggle(m, messageId, emoji, currentUserId) : m)));
-    setActiveThread((current) => (current && current.id === messageId ? optimisticToggle(current, messageId, emoji, currentUserId) : current));
-    setThreadReplies((prev) => prev.map((r) => (r.id === messageId ? optimisticToggle(r, messageId, emoji, currentUserId) : r)));
+    setMessages((prev) => prev.map((m) => (m.id === messageId ? optimisticToggle(m, messageId, emoji, userId) : m)));
+    setActiveThread((current) => (current && current.id === messageId ? optimisticToggle(current, messageId, emoji, userId) : current));
+    setThreadReplies((prev) => prev.map((r) => (r.id === messageId ? optimisticToggle(r, messageId, emoji, userId) : r)));
   }
 
   function optimisticToggle(m: MessageRow, messageId: string, emoji: string, userId: string): MessageRow {
@@ -283,9 +285,11 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                           </div>
                         )}
                       </div>
-                      <div className={isOwn ? "self-end" : "self-start"}>
-                        <FlagContentButton targetType="Message" targetId={m.id} />
-                      </div>
+                      {currentUserId && (
+                        <div className={isOwn ? "self-end" : "self-start"}>
+                          <FlagContentButton targetType="Message" targetId={m.id} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

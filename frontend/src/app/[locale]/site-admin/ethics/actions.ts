@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { requireSiteAdmin } from "@/lib/authz";
+import { reviewEntityContentFlag, type EntityFlagOutcome } from "@/lib/entityFlagReview";
 
 
 async function requireAdmin() {
@@ -49,6 +50,22 @@ export async function reviewFlag(flagId: string, outcome: Outcome, note?: string
   if (outcome === "removed") {
     await prisma.project.delete({ where: { id: flag.projectId } });
   }
+
+  revalidatePath("/site-admin/ethics");
+}
+
+// Reviews a Project ContentFlag (the unified flagging pipeline) — the
+// counterpart to reviewFlag above for legacy ProjectFlag rows.
+export async function reviewProjectContentFlag(contentFlagId: string, outcome: EntityFlagOutcome, note?: string) {
+  const admin = await requireAdmin();
+
+  const flag = await prisma.contentFlag.findUnique({
+    where: { id: contentFlagId },
+    select: { id: true, targetId: true, targetType: true },
+  });
+  if (!flag || flag.targetType !== "Project") throw new Error("Flag not found");
+
+  await reviewEntityContentFlag(flag.id, "Project", flag.targetId, admin.id, outcome, note);
 
   revalidatePath("/site-admin/ethics");
 }

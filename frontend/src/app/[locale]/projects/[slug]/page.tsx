@@ -8,13 +8,17 @@ import { auth } from "@/auth";
 import { JoinButton, JoinRequestsPanel } from "./JoinSection";
 import InviteForm from "./(workspace)/invite/InviteForm";
 import TeamManager from "./TeamManager";
-import FlagProjectButton from "@/components/FlagProjectButton";
+import FlagContentButton from "@/components/FlagContentButton";
 import KudosButton from "@/components/KudosButton";
 import { SdgIcon } from "@/components/SdgIcon";
 import Tooltip from "@/components/Tooltip";
 import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import ProjectTabNav from "./ProjectTabNav";
 import { isLeadRole } from "@/lib/authz";
+import { buildMetadata, APP_URL } from "@/lib/metadata";
+import ShareButton from "@/components/ShareButton";
+import LikeCommentBlock from "@/components/LikeCommentBlock";
+import { getLikeCommentData } from "@/lib/socialInteractions";
 
 function MemberAvatar({
   name,
@@ -129,37 +133,26 @@ function MiniCalendar({ events }: { events: { startsAt: Date }[] }) {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const project = await prisma.project.findUnique({ where: { slug } });
   if (!project) return {};
-  return {
+  return buildMetadata({
+    locale,
+    path: `/projects/${slug}`,
     title: project.title,
-    description: project.description ?? undefined,
-    openGraph: {
-      title: `${project.title} — GoodTribes.org`,
-      description: project.description ?? "A project on GoodTribes.org",
-      url: `/projects/${slug}`,
-      ...(project.imageUrl
-        ? { images: [{ url: project.imageUrl, alt: project.title }] }
-        : {}),
-    },
-    twitter: {
-      card: project.imageUrl ? "summary_large_image" : "summary",
-      title: project.title,
-      description: project.description ?? "A project on GoodTribes.org",
-      ...(project.imageUrl ? { images: [project.imageUrl] } : {}),
-    },
-  };
+    description: project.description ?? "A project on GoodTribes.org",
+    imageUrl: project.imageUrl,
+  });
 }
 
 export default async function ProjectDetailPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }) {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const session = await auth();
 
   const project = await prisma.project.findUnique({
@@ -189,6 +182,8 @@ export default async function ProjectDetailPage({
   const userMembership = project.members.find((m) => m.user.id === userId);
   const isOwnerOrAdmin = isLeadRole(userMembership?.role);
   const isMember = !!userMembership;
+
+  const { likeCount, liked, comments } = await getLikeCommentData("project", project.id, userId ?? null);
 
   // Month bounds for calendar
   const now = new Date();
@@ -798,11 +793,25 @@ export default async function ProjectDetailPage({
         </div>
       </div>
 
-      {userId && !isOwnerOrAdmin && (
-        <div className="mt-10 pt-6 border-t border-muted-teal/20 flex justify-end">
-          <FlagProjectButton projectId={project.id} />
-        </div>
-      )}
+      <div className="mt-10 border border-muted-teal/30 rounded-lg p-5 bg-white">
+        <LikeCommentBlock
+          targetType="project"
+          targetId={project.id}
+          isLoggedIn={!!userId}
+          initialLikeCount={likeCount}
+          initialLiked={liked}
+          initialComments={comments}
+        />
+      </div>
+
+      <div className="mt-6 pt-6 border-t border-muted-teal/20 flex justify-end items-center gap-3">
+        <ShareButton
+          url={`${APP_URL}/${locale}/projects/${slug}`}
+          title={project.title}
+          text={project.description ?? undefined}
+        />
+        {userId && !isOwnerOrAdmin && <FlagContentButton targetType="Project" targetId={project.id} />}
+      </div>
     </div>
   );
 }

@@ -104,6 +104,39 @@ export async function getProjectChannelGroups(userId: string) {
   return memberships.map((m) => m.project).filter((p) => p.rooms.length > 0);
 }
 
+export type PublicProjectChannelGroup = {
+  id: string;
+  slug: string;
+  title: string;
+  rooms: { id: string; name: string | null }[];
+};
+
+// Membership-independent counterpart to getProjectChannelGroups — lists a
+// single public project's channels so the messages sidebar can surface them
+// to a logged-out (or logged-in-but-not-a-member) visitor who lands on that
+// project's channel via a direct link (e.g. from the activity feed) or the
+// project page's "Kommunikation" tab. Private projects return null: their
+// channels stay discoverable only to members, same as getRoomAccess.
+export async function getPublicProjectChannelsBySlug(slug: string): Promise<PublicProjectChannelGroup | null> {
+  const project = await prisma.project.findUnique({
+    where: { slug },
+    select: {
+      id: true, slug: true, title: true, visibility: true,
+      rooms: { where: { type: "PROJECT_CHANNEL" }, orderBy: { order: "asc" }, select: { id: true, name: true } },
+    },
+  });
+  if (!project || project.visibility !== "public" || project.rooms.length === 0) return null;
+  return { id: project.id, slug: project.slug, title: project.title, rooms: project.rooms };
+}
+
+export async function getPublicProjectChannelsForRoom(roomId: string): Promise<PublicProjectChannelGroup | null> {
+  const room = await prisma.room.findUnique({ where: { id: roomId }, select: { type: true, projectId: true } });
+  if (!room || room.type !== "PROJECT_CHANNEL" || !room.projectId) return null;
+  const project = await prisma.project.findUnique({ where: { id: room.projectId }, select: { slug: true } });
+  if (!project) return null;
+  return getPublicProjectChannelsBySlug(project.slug);
+}
+
 export async function getOrgChannelGroups(userId: string) {
   const [memberships, ownedOrgs] = await Promise.all([
     prisma.organisationMember.findMany({

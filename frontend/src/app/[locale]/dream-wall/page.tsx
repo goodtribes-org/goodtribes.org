@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { PostDreamForm, ReactionButtons } from "./DreamWallClient";
 import FlagContentButton from "@/components/FlagContentButton";
+import ShareButton from "@/components/ShareButton";
+import { APP_URL } from "@/lib/metadata";
 
 export const metadata: Metadata = {
   title: "Drömväggen — GoodTribes.org",
@@ -31,7 +33,12 @@ function firstName(name: string | null): string {
   return name.split(" ")[0];
 }
 
-export default async function DreamWallPage() {
+export default async function DreamWallPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const [session, dreams] = await Promise.all([
     auth(),
     prisma.dreamWallPost.findMany({
@@ -57,6 +64,9 @@ export default async function DreamWallPage() {
         <p className="text-dark-slate/50 text-base">
           En mening. En vision. En förändring.
         </p>
+        <div className="flex justify-center">
+          <ShareButton url={`${APP_URL}/${locale}/dream-wall`} title="Drömväggen — GoodTribes.org" />
+        </div>
       </div>
 
       {/* Post form — only for logged-in users */}
