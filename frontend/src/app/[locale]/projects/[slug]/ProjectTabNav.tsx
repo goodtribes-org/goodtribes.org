@@ -1,18 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 
 const MAIN_TABS = [
-  { label: "Projekt",      href: "" },
-  { label: "Uppgifter",    href: "/tasks" },
-  { label: "Planering",    href: "/calendar" },
-  { label: "Kanaler",      href: "/kanaler", absolute: true },
-  { label: "Omröstningar", href: "/polls" },
+  { label: "Projektet",     href: "" },
+  { label: "Uppgifter",     href: "/tasks" },
+  { label: "Kalender",      href: "/calendar" },
+  { label: "Kommunikation", href: "/kanaler", absolute: true },
 ];
 
-const MENU_TABS = [
+const TOOLS_TABS = [
+  { label: "Omröstningar",  href: "/polls" },
   { label: "Uppdateringar", href: "/updates" },
   { label: "Lean Canvas",   href: "/lean-canvas" },
   { label: "Resurser",      href: "/wiki" },
@@ -26,30 +27,97 @@ const MENU_TABS = [
 ];
 
 const ADMIN_TABS = [
-  { label: "Redigera",   href: "/edit" },
-  { label: "Medlemmar",  href: "/members" },
+  { label: "Redigera",  href: "/edit" },
+  { label: "Medlemmar", href: "/members" },
 ];
+
+function tabClass(active: boolean) {
+  return `flex items-center gap-1 px-3 sm:px-4 pb-2.5 pt-1 text-sm font-bold whitespace-nowrap transition-colors -mb-px ${
+    active
+      ? "border-b-4 border-coral text-dark-slate"
+      : "border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate hover:border-muted-teal/40"
+  }`;
+}
+
+function TabDropdown({
+  label,
+  tabs,
+  base,
+  active,
+  isActive,
+}: {
+  label: string;
+  tabs: { label: string; href: string }[];
+  base: string;
+  active: boolean;
+  isActive: (href: string) => boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      const target = e.target as Node;
+      if (btnRef.current?.contains(target)) return;
+      if (panelRef.current?.contains(target)) return;
+      setOpen(false);
+    }
+    if (open) document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [open]);
+
+  function toggle() {
+    if (!open && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 4, right: Math.max(8, window.innerWidth - rect.right) });
+    }
+    setOpen((v) => !v);
+  }
+
+  return (
+    <>
+      <button ref={btnRef} onClick={toggle} className={tabClass(active)}>
+        {label}
+        <svg
+          className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-180" : ""}`}
+          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && pos && createPortal(
+        <div
+          ref={panelRef}
+          className="fixed w-48 max-w-[calc(100vw-1rem)] bg-white border border-muted-teal/20 rounded-lg shadow-lg z-50 py-1"
+          style={{ top: pos.top, right: pos.right }}
+        >
+          {tabs.map((tab) => (
+            <Link
+              key={tab.href}
+              href={`${base}${tab.href}`}
+              onClick={() => setOpen(false)}
+              className={`block px-4 py-2 text-sm transition-colors ${
+                isActive(tab.href)
+                  ? "text-dark-slate font-bold bg-coral/5"
+                  : "text-dark-slate/60 hover:text-dark-slate hover:bg-gray-50"
+              }`}
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </div>,
+        document.body
+      )}
+    </>
+  );
+}
 
 export default function ProjectTabNav({ slug, isOwner }: { slug: string; isOwner?: boolean }) {
   const pathname = usePathname();
   const base = `/projects/${slug}`;
-  const [open, setOpen] = useState(false);
-  const [openAdmin, setOpenAdmin] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const adminRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function onClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-      if (adminRef.current && !adminRef.current.contains(e.target as Node)) {
-        setOpenAdmin(false);
-      }
-    }
-    if (open || openAdmin) document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
-  }, [open, openAdmin]);
 
   function isActive(href: string) {
     if (href === "/kanaler") return pathname.startsWith("/messages");
@@ -59,108 +127,28 @@ export default function ProjectTabNav({ slug, isOwner }: { slug: string; isOwner
       : pathname === full || pathname.startsWith(`${full}/`);
   }
 
-  const menuActive = MENU_TABS.some((t) => isActive(t.href));
+  const toolsActive = TOOLS_TABS.some((t) => isActive(t.href));
+  const adminActive = ADMIN_TABS.some((t) => isActive(t.href));
 
   return (
-    <div className="flex items-center">
-      {/* Scrollable main tabs */}
-      <div
-        className="flex flex-nowrap overflow-x-auto justify-center gap-x-1 scrollbar-none flex-1 min-w-0"
-        style={{ scrollbarWidth: "none" }}
-      >
-        {MAIN_TABS.map((tab) => (
-          <Link
-            key={tab.href}
-            href={tab.absolute ? `/messages?project=${slug}` : `${base}${tab.href}`}
-            className={`px-4 pb-2.5 pt-1 text-sm font-bold whitespace-nowrap transition-colors -mb-px ${
-              isActive(tab.href)
-                ? "border-b-4 border-coral text-dark-slate"
-                : "border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate hover:border-muted-teal/40"
-            }`}
-          >
-            {tab.label}
-          </Link>
-        ))}
-      </div>
-
-      {/* Dropdown — outside scroll container so it isn't clipped */}
-      <div ref={menuRef} className="relative shrink-0">
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className={`flex items-center gap-1 px-4 pb-2.5 pt-1 text-sm font-bold whitespace-nowrap transition-colors -mb-px ${
-            menuActive
-              ? "border-b-4 border-coral text-dark-slate"
-              : "border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate hover:border-muted-teal/40"
-          }`}
+    <div
+      className="flex flex-nowrap items-center overflow-x-auto justify-center gap-x-0.5 scrollbar-none w-full"
+      style={{ scrollbarWidth: "none" }}
+    >
+      {MAIN_TABS.map((tab) => (
+        <Link
+          key={tab.href}
+          href={tab.absolute ? `/messages?project=${slug}` : `${base}${tab.href}`}
+          className={tabClass(isActive(tab.href))}
         >
-          Mer
-          <svg
-            className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-180" : ""}`}
-            fill="none" stroke="currentColor" viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
+          {tab.label}
+        </Link>
+      ))}
 
-        {open && (
-          <div className="absolute top-full right-0 mt-1 w-44 bg-white border border-muted-teal/20 rounded-lg shadow-lg z-50 py-1">
-            {MENU_TABS.map((tab) => (
-              <Link
-                key={tab.href}
-                href={`${base}${tab.href}`}
-                onClick={() => setOpen(false)}
-                className={`block px-4 py-2 text-sm transition-colors ${
-                  isActive(tab.href)
-                    ? "text-dark-slate font-bold bg-coral/5"
-                    : "text-dark-slate/60 hover:text-dark-slate hover:bg-gray-50"
-                }`}
-              >
-                {tab.label}
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
+      <TabDropdown label="Verktyg" tabs={TOOLS_TABS} base={base} active={toolsActive} isActive={isActive} />
 
-      {/* Admin dropdown — only for owners/admins */}
       {isOwner && (
-        <div ref={adminRef} className="relative shrink-0">
-          <button
-            onClick={() => setOpenAdmin((v) => !v)}
-            className={`flex items-center gap-1 px-4 pb-2.5 pt-1 text-sm font-bold whitespace-nowrap transition-colors -mb-px ${
-              ADMIN_TABS.some((t) => isActive(t.href))
-                ? "border-b-4 border-coral text-dark-slate"
-                : "border-b-2 border-transparent text-dark-slate/50 hover:text-dark-slate hover:border-muted-teal/40"
-            }`}
-          >
-            Admin
-            <svg
-              className={`w-3.5 h-3.5 transition-transform ${openAdmin ? "rotate-180" : ""}`}
-              fill="none" stroke="currentColor" viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          {openAdmin && (
-            <div className="absolute top-full right-0 mt-1 w-44 bg-white border border-muted-teal/20 rounded-lg shadow-lg z-50 py-1">
-              {ADMIN_TABS.map((tab) => (
-                <Link
-                  key={tab.href}
-                  href={`${base}${tab.href}`}
-                  onClick={() => setOpenAdmin(false)}
-                  className={`block px-4 py-2 text-sm transition-colors ${
-                    isActive(tab.href)
-                      ? "text-dark-slate font-bold bg-coral/5"
-                      : "text-dark-slate/60 hover:text-dark-slate hover:bg-gray-50"
-                  }`}
-                >
-                  {tab.label}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
+        <TabDropdown label="Admin" tabs={ADMIN_TABS} base={base} active={adminActive} isActive={isActive} />
       )}
     </div>
   );
