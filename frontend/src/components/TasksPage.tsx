@@ -141,6 +141,7 @@ export default function TasksPage({
             initialColumns={initialColumns}
             isLoggedIn={isLoggedIn}
             currentUserId={currentUserId}
+            isLead={isLead}
             members={members}
           />
         </div>

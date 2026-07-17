@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { logActivity } from "@/lib/activity";
 import { publishToKanban } from "@/lib/redis";
+import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
 async function updateStreak(userId: string, projectSlug: string) {
   const project = await prisma.project.findUnique({
@@ -36,31 +37,38 @@ export async function moveKanbanCard(cardId: string, newColumn: string, userId: 
   const card = await prisma.kanbanCard.findUnique({ where: { id: cardId } });
   if (!card) return { error: "Card not found" };
 
+  const project = await prisma.project.findUnique({
+    where: { slug: card.projectSlug },
+    select: { id: true },
+  });
+
+  // Regular members can't move cards straight to Done — they land in Review for a lead to approve.
+  let targetColumn = newColumn;
+  if (newColumn === "DONE" && project && !(await hasProjectRole(project.id, userId, PROJECT_LEAD_ROLES))) {
+    targetColumn = "REVIEW";
+  }
+
   const maxOrder = await prisma.kanbanCard.aggregate({
-    where: { projectSlug: card.projectSlug, column: newColumn, NOT: { id: cardId } },
+    where: { projectSlug: card.projectSlug, column: targetColumn, NOT: { id: cardId } },
     _max: { order: true },
   });
 
   const updated = await prisma.kanbanCard.update({
     where: { id: cardId },
-    data: { column: newColumn, order: (maxOrder._max.order ?? -1) + 1 },
+    data: { column: targetColumn, order: (maxOrder._max.order ?? -1) + 1 },
   });
 
   await updateStreak(userId, card.projectSlug);
 
-  if (newColumn !== card.column) {
-    const project = await prisma.project.findUnique({
-      where: { slug: card.projectSlug },
-      select: { id: true },
-    });
+  if (targetColumn !== card.column) {
     if (project) {
-      if (newColumn === "DONE") {
+      if (targetColumn === "DONE") {
         const subtasks = await prisma.kanbanCardSubtask.findMany({
           where: { cardId: card.id }, orderBy: { order: "asc" }, select: { title: true, done: true },
         });
         await logActivity(project.id, userId, "task_completed", { title: card.title, cardId: card.id, description: card.description, subtasks });
       } else {
-        await logActivity(project.id, userId, "task_moved", { title: card.title, cardId: card.id, fromColumn: card.column, toColumn: newColumn });
+        await logActivity(project.id, userId, "task_moved", { title: card.title, cardId: card.id, fromColumn: card.column, toColumn: targetColumn });
       }
     }
   }

@@ -68,41 +68,31 @@ export default function TaskListView({
   initialColumns,
   isLoggedIn,
   currentUserId,
+  isLead,
   members,
 }: {
   projectSlug: string;
   initialColumns: Columns;
   isLoggedIn: boolean;
   currentUserId: string | null;
+  isLead: boolean;
   members: Member[];
 }) {
   const [columns, setColumns] = useState<Columns>(initialColumns);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ DONE: true });
   const [addingInColumn, setAddingInColumn] = useState<string | null>(null);
 
-  function handleCardDone(cardId: string) {
+  function handleCardMoved(cardId: string, toColumn: keyof Columns) {
     setColumns((prev) => {
       const srcKey = (Object.keys(prev) as (keyof Columns)[]).find((k) =>
         prev[k].some((c) => c.id === cardId)
       );
-      if (!srcKey || srcKey === "DONE") return prev;
+      if (!srcKey || srcKey === toColumn) return prev;
       const card = prev[srcKey].find((c) => c.id === cardId)!;
       return {
         ...prev,
         [srcKey]: prev[srcKey].filter((c) => c.id !== cardId),
-        DONE: [...prev.DONE, { ...card, column: "DONE" }],
-      };
-    });
-  }
-
-  function handleCardUndone(cardId: string) {
-    setColumns((prev) => {
-      const card = prev.DONE.find((c) => c.id === cardId);
-      if (!card) return prev;
-      return {
-        ...prev,
-        DONE: prev.DONE.filter((c) => c.id !== cardId),
-        TODO: [...prev.TODO, { ...card, column: "TODO" }],
+        [toColumn]: [...prev[toColumn], { ...card, column: toColumn }],
       };
     });
   }
@@ -132,6 +122,7 @@ export default function TaskListView({
           cards={columns[col.key as keyof Columns]}
           isLoggedIn={isLoggedIn}
           currentUserId={currentUserId}
+          isLead={isLead}
           isCollapsed={!!collapsed[col.key]}
           onToggleCollapse={() =>
             setCollapsed((p) => ({ ...p, [col.key]: !p[col.key] }))
@@ -140,8 +131,7 @@ export default function TaskListView({
           onOpenAdd={() => setAddingInColumn(col.key)}
           onCloseAdd={() => setAddingInColumn(null)}
           onCardAdded={handleCardAdded}
-          onCardDone={handleCardDone}
-          onCardUndone={handleCardUndone}
+          onCardMoved={handleCardMoved}
           onCardDeleted={handleCardDeleted}
           projectSlug={projectSlug}
         />
@@ -155,14 +145,14 @@ function SectionGroup({
   cards,
   isLoggedIn,
   currentUserId,
+  isLead,
   isCollapsed,
   onToggleCollapse,
   isAddingHere,
   onOpenAdd,
   onCloseAdd,
   onCardAdded,
-  onCardDone,
-  onCardUndone,
+  onCardMoved,
   onCardDeleted,
   projectSlug,
 }: {
@@ -170,14 +160,14 @@ function SectionGroup({
   cards: Card[];
   isLoggedIn: boolean;
   currentUserId: string | null;
+  isLead: boolean;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   isAddingHere: boolean;
   onOpenAdd: () => void;
   onCloseAdd: () => void;
   onCardAdded: (card: Card) => void;
-  onCardDone: (id: string) => void;
-  onCardUndone: (id: string) => void;
+  onCardMoved: (id: string, toColumn: keyof Columns) => void;
   onCardDeleted: (id: string) => void;
   projectSlug: string;
 }) {
@@ -217,16 +207,20 @@ function SectionGroup({
               currentUserId={currentUserId}
               onCheck={() => {
                 if (card.column === "DONE") {
-                  onCardUndone(card.id);
+                  onCardMoved(card.id, "TODO");
                   startTransition(async () => {
                     try { await moveCard(card.id, "TODO"); }
-                    catch { onCardDone(card.id); }
+                    catch { onCardMoved(card.id, "DONE"); }
                   });
                 } else {
-                  onCardDone(card.id);
+                  // Regular members can't mark a card done directly — it goes to Review for a lead to approve.
+                  const target: keyof Columns = isLead ? "DONE" : "REVIEW";
+                  const previousColumn = card.column as keyof Columns;
+                  if (target === previousColumn) return;
+                  onCardMoved(card.id, target);
                   startTransition(async () => {
-                    try { await moveCard(card.id, "DONE"); }
-                    catch { onCardUndone(card.id); }
+                    try { await moveCard(card.id, target); }
+                    catch { onCardMoved(card.id, previousColumn); }
                   });
                 }
               }}

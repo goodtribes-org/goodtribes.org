@@ -224,8 +224,11 @@ export default function KanbanBoard({
     const cardId = active.id as string;
     const overId = over.id as string;
     const sourceCol = findCardColumn(cardId);
-    const targetCol = COLUMN_ORDER.includes(overId) ? overId : findCardColumn(overId);
-    if (!sourceCol || !targetCol || sourceCol === targetCol) return;
+    const rawTargetCol = COLUMN_ORDER.includes(overId) ? overId : findCardColumn(overId);
+    if (!sourceCol || !rawTargetCol || sourceCol === rawTargetCol) return;
+    // Regular members can't move cards straight to Done — they land in Review for a lead to approve.
+    const targetCol = (rawTargetCol === "DONE" && !isLead) ? "REVIEW" : rawTargetCol;
+    if (sourceCol === targetCol) return;
 
     let previousColumns: Columns | undefined;
     setColumns((prev) => {
