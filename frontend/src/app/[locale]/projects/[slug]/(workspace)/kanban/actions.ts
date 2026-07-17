@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { estimateTask } from "@/lib/taskEstimate";
 import { logActivity } from "@/lib/activity";
-import { isRealMember } from "@/lib/authz";
+import { isRealMember, hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { publishToKanban } from "@/lib/redis";
 import { moveKanbanCard } from "@/lib/kanbanMove";
 
@@ -366,8 +366,8 @@ export async function clearColumnCards(projectSlug: string, column: string) {
   const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
   if (!project) return { error: "Project not found" };
 
-  const member = await isRealMember(project.id, session.user.id);
-  if (!member) return { error: "Not a project member" };
+  const isLead = await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES);
+  if (!isLead) return { error: "Must be a project admin or founder" };
 
   await prisma.kanbanCard.deleteMany({ where: { projectSlug, column } });
 

@@ -12,6 +12,7 @@ function KanbanColumnImpl({
   cards,
   isLoggedIn,
   isMember,
+  isLead,
   projectSlug,
   currentUserId,
   onOpenModal,
@@ -28,6 +29,7 @@ function KanbanColumnImpl({
   cards: Card[];
   isLoggedIn: boolean;
   isMember: boolean;
+  isLead: boolean;
   projectSlug: string;
   currentUserId: string | null;
   onOpenModal: (colKey: string) => void;
@@ -50,7 +52,7 @@ function KanbanColumnImpl({
     if (!window.confirm(`Ta bort alla ${cards.length} kort i "${col.label}"? Detta går inte att ångra.`)) return;
     onClearColumn(col.key);
     clearColumnCards(projectSlug, col.key).then((result) => {
-      if (result && "error" in result) alert("Kunde inte rensa kolumnen. Du måste vara medlem i projektet.");
+      if (result && "error" in result) alert("Kunde inte rensa kolumnen. Du måste vara admin eller founder i projektet.");
     });
   }
 
@@ -78,7 +80,7 @@ function KanbanColumnImpl({
               Lägg till
             </button>
           )}
-          {isLoggedIn && (
+          {isLoggedIn && isLead && (
             <button
               onClick={() => setMenuOpen((v) => !v)}
               aria-label="Kolumnalternativ"

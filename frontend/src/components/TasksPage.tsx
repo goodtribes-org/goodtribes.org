@@ -50,6 +50,7 @@ export default function TasksPage({
   isLoggedIn,
   currentUserId,
   isMember,
+  isLead,
   members,
   openCardId,
 }: {
@@ -58,6 +59,7 @@ export default function TasksPage({
   isLoggedIn: boolean;
   currentUserId: string | null;
   isMember: boolean;
+  isLead: boolean;
   members: Member[];
   openCardId?: string | null;
 }) {
@@ -123,6 +125,7 @@ export default function TasksPage({
           isLoggedIn={isLoggedIn}
           currentUserId={currentUserId}
           isMember={isMember}
+          isLead={isLead}
           members={members}
           requestAddColumn={addColKey}
           onRequestAddDone={() => setAddColKey(null)}

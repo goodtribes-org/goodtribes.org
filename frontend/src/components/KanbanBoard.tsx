@@ -36,6 +36,7 @@ export default function KanbanBoard({
   isLoggedIn,
   currentUserId,
   isMember,
+  isLead,
   members,
   requestAddColumn,
   onRequestAddDone,
@@ -47,6 +48,7 @@ export default function KanbanBoard({
   isLoggedIn: boolean;
   currentUserId: string | null;
   isMember: boolean;
+  isLead: boolean;
   members: Member[];
   requestAddColumn?: string | null;
   onRequestAddDone?: () => void;
@@ -432,6 +434,7 @@ export default function KanbanBoard({
                 cards={filteredColumns[col.key as keyof Columns] as Card[]}
                 isLoggedIn={isLoggedIn}
                 isMember={isMember}
+                isLead={isLead}
                 projectSlug={projectSlug}
                 currentUserId={currentUserId}
                 onOpenModal={openNewCard}

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
+import { isLeadRole } from "@/lib/authz";
 import TasksPage from "@/components/TasksPage";
 import type { Metadata } from "next";
 
@@ -61,6 +62,7 @@ export default async function TasksRoutePage({
   });
 
   const isMember = !!(session?.user?.id && project.members.some((m) => m.userId === session.user!.id));
+  const isLead = isLeadRole(project.members.find((m) => m.userId === session?.user?.id)?.role);
 
   const allCommentIds = cards.flatMap((c) => c.comments.map((cm) => cm.id));
   const likes = allCommentIds.length > 0
@@ -118,6 +120,7 @@ export default async function TasksRoutePage({
           isLoggedIn={!!session?.user?.id}
           currentUserId={session?.user?.id ?? null}
           isMember={isMember}
+          isLead={isLead}
           members={members}
           openCardId={openCardId ?? null}
         />
