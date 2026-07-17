@@ -549,15 +549,16 @@ export default async function ProjectDetailPage({
               { key: "REVIEW",  label: "Granskas", bg: "#f59e0b" },
               { key: "DONE",    label: "Klart",    bg: "#43aa8b" },
             ];
-            const counts = cols.map(c => {
-              const cardsInCol = kanbanCards.filter(k => k.column === c.key);
-              return cardsInCol.length + cardsInCol.reduce((sum, k) => sum + (k.subtasks?.length ?? 0), 0);
-            });
-            const max = Math.max(...counts, 1);
             const total = kanbanCards.reduce((sum, k) => sum + 1 + (k.subtasks?.length ?? 0), 0);
             const doneCards = kanbanCards.filter(k => k.column === "DONE").length;
             const doneSubtasks = kanbanCards.reduce((sum, k) => sum + (k.subtasks?.filter(s => s.done).length ?? 0), 0);
             const done = doneCards + doneSubtasks;
+            const counts = cols.map(c => {
+              if (c.key === "DONE") return done;
+              const cardsInCol = kanbanCards.filter(k => k.column === c.key);
+              return cardsInCol.length + cardsInCol.reduce((sum, k) => sum + (k.subtasks?.length ?? 0), 0);
+            });
+            const max = Math.max(...counts, 1);
             return (
               <section className="border border-muted-teal/30 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-4">
