@@ -83,6 +83,16 @@ export async function isRealMember(projectId: string, userId: string): Promise<b
   return role !== null && role !== "FOLLOWER";
 }
 
+// A non-member who self-claimed an openToPublic micro-task gets limited
+// write access (comment/like/log time) on that specific card only, without
+// becoming a project member.
+export function isCardClaimant(
+  card: { assigneeId: string | null; openToPublic: boolean },
+  userId: string
+): boolean {
+  return card.openToPublic && card.assigneeId === userId;
+}
+
 // True if userId is the sole remaining founder on this project — used to
 // block removing/demoting the last founder (a project can have any number
 // of equal-authority founders; this only fires when exactly one remains).

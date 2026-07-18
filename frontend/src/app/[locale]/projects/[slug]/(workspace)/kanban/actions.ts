@@ -5,7 +5,8 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { estimateTask } from "@/lib/taskEstimate";
 import { logActivity } from "@/lib/activity";
-import { isRealMember, hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { isRealMember, isCardClaimant, hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { createNotification } from "@/lib/notify";
 import { publishToKanban } from "@/lib/redis";
 import { moveKanbanCard } from "@/lib/kanbanMove";
 
@@ -187,12 +188,12 @@ export async function addComment(cardId: string, body: string) {
 
   const card = await prisma.kanbanCard.findUnique({
     where: { id: cardId },
-    select: { projectSlug: true, project: { select: { id: true } } },
+    select: { projectSlug: true, assigneeId: true, openToPublic: true, project: { select: { id: true } } },
   });
   if (!card) return { error: "Card not found" };
 
-  const member = await isRealMember(card.project.id, session.user.id);
-  if (!member) return { error: "Not a project member" };
+  const allowed = (await isRealMember(card.project.id, session.user.id)) || isCardClaimant(card, session.user.id);
+  if (!allowed) return { error: "Not a project member" };
 
   const comment = await prisma.kanbanCardComment.create({
     data: { cardId, authorId: session.user.id, body },
@@ -212,12 +213,12 @@ export async function toggleCardCommentLike(commentId: string) {
 
   const comment = await prisma.kanbanCardComment.findUnique({
     where: { id: commentId },
-    select: { card: { select: { projectSlug: true, project: { select: { id: true } } } } },
+    select: { card: { select: { projectSlug: true, assigneeId: true, openToPublic: true, project: { select: { id: true } } } } },
   });
   if (!comment) return { error: "Comment not found" };
 
-  const member = await isRealMember(comment.card.project.id, session.user.id);
-  if (!member) return { error: "Not a project member" };
+  const allowed = (await isRealMember(comment.card.project.id, session.user.id)) || isCardClaimant(comment.card, session.user.id);
+  if (!allowed) return { error: "Not a project member" };
 
   const existing = await prisma.feedLike.findUnique({
     where: {
@@ -250,12 +251,12 @@ export async function toggleCardLike(cardId: string) {
 
   const card = await prisma.kanbanCard.findUnique({
     where: { id: cardId },
-    select: { projectSlug: true, project: { select: { id: true } } },
+    select: { projectSlug: true, assigneeId: true, openToPublic: true, project: { select: { id: true } } },
   });
   if (!card) return { error: "Card not found" };
 
-  const member = await isRealMember(card.project.id, session.user.id);
-  if (!member) return { error: "Not a project member" };
+  const allowed = (await isRealMember(card.project.id, session.user.id)) || isCardClaimant(card, session.user.id);
+  if (!allowed) return { error: "Not a project member" };
 
   const existing = await prisma.feedLike.findUnique({
     where: {
@@ -323,9 +324,21 @@ export async function updateCard(
 ) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
+  const userId = session.user.id;
 
   const card = await prisma.kanbanCard.findUnique({ where: { id: cardId } });
   if (!card) return { error: "Card not found" };
+
+  let assigneeIsMember = false;
+  if (data.assigneeId !== undefined) {
+    const project = await prisma.project.findUnique({ where: { slug: card.projectSlug }, select: { id: true } });
+    assigneeIsMember = project ? await isRealMember(project.id, userId) : false;
+    const isFreshSelfClaim = card.openToPublic && card.assigneeId === null && data.assigneeId === userId;
+    const isSelfUnclaim = card.openToPublic && card.assigneeId === userId && !data.assigneeId;
+    if (!assigneeIsMember && !isFreshSelfClaim && !isSelfUnclaim) {
+      return { error: "Not authorized to change the assignee" };
+    }
+  }
 
   const updated = await prisma.kanbanCard.update({
     where: { id: cardId },
@@ -336,7 +349,12 @@ export async function updateCard(
       ...(data.startDate !== undefined ? { startDate: data.startDate ? new Date(data.startDate) : null } : {}),
       ...(data.priority !== undefined ? { priority: data.priority } : {}),
       ...(data.category !== undefined ? { category: data.category || null } : {}),
-      ...(data.assigneeId !== undefined ? { assigneeId: data.assigneeId || null } : {}),
+      ...(data.assigneeId !== undefined
+        ? {
+            assigneeId: data.assigneeId || null,
+            ...(data.assigneeId && !assigneeIsMember ? { claimedAt: new Date() } : { claimedAt: null }),
+          }
+        : {}),
     },
   });
 
@@ -344,6 +362,92 @@ export async function updateCard(
 
   revalidatePath(`/projects/${card.projectSlug}/kanban`);
   revalidatePath(`/projects/${card.projectSlug}/calendar`);
+}
+
+export async function claimCard(cardId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+  const userId = session.user.id;
+
+  const card = await prisma.kanbanCard.findUnique({
+    where: { id: cardId },
+    select: {
+      id: true, projectSlug: true, title: true, openToPublic: true, assigneeId: true, column: true,
+      project: { select: { id: true, members: { where: { role: { in: PROJECT_LEAD_ROLES } }, select: { userId: true } } } },
+    },
+  });
+  if (!card) return { error: "Card not found" };
+  if (!card.openToPublic) return { error: "This task is not open for public claiming" };
+  if (card.column === "DONE") return { error: "This task is already done" };
+  if (await isRealMember(card.project.id, userId)) return { error: "Members should assign themselves via the card editor" };
+
+  const result = await prisma.kanbanCard.updateMany({
+    where: { id: cardId, assigneeId: null, openToPublic: true },
+    data: { assigneeId: userId, claimedAt: new Date() },
+  });
+  if (result.count === 0) return { error: "Someone already claimed this task" };
+
+  const updated = await prisma.kanbanCard.findUnique({ where: { id: cardId } });
+  publishToKanban(card.projectSlug, { action: "updated", card: updated });
+  await logActivity(card.project.id, userId, "task_claimed", { title: card.title, cardId: card.id });
+
+  await Promise.all(
+    card.project.members.map((m) =>
+      createNotification({
+        userId: m.userId,
+        type: "task_claimed",
+        title: `Someone claimed the open task "${card.title}"`,
+        url: `/projects/${card.projectSlug}/tasks?card=${card.id}`,
+      })
+    )
+  );
+
+  revalidatePath(`/projects/${card.projectSlug}/kanban`);
+  revalidatePath(`/projects/${card.projectSlug}/tasks`);
+  return { ok: true, card: updated };
+}
+
+export async function abandonCard(cardId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+  const userId = session.user.id;
+
+  const card = await prisma.kanbanCard.findUnique({
+    where: { id: cardId },
+    select: { id: true, projectSlug: true },
+  });
+  if (!card) return { error: "Card not found" };
+
+  const result = await prisma.kanbanCard.updateMany({
+    where: { id: cardId, assigneeId: userId, openToPublic: true },
+    data: { assigneeId: null, claimedAt: null },
+  });
+  if (result.count === 0) return { error: "Not your claimed task" };
+
+  const updated = await prisma.kanbanCard.findUnique({ where: { id: cardId } });
+  publishToKanban(card.projectSlug, { action: "updated", card: updated });
+  revalidatePath(`/projects/${card.projectSlug}/kanban`);
+  revalidatePath(`/projects/${card.projectSlug}/tasks`);
+  return { ok: true, card: updated };
+}
+
+export async function setCardOpenToPublic(cardId: string, open: boolean) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+
+  const card = await prisma.kanbanCard.findUnique({ where: { id: cardId }, select: { projectSlug: true } });
+  if (!card) return { error: "Card not found" };
+  if (!(await isProjectLead(card.projectSlug, session.user.id))) return { error: "Not authorized" };
+
+  const updated = await prisma.kanbanCard.update({
+    where: { id: cardId },
+    data: { openToPublic: open },
+  });
+
+  publishToKanban(card.projectSlug, { action: "updated", card: updated });
+  revalidatePath(`/projects/${card.projectSlug}/kanban`);
+  revalidatePath(`/projects/${card.projectSlug}/tasks`);
+  return { ok: true, card: updated };
 }
 
 export async function moveCard(cardId: string, newColumn: string) {

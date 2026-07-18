@@ -61,7 +61,11 @@ export default async function TasksRoutePage({
     },
   });
 
-  const isMember = !!(session?.user?.id && project.members.some((m) => m.userId === session.user!.id));
+  // Real membership excludes FOLLOWER — a lightweight, non-member following
+  // relationship (see isRealMember in @/lib/authz) that shouldn't grant
+  // write access to kanban comments/likes/claims.
+  const myRole = session?.user?.id ? project.members.find((m) => m.userId === session.user!.id)?.role : undefined;
+  const isMember = !!myRole && myRole !== "FOLLOWER";
   const isLead = isLeadRole(project.members.find((m) => m.userId === session?.user?.id)?.role);
 
   const allCommentIds = cards.flatMap((c) => c.comments.map((cm) => cm.id));

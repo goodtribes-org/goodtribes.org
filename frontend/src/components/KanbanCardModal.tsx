@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useTransition } from "react";
 import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
 import {
   createCard,
   toggleSubtask,
@@ -13,7 +14,11 @@ import {
   promoteSubtaskToCard,
   deleteSubtask,
   updateSubtaskTitle,
+  claimCard,
+  abandonCard,
+  setCardOpenToPublic,
 } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
+import { logTime } from "@/app/[locale]/projects/[slug]/(workspace)/tokens/actions";
 import { htmlToPreviewText } from "@/lib/renderBody";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import FlagContentButton from "@/components/FlagContentButton";
@@ -60,6 +65,7 @@ function CardDetailModalImpl({
   onAdd?: (card: Card) => void;
   onCardCreated?: (tempId: string, cardId: string) => void;
 }) {
+  const t = useTranslations("Kanban");
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description ?? "");
   const [priority, setPriority] = useState(card.priority);
@@ -79,10 +85,84 @@ function CardDetailModalImpl({
   const [commentError, setCommentError] = useState<string | null>(null);
   const [cardLiked, setCardLiked] = useState(!!card.likedByMe);
   const [cardLikeCount, setCardLikeCount] = useState(card.likeCount ?? 0);
+  const [openToPublic, setOpenToPublic] = useState(!!card.openToPublic);
+  const [cardAssigneeId, setCardAssigneeId] = useState(card.assigneeId ?? null);
+  const [claimError, setClaimError] = useState<string | null>(null);
+  const [claimPending, setClaimPending] = useState(false);
+  const [logHours, setLogHours] = useState("");
+  const [logNote, setLogNote] = useState("");
+  const [loggingTime, setLoggingTime] = useState(false);
+  const [logTimeResult, setLogTimeResult] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
   const canDelete = currentUserId === card.createdById || isLead;
   const canDeleteSubtask = (s: Subtask) => currentUserId === card.createdById || isLead || s.id.startsWith("temp-");
+  const isClaimant = openToPublic && !!currentUserId && cardAssigneeId === currentUserId;
+  const canInteractWithCard = isMember || isClaimant;
+
+  const claimErrorKeys: Record<string, string> = {
+    "This task is not open for public claiming": "claimErrorNotOpen",
+    "This task is already done": "claimErrorDone",
+    "Someone already claimed this task": "claimErrorAlreadyClaimed",
+    "Members should assign themselves via the card editor": "claimErrorMember",
+    "Not your claimed task": "abandonErrorNotYours",
+  };
+  function translateClaimError(error: string): string {
+    const key = claimErrorKeys[error];
+    return key ? t(key) : error;
+  }
+
+  async function handleClaim() {
+    setClaimPending(true);
+    setClaimError(null);
+    const result = await claimCard(card.id);
+    if (result && "error" in result && result.error) {
+      setClaimError(translateClaimError(result.error));
+    } else if (result && "card" in result && result.card) {
+      setCardAssigneeId(result.card.assigneeId ?? null);
+      onSaved(card.id, { assigneeId: result.card.assigneeId ?? null, claimedAt: result.card.claimedAt ?? null });
+    }
+    setClaimPending(false);
+  }
+
+  async function handleAbandon() {
+    setClaimPending(true);
+    setClaimError(null);
+    const result = await abandonCard(card.id);
+    if (result && "error" in result && result.error) {
+      setClaimError(translateClaimError(result.error));
+    } else {
+      setCardAssigneeId(null);
+      onSaved(card.id, { assigneeId: null, claimedAt: null });
+    }
+    setClaimPending(false);
+  }
+
+  async function handleToggleOpenToPublic(next: boolean) {
+    setOpenToPublic(next);
+    onSaved(card.id, { openToPublic: next });
+    const result = await setCardOpenToPublic(card.id, next);
+    if (result && "error" in result && result.error) {
+      setOpenToPublic(!next);
+      onSaved(card.id, { openToPublic: !next });
+    }
+  }
+
+  async function handleLogTime() {
+    const hours = parseFloat(logHours.replace(",", "."));
+    if (!hours || hours <= 0) return;
+    setLoggingTime(true);
+    setLogTimeResult(null);
+    const result = await logTime(card.id, hours, logNote, card.projectSlug);
+    if (result?.error) {
+      setLogTimeResult(result.error);
+    } else {
+      setLogTimeResult(t("logTimeSuccess"));
+      setLogHours("");
+      setLogNote("");
+    }
+    setLoggingTime(false);
+  }
 
   const columnLabel = COLUMNS.find((c) => c.key === card.column)?.label ?? card.column;
 
@@ -250,7 +330,7 @@ function CardDetailModalImpl({
   }
 
   function handleToggleCardLike() {
-    if (!isLoggedIn || !isMember) return;
+    if (!isLoggedIn || !canInteractWithCard) return;
     const nextLiked = !cardLiked;
     const nextCount = cardLikeCount + (cardLiked ? -1 : 1);
     setCardLikeCount(nextCount);
@@ -322,17 +402,69 @@ function CardDetailModalImpl({
             </div>
 
             <span className="text-gray-400 pt-1">Ansvarig</span>
-            <select
-              value={assigneeId}
-              onChange={(e) => setAssigneeId(e.target.value)}
-              disabled={!isLoggedIn}
-              className="border border-gray-200 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:border-blue-400 bg-white disabled:opacity-60"
-            >
-              <option value="">— ingen —</option>
-              {members.map((m) => (
-                <option key={m.id} value={m.id}>{m.name ?? m.id}</option>
-              ))}
-            </select>
+            {isMember || isNew ? (
+              <select
+                value={assigneeId}
+                onChange={(e) => setAssigneeId(e.target.value)}
+                disabled={!isLoggedIn}
+                className="border border-gray-200 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:border-blue-400 bg-white disabled:opacity-60"
+              >
+                <option value="">— ingen —</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.id}>{m.name ?? m.id}</option>
+                ))}
+              </select>
+            ) : openToPublic && !cardAssigneeId && isLoggedIn ? (
+              <div>
+                <button
+                  type="button"
+                  onClick={handleClaim}
+                  disabled={claimPending}
+                  className="text-sm font-medium text-white bg-seagrass px-3 py-1.5 rounded-lg hover:bg-seagrass/80 disabled:opacity-50 transition-colors"
+                >
+                  {claimPending ? t("claimButtonPending") : t("claimButton")}
+                </button>
+                {claimError && <p className="text-xs text-red-500 mt-1">{claimError}</p>}
+              </div>
+            ) : isClaimant ? (
+              <div>
+                <p className="text-sm text-gray-700">{t("claimedByYou")}</p>
+                <button
+                  type="button"
+                  onClick={handleAbandon}
+                  disabled={claimPending}
+                  className="text-xs font-medium text-gray-400 hover:text-red-500 transition-colors mt-1"
+                >
+                  {claimPending ? t("abandonButtonPending") : t("abandonButton")}
+                </button>
+                {claimError && <p className="text-xs text-red-500 mt-1">{claimError}</p>}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 pt-1">
+                {card.assignee?.name
+                  ?? (openToPublic && !cardAssigneeId
+                    ? t("claimedLoginPrompt")
+                    : openToPublic
+                    ? t("openTaskTooltipClaimed")
+                    : t("noAssignee"))}
+              </p>
+            )}
+
+            {isLead && (
+              <>
+                <span className="text-gray-400 pt-1">{t("openToPublicLabel")}</span>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={openToPublic}
+                    onChange={(e) => handleToggleOpenToPublic(e.target.checked)}
+                    disabled={isNew}
+                    className="w-4 h-4 accent-seagrass"
+                  />
+                  <span className="text-xs text-gray-500">{t("openToPublicHelp")}</span>
+                </label>
+              </>
+            )}
 
             <span className="text-gray-400 pt-1">Startdatum</span>
             <input
@@ -509,11 +641,11 @@ function CardDetailModalImpl({
             <div className="flex items-center gap-3 mb-3">
               <button
                 onClick={handleToggleCardLike}
-                disabled={!isLoggedIn || !isMember}
+                disabled={!isLoggedIn || !canInteractWithCard}
                 title={
                   !isLoggedIn
                     ? "Logga in för att gilla"
-                    : !isMember
+                    : !canInteractWithCard
                     ? "Bli medlem i projektet för att gilla"
                     : cardLiked
                     ? "Ta bort gillning"
@@ -521,7 +653,7 @@ function CardDetailModalImpl({
                 }
                 className={`flex items-center gap-1 text-xs font-medium transition-colors ${
                   cardLiked ? "text-coral" : "text-gray-400 hover:text-coral"
-                } ${!isLoggedIn || !isMember ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                } ${!isLoggedIn || !canInteractWithCard ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
               >
                 <svg className="w-4 h-4" fill={cardLiked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -556,7 +688,7 @@ function CardDetailModalImpl({
               </div>
             )}
 
-            {isLoggedIn && isMember ? (
+            {isLoggedIn && canInteractWithCard ? (
               <form onSubmit={(e) => { e.preventDefault(); handleSubmitComment(); }} className="flex gap-2">
                 <textarea
                   value={commentBody}
@@ -576,9 +708,41 @@ function CardDetailModalImpl({
             ) : !isLoggedIn ? (
               <p className="text-xs text-gray-400">Logga in för att kommentera.</p>
             ) : (
-              <p className="text-xs text-gray-400">Bli medlem i projektet för att kommentera.</p>
+              <p className="text-xs text-gray-400">{t("commentJoinOrClaim")}</p>
             )}
             {commentError && <p className="text-xs text-red-500 mt-1">{commentError}</p>}
+
+            {canInteractWithCard && (
+              <div className="mt-4 pt-3 border-t border-gray-100">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{t("logTimeHeading")}</p>
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={logHours}
+                    onChange={(e) => setLogHours(e.target.value)}
+                    placeholder={t("logTimeHoursPlaceholder")}
+                    className="w-20 border border-gray-200 rounded-md px-2 py-1 text-sm focus:outline-none focus:border-blue-400"
+                  />
+                  <input
+                    type="text"
+                    value={logNote}
+                    onChange={(e) => setLogNote(e.target.value)}
+                    placeholder={t("logTimeNotePlaceholder")}
+                    className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-sm focus:outline-none focus:border-blue-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleLogTime}
+                    disabled={loggingTime || !logHours.trim()}
+                    className="px-3 py-1.5 bg-seagrass text-white text-sm font-medium rounded-lg hover:bg-seagrass/80 disabled:opacity-50 transition-colors"
+                  >
+                    {loggingTime ? t("logTimeSubmitting") : t("logTimeSubmit")}
+                  </button>
+                </div>
+                {logTimeResult && <p className="text-xs text-gray-500 mt-1">{logTimeResult}</p>}
+              </div>
+            )}
           </div>}
         </div>
 

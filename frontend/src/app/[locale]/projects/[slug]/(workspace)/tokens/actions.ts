@@ -3,7 +3,8 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
-import { hasProjectRole } from "@/lib/authz";
+import { hasProjectRole, isRealMember, isCardClaimant } from "@/lib/authz";
+import { createNotification } from "@/lib/notify";
 
 
 export async function logTime(
@@ -15,6 +16,14 @@ export async function logTime(
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
   const userId = session.user.id;
+
+  const card = await prisma.kanbanCard.findUnique({
+    where: { id: kanbanCardId },
+    select: { assigneeId: true, openToPublic: true, project: { select: { id: true } } },
+  });
+  if (!card) return { error: "Card not found" };
+  const allowed = (await isRealMember(card.project.id, userId)) || isCardClaimant(card, userId);
+  if (!allowed) return { error: "Not authorized to log time on this card" };
 
   // Check no existing pending/approved TimeLog for this card + user
   const existing = await prisma.timeLog.findFirst({
@@ -84,6 +93,13 @@ export async function approveTimeLog(
     },
   });
 
+  await createNotification({
+    userId: timeLog.userId,
+    type: "time_log_approved",
+    title: `Your logged time on "${timeLog.kanbanCard.title}" was approved`,
+    url: `/projects/${projectSlug}/tokens`,
+  });
+
   revalidatePath(`/projects/${projectSlug}/tokens`);
   return {};
 }
@@ -98,7 +114,10 @@ export async function rejectTimeLog(
 
   if (!(await isProjectFounder(projectSlug, userId))) return { error: "Not authorized" };
 
-  const timeLog = await prisma.timeLog.findUnique({ where: { id: timeLogId } });
+  const timeLog = await prisma.timeLog.findUnique({
+    where: { id: timeLogId },
+    include: { kanbanCard: { select: { title: true } } },
+  });
   if (!timeLog) return { error: "TimeLog not found" };
   if (timeLog.status !== "pending") return { error: "Tidsloggen är inte väntande" };
 
@@ -109,6 +128,13 @@ export async function rejectTimeLog(
       reviewedBy: userId,
       reviewedAt: new Date(),
     },
+  });
+
+  await createNotification({
+    userId: timeLog.userId,
+    type: "time_log_rejected",
+    title: `Your logged time on "${timeLog.kanbanCard.title}" was not approved`,
+    url: `/projects/${projectSlug}/tokens`,
   });
 
   revalidatePath(`/projects/${projectSlug}/tokens`);

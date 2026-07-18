@@ -85,6 +85,7 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
               <a href="/projects" onClick={navLink("/projects", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverProjects")}</a>
               <a href="/ideas" onClick={navLink("/ideas", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverIdeas")}</a>
               <a href="/org" onClick={navLink("/org", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverOrgs")}</a>
+              <a href="/micro-tasks" onClick={navLink("/micro-tasks", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverMicroTasks")}</a>
               <div className="my-1 border-t border-muted-teal/20" />
               <a href="/skill" onClick={navLink("/skill", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverSkills")}</a>
               <a href="/mentors" onClick={navLink("/mentors", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverMentors")}</a>
@@ -123,6 +124,7 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
             <a href="/projects" onClick={navLink("/projects", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverProjects")}</a>
             <a href="/ideas" onClick={navLink("/ideas", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverIdeas")}</a>
             <a href="/org" onClick={navLink("/org", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverOrgs")}</a>
+            <a href="/micro-tasks" onClick={navLink("/micro-tasks", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverMicroTasks")}</a>
             <a href="/skill" onClick={navLink("/skill", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverSkills")}</a>
             <a href="/mentors" onClick={navLink("/mentors", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverMentors")}</a>
 

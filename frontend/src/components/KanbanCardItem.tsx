@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useTransition, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -58,9 +59,11 @@ function KanbanCardItemImpl({
   onSubtasksChanged?: (cardId: string, subtasks: Subtask[]) => void;
   onSaved: (cardId: string, patch: Partial<Card>) => void;
 }) {
+  const t = useTranslations("Kanban");
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: card.id });
-  const canInteract = isLoggedIn && isMember;
+  const isClaimant = !!card.openToPublic && !!currentUserId && card.assigneeId === currentUserId;
+  const canInteract = isLoggedIn && (isMember || isClaimant);
   const canDeleteSubtask = (s: Subtask) => currentUserId === card.createdById || isLead || s.id.startsWith("temp-");
 
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
@@ -182,6 +185,13 @@ function KanbanCardItemImpl({
               <Tooltip lines={[priorityMeta.label]}>
                 <span className={`inline-block w-2 h-2 rounded-full ${priorityMeta.dot} shrink-0`} />
               </Tooltip>
+              {card.openToPublic && (
+                <Tooltip lines={[card.assigneeId ? t("openTaskTooltipClaimed") : t("openTaskTooltipUnclaimed")]}>
+                  <span className={`text-[9px] font-medium px-1 py-px rounded shrink-0 whitespace-nowrap ${card.assigneeId ? "bg-gray-100 text-gray-500" : "bg-emerald-100 text-emerald-700"}`}>
+                    {card.assigneeId ? t("openTaskBadgeClaimed") : t("openTaskBadge")}
+                  </span>
+                </Tooltip>
+              )}
               {(card.startDate || card.dueDate) ? (
                 <span className="text-[10px] text-gray-400 shrink-0 whitespace-nowrap">
                   Dates: {[formatDate(card.startDate ?? null), due].filter(Boolean).join(" – ")}
@@ -221,7 +231,7 @@ function KanbanCardItemImpl({
         </Tooltip>
 
         <div className="flex items-start justify-between gap-1">
-          <KanbanCardComments card={card} isLoggedIn={isLoggedIn} isMember={isMember} onSaved={onSaved} />
+          <KanbanCardComments card={card} isLoggedIn={isLoggedIn} isMember={isMember} isClaimant={isClaimant} onSaved={onSaved} />
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); setDetailsExpanded((v) => !v); }}

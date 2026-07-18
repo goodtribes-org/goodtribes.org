@@ -358,6 +358,8 @@ model KanbanCard {
   priority    String    @default("normal")
   category    String?
   assigneeId  String?
+  openToPublic Boolean  @default(false)
+  claimedAt   DateTime?
   column      String    @default("BACKLOG")
   order       Int       @default(0)
   createdById String
@@ -375,6 +377,7 @@ model KanbanCard {
   comments    KanbanCardComment[]
 
   @@index([projectSlug, column])
+  @@index([openToPublic, assigneeId])
 }
 
 model KanbanCardSubtask {

@@ -38,6 +38,8 @@ export type Card = {
   category?: string | null;
   assigneeId: string | null;
   assignee: Member | null;
+  openToPublic?: boolean;
+  claimedAt?: Date | string | null;
   createdById: string;
   createdAt: Date | string;
   updatedAt: Date | string;

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useTransition, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { addComment, toggleCardLike } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
 import { htmlToPreviewText } from "@/lib/renderBody";
 import { timeAgo, type Card, type Comment } from "./kanbanShared";
@@ -9,13 +10,16 @@ function KanbanCardCommentsImpl({
   card,
   isLoggedIn,
   isMember,
+  isClaimant = false,
   onSaved,
 }: {
   card: Card;
   isLoggedIn: boolean;
   isMember: boolean;
+  isClaimant?: boolean;
   onSaved: (cardId: string, patch: Partial<Card>) => void;
 }) {
+  const t = useTranslations("Kanban");
   const [comments, setComments] = useState<Comment[]>(card.comments ?? []);
   const [showComments, setShowComments] = useState(false);
   const [pendingComment, setPendingComment] = useState(false);
@@ -27,7 +31,7 @@ function KanbanCardCommentsImpl({
   useEffect(() => { setComments(card.comments ?? []); }, [card.comments]);
   useEffect(() => { setLiked(!!card.likedByMe); setLikeCount(card.likeCount ?? 0); }, [card.likedByMe, card.likeCount]);
 
-  const canInteract = isLoggedIn && isMember;
+  const canInteract = isLoggedIn && (isMember || isClaimant);
 
   function handleLike() {
     if (!canInteract) return;
@@ -71,7 +75,7 @@ function KanbanCardCommentsImpl({
           title={
             !isLoggedIn
               ? "Logga in för att gilla"
-              : !isMember
+              : !(isMember || isClaimant)
               ? "Bli medlem i projektet för att gilla"
               : liked
               ? "Ta bort gillning"
@@ -124,7 +128,7 @@ function KanbanCardCommentsImpl({
           ) : !isLoggedIn ? (
             <p className="text-[10px] text-gray-400">Logga in för att kommentera.</p>
           ) : (
-            <p className="text-[10px] text-gray-400">Bli medlem i projektet för att kommentera.</p>
+            <p className="text-[10px] text-gray-400">{t("commentJoinOrClaim")}</p>
           )}
         </div>
       )}
