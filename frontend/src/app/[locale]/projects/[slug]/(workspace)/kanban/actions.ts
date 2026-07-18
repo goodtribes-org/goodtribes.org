@@ -31,6 +31,9 @@ export async function createCard(
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
 
+  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
+  const canSetPriority = project ? await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES) : false;
+
   const maxOrder = await prisma.kanbanCard.aggregate({
     where: { projectSlug, column },
     _max: { order: true },
@@ -46,7 +49,7 @@ export async function createCard(
       description: description?.trim() || null,
       dueDate: dueDate ? new Date(dueDate) : null,
       startDate: startDate ? new Date(startDate) : null,
-      priority: priority || "normal",
+      priority: canSetPriority ? (priority || "normal") : "normal",
       category: category || null,
       assigneeId: assigneeId || null,
     },
@@ -63,7 +66,6 @@ export async function createCard(
     });
   }
 
-  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
   if (project) await logActivity(project.id, session.user.id, "task_created", {
     title: card.title, cardId: card.id, description: card.description,
     subtasks: cleanedSubtasks.map((title) => ({ title, done: false })),
@@ -329,6 +331,14 @@ export async function updateCard(
   const card = await prisma.kanbanCard.findUnique({ where: { id: cardId } });
   if (!card) return { error: "Card not found" };
 
+  const priorityChanging = data.priority !== undefined && data.priority !== card.priority;
+  if (priorityChanging) {
+    if (card.priorityLockedAt) return { error: "Priority is locked once work has started on this card" };
+    if (!(await isProjectLead(card.projectSlug, userId))) {
+      return { error: "Only project founders/admins can set priority" };
+    }
+  }
+
   let assigneeIsMember = false;
   if (data.assigneeId !== undefined) {
     const project = await prisma.project.findUnique({ where: { slug: card.projectSlug }, select: { id: true } });
@@ -357,6 +367,12 @@ export async function updateCard(
         : {}),
     },
   });
+
+  if (priorityChanging) {
+    await prisma.kanbanCardPriorityChange.create({
+      data: { kanbanCardId: cardId, changedById: userId, fromPriority: card.priority, toPriority: data.priority! },
+    });
+  }
 
   publishToKanban(card.projectSlug, { action: "updated", card: updated });
 

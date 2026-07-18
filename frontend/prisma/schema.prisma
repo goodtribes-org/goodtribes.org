@@ -140,6 +140,8 @@ model User {
   leanCanvasComments      LeanCanvasComment[]        @relation("LeanCanvasCommentAuthor")
   contentFlagsRaised     ContentFlag[]               @relation("ContentFlaggedBy")
   contentFlagReviews     ContentFlag[]               @relation("ContentFlagReviewer")
+  priorityChanges        KanbanCardPriorityChange[]  @relation("PriorityChanges")
+  gtLedger               GtLedger[]                  @relation("GtLedger")
 }
 
 model Skill {
@@ -356,6 +358,8 @@ model KanbanCard {
   dueDate     DateTime?
   startDate   DateTime?
   priority    String    @default("normal")
+  priorityLockedAt DateTime?
+  lockedTokenValue Float?
   category    String?
   assigneeId  String?
   openToPublic Boolean  @default(false)
@@ -366,15 +370,16 @@ model KanbanCard {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  createdBy   User                @relation("CreatedKanbanCards", fields: [createdById], references: [id], onDelete: Cascade)
-  assignee    User?               @relation("AssignedKanbanCards", fields: [assigneeId], references: [id], onDelete: SetNull)
-  project     Project             @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
-  estimate    TaskEstimate?
-  timeLogs    TimeLog[]           @relation("KanbanTimeLogs")
-  tokenLedger TokenLedger[]       @relation("KanbanTokens")
-  aiTaskRuns  AiTaskRun[]         @relation("KanbanAiRuns")
-  subtasks    KanbanCardSubtask[]
-  comments    KanbanCardComment[]
+  createdBy       User                       @relation("CreatedKanbanCards", fields: [createdById], references: [id], onDelete: Cascade)
+  assignee        User?                      @relation("AssignedKanbanCards", fields: [assigneeId], references: [id], onDelete: SetNull)
+  project         Project                    @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
+  estimate        TaskEstimate?
+  timeLogs        TimeLog[]                  @relation("KanbanTimeLogs")
+  tokenLedger     TokenLedger[]              @relation("KanbanTokens")
+  aiTaskRuns      AiTaskRun[]                @relation("KanbanAiRuns")
+  subtasks        KanbanCardSubtask[]
+  comments        KanbanCardComment[]
+  priorityChanges KanbanCardPriorityChange[]
 
   @@index([projectSlug, column])
   @@index([openToPublic, assigneeId])
@@ -820,9 +825,36 @@ model TokenLedger {
   tokens       Float
   reason       String
   createdAt    DateTime    @default(now())
+  gtMirrors    GtLedger[]  @relation("GtLedgerSource")
 
   @@index([userId])
   @@index([projectSlug])
+}
+
+model KanbanCardPriorityChange {
+  id           String     @id @default(cuid())
+  kanbanCardId String
+  kanbanCard   KanbanCard @relation(fields: [kanbanCardId], references: [id], onDelete: Cascade)
+  changedById  String
+  changedBy    User       @relation("PriorityChanges", fields: [changedById], references: [id])
+  fromPriority String
+  toPriority   String
+  changedAt    DateTime   @default(now())
+
+  @@index([kanbanCardId])
+}
+
+model GtLedger {
+  id                  String       @id @default(cuid())
+  userId              String
+  user                User         @relation("GtLedger", fields: [userId], references: [id])
+  tokens              Float
+  sourceTokenLedgerId String?
+  sourceTokenLedger   TokenLedger? @relation("GtLedgerSource", fields: [sourceTokenLedgerId], references: [id], onDelete: SetNull)
+  reason              String
+  createdAt           DateTime     @default(now())
+
+  @@index([userId])
 }
 
 model AiTaskRun {

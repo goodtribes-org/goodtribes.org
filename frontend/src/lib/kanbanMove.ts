@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { logActivity } from "@/lib/activity";
 import { publishToKanban } from "@/lib/redis";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { getPriorityTokenValue } from "@/lib/priorityTokens";
 
 async function updateStreak(userId: string, projectSlug: string) {
   const project = await prisma.project.findUnique({
@@ -53,9 +54,19 @@ export async function moveKanbanCard(cardId: string, newColumn: string, userId: 
     _max: { order: true },
   });
 
+  // Priority locks the first time a card enters "Doing" — from then on its token
+  // value is frozen, so later priority edits can't retroactively change payout.
+  const shouldLockPriority = targetColumn === "DOING" && !card.priorityLockedAt;
+
   const updated = await prisma.kanbanCard.update({
     where: { id: cardId },
-    data: { column: targetColumn, order: (maxOrder._max.order ?? -1) + 1 },
+    data: {
+      column: targetColumn,
+      order: (maxOrder._max.order ?? -1) + 1,
+      ...(shouldLockPriority
+        ? { priorityLockedAt: new Date(), lockedTokenValue: getPriorityTokenValue(card.priority) }
+        : {}),
+    },
   });
 
   await updateStreak(userId, card.projectSlug);

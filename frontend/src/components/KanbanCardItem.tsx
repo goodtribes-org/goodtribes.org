@@ -182,8 +182,15 @@ function KanbanCardItemImpl({
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-gray-800 leading-snug truncate">{card.title}</p>
             <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-              <Tooltip lines={[priorityMeta.label]}>
-                <span className={`inline-block w-2 h-2 rounded-full ${priorityMeta.dot} shrink-0`} />
+              <Tooltip lines={[`${priorityMeta.label} (${card.lockedTokenValue ?? priorityMeta.tokenValue} tokens)${card.priorityLockedAt ? " — låst" : ""}`]}>
+                <span className="inline-flex items-center gap-0.5 shrink-0">
+                  <span className={`inline-block w-2 h-2 rounded-full ${priorityMeta.dot} shrink-0`} />
+                  {card.priorityLockedAt && (
+                    <svg className="w-2.5 h-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  )}
+                </span>
               </Tooltip>
               {card.openToPublic && (
                 <Tooltip lines={[card.assigneeId ? t("openTaskTooltipClaimed") : t("openTaskTooltipUnclaimed")]}>

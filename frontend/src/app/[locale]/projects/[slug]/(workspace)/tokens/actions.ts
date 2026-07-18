@@ -5,6 +5,11 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { hasProjectRole, isRealMember, isCardClaimant } from "@/lib/authz";
 import { createNotification } from "@/lib/notify";
+import { getPriorityTokenValue } from "@/lib/priorityTokens";
+
+const CREATOR_BONUS_TOKENS = 5;
+const APPROVER_BONUS_TOKENS = 5;
+const GT_MIRROR_RATE = 0.1;
 
 
 export async function logTime(
@@ -69,34 +74,75 @@ export async function approveTimeLog(
 
   const timeLog = await prisma.timeLog.findUnique({
     where: { id: timeLogId },
-    include: { kanbanCard: { select: { title: true } } },
+    include: { kanbanCard: true },
   });
   if (!timeLog) return { error: "TimeLog not found" };
   if (timeLog.status !== "pending") return { error: "Tidsloggen är inte väntande" };
 
-  await prisma.timeLog.update({
-    where: { id: timeLogId },
-    data: {
-      status: "approved",
-      reviewedBy: userId,
-      reviewedAt: new Date(),
-    },
-  });
+  const card = timeLog.kanbanCard;
 
-  await prisma.tokenLedger.create({
-    data: {
-      userId: timeLog.userId,
-      projectSlug,
-      kanbanCardId: timeLog.kanbanCardId,
-      tokens: timeLog.loggedHours,
-      reason: `Godkänd tidslogg: ${timeLog.kanbanCard.title}`,
-    },
+  await prisma.$transaction(async (tx) => {
+    // Safety net: a card approved without ever passing through "Doing" (e.g. logged
+    // straight from Backlog) locks its priority/token value right here instead.
+    const tokenValue = card.lockedTokenValue ?? getPriorityTokenValue(card.priority);
+    if (!card.priorityLockedAt) {
+      await tx.kanbanCard.update({
+        where: { id: card.id },
+        data: { priorityLockedAt: new Date(), lockedTokenValue: tokenValue },
+      });
+    }
+
+    const isFirstApproval =
+      (await tx.timeLog.count({ where: { kanbanCardId: card.id, status: "approved" } })) === 0;
+
+    await tx.timeLog.update({
+      where: { id: timeLogId },
+      data: { status: "approved", reviewedBy: userId, reviewedAt: new Date() },
+    });
+
+    // The priority's fixed value is split between everyone with an approved
+    // timelog on this card so far — non-retroactive, each approval computed
+    // from the state at that moment (see plan for the fairness trade-off).
+    const distinctExecutors = await tx.timeLog.findMany({
+      where: { kanbanCardId: card.id, status: "approved" },
+      distinct: ["userId"],
+      select: { userId: true },
+    });
+    const executorShare = tokenValue / Math.max(distinctExecutors.length, 1);
+
+    const mintedRows: { userId: string; tokens: number; reason: string }[] = [
+      { userId: timeLog.userId, tokens: executorShare, reason: `Prioritetsbaserad utbetalning (${card.priority}): ${card.title}` },
+    ];
+    if (isFirstApproval) {
+      mintedRows.push({ userId: card.createdById, tokens: CREATOR_BONUS_TOKENS, reason: `Kortskapare-bonus: ${card.title}` });
+      mintedRows.push({ userId, tokens: APPROVER_BONUS_TOKENS, reason: `Godkännande-bonus: ${card.title}` });
+    }
+
+    for (const row of mintedRows) {
+      const ledgerRow = await tx.tokenLedger.create({
+        data: {
+          userId: row.userId,
+          projectSlug,
+          kanbanCardId: card.id,
+          tokens: row.tokens,
+          reason: row.reason,
+        },
+      });
+      await tx.gtLedger.create({
+        data: {
+          userId: row.userId,
+          tokens: row.tokens * GT_MIRROR_RATE,
+          sourceTokenLedgerId: ledgerRow.id,
+          reason: `GT-spegling: ${row.reason}`,
+        },
+      });
+    }
   });
 
   await createNotification({
     userId: timeLog.userId,
     type: "time_log_approved",
-    title: `Your logged time on "${timeLog.kanbanCard.title}" was approved`,
+    title: `Your logged time on "${card.title}" was approved`,
     url: `/projects/${projectSlug}/tokens`,
   });
 

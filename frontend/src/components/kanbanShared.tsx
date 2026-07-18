@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { toProxyUrl } from "@/lib/storageUrl";
+import { PRIORITY_TOKEN_VALUES } from "@/lib/priorityTokens";
 
 export type CardCreator = { name: string | null; image?: string | null };
 
@@ -35,6 +36,8 @@ export type Card = {
   column: string;
   order: number;
   priority: string;
+  priorityLockedAt?: Date | string | null;
+  lockedTokenValue?: number | null;
   category?: string | null;
   assigneeId: string | null;
   assignee: Member | null;
@@ -76,11 +79,11 @@ export const CATEGORY_META: Record<string, { label: string; bg: string; text: st
   community:      { label: "Community",     bg: "bg-orange-100", text: "text-orange-700", hex: "#f97316" },
 };
 
-export const PRIORITY_META: Record<string, { label: string; color: string; dot: string; bottomHex: string }> = {
-  low:    { label: "Low",    color: "text-gray-400",   dot: "bg-gray-300",   bottomHex: "#d1d5db" },
-  normal: { label: "Normal", color: "text-blue-500",   dot: "bg-blue-400",   bottomHex: "#60a5fa" },
-  high:   { label: "High",   color: "text-orange-500", dot: "bg-orange-400", bottomHex: "#fb923c" },
-  urgent: { label: "Urgent", color: "text-red-500",    dot: "bg-red-500",    bottomHex: "#ef4444" },
+export const PRIORITY_META: Record<string, { label: string; color: string; dot: string; bottomHex: string; tokenValue: number }> = {
+  low:    { label: "Low",    color: "text-gray-400",   dot: "bg-gray-300",   bottomHex: "#d1d5db", tokenValue: PRIORITY_TOKEN_VALUES.low },
+  normal: { label: "Normal", color: "text-blue-500",   dot: "bg-blue-400",   bottomHex: "#60a5fa", tokenValue: PRIORITY_TOKEN_VALUES.normal },
+  high:   { label: "High",   color: "text-orange-500", dot: "bg-orange-400", bottomHex: "#fb923c", tokenValue: PRIORITY_TOKEN_VALUES.high },
+  urgent: { label: "Urgent", color: "text-red-500",    dot: "bg-red-500",    bottomHex: "#ef4444", tokenValue: PRIORITY_TOKEN_VALUES.urgent },
 };
 
 export const COLUMNS = [
