@@ -6,10 +6,10 @@ import { revalidatePath } from "next/cache";
 import { hasProjectRole, isRealMember, isCardClaimant } from "@/lib/authz";
 import { createNotification } from "@/lib/notify";
 import { getPriorityTokenValue } from "@/lib/priorityTokens";
+import { awardTokens } from "@/lib/tokens";
 
 const CREATOR_BONUS_TOKENS = 5;
 const APPROVER_BONUS_TOKENS = 5;
-const GT_MIRROR_RATE = 0.1;
 
 
 export async function logTime(
@@ -119,23 +119,7 @@ export async function approveTimeLog(
     }
 
     for (const row of mintedRows) {
-      const ledgerRow = await tx.tokenLedger.create({
-        data: {
-          userId: row.userId,
-          projectSlug,
-          kanbanCardId: card.id,
-          tokens: row.tokens,
-          reason: row.reason,
-        },
-      });
-      await tx.gtLedger.create({
-        data: {
-          userId: row.userId,
-          tokens: row.tokens * GT_MIRROR_RATE,
-          sourceTokenLedgerId: ledgerRow.id,
-          reason: `GT-spegling: ${row.reason}`,
-        },
-      });
+      await awardTokens(tx, { userId: row.userId, projectSlug, kanbanCardId: card.id, tokens: row.tokens, reason: row.reason });
     }
   });
 
