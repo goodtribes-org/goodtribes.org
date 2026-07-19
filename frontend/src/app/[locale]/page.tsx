@@ -21,25 +21,28 @@ const PAGE_SIZE = 12;
 const IDEA_PREVIEW_SIZE = 8;
 
 async function getLeaderboard() {
-  const tokenGroups = await prisma.tokenLedger.groupBy({
-    by: ["userId"],
-    _sum: { tokens: true },
-    orderBy: { _sum: { tokens: "desc" } },
-    take: 20,
-  });
-  const users = await prisma.user.findMany({
-    where: { id: { in: tokenGroups.map((g) => g.userId) }, showProfile: true, name: { not: null as null } },
+  // Filter to public profiles *before* ranking — otherwise the global top-N by
+  // tokens can be entirely non-public users, hiding public users who do have
+  // tokens but not enough to make an unfiltered cutoff.
+  const eligibleUsers = await prisma.user.findMany({
+    where: { showProfile: true, name: { not: null as null } },
     select: { id: true, name: true, image: true },
   });
-  const userMap = new Map(users.map((u) => [u.id, u]));
+  if (eligibleUsers.length === 0) return [];
+  const userMap = new Map(eligibleUsers.map((u) => [u.id, u]));
 
-  return tokenGroups
-    .map((g) => {
-      const user = userMap.get(g.userId);
-      return user ? { id: user.id, name: user.name!, image: user.image, tokens: g._sum.tokens ?? 0 } : null;
-    })
-    .filter((entry): entry is { id: string; name: string; image: string | null; tokens: number } => !!entry)
-    .slice(0, 5);
+  const tokenGroups = await prisma.tokenLedger.groupBy({
+    by: ["userId"],
+    where: { userId: { in: eligibleUsers.map((u) => u.id) } },
+    _sum: { tokens: true },
+    orderBy: { _sum: { tokens: "desc" } },
+    take: 5,
+  });
+
+  return tokenGroups.map((g) => {
+    const user = userMap.get(g.userId)!;
+    return { id: user.id, name: user.name!, image: user.image, tokens: g._sum.tokens ?? 0 };
+  });
 }
 
 export default async function HomePage({
