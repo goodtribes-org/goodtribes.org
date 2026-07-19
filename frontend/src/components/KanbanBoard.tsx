@@ -20,6 +20,7 @@ import {
   PRIORITY_META,
   COLUMNS,
   COLUMN_ORDER,
+  categoryRank,
   type Card,
   type Columns,
   type Member,
@@ -160,13 +161,15 @@ export default function KanbanBoard({
 
   const filteredColumns = useMemo(() => {
     const q = filterQuery.toLowerCase();
-    const apply = (cards: Card[]) => cards.filter((c) => {
-      if (q && !c.title.toLowerCase().includes(q)) return false;
-      if (filterCategory && c.category !== filterCategory) return false;
-      if (filterPriority && c.priority !== filterPriority) return false;
-      if (filterAssignee && c.assigneeId !== filterAssignee) return false;
-      return true;
-    });
+    const apply = (cards: Card[]) => cards
+      .filter((c) => {
+        if (q && !c.title.toLowerCase().includes(q)) return false;
+        if (filterCategory && c.category !== filterCategory) return false;
+        if (filterPriority && c.priority !== filterPriority) return false;
+        if (filterAssignee && c.assigneeId !== filterAssignee) return false;
+        return true;
+      })
+      .sort((a, b) => categoryRank(a.category) - categoryRank(b.category));
     return {
       BACKLOG: apply(columns.BACKLOG),
       TODO:    apply(columns.TODO),

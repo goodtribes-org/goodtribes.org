@@ -79,6 +79,13 @@ export const CATEGORY_META: Record<string, { label: string; bg: string; text: st
   community:      { label: "Community",     bg: "bg-orange-100", text: "text-orange-700", hex: "#f97316" },
 };
 
+export const CATEGORY_ORDER = Object.keys(CATEGORY_META);
+
+export function categoryRank(category?: string | null): number {
+  const idx = CATEGORY_ORDER.indexOf(category ?? "");
+  return idx === -1 ? CATEGORY_ORDER.length : idx;
+}
+
 export const PRIORITY_META: Record<string, { label: string; color: string; dot: string; bottomHex: string; tokenValue: number }> = {
   low:    { label: "Low",    color: "text-gray-400",   dot: "bg-gray-300",   bottomHex: "#d1d5db", tokenValue: PRIORITY_TOKEN_VALUES.low },
   normal: { label: "Normal", color: "text-blue-500",   dot: "bg-blue-400",   bottomHex: "#60a5fa", tokenValue: PRIORITY_TOKEN_VALUES.normal },
