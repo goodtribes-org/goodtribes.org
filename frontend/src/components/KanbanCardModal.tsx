@@ -18,7 +18,6 @@ import {
   abandonCard,
   setCardOpenToPublic,
 } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
-import { logTime } from "@/app/[locale]/projects/[slug]/(workspace)/tokens/actions";
 import { htmlToPreviewText } from "@/lib/renderBody";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import FlagContentButton from "@/components/FlagContentButton";
@@ -89,10 +88,6 @@ function CardDetailModalImpl({
   const [cardAssigneeId, setCardAssigneeId] = useState(card.assigneeId ?? null);
   const [claimError, setClaimError] = useState<string | null>(null);
   const [claimPending, setClaimPending] = useState(false);
-  const [logHours, setLogHours] = useState("");
-  const [logNote, setLogNote] = useState("");
-  const [loggingTime, setLoggingTime] = useState(false);
-  const [logTimeResult, setLogTimeResult] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
   const canDelete = currentUserId === card.createdById || isLead;
@@ -146,22 +141,6 @@ function CardDetailModalImpl({
       setOpenToPublic(!next);
       onSaved(card.id, { openToPublic: !next });
     }
-  }
-
-  async function handleLogTime() {
-    const hours = parseFloat(logHours.replace(",", "."));
-    if (!hours || hours <= 0) return;
-    setLoggingTime(true);
-    setLogTimeResult(null);
-    const result = await logTime(card.id, hours, logNote, card.projectSlug);
-    if (result?.error) {
-      setLogTimeResult(result.error);
-    } else {
-      setLogTimeResult(t("logTimeSuccess"));
-      setLogHours("");
-      setLogNote("");
-    }
-    setLoggingTime(false);
   }
 
   const columnLabel = COLUMNS.find((c) => c.key === card.column)?.label ?? card.column;
@@ -724,38 +703,6 @@ function CardDetailModalImpl({
               <p className="text-xs text-gray-400">{t("commentJoinOrClaim")}</p>
             )}
             {commentError && <p className="text-xs text-red-500 mt-1">{commentError}</p>}
-
-            {canInteractWithCard && (
-              <div className="mt-4 pt-3 border-t border-gray-100">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{t("logTimeHeading")}</p>
-                <div className="flex gap-2 items-center">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    value={logHours}
-                    onChange={(e) => setLogHours(e.target.value)}
-                    placeholder={t("logTimeHoursPlaceholder")}
-                    className="w-20 border border-gray-200 rounded-md px-2 py-1 text-sm focus:outline-none focus:border-blue-400"
-                  />
-                  <input
-                    type="text"
-                    value={logNote}
-                    onChange={(e) => setLogNote(e.target.value)}
-                    placeholder={t("logTimeNotePlaceholder")}
-                    className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-sm focus:outline-none focus:border-blue-400"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleLogTime}
-                    disabled={loggingTime || !logHours.trim()}
-                    className="px-3 py-1.5 bg-seagrass text-white text-sm font-medium rounded-lg hover:bg-seagrass/80 disabled:opacity-50 transition-colors"
-                  >
-                    {loggingTime ? t("logTimeSubmitting") : t("logTimeSubmit")}
-                  </button>
-                </div>
-                {logTimeResult && <p className="text-xs text-gray-500 mt-1">{logTimeResult}</p>}
-              </div>
-            )}
           </div>}
         </div>
 

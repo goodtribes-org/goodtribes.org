@@ -1,10 +1,10 @@
 export default function ImpactStatsWidget({
   totalRaised,
-  totalHours,
+  totalTokens,
   completedTasks,
 }: {
   totalRaised: number;
-  totalHours: number;
+  totalTokens: number;
   completedTasks: number;
 }) {
   const formattedRaised = new Intl.NumberFormat("sv-SE", {
@@ -24,8 +24,8 @@ export default function ImpactStatsWidget({
 
       <div className="grid grid-cols-2 gap-2">
         <div className="bg-dry-sage/20 rounded-xl px-3 py-2 text-center">
-          <p className="text-xl font-bold text-dark-slate">{totalHours.toLocaleString("sv-SE")}</p>
-          <p className="text-dark-slate/60 text-xs mt-0.5">Volontärtimmar</p>
+          <p className="text-xl font-bold text-dark-slate">{totalTokens.toLocaleString("sv-SE")}</p>
+          <p className="text-dark-slate/60 text-xs mt-0.5">Tokens utdelade</p>
         </div>
         <div className="bg-dry-sage/20 rounded-xl px-3 py-2 text-center">
           <p className="text-xl font-bold text-dark-slate">{completedTasks.toLocaleString("sv-SE")}</p>

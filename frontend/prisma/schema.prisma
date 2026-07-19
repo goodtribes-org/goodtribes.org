@@ -102,8 +102,7 @@ model User {
   createdOrgInvites       OrgInvite[]               @relation("CreatedOrgInvites")
   fundingPledges          FundingPledge[]           @relation("FundingPledges")
   calendarEvents          CalendarEvent[]           @relation("CreatedCalendarEvents")
-  timeLogs                TimeLog[]                 @relation("UserTimeLogs")
-  timeLogReviews          TimeLog[]                 @relation("ReviewedTimeLogs")
+  completedSubtasks       KanbanCardSubtask[]       @relation("CompletedSubtasks")
   tokenLedger             TokenLedger[]             @relation("TokenLedger")
   aiTaskReviews           AiTaskReview[]            @relation("AiTaskReviews")
   createdPolls            Poll[]                    @relation("CreatedPolls")
@@ -374,7 +373,6 @@ model KanbanCard {
   assignee        User?                      @relation("AssignedKanbanCards", fields: [assigneeId], references: [id], onDelete: SetNull)
   project         Project                    @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
   estimate        TaskEstimate?
-  timeLogs        TimeLog[]                  @relation("KanbanTimeLogs")
   tokenLedger     TokenLedger[]              @relation("KanbanTokens")
   aiTaskRuns      AiTaskRun[]                @relation("KanbanAiRuns")
   subtasks        KanbanCardSubtask[]
@@ -386,13 +384,16 @@ model KanbanCard {
 }
 
 model KanbanCardSubtask {
-  id        String     @id @default(cuid())
-  cardId    String
-  card      KanbanCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  title     String
-  done      Boolean    @default(false)
-  order     Int        @default(0)
-  createdAt DateTime   @default(now())
+  id            String     @id @default(cuid())
+  cardId        String
+  card          KanbanCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  title         String
+  done          Boolean    @default(false)
+  order         Int        @default(0)
+  createdAt     DateTime   @default(now())
+  completedById String?
+  completedBy   User?      @relation("CompletedSubtasks", fields: [completedById], references: [id], onDelete: SetNull)
+  completedAt   DateTime?
 
   @@index([cardId])
 }
@@ -796,23 +797,6 @@ model TaskEstimate {
   createdAt    DateTime   @default(now())
 }
 
-model TimeLog {
-  id           String     @id @default(cuid())
-  kanbanCardId String
-  kanbanCard   KanbanCard @relation("KanbanTimeLogs", fields: [kanbanCardId], references: [id], onDelete: Cascade)
-  userId       String
-  user         User       @relation("UserTimeLogs", fields: [userId], references: [id])
-  loggedHours  Float
-  status       String     @default("pending")
-  reviewedBy   String?
-  reviewer     User?      @relation("ReviewedTimeLogs", fields: [reviewedBy], references: [id])
-  reviewedAt   DateTime?
-  note         String?
-  createdAt    DateTime   @default(now())
-
-  @@index([kanbanCardId])
-  @@index([userId])
-}
 
 model TokenLedger {
   id           String      @id @default(cuid())

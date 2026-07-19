@@ -497,7 +497,7 @@ export default async function WorkplacePage({
             <h2 className="text-xl font-semibold mb-4">Per projekt</h2>
             {tokensByProject.length === 0 ? (
               <p className="text-dark-slate/50 italic text-sm">
-                Du har inte tjänat några tokens ännu. Logga tid på ett projekt för att komma igång.
+                Du har inte tjänat några tokens ännu. Bocka av deluppgifter och flytta kort till Klart för att komma igång.
               </p>
             ) : (
               <div className="border border-muted-teal rounded-lg overflow-hidden divide-y divide-muted-teal/50">

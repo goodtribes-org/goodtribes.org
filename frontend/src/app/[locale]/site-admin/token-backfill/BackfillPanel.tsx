@@ -5,7 +5,7 @@ import { runTokenBackfill } from "./actions";
 
 export default function BackfillPanel({ disabled }: { disabled: boolean }) {
   const [confirming, setConfirming] = useState(false);
-  const [result, setResult] = useState<{ paid: number; skippedNoAssignee: number; totalTokens: number } | null>(null);
+  const [result, setResult] = useState<{ paid: number; skippedNoPayee: number; totalTokens: number } | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleRun() {
@@ -20,7 +20,7 @@ export default function BackfillPanel({ disabled }: { disabled: boolean }) {
     return (
       <div className="border border-green-200 bg-green-50 rounded-xl p-4 text-sm text-green-800">
         Klart — {result.paid} kort fick tokens utdelade (totalt {Math.round(result.totalTokens)} tokens),
-        {" "}{result.skippedNoAssignee} hoppades över utan tilldelad person. Ladda om sidan om du vill
+        {" "}{result.skippedNoPayee} hoppades över utan någon att betala ut till. Ladda om sidan om du vill
         kontrollera att listan nu är tom.
       </div>
     );

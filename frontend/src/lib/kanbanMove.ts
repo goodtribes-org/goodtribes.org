@@ -4,6 +4,8 @@ import { logActivity } from "@/lib/activity";
 import { publishToKanban } from "@/lib/redis";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { getPriorityTokenValue } from "@/lib/priorityTokens";
+import { mintCardCompletion } from "@/lib/tokens";
+import { createNotification } from "@/lib/notify";
 
 async function updateStreak(userId: string, projectSlug: string) {
   const project = await prisma.project.findUnique({
@@ -43,6 +45,18 @@ export async function moveKanbanCard(cardId: string, newColumn: string, userId: 
     select: { id: true },
   });
 
+  const subtasks = await prisma.kanbanCardSubtask.findMany({
+    where: { cardId: card.id },
+    orderBy: { order: "asc" },
+    select: { title: true, done: true, completedById: true },
+  });
+
+  // A card with subtasks can't reach Review or Done until every subtask is
+  // checked off — that's the only signal we have for "who actually did this".
+  if ((newColumn === "REVIEW" || newColumn === "DONE") && subtasks.some((s) => !s.done)) {
+    return { error: "Alla deluppgifter måste vara klara innan kortet kan flyttas dit" };
+  }
+
   // Regular members can't move cards straight to Done — they land in Review for a lead to approve.
   let targetColumn = newColumn;
   if (newColumn === "DONE" && project && !(await hasProjectRole(project.id, userId, PROJECT_LEAD_ROLES))) {
@@ -56,27 +70,49 @@ export async function moveKanbanCard(cardId: string, newColumn: string, userId: 
 
   // Priority locks the first time a card enters "Doing" — from then on its token
   // value is frozen, so later priority edits can't retroactively change payout.
-  const shouldLockPriority = targetColumn === "DOING" && !card.priorityLockedAt;
+  // Locks the first time a card reaches "Doing" — or "Done" directly, for
+  // cards whose subtasks were all finished before ever passing through Doing.
+  const shouldLockPriority = (targetColumn === "DOING" || targetColumn === "DONE") && !card.priorityLockedAt;
+  const tokenValue = card.lockedTokenValue ?? getPriorityTokenValue(card.priority);
 
   const updated = await prisma.kanbanCard.update({
     where: { id: cardId },
     data: {
       column: targetColumn,
       order: (maxOrder._max.order ?? -1) + 1,
-      ...(shouldLockPriority
-        ? { priorityLockedAt: new Date(), lockedTokenValue: getPriorityTokenValue(card.priority) }
-        : {}),
+      ...(shouldLockPriority ? { priorityLockedAt: new Date(), lockedTokenValue: tokenValue } : {}),
     },
   });
 
   await updateStreak(userId, card.projectSlug);
 
+  // Tokens mint the moment a card actually lands in Done — a lead moving it
+  // there (directly, or approving it out of Review) is the approval act.
+  if (targetColumn === "DONE" && card.column !== "DONE") {
+    const payees = await prisma.$transaction(async (tx) => {
+      const alreadyPaid = await tx.tokenLedger.count({ where: { kanbanCardId: card.id } });
+      if (alreadyPaid > 0) return [];
+      return mintCardCompletion(tx, {
+        card: { id: card.id, projectSlug: card.projectSlug, title: card.title, priority: card.priority, createdById: card.createdById },
+        tokenValue,
+        subtasks,
+        assigneeId: card.assigneeId,
+        approverId: userId,
+      });
+    });
+    for (const payee of payees) {
+      await createNotification({
+        userId: payee.userId,
+        type: "card_tokens_awarded",
+        title: `You were awarded tokens for "${card.title}"`,
+        url: `/projects/${card.projectSlug}/tokens`,
+      });
+    }
+  }
+
   if (targetColumn !== card.column) {
     if (project) {
       if (targetColumn === "DONE") {
-        const subtasks = await prisma.kanbanCardSubtask.findMany({
-          where: { cardId: card.id }, orderBy: { order: "asc" }, select: { title: true, done: true },
-        });
         await logActivity(project.id, userId, "task_completed", { title: card.title, cardId: card.id, description: card.description, subtasks });
       } else {
         await logActivity(project.id, userId, "task_moved", { title: card.title, cardId: card.id, fromColumn: card.column, toColumn: targetColumn });
@@ -88,6 +124,7 @@ export async function moveKanbanCard(cardId: string, newColumn: string, userId: 
 
   revalidatePath(`/projects/${card.projectSlug}/kanban`);
   revalidatePath(`/projects/${card.projectSlug}/tasks`);
+  revalidatePath(`/projects/${card.projectSlug}/tokens`);
 
   return { ok: true, card: updated };
 }

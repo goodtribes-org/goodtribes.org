@@ -84,7 +84,7 @@ export async function isRealMember(projectId: string, userId: string): Promise<b
 }
 
 // A non-member who self-claimed an openToPublic micro-task gets limited
-// write access (comment/like/log time) on that specific card only, without
+// write access (comment/like/subtasks) on that specific card only, without
 // becoming a project member.
 export function isCardClaimant(
   card: { assigneeId: string | null; openToPublic: boolean },

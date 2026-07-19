@@ -86,7 +86,7 @@ export default async function HomePage({
     orgCount,
     memberCount,
     pledgeSum,
-    hoursSum,
+    tokenSum,
     completedCards,
     completedSubtasks,
     leaderboard,
@@ -101,7 +101,7 @@ export default async function HomePage({
     prisma.organisation.count({ where: { isPublic: true } }),
     prisma.user.count({ where: { showProfile: true } }),
     prisma.fundingPledge.aggregate({ where: { pledgeStatus: "confirmed" }, _sum: { amount: true } }),
-    prisma.timeLog.aggregate({ where: { status: "approved" }, _sum: { loggedHours: true } }),
+    prisma.tokenLedger.aggregate({ _sum: { tokens: true } }),
     prisma.kanbanCard.count({ where: { column: "DONE" } }),
     prisma.kanbanCardSubtask.count({ where: { done: true } }),
     getLeaderboard(),
@@ -139,7 +139,7 @@ export default async function HomePage({
 
   const totalRaised = pledgeSum._sum.amount ?? 0;
   const completedTasks = completedCards + completedSubtasks;
-  const totalHours = Math.round(hoursSum._sum.loggedHours ?? 0);
+  const totalTokens = Math.round(tokenSum._sum.tokens ?? 0);
   const coveredGoals = Array.from(new Set(sdgProjects.flatMap((p) => p.sdgGoals)));
 
   const [projectLikeCounts, doneTaskCounts] = await Promise.all([
@@ -264,7 +264,7 @@ export default async function HomePage({
             />
             <ImpactStatsWidget
               totalRaised={totalRaised}
-              totalHours={totalHours}
+              totalTokens={totalTokens}
               completedTasks={completedTasks}
             />
             <SdgCoverageWidget coveredGoals={coveredGoals} />

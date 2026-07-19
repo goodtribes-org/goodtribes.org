@@ -3,8 +3,8 @@ import BackfillPanel from "./BackfillPanel";
 
 export default async function TokenBackfillPage() {
   const { candidates, cappedAt } = await getBackfillCandidates();
-  const payable = candidates.filter((c) => c.assigneeId);
-  const unassigned = candidates.filter((c) => !c.assigneeId);
+  const payable = candidates.filter((c) => c.payees.length > 0);
+  const unpayable = candidates.filter((c) => c.payees.length === 0);
   const totalTokens = payable.reduce((sum, c) => sum + c.tokenValue, 0);
 
   return (
@@ -12,9 +12,10 @@ export default async function TokenBackfillPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-dark-slate">Token-bakfyllning</h1>
         <p className="text-sm text-dark-slate/60 mt-1">
-          Klara Kanban-kort (kolumn <code>DONE</code>) i alla projekt som aldrig gick igenom
-          logga tid → godkänn-flödet, och därför aldrig fick tokens utdelade. Tilldelad person
-          på kortet får kortets prioritetsvärde i tokens; kort utan tilldelad person hoppas över.
+          Klara Kanban-kort (kolumn <code>DONE</code>) i alla projekt som aldrig fick tokens
+          utdelade. Kortets prioritetsvärde delas mellan de som bockade av deluppgifter (eller
+          går till tilldelad person om kortet saknar deluppgifter); kort utan någon att betala ut
+          till hoppas över.
         </p>
       </div>
 
@@ -35,8 +36,8 @@ export default async function TokenBackfillPage() {
           <p className="text-2xl font-bold text-coral">{Math.round(totalTokens)}</p>
         </div>
         <div className="border border-muted-teal/30 rounded-xl p-4">
-          <p className="text-xs text-dark-slate/50">Hoppas över (ingen tilldelad)</p>
-          <p className="text-2xl font-bold text-dark-slate/40">{unassigned.length}</p>
+          <p className="text-xs text-dark-slate/50">Hoppas över (ingen att betala)</p>
+          <p className="text-2xl font-bold text-dark-slate/40">{unpayable.length}</p>
         </div>
       </div>
 
@@ -51,11 +52,18 @@ export default async function TokenBackfillPage() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-dark-slate truncate">{c.title}</p>
               <p className="text-xs text-dark-slate/40">
-                {c.project.title} · {c.priority}
-                {c.assignee ? ` · ${c.assignee.name ?? c.assignee.id}` : " · ingen tilldelad"}
+                {c.project.title} · {c.priority} ·{" "}
+                {c.payees.length === 0
+                  ? "ingen att betala ut till"
+                  : c.payees
+                      .map((p) => {
+                        const name = p.userId === c.assignee?.id ? c.assignee?.name : null;
+                        return `${name ?? p.userId} (${Math.round(p.tokens)})`;
+                      })
+                      .join(", ")}
               </p>
             </div>
-            <span className={`text-xs font-semibold ${c.assigneeId ? "text-coral" : "text-dark-slate/30 line-through"}`}>
+            <span className={`text-xs font-semibold ${c.payees.length > 0 ? "text-coral" : "text-dark-slate/30 line-through"}`}>
               {Math.round(c.tokenValue)} tokens
             </span>
           </div>

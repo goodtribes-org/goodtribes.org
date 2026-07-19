@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { requireSiteAdmin } from "@/lib/authz";
 import { getPriorityTokenValue } from "@/lib/priorityTokens";
-import { awardTokens } from "@/lib/tokens";
+import { awardTokens, computeCardPayees } from "@/lib/tokens";
 import { createNotification } from "@/lib/notify";
 
 const CANDIDATE_CAP = 500;
@@ -14,7 +14,6 @@ async function findCandidates() {
   return prisma.kanbanCard.findMany({
     where: {
       column: "DONE",
-      timeLogs: { none: { status: "approved" } },
       tokenLedger: { none: {} },
     },
     select: {
@@ -26,13 +25,17 @@ async function findCandidates() {
       projectSlug: true,
       project: { select: { title: true } },
       assignee: { select: { id: true, name: true } },
+      subtasks: { select: { done: true, completedById: true } },
     },
     orderBy: { createdAt: "asc" },
     take: CANDIDATE_CAP,
   });
 }
 
-export type BackfillCandidate = Awaited<ReturnType<typeof findCandidates>>[number] & { tokenValue: number };
+export type BackfillCandidate = Awaited<ReturnType<typeof findCandidates>>[number] & {
+  tokenValue: number;
+  payees: Array<{ userId: string; tokens: number }>;
+};
 
 export async function getBackfillCandidates(): Promise<{ candidates: BackfillCandidate[]; cappedAt: number | null }> {
   const session = await auth();
@@ -40,11 +43,15 @@ export async function getBackfillCandidates(): Promise<{ candidates: BackfillCan
   await requireSiteAdmin(session.user.id);
 
   const cards = await findCandidates();
-  const candidates = cards.map((c) => ({ ...c, tokenValue: c.lockedTokenValue ?? getPriorityTokenValue(c.priority) }));
+  const candidates = cards.map((c) => {
+    const tokenValue = c.lockedTokenValue ?? getPriorityTokenValue(c.priority);
+    const payees = computeCardPayees({ tokenValue, subtasks: c.subtasks, assigneeId: c.assigneeId });
+    return { ...c, tokenValue, payees };
+  });
   return { candidates, cappedAt: candidates.length === CANDIDATE_CAP ? CANDIDATE_CAP : null };
 }
 
-export async function runTokenBackfill(): Promise<{ paid: number; skippedNoAssignee: number; totalTokens: number }> {
+export async function runTokenBackfill(): Promise<{ paid: number; skippedNoPayee: number; totalTokens: number }> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Forbidden");
   await requireSiteAdmin(session.user.id);
@@ -55,18 +62,19 @@ export async function runTokenBackfill(): Promise<{ paid: number; skippedNoAssig
   const cards = await findCandidates();
 
   let paid = 0;
-  let skippedNoAssignee = 0;
+  let skippedNoPayee = 0;
   let totalTokens = 0;
 
   for (const card of cards) {
-    if (!card.assigneeId) { skippedNoAssignee++; continue; }
     const tokenValue = card.lockedTokenValue ?? getPriorityTokenValue(card.priority);
+    const payees = computeCardPayees({ tokenValue, subtasks: card.subtasks, assigneeId: card.assigneeId });
+    if (payees.length === 0) { skippedNoPayee++; continue; }
 
-    await prisma.$transaction(async (tx) => {
+    const minted = await prisma.$transaction(async (tx) => {
       // Double-check inside the transaction: guards against a card being paid
       // out by a concurrent normal approval between the query above and now.
       const alreadyPaid = await tx.tokenLedger.count({ where: { kanbanCardId: card.id } });
-      if (alreadyPaid > 0) return;
+      if (alreadyPaid > 0) return false;
 
       if (!card.lockedTokenValue) {
         await tx.kanbanCard.update({
@@ -74,26 +82,32 @@ export async function runTokenBackfill(): Promise<{ paid: number; skippedNoAssig
           data: { priorityLockedAt: new Date(), lockedTokenValue: tokenValue },
         });
       }
-      await awardTokens(tx, {
-        userId: card.assigneeId!,
-        projectSlug: card.projectSlug,
-        kanbanCardId: card.id,
-        tokens: tokenValue,
-        reason: `Bakfyllning: klart kort utan godkänd tidslogg (${card.priority}): ${card.title}`,
-      });
+      for (const payee of payees) {
+        await awardTokens(tx, {
+          userId: payee.userId,
+          projectSlug: card.projectSlug,
+          kanbanCardId: card.id,
+          tokens: payee.tokens,
+          reason: `Bakfyllning: klart kort utan tidigare utbetalning (${card.priority}): ${card.title}`,
+        });
+      }
+      return true;
     });
+    if (!minted) continue;
 
-    await createNotification({
-      userId: card.assigneeId,
-      type: "time_log_approved",
-      title: `You were awarded tokens for the completed task "${card.title}"`,
-      url: `/projects/${card.projectSlug}/tokens`,
-    });
+    for (const payee of payees) {
+      await createNotification({
+        userId: payee.userId,
+        type: "card_tokens_awarded",
+        title: `You were awarded tokens for the completed task "${card.title}"`,
+        url: `/projects/${card.projectSlug}/tokens`,
+      });
+    }
 
     paid++;
     totalTokens += tokenValue;
   }
 
   revalidatePath("/site-admin/token-backfill");
-  return { paid, skippedNoAssignee, totalTokens };
+  return { paid, skippedNoPayee, totalTokens };
 }

@@ -34,8 +34,14 @@ export async function createCard(
   const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
   const canSetPriority = project ? await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES) : false;
 
+  const cleanedSubtasks = subtasks?.map((t) => t.trim()).filter(Boolean) ?? [];
+  // A card can't sit in Review/Done with incomplete subtasks — new subtasks are
+  // never pre-completed, so creating straight into either column would be an
+  // instant loophole around that rule.
+  const effectiveColumn = (column === "REVIEW" || column === "DONE") && cleanedSubtasks.length > 0 ? "TODO" : column;
+
   const maxOrder = await prisma.kanbanCard.aggregate({
-    where: { projectSlug, column },
+    where: { projectSlug, column: effectiveColumn },
     _max: { order: true },
   });
 
@@ -43,7 +49,7 @@ export async function createCard(
     data: {
       projectSlug,
       title: title.trim(),
-      column,
+      column: effectiveColumn,
       order: (maxOrder._max.order ?? -1) + 1,
       createdById: session.user.id,
       description: description?.trim() || null,
@@ -55,7 +61,6 @@ export async function createCard(
     },
   });
 
-  const cleanedSubtasks = subtasks?.map((t) => t.trim()).filter(Boolean) ?? [];
   if (cleanedSubtasks.length > 0) {
     await prisma.kanbanCardSubtask.createMany({
       data: cleanedSubtasks.map((t, i) => ({
@@ -304,20 +309,37 @@ export async function deleteComment(commentId: string) {
 export async function toggleSubtask(subtaskId: string, done: boolean) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
+  const userId = session.user.id;
 
   const subtask = await prisma.kanbanCardSubtask.findUnique({
     where: { id: subtaskId },
-    include: { card: { select: { projectSlug: true } } },
+    include: {
+      card: {
+        select: { id: true, projectSlug: true, column: true, assigneeId: true, openToPublic: true, project: { select: { id: true } } },
+      },
+    },
   });
   if (!subtask) return { error: "Subtask not found" };
 
+  const allowed = (await isRealMember(subtask.card.project.id, userId)) || isCardClaimant(subtask.card, userId);
+  if (!allowed) return { error: "Not authorized to update this card" };
+
   await prisma.kanbanCardSubtask.update({
     where: { id: subtaskId },
-    data: { done },
+    data: { done, completedById: done ? userId : null, completedAt: done ? new Date() : null },
   });
 
   revalidatePath(`/projects/${subtask.card.projectSlug}/kanban`);
   revalidatePath(`/projects/${subtask.card.projectSlug}/tasks`);
+
+  // Whoever checks off the last remaining subtask sends the card to Review —
+  // that's the signal that "who did what" is now fully attributed.
+  if (done && !["REVIEW", "DONE"].includes(subtask.card.column)) {
+    const remaining = await prisma.kanbanCardSubtask.count({ where: { cardId: subtask.card.id, done: false } });
+    if (remaining === 0) {
+      await moveKanbanCard(subtask.card.id, "REVIEW", userId);
+    }
+  }
 }
 
 export async function updateCard(
