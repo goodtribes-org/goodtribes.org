@@ -11,11 +11,12 @@ const CATEGORIES = ["Technology", "Environment", "Education", "Arts", "Community
 interface Props {
   initial?: { title?: string; description?: string; sdgGoals?: number[]; category?: string; tags?: string[]; imageUrl?: string };
   ideaId?: string;
+  fromThread?: string;
   skills: { id: string; name: string; slug: string }[];
   orgs: { id: string; name: string }[];
 }
 
-export default function NewProjectForm({ initial = {}, ideaId, skills, orgs }: Props) {
+export default function NewProjectForm({ initial = {}, ideaId, fromThread, skills, orgs }: Props) {
   const [description, setDescription] = useState(initial.description ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set(initial.sdgGoals ?? []));
   const [aiSuggested, setAiSuggested] = useState<number[]>([]);
@@ -49,6 +50,7 @@ export default function NewProjectForm({ initial = {}, ideaId, skills, orgs }: P
   return (
     <form action={createProject} className="flex flex-col gap-5">
       {ideaId && <input type="hidden" name="ideaId" value={ideaId} />}
+      {fromThread && <input type="hidden" name="fromThread" value={fromThread} />}
 
       {/* Project image */}
       <div>

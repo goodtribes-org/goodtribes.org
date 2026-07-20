@@ -34,6 +34,7 @@ export async function createProject(formData: FormData) {
   const imageUrl = (formData.get("imageUrl") as string | null)?.trim() || null;
   const orgId = (formData.get("orgId") as string | null)?.trim() || null;
   const ideaId = (formData.get("ideaId") as string | null)?.trim() || null;
+  const fromThreadId = (formData.get("fromThread") as string | null)?.trim() || null;
 
   if (!title) return;
 
@@ -74,6 +75,10 @@ export async function createProject(formData: FormData) {
 
       if (ideaId) {
         await prisma.idea.update({ where: { id: ideaId }, data: { status: "converted" } }).catch(() => {});
+      }
+
+      if (fromThreadId) {
+        await prisma.room.update({ where: { id: fromThreadId }, data: { convertedToProjectId: project.id } }).catch(() => {});
       }
 
       await indexDocuments("projects", [

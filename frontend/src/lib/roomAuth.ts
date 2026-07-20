@@ -47,6 +47,23 @@ export async function getRoomAccess(roomId: string, userId: string | null): Prom
     return { room, canRead: true, canPost };
   }
 
+  // IDEA_THREAD — Idéverkstaden (PRD 5.10). Project-scoped threads (an
+  // in-project idea session) follow the same rule as PROJECT_CHANNEL. Open
+  // threads (projectId null) require only being logged in — no
+  // pre-existing RoomParticipant/membership check — since anyone
+  // registered can start or join a conversation in the open Idéverkstaden.
+  if (room.type === "IDEA_THREAD") {
+    if (room.projectId) {
+      const [role, project] = await Promise.all([
+        userId ? getProjectRole(room.projectId, userId) : Promise.resolve(null),
+        prisma.project.findUnique({ where: { id: room.projectId }, select: { visibility: true } }),
+      ]);
+      if (!role) return { room, canRead: project?.visibility === "public", canPost: false };
+      return { room, canRead: true, canPost: role !== "FOLLOWER" };
+    }
+    return { room, canRead: !!userId, canPost: !!userId };
+  }
+
   // ORG_CHANNEL — unchanged, membership-gated for reading too (not part of
   // the public activity feed, unlike PROJECT_CHANNEL).
   if (!userId || !room.organisationId) return { room, canRead: false, canPost: false };

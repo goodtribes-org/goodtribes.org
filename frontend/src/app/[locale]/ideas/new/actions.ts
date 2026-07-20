@@ -31,6 +31,7 @@ export async function createIdea(formData: FormData) {
   const estimatedReach = estimatedReachRaw ? parseInt(estimatedReachRaw) || null : null;
   const status = (formData.get("status") as string | null) === "draft" ? "draft" : "open";
   const sdgGoals = formData.getAll("sdgGoals").map(Number).filter((n) => n >= 1 && n <= 17);
+  const fromThreadId = (formData.get("fromThread") as string | null)?.trim() || null;
 
   const idea = await prisma.idea.create({
     data: {
@@ -39,6 +40,10 @@ export async function createIdea(formData: FormData) {
       authorId: session.user.id,
     },
   });
+
+  if (fromThreadId) {
+    await prisma.room.update({ where: { id: fromThreadId }, data: { convertedToIdeaId: idea.id } }).catch(() => {});
+  }
 
   if (status === "open") {
     await indexDocuments("ideas", [{

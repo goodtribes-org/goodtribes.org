@@ -17,9 +17,14 @@ const STEPS = [
   { id: "impact",  label: "Impact" },
 ];
 
-export default function NewIdeaForm() {
+interface Props {
+  initial?: { title?: string; problem?: string };
+  fromThread?: string;
+}
+
+export default function NewIdeaForm({ initial, fromThread }: Props) {
   const [step, setStep] = useState(0);
-  const [problem, setProblem] = useState("");
+  const [problem, setProblem] = useState(initial?.problem ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [aiSuggested, setAiSuggested] = useState<number[]>([]);
   const [reasoning, setReasoning] = useState("");
@@ -56,6 +61,7 @@ export default function NewIdeaForm() {
 
   return (
     <form action={handleSubmit} className="flex flex-col gap-0">
+      {fromThread && <input type="hidden" name="fromThread" value={fromThread} />}
       {/* Step indicator */}
       <div className="flex items-center gap-0 mb-8">
         {STEPS.map((s, i) => (
@@ -87,6 +93,7 @@ export default function NewIdeaForm() {
           </label>
           <input
             id="title" name="title" type="text" required
+            defaultValue={initial?.title}
             placeholder="Give your idea a clear, compelling title"
             className="w-full border border-muted-teal rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
           />

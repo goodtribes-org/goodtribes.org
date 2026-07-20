@@ -6,11 +6,14 @@ import { revalidatePath } from "next/cache";
 import { getProjectRole, isLeadRole } from "@/lib/authz";
 import { getRoomAccess } from "@/lib/roomAuth";
 import { publishToRoom } from "@/lib/redis";
+import { getAiParticipantUser } from "@/lib/aiParticipant";
+import { triggerAiThreadReply } from "@/lib/aiThreadReply";
 import {
   findOrCreateDmRoom,
   createGroupRoom,
   markRoomRead as markRoomReadDb,
   getRoomMentionables,
+  getNotificationRecipients,
   getPublicProjectChannelsBySlug,
   getPublicProjectChannelsForRoom,
   type PublicProjectChannelGroup,
@@ -36,53 +39,6 @@ function extractMentionedUserIds(body: string): string[] {
     if (idMatch) ids.add(idMatch[1]);
   }
   return [...ids];
-}
-
-async function getNotificationRecipients(room: Room, senderId: string, threadParentId?: string): Promise<string[]> {
-  if (threadParentId) {
-    const [parent, repliers] = await Promise.all([
-      prisma.message.findUnique({ where: { id: threadParentId }, select: { authorId: true } }),
-      prisma.message.findMany({ where: { threadParentId }, select: { authorId: true }, distinct: ["authorId"] }),
-    ]);
-    return [
-      ...new Set(
-        [parent?.authorId, ...repliers.map((r) => r.authorId)].filter(
-          (id): id is string => !!id && id !== senderId
-        )
-      ),
-    ];
-  }
-
-  if (room.type === "DM" || room.type === "GROUP") {
-    const participants = await prisma.roomParticipant.findMany({
-      where: { roomId: room.id, userId: { not: senderId } },
-      select: { userId: true },
-    });
-    return participants.map((p) => p.userId);
-  }
-
-  if (room.type === "PROJECT_CHANNEL" && room.projectId) {
-    const members = await prisma.projectMember.findMany({
-      where: { projectId: room.projectId, userId: { not: senderId } },
-      select: { userId: true },
-    });
-    return members.map((m) => m.userId);
-  }
-
-  if (room.type === "ORG_CHANNEL" && room.organisationId) {
-    const [members, org] = await Promise.all([
-      prisma.organisationMember.findMany({
-        where: { organisationId: room.organisationId, userId: { not: senderId } },
-        select: { userId: true },
-      }),
-      prisma.organisation.findUnique({ where: { id: room.organisationId }, select: { ownerId: true } }),
-    ]);
-    const ids = new Set(members.map((m) => m.userId));
-    if (org && org.ownerId !== senderId) ids.add(org.ownerId);
-    return [...ids];
-  }
-
-  return [];
 }
 
 function buildNotificationCopy(room: Room, senderName: string, body: string, isThread: boolean) {
@@ -123,8 +79,12 @@ export async function sendRoomMessage(roomId: string, body: string, threadParent
   await prisma.room.update({ where: { id: roomId }, data: { lastMessageAt: new Date() } });
 
   // Lazily create/refresh the sender's own roster row for channel types so
-  // they never see their own just-sent message flagged unread.
-  if (access.room.type === "PROJECT_CHANNEL" || access.room.type === "ORG_CHANNEL") {
+  // they never see their own just-sent message flagged unread. Open
+  // IDEA_THREAD rooms (Idéverkstaden, no project) have no external
+  // membership source — RoomParticipant is the only roster, so the first
+  // post from a new participant registers them here too.
+  const isOpenIdeaThread = access.room.type === "IDEA_THREAD" && !access.room.projectId;
+  if (access.room.type === "PROJECT_CHANNEL" || access.room.type === "ORG_CHANNEL" || isOpenIdeaThread) {
     await markRoomReadDb(roomId, userId);
   }
 
@@ -137,6 +97,17 @@ export async function sendRoomMessage(roomId: string, body: string, threadParent
     const mentionables = await getRoomMentionables(access.room, userId);
     const validIds = new Set(mentionables.map((u) => u.id));
     mentionedIds = rawMentionIds.filter((id) => validIds.has(id));
+  }
+
+  if (access.room.type === "IDEA_THREAD" && mentionedIds.length > 0) {
+    const aiUser = await getAiParticipantUser();
+    if (mentionedIds.includes(aiUser.id)) {
+      // Fire-and-forget: the triggering message is already saved/published
+      // above, the AI's reply arrives moments later over the same SSE
+      // channel. Safe because this app runs as a persistent Node server,
+      // not a serverless function that tears down after the response.
+      void triggerAiThreadReply(access.room);
+    }
   }
 
   const recipients = (await getNotificationRecipients(access.room, userId, threadParentId)).filter(

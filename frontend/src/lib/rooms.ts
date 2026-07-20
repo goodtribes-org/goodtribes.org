@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getAiParticipantUser } from "@/lib/aiParticipant";
 import type { Room } from "@prisma/client";
 
 export async function findOrCreateDmRoom(userIdA: string, userIdB: string): Promise<string> {
@@ -204,6 +205,85 @@ export async function getRoomMentionables(room: Room, excludeUserId: string): Pr
     const byId = new Map(members.map((m) => [m.user.id, m.user]));
     if (org && org.ownerId !== excludeUserId) byId.set(org.ownerId, org.owner);
     return [...byId.values()];
+  }
+
+  // IDEA_THREAD — Idéverkstaden. AI is always mentionable (PRD 5.10: anyone
+  // in the thread can type `@AI` at any point), unlike person-mentions
+  // which depend on who's already posted/is a project member.
+  if (room.type === "IDEA_THREAD") {
+    const aiUser = await getAiParticipantUser();
+    const people = room.projectId
+      ? await prisma.projectMember.findMany({
+          where: { projectId: room.projectId, userId: { not: excludeUserId }, role: { not: "FOLLOWER" } },
+          select: { user: { select: { id: true, name: true } } },
+        }).then((rows) => rows.map((r) => r.user))
+      : await prisma.roomParticipant.findMany({
+          where: { roomId: room.id, userId: { not: excludeUserId } },
+          select: { user: { select: { id: true, name: true } } },
+        }).then((rows) => rows.map((r) => r.user));
+    return [aiUser, ...people];
+  }
+
+  return [];
+}
+
+export async function getNotificationRecipients(room: Room, senderId: string, threadParentId?: string): Promise<string[]> {
+  if (threadParentId) {
+    const [parent, repliers] = await Promise.all([
+      prisma.message.findUnique({ where: { id: threadParentId }, select: { authorId: true } }),
+      prisma.message.findMany({ where: { threadParentId }, select: { authorId: true }, distinct: ["authorId"] }),
+    ]);
+    return [
+      ...new Set(
+        [parent?.authorId, ...repliers.map((r) => r.authorId)].filter(
+          (id): id is string => !!id && id !== senderId
+        )
+      ),
+    ];
+  }
+
+  if (room.type === "DM" || room.type === "GROUP") {
+    const participants = await prisma.roomParticipant.findMany({
+      where: { roomId: room.id, userId: { not: senderId } },
+      select: { userId: true },
+    });
+    return participants.map((p) => p.userId);
+  }
+
+  if (room.type === "PROJECT_CHANNEL" && room.projectId) {
+    const members = await prisma.projectMember.findMany({
+      where: { projectId: room.projectId, userId: { not: senderId } },
+      select: { userId: true },
+    });
+    return members.map((m) => m.userId);
+  }
+
+  if (room.type === "ORG_CHANNEL" && room.organisationId) {
+    const [members, org] = await Promise.all([
+      prisma.organisationMember.findMany({
+        where: { organisationId: room.organisationId, userId: { not: senderId } },
+        select: { userId: true },
+      }),
+      prisma.organisation.findUnique({ where: { id: room.organisationId }, select: { ownerId: true } }),
+    ]);
+    const ids = new Set(members.map((m) => m.userId));
+    if (org && org.ownerId !== senderId) ids.add(org.ownerId);
+    return [...ids];
+  }
+
+  if (room.type === "IDEA_THREAD") {
+    if (room.projectId) {
+      const members = await prisma.projectMember.findMany({
+        where: { projectId: room.projectId, userId: { not: senderId } },
+        select: { userId: true },
+      });
+      return members.map((m) => m.userId);
+    }
+    const participants = await prisma.roomParticipant.findMany({
+      where: { roomId: room.id, userId: { not: senderId } },
+      select: { userId: true },
+    });
+    return participants.map((p) => p.userId);
   }
 
   return [];

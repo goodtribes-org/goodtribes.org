@@ -508,6 +508,7 @@ model Project {
   ethicsReviews      EthicsReview[]       @relation("EthicsReviews")
   phaseTransitions   PhaseTransition[]
   checklistItems     InitiativeChecklistItem[]
+  convertedFromRoom  Room?                @relation("RoomConvertedToProject")
 }
 
 model ProjectSkill {
@@ -583,11 +584,12 @@ model Idea {
   hiddenById     String?
   hiddenReason   ContentHideReason?
 
-  author       User              @relation("AuthoredIdeas", fields: [authorId], references: [id], onDelete: Cascade)
-  votes        IdeaVote[]
-  endorsements IdeaEndorsement[]
-  followers    IdeaFollower[]
-  comments     IdeaComment[]
+  author           User              @relation("AuthoredIdeas", fields: [authorId], references: [id], onDelete: Cascade)
+  votes            IdeaVote[]
+  endorsements     IdeaEndorsement[]
+  followers        IdeaFollower[]
+  comments         IdeaComment[]
+  convertedFromRoom Room?            @relation("RoomConvertedToIdea")
 }
 
 model IdeaVote {
@@ -1276,6 +1278,7 @@ enum RoomType {
   GROUP
   PROJECT_CHANNEL
   ORG_CHANNEL
+  IDEA_THREAD
 }
 
 enum RoomPostingPolicy {
@@ -1304,6 +1307,11 @@ model Room {
   pinned         Boolean           @default(false)
   createdAt      DateTime          @default(now())
   lastMessageAt  DateTime          @default(now())
+
+  convertedToIdeaId    String?  @unique
+  convertedToIdea      Idea?    @relation("RoomConvertedToIdea", fields: [convertedToIdeaId], references: [id], onDelete: SetNull)
+  convertedToProjectId String?  @unique
+  convertedToProject   Project? @relation("RoomConvertedToProject", fields: [convertedToProjectId], references: [id], onDelete: SetNull)
 
   participants RoomParticipant[]
   messages     Message[]
@@ -1340,6 +1348,7 @@ model Message {
   threadParent   Message?          @relation("MessageThread", fields: [threadParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   threadReplies  Message[]         @relation("MessageThread")
   reactions      MessageReaction[]
+  isAi           Boolean           @default(false)
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
   hiddenAt       DateTime?

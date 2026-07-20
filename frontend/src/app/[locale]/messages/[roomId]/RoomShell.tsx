@@ -25,11 +25,12 @@ export type MessageRow = {
   author: { id: string; name: string | null; image: string | null };
   reactions: { emoji: string; userId: string }[];
   _count: { threadReplies: number };
+  isAi?: boolean;
 };
 
 type RoomInfo = {
   id: string;
-  type: "DM" | "GROUP" | "PROJECT_CHANNEL" | "ORG_CHANNEL";
+  type: "DM" | "GROUP" | "PROJECT_CHANNEL" | "ORG_CHANNEL" | "IDEA_THREAD";
   name: string | null;
   postingPolicy: "ALL_MEMBERS" | "LEADS_ONLY";
   otherUsers: { id: string; name: string | null; image: string | null }[];
@@ -46,6 +47,7 @@ type Props = {
 function roomTitle(room: RoomInfo) {
   if (room.type === "DM") return room.otherUsers[0]?.name ?? "?";
   if (room.type === "GROUP") return room.name ?? room.otherUsers.map((u) => u.name).join(", ");
+  if (room.type === "IDEA_THREAD") return room.name ?? "Idésession";
   return room.name ? `#${room.name}` : room.type === "ORG_CHANNEL" ? "Arbetsrum" : "Kanal";
 }
 
@@ -215,6 +217,11 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                       {!m.isGrouped && (
                         <div className="flex items-baseline gap-2 mb-0.5 px-1">
                           {!isOwn && <span className="text-sm font-bold text-gray-900">{m.author.name ?? "Okänd"}</span>}
+                          {m.isAi && (
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-seagrass bg-seagrass/10 rounded px-1.5 py-0.5">
+                              AI
+                            </span>
+                          )}
                           <span className="text-xs text-gray-400">{timeLabel(m.createdAt)}</span>
                         </div>
                       )}

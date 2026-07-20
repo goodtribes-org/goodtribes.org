@@ -17,6 +17,19 @@ function wrapEmojis(html: string): string {
   });
 }
 
+// Escapes raw plain text before it's wrapped in HTML tags for storage as a
+// Message.body — renderBody() renders anything starting with "<" via
+// dangerouslySetInnerHTML, so untrusted plain text (a user's free-text
+// post, an LLM's raw response) must never be inserted unescaped.
+export function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function htmlToPreviewText(body: string): string {
   if (!body.trimStart().startsWith("<")) return body;
   return body
