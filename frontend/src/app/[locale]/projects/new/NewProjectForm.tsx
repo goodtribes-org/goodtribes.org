@@ -5,6 +5,7 @@ import { createProject, getSdgSuggestions } from "./actions";
 import FileUpload from "@/components/FileUpload";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_NUMBERS, SDG_LABELS_EN } from "@/lib/sdg";
+import { LEGAL_TYPES } from "@/lib/legalType";
 
 const CATEGORIES = ["Technology", "Environment", "Education", "Arts", "Community", "Health", "Other"];
 
@@ -114,6 +115,29 @@ export default function NewProjectForm({ initial = {}, ideaId, fromThread, skill
           <input id="tags" name="tags" type="text" placeholder="climate, youth"
             defaultValue={initial.tags?.join(", ") ?? ""}
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral" />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-dark-slate mb-2">
+          Juridisk form <span className="text-dark-slate/50 font-normal">(se 4c — avgör vilket avtal som gäller)</span>
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          {LEGAL_TYPES.map((t) => (
+            <label
+              key={t.value}
+              className="flex items-start gap-2 border border-muted-teal rounded-md px-3 py-2 cursor-pointer hover:border-seagrass/60 transition-colors"
+            >
+              <input
+                type="radio"
+                name="legalType"
+                value={t.value}
+                defaultChecked={t.value === "NONPROFIT_UMBRELLA"}
+                className="mt-0.5 accent-seagrass"
+              />
+              <span className="text-xs text-dark-slate/80">{t.label}</span>
+            </label>
+          ))}
         </div>
       </div>
 

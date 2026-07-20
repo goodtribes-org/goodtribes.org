@@ -24,6 +24,7 @@ const TOOLS_TABS = [
   { label: "AI Granskning", href: "/ai-review" },
   { label: "Alumni",        href: "/alumni" },
   { label: "Skalning",      href: "/scale" },
+  { label: "Juridisk form", href: "/legal-type" },
 ];
 
 const ADMIN_TABS = [

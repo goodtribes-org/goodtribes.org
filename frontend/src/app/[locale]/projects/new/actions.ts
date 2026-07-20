@@ -7,6 +7,7 @@ import { slugify } from "@/lib/slugify";
 import { indexDocuments } from "@/lib/meili";
 import { suggestSdgGoals } from "@/lib/claude";
 import { logOrgActivity } from "@/lib/activity";
+import { isValidLegalType } from "@/lib/legalType";
 
 export async function getSdgSuggestions(
   description: string
@@ -35,6 +36,8 @@ export async function createProject(formData: FormData) {
   const orgId = (formData.get("orgId") as string | null)?.trim() || null;
   const ideaId = (formData.get("ideaId") as string | null)?.trim() || null;
   const fromThreadId = (formData.get("fromThread") as string | null)?.trim() || null;
+  const legalTypeRaw = (formData.get("legalType") as string | null)?.trim() || "";
+  const legalType = isValidLegalType(legalTypeRaw) ? legalTypeRaw : "NONPROFIT_UMBRELLA";
 
   if (!title) return;
 
@@ -45,7 +48,7 @@ export async function createProject(formData: FormData) {
     const candidate = attempt === 0 ? baseSlug : `${baseSlug}-${attempt}`;
     try {
       const project = await prisma.project.create({
-        data: { slug: candidate, title, summary, description, visibility, category, tags, sdgGoals, ownerId: userId, ...(imageUrl ? { imageUrl } : {}), ...(orgId ? { orgId } : {}) },
+        data: { slug: candidate, title, summary, description, visibility, category, tags, sdgGoals, legalType, ownerId: userId, ...(imageUrl ? { imageUrl } : {}), ...(orgId ? { orgId } : {}) },
       });
       await prisma.projectMember.create({
         data: { projectId: project.id, userId, role: "FOUNDER" },

@@ -31,6 +31,15 @@ enum ProjectPhase {
   IMPACT
 }
 
+// PRD 4c — replaces the dead Project.commercial Boolean (added
+// 20260715220000_project_commercial, never actually written anywhere).
+enum LegalType {
+  COMMERCIAL_UMBRELLA
+  COMMERCIAL_AB
+  NONPROFIT_UMBRELLA
+  NONPROFIT_OWN_ASSOC
+}
+
 enum OrganisationRole {
   OWNER
   ADMIN
@@ -152,6 +161,8 @@ model User {
   exclusionCasesReported  ExclusionCase[]             @relation("ReportedInExclusionCases")
   exclusionCasesFiled     ExclusionCase[]             @relation("FiledExclusionCases")
   exclusionCaseVotes      ExclusionCaseVote[]         @relation("ExclusionCaseVotes")
+  requestedLegalTypeChanges LegalTypeChangeRequest[]  @relation("RequestedLegalTypeChanges")
+  executedLegalTypeChanges  LegalTypeChangeRequest[]  @relation("ExecutedLegalTypeChanges")
 }
 
 model Skill {
@@ -475,7 +486,9 @@ model Project {
   imageUrl    String?
   links       String[] @default([])
   sdgGoals    Int[]
-  commercial  Boolean  @default(false)
+  legalType   LegalType @default(NONPROFIT_UMBRELLA)
+  commercialUmbrellaEntityId String?
+  commercialUmbrellaEntity   CommercialUmbrellaEntity? @relation(fields: [commercialUmbrellaEntityId], references: [id], onDelete: SetNull)
   ownerId     String
   orgId       String?
   createdAt   DateTime @default(now())
@@ -513,6 +526,7 @@ model Project {
   streaks            UserStreak[]         @relation("ProjectStreaks")
   flags              ProjectFlag[]        @relation("ProjectFlags")
   exclusionCases     ExclusionCase[]
+  legalTypeChangeRequests LegalTypeChangeRequest[]
   ethicsReviews      EthicsReview[]       @relation("EthicsReviews")
   phaseTransitions   PhaseTransition[]
   checklistItems     InitiativeChecklistItem[]
@@ -959,6 +973,39 @@ model PollVote {
 
   @@unique([pollId, pollOptionId, userId])
   @@index([pollId, userId])
+}
+
+// The Foundation-owned umbrella AB(s) a commercial_umbrella project's
+// product line sits under (PRD 4c), e.g. "GoodTribes Ventures AB".
+model CommercialUmbrellaEntity {
+  id                    String   @id @default(cuid())
+  name                  String
+  foundationAbOrgNumber String?
+  createdAt             DateTime @default(now())
+
+  projects Project[]
+}
+
+// PRD 4c "Övergång mellan juridisk form": a member-initiated request,
+// decided by a Tribe-Token-weighted Poll (see closePoll's legal_type_change
+// branch in polls/actions.ts), but only ever executed by the Foundation
+// (site-admin) — an approved vote is a request, never an automatic change.
+model LegalTypeChangeRequest {
+  id            String    @id @default(cuid())
+  projectId     String
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requestedType LegalType
+  pollId        String?
+  status        String    @default("pending") // pending | approved_by_members | rejected_by_members | executed | rejected_by_foundation
+  requestedById String
+  requestedBy   User      @relation("RequestedLegalTypeChanges", fields: [requestedById], references: [id])
+  decisionNote  String?   @db.Text
+  executedById  String?
+  executedBy    User?     @relation("ExecutedLegalTypeChanges", fields: [executedById], references: [id], onDelete: SetNull)
+  executedAt    DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([projectId])
 }
 
 // Platform-wide, GT-weighted polls (Granskningsrådet elections, PRD 5.53;

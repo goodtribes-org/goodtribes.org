@@ -129,12 +129,39 @@ export async function closePoll(pollId: string, projectSlug: string) {
     return { error: "Not authorized" };
   }
 
-  await prisma.poll.update({
+  const poll = await prisma.poll.update({
     where: { id: pollId },
     data: { status: "closed", closedAt: new Date() },
+    include: { options: true },
   });
+
+  // legal_type_change polls (PRD 4c) drive a linked LegalTypeChangeRequest
+  // out of `pending` on close — every other poll type is unaffected.
+  if (poll.type === "legal_type_change") {
+    const changeRequest = await prisma.legalTypeChangeRequest.findFirst({
+      where: { pollId, status: "pending" },
+    });
+    if (changeRequest) {
+      const tally = await prisma.pollVote.groupBy({
+        by: ["pollOptionId"],
+        where: { pollId },
+        _sum: { tokenWeight: true },
+      });
+      const weightByOption = new Map(tally.map((t) => [t.pollOptionId, t._sum.tokenWeight ?? 0]));
+      const yesOption = poll.options.find((o) => o.label === "Ja");
+      const noOption = poll.options.find((o) => o.label === "Nej");
+      const yesWeight = yesOption ? weightByOption.get(yesOption.id) ?? 0 : 0;
+      const noWeight = noOption ? weightByOption.get(noOption.id) ?? 0 : 0;
+
+      await prisma.legalTypeChangeRequest.update({
+        where: { id: changeRequest.id },
+        data: { status: yesWeight > noWeight ? "approved_by_members" : "rejected_by_members" },
+      });
+    }
+  }
 
   revalidatePath(`/projects/${projectSlug}/polls`);
   revalidatePath(`/projects/${projectSlug}/polls/${pollId}`);
+  revalidatePath(`/projects/${projectSlug}/legal-type`);
   return { success: true };
 }

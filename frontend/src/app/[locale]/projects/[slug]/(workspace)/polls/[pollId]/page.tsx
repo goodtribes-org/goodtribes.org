@@ -23,6 +23,7 @@ const TYPE_LABELS: Record<string, string> = {
   yes_no: "Ja/Nej-omröstning",
   multiple: "Flerval",
   ranked: "Rangordning",
+  legal_type_change: "Byte av juridisk form",
 };
 
 function AvatarInitial({ name }: { name: string | null }) {

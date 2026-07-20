@@ -1,5 +1,6 @@
 import { SdgIcon } from "@/components/SdgIcon";
 import { sdgIconPath, SDG_COLORS } from "@/lib/sdg";
+import { isCommercialLegalType } from "@/lib/legalType";
 
 export type ProjectCardData = {
   slug: string;
@@ -10,7 +11,7 @@ export type ProjectCardData = {
   archivedAt: Date | string | null;
   imageUrl: string | null;
   sdgGoals: number[];
-  commercial: boolean;
+  legalType: string;
   likes: number;
   owner: { name: string | null };
   members: { id: string }[];
@@ -62,10 +63,10 @@ export default function ProjectCard({ project }: { project: ProjectCardData }) {
           <span className="text-coral">♥</span> {project.likes}
         </span>
         <span
-          title={project.commercial ? "Kommersiellt projekt" : "Ideellt projekt"}
+          title={isCommercialLegalType(project.legalType) ? "Kommersiellt projekt" : "Ideellt projekt"}
           className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/90 border border-muted-teal/40 flex items-center justify-center"
         >
-          {project.commercial ? (
+          {isCommercialLegalType(project.legalType) ? (
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0505cb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
               <rect x="2" y="7" width="20" height="13" rx="2"></rect>
               <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"></path>
