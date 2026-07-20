@@ -15,6 +15,7 @@ import Tooltip from "@/components/Tooltip";
 import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import ProjectTabNav from "./ProjectTabNav";
 import { isLeadRole } from "@/lib/authz";
+import { isCommercialLegalType } from "@/lib/legalType";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
 import ShareButton from "@/components/ShareButton";
 import LikeCommentBlock from "@/components/LikeCommentBlock";
@@ -433,7 +434,7 @@ export default async function ProjectDetailPage({
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
         <div className="px-6">
-          <ProjectTabNav slug={slug} isOwner={!!isOwnerOrAdmin} />
+          <ProjectTabNav slug={slug} isOwner={!!isOwnerOrAdmin} isCommercial={isCommercialLegalType(project.legalType)} />
         </div>
       </div>
 

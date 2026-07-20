@@ -160,8 +160,35 @@ export async function closePoll(pollId: string, projectSlug: string) {
     }
   }
 
+  // profit_distribution polls (PRD 4a Intäktsström 2, Steg 1) drive a linked
+  // ProfitDistributionProposal out of `pending` on close, same shape as
+  // legal_type_change above.
+  if (poll.type === "profit_distribution") {
+    const proposal = await prisma.profitDistributionProposal.findFirst({
+      where: { pollId, status: "pending" },
+    });
+    if (proposal) {
+      const tally = await prisma.pollVote.groupBy({
+        by: ["pollOptionId"],
+        where: { pollId },
+        _sum: { tokenWeight: true },
+      });
+      const weightByOption = new Map(tally.map((t) => [t.pollOptionId, t._sum.tokenWeight ?? 0]));
+      const yesOption = poll.options.find((o) => o.label === "Ja");
+      const noOption = poll.options.find((o) => o.label === "Nej");
+      const yesWeight = yesOption ? weightByOption.get(yesOption.id) ?? 0 : 0;
+      const noWeight = noOption ? weightByOption.get(noOption.id) ?? 0 : 0;
+
+      await prisma.profitDistributionProposal.update({
+        where: { id: proposal.id },
+        data: { status: yesWeight > noWeight ? "approved_by_members" : "rejected_by_members" },
+      });
+    }
+  }
+
   revalidatePath(`/projects/${projectSlug}/polls`);
   revalidatePath(`/projects/${projectSlug}/polls/${pollId}`);
   revalidatePath(`/projects/${projectSlug}/legal-type`);
+  revalidatePath(`/projects/${projectSlug}/profit-distribution`);
   return { success: true };
 }

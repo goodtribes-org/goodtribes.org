@@ -24,6 +24,7 @@ const TYPE_LABELS: Record<string, string> = {
   multiple: "Flerval",
   ranked: "Rangordning",
   legal_type_change: "Byte av juridisk form",
+  profit_distribution: "Vinstfördelning",
 };
 
 function AvatarInitial({ name }: { name: string | null }) {

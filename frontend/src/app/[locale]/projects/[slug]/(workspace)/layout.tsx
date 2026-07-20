@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import ProjectTabNav from "../ProjectTabNav";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { isCommercialLegalType } from "@/lib/legalType";
 
 export default async function WorkspaceLayout({
   children,
@@ -14,7 +15,7 @@ export default async function WorkspaceLayout({
   const { slug } = await params;
   const [session, project] = await Promise.all([
     auth(),
-    prisma.project.findUnique({ where: { slug }, select: { id: true } }),
+    prisma.project.findUnique({ where: { slug }, select: { id: true, legalType: true } }),
   ]);
   if (!project) notFound();
 
@@ -29,7 +30,7 @@ export default async function WorkspaceLayout({
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
         <div className="px-6">
-          <ProjectTabNav slug={slug} isOwner={isOwner} />
+          <ProjectTabNav slug={slug} isOwner={isOwner} isCommercial={isCommercialLegalType(project.legalType)} />
         </div>
       </div>
       {children}

@@ -1,0 +1,17 @@
+name: Impact Fund Sweep
+
+on:
+  schedule:
+    # Every day at 06:00 UTC
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger sweep endpoint
+        run: |
+          curl -sf -X POST "${{ vars.APP_URL }}/api/cron/impact-fund-sweep" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"

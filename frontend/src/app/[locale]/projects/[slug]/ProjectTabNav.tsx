@@ -25,6 +25,7 @@ const TOOLS_TABS = [
   { label: "Alumni",        href: "/alumni" },
   { label: "Skalning",      href: "/scale" },
   { label: "Juridisk form", href: "/legal-type" },
+  { label: "Vinstfördelning", href: "/profit-distribution", commercialOnly: true },
 ];
 
 const ADMIN_TABS = [
@@ -116,7 +117,15 @@ function TabDropdown({
   );
 }
 
-export default function ProjectTabNav({ slug, isOwner }: { slug: string; isOwner?: boolean }) {
+export default function ProjectTabNav({
+  slug,
+  isOwner,
+  isCommercial,
+}: {
+  slug: string;
+  isOwner?: boolean;
+  isCommercial?: boolean;
+}) {
   const pathname = usePathname();
   const base = `/projects/${slug}`;
 
@@ -128,7 +137,8 @@ export default function ProjectTabNav({ slug, isOwner }: { slug: string; isOwner
       : pathname === full || pathname.startsWith(`${full}/`);
   }
 
-  const toolsActive = TOOLS_TABS.some((t) => isActive(t.href));
+  const visibleToolsTabs = TOOLS_TABS.filter((t) => !t.commercialOnly || isCommercial);
+  const toolsActive = visibleToolsTabs.some((t) => isActive(t.href));
   const adminActive = ADMIN_TABS.some((t) => isActive(t.href));
 
   return (
@@ -146,7 +156,7 @@ export default function ProjectTabNav({ slug, isOwner }: { slug: string; isOwner
         </Link>
       ))}
 
-      <TabDropdown label="Verktyg" tabs={TOOLS_TABS} base={base} active={toolsActive} isActive={isActive} />
+      <TabDropdown label="Verktyg" tabs={visibleToolsTabs} base={base} active={toolsActive} isActive={isActive} />
 
       {isOwner && (
         <TabDropdown label="Admin" tabs={ADMIN_TABS} base={base} active={adminActive} isActive={isActive} />

@@ -163,6 +163,11 @@ model User {
   exclusionCaseVotes      ExclusionCaseVote[]         @relation("ExclusionCaseVotes")
   requestedLegalTypeChanges LegalTypeChangeRequest[]  @relation("RequestedLegalTypeChanges")
   executedLegalTypeChanges  LegalTypeChangeRequest[]  @relation("ExecutedLegalTypeChanges")
+  proposedProfitDistributions ProfitDistributionProposal[] @relation("ProposedProfitDistributions")
+  executedProfitDistributions ProfitDistributionProposal[] @relation("ExecutedProfitDistributions")
+  personalProfitAllocations    PersonalProfitAllocation[]
+  recordedImpactFundEntries    ImpactFundLedger[]         @relation("RecordedImpactFundEntries")
+  openedImpactFundRounds       ImpactFundAllocationRound[] @relation("OpenedImpactFundRounds")
 }
 
 model Skill {
@@ -531,6 +536,10 @@ model Project {
   phaseTransitions   PhaseTransition[]
   checklistItems     InitiativeChecklistItem[]
   convertedFromRoom  Room?                @relation("RoomConvertedToProject")
+  profitDistributionProposals ProfitDistributionProposal[]
+  profitDistributions         ProfitDistribution[]
+  impactFundPayouts           ImpactFundLedger[]          @relation("ImpactFundPayouts")
+  impactFundPollOptions       PlatformPollOption[]        @relation("ImpactFundPollOptionProjects")
 }
 
 model ProjectSkill {
@@ -1008,6 +1017,108 @@ model LegalTypeChangeRequest {
   @@index([projectId])
 }
 
+// PRD 4a Intäktsström 2 / Utvecklingsfas 2.96, Steg 1: the board's ("styrelsen",
+// represented by site-admin) proposed split of a commercial project's audited
+// profit between Stiftelsens drift and the Impact-fond, decided by a
+// Tribe-Token-weighted Poll (closePoll's profit_distribution branch), and only
+// ever executed (or vetoed) by the Foundation — same request/vote/execute shape
+// as LegalTypeChangeRequest above.
+model ProfitDistributionProposal {
+  id                    String    @id @default(cuid())
+  projectId             String
+  project               Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  auditedProfitSek      Int
+  proposedOperationsPct Float
+  proposedImpactFundPct Float
+  pollId                String?
+  status                String    @default("pending") // pending | approved_by_members | rejected_by_members | vetoed_by_foundation | executed
+  proposedById          String
+  proposedBy            User      @relation("ProposedProfitDistributions", fields: [proposedById], references: [id])
+  decisionNote          String?   @db.Text
+  executedById          String?
+  executedBy            User?     @relation("ExecutedProfitDistributions", fields: [executedById], references: [id], onDelete: SetNull)
+  executedAt            DateTime?
+  createdAt             DateTime  @default(now())
+
+  distribution ProfitDistribution?
+
+  @@index([projectId])
+}
+
+// The executed record of Steg 1 once the Foundation approves a proposal —
+// splits the audited profit into the three shares PRD 4a describes.
+model ProfitDistribution {
+  id                 String   @id @default(cuid())
+  proposalId         String   @unique
+  proposal           ProfitDistributionProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  projectId          String
+  project            Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  auditedProfitSek   Int
+  operationsShareSek Int
+  impactFundShareSek Int
+  remainingShareSek  Int
+  createdAt          DateTime @default(now())
+
+  allocations PersonalProfitAllocation[]
+
+  @@index([projectId])
+}
+
+// PRD 4a Intäktsström 2, Steg 2: each Tribe Token holder's personal share of
+// remainingShareSek, proportional to their TokenLedger balance in the
+// distributing project. A personal choice, not a vote — targetProjectSlug is
+// null until the holder picks a recipient project, and stays null if the
+// deadline sweep (see /api/cron/impact-fund-sweep) defaults it to the fund.
+model PersonalProfitAllocation {
+  id                 String    @id @default(cuid())
+  distributionId     String
+  distribution       ProfitDistribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)
+  userId             String
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amountAvailableSek Int
+  allocationDeadline DateTime
+  targetProjectSlug  String?
+  processedAt        DateTime?
+  createdAt          DateTime  @default(now())
+
+  @@index([userId])
+  @@index([distributionId])
+}
+
+// PRD 5.52: the Impact-fond's full inflow/outflow history — always real SEK,
+// never a token transaction (see Utvecklingsfas 2.96's grundprincip). Money
+// movement here is admin-attested (no Stripe Connect exists yet), not an
+// automatic transfer — every row is a real, auditable fact for the public
+// transparency page (PRD 5.51), recorded by whoever attested the movement.
+model ImpactFundLedger {
+  id                    String   @id @default(cuid())
+  direction             String   // "in" | "out"
+  amountSek             Int
+  relatedDistributionId String?
+  relatedAllocationId   String?
+  targetProjectId       String?
+  targetProject         Project? @relation("ImpactFundPayouts", fields: [targetProjectId], references: [id], onDelete: SetNull)
+  decidedByPollId       String?
+  note                  String?  @db.Text
+  recordedById          String?
+  recordedBy            User?    @relation("RecordedImpactFundEntries", fields: [recordedById], references: [id], onDelete: SetNull)
+  createdAt             DateTime @default(now())
+}
+
+// PRD 5.50.4: a round of the Impact-fond's outbound allocation to new
+// projects, decided by a platform-wide GT-weighted vote (PlatformPoll, type
+// "impact_fund_allocation") over site-admin-nominated candidate projects —
+// same election mechanics as Granskningsrådet, reused for a different type.
+model ImpactFundAllocationRound {
+  id         String    @id @default(cuid())
+  pollId     String    @unique
+  status     String    @default("open") // open | closed | executed
+  openedById String
+  openedBy   User      @relation("OpenedImpactFundRounds", fields: [openedById], references: [id])
+  executedAt DateTime?
+  createdAt  DateTime  @default(now())
+}
+
 // Platform-wide, GT-weighted polls (Granskningsrådet elections, PRD 5.53;
 // room for future platform-level votes e.g. Impact-fund priority, Fas 2.96).
 // Deliberately separate from Poll/PollOption/PollVote, which are always
@@ -1031,14 +1142,18 @@ model PlatformPoll {
 }
 
 model PlatformPollOption {
-  id          String       @id @default(cuid())
-  pollId      String
-  poll        PlatformPoll @relation(fields: [pollId], references: [id], onDelete: Cascade)
-  candidateId String?
-  candidate   User?        @relation("PlatformPollCandidacies", fields: [candidateId], references: [id], onDelete: Cascade)
-  label       String
-  description String?
-  sortOrder   Int          @default(0)
+  id              String       @id @default(cuid())
+  pollId          String
+  poll            PlatformPoll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  candidateId     String?
+  candidate       User?        @relation("PlatformPollCandidacies", fields: [candidateId], references: [id], onDelete: Cascade)
+  // Set when this option is a candidate project in an Impact-fund
+  // allocation round (PRD 5.50.4) rather than a council-election candidate.
+  linkedProjectId String?
+  linkedProject   Project?     @relation("ImpactFundPollOptionProjects", fields: [linkedProjectId], references: [id], onDelete: Cascade)
+  label           String
+  description     String?
+  sortOrder       Int          @default(0)
 
   votes PlatformPollVote[]
 }
