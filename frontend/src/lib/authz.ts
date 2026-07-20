@@ -75,6 +75,42 @@ export async function requireSiteAdmin(userId: string) {
   return user;
 }
 
+// Granskningsrådet (PRD 5.53) — a community-elected, term-limited body,
+// deliberately separate from siteRole (Stiftelsen staff, see 5.54's
+// mandate separation). Modeled directly on isSiteAdmin/requireSiteAdmin.
+export async function isCouncilMember(userId: string): Promise<boolean> {
+  const membership = await prisma.reviewCouncilMember.findFirst({
+    where: { userId, termEnd: { gt: new Date() } },
+  });
+  return !!membership;
+}
+
+export async function requireCouncilMember(userId: string): Promise<void> {
+  if (!(await isCouncilMember(userId))) throw new Error("Forbidden");
+}
+
+// Ethics review of flagged projects (PRD 5.53) is authorized for either
+// site-admin staff (existing capability, kept per 5.54's appeals-backstop
+// role) or a currently-serving council member.
+export async function canReviewEthicsFlags(userId: string): Promise<boolean> {
+  return (await isSiteAdmin(userId)) || (await isCouncilMember(userId));
+}
+
+export async function requireEthicsReviewer(userId: string): Promise<void> {
+  if (!(await canReviewEthicsFlags(userId))) throw new Error("Forbidden");
+}
+
+// True if Granskningsrådet has resolved a project_ban against this user for
+// this specific project (PRD 5.53/5.55) — checked before creating a new
+// ProjectMember row (join-request approval, invite acceptance) so a banned
+// user can't simply rejoin.
+export async function isExcludedFromProject(userId: string, projectId: string): Promise<boolean> {
+  const banned = await prisma.exclusionCase.findFirst({
+    where: { reportedUserId: userId, projectId, status: "resolved", decision: "project_ban" },
+  });
+  return !!banned;
+}
+
 // Real membership excludes FOLLOWER — a lightweight, non-member
 // following relationship that shouldn't grant write access to project
 // features (kanban comments, etc).

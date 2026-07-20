@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { createNotification } from "@/lib/notify";
 import { logActivity } from "@/lib/activity";
 import { sendEmail } from "@/lib/email";
-import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { hasProjectRole, PROJECT_LEAD_ROLES, isExcludedFromProject } from "@/lib/authz";
 
 
 export async function requestToJoin(projectId: string, slug: string, message: string) {
@@ -75,18 +75,24 @@ export async function respondToJoinRequest(
 
   const pending = await prisma.projectJoinRequest.findUnique({
     where: { id: requestId },
-    select: { projectId: true },
+    select: { projectId: true, userId: true },
   });
   if (!pending) return;
   if (!(await hasProjectRole(pending.projectId, session.user.id, PROJECT_LEAD_ROLES))) return;
 
+  // A Granskningsrådet project_ban overrides an approval decision — the
+  // requester is excluded from this specific project regardless of what
+  // the reviewing lead submits.
+  const effectiveDecision =
+    decision === "approved" && (await isExcludedFromProject(pending.userId, pending.projectId)) ? "rejected" : decision;
+
   const req = await prisma.projectJoinRequest.update({
     where: { id: requestId },
-    data: { status: decision },
+    data: { status: effectiveDecision },
     include: { project: { select: { title: true } } },
   });
 
-  if (decision === "approved") {
+  if (effectiveDecision === "approved") {
     await prisma.projectMember.upsert({
       where: { projectId_userId: { projectId: req.projectId, userId: req.userId } },
       create: { projectId: req.projectId, userId: req.userId, role: "MEMBER" },
@@ -97,18 +103,18 @@ export async function respondToJoinRequest(
 
   await createNotification({
     userId: req.userId,
-    type: decision === "approved" ? "join_approved" : "join_rejected",
+    type: effectiveDecision === "approved" ? "join_approved" : "join_rejected",
     title:
-      decision === "approved"
+      effectiveDecision === "approved"
         ? `You're now a member of ${req.project.title}`
         : `Your request to join ${req.project.title} was not approved`,
-    url: decision === "approved" ? `/projects/${slug}` : "/projects",
+    url: effectiveDecision === "approved" ? `/projects/${slug}` : "/projects",
   });
 
   const requester = await prisma.user.findUnique({ where: { id: req.userId }, select: { email: true, name: true } });
   if (requester?.email) {
     const base = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
-    if (decision === "approved") {
+    if (effectiveDecision === "approved") {
       await sendEmail({
         to: requester.email,
         subject: `You're now a member of ${req.project.title}`,

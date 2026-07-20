@@ -145,6 +145,13 @@ model User {
   gtLedger               GtLedger[]                  @relation("GtLedger")
   phaseTransitions       PhaseTransition[]           @relation("PhaseTransitions")
   completedChecklistItems InitiativeChecklistItem[]  @relation("CompletedChecklistItems")
+  createdPlatformPolls   PlatformPoll[]              @relation("CreatedPlatformPolls")
+  platformPollCandidacies PlatformPollOption[]       @relation("PlatformPollCandidacies")
+  platformPollVotes      PlatformPollVote[]          @relation("PlatformPollVotes")
+  reviewCouncilMemberships ReviewCouncilMember[]      @relation("ReviewCouncilMemberships")
+  exclusionCasesReported  ExclusionCase[]             @relation("ReportedInExclusionCases")
+  exclusionCasesFiled     ExclusionCase[]             @relation("FiledExclusionCases")
+  exclusionCaseVotes      ExclusionCaseVote[]         @relation("ExclusionCaseVotes")
 }
 
 model Skill {
@@ -505,6 +512,7 @@ model Project {
   kudos              Kudos[]              @relation("ProjectKudos")
   streaks            UserStreak[]         @relation("ProjectStreaks")
   flags              ProjectFlag[]        @relation("ProjectFlags")
+  exclusionCases     ExclusionCase[]
   ethicsReviews      EthicsReview[]       @relation("EthicsReviews")
   phaseTransitions   PhaseTransition[]
   checklistItems     InitiativeChecklistItem[]
@@ -951,6 +959,110 @@ model PollVote {
 
   @@unique([pollId, pollOptionId, userId])
   @@index([pollId, userId])
+}
+
+// Platform-wide, GT-weighted polls (Granskningsrådet elections, PRD 5.53;
+// room for future platform-level votes e.g. Impact-fund priority, Fas 2.96).
+// Deliberately separate from Poll/PollOption/PollVote, which are always
+// project-scoped (Poll.projectSlug is a required FK) — see PRD 4d note.
+model PlatformPoll {
+  id          String    @id @default(cuid())
+  title       String
+  description String?   @db.Text
+  type        String    @default("council_election")
+  status      String    @default("open")
+  seatCount   Int?
+  termMonths  Int?
+  deadline    DateTime?
+  closedAt    DateTime?
+  createdById String
+  createdBy   User      @relation("CreatedPlatformPolls", fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+
+  options PlatformPollOption[]
+  votes   PlatformPollVote[]
+}
+
+model PlatformPollOption {
+  id          String       @id @default(cuid())
+  pollId      String
+  poll        PlatformPoll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  candidateId String?
+  candidate   User?        @relation("PlatformPollCandidacies", fields: [candidateId], references: [id], onDelete: Cascade)
+  label       String
+  description String?
+  sortOrder   Int          @default(0)
+
+  votes PlatformPollVote[]
+}
+
+model PlatformPollVote {
+  id           String             @id @default(cuid())
+  pollId       String
+  poll         PlatformPoll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  pollOptionId String
+  pollOption   PlatformPollOption @relation(fields: [pollOptionId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User               @relation("PlatformPollVotes", fields: [userId], references: [id])
+  gtWeight     Float
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@unique([pollId, pollOptionId, userId])
+  @@index([pollId, userId])
+}
+
+model ReviewCouncilMember {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation("ReviewCouncilMemberships", fields: [userId], references: [id], onDelete: Cascade)
+  termStart        DateTime @default(now())
+  termEnd          DateTime
+  electedViaPollId String?
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Granskningsrådet's uteslutningsärenden (PRD 5.53-5.55) — deliberately
+// separate from ContentFlag/EthicsReview (which stay reviewer=site-admin/
+// council for flagged *projects*, see canReviewEthicsFlags): reporting a
+// *user* for misconduct needs richer state (project scope, response window,
+// proposed decision, council votes) than the generic flag pipeline has.
+model ExclusionCase {
+  id                String    @id @default(cuid())
+  reportedUserId    String
+  reportedUser      User      @relation("ReportedInExclusionCases", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  reportedById      String
+  reportedBy        User      @relation("FiledExclusionCases", fields: [reportedById], references: [id])
+  projectId         String?
+  project           Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  reason            String    @db.Text
+  responseText      String?   @db.Text
+  respondedAt       DateTime?
+  status            String    @default("open")
+  proposedDecision  String?
+  decision          String?
+  decidedAt         DateTime?
+  decisionReasoning String?   @db.Text
+  createdAt         DateTime  @default(now())
+
+  votes ExclusionCaseVote[]
+  @@index([reportedUserId])
+  @@index([projectId])
+}
+
+model ExclusionCaseVote {
+  id              String        @id @default(cuid())
+  caseId          String
+  case            ExclusionCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  councilMemberId String
+  councilMember   User          @relation("ExclusionCaseVotes", fields: [councilMemberId], references: [id])
+  vote            String
+  reasoning       String?       @db.Text
+  createdAt       DateTime      @default(now())
+
+  @@unique([caseId, councilMemberId])
 }
 
 model FundingRewardTier {

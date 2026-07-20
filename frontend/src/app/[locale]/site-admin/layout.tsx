@@ -10,6 +10,7 @@ const NAV = [
   { href: "/site-admin/projects", label: "Projekt" },
   { href: "/site-admin/organisations", label: "Organisationer" },
   { href: "/site-admin/token-backfill", label: "Token-bakfyllning" },
+  { href: "/site-admin/council", label: "Granskningsråd" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

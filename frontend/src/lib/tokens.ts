@@ -1,6 +1,19 @@
 import type { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 const GT_MIRROR_RATE = 0.1;
+
+// A user's total GT balance across the whole platform — used to weight
+// votes in platform-wide polls (Granskningsrådet elections, PRD 5.53).
+// GtLedger is append-only and otherwise write-only (see awardTokens below),
+// so this is the first place it's actually aggregated/read.
+export async function getGtBalance(userId: string): Promise<number> {
+  const aggregate = await prisma.gtLedger.aggregate({
+    where: { userId },
+    _sum: { tokens: true },
+  });
+  return aggregate._sum.tokens ?? 0;
+}
 
 // Single place that mints a project-scoped Tribe Token and its 10% platform-level
 // GT mirror together — every token award (time-log approval, admin backfills, …)

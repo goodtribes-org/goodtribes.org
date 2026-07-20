@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { logActivity } from "@/lib/activity";
+import { isExcludedFromProject } from "@/lib/authz";
 
 
 export async function acceptInvite(token: string): Promise<void> {
@@ -16,6 +17,11 @@ export async function acceptInvite(token: string): Promise<void> {
   });
 
   if (!invite || invite.usedAt || invite.expiresAt < new Date()) {
+    redirect("/projects");
+  }
+
+  // A Granskningsrådet project_ban blocks rejoining via invite too.
+  if (await isExcludedFromProject(session.user.id, invite.projectId)) {
     redirect("/projects");
   }
 

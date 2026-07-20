@@ -129,6 +129,12 @@ export default async function MemberProfilePage({
                 toUserId={id}
                 toUserName={member.name ?? "denna person"}
               />
+              <Link
+                href={`/granskningsradet/anmal?userId=${id}`}
+                className="text-xs text-dark-slate/40 hover:text-watermelon self-center"
+              >
+                Anmäl till Granskningsrådet
+              </Link>
             </div>
           )}
         </div>
