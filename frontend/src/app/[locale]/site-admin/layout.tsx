@@ -13,6 +13,7 @@ const NAV = [
   { href: "/site-admin/council", label: "Granskningsråd" },
   { href: "/site-admin/legal-type", label: "Juridisk form" },
   { href: "/site-admin/profit-distribution", label: "Vinstfördelning" },
+  { href: "/site-admin/impact-fund", label: "Impact-fond" },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

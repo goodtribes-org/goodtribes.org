@@ -1,8 +1,11 @@
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getImpactFundBalance } from "@/lib/impactFund";
+import { getGtBalance } from "@/lib/tokens";
+import ImpactFundVoteForm from "./ImpactFundVoteForm";
 
 export const metadata: Metadata = {
   title: "Impact-fonden — GoodTribes.org",
@@ -14,7 +17,10 @@ function formatSek(amount: number) {
 }
 
 export default async function ImpactFundPage() {
-  const [balance, entries] = await Promise.all([
+  const session = await auth();
+  const userId = session?.user?.id ?? null;
+
+  const [balance, entries, openPoll] = await Promise.all([
     getImpactFundBalance(),
     prisma.impactFundLedger.findMany({
       orderBy: { createdAt: "desc" },
@@ -23,7 +29,25 @@ export default async function ImpactFundPage() {
         targetProject: { select: { title: true, slug: true } },
       },
     }),
+    prisma.platformPoll.findFirst({
+      where: { type: "impact_fund_allocation", status: "open" },
+      include: { options: { include: { linkedProject: { select: { title: true } } } } },
+    }),
   ]);
+
+  let gtBalance = 0;
+  let existingVotes: { optionId: string; weight: number }[] = [];
+  if (userId && openPoll) {
+    [gtBalance, existingVotes] = await Promise.all([
+      getGtBalance(userId).then((b) => Math.max(b, 1)),
+      prisma.platformPollVote
+        .findMany({
+          where: { pollId: openPoll.id, userId },
+          select: { pollOptionId: true, gtWeight: true },
+        })
+        .then((rows) => rows.map((r) => ({ optionId: r.pollOptionId, weight: r.gtWeight }))),
+    ]);
+  }
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -40,6 +64,23 @@ export default async function ImpactFundPage() {
           </div>
         </div>
       </div>
+
+      {openPoll && (
+        <div>
+          {userId ? (
+            <ImpactFundVoteForm
+              pollId={openPoll.id}
+              candidates={openPoll.options.map((o) => ({ optionId: o.id, label: o.linkedProject?.title ?? o.label }))}
+              gtBalance={gtBalance}
+              existingVotes={existingVotes}
+            />
+          ) : (
+            <p className="text-sm text-dark-slate/40 text-center">
+              En omgång om uppstartskapital pågår — logga in för att rösta.
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="border border-muted-teal rounded-lg overflow-hidden">
         <div className="px-4 py-3 bg-dark-slate/[0.03] border-b border-muted-teal">
