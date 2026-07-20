@@ -1,12 +1,26 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 3.8 (Draft)
+**Version:** 4.1 (Draft)
 **Datum:** 2026-07-20
 **Status:** Under utveckling
 
+**Ändringar i v4.1:**
+- Återinfört och utvidgat reconciliation-fixen mellan 4f (fork) och 4c som föll bort i en tidigare redigering (se v3.8): forkade projekt defaultar alltid till `nonprofit_umbrella`, ingen genväg runt 4c:s övergångsprocess — nu uppdaterad för att även täcka den nya `commercial_umbrella`-nivån (ett original som var `commercial_umbrella` eller `commercial_ab` ger ingen automatisk plats i samma struktur för forken)
+
+**Ändringar i v4.0:**
+- "GoodTribes Ventures AB" tillagt som exempelnamn på paraply-AB:et på fler ställen i 4c (databasschemats exempelrad, delegationsmeningen), utöver den ursprungliga nämningen i nivåtabellen. Endast ett exempelnamn, inte ett formellt beslutat bolagsnamn.
+
+**Ändringar i v3.9:**
+- 4c omstrukturerad: kommersiella projekt får nu **två nivåer**, symmetriskt med de ideella — **paraply-AB** (produktlinje under ett gemensamt, redan helägt Stiftelse-AB, ingen egen juridisk person) och **eget helägt aktiebolag** (full ansvarsisolering). Löser problemet att AB-registreringens tröskel (aktiekapital, avgifter, revisionskrav) annars är onödigt hög för ett litet kommersiellt pilotprojekt.
+- **Viktigt förbehåll tillagt:** ansvarsisolering gäller fullt ut först vid eget AB — så länge ett projekt delar paraply-AB med andra gäller inte principen att ett projekts juridiska problem stannar inom det egna projektet
+- `legal_type`-enumet utökat med `commercial_umbrella` (§7, 4c, `legal_type_change_requests`), ny tabell `commercial_umbrella_entities`, samt `projects.commercial_umbrella_entity_id`
+- Övergångslogiken i 4c uppdaterad för att hantera knoppning mellan paraply-AB och eget AB, inte bara ideellt↔kommersiellt
+
 **Ändringar i v3.8:**
-- Reconciliation-gap åtgärdat mellan 4f (fork) och 4c (ägarstruktur): ny beslutad paragraf i 4f klargör att ett forkat projekt alltid är en juridiskt blank slate (`legal_type = nonprofit_umbrella` som default, oavsett originalets `legal_type`), och att det inte finns någon genväg runt 4c:s vanliga övergångsprocess (röstning + Stiftelsen genomför) för att bli `commercial_ab` eller egen förening — gäller lika för Scenario A och B
+- Ny subsektion i 4c: Skattemässig grund — allmännyttig stiftelse med helägda aktiebolag. Bekräftar att den redan valda strukturen (helägda AB, se 4c) är rätt väg skattemässigt, samt beskriver de fyra löpande kraven för att behålla skattebefrielsen (ändamålskravet, fullföljdskravet, verksamhetskravet, öppenhetskravet)
+- Ny öppen fråga i punkt 10: fullföljdskravets faktiska efterlevnad (75–80% utdelning över rullande 5 år) bör stämmas av mot `impact_fund_ledger`/4a i samråd med jurist/revisor
+- **Observera:** detta är en översiktlig karta, inte juridisk rådgivning — kräver genomgång med jurist/revisor specialiserad på stiftelserätt innan strukturen låses fast
 
 **Ändringar i v3.7:**
 - **Beslutat:** fork (se 4f) tillåts oavsett vilken fas (4d) originalprojektet befinner sig i — från `idea` till `impact`. Det forkade projektet ärver originalets fas vid gaffeltillfället och får sin egen fasövergångshistorik framåt.
@@ -358,14 +372,20 @@ Varje projekt på GoodTribes är operativt självständigt — styrt av sin init
 
 ---
 
-**Kommersiella projekt — helägda aktiebolag**
+**Kommersiella projekt — två nivåer**
 
-- Varje kommersiellt projekt drivs som ett fristående aktiebolag, till 100% ägt av Stiftelsen GoodTribes.
-- Ansvarsisolering: ett projekts konkurs eller juridiska problem slår inte igenom till Stiftelsen eller andra projekt.
-- Stiftelsen delegerar, som ensam aktieägare, det löpande operativa beslutsmandatet (produktriktning, prioritering, mindre budgetbeslut) till projektets Tribe Token-röstning.
+| Nivå | Beskrivning | Passar för |
+|---|---|---|
+| Under gemensamt paraply-AB | Ingen egen juridisk person. Projektet drivs som en intern produktlinje under ett befintligt, helägt Stiftelse-AB (t.ex. "GoodTribes Ventures AB") tillsammans med andra tidiga kommersiella projekt. | Nystartade kommersiella projekt, innan behovet av ett eget AB motiverar kostnaden |
+| Eget helägt aktiebolag | Fristående AB, till 100% ägt av Stiftelsen GoodTribes, med eget organisationsnummer. | Projekt som vuxit i omsättning eller risk och motiverar ansvarsisolering |
+
+- **Ansvarsisolering gäller fullt ut först vid eget AB.** Så länge ett projekt delar paraply-AB med andra projekt gäller *inte* principen att ett projekts juridiska problem eller konkurs stannar inom det egna projektet — ett problem i en produktlinje kan i teorin påverka andra produktlinjer i samma bolag. Detta är den viktigaste avvägningen mot att undvika AB-registreringens tröskel (aktiekapital, registreringsavgift, löpande bokförings-/revisionskrav).
+- Stiftelsen delegerar, som ensam aktieägare (direkt eller via paraply-AB:et, t.ex. "GoodTribes Ventures AB"), det löpande operativa beslutsmandatet (produktriktning, prioritering, mindre budgetbeslut) till respektive projekts Tribe Token-röstning — oavsett nivå.
 - Stiftelsen behåller alltid vetorätt i frågor om: byte av styrelse/vd, ändring av bolagsordning, större investeringar, varumärkesanvändning, samt frågor som utgör juridisk eller finansiell risk — inklusive vetorätt över fördelningen av vinstutdelning (se 4a) om utfallet skulle utgöra en fara för Stiftelsens fortsatta verksamhet.
-- Vinst går som utdelning till Stiftelsen. Projektets Tribe Token-innehavare röstar därefter, proportionellt mot sitt tokeninnehav, om hur överskottet fördelas — t.ex. andel till Impact-fonden, andel till projektets eget vinstdelningsprogram, eller reinvestering (se 4a och Utvecklingsfas 2.96).
-- Regleras genom ett **delegations- och anslutningsavtal** mellan Stiftelsen och respektive AB (se separat avtalsmall).
+- Vinst går som utdelning till Stiftelsen (för paraply-nivån: internt fördelad per produktlinje innan utdelning). Projektets Tribe Token-innehavare röstar därefter, proportionellt mot sitt tokeninnehav, om hur överskottet fördelas — t.ex. andel till Impact-fonden, andel till projektets eget vinstdelningsprogram, eller reinvestering (se 4a och Utvecklingsfas 2.96).
+- Regleras genom ett **delegations- och anslutningsavtal** mellan Stiftelsen och respektive AB, eller för paraply-nivån ett internt produktlinjeavtal med paraply-AB:et (se separat avtalsmall).
+- Stiftelsen fastställer tröskelvärden (t.ex. omsättning, teamstorlek, juridisk risknivå) för när ett projekt måste knoppas av till eget AB. *(Öppen fråga — se punkt 10: exakta tröskelvärden ej beslutade — jämför motsvarande öppna fråga för ideella tröskelvärden nedan.)*
+- Att bedriva kommersiell verksamhet direkt i Stiftelsen utan mellanliggande AB (varken paraply eller eget) rekommenderas inte — se skattemässig grund nedan.
 
 **Ideella projekt — två nivåer**
 
@@ -379,19 +399,27 @@ Varje projekt på GoodTribes är operativt självständigt — styrt av sin init
 
 **Övergång mellan juridisk form**
 
-- Projektets medlemmar kan rösta, viktat mot Tribe Token-innehav (se Utvecklingsfas 2.95), om att föreslå en ändring av `legal_type` — t.ex. från ideellt till kommersiellt eller tvärtom.
-- Ett godkänt röstresultat är en **begäran**, inte en automatisk ändring: Stiftelsen genomför den faktiska juridiska övergången, eftersom den kräver verkliga steg (bilda eller avveckla ett aktiebolag, teckna nytt avtal enligt 4c, hantera eventuella skattekonsekvenser).
-- Vid övergång från ideellt till kommersiellt: ett nytt aktiebolag bildas, helägt av Stiftelsen, och ett delegations- och anslutningsavtal tecknas enligt ovan.
-- Vid övergång från kommersiellt till ideellt: Stiftelsen (som redan äger bolaget till 100%) beslutar om avveckling eller ombildning av det befintliga AB:et, i samråd med projektets medlemmar.
+- Projektets medlemmar kan rösta, viktat mot Tribe Token-innehav (se Utvecklingsfas 2.95), om att föreslå en ändring av `legal_type` — t.ex. från ideellt till kommersiellt (paraply eller eget AB), eller tvärtom.
+- Ett godkänt röstresultat är en **begäran**, inte en automatisk ändring: Stiftelsen genomför den faktiska juridiska övergången, eftersom den kräver verkliga steg (ansluta till/bilda eller avveckla ett aktiebolag, teckna nytt avtal enligt 4c, hantera eventuella skattekonsekvenser).
+- Vid övergång från ideellt till kommersiellt: projektet ansluts som produktlinje under paraply-AB:et, eller ett nytt eget aktiebolag bildas (helägt av Stiftelsen) om tröskelvärdena för eget AB redan är uppfyllda, och ett delegations- eller anslutningsavtal tecknas enligt ovan.
+- Vid övergång mellan paraply-AB och eget AB (i endera riktningen): produktlinjen knoppas av från/in i paraply-AB:et. Kräver inte samma juridiska tyngd som att bilda/avveckla ett helt bolag, men regleras fortfarande genom uppdaterat avtal.
+- Vid övergång från kommersiellt till ideellt: Stiftelsen (som redan äger bolaget/paraply-AB:et till 100%) beslutar om avveckling eller ombildning, i samråd med projektets medlemmar.
 - Stiftelsen kan avslå en begäran om övergång om den bedöms medföra oskälig juridisk, ekonomisk eller skattemässig risk.
 - *(Öppen fråga — se punkt 10: exakt tidsram och process för hur Stiftelsen hanterar en godkänd övergångsbegäran är inte specificerad.)*
 
 **Databasutökning**
 ```
 legal_type_change_requests
-  id, project_id, requested_type (commercial_ab | nonprofit_umbrella | nonprofit_own_assoc)
+  id, project_id, requested_type (commercial_umbrella | commercial_ab | nonprofit_umbrella | nonprofit_own_assoc)
   poll_id, status (pending | approved_by_members | executed | rejected_by_foundation)
   decided_at, executed_at, created_at
+
+commercial_umbrella_entities
+  id, name, foundation_ab_org_number, created_at
+  -- exempelrad: name = "GoodTribes Ventures AB"
+
+projects
+  commercial_umbrella_entity_id (nullable) — sätts om legal_type = commercial_umbrella, se 7
 ```
 
 **Juridiska principer som gäller oavsett projektform**
@@ -399,6 +427,30 @@ legal_type_change_requests
 - Inga tokens (Tribe Tokens eller GT) representerar ägande, aktier eller är fritt överlåtbara — se Utvecklingsfas 2.8.
 - Allt faktiskt penningflöde (utdelning, donationer, ersättningar) sker i vanlig valuta via Stripe Connect, aldrig som en tokentransaktion.
 - Avtalsmallar för båda projekttyperna finns som separat bilaga till detta dokument (`avtal/kommersiellt-projekt-mall.docx` och `avtal/ideellt-projekt-mall.docx`) och ska granskas av jurist per projekt innan signering.
+
+---
+
+**Skattemässig grund — allmännyttig stiftelse med helägda aktiebolag**
+
+*(Detta är en översiktlig karta, inte juridisk rådgivning. Stiftelserätt och skatterätt avgörs av era faktiska stadgar och Skatteverkets bedömning — anlita jurist/revisor specialiserad på stiftelserätt innan strukturen låses fast.)*
+
+En svensk stiftelse får driva näringsverksamhet, men hur det görs avgör skatteutfallet:
+
+- **Vald modell (helägda AB, se ovan) är rätt väg.** AB:et betalar vanlig bolagsskatt (20,6%). Utdelning från AB:et till Stiftelsen är normalt **skattefri**, förutsatt att Stiftelsen räknas som **allmännyttig**. Detta är den etablerade svenska modellen (jämförbart med t.ex. forskningsstiftelser som äger operativa bolag).
+- Alternativet — att Stiftelsen bedriver näringsverksamhet direkt utan mellanliggande AB — beskattas i regel som vanlig näringsverksamhet och är juridiskt mer riskabelt. Inte den valda vägen för GoodTribes.
+
+**Fyra löpande krav för att behålla skattebefrielsen (inkomstskattelagen):**
+
+| Krav | Innebörd | Koppling till GoodTribes |
+|---|---|---|
+| Ändamålskravet | Stiftelsens ändamål i stiftelseförordnandet måste falla inom erkända allmännyttiga kategorier (social hjälpverksamhet, utbildning, vetenskap, kultur m.fl.) | Agenda 2030-inriktningen behöver formuleras så den tydligt faller inom dessa kategorier — ordalydelsen i stadgarna spelar roll |
+| Fullföljdskravet | I storleksordningen 75–80% av avkastningen ska delas ut till ändamålet, bedömt över en rullande period (normalt ca 5 år) | Samma grundprincip som `impact_fund_ledger` (se Utvecklingsfas 2.96) redan bygger på — pengar ska faktiskt flöda till projekt, inte bara ackumuleras i Stiftelsen |
+| Verksamhetskravet | Stiftelsen ska faktiskt bedriva eller finansiera verksamhet i linje med ändamålet, inte bara passivt förvalta kapital | Uppfylls löpande genom aktiv drift av plattformen och dess projekt |
+| Öppenhetskravet | Ändamålet får inte vara orimligt begränsat till en alltför sluten krets av mottagare | I linje med plattformens öppna, globala inriktning |
+
+**Tillsyn:** Stiftelsen och dess AB:n står under Länsstyrelsens tillsyn, med registreringsplikt om tillgångarna överstiger vissa gränsvärden, samt krav på auktoriserad revisor vid en viss verksamhetsstorlek.
+
+*(Öppen fråga — se punkt 10: fullföljdskravets faktiska efterlevnad bör stämmas av mot den planerade utdelningstakten i `impact_fund_ledger` och vinstdelningslogiken i 4a, i samråd med jurist/revisor — ingen konkret siffra är verifierad ännu.)*
 
 ---
 
@@ -582,13 +634,13 @@ Båda scenarierna delar samma underliggande mekanism — kopiera projektets snap
 
 ---
 
-**Beslutat (v3.8) — `legal_type` vid fork, reconciliation med 4c**
+**Beslutat (v4.1) — `legal_type` vid fork, reconciliation med 4c**
 
-Fork-funktionen kopierar ett projekts *data* (snapshot, medlemskap, historik) till ett nytt `project_id` — men den kopierar aldrig en juridisk person. Det forkade projektet är alltid en juridiskt blank slate, oavsett vilken `legal_type` originalet hade:
+Fork-funktionen kopierar ett projekts *data* (snapshot, medlemskap, historik) till ett nytt `project_id` — men den kopierar aldrig en juridisk person eller en plats i ett befintligt AB. Det forkade projektet är alltid en juridiskt blank slate, oavsett vilken `legal_type` originalet hade — inklusive originalet var `commercial_umbrella` eller `commercial_ab` (se den nya tvånivåstrukturen för kommersiella projekt ovan):
 
-- **Default vid skapande: `nonprofit_umbrella`, för alla forkar, i båda scenarierna.** Detta är samma default som gäller för varje nyskapat projekt på plattformen (se 4c) — inget särfall för forkar. Att sätta denna default kräver ingen handling från Stiftelsen vid gaffeltillfället, eftersom `nonprofit_umbrella` är projektets normala vilostatus (Stiftelsen är per definition redan juridisk huvudman för alla `nonprofit_umbrella`-projekt) — det är inte en *övergång* i 4c:s mening, bara startvärdet.
-- **Ingen genväg runt 4c:s övergångsprocess.** Vill det forkade projektets medlemmar senare bli `commercial_ab` eller egen `nonprofit_own_assoc`, gäller exakt samma process som för alla andra projekt: röstning bland forkens medlemmar + Stiftelsen genomför den faktiska juridiska övergången (`legal_type_change_requests`, se 4c). Fork-funktionen ger alltså inte gafflaren rätt att själv deklarera `legal_type` fritt.
-- **Specialfall — originalet var `commercial_ab`:** forken ärver *inte* originalets aktiebolag eller Stiftelsens ägarskap i det. Bolaget är en egen juridisk person kopplad till originalprojektet, inte till projektdatan som kopieras. Vill forkens medlemmar själva driva kommersiellt krävs en helt ny AB-bildning, helägd av Stiftelsen, via ett nytt delegations- och anslutningsavtal — samma process som när ett helt nytt projekt (utan fork-koppling) ansöker om att bli `commercial_ab`.
+- **Default vid skapande: `nonprofit_umbrella`, för alla forkar, i båda scenarierna, oavsett originalets `legal_type`.** Detta är samma default som gäller för varje nyskapat projekt på plattformen — den lägsta juridiska tröskeln, inget särfall för forkar. Att sätta denna default kräver ingen handling från Stiftelsen vid gaffeltillfället, eftersom `nonprofit_umbrella` är projektets normala vilostatus — det är inte en *övergång* i 4c:s mening, bara startvärdet.
+- **Ingen genväg runt 4c:s övergångsprocess.** Vill det forkade projektets medlemmar senare bli `commercial_umbrella` (ansluta som produktlinje under ett paraply-AB), eget `commercial_ab`, eller `nonprofit_own_assoc`, gäller exakt samma process som för alla andra projekt: röstning bland forkens medlemmar + Stiftelsen genomför den faktiska juridiska övergången (`legal_type_change_requests`, se 4c).
+- **Specialfall — originalet var `commercial_umbrella` eller `commercial_ab`:** forken ärver *inte* originalets plats i ett paraply-AB eller dess eget aktiebolag. Att originalet redan är en produktlinje under ett paraply-AB, eller ett eget helägt AB, ger ingen automatisk plats för forken i samma struktur — anslutning eller nybildning kräver samma beslutsprocess som för ett helt nytt projekt utan fork-koppling.
 - **Gäller lika för Scenario A och B.** Vem som initierar forken (initiativtagaren själv vid självvald uppdelning, eller en dissenterande medlem) påverkar inte den juridiska processen ovan.
 
 ---
@@ -599,7 +651,7 @@ Fork-funktionen kopierar ett projekts *data* (snapshot, medlemskap, historik) ti
 |---|---|
 | Vem får initiera en dissens-fork — vem som helst som följer projektet, eller krävs tidigare aktivt bidrag (Tribe Tokens intjänade)? | **Beslutat (v3.5): Vem som helst, permissionless precis som på GitHub — inget krav på tidigare aktivt bidrag.** |
 | Vilken fas (se 4d) hamnar det forkade projektet i — samma fas som originalet hade vid gaffeltillfället, eller alltid `idea`? | **Beslutat (v3.7): Fork tillåts oavsett fas — `idea` t.o.m. `impact`. Det forkade projektet ärver originalets fas vid gaffeltillfället, med egen fasövergångshistorik framåt.** |
-| Vilken `legal_type` (se 4c) får det forkade projektet vid skapande, om originalet var `commercial_ab` (ägt av Stiftelsen, som inte automatiskt äger forken)? | **Beslutat (v3.8): `nonprofit_umbrella` som default för alla forkar, ingen genväg runt 4c:s vanliga övergångsprocess. Se ny sektion ovan.** |
+| Vilken `legal_type` (se 4c) får det forkade projektet vid skapande, om originalet var `commercial_umbrella` eller `commercial_ab` (ägt av/anslutet till Stiftelsen, som inte automatiskt gäller forken)? | **Beslutat (v4.1): `nonprofit_umbrella` som default för alla forkar, ingen genväg runt 4c:s vanliga övergångsprocess. Se ny sektion ovan.** |
 | Vem äger organisationen som skapas vid Scenario A — automatiskt samma initiativtagare som originalprojektet, eller kan flera av originalets medlemmar bli medgrundare? | **Beslutat (v3.5): Samma initiativtagare som originalprojektet.** |
 | Blandas Granskningsrådet in vid en dissens-fork? | Löst: Nej, i linje med den reaktiva principen (se 5.54) — en fork är aldrig i sig ett regelbrott, bara en funktion. Rådet blandas bara in om någon faktiskt anmäler något |
 
@@ -610,7 +662,7 @@ Fork-funktionen kopierar ett projekts *data* (snapshot, medlemskap, historik) ti
 ```
 projects
   forked_from_project_id (nullable), fork_type (self_split | dissent) — kompletterar befintliga fält, se 7
-  -- legal_type sätts alltid till nonprofit_umbrella vid gaffling, oavsett originalets legal_type — se "Beslutat (v3.8)" ovan
+  -- legal_type sätts alltid till nonprofit_umbrella vid gaffling, oavsett originalets legal_type — se "Beslutat (v4.1)" ovan
 
 fork_contributor_credits
   id, forked_project_id, original_project_id, credited_user_id, created_at
@@ -713,7 +765,7 @@ Alla inloggade användare kan skapa ett nytt projekt när som helst via en tydli
 - Kategori (välj från lista: Teknik / Miljö / Utbildning / Konst / Samhälle / Övrigt)
 - Taggar (fritext, max 5)
 - **Agenda 2030-mål** — AI föreslår baserat på beskrivningen, initiativtagaren bekräftar eller justerar
-- **Juridisk form** (`legal_type`, se 4c): Kommersiellt (helägt AB) / Ideellt (under Stiftelsens paraply) / Ideellt (egen förening). Avgör vilket avtal som gäller för projektet (delegations- och anslutningsavtal eller verksamhetsavtal, se 4c).
+- **Juridisk form** (`legal_type`, se 4c): Kommersiellt (paraply-AB eller eget helägt AB) / Ideellt (under Stiftelsens paraply eller egen förening). Avgör vilket avtal som gäller för projektet (delegations-/anslutningsavtal, internt produktlinjeavtal, eller verksamhetsavtal, se 4c).
 
 **Steg 2 — Inställningar**
 - Synlighet: Öppet (vem som helst kan gå med) eller Slutet (kräver godkännande)
@@ -1897,7 +1949,8 @@ organizations
 projects
   id, title, description, visibility, category, initiator_user_id, org_id, created_at
   phase (idea | project | pilot | production | establish | scale | impact) — se 4d
-  legal_type (commercial_ab | nonprofit_umbrella | nonprofit_own_assoc) — se 4c
+  legal_type (commercial_umbrella | commercial_ab | nonprofit_umbrella | nonprofit_own_assoc) — se 4c
+commercial_umbrella_entity_id (nullable) — se 4c
 
 phase_transitions
   id, project_id, from_phase (nullable), to_phase, changed_by, changed_at — se 4d
@@ -2030,9 +2083,10 @@ För att komma till marknad snabbast möjligt begränsas MVP till:
 | `peer_review_approved` (se 4d, delsteg i `idea`-fasen) — är detta samma granskningsmekanism som Granskningsrådet (Utvecklingsfas 2.97), eller en separat, lättare community-granskning innan idé blir projekt? | **Löst (v3.0): Separat mekanism. Peer review är proaktiv kvalitetsgranskning av peers innan idé blir projekt. Granskningsrådet är reaktivt och hanterar anmälningar om regelbrott hos användare, projekt eller organisationer, med möjlighet till uteslutning. Se 4d för fullständig jämförelse.** |
 | Fork-funktion (se 4f) — vem får initiera en dissens-fork? Krävs tidigare aktivt bidrag i originalprojektet? | **Beslutat (v3.5): Vem som helst, permissionless — inget krav på tidigare bidrag.** |
 | Fork-funktion (se 4f) — vilken fas (4d) hamnar ett forkat projekt i? | **Beslutat (v3.7): Fork tillåts oavsett vilken fas originalprojektet befinner sig i (`idea` t.o.m. `impact`). Det forkade projektet ärver originalets fas vid gaffeltillfället, med egen fasövergångshistorik framåt.** |
-| Fork-funktion (se 4f) — vilken `legal_type` (4c) får ett forkat projekt vid skapande om originalet var `commercial_ab`? | **Beslutat (v3.8): `nonprofit_umbrella` som default för alla forkar. Forken ärver aldrig originalets aktiebolag eller Stiftelsens ägarskap i det — vill forken bli `commercial_ab` krävs en ny AB-bildning via 4c:s vanliga övergångsprocess, ingen genväg.** |
+| Fork-funktion (se 4f) — vilken `legal_type` (4c) får ett forkat projekt vid skapande om originalet var `commercial_umbrella` eller `commercial_ab`? | **Beslutat (v4.1): `nonprofit_umbrella` som default för alla forkar. Forken ärver aldrig originalets plats i ett paraply-AB eller dess eget aktiebolag — vill forken bli kommersiell krävs 4c:s vanliga övergångsprocess, ingen genväg.** |
 | Fork-funktion (se 4f) — vem äger organisationen som skapas vid självvald uppdelning (Scenario A)? | **Beslutat (v3.5): Samma initiativtagare som originalprojektet.** |
 | Fork-funktion (se 4f) — gäller vinstdelningsmodellen för dissens-fork (Scenario B) även vid självvald uppdelning (Scenario A)? | Öppen |
+| Fullföljdskravet för allmännyttig stiftelse (se 4c) — stämmer den planerade utdelningstakten i `impact_fund_ledger`/4a faktiskt överens med Skatteverkets krav på ca 75–80% över en rullande 5-årsperiod? | Öppen — kräver avstämning med jurist/revisor, ingen siffra verifierad |
 
 ---
 
