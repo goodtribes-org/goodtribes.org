@@ -13,7 +13,7 @@ import OrgReviewButton from "@/components/OrgReviewButton";
 import ResourceLibrary from "@/components/ResourceLibrary";
 import ActivityTimeline, { type EventMeta } from "@/components/ActivityTimeline";
 import OrgTourGate from "@/components/OrgTourGate";
-import { PROJECT_STATUS_LABEL } from "@/lib/projectStatus";
+import { PROJECT_PHASE_LABEL } from "@/lib/projectPhase";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
 import ShareButton from "@/components/ShareButton";
 import LikeCommentBlock from "@/components/LikeCommentBlock";
@@ -124,7 +124,7 @@ export default async function OrgDetailPage({
     activeTab === "projects"
       ? prisma.project.findMany({
           where: { orgId: org.id, visibility: "public" },
-          select: { slug: true, title: true, status: true, description: true, _count: { select: { members: true } } },
+          select: { slug: true, title: true, phase: true, description: true, _count: { select: { members: true } } },
           orderBy: { createdAt: "desc" },
         })
       : Promise.resolve([]),
@@ -413,7 +413,7 @@ export default async function OrgDetailPage({
                       <div className="flex items-center gap-2 mb-1">
                         <p className="font-medium text-dark-slate truncate">{p.title}</p>
                         <span className="text-xs bg-dry-sage text-dark-slate/60 px-2 py-0.5 rounded flex-shrink-0">
-                          {PROJECT_STATUS_LABEL[p.status] ?? p.status}
+                          {PROJECT_PHASE_LABEL[p.phase] ?? p.phase}
                         </span>
                       </div>
                       {p.description && (

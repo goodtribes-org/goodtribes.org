@@ -6,7 +6,7 @@ import ProjectFilters from "./ProjectFilters";
 interface Props {
   sort: string;
   q?: string;
-  status?: string;
+  phase?: string;
   category?: string;
   sdg?: string;
   basePath?: string;

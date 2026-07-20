@@ -32,6 +32,14 @@ export default async function EditProjectPage({
   ]);
   if (!project) redirect("/projects");
 
+  const checklistItems =
+    project.phase === "IDEA" || project.phase === "PROJECT"
+      ? await prisma.initiativeChecklistItem.findMany({
+          where: { projectId: project.id, completedAt: { not: null } },
+          select: { itemKey: true },
+        })
+      : [];
+
   const role = project.members[0]?.role;
   if (!isLeadRole(role)) redirect(`/projects/${slug}`);
 
@@ -55,13 +63,14 @@ export default async function EditProjectPage({
           title: project.title,
           summary: (project as typeof project & { summary: string | null }).summary,
           description: project.description,
-          status: project.status,
+          phase: project.phase,
           visibility: project.visibility,
           category: project.category,
           tags: project.tags,
           sdgGoals: project.sdgGoals,
           imageUrl: project.imageUrl,
         }}
+        completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
       />
       {isOwner && (
         <div className="mt-12 pt-8 border-t border-red-200">

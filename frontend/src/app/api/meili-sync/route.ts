@@ -34,7 +34,7 @@ export async function POST() {
         title: p.title,
         description: p.description ?? "",
         url: `/projects/${p.slug}`,
-        status: p.status,
+        phase: p.phase,
         sdgGoals: p.sdgGoals,
         ownerName: p.owner.name ?? "",
       }))

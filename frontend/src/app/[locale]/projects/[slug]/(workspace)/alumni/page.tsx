@@ -23,7 +23,7 @@ export default async function AlumniPage({ params }: { params: Promise<{ slug: s
   const [project, alumni, maturity] = await Promise.all([
     prisma.project.findUnique({
       where: { slug },
-      select: { title: true, slug: true, status: true },
+      select: { title: true, slug: true, archivedAt: true },
     }),
     prisma.projectAlumni.findMany({
       where: { projectSlug: slug },
@@ -62,7 +62,7 @@ export default async function AlumniPage({ params }: { params: Promise<{ slug: s
           </p>
         </div>
 
-        {isOwnerOrAdmin && project.status !== "ARCHIVED" && (
+        {isOwnerOrAdmin && !project.archivedAt && (
           <ArchiveButton projectSlug={slug} />
         )}
       </div>
@@ -79,7 +79,7 @@ export default async function AlumniPage({ params }: { params: Promise<{ slug: s
         </section>
       )}
 
-      {isOwnerOrAdmin && !maturity?.finalReport && project.status === "ARCHIVED" && (
+      {isOwnerOrAdmin && !maturity?.finalReport && project.archivedAt && (
         <GenerateReportButton projectSlug={slug} />
       )}
 
@@ -88,7 +88,7 @@ export default async function AlumniPage({ params }: { params: Promise<{ slug: s
         <div className="border border-dashed border-muted-teal/40 rounded-xl p-12 text-center">
           <p className="text-dark-slate/40 text-sm">
             Inga alumni ännu.{" "}
-            {project.status !== "ARCHIVED"
+            {!project.archivedAt
               ? "Arkivera projektet för att skapa alumni-badges."
               : ""}
           </p>

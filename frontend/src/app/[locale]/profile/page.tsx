@@ -7,7 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_LABELS_SV } from "@/lib/sdg";
-import { PROJECT_STATUS_LABEL } from "@/lib/projectStatus";
+import { PROJECT_PHASE_LABEL } from "@/lib/projectPhase";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -30,7 +30,7 @@ export default async function ProfilePage() {
         select: { skill: { select: { id: true, name: true, slug: true } } },
       },
       projectMemberships: {
-        include: { project: { select: { slug: true, title: true, status: true, description: true } } },
+        include: { project: { select: { slug: true, title: true, phase: true, description: true } } },
         orderBy: { joinedAt: "desc" },
         take: 6,
       },
@@ -214,7 +214,7 @@ export default async function ProfilePage() {
                         <p className="text-xs text-dark-slate/50 line-clamp-1 mt-0.5">{project.description}</p>
                       )}
                     </div>
-                    <span className="text-xs text-dark-slate/40 shrink-0 mt-0.5">{PROJECT_STATUS_LABEL[project.status] ?? project.status}</span>
+                    <span className="text-xs text-dark-slate/40 shrink-0 mt-0.5">{PROJECT_PHASE_LABEL[project.phase] ?? project.phase}</span>
                   </Link>
                 ))}
               </div>

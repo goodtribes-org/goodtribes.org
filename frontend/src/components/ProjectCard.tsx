@@ -6,7 +6,8 @@ export type ProjectCardData = {
   title: string;
   summary: string | null;
   description: string | null;
-  status: string;
+  phase: string;
+  archivedAt: Date | string | null;
   imageUrl: string | null;
   sdgGoals: number[];
   commercial: boolean;
@@ -17,20 +18,23 @@ export type ProjectCardData = {
   kanbanCardsDone: number;
 };
 
-// Card-only Swedish stage bucket — the real ProjectStatus enum has 5 lifecycle
-// stages (see @/lib/projectStatus), simplified here to the 3 buckets the design calls for.
-const STATUS_LABEL_SV: Record<string, string> = {
-  CONCEPT: "Idéfas",
-  PROTOTYPE: "Aktivt",
+// Card-only Swedish stage bucket — the real ProjectPhase enum has 7 lifecycle
+// phases (see @/lib/projectPhase), simplified here to the buckets the design
+// calls for. Archival is decoupled from phase, so it's checked separately.
+const PHASE_LABEL_SV: Record<string, string> = {
+  IDEA: "Idéfas",
+  PROJECT: "Idéfas",
+  PILOT: "Aktivt",
   PRODUCTION: "Aktivt",
-  DELIVERY: "Avslutat",
-  ARCHIVED: "Avslutat",
+  ESTABLISH: "Aktivt",
+  SCALE: "Aktivt",
+  IMPACT: "Impact",
 };
 
 export default function ProjectCard({ project }: { project: ProjectCardData }) {
   const primarySdg = project.sdgGoals[0];
   const tint = primarySdg ? SDG_COLORS[primarySdg] : "#43aa8b";
-  const stageLabel = STATUS_LABEL_SV[project.status] ?? project.status;
+  const stageLabel = project.archivedAt ? "Avslutat" : PHASE_LABEL_SV[project.phase] ?? project.phase;
 
   return (
     <a

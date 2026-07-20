@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import SortToggle from "./SortToggle";
-import { PROJECT_STATUSES as STAGES } from "@/lib/projectStatus";
+import { PROJECT_PHASES as STAGES } from "@/lib/projectPhase";
 import { CATEGORIES } from "@/lib/categories";
 
 const SDG_LABELS: Record<number, string> = {
@@ -16,7 +16,7 @@ const SDG_LABELS: Record<number, string> = {
 interface Props {
   sort: string;
   q?: string;
-  status?: string;
+  phase?: string;
   category?: string;
   sdg?: string;
   basePath?: string;
@@ -24,12 +24,12 @@ interface Props {
   onNavigate: (url: string) => void;
 }
 
-export default function ProjectFilters({ sort, q, status, category, sdg, basePath, onNavigate }: Props) {
+export default function ProjectFilters({ sort, q, phase, category, sdg, basePath, onNavigate }: Props) {
   const [query, setQuery] = useState(q ?? "");
 
   function buildUrl(overrides: Record<string, string | undefined>) {
     const params = new URLSearchParams();
-    const current: Record<string, string | undefined> = { sort, q, status, category, sdg };
+    const current: Record<string, string | undefined> = { sort, q, phase, category, sdg };
     const merged = { ...current, ...overrides };
     for (const [k, v] of Object.entries(merged)) {
       if (v) params.set(k, v);
@@ -43,17 +43,17 @@ export default function ProjectFilters({ sort, q, status, category, sdg, basePat
     onNavigate(buildUrl({ q: query.trim() || undefined, page: undefined }));
   }
 
-  const clearFiltersHref = buildUrl({ status: undefined, category: undefined, sdg: undefined, page: undefined });
+  const clearFiltersHref = buildUrl({ phase: undefined, category: undefined, sdg: undefined, page: undefined });
 
   return (
     <div className="flex flex-wrap items-center gap-3 mb-6">
       {/* Sort */}
-      <SortToggle sort={sort} q={q} status={status} category={category} sdg={sdg} basePath={basePath} onNavigate={onNavigate} />
+      <SortToggle sort={sort} q={q} phase={phase} category={category} sdg={sdg} basePath={basePath} onNavigate={onNavigate} />
 
       {/* Stage */}
       <select
-        value={status ?? ""}
-        onChange={(e) => onNavigate(buildUrl({ status: e.target.value || undefined, page: undefined }))}
+        value={phase ?? ""}
+        onChange={(e) => onNavigate(buildUrl({ phase: e.target.value || undefined, page: undefined }))}
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
         <option value="">All stages</option>
@@ -99,7 +99,7 @@ export default function ProjectFilters({ sort, q, status, category, sdg, basePat
         </button>
       </form>
 
-      {(status || category || sdg) && (
+      {(phase || category || sdg) && (
         <a
           href={clearFiltersHref}
           onClick={(e) => {

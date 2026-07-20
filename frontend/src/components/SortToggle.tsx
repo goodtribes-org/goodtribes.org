@@ -9,7 +9,7 @@ const SORT_OPTIONS = [
 interface Props {
   sort: string;
   q?: string;
-  status?: string;
+  phase?: string;
   category?: string;
   sdg?: string;
   basePath?: string;
@@ -17,10 +17,10 @@ interface Props {
   onNavigate: (url: string) => void;
 }
 
-export default function SortToggle({ sort, q, status, category, sdg, basePath, onNavigate }: Props) {
+export default function SortToggle({ sort, q, phase, category, sdg, basePath, onNavigate }: Props) {
   function buildUrl(newSort: string) {
     const params = new URLSearchParams();
-    const current: Record<string, string | undefined> = { sort: newSort, q, status, category, sdg };
+    const current: Record<string, string | undefined> = { sort: newSort, q, phase, category, sdg };
     for (const [k, v] of Object.entries(current)) {
       if (v) params.set(k, v);
     }

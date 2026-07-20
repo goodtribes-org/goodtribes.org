@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { acceptMentorship } from "@/app/[locale]/mentors/actions";
-import { PROJECT_STATUS_LABEL as STATUS_LABEL, PROJECT_STATUS_COLOR as STATUS_COLOR } from "@/lib/projectStatus";
+import { PROJECT_PHASE_LABEL as PHASE_LABEL, PROJECT_PHASE_COLOR as PHASE_COLOR } from "@/lib/projectPhase";
 import VolunteerTourGate from "@/components/VolunteerTourGate";
 
 export const metadata: Metadata = { title: "Workplace — GoodTribes.org" };
@@ -134,7 +134,7 @@ export default async function WorkplacePage({
             id: true,
             title: true,
             slug: true,
-            status: true,
+            phase: true,
             summary: true,
             description: true,
             _count: {
@@ -388,9 +388,9 @@ export default async function WorkplacePage({
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-semibold text-dark-slate leading-tight">{project.title}</h3>
                       <span
-                        className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full flex-shrink-0 ${STATUS_COLOR[project.status] ?? STATUS_COLOR.concept}`}
+                        className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full flex-shrink-0 ${PHASE_COLOR[project.phase] ?? PHASE_COLOR.IDEA}`}
                       >
-                        {STATUS_LABEL[project.status] ?? project.status}
+                        {PHASE_LABEL[project.phase] ?? project.phase}
                       </span>
                     </div>
                     {(project.summary ?? project.description) && (

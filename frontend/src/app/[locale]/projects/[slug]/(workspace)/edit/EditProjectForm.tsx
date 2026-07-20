@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useTransition, useRef } from "react";
-import { updateProject, deleteProject } from "./actions";
+import { updateProject, deleteProject, advanceProjectPhase, toggleChecklistItem } from "./actions";
 import { getSdgSuggestions } from "@/app/[locale]/projects/new/actions";
 import FileUpload from "@/components/FileUpload";
 import RichTextEditor from "@/components/RichTextEditor";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_NUMBERS, SDG_LABELS_EN } from "@/lib/sdg";
-import { PROJECT_STATUSES as STATUSES } from "@/lib/projectStatus";
+import { PROJECT_PHASE_LABEL, getNextPhase, isValidProjectPhase, INITIATIVE_CHECKLIST_ITEMS } from "@/lib/projectPhase";
 import { CATEGORIES } from "@/lib/categories";
 
 interface Props {
@@ -20,23 +20,38 @@ interface Props {
     title: string;
     summary: string | null;
     description: string | null;
-    status: string;
+    phase: string;
     visibility: string;
     category: string | null;
     tags: string[];
     sdgGoals: number[];
     imageUrl: string | null;
   };
+  completedChecklistKeys: string[];
 }
 
-export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, currentOrgId, initial }: Props) {
+export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, currentOrgId, initial, completedChecklistKeys }: Props) {
   const [description, setDescription] = useState(initial.description ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set(initial.sdgGoals));
   const [aiSuggested, setAiSuggested] = useState<number[]>([]);
   const [reasoning, setReasoning] = useState("");
   const [isPending, startTransition] = useTransition();
   const [isSuggesting, startSuggesting] = useTransition();
+  const [isAdvancing, startAdvancing] = useTransition();
+  const [isTogglingChecklist, startTogglingChecklist] = useTransition();
+  const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedChecklistKeys));
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const nextPhase = isValidProjectPhase(initial.phase) ? getNextPhase(initial.phase) : null;
+  const checklist = initial.phase === "IDEA" || initial.phase === "PROJECT" ? INITIATIVE_CHECKLIST_ITEMS[initial.phase] : null;
+
+  function handleToggleChecklistItem(itemKey: string, done: boolean) {
+    setDoneKeys((prev) => {
+      const next = new Set(prev);
+      if (done) next.add(itemKey); else next.delete(itemKey);
+      return next;
+    });
+    startTogglingChecklist(() => toggleChecklistItem(slug, initial.phase as "IDEA" | "PROJECT", itemKey, done));
+  }
 
   function handleImageUpload(url: string) {
     if (imageInputRef.current) imageInputRef.current.value = url;
@@ -132,34 +147,59 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
         <RichTextEditor content={description} onChange={setDescription} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="category" className="block text-sm font-medium text-dark-slate mb-1">
-            Category
-          </label>
-          <select
-            id="category" name="category"
-            defaultValue={initial.category ?? ""}
-            className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral bg-white"
-          >
-            <option value="">— none —</option>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="status" className="block text-sm font-medium text-dark-slate mb-1">
-            Status
-          </label>
-          <select
-            id="status" name="status"
-            defaultValue={initial.status}
-            className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral bg-white"
-          >
-            {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-          </select>
-        </div>
+      <div>
+        <label htmlFor="category" className="block text-sm font-medium text-dark-slate mb-1">
+          Category
+        </label>
+        <select
+          id="category" name="category"
+          defaultValue={initial.category ?? ""}
+          className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral bg-white"
+        >
+          <option value="">— none —</option>
+          {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
       </div>
+
+      {/* Fas — fasövergångar sker bara framåt, ett steg i taget (PRD 4d) */}
+      <div className="border border-muted-teal rounded-md p-4 flex items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-medium text-dark-slate">Fas</p>
+          <p className="text-sm text-dark-slate/70 mt-0.5">{PROJECT_PHASE_LABEL[initial.phase] ?? initial.phase}</p>
+        </div>
+        {nextPhase ? (
+          <button
+            type="button"
+            disabled={isAdvancing}
+            onClick={() => startAdvancing(() => advanceProjectPhase(slug))}
+            className="text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors disabled:opacity-60 flex-shrink-0"
+          >
+            {isAdvancing ? "Avancerar…" : `Avancera till ${PROJECT_PHASE_LABEL[nextPhase]} →`}
+          </button>
+        ) : (
+          <span className="text-xs text-dark-slate/40 flex-shrink-0">Sista fasen uppnådd</span>
+        )}
+      </div>
+
+      {checklist && (
+        <div className="border border-muted-teal rounded-md p-4">
+          <p className="text-sm font-medium text-dark-slate mb-3">Checklista — {PROJECT_PHASE_LABEL[initial.phase]}</p>
+          <div className="flex flex-col gap-2">
+            {checklist.map((item) => (
+              <label key={item.key} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={doneKeys.has(item.key)}
+                  disabled={isTogglingChecklist}
+                  onChange={(e) => handleToggleChecklistItem(item.key, e.target.checked)}
+                  className="accent-seagrass w-4 h-4"
+                />
+                <span className="text-sm text-dark-slate/80">{item.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div>
         <label htmlFor="tags" className="block text-sm font-medium text-dark-slate mb-1">

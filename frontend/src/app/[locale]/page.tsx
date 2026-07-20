@@ -15,7 +15,7 @@ import ImpactStatsWidget from "@/components/ImpactStatsWidget";
 import LeaderboardWidget from "@/components/LeaderboardWidget";
 import NewMembersWidget from "@/components/NewMembersWidget";
 import SdgCoverageWidget from "@/components/SdgCoverageWidget";
-import { isValidProjectStatus } from "@/lib/projectStatus";
+import { isValidProjectPhase } from "@/lib/projectPhase";
 
 const PAGE_SIZE = 12;
 const IDEA_PREVIEW_SIZE = 8;
@@ -51,13 +51,13 @@ export default async function HomePage({
   searchParams: Promise<{
     sort?: string;
     q?: string;
-    status?: string;
+    phase?: string;
     category?: string;
     sdg?: string;
     page?: string;
   }>;
 }) {
-  const { sort: sortParam, q, status, category, sdg, page: pageStr } = await searchParams;
+  const { sort: sortParam, q, phase, category, sdg, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const sdgNum = sdg ? parseInt(sdg) : undefined;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
@@ -71,7 +71,7 @@ export default async function HomePage({
       { title: { contains: q, mode: "insensitive" } },
       { description: { contains: q, mode: "insensitive" } },
     ]} : {}),
-    ...(status && isValidProjectStatus(status) ? { status } : {}),
+    ...(phase && isValidProjectPhase(phase) ? { phase } : {}),
     ...(category ? { category } : {}),
     ...(sdgNum && !isNaN(sdgNum) ? { sdgGoals: { has: sdgNum } } : {}),
   };
@@ -168,7 +168,7 @@ export default async function HomePage({
 
   const ideasWithVote = ideas.map((idea) => ({ ...idea, myVoteId: idea.votes?.[0]?.id ?? null }));
 
-  const rawParams = { sort: sortParam, q, status, category, sdg, page: pageStr };
+  const rawParams = { sort: sortParam, q, phase, category, sdg, page: pageStr };
 
   return (
     <div>
@@ -188,7 +188,7 @@ export default async function HomePage({
               Utforska projekt{" "}
               <span className="text-dark-slate/40 font-normal">({totalFiltered})</span>
             </h2>
-            <SortToggle sort={sort} q={q} status={status} category={category} sdg={sdg} basePath="/" />
+            <SortToggle sort={sort} q={q} phase={phase} category={category} sdg={sdg} basePath="/" />
           </div>
           <Link href="/projects" className="text-xs text-coral hover:underline">
             Se alla projekt →

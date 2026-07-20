@@ -21,12 +21,14 @@ enum ProjectRole {
   FOLLOWER
 }
 
-enum ProjectStatus {
-  CONCEPT
-  PROTOTYPE
+enum ProjectPhase {
+  IDEA
+  PROJECT
+  PILOT
   PRODUCTION
-  DELIVERY
-  ARCHIVED
+  ESTABLISH
+  SCALE
+  IMPACT
 }
 
 enum OrganisationRole {
@@ -141,6 +143,8 @@ model User {
   contentFlagReviews     ContentFlag[]               @relation("ContentFlagReviewer")
   priorityChanges        KanbanCardPriorityChange[]  @relation("PriorityChanges")
   gtLedger               GtLedger[]                  @relation("GtLedger")
+  phaseTransitions       PhaseTransition[]           @relation("PhaseTransitions")
+  completedChecklistItems InitiativeChecklistItem[]  @relation("CompletedChecklistItems")
 }
 
 model Skill {
@@ -456,7 +460,8 @@ model Project {
   title       String
   summary     String?
   description String?
-  status      ProjectStatus @default(CONCEPT)
+  phase       ProjectPhase @default(IDEA)
+  archivedAt  DateTime?
   visibility  String   @default("public")
   category    String?
   tags        String[]
@@ -501,6 +506,8 @@ model Project {
   streaks            UserStreak[]         @relation("ProjectStreaks")
   flags              ProjectFlag[]        @relation("ProjectFlags")
   ethicsReviews      EthicsReview[]       @relation("EthicsReviews")
+  phaseTransitions   PhaseTransition[]
+  checklistItems     InitiativeChecklistItem[]
 }
 
 model ProjectSkill {
@@ -526,6 +533,33 @@ model ProjectMember {
   user    User    @relation("ProjectMemberships", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])
+}
+
+model PhaseTransition {
+  id          String        @id @default(cuid())
+  projectId   String
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fromPhase   ProjectPhase?
+  toPhase     ProjectPhase
+  changedById String
+  changedBy   User          @relation("PhaseTransitions", fields: [changedById], references: [id])
+  changedAt   DateTime      @default(now())
+
+  @@index([projectId])
+}
+
+model InitiativeChecklistItem {
+  id            String       @id @default(cuid())
+  projectId     String
+  project       Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  phase         ProjectPhase
+  itemKey       String
+  completedAt   DateTime?
+  completedById String?
+  completedBy   User?        @relation("CompletedChecklistItems", fields: [completedById], references: [id], onDelete: SetNull)
+
+  @@unique([projectId, itemKey])
+  @@index([projectId])
 }
 
 model Idea {

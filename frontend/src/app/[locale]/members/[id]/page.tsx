@@ -8,7 +8,7 @@ import MessageButton from "@/components/MessageButton";
 import ShareButton from "@/components/ShareButton";
 import FlagContentButton from "@/components/FlagContentButton";
 import { isLeadRole } from "@/lib/authz";
-import { PROJECT_STATUS_LABEL as STATUS_LABELS } from "@/lib/projectStatus";
+import { PROJECT_PHASE_LABEL as PHASE_LABELS } from "@/lib/projectPhase";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
 
 export const dynamic = "force-dynamic";
@@ -64,7 +64,7 @@ export default async function MemberProfilePage({
         select: {
           role: true,
           project: {
-            select: { slug: true, title: true, status: true, description: true },
+            select: { slug: true, title: true, phase: true, description: true },
           },
         },
         orderBy: { joinedAt: "desc" },
@@ -178,7 +178,7 @@ export default async function MemberProfilePage({
                   <div className="flex items-center gap-2 mb-1">
                     <p className="font-medium text-dark-slate truncate">{project.title}</p>
                     <span className="text-xs bg-dry-sage text-dark-slate/60 px-2 py-0.5 rounded capitalize flex-shrink-0">
-                      {STATUS_LABELS[project.status] ?? project.status}
+                      {PHASE_LABELS[project.phase] ?? project.phase}
                     </span>
                     {isLeadRole(project.role) && (
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-coral flex-shrink-0">

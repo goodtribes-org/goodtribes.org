@@ -11,7 +11,7 @@ import Pagination from "@/components/Pagination";
 import ProjectCard from "@/components/ProjectCard";
 import CountryMap from "@/components/CountryMap";
 import { countByCountry } from "@/lib/geo";
-import { isValidProjectStatus } from "@/lib/projectStatus";
+import { isValidProjectPhase } from "@/lib/projectPhase";
 
 export const metadata: Metadata = {
   title: "Projects — GoodTribes.org",
@@ -23,9 +23,9 @@ const PAGE_SIZE = 12;
 export default async function ProjectsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sort?: string; q?: string; status?: string; category?: string; sdg?: string; page?: string }>;
+  searchParams: Promise<{ sort?: string; q?: string; phase?: string; category?: string; sdg?: string; page?: string }>;
 }) {
-  const { sort: sortParam, q, status, category, sdg, page: pageStr } = await searchParams;
+  const { sort: sortParam, q, phase, category, sdg, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const sdgNum = sdg ? parseInt(sdg) : undefined;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
@@ -36,7 +36,7 @@ export default async function ProjectsPage({
       { title: { contains: q, mode: "insensitive" } },
       { description: { contains: q, mode: "insensitive" } },
     ]} : {}),
-    ...(status && isValidProjectStatus(status) ? { status } : {}),
+    ...(phase && isValidProjectPhase(phase) ? { phase } : {}),
     ...(category ? { category } : {}),
     ...(sdgNum && !isNaN(sdgNum) ? { sdgGoals: { has: sdgNum } } : {}),
   };
@@ -89,7 +89,7 @@ export default async function ProjectsPage({
     kanbanCardsDone: doneTasksBySlug.get(p.slug) ?? 0,
   }));
 
-  const rawParams = { sort: sortParam, q, status, category, sdg, page: pageStr };
+  const rawParams = { sort: sortParam, q, phase, category, sdg, page: pageStr };
 
   return (
     <div>
@@ -114,7 +114,7 @@ export default async function ProjectsPage({
         </div>
       )}
 
-      <ProjectFilters sort={sort} q={q} status={status} category={category} sdg={sdg} />
+      <ProjectFilters sort={sort} q={q} phase={phase} category={category} sdg={sdg} />
 
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">

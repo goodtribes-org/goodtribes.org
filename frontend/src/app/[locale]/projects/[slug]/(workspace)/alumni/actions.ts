@@ -46,7 +46,7 @@ export async function archiveProject(projectSlug: string): Promise<{ error?: str
 
     await tx.project.update({
       where: { slug: projectSlug },
-      data: { status: "ARCHIVED" },
+      data: { archivedAt: new Date() },
     });
   });
 

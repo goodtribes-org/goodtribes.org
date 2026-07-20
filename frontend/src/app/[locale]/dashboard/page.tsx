@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { PROJECT_STATUS_LABEL as STATUS_LABELS } from "@/lib/projectStatus";
+import { PROJECT_PHASE_LABEL as PHASE_LABELS } from "@/lib/projectPhase";
 import { SdgIcon } from "@/components/SdgIcon";
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ type MatchProjectCard = {
   title: string;
   description: string | null;
   category: string | null;
-  status: string;
+  phase: string;
   _count: { members: number };
   sdgGoals: number[];
   neededSkills: { skill: { id: string; name: string; slug: string } }[];
@@ -147,7 +147,7 @@ export default async function DashboardPage({
       prisma.projectMember.findMany({
         where: { userId },
         include: {
-          project: { select: { slug: true, title: true, status: true, description: true } },
+          project: { select: { slug: true, title: true, phase: true, description: true } },
         },
         orderBy: { joinedAt: "desc" },
       }),
@@ -171,7 +171,7 @@ export default async function DashboardPage({
         select: { interests: true, skills: { select: { skillId: true } } },
       }),
       prisma.skill.findMany({
-        where: { projects: { some: { project: { visibility: "public", status: { not: "DELIVERY" } } } } },
+        where: { projects: { some: { project: { visibility: "public", archivedAt: null } } } },
         select: { id: true, name: true, slug: true },
         orderBy: { name: "asc" },
       }),
@@ -191,7 +191,7 @@ export default async function DashboardPage({
     title: true,
     description: true,
     category: true,
-    status: true,
+    phase: true,
     sdgGoals: true,
     _count: { select: { members: true } },
     neededSkills: {
@@ -203,7 +203,7 @@ export default async function DashboardPage({
     hasSkills
       ? prisma.project.findMany({
           where: {
-            status: { not: "DELIVERY" },
+            archivedAt: null,
             visibility: "public",
             neededSkills: { some: { skillId: { in: userSkillIds } } },
             members: { none: { userId } },
@@ -238,7 +238,7 @@ export default async function DashboardPage({
     hasInterests
       ? prisma.project.findMany({
           where: {
-            status: { not: "DELIVERY" },
+            archivedAt: null,
             visibility: "public",
             sdgGoals: { hasSome: userInterests },
             members: { none: { userId } },
@@ -251,7 +251,7 @@ export default async function DashboardPage({
 
     prisma.project.findMany({
       where: {
-        status: { not: "DELIVERY" },
+        archivedAt: null,
         visibility: "public",
         ...(skillSlug ? { neededSkills: { some: { skill: { slug: skillSlug } } } } : {}),
       },
@@ -315,7 +315,7 @@ export default async function DashboardPage({
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-dark-slate/50 capitalize">{STATUS_LABELS[p.status] ?? p.status}</span>
+                    <span className="text-xs text-dark-slate/50 capitalize">{PHASE_LABELS[p.phase] ?? p.phase}</span>
                   </div>
                 </div>
                 <svg className="w-4 h-4 text-dark-slate/30 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

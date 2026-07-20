@@ -49,6 +49,9 @@ export async function createProject(formData: FormData) {
       await prisma.projectMember.create({
         data: { projectId: project.id, userId, role: "FOUNDER" },
       });
+      await prisma.phaseTransition.create({
+        data: { projectId: project.id, fromPhase: null, toPhase: project.phase, changedById: userId },
+      });
       await prisma.room.createMany({
         data: [
           { type: "PROJECT_CHANNEL", projectId: project.id, name: "allmänt", postingPolicy: "ALL_MEMBERS", order: 0 },
@@ -80,7 +83,7 @@ export async function createProject(formData: FormData) {
           title: project.title,
           description: project.description ?? "",
           url: `/projects/${project.slug}`,
-          status: project.status,
+          phase: project.phase,
           sdgGoals: project.sdgGoals,
         },
       ]);

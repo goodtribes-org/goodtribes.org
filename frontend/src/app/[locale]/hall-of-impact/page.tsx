@@ -19,7 +19,7 @@ export default async function HallOfImpactPage({
 }) {
   const { locale } = await params;
   const projects = await prisma.project.findMany({
-    where: { status: { in: ["DELIVERY", "ARCHIVED"] } },
+    where: { OR: [{ phase: "IMPACT" }, { archivedAt: { not: null } }] },
     include: {
       alumni: { select: { id: true } },
       impactMetrics: {
