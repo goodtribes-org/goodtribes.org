@@ -1,21 +1,78 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 2.6 (Draft)
+**Version:** 3.8 (Draft)
 **Datum:** 2026-07-20
 **Status:** Under utveckling
 
+**Ändringar i v3.8:**
+- Reconciliation-gap åtgärdat mellan 4f (fork) och 4c (ägarstruktur): ny beslutad paragraf i 4f klargör att ett forkat projekt alltid är en juridiskt blank slate (`legal_type = nonprofit_umbrella` som default, oavsett originalets `legal_type`), och att det inte finns någon genväg runt 4c:s vanliga övergångsprocess (röstning + Stiftelsen genomför) för att bli `commercial_ab` eller egen förening — gäller lika för Scenario A och B
+
+**Ändringar i v3.7:**
+- **Beslutat:** fork (se 4f) tillåts oavsett vilken fas (4d) originalprojektet befinner sig i — från `idea` till `impact`. Det forkade projektet ärver originalets fas vid gaffeltillfället och får sin egen fasövergångshistorik framåt.
+
+**Ändringar i v3.6:**
+- 4f uppdaterad: kompensation vid dissens-fork är nu tvådelad — **vinstandel är en obligatorisk miniminivå** (oförändrat sedan v3.4), medan **rösträtt via nymyntade Tribe Tokens till originalprojektets medlemmar blir ett valfritt tillägg** som gafflaren själv väljer att ge. Löser den tidigare motsättningen mellan "ingen rösträtt" och "vinstandel" — nu är det inte antingen/eller, utan ett garanterat golv plus en frivillig gest därutöver.
+- Ny tabell `fork_token_grants` för att stödja den valfria tokentilldelningen
+
+**Ändringar i v3.5:**
+- **Beslutat:** vem som helst får initiera en dissens-fork (se 4f) — permissionless, precis som på GitHub, inget krav på tidigare aktivt bidrag i originalprojektet
+- **Beslutat:** vid självvald uppdelning (Scenario A, se 4f) ägs den nya organisationen automatiskt av samma initiativtagare som originalprojektet
+
+**Ändringar i v3.4:**
+- Ny sektion 4f: Fork-funktion. Två scenarier definierade — självvald uppdelning (Scenario A, projekt läggs under en organisation) och dissens-fork (Scenario B, en medlem gafflar pga oenighet om riktning)
+- **Beslutat för Scenario B:** ingen rösträtt/tokenandel i det nya projektet för originalets medlemmar, men en automatisk vinstandel om det forkade projektet blir kommersiellt (kopplas till befintlig vinstdelningslogik i 4a). Synlig härstamning och kreditering av originalets bidragsgivare är obligatoriskt.
+- Ny tabell `fork_profit_shares` och `fork_contributor_credits`, samt `forked_from_project_id`/`fork_type` på `projects`
+- Fem nya öppna frågor tillagda i punkt 10 om fork-funktionens detaljer (vem får gaffla, vilken fas/legal_type det resulterande projektet får, ägarskap av organisation, om vinstdelningsmodellen även gäller Scenario A)
+
+**Ändringar i v3.3:**
+- **Beslutat:** `idea` → `project` kräver ingen extern granskning. Initiativtagaren beslutar alltid själv om idén är redo att bli projekt — tar bort det tidigare förslaget om "peer review godkänd av minst N granskare". Se 4d.
+- `peer_review_approved` (checklista, `idea`-fasen) ersatt med `peer_feedback_requested` — en valfri, informativ markering utan koppling till fasövergången. Jämförelsetabellen peer feedback vs. Granskningsrådet uppdaterad i linje med detta.
+- **Beslutat:** Granskningsrådet agerar reaktivt, inte proaktivt — granskar inte projekt eller crowdfunding-kampanjer i förväg, endast vid inkommen anmälan. Tillagt i 5.54. Det tidigare beslutet att Granskningsrådet som institution måste finnas på plats innan crowdfunding-funktionen lanseras på plattformsnivå kvarstår oförändrat — det är en separat fråga om beredskap, inte förhandsgranskning per kampanj.
+
+**Ändringar i v3.2:**
+- 4d:s gating-tabell fylld i för de tre tidigare öppna övergångarna, tydligt markerade som **förslag, inte beslut**:
+  - `pilot` → `production`: Tribe Token-röstning godkänner pilotresultat + milstolpe klar + resurser säkrade
+  - `production` → `establish`: Projektpuls stabil i N månader utan öppet Granskningsråds-ärende — markerad som svagast underbyggd, kräver styrelsediskussion
+  - `scale` → `impact`: minst en fork har nått `establish` + verifierade SDG-resultat
+- Ny tabell `impact_reports` tillagd i 4d och §7 för att stödja verifiering av SDG-resultat
+- Motsvarande tre öppna frågor i punkt 10 uppdaterade till "Föreslaget" med hänvisning till 4d
+
+**Ändringar i v3.1:**
+- Ny sektion 4e: Lanseringsstrategi — Cold start. Fem principer (single-player-värde först, koncentrerad första kohort, aktiv användning av `production`/`establish`-ingången för seed-innehåll, flaggskeppsprojekt, geografisk koncentration före global skalning) samt två föreslagna produktfunktioner: admin-kuratering av seed-innehåll och inbjudningskoder för grundarkohort
+- Öppen fråga i punkt 10 om cold start uppdaterad till "delvis löst" — strategin är ett förstahandsförslag, inte slutgiltigt beslutad
+
+**Ändringar i v3.0:**
+- 4d klargjord: `peer_review_approved` (delsteg i `idea`-fasen) är en separat mekanism från Granskningsrådet — proaktiv kvalitetsgranskning av peers, inte reaktiv regelefterlevnad. Öppen fråga i punkt 10 löst.
+- 5.53/Grundprincip (Utvecklingsfas 2.97) utökad: Granskningsrådet kan nu explicit granska och besluta om uteslutning av **organisationer**, inte bara användare och projekt — organisationer är en egen entitet i plattformen (se §3, §7) och saknades tidigare i Granskningsrådets uttalade mandat
+- `exclusion_cases`-schemat (5.55) omstrukturerat: separata nullable-fält för `reported_user_id` / `reported_project_id` / `reported_org_id`, samt ett eget `scope_project_id` för att skilja "uteslutning från ett projekt" från "vem anmälan gäller" — tidigare version blandade ihop dessa två betydelser i samma fält
+
+**Ändringar i v2.9:**
+- Namnkonflikten från v2.7/v2.8 löst: plattformens utrullningsordning bytt från "Fas X" till **"Utvecklingsfas X"** genomgående (91 förekomster) — särskiljer nu tydligt från livscykelfaserna i 4d (`idea`, `project`, `pilot`, `production`, `establish`, `scale`, `impact`), som fortsatt kallas "fas" i löptext eftersom sammanhanget redan är otvetydigt där
+- Öppen fråga i punkt 10 om namnkonflikten markerad som löst
+
+**Ändringar i v2.8:**
+- Fasnamnet `mvp` bytt till `pilot` i 4d, 7 och samtliga referenser — "MVP" är teknikjargong som inte passar naturligt för offentlig sektor och akademia (se målgrupp, §3), och kolliderade dessutom med den redan etablerade betydelsen "MVP" i §9 (plattformens egen lanseringsscope) och §4b (inloggningsprioritet). Bytet till `pilot` löser båda namnkollisionerna på en gång.
+- Namnkonflikten mellan livscykelfaserna (4d) och "Fas"-numreringen (§11) kvarstår som öppen fråga — se punkt 10.
+
+**Ändringar i v2.7:**
+- Ny sektion 4d: Initiativets livscykel (fasmodell) — formaliserar `projects.phase` som en 7-värdes enum (`idea`, `project`, `pilot`, `production`, `establish`, `scale`, `impact`), ersätter det tidigare enkla statusfältet `Idé / Aktiv / Avslutad` i 5.1
+- §5.1 uppdaterat för att peka mot 4d istället för att definiera status inline
+- §7 databasschema uppdaterat: `projects.status` → `projects.phase` (enum), nya tabeller `phase_transitions` och `initiative_checklist_items`
+- Nya öppna frågor tillagda i punkt 10: tre av sex gating-villkor mellan faserna är ännu inte beslutade (pilot→production, production→establish, scale→impact)
+- **Namnkonflikt flaggad:** ordet "fas" används redan i detta dokument för utvecklings-/utrullningsordning (Utvecklingsfas 1, Utvecklingsfas 1.2, Utvecklingsfas 2.8 osv, se §11). Den nya livscykelmodellen i 4d beskriver istället var ett enskilt initiativ befinner sig, inte i vilken ordning plattformens funktioner byggs. Se öppen fråga i punkt 10 — namnen bör troligen särskiljas innan Claude Code implementerar, annars är risken stor för sammanblandning i kod och kommunikation.
+
 **Ändringar i v2.6:**
-- §9 MVP-scope uppdaterat: Tribe Tokens & GT (Fas 2.8) flyttat från "Ej inkluderat" till "Inkluderat i MVP" — produkten har redan gått förbi det ursprungliga scopet på den punkten
+- §9 MVP-scope uppdaterat: Tribe Tokens & GT (Utvecklingsfas 2.8) flyttat från "Ej inkluderat" till "Inkluderat i MVP" — produkten har redan gått förbi det ursprungliga scopet på den punkten
 - Samtliga 10 öppna frågor från v2.5:s kodgranskning triagerade och beslutade (se punkt 10 för fullständiga motiveringar):
   - Google-inloggning — nedprioriterad för nu
-  - Idéverkstaden (Fas 1.2) — hög prioritet, nästa gap att bygga
-  - Granskningsrådet (Fas 2.97) — blockerar lansering av crowdfunding/vinstdelning
+  - Idéverkstaden (Utvecklingsfas 1.2) — hög prioritet, nästa gap att bygga
+  - Granskningsrådet (Utvecklingsfas 2.97) — blockerar lansering av crowdfunding/vinstdelning
   - `legal_type`/4c-ägarstruktur — blockerar lansering av crowdfunding/vinstdelning
-  - Projektchatt (Fas 2.5) — riktig kanalmodell krävs, dagens `kanaler`-redirect till DM räcker inte
-  - Impact-fondens ledger (Fas 2.96) — byggs tillsammans med vinstdelningslogiken i 4a
+  - Projektchatt (Utvecklingsfas 2.5) — riktig kanalmodell krävs, dagens `kanaler`-redirect till DM räcker inte
+  - Impact-fondens ledger (Utvecklingsfas 2.96) — byggs tillsammans med vinstdelningslogiken i 4a
   - E2E-kryptering av DM (5.30/5.31) — kravet nedgraderat till kryptering i vila/transit
-  - Idéflödets co-creation & idé→projekt-pipeline (Fas 1.5) — prioritet höjd från "iteration 2"
+  - Idéflödets co-creation & idé→projekt-pipeline (Utvecklingsfas 1.5) — prioritet höjd från "iteration 2"
   - PWA/offline-stöd (5.75) — låg prioritet bekräftad
 
 **Ändringar i v2.5:**
@@ -23,9 +80,9 @@
 
 **Ändringar i v2.4:**
 - Tribe Tokens: bytt från timbaserad estimering till prioritetsbaserad poängsättning (låg/normal/hög/bråttom) med lås vid uppgiftsstart
-- Ny övergripande GoodTribes Token (GT), separat från projektens lokala Tribe Tokens — se 4c och Fas 2.8
+- Ny övergripande GoodTribes Token (GT), separat från projektens lokala Tribe Tokens — se 4c och Utvecklingsfas 2.8
 - Ny sektion 4c: Ägarstruktur & juridisk form (kommersiella AB helägda av stiftelsen, ideella projekt under paraply vs. egen förening)
-- Ny Fas 2.96: Impact-fond & kapitalomfördelning
+- Ny Utvecklingsfas 2.96: Impact-fond & kapitalomfördelning
 - Explicita juridiska gränsdragningar för tokensystemet (ingen växling, ingen inlösen mot pengar)
 - Avtalsmallar för kommersiella och ideella projekt finns som separat bilaga (se 4c)
 
@@ -137,7 +194,7 @@ När ett projekt samlar in pengar via GoodTribes crowdfunding-funktion tar stift
 Kommersiella projekt drivs som aktiebolag, helägda av Stiftelsen (se 4c). Vinst i dessa bolag tillfaller Stiftelsen i sin helhet genom ordinarie utdelning enligt aktiebolagslagen. Fördelningen av överskottet sker därefter i två steg:
 
 **Steg 1 — Styrelseförslag om drift och Impact-fond**
-GoodTribes styrelse lägger fram ett förslag om hur stor andel av vinsten som ska gå till **Stiftelsens dagliga drift** respektive **Impact-fonden** (se Fas 2.96). Projektets Tribe Token-innehavare röstar om förslaget, proportionellt mot sitt tokeninnehav (se Fas 2.95). Styrelsen har vetorätt om utfallet skulle utgöra en fara för Stiftelsens fortsatta verksamhet.
+GoodTribes styrelse lägger fram ett förslag om hur stor andel av vinsten som ska gå till **Stiftelsens dagliga drift** respektive **Impact-fonden** (se Utvecklingsfas 2.96). Projektets Tribe Token-innehavare röstar om förslaget, proportionellt mot sitt tokeninnehav (se Utvecklingsfas 2.95). Styrelsen har vetorätt om utfallet skulle utgöra en fara för Stiftelsens fortsatta verksamhet.
 
 **Steg 2 — Individuell fördelning av resterande andel**
 Den andel som blir kvar efter drift och Impact-fond fördelas till varje bidragsgivare proportionellt mot dennes Tribe Token-innehav i det vinstgivande projektet. Varje person väljer sedan **själv** vilket eller vilka projekt på goodtribes.org de vill rikta sin andel till — inklusive möjligheten att stödja sitt eget projekts fortsatta utveckling, eller andra projekt de vill se lyckas. Görs inget aktivt val inom en fastställd tidsram (t.ex. 30 dagar) går andelen automatiskt till Impact-fonden.
@@ -184,7 +241,7 @@ Utöver plattformsavgifter och vinstdelning finansieras Stiftelsen även genom:
 
 - Stiftelsen registreras i Sverige och lyder under svensk stiftelselag
 - Delegations- och anslutningsavtal (för AB, se 4c) samt verksamhetsavtal (för ideella projekt under paraplyet, se 4c) behöver juridisk granskning per jurisdiktion för internationella projekt — den svenska helägda-AB-modellen har inte nödvändigtvis en direkt motsvarighet utomlands *(öppen fråga, se punkt 10)*
-- Plattformsavgiften på crowdfunding kräver inga extra tillstånd i Sverige — sedan finansiärer får Tribe Tokens istället för aktier (se Fas 3, 5.56) krävs inte Finansinspektionens tillstånd för equity-crowdfunding
+- Plattformsavgiften på crowdfunding kräver inga extra tillstånd i Sverige — sedan finansiärer får Tribe Tokens istället för aktier (se Utvecklingsfas 3, 5.56) krävs inte Finansinspektionens tillstånd för equity-crowdfunding
 - GDPR-efterlevnad säkerställs för alla EU-användare
 
 **Databasutökning — affärsmodell:**
@@ -225,8 +282,8 @@ Integrerar direkt med databasen, hanterar sessioner och JWT-tokens automatiskt o
 |---|---|---|
 | Google | MVP | Lägst tröskel, störst räckvidd |
 | Magic link (e-post) | MVP | Inget lösenord att glömma |
-| LinkedIn | Fas 2 | Relevant för organisationer och professionella |
-| E-post + lösenord | Fas 2 | För användare utan Google-konto |
+| LinkedIn | Utvecklingsfas 2 | Relevant för organisationer och professionella |
+| E-post + lösenord | Utvecklingsfas 2 | För användare utan Google-konto |
 | GitHub | Framtid | Relevant för tekniska projekt |
 
 ---
@@ -272,7 +329,7 @@ Steg 3 kan hoppas över och fyllas i senare från profilen.
 
 **Efter registrering:**
 - Användaren landar på sin Workplace
-- Onboarding-guide startar automatiskt (Fas 5)
+- Onboarding-guide startar automatiskt (Utvecklingsfas 5)
 - Välkomstmejl skickas
 
 ---
@@ -297,7 +354,7 @@ user_consents
 
 ## 4c. Ägarstruktur & juridisk form
 
-Varje projekt på GoodTribes är operativt självständigt — styrt av sin initiativtagare och sina medlemmar genom Tribe Tokens-röstning (se Fas 2.95) — men den juridiska formen skiljer sig beroende på om projektet är kommersiellt eller ideellt.
+Varje projekt på GoodTribes är operativt självständigt — styrt av sin initiativtagare och sina medlemmar genom Tribe Tokens-röstning (se Utvecklingsfas 2.95) — men den juridiska formen skiljer sig beroende på om projektet är kommersiellt eller ideellt.
 
 ---
 
@@ -307,7 +364,7 @@ Varje projekt på GoodTribes är operativt självständigt — styrt av sin init
 - Ansvarsisolering: ett projekts konkurs eller juridiska problem slår inte igenom till Stiftelsen eller andra projekt.
 - Stiftelsen delegerar, som ensam aktieägare, det löpande operativa beslutsmandatet (produktriktning, prioritering, mindre budgetbeslut) till projektets Tribe Token-röstning.
 - Stiftelsen behåller alltid vetorätt i frågor om: byte av styrelse/vd, ändring av bolagsordning, större investeringar, varumärkesanvändning, samt frågor som utgör juridisk eller finansiell risk — inklusive vetorätt över fördelningen av vinstutdelning (se 4a) om utfallet skulle utgöra en fara för Stiftelsens fortsatta verksamhet.
-- Vinst går som utdelning till Stiftelsen. Projektets Tribe Token-innehavare röstar därefter, proportionellt mot sitt tokeninnehav, om hur överskottet fördelas — t.ex. andel till Impact-fonden, andel till projektets eget vinstdelningsprogram, eller reinvestering (se 4a och Fas 2.96).
+- Vinst går som utdelning till Stiftelsen. Projektets Tribe Token-innehavare röstar därefter, proportionellt mot sitt tokeninnehav, om hur överskottet fördelas — t.ex. andel till Impact-fonden, andel till projektets eget vinstdelningsprogram, eller reinvestering (se 4a och Utvecklingsfas 2.96).
 - Regleras genom ett **delegations- och anslutningsavtal** mellan Stiftelsen och respektive AB (se separat avtalsmall).
 
 **Ideella projekt — två nivåer**
@@ -322,7 +379,7 @@ Varje projekt på GoodTribes är operativt självständigt — styrt av sin init
 
 **Övergång mellan juridisk form**
 
-- Projektets medlemmar kan rösta, viktat mot Tribe Token-innehav (se Fas 2.95), om att föreslå en ändring av `legal_type` — t.ex. från ideellt till kommersiellt eller tvärtom.
+- Projektets medlemmar kan rösta, viktat mot Tribe Token-innehav (se Utvecklingsfas 2.95), om att föreslå en ändring av `legal_type` — t.ex. från ideellt till kommersiellt eller tvärtom.
 - Ett godkänt röstresultat är en **begäran**, inte en automatisk ändring: Stiftelsen genomför den faktiska juridiska övergången, eftersom den kräver verkliga steg (bilda eller avveckla ett aktiebolag, teckna nytt avtal enligt 4c, hantera eventuella skattekonsekvenser).
 - Vid övergång från ideellt till kommersiellt: ett nytt aktiebolag bildas, helägt av Stiftelsen, och ett delegations- och anslutningsavtal tecknas enligt ovan.
 - Vid övergång från kommersiellt till ideellt: Stiftelsen (som redan äger bolaget till 100%) beslutar om avveckling eller ombildning av det befintliga AB:et, i samråd med projektets medlemmar.
@@ -339,22 +396,250 @@ legal_type_change_requests
 
 **Juridiska principer som gäller oavsett projektform**
 
-- Inga tokens (Tribe Tokens eller GT) representerar ägande, aktier eller är fritt överlåtbara — se Fas 2.8.
+- Inga tokens (Tribe Tokens eller GT) representerar ägande, aktier eller är fritt överlåtbara — se Utvecklingsfas 2.8.
 - Allt faktiskt penningflöde (utdelning, donationer, ersättningar) sker i vanlig valuta via Stripe Connect, aldrig som en tokentransaktion.
 - Avtalsmallar för båda projekttyperna finns som separat bilaga till detta dokument (`avtal/kommersiellt-projekt-mall.docx` och `avtal/ideellt-projekt-mall.docx`) och ska granskas av jurist per projekt innan signering.
 
 ---
 
+## 4d. Initiativets livscykel (fasmodell)
+
+Varje initiativ på GoodTribes — oavsett om det startar som en lös idé eller som ett färdigt koncept som är redo att köra — rör sig genom samma sju faser. Faserna representerar mognadsgrad, inte separata verktyg: ett initiativ är alltid samma underliggande objekt i databasen, bara med olika `phase`-värde.
+
+**Designprincip:** användaren ska kunna starta där den befinner sig. Ny idé → börja i `idea`. Redan validerad lösning i drift → skapa initiativet direkt i `production`. Alla faser är alltid tillgängliga som startpunkt; inget tvingar en användare att passera faser den redan klarat av utanför plattformen.
+
+---
+
+**Fasenum (databasfält: `projects.phase`)**
+
+| Värde (enum) | Svensk etikett | Beskrivning |
+|---|---|---|
+| `idea` | Idé | AI-assisterad idéfas (se Utvecklingsfas 1.2/1.5), peer review, community-feedback |
+| `project` | Projekt | Uppgiftsnedbrytning (to-do), bjuda in medskapare, formera team, säkra resurser |
+| `pilot` | Pilot | Utveckling och pilot i liten skala (prototyp) |
+| `production` | Produktion | Skarp drift |
+| `establish` | Etablera | Stabil lokal verksamhet |
+| `scale` | Skala | Regional replikering / fork till nya instanser |
+| `impact` | Impact | Mätning och rapportering — kulmen av kontinuerlig mätning som pågår från `idea` |
+
+Fasen lagras som en enum-kolumn, aldrig fritext. Övergångar sker endast framåt (ingen backwards-transition i v1). Varje övergång loggas:
+
+```
+phase_transitions
+  id, project_id, from_phase, to_phase, changed_by, changed_at
+```
+
+**Undantag för startpunkt:** ett initiativ kan skapas direkt i vilken fas som helst (se designprincip ovan) — `phase_transitions` får då bara en rad med `from_phase = null`. Det är inte ett brott mot "endast framåt"-regeln, bara initiativets första registrerade fas.
+
+---
+
+**Delsteg inom `idea`- och `project`-faserna (UI-checklista, inte egna enum-värden)**
+
+Dessa var ursprungligen skissade som egna toppnivåfaser (idea/dream, peer review, to-do, invite, team, resources) men fungerar bättre som en checklista/progress-bar inuti `idea` och `project` — annars får `phase`-fältet 11+ värden där flertalet bara betyder "fortfarande i projektfasen, delsteg X", vilket gör frågor som "visa alla aktiva projekt" svåra att uttrycka.
+
+```
+initiative_checklist_items
+  id, project_id, phase (idea | project), item_key, completed_at, completed_by
+```
+
+| `phase` | `item_key`-värden |
+|---|---|
+| `idea` | `dream_defined`, `peer_feedback_requested` *(valfritt, se nedan)* |
+| `project` | `todo_created`, `collaborators_invited`, `team_formed`, `resources_secured` |
+
+**Peer review är valfri feedback, inte ett godkännandekrav — beslutet om `idea → project` tas alltid av initiativtagaren själv.** Community-feedback (via idéflödet, se Utvecklingsfas 1.2/1.5) kan hjälpa initiativtagaren att förbättra idén, men ingen extern granskning eller antal granskare krävs för att gå vidare. `peer_feedback_requested` är därför bara en informativ markering — inte en spärr — och ersätter det tidigare `peer_review_approved`, som antydde ett godkännandekrav som inte längre gäller.
+
+**Peer feedback vs. Granskningsrådet — två separata mekanismer:** även om peer feedback inte är ett krav, är det fortfarande värt att skilja den från Granskningsrådet (se Utvecklingsfas 2.97), eftersom de har helt olika syften:
+
+| | Peer feedback (`idea`-fasen) | Granskningsrådet |
+|---|---|---|
+| **Syfte** | Valfri kvalitetsfeedback — hjälper initiativtagaren förbättra idén | Reaktiv regelefterlevnad — bryter en användare, ett projekt eller en organisation mot plattformens regler? |
+| **Utlöses av** | Initiativtagaren själv, om denne vill ha feedback | En anmälan/flaggning från någon annan |
+| **Beslutar om fasövergång?** | Nej — initiativtagaren beslutar alltid själv | Ej tillämpligt — rör inte fasövergångar, endast regelbrott |
+| **Vem granskar** | Övriga community-medlemmar (peers), inget valt organ | Det community-valda Granskningsrådet, se 5.53 |
+| **Möjlig konsekvens** | Feedback för omarbetning, men aldrig ett stopp | Åtgärder inklusive uteslutning av användare, projekt eller organisation |
+
+Detta är inte längre en öppen fråga — se punkt 10.
+
+---
+
+**Övergångsvillkor (gating rules)**
+
+| Övergång | Krav för att låsa upp | Status |
+|---|---|---|
+| `idea` → `project` | Initiativtagaren beslutar själv — inget krav på extern granskning eller antal granskare. Peer feedback (se ovan) är valfri och påverkar inte beslutet. | **Beslutat (v3.3)** |
+| `project` → `pilot` | Team tilldelat + budget/resurser definierade | Beslutat |
+| `pilot` → `production` | Tribe Token-röstning bland projektmedlemmar godkänner pilotresultatet (se Utvecklingsfas 2.95) + minst en milstolpe markerad klar (se 5.74) + `resources_secured` uppfyllt för fortsatt drift | **Föreslaget — ej formellt beslutat, se punkt 10** |
+| `production` → `establish` | Projektpuls (se 5.74) stabil över ett tröskelvärde i N sammanhängande månader, utan öppet allvarligt ärende hos Granskningsrådet (se 5.55) | **Föreslaget — svagast underbyggt av de tre, tröskelvärde N och ev. variation per `legal_type` (se 4c) kräver styrelsediskussion, se punkt 10** |
+| `establish` → `scale` | Initiativtagare initierar fork/replikering till ny region | Beslutat |
+| `scale` → `impact` | Minst en replikerad instans (fork) har själv nått `establish` + mätbara SDG-resultat rapporterade och verifierade (kräver ny `impact_reports`-tabell, se nedan) | **Föreslaget — ej formellt beslutat, se punkt 10** |
+
+> Rader markerade "Öppen" ska INTE tolkas som spec av Claude Code. Bygg gating-logiken som ett konfigurerbart regelverk (t.ex. en funktion per övergång) snarare än hårdkodade villkor, så att öppna rader kan fyllas i utan omskrivning.
+
+---
+
+**Vad varje fasövergång låser upp (funktionsnivå)**
+
+| Övergång | Låser upp |
+|---|---|
+| `idea` → `project` | Kanban-board skapas (se Utvecklingsfas 1), `initiativtagare`-roll tilldelas formellt |
+| `project` → `pilot` | Tribe Tokens börjar delas ut för uppgifter (se Utvecklingsfas 2.8) |
+| `pilot` → `production` | Skarp driftmiljö aktiveras för projektet *(exakt vilka funktioner — ej slutgiltigt beslutat, se punkt 10)* |
+| `establish` → `scale` | Crowdfunding-modul (se Utvecklingsfas 3) + regional fork-funktion (se Utvecklingsfas 4) |
+| `scale` → `impact` | Impact-rapportering, publik impact-dashboard |
+
+---
+
+**Databasutökning — fasmodell**
+
+```
+projects
+  phase (idea | project | pilot | production | establish | scale | impact) — ersätter tidigare status-fält, se 7
+
+phase_transitions
+  id, project_id, from_phase (nullable), to_phase, changed_by, changed_at
+
+initiative_checklist_items
+  id, project_id, phase (idea | project), item_key, completed_at, completed_by
+
+impact_reports
+  id, project_id, sdg_goals[], metric_description, metric_value, verified_by, verified_at, created_at
+```
+
+---
+
+## 4e. Lanseringsstrategi — Cold start
+
+GoodTribes är en tvåsidig marknadsplats (initiativtagare *och* bidragsgivare behövs samtidigt för att kännas levande) där community- och matchmaking-funktionerna dessutom ökar i värde med volym. Det klassiska hönan-och-ägget-problemet gäller alltså dubbelt. Denna sektion beskriver hur de första ~100 aktiva projekten och ~1000 medlemmarna nås innan nätverkseffekten bär plattformen själv.
+
+*(Öppen fråga — se punkt 10: den exakta strategin nedan är ett förstahandsförslag, inte slutgiltigt beslutad.)*
+
+---
+
+**Princip 1 — Bygg för "single-player" innan "multiplayer"**
+
+Idégenereringsverktyget (AI-assisterad idéfas, se Utvecklingsfas 1.2) ska ge fullt värde till en enda inloggad användare, utan att någon annan behöver vara aktiv på plattformen samtidigt. Detta är den funktion som ska vara mest komplett och polerad *innan* lansering — peer review, matchmaking och community-discovery kan komma senare i en användares resa och är beroende av att andra användare redan finns.
+
+**Princip 2 — Koncentrerad första kohort, inte bred lansering**
+
+Istället för att sprida marknadsföringskanalerna i §3 brett och tunt från start, väljs medvetet en avgränsad grupp (t.ex. en skola, en kommun eller ett existerande nätverk) att fylla plattformen med på djupet. Täthet inom en grupp gör att sociala funktioner (chatt, matchmaking, discovery) känns levande för de första användarna, istället för tomma på en gles, global yta.
+
+**Princip 3 — Använd `production`/`establish`-ingången aktivt för seed-innehåll**
+
+Fasmodellen (se 4d) tillåter redan att ett initiativ skapas direkt i `production` eller `establish`. Denna ingång används aktivt i lanseringsfasen: befintliga ideella föreningar, kommunprojekt eller forskningsinitiativ som redan bedriver SDG-arbete bjuds in att **registrera sitt pågående arbete**, snarare än att starta om från idé. Det ger plattformen trovärdigt, verkligt innehåll från dag ett.
+
+**Princip 4 — Flaggskeppsprojekt**
+
+Minst ett fullt genomlevt exempelinitiativ (idé → projekt → pilot → produktion) drivs av GoodTribes själva, som konkret showcase för nya användare.
+
+**Princip 5 — Geografisk koncentration innan global skalning**
+
+Modellen bevisas i en region (Sverige, i linje med befintlig målgrupp inom offentlig sektor/akademia, se §3) innan `scale`-fasens regionala replikering (se 4d, Utvecklingsfas 4) triggas mot nya regioner.
+
+---
+
+**Produktimplikationer**
+
+| Funktion | Beskrivning | Prioritet |
+|---|---|---|
+| Admin-kuratering av seed-innehåll | Administratörer kan skapa/importera showcase-initiativ direkt i valfri fas (t.ex. `production`) utan att gå igenom hela flödet, för att fylla plattformen med trovärdigt innehåll före publik lansering | Föreslagen MVP-tillägg |
+| Inbjudningskoder för grundarkohort | En avgränsad första användargrupp bjuds in via kod, ger möjlighet att spåra och särskilja "grundarkohorten" i statistik och ev. framtida erkännande (t.ex. ett badge) | Föreslagen MVP-tillägg |
+
+**Databasutökning**
+
+```
+seed_initiatives
+  id, project_id, curated_by_admin_id, source_description, created_at
+
+founder_cohort_invites
+  id, code, invited_email (nullable), redeemed_by_user_id (nullable)
+  redeemed_at, created_at
+```
+
+---
+
+## 4f. Fork-funktion
+
+Inspirerat av GitHub ska projekt kunna "gafflas" — kopieras till ett nytt, oberoende projekt. Detta är en annan mekanism än den regionala replikering som redan beskrivs för `establish → scale` (se 4d, Utvecklingsfas 4), där initiativtagaren själv initierar expansion till en ny region. Fork-funktionen i denna sektion är bredare och täcker två skilda scenarier:
+
+**Scenario A — Självvald uppdelning**
+Initiativtagaren väljer själv att dela upp ett växande projekt i flera. Flödet: (1) skapa en organisation om den inte redan finns, (2) gaffla det befintliga projektet till ett eller flera nya projekt placerade under organisationen (`org_id` sätts vid gafflingen).
+
+**Scenario B — Dissens-fork**
+En medlem (inte nödvändigtvis initiativtagaren) gafflar projektet för att de anser att det går åt fel håll. Resulterar i ett nytt, fristående projekt (eller under gafflarens egen organisation, om denne har en).
+
+Båda scenarierna delar samma underliggande mekanism — kopiera projektets snapshot till ett nytt `project_id` — men skiljer sig åt i vem som initierar och vart resultatet placeras.
+
+---
+
+**Beslutat — Kompensation vid dissens-fork (Scenario B)**
+
+- **Obligatorisk miniminivå: vinstandel.** Om det forkade projektet någon gång blir vinstdrivande (`commercial_ab`, se 4c), avsätts automatiskt en andel av dess framtida vinstdelning (se 4a, Steg 2) till originalprojektets bidragsgivare, proportionellt mot deras Tribe Token-innehav i originalet vid gaffeltillfället. Detta rör sig i riktig valuta via Stripe Connect, inte som tokentransaktion — bryter alltså inte mot principen att tokens aldrig växlas mot pengar. Detta gäller alltid, oavsett vad gafflaren väljer nedan.
+- **Valfritt tillägg: rösträtt via nymyntade tokens.** Utöver miniminivån kan personen som gafflar **själv välja** att även ge Tribe Tokens (och därmed rösträtt, se Utvecklingsfas 2.95) i det nya projektet till en eller flera av originalprojektets medlemmar. Detta är alltid ett aktivt, frivilligt val av gafflaren — aldrig automatiskt eller ett krav. Eftersom det handlar om nymyntade tokens i det nya projektet (inte en flytt eller växling av befintliga tokens) bryter detta inte mot principen att Tribe Tokens är strikt projektlokala (se 4c).
+- **Synlig härstamning och kreditering är obligatoriskt.** Det nya projektet ska tydligt visa att det är en fork av originalprojektet, med länk till detta, samt kreditera de medlemmar som bidrog till originalet.
+
+*(Öppet — se punkt 10: gäller samma kompensationsmodell Scenario A (självvald uppdelning), eller är det bara relevant vid dissens eftersom det där ofta är samma team/initiativtagare på båda sidor?)*
+
+---
+
+**Beslutat (v3.8) — `legal_type` vid fork, reconciliation med 4c**
+
+Fork-funktionen kopierar ett projekts *data* (snapshot, medlemskap, historik) till ett nytt `project_id` — men den kopierar aldrig en juridisk person. Det forkade projektet är alltid en juridiskt blank slate, oavsett vilken `legal_type` originalet hade:
+
+- **Default vid skapande: `nonprofit_umbrella`, för alla forkar, i båda scenarierna.** Detta är samma default som gäller för varje nyskapat projekt på plattformen (se 4c) — inget särfall för forkar. Att sätta denna default kräver ingen handling från Stiftelsen vid gaffeltillfället, eftersom `nonprofit_umbrella` är projektets normala vilostatus (Stiftelsen är per definition redan juridisk huvudman för alla `nonprofit_umbrella`-projekt) — det är inte en *övergång* i 4c:s mening, bara startvärdet.
+- **Ingen genväg runt 4c:s övergångsprocess.** Vill det forkade projektets medlemmar senare bli `commercial_ab` eller egen `nonprofit_own_assoc`, gäller exakt samma process som för alla andra projekt: röstning bland forkens medlemmar + Stiftelsen genomför den faktiska juridiska övergången (`legal_type_change_requests`, se 4c). Fork-funktionen ger alltså inte gafflaren rätt att själv deklarera `legal_type` fritt.
+- **Specialfall — originalet var `commercial_ab`:** forken ärver *inte* originalets aktiebolag eller Stiftelsens ägarskap i det. Bolaget är en egen juridisk person kopplad till originalprojektet, inte till projektdatan som kopieras. Vill forkens medlemmar själva driva kommersiellt krävs en helt ny AB-bildning, helägd av Stiftelsen, via ett nytt delegations- och anslutningsavtal — samma process som när ett helt nytt projekt (utan fork-koppling) ansöker om att bli `commercial_ab`.
+- **Gäller lika för Scenario A och B.** Vem som initierar forken (initiativtagaren själv vid självvald uppdelning, eller en dissenterande medlem) påverkar inte den juridiska processen ovan.
+
+---
+
+**Fortsatt öppna frågor om fork-funktionen**
+
+| Fråga | Status |
+|---|---|
+| Vem får initiera en dissens-fork — vem som helst som följer projektet, eller krävs tidigare aktivt bidrag (Tribe Tokens intjänade)? | **Beslutat (v3.5): Vem som helst, permissionless precis som på GitHub — inget krav på tidigare aktivt bidrag.** |
+| Vilken fas (se 4d) hamnar det forkade projektet i — samma fas som originalet hade vid gaffeltillfället, eller alltid `idea`? | **Beslutat (v3.7): Fork tillåts oavsett fas — `idea` t.o.m. `impact`. Det forkade projektet ärver originalets fas vid gaffeltillfället, med egen fasövergångshistorik framåt.** |
+| Vilken `legal_type` (se 4c) får det forkade projektet vid skapande, om originalet var `commercial_ab` (ägt av Stiftelsen, som inte automatiskt äger forken)? | **Beslutat (v3.8): `nonprofit_umbrella` som default för alla forkar, ingen genväg runt 4c:s vanliga övergångsprocess. Se ny sektion ovan.** |
+| Vem äger organisationen som skapas vid Scenario A — automatiskt samma initiativtagare som originalprojektet, eller kan flera av originalets medlemmar bli medgrundare? | **Beslutat (v3.5): Samma initiativtagare som originalprojektet.** |
+| Blandas Granskningsrådet in vid en dissens-fork? | Löst: Nej, i linje med den reaktiva principen (se 5.54) — en fork är aldrig i sig ett regelbrott, bara en funktion. Rådet blandas bara in om någon faktiskt anmäler något |
+
+---
+
+**Databasutökning — fork**
+
+```
+projects
+  forked_from_project_id (nullable), fork_type (self_split | dissent) — kompletterar befintliga fält, se 7
+  -- legal_type sätts alltid till nonprofit_umbrella vid gaffling, oavsett originalets legal_type — se "Beslutat (v3.8)" ovan
+
+fork_contributor_credits
+  id, forked_project_id, original_project_id, credited_user_id, created_at
+
+fork_profit_shares
+  id, forked_project_id, original_project_id, original_contributor_user_id
+  share_percent — proportionellt mot original_contributor_user_id:s Tribe Token-innehav i originalet vid gaffeltillfället
+  created_at
+
+fork_token_grants
+  id, forked_project_id, original_project_id, original_contributor_user_id
+  tribe_tokens_granted — sätts av gafflaren, helt valfritt, ger rösträtt i det nya projektet (se Utvecklingsfas 2.95)
+  granted_by, created_at
+```
+
+`fork_profit_shares` kopplas till den befintliga vinstdelningslogiken i 4a (Steg 2) — när det forkade projektet delar ut vinst, allokeras en andel enligt denna tabell innan/parallellt med den vanliga `personal_profit_allocations`-flödet.
+
+---
+
 ## 5. Features — Prioritetsordning
 
-### Fas 1 — Projekthantering (MVP)
+### Utvecklingsfas 1 — Projekthantering (MVP)
 
 Målet är att ge initiativtagare ett kraftfullt men enkelt verktyg för att driva sitt arbete.
 
 **5.1 Projektsida**
 - Titel, beskrivning, kategori och taggar
 - Projektbild / banner
-- Status: Idé / Aktiv / Avslutad
+- **Fas** — se 4d för fullständig fasmodell (`idea` / `project` / `pilot` / `production` / `establish` / `scale` / `impact`)
 - Offentlig eller privat synlighet
 - **Agenda 2030-mål** — visuella symboler som visar vilka av FN:s 17 globala mål projektet kopplas mot
 
@@ -390,7 +675,7 @@ Varje projekt kopplas mot ett eller flera av FN:s 17 globala hållbarhetsmål (S
 - Ikonerna visas prominent på projektsidan under projektnamnet
 - Varje ikon är klickbar — visar en kort beskrivning av målet och hur projektet kopplar till det
 - I discovery kan användare filtrera projekt per SDG-mål
-- Fondkatalogen (Fas 3.5) matchar automatiskt mot fonder som finansierar specifika SDG-mål
+- Fondkatalogen (Utvecklingsfas 3.5) matchar automatiskt mot fonder som finansierar specifika SDG-mål
 - GoodTribes startsida visar ett globalt SDG-dashboard: hur många projekt arbetar mot varje mål
 
 *Teknisk implementation:*
@@ -460,23 +745,23 @@ Ett enda sammanhållet system för alla typer av uppgifter i projektet. Använda
 - Beskrivning (valfritt, markdown)
 - Ansvarig (valfri tilldelning till projektmedlem)
 - Deadline (valfritt)
-- Prioritet: Låg / Normal / Hög / Bråttom (avgör tokenvärde, se Fas 2.8)
+- Prioritet: Låg / Normal / Hög / Bråttom (avgör tokenvärde, se Utvecklingsfas 2.8)
 - Status: Att göra / Pågår / Granskning / Klart
 - Grupperbar i namngivna listor (t.ex. "Sprint 1", "Möte 2026-07-01")
 - Bifoga filer och länkar
 
 **Prioritet och lås:**
-- Initiativtagaren eller admin sätter prioritet vid skapande — se Fas 2.8 (5.32) för fullständig logik kring låsning och tokenvärde
+- Initiativtagaren eller admin sätter prioritet vid skapande — se Utvecklingsfas 2.8 (5.32) för fullständig logik kring låsning och tokenvärde
 - Prioriteten kan ändras fritt medan uppgiften ligger i "Att göra", men låses automatiskt när den flyttas till "Pågår"
 - Gäller oavsett om uppgiften skapas som ett Kanban-kort eller en snabb todo-punkt
 
 **Tokens:**
-- Alla godkända uppgifter ger Tribe Tokens enligt sin låsta prioritet: Låg = 10, Normal = 20, Hög = 30, Bråttom = 40 (se Fas 2.8)
+- Alla godkända uppgifter ger Tribe Tokens enligt sin låsta prioritet: Låg = 10, Normal = 20, Hög = 30, Bråttom = 40 (se Utvecklingsfas 2.8)
 - Ingen minimitröskel — även den minsta uppgiften ger sitt fulla prioritetsvärde när den godkänns
 
 **AI-agent:**
 - Knappen "Tilldela AI" finns på alla uppgifter (text och research)
-- Tribe Tokens för AI-utförda uppgifter går till GoodTribes (se Fas 2.9, 5.41)
+- Tribe Tokens för AI-utförda uppgifter går till GoodTribes (se Utvecklingsfas 2.9, 5.41)
 
 **Databasutökning — unified tasks:**
 ```
@@ -500,7 +785,7 @@ Varje projekt är en självständig enhet med egen medlemshantering. Initiativta
 
 | Roll | Beskrivning |
 |---|---|
-| **Initiativtagare** | Personen som startade projektet. Fullständig kontroll. Kan inte tas bort av andra medlemmar i projektet — men kan uteslutas av GoodTribes Granskningsråd vid grov misskötsel eller regelbrott (se Fas 2.97). *Notera: rollen innebär ansvar och mandat att leda projektet, inte juridiskt ägarskap — se 4c för hur äganderätten faktiskt är strukturerad.* |
+| **Initiativtagare** | Personen som startade projektet. Fullständig kontroll. Kan inte tas bort av andra medlemmar i projektet — men kan uteslutas av GoodTribes Granskningsråd vid grov misskötsel eller regelbrott (se Utvecklingsfas 2.97). *Notera: rollen innebär ansvar och mandat att leda projektet, inte juridiskt ägarskap — se 4c för hur äganderätten faktiskt är strukturerad.* |
 | **Admin** | Utsedd av initiativtagaren. Samma rättigheter som initiativtagaren förutom att ta bort projektet eller initiativtagaren själv. |
 | **Medarbetare** | Kan skapa och redigera uppgifter, delta i chatt, forum och röstningar. |
 | **Följare** | Kan se projektet och kommentera. Ingen redigeringsrätt. |
@@ -530,10 +815,10 @@ Varje projekt är en självständig enhet med egen medlemshantering. Initiativta
 
 **Efterträdare — när initiativtagaren vill lämna**
 - Initiativtagaren kan när som helst signalera att de vill lämna rollen
-- Projektets medlemmar röstar fram en efterträdare genom en Tribe Token-viktad omröstning (se Fas 2.95), på samma sätt som övriga projektbeslut
+- Projektets medlemmar röstar fram en efterträdare genom en Tribe Token-viktad omröstning (se Utvecklingsfas 2.95), på samma sätt som övriga projektbeslut
 - Initiativtagaren kan nominera en kandidat, men rösten avgör — nomineringen är inte bindande
 - Fram till att en efterträdare är vald och bekräftad behåller den avgående initiativtagaren rollen, för att undvika ett ledarskapsvakuum
-- Skiljer sig från uteslutning via Granskningsrådet (Fas 2.97): detta är ett frivilligt, planerat maktskifte, inte en disciplinär åtgärd
+- Skiljer sig från uteslutning via Granskningsrådet (Utvecklingsfas 2.97): detta är ett frivilligt, planerat maktskifte, inte en disciplinär åtgärd
 - *(Öppen fråga — se punkt 10: vad händer om ingen kandidat får majoritet, eller om initiativtagaren lämnar utan att en efterträdare hunnit väljas?)*
 
 **Databasutökning:**
@@ -632,7 +917,7 @@ wiki_comment_reactions
 
 ---
 
-### Fas 1.2 — Kollaborativ Idégenerering
+### Utvecklingsfas 1.2 — Kollaborativ Idégenerering
 
 Målet är att hjälpa inloggade användare gå från ett vagt problem till en konkret projektidé — tillsammans med andra användare och med AI som stöd. Poängen är att människor bollar idéer med varandra, inte att AI genererar allt ensam.
 
@@ -677,7 +962,7 @@ AI läser hela trådens konversationshistorik och svarar kontextuellt — som en
 - Tråden fortsätter tills initiativtagaren är nöjd
 
 **Steg 5 — Spara och agera**
-- En idé kan sparas till Idéflödet (Fas 1.5) för vidare community-feedback
+- En idé kan sparas till Idéflödet (Utvecklingsfas 1.5) för vidare community-feedback
 - Eller konverteras direkt till ett nytt projekt — med AI som automatiskt genererar projektbeskrivning, milstolpar och startuppgifter
 - Alla som deltagit i tråden notifieras när ett projekt skapas och erbjuds att gå med
 
@@ -728,7 +1013,7 @@ idea_thread_participants
 
 ---
 
-### Fas 1.5 — Öppen Innovation
+### Utvecklingsfas 1.5 — Öppen Innovation
 
 Målet är att låta vem som helst bidra med idéer och forma dem tillsammans — innan de blir formella projekt. Detta är plattformens "idéinkubator" och en central differentiator mot konkurrenter.
 
@@ -778,7 +1063,7 @@ idea_contributors
 
 ---
 
-### Fas 2 — Community & Matchmaking
+### Utvecklingsfas 2 — Community & Matchmaking
 
 Målet är att koppla ihop rätt personer med rätt projekt.
 
@@ -887,7 +1172,7 @@ search_index (hanteras av pgvector + Supabase FTS)
 
 ---
 
-### Fas 2.5 — Sociala & Kommunikationsfunktioner
+### Utvecklingsfas 2.5 — Sociala & Kommunikationsfunktioner
 
 Målet är att göra samarbetet inom projekt naturligt och smidigt — utan att behöva lämna plattformen för Slack, Zoom eller e-post.
 
@@ -988,7 +1273,7 @@ direct_messages
 
 ---
 
-### Fas 2.8 — Tribe Tokens & GoodTribes Token (dubbla nivåer)
+### Utvecklingsfas 2.8 — Tribe Tokens & GoodTribes Token (dubbla nivåer)
 
 Målet är att synliggöra och belöna varje persons insats med en belöningsstruktur i två nivåer: lokala **Tribe Tokens** per projekt, och en övergripande **GoodTribes Token (GT)** för hela plattformen. Tokens representerar bidrag och inflytande — aldrig ägarandel — och kan förtjänas genom verifierat arbete, aldrig köpas.
 
@@ -1029,8 +1314,8 @@ Målet är att synliggöra och belöna varje persons insats med en belöningsstr
 - Synlig för alla (öppen transparens)
 
 **5.36 Vad tokens ger (nuvarande och framtida fas)**
-- Tribe Tokens ger rösträtt inom det egna projektet (1 token = 1 röst, se Fas 2.95)
-- GT ger rösträtt på plattformsnivå: prioritering av produktutveckling, policyfrågor, och fördelning av Impact-fondens medel (se Fas 2.96)
+- Tribe Tokens ger rösträtt inom det egna projektet (1 token = 1 röst, se Utvecklingsfas 2.95)
+- GT ger rösträtt på plattformsnivå: prioritering av produktutveckling, policyfrågor, och fördelning av Impact-fondens medel (se Utvecklingsfas 2.96)
 - I kommersiella projekt ger Tribe Tokens underlag för en andel av vinstutdelningen (efter styrelsens föreslagna andel till drift och Impact-fond) — som innehavaren själv väljer att rikta till valfritt projekt på plattformen, se 4a. Tokens representerar aldrig aktier eller ägande i sig (se 4c)
 - Plattformsstatus: "Core Contributor", "Top Builder" etc. baserat på GT
 - Prioriterad matchmaking — högt GT-saldo ger mer synlighet
@@ -1039,7 +1324,7 @@ Målet är att synliggöra och belöna varje persons insats med en belöningsstr
 **5.37 Databasutökning för Tribe Tokens & GT**
 
 ```
-(priority och priority_locked_at definieras redan på tasks-tabellen, se Fas 1 — Databasutökning för unified tasks)
+(priority och priority_locked_at definieras redan på tasks-tabellen, se Utvecklingsfas 1 — Databasutökning för unified tasks)
 
 priority_change_log
   id, task_id, changed_by, old_priority, new_priority, changed_at
@@ -1059,7 +1344,7 @@ platform_token_balances (materialiserad vy / cache — GT)
 
 ---
 
-### Fas 2.9 — AI-agenter som projektmedlemmar
+### Utvecklingsfas 2.9 — AI-agenter som projektmedlemmar
 
 Målet är att låta användare delegera textbaserade och research-baserade uppgifter direkt till en AI-agent från Kanban-boardet — med en människa som granskar och godkänner leveransen innan uppgiften stängs.
 
@@ -1101,7 +1386,7 @@ AI-agenten tjänar **inga Tribe Tokens** — tokens tilldelas den människa som 
 
 **5.41 Tokens vid AI-utfört arbete**
 - AI tjänar inga tokens
-- **GoodTribes tilldelas Tribe Tokens** (projektlokala, inte GT) motsvarande uppgiftens fulla prioritetsvärde — som ersättning för att plattformen tillhandahåller AI-kapaciteten. Detta ger GoodTribes rösträtt inom just det projektet, i linje med Fas 2.95
+- **GoodTribes tilldelas Tribe Tokens** (projektlokala, inte GT) motsvarande uppgiftens fulla prioritetsvärde — som ersättning för att plattformen tillhandahåller AI-kapaciteten. Detta ger GoodTribes rösträtt inom just det projektet, i linje med Utvecklingsfas 2.95
 - Granskaren tilldelas Tribe Tokens baserat på granskningsinsats (standard: 20% av uppgiftens prioritetsvärde), utöver GoodTribes andel — samt motsvarande GT-spegling enligt 5.33
 - Om uppgiften kräver flera revideringar ökar granskarens token-ersättning proportionellt
 - GoodTribes token-saldo per projekt är offentligt synligt — full transparens om plattformens andel
@@ -1145,14 +1430,14 @@ ai_task_reviews
 
 ---
 
-### Fas 2.95 — Token-viktad röstning (Projektdemokrati)
+### Utvecklingsfas 2.95 — Token-viktad röstning (Projektdemokrati)
 
 Målet är att ge projektmedlemmar reellt inflytande över projektbeslut — proportionellt mot deras faktiska bidrag. Den som arbetat mest har störst röststyrka.
 
 **Grundprincip**
 > Antal tillgängliga röster = antal Tribe Tokens intjänade i projektet
 
-Detta gäller projektnivån specifikt. GT ger separat rösträtt på plattformsnivå (se Fas 2.96) — de två röstsystemen är alltid åtskilda, precis som tokennivåerna de bygger på (se Fas 2.8).
+Detta gäller projektnivån specifikt. GT ger separat rösträtt på plattformsnivå (se Utvecklingsfas 2.96) — de två röstsystemen är alltid åtskilda, precis som tokennivåerna de bygger på (se Utvecklingsfas 2.8).
 
 GoodTribes röster (från AI-utförda uppgifter, i form av Tribe Tokens) räknas med i omröstningar — plattformen är en transparent röstberättigad aktör i alla projekt.
 
@@ -1182,7 +1467,7 @@ GoodTribes röster (från AI-utförda uppgifter, i form av Tribe Tokens) räknas
 - Historik över alla genomförda omröstningar sparas permanent på projektsidan
 - Beslut kan markeras som "Bindande" eller "Rådgivande"
 - Bindande beslut kopplas till en milstolpe eller uppgift automatiskt
-- Vissa omröstningar initieras av GoodTribes styrelse snarare än initiativtagaren (t.ex. fördelning av vinstutdelning, se Fas 2.96) — dessa är bindande men med vetorätt för styrelsen om utfallet skulle utgöra en fara för Stiftelsens fortsatta verksamhet
+- Vissa omröstningar initieras av GoodTribes styrelse snarare än initiativtagaren (t.ex. fördelning av vinstutdelning, se Utvecklingsfas 2.96) — dessa är bindande men med vetorätt för styrelsen om utfallet skulle utgöra en fara för Stiftelsens fortsatta verksamhet
 
 **5.48 Specialfall — GoodTribes röststyrka**
 - GoodTribes token-saldo visas öppet i varje omröstning
@@ -1210,9 +1495,9 @@ poll_results (materialiserad vy)
 
 ---
 
-### Fas 2.96 — Impact-fond & kapitalomfördelning
+### Utvecklingsfas 2.96 — Impact-fond & kapitalomfördelning
 
-Målet är att kanalisera kapital från vinstdrivande projekt till Stiftelsens drift och till nya projekt som behöver hjälp att komma igång — ett av GoodTribes centrala syften — utan att detta sker via tokenväxling (se juridisk gränsdragning i Fas 2.8 och 4c). Flödet sker i vanlig valuta, styrt av tydliga, loggade beslutssteg.
+Målet är att kanalisera kapital från vinstdrivande projekt till Stiftelsens drift och till nya projekt som behöver hjälp att komma igång — ett av GoodTribes centrala syften — utan att detta sker via tokenväxling (se juridisk gränsdragning i Utvecklingsfas 2.8 och 4c). Flödet sker i vanlig valuta, styrt av tydliga, loggade beslutssteg.
 
 Impact-fonden är specifikt inriktad på **uppstartskapital** — att hjälpa nya (företrädesvis ideella) projekt över den första tröskeln, snarare än att vara ett generellt löpande stöd till redan etablerade projekt.
 
@@ -1225,7 +1510,7 @@ Impact-fonden är specifikt inriktad på **uppstartskapital** — att hjälpa ny
 1. Ett kommersiellt AB (helägt av Stiftelsen, se 4c) genererar vinst och lämnar utdelning till Stiftelsen enligt gällande aktiebolagsrättsliga regler.
 2. GoodTribes styrelse lägger fram ett förslag om hur stor andel av utdelningen som ska gå till **Stiftelsens dagliga drift** respektive **Impact-fonden**. Projektets Tribe Token-innehavare röstar om förslaget, proportionellt mot sitt tokeninnehav. Detta är ett delegerat beslutsmandat enligt avtalet i 4c — men styrelsen har vetorätt om utfallet skulle utgöra en fara för Stiftelsens fortsatta verksamhet.
 3. Den andel som röstas till Impact-fonden tillförs fonden. Resterande del (efter drift och Impact-fond) fördelas till varje bidragsgivare proportionellt mot deras Tribe Token-innehav, och var och en väljer sedan själv vilket eller vilka GoodTribes-projekt de vill rikta sin del till (se 4a, Steg 2).
-4. Stiftelsen fördelar Impact-fondens samlade medel som uppstartskapital till nya projekt — antingen genom en ansökningsprocess (se Fas 3.5, Extern Fondansökan) eller genom en separat plattformsomfattande GT-röstning om vilka projekt som ska prioriteras en given period.
+4. Stiftelsen fördelar Impact-fondens samlade medel som uppstartskapital till nya projekt — antingen genom en ansökningsprocess (se Utvecklingsfas 3.5, Extern Fondansökan) eller genom en separat plattformsomfattande GT-röstning om vilka projekt som ska prioriteras en given period.
 5. Varje överföring — oavsett om den går via Impact-fonden eller direkt från en bidragsgivares individuella val — registreras som en verklig Stripe-transaktion, kopplad till en post i respektive projekts ledger. Aldrig som en tokenöverföring.
 
 **5.51 Transparens**
@@ -1242,27 +1527,28 @@ impact_fund_ledger
 
 ---
 
-### Fas 2.97 — Granskningsråd, uteslutning & etisk granskning
+### Utvecklingsfas 2.97 — Granskningsråd, uteslutning & etisk granskning
 
-Målet är att ge communityn en oberoende, demokratiskt vald instans för att hantera allvarliga fall av regelbrott eller misskötsel — utan att förlita sig på ensidiga beslut från Stiftelsen eller ett enskilt projekts initiativtagare. Rådet är plattformens enda granskningsorgan: det hanterar både uteslutning av användare och etisk granskning av flaggade projekt (se Fas 5, 5.76 för det senare).
+Målet är att ge communityn en oberoende, demokratiskt vald instans för att hantera allvarliga fall av regelbrott eller misskötsel — utan att förlita sig på ensidiga beslut från Stiftelsen eller ett enskilt projekts initiativtagare. Rådet är plattformens enda granskningsorgan: det hanterar uteslutning av användare, projekt och organisationer, samt etisk granskning av flaggade projekt (se Utvecklingsfas 5, 5.76 för det senare).
 
 **Grundprincip**
-> Communityn röstar fram ett Granskningsråd genom GT (plattformsnivå). Rådet utreder och beslutar om uteslutning av användare — från hela GoodTribes eller från ett specifikt underprojekt — samt om huruvida flaggade projekt bryter mot GoodTribes etiska riktlinjer.
+> Communityn röstar fram ett Granskningsråd genom GT (plattformsnivå). Rådet utreder och beslutar om uteslutning av en användare, ett projekt eller en organisation som misstänks bryta mot GoodTribes regler — samt om huruvida flaggade projekt bryter mot GoodTribes etiska riktlinjer.
 
 ---
 
 **5.53 Granskningsrådet**
-- Rådet väljs av communityn genom en GT-viktad omröstning (se Fas 2.95/2.96 för röstningsmekanik), för en bestämd mandatperiod
-- Rådet utreder anmälningar om grov misskötsel, regelbrott eller uppförande som skadar GoodTribes eller enskilda projekt — samt projekt som flaggats som potentiellt oetiska eller skadliga (se Fas 5, 5.76)
-- Rådet kan besluta om: uteslutning från ett specifikt projekt, uteslutning från hela plattformen, mildare åtgärder (varning, tillfällig avstängning), eller — för flaggade projekt — godkännande, varning eller nedstängning
+- Rådet väljs av communityn genom en GT-viktad omröstning (se Utvecklingsfas 2.95/2.96 för röstningsmekanik), för en bestämd mandatperiod
+- Rådet utreder anmälningar om grov misskötsel, regelbrott eller uppförande som skadar GoodTribes eller enskilda projekt — riktade mot **användare, projekt eller organisationer** — samt projekt som flaggats som potentiellt oetiska eller skadliga (se Utvecklingsfas 5, 5.76)
+- Rådet kan besluta om: uteslutning av en användare, ett projekt eller en organisation (från en specifik del av plattformen eller från hela GoodTribes), mildare åtgärder (varning, tillfällig avstängning), eller — för flaggade projekt — godkännande, varning eller nedstängning
 - Beslut kräver majoritet inom rådet och ska motiveras skriftligt
-- Den anmälda personen eller projektets initiativtagare har rätt att bemöta anmälan innan beslut fattas
+- Den anmälda personen, organisationen eller projektets initiativtagare har rätt att bemöta anmälan innan beslut fattas
 - *(Öppna frågor — se punkt 10: antal ledamöter, mandatperiodens längd, och exakt valprocess är inte specificerade.)*
 
 **5.54 Förhållande till andra beslutsinstanser**
 - Rådets mandat gäller uppförande, regelbrott och etisk lämplighet — inte affärsbeslut. Stiftelsens vetorätt i kommersiella projekt (se 4c) gäller specifikt juridisk eller finansiell risk för Stiftelsen, en separat fråga
 - Initiativtagaren kan uteslutas av Granskningsrådet vid grov misskötsel, trots att rollhierarkin (5.5) annars anger att initiativtagaren inte kan tas bort av andra medlemmar i projektet
 - Rådets beslut är bindande men kan i undantagsfall överklagas till Stiftelsens styrelse, t.ex. om beslutet bedöms strida mot grundläggande rättssäkerhet
+- **Reaktiv princip (beslutat v3.3):** Granskningsrådet agerar endast utifrån inkomna anmälningar/flaggningar. Rådet granskar inte projekt proaktivt och stoppar inte ett enskilt projekts crowdfunding-kampanj (se Utvecklingsfas 3) i förväg — endast om en anmälan kommit in som tyder på regelbrott. Det tidigare kravet på att Granskningsrådet ska finnas på plats innan crowdfunding-*funktionen* lanseras på plattformsnivå (se punkt 10) gäller fortfarande — det handlar om att en fungerande tvistlösningsinstans ska existera *om* något går fel, inte om förhandsgranskning av varje kampanj
 
 **5.55 Databasutökning**
 
@@ -1271,9 +1557,10 @@ review_council_members
   id, user_id, term_start, term_end, elected_via_poll_id
 
 exclusion_cases
-  id, reported_user_id, reported_by, project_id (nullable — null = plattformsomfattande)
-  reason, status (open | under_review | resolved)
-  decision (none | warning | project_ban | platform_ban)
+  id, reported_user_id (nullable), reported_project_id (nullable), reported_org_id (nullable) — exakt en av dessa tre ska vara satt, anger vem anmälan gäller
+  scope_project_id (nullable) — endast relevant om reported_user_id är satt: begränsar en ev. uteslutning till detta projekt. Null = plattformsomfattande
+  reported_by, reason, status (open | under_review | resolved)
+  decision (none | warning | ban)
   decided_at, decision_reasoning, created_at
 
 exclusion_case_votes
@@ -1290,14 +1577,14 @@ ethics_reviews
 
 ---
 
-### Fas 3 — Crowdfunding & Finansiering
+### Utvecklingsfas 3 — Crowdfunding & Finansiering
 
 Målet är att koppla ekonomiska resurser till verifierade projekt.
 
 **5.56 Finansieringskampanjer**
 - Mål, deadline och progress bar
 - Belöningsnivåer (Kickstarter-modell) eller donationsbaserad
-- **Token-baserad finansiering** — finansiärer får Tribe Tokens i projektet, proportionellt mot sitt bidrag, enligt en växelkurs som initiativtagaren sätter vid kampanjskapande (t.ex. "100 kr = 1 Tribe Token"). Detta ger samma rösträtt (se Fas 2.95) och, om projektet är kommersiellt, samma rätt till andel av vinstfördelningen (se 4a, Steg 2) som bidragsgivare som tjänat tokens genom arbete. Inga aktier säljs — Stiftelsens ägande av eventuellt AB (se 4c) påverkas aldrig, och Finansinspektionens equity-crowdfunding-tillstånd krävs inte.
+- **Token-baserad finansiering** — finansiärer får Tribe Tokens i projektet, proportionellt mot sitt bidrag, enligt en växelkurs som initiativtagaren sätter vid kampanjskapande (t.ex. "100 kr = 1 Tribe Token"). Detta ger samma rösträtt (se Utvecklingsfas 2.95) och, om projektet är kommersiellt, samma rätt till andel av vinstfördelningen (se 4a, Steg 2) som bidragsgivare som tjänat tokens genom arbete. Inga aktier säljs — Stiftelsens ägande av eventuellt AB (se 4c) påverkas aldrig, och Finansinspektionens equity-crowdfunding-tillstånd krävs inte.
 
 **5.57 Betalningar**
 - Stripe Connect för globala betalningar
@@ -1311,7 +1598,7 @@ Målet är att koppla ekonomiska resurser till verifierade projekt.
 
 ---
 
-### Fas 3.5 — Extern Fondansökan ⚠️ Framtida fas
+### Utvecklingsfas 3.5 — Extern Fondansökan ⚠️ Framtida fas
 
 > **Status: Ej prioriterad — planeras efter övriga faser är lanserade.**
 
@@ -1365,7 +1652,7 @@ fund_application_versions
 
 ---
 
-### Fas 4 — Skalning & Global Etablering
+### Utvecklingsfas 4 — Skalning & Global Etablering
 
 Målet är att hjälpa framgångsrika projekt växa bortom sin ursprungliga kontext — till nya geografier, nya målgrupper och global impact. Det är här GoodTribes vision fulländas: från lokal idé till global förändring.
 
@@ -1466,7 +1753,7 @@ project_alumni
 
 ---
 
-### Fas 5 — Mänsklig Grund
+### Utvecklingsfas 5 — Mänsklig Grund
 
 Målet är att säkerställa att plattformen är tillgänglig, trygg och motiverande för alla människor — oavsett bakgrund, språk, teknisk vana eller internetuppkoppling. Det är det som avgör om GoodTribes verkligen kan förändra världen.
 
@@ -1575,12 +1862,12 @@ GoodTribes är en plattform för positiv förändring — det kräver ett ramver
 
 - **Etiska riktlinjer** — tydligt publicerade principer för vilka projekt som är välkomna (och inte). Baserade på FN:s globala mål (SDG)
 - **Community-flaggning** — vem som helst kan flagga ett projekt som potentiellt skadligt med en motivering
-- **Granskningsrådet** granskar flaggade projekt — samma community-valda organ som hanterar uteslutning av användare (se Fas 2.97), snarare än en separat kommitté
+- **Granskningsrådet** granskar flaggade projekt — samma community-valda organ som hanterar uteslutning av användare (se Utvecklingsfas 2.97), snarare än en separat kommitté
 - **AI-förhandsgranskning** — när ett projekt skapas analyserar AI beskrivningen och varnar om innehållet bryter mot riktlinjerna
 - **Transparensrapport** — GoodTribes publicerar kvartalsvis en rapport om flaggade projekt, beslut och åtgärder
-- **Överklagandeprocess** — initiativtagare kan överklaga ett beslut om nedstängning till Stiftelsens styrelse (se Fas 2.97, 5.54)
+- **Överklagandeprocess** — initiativtagare kan överklaga ett beslut om nedstängning till Stiftelsens styrelse (se Utvecklingsfas 2.97, 5.54)
 
-*(Databasschema för flaggning och etisk granskning finns i Fas 2.97, 5.55 — samma tabeller används för båda typerna av granskning.)*
+*(Databasschema för flaggning och etisk granskning finns i Utvecklingsfas 2.97, 5.55 — samma tabeller används för båda typerna av granskning.)*
 
 ---
 
@@ -1608,8 +1895,18 @@ organizations
   id, name, description, logo_url, verified, initiator_user_id
 
 projects
-  id, title, description, status, visibility, category, initiator_user_id, org_id, created_at
+  id, title, description, visibility, category, initiator_user_id, org_id, created_at
+  phase (idea | project | pilot | production | establish | scale | impact) — se 4d
   legal_type (commercial_ab | nonprofit_umbrella | nonprofit_own_assoc) — se 4c
+
+phase_transitions
+  id, project_id, from_phase (nullable), to_phase, changed_by, changed_at — se 4d
+
+initiative_checklist_items
+  id, project_id, phase (idea | project), item_key, completed_at, completed_by — se 4d
+
+impact_reports
+  id, project_id, sdg_goals[], metric_description, metric_value, verified_by, verified_at, created_at — se 4d
 
 project_members
   id, project_id, user_id, role (initiator | collaborator | follower)
@@ -1643,7 +1940,7 @@ contributions
 - Hitta projekt som matchar mina intressen och kompetenser
 - Söka med i ett projekt och bli matchad automatiskt
 - Finansiera projekt jag tror på
-- Tjäna Tribe Tokens både för arbetsinsats och för finansiella bidrag (se Fas 3, 5.56)
+- Tjäna Tribe Tokens både för arbetsinsats och för finansiella bidrag (se Utvecklingsfas 3, 5.56)
 - Följa progress och se hur mina pengar används
 - Tjäna Tribe Tokens för varje godkänd arbetsinsats
 - Se min token-historik och jämföra med andra bidragsgivare
@@ -1666,15 +1963,15 @@ För att komma till marknad snabbast möjligt begränsas MVP till:
 - Enkla användarprofiler
 - Projektdiscovery (sök + filter)
 - Offentlig projektsida
-- Idéflöde med röstning och kommentarer (Fas 1.5 grundnivå)
-- Tribe Tokens & GT (se Fas 2.8) — prioritetsbaserad tokenutdelning på Kanban-uppgifter *(tillagd i v2.6 — redan byggt och i drift, se punkt 10)*
+- Idéflöde med röstning och kommentarer (Utvecklingsfas 1.5 grundnivå)
+- Tribe Tokens & GT (se Utvecklingsfas 2.8) — prioritetsbaserad tokenutdelning på Kanban-uppgifter *(tillagd i v2.6 — redan byggt och i drift, se punkt 10)*
 
 **Ej inkluderat i MVP:**
 - Crowdfunding och betalningar
 - AI-matchmaking
 - Token-baserad finansiering (crowdfunding mot Tribe Tokens)
 - Avancerad rapportering
-- Co-creation (versionshistorik och pull requests för idéer — Fas 1.5, prioritet höjd i v2.6, se punkt 10)
+- Co-creation (versionshistorik och pull requests för idéer — Utvecklingsfas 1.5, prioritet höjd i v2.6, se punkt 10)
 
 ---
 
@@ -1682,13 +1979,13 @@ För att komma till marknad snabbast möjligt begränsas MVP till:
 
 | Fråga | Status |
 |---|---|
-| Equity crowdfunding — vilka jurisdiktioner stödjs från start? | **Löst (v2.4): Inte längre relevant — finansiärer får Tribe Tokens istället för aktier, se Fas 3 (5.56).** |
+| Equity crowdfunding — vilka jurisdiktioner stödjs från start? | **Löst (v2.4): Inte längre relevant — finansiärer får Tribe Tokens istället för aktier, se Utvecklingsfas 3 (5.56).** |
 | Vem sätter gränser för växelkursen kr→Tribe Tokens vid finansieringskampanjer — fritt av initiativtagaren, eller med en plattformsrekommenderad standard? | Öppen |
-| Moderering av projekt och innehåll | **Delvis löst (v2.4): Uteslutning av användare och etisk granskning av flaggade projekt hanteras båda av samma community-valda Granskningsråd, se Fas 2.97 och 5.76. Löpande innehållsmoderering (spam, olämpliga kommentarer etc.) är fortfarande öppen.** |
+| Moderering av projekt och innehåll | **Delvis löst (v2.4): Uteslutning av användare och etisk granskning av flaggade projekt hanteras båda av samma community-valda Granskningsråd, se Utvecklingsfas 2.97 och 5.76. Löpande innehållsmoderering (spam, olämpliga kommentarer etc.) är fortfarande öppen.** |
 | Freemium vs. prenumerationsmodell | Öppen |
 | Hur hanteras projekt i flera språk? | Öppen |
 | Vilken valuta används som standard? | Öppen |
-| Kan Tribe Tokens eller GT någonsin lösas in mot pengar? (påverkar juridisk klassificering) | **Löst (v2.4): Nej, aldrig. Se Fas 2.8 och 4c** |
+| Kan Tribe Tokens eller GT någonsin lösas in mot pengar? (påverkar juridisk klassificering) | **Löst (v2.4): Nej, aldrig. Se Utvecklingsfas 2.8 och 4c** |
 | Vad händer med tokens om ett projekt läggs ner? | Öppen |
 | Hur hanteras missbruk — t.ex. uppblåsta prioritetssättningar? | Öppen |
 | Vilken AI-kostnad bär plattformen vs. initiativtagaren för agentuppgifter? | Öppen |
@@ -1696,8 +1993,8 @@ För att komma till marknad snabbast möjligt begränsas MVP till:
 | Exakt procentsats för GT-spegling vid tokenmintning (standard 10% föreslaget) | Öppen |
 | Tak på individuellt röstinflytande per projekt (t.ex. `sqrt(tokens)` eller procenttak)? | Öppen |
 | Exakta tröskelvärden för när ett ideellt projekt får knoppas av till egen förening | Öppen |
-| Vinstdelningsprocent mellan kommersiellt AB och Stiftelsen | **Löst (v2.4): Inte en fast procentsats — 100% av vinsten går till Stiftelsen som ägare, och projektets Tribe Token-innehavare röstar om hur överskottet därefter fördelas. Se 4a och Fas 2.96.** |
-| Vinstfördelning: minimibelopp till drift/Impact-fond utan att röstas bort | **Löst (v2.4): Styrelsen föreslår andelen till drift och Impact-fond, medlemmarna röstar, styrelsen har vetorätt vid fara för Stiftelsens fortsatta verksamhet. Se 4a och Fas 2.96.** |
+| Vinstdelningsprocent mellan kommersiellt AB och Stiftelsen | **Löst (v2.4): Inte en fast procentsats — 100% av vinsten går till Stiftelsen som ägare, och projektets Tribe Token-innehavare röstar om hur överskottet därefter fördelas. Se 4a och Utvecklingsfas 2.96.** |
+| Vinstfördelning: minimibelopp till drift/Impact-fond utan att röstas bort | **Löst (v2.4): Styrelsen föreslår andelen till drift och Impact-fond, medlemmarna röstar, styrelsen har vetorätt vid fara för Stiftelsens fortsatta verksamhet. Se 4a och Utvecklingsfas 2.96.** |
 | Vad händer om en bidragsgivare inte aktivt väljer vilket projekt deras andel av vinsten ska gå till? | **Löst (v2.4): Om inget aktivt val görs inom en fastställd tidsram går andelen automatiskt till Impact-fonden.** |
 | Granskningsrådet: antal ledamöter, mandatperiodens längd och exakt valprocess | Öppen |
 | Hur överklagas ett beslut av Granskningsrådet till Stiftelsens styrelse i praktiken — vilken tidsram och process gäller? | Öppen |
@@ -1715,46 +2012,56 @@ För att komma till marknad snabbast möjligt begränsas MVP till:
 | Betalningstäckning utanför Stripe Connects starka marknader (t.ex. Afrika, Sydasien) — risk att utestänga målgrupper i linje med GoodTribes vision | Öppen |
 | Internationell motsvarighet till den svenska stiftelse-/AB-strukturen (se även tidigare fråga om "helägt AB") för verklig global skalning | Öppen |
 | Arbetsrättslig och skattemässig status för tokenintjäning som blir till pengar — anställd, uppdragstagare eller volontär i olika jurisdiktioner? | Öppen |
-| Strategi för att lösa cold start-problemet — hur nås de första ~100 aktiva projekten och ~1000 medlemmarna innan nätverkseffekten bär plattformen själv? | Öppen |
+| Strategi för att lösa cold start-problemet — hur nås de första ~100 aktiva projekten och ~1000 medlemmarna innan nätverkseffekten bär plattformen själv? | **Delvis löst (v3.1): Se ny sektion 4e för fem principer och två föreslagna produktfunktioner (admin-kuratering av seed-innehåll, inbjudningskoder för grundarkohort). Strategin är ett förstahandsförslag — exakt vilken region/nätverk som blir första kohort är fortfarande öppet.** |
 | Google-inloggning är prioriterad som MVP i 4b, men bara magic link (Resend) är implementerat i nuvarande kod — ska Google-inloggning prioriteras innan lansering? | **Väntar (v2.6): Nedprioriterat för nu — hanteras senare, inte blockerande för övrigt arbete.** |
-| §9 anger att Kanban i MVP ska vara utan tokenutdelning, men Tribe Tokens/GT (Fas 2.8) är redan fullt implementerat i koden — bör §9:s MVP-scope uppdateras för att spegla detta, eller bör tokenutdelningen stängas av tills övriga MVP-delar är klara? | **Löst (v2.6): §9 uppdaterat — Tribe Tokens & GT flyttat till "Inkluderat i MVP" för att spegla att det redan är byggt och i drift.** |
-| Idéverkstaden (Fas 1.2 — kollaborativ trådbaserad idégenerering med `@AI`) saknar helt kodmässig grund, trots att det är en av de mest utförligt specificerade sektionerna i detta dokument — vilken prioritet ska den ges relativt övriga ofärdiga faser? | **Löst (v2.6): Hög prioritet — nästa gap att bygga.** |
-| Granskningsrådet (Fas 2.97) saknar valprocess, ledamöter och uteslutningsmekanism i koden — flaggning av projekt/innehåll finns redan (Fas 2.97/5.76), men själva rådet gör det inte. Blockar detta lansering av crowdfunding och vinstdelning, som förutsätter en fungerande tvistlösningsinstans? | **Löst (v2.6): Ja, blockerande — crowdfunding och vinstdelning ska inte lanseras förrän Granskningsrådet finns på plats som tvistlösningsinstans. Hög prioritet att bygga.** |
-| `legal_type` och hela ägarstrukturen i 4c saknar motsvarighet i databasschemat — bör detta byggas innan crowdfunding (Fas 3) eller vinstdelning (4a) går live, givet att fördelningslogiken i 4a förutsätter `legal_type`? | **Löst (v2.6): Ja, blockerande — `legal_type` måste finnas på plats innan crowdfunding/vinstdelning lanseras, eftersom 4a:s fördelningslogik förutsätter det.** |
-| Projektchatt, diskussionsforum, videomöten och kalendersynkronisering (Fas 2.5) saknas helt i koden — enbart privata meddelanden (DM) och notifikationer är byggda (`kanaler`-rutten är bara en redirect-alias till DM-systemet, ingen egen kanalmodell). Räcker DM för lansering, eller krävs projektchatt/forum innan Fas 2.5 kan anses klar? | **Löst (v2.6): En riktig projektchattkanal (dedikerad kanalmodell, automatiskt skapad per projekt) krävs innan Fas 2.5 anses klar — dagens `kanaler`-redirect till DM-systemet räcker inte. Forum, videomöten och kalendersync kan vänta.** |
-| Impact-fondens kapitalomfördelningsflöde (`impact_fund_ledger`, Fas 2.96) saknas i koden trots att impact-mätning redan finns — bör detta byggas i samma veva som vinstdelningslogiken i 4a, eftersom flödena är direkt beroende av varandra? | **Löst (v2.6): Ja — byggs tillsammans med vinstdelningslogiken i 4a som ett sammanhållet arbete.** |
+| §9 anger att Kanban i MVP ska vara utan tokenutdelning, men Tribe Tokens/GT (Utvecklingsfas 2.8) är redan fullt implementerat i koden — bör §9:s MVP-scope uppdateras för att spegla detta, eller bör tokenutdelningen stängas av tills övriga MVP-delar är klara? | **Löst (v2.6): §9 uppdaterat — Tribe Tokens & GT flyttat till "Inkluderat i MVP" för att spegla att det redan är byggt och i drift.** |
+| Idéverkstaden (Utvecklingsfas 1.2 — kollaborativ trådbaserad idégenerering med `@AI`) saknar helt kodmässig grund, trots att det är en av de mest utförligt specificerade sektionerna i detta dokument — vilken prioritet ska den ges relativt övriga ofärdiga faser? | **Löst (v2.6): Hög prioritet — nästa gap att bygga.** |
+| Granskningsrådet (Utvecklingsfas 2.97) saknar valprocess, ledamöter och uteslutningsmekanism i koden — flaggning av projekt/innehåll finns redan (Utvecklingsfas 2.97/5.76), men själva rådet gör det inte. Blockar detta lansering av crowdfunding och vinstdelning, som förutsätter en fungerande tvistlösningsinstans? | **Löst (v2.6): Ja, blockerande — crowdfunding och vinstdelning ska inte lanseras förrän Granskningsrådet finns på plats som tvistlösningsinstans. Hög prioritet att bygga.** |
+| `legal_type` och hela ägarstrukturen i 4c saknar motsvarighet i databasschemat — bör detta byggas innan crowdfunding (Utvecklingsfas 3) eller vinstdelning (4a) går live, givet att fördelningslogiken i 4a förutsätter `legal_type`? | **Löst (v2.6): Ja, blockerande — `legal_type` måste finnas på plats innan crowdfunding/vinstdelning lanseras, eftersom 4a:s fördelningslogik förutsätter det.** |
+| Projektchatt, diskussionsforum, videomöten och kalendersynkronisering (Utvecklingsfas 2.5) saknas helt i koden — enbart privata meddelanden (DM) och notifikationer är byggda (`kanaler`-rutten är bara en redirect-alias till DM-systemet, ingen egen kanalmodell). Räcker DM för lansering, eller krävs projektchatt/forum innan Utvecklingsfas 2.5 kan anses klar? | **Löst (v2.6): En riktig projektchattkanal (dedikerad kanalmodell, automatiskt skapad per projekt) krävs innan Utvecklingsfas 2.5 anses klar — dagens `kanaler`-redirect till DM-systemet räcker inte. Forum, videomöten och kalendersync kan vänta.** |
+| Impact-fondens kapitalomfördelningsflöde (`impact_fund_ledger`, Utvecklingsfas 2.96) saknas i koden trots att impact-mätning redan finns — bör detta byggas i samma veva som vinstdelningslogiken i 4a, eftersom flödena är direkt beroende av varandra? | **Löst (v2.6): Ja — byggs tillsammans med vinstdelningslogiken i 4a som ett sammanhållet arbete.** |
 | E2E-kryptering av privata meddelanden krävs uttryckligen i 5.30, men är inte implementerad i nuvarande DM-funktion — ska kravet mjukas upp, eller krävs det innan DM kan anses produktionsklar? | **Löst (v2.6): Kravet mjukat upp — 5.30 och 5.31 nedgraderar E2E från krav till möjlig framtida förbättring; kryptering i vila/transit (databas + TLS) räcker för nu.** |
-| Idéflödets co-creation (versionshistorik, förslag à la pull request) och automatisk idé→projekt-pipeline (Fas 1.5) saknas i koden — redan noterat som "iteration 2" i §9, men bekräftat här som fortsatt öppet efter kodgranskning. | **Löst (v2.6): Prioritet höjd — flyttas upp bland de närmast liggande gapen, tidigare än §9:s ursprungliga "iteration 2"-placering.** |
-| PWA/offline-stöd (5.75) saknas i koden — lägre prioritet, men noterat som gap mot Fas 5:s tillgänglighetskrav. | **Löst (v2.6): Låg prioritet bekräftad — byggs efter övriga högprioriterade gap.** |
+| Idéflödets co-creation (versionshistorik, förslag à la pull request) och automatisk idé→projekt-pipeline (Utvecklingsfas 1.5) saknas i koden — redan noterat som "iteration 2" i §9, men bekräftat här som fortsatt öppet efter kodgranskning. | **Löst (v2.6): Prioritet höjd — flyttas upp bland de närmast liggande gapen, tidigare än §9:s ursprungliga "iteration 2"-placering.** |
+| PWA/offline-stöd (5.75) saknas i koden — lägre prioritet, men noterat som gap mot Utvecklingsfas 5:s tillgänglighetskrav. | **Löst (v2.6): Låg prioritet bekräftad — byggs efter övriga högprioriterade gap.** |
+| Gating-villkor `pilot` → `production` (se 4d) — vad krävs konkret för att en pilot ska räknas som redo för skarp drift? | **Föreslaget (v3.2): Tribe Token-röstning godkänner pilotresultatet + minst en milstolpe klar + `resources_secured` uppfyllt. Se 4d. Ej formellt beslutat av styrelsen.** |
+| Gating-villkor `production` → `establish` (se 4d) — t.ex. ett minimiantal månaders stabil drift, eller ett annat mått? | **Föreslaget (v3.2): Projektpuls stabil över tröskelvärde N i N sammanhängande månader, utan öppet allvarligt Granskningsråds-ärende. Se 4d. Svagast underbyggt av de tre — kräver troligen styrelsediskussion, då "stabil verksamhet" ser olika ut per `legal_type` (se 4c).** |
+| Gating-villkor `scale` → `impact` (se 4d) — vilka mätbara resultat krävs innan ett initiativ formellt räknas som i impact-fasen? | **Föreslaget (v3.2): Minst en fork har själv nått `establish` + verifierade SDG-resultat rapporterade via ny `impact_reports`-tabell. Se 4d. Ej formellt beslutat av styrelsen.** |
+| Namnkonflikt mellan livscykelfaserna i 4d (`idea`...`impact`, var ett enskilt initiativ befinner sig) och den befintliga "Fas"-numreringen i §11 (Utvecklingsfas 1, 1.2, 2.8 osv, utvecklingsordning för plattformens funktioner) — bör ett av begreppen döpas om innan Claude Code implementerar, för att undvika sammanblandning i kod och kommunikation? | **Löst (v2.9): Plattformens utrullningsordning heter nu "Utvecklingsfas X" genomgående. Livscykelfaserna i 4d behåller ordet "fas" i löptext.** |
+| `peer_review_approved` (se 4d, delsteg i `idea`-fasen) — är detta samma granskningsmekanism som Granskningsrådet (Utvecklingsfas 2.97), eller en separat, lättare community-granskning innan idé blir projekt? | **Löst (v3.0): Separat mekanism. Peer review är proaktiv kvalitetsgranskning av peers innan idé blir projekt. Granskningsrådet är reaktivt och hanterar anmälningar om regelbrott hos användare, projekt eller organisationer, med möjlighet till uteslutning. Se 4d för fullständig jämförelse.** |
+| Fork-funktion (se 4f) — vem får initiera en dissens-fork? Krävs tidigare aktivt bidrag i originalprojektet? | **Beslutat (v3.5): Vem som helst, permissionless — inget krav på tidigare bidrag.** |
+| Fork-funktion (se 4f) — vilken fas (4d) hamnar ett forkat projekt i? | **Beslutat (v3.7): Fork tillåts oavsett vilken fas originalprojektet befinner sig i (`idea` t.o.m. `impact`). Det forkade projektet ärver originalets fas vid gaffeltillfället, med egen fasövergångshistorik framåt.** |
+| Fork-funktion (se 4f) — vilken `legal_type` (4c) får ett forkat projekt vid skapande om originalet var `commercial_ab`? | **Beslutat (v3.8): `nonprofit_umbrella` som default för alla forkar. Forken ärver aldrig originalets aktiebolag eller Stiftelsens ägarskap i det — vill forken bli `commercial_ab` krävs en ny AB-bildning via 4c:s vanliga övergångsprocess, ingen genväg.** |
+| Fork-funktion (se 4f) — vem äger organisationen som skapas vid självvald uppdelning (Scenario A)? | **Beslutat (v3.5): Samma initiativtagare som originalprojektet.** |
+| Fork-funktion (se 4f) — gäller vinstdelningsmodellen för dissens-fork (Scenario B) även vid självvald uppdelning (Scenario A)? | Öppen |
 
 ---
 
 ## 11. Plattformens resa — Översikt
 
 ```
-Problem → [Fas 1.2] Idégenerering → [Fas 1.5] Öppen Innovation →
-[Fas 1] Projektformering → [Fas 2] Community & Matchmaking →
-[Fas 2.5] Socialt samarbete → [Fas 2.8] Tribe Tokens & GT →
-[Fas 2.9] AI-agenter → [Fas 2.95] Demokrati & Röstning →
-[Fas 2.96] Impact-fond & kapitalomfördelning →
-[Fas 2.97] Granskningsråd, uteslutning & etisk granskning →
-[Fas 3] Crowdfunding → [Fas 3.5] Extern Fondansökan (framtid) →
-[Fas 4] Skalning & Global Etablering
+Problem → [Utvecklingsfas 1.2] Idégenerering → [Utvecklingsfas 1.5] Öppen Innovation →
+[Utvecklingsfas 1] Projektformering → [Utvecklingsfas 2] Community & Matchmaking →
+[Utvecklingsfas 2.5] Socialt samarbete → [Utvecklingsfas 2.8] Tribe Tokens & GT →
+[Utvecklingsfas 2.9] AI-agenter → [Utvecklingsfas 2.95] Demokrati & Röstning →
+[Utvecklingsfas 2.96] Impact-fond & kapitalomfördelning →
+[Utvecklingsfas 2.97] Granskningsråd, uteslutning & etisk granskning →
+[Utvecklingsfas 3] Crowdfunding → [Utvecklingsfas 3.5] Extern Fondansökan (framtid) →
+[Utvecklingsfas 4] Skalning & Global Etablering
 
 Genomgående i alla faser:
-[Fas 5] Mänsklig Grund — Onboarding, Mentorskap, Lärande,
+[Utvecklingsfas 5] Mänsklig Grund — Onboarding, Mentorskap, Lärande,
         Välmående, Tillgänglighet, Etik
 ```
 
 ## 12. Nästa steg
 
 1. Validera PRD med intressenter
-2. Låt jurist granska avtalsmallarna för kommersiella och ideella projekt (se 4c) samt gränsdragningen för tokensystemet (Fas 2.8)
+2. Låt jurist granska avtalsmallarna för kommersiella och ideella projekt (se 4c) samt gränsdragningen för tokensystemet (Utvecklingsfas 2.8)
 3. Sätt upp Next.js + Supabase-projekt
 4. Implementera autentisering (Google + magic link)
 5. Bygg registreringsflöde och användarprofil
 6. Designa databasschema i detalj
-7. Bygg projektsida + Kanban (MVP Fas 1)
+7. Bygg projektsida + Kanban (MVP Utvecklingsfas 1)
 8. Lansera intern beta
 
 ---
