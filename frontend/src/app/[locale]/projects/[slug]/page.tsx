@@ -19,6 +19,7 @@ import { buildMetadata, APP_URL } from "@/lib/metadata";
 import ShareButton from "@/components/ShareButton";
 import LikeCommentBlock from "@/components/LikeCommentBlock";
 import { getLikeCommentData } from "@/lib/socialInteractions";
+import { toProxyUrl } from "@/lib/storageUrl";
 
 function MemberAvatar({
   name,
@@ -190,7 +191,7 @@ export default async function ProjectDetailPage({
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-  const [latestUpdate, fundingCampaign, monthEvents, userJoinRequest, kanbanCards, recentChannelMessages] =
+  const [latestUpdate, fundingCampaign, monthEvents, userJoinRequest, kanbanCards, recentChannelMessages, tokenTotals] =
     await Promise.all([
       prisma.blogPost.findFirst({
         where: { projectSlug: slug },
@@ -249,6 +250,13 @@ export default async function ProjectDetailPage({
           room: { select: { id: true, name: true } },
         },
       }),
+      prisma.tokenLedger.groupBy({
+        by: ["userId"],
+        where: { projectSlug: slug },
+        _sum: { tokens: true },
+        orderBy: { _sum: { tokens: "desc" } },
+        take: 5,
+      }),
     ]);
 
   const raised =
@@ -275,6 +283,15 @@ export default async function ProjectDetailPage({
     a.role === "FOUNDER" && b.role !== "FOUNDER" ? -1
     : b.role === "FOUNDER" && a.role !== "FOUNDER" ? 1 : 0
   );
+
+  const memberMap = new Map(project.members.map((m) => [m.user.id, m.user]));
+  const mostActiveMembers = tokenTotals
+    .map((t) => {
+      const user = memberMap.get(t.userId);
+      if (!user) return null;
+      return { id: user.id, name: user.name ?? "Okänd", image: user.image, showProfile: user.showProfile, tokens: t._sum.tokens ?? 0 };
+    })
+    .filter((m): m is NonNullable<typeof m> => m !== null);
 
   return (
     <div>
@@ -532,6 +549,57 @@ export default async function ProjectDetailPage({
                   );
                 })}
               </ul>
+            </section>
+          )}
+
+          {/* Most active members */}
+          {mostActiveMembers.length > 0 && (
+            <section className="border border-muted-teal/30 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-dark-slate">Mest aktiva medlemmar</h2>
+                <Link href={`/projects/${slug}/tokens`} className="text-xs text-seagrass hover:underline">
+                  Alla →
+                </Link>
+              </div>
+              <ol className="space-y-2">
+                {mostActiveMembers.map((m, i) => {
+                  const initials = m.name
+                    .split(" ")
+                    .map((w) => w[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase();
+                  const avatarContent = m.image ? (
+                    <Image src={toProxyUrl(m.image)} alt={m.name} fill unoptimized className="object-cover" />
+                  ) : (
+                    initials
+                  );
+                  const row = (
+                    <div className="flex items-center gap-3">
+                      <span className="w-5 text-center text-xs font-bold text-dark-slate/40">{i + 1}</span>
+                      <div className="w-8 h-8 rounded-full bg-dry-sage flex-shrink-0 flex items-center justify-center text-xs font-semibold text-dark-slate overflow-hidden relative">
+                        {avatarContent}
+                      </div>
+                      <span className="flex-1 min-w-0 text-sm text-dark-slate truncate">{m.name}</span>
+                      <span className="text-xs font-semibold text-coral">{Math.round(m.tokens)} p</span>
+                    </div>
+                  );
+                  return (
+                    <li key={m.id}>
+                      {m.showProfile ? (
+                        <Link
+                          href={`/members/${m.id}`}
+                          className="block hover:bg-dry-sage/20 rounded-lg px-1.5 py-1 -mx-1.5 transition-colors"
+                        >
+                          {row}
+                        </Link>
+                      ) : (
+                        <div className="px-1.5 py-1 -mx-1.5">{row}</div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
             </section>
           )}
 
