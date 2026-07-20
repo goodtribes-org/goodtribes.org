@@ -1,9 +1,22 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 2.5 (Draft)
-**Datum:** 2026-07-19
+**Version:** 2.6 (Draft)
+**Datum:** 2026-07-20
 **Status:** Under utveckling
+
+**Ändringar i v2.6:**
+- §9 MVP-scope uppdaterat: Tribe Tokens & GT (Fas 2.8) flyttat från "Ej inkluderat" till "Inkluderat i MVP" — produkten har redan gått förbi det ursprungliga scopet på den punkten
+- Samtliga 10 öppna frågor från v2.5:s kodgranskning triagerade och beslutade (se punkt 10 för fullständiga motiveringar):
+  - Google-inloggning — nedprioriterad för nu
+  - Idéverkstaden (Fas 1.2) — hög prioritet, nästa gap att bygga
+  - Granskningsrådet (Fas 2.97) — blockerar lansering av crowdfunding/vinstdelning
+  - `legal_type`/4c-ägarstruktur — blockerar lansering av crowdfunding/vinstdelning
+  - Projektchatt (Fas 2.5) — riktig kanalmodell krävs, dagens `kanaler`-redirect till DM räcker inte
+  - Impact-fondens ledger (Fas 2.96) — byggs tillsammans med vinstdelningslogiken i 4a
+  - E2E-kryptering av DM (5.30/5.31) — kravet nedgraderat till kryptering i vila/transit
+  - Idéflödets co-creation & idé→projekt-pipeline (Fas 1.5) — prioritet höjd från "iteration 2"
+  - PWA/offline-stöd (5.75) — låg prioritet bekräftad
 
 **Ändringar i v2.5:**
 - Nya öppna frågor tillagda i punkt 10, baserade på en kodgranskning som jämförde detta dokument mot nuvarande implementation i `goodtribes-org/goodtribes.org` — se tabellen för detaljer per fas
@@ -945,7 +958,7 @@ notifications
 - Gruppkonversationer med upp till 20 deltagare
 - Fildelning och bildbilagor
 - Läskvitton (valfritt att visa)
-- Meddelandena är end-to-end krypterade — inte synliga för GoodTribes
+- Meddelanden krypteras i vila och i transit (databas + TLS) — full end-to-end-kryptering nedgraderad från krav till möjlig framtida förbättring i v2.6, se punkt 10
 - Notifikation vid nytt meddelande (in-app, e-post, push)
 - Blockera / rapportera användare direkt från konversationen
 
@@ -971,7 +984,7 @@ direct_messages
 | Videomöten | Daily.co, Whereby Embedded eller Livekit |
 | Push-notifikationer | OneSignal eller Expo Notifications |
 | AI-mötessammanfattning | Anthropic Claude API |
-| End-to-end kryptering (DM) | libsodium eller Signal Protocol |
+| Kryptering i vila/transit (DM) | Databaskryptering + TLS — full E2E ej längre krav, se 5.30 och punkt 10 |
 
 ---
 
@@ -1654,14 +1667,14 @@ För att komma till marknad snabbast möjligt begränsas MVP till:
 - Projektdiscovery (sök + filter)
 - Offentlig projektsida
 - Idéflöde med röstning och kommentarer (Fas 1.5 grundnivå)
+- Tribe Tokens & GT (se Fas 2.8) — prioritetsbaserad tokenutdelning på Kanban-uppgifter *(tillagd i v2.6 — redan byggt och i drift, se punkt 10)*
 
 **Ej inkluderat i MVP:**
 - Crowdfunding och betalningar
 - AI-matchmaking
-- Tribe Tokens & GT (se Fas 2.8) — Kanban i MVP är ren uppgiftshantering utan tokenutdelning
 - Token-baserad finansiering (crowdfunding mot Tribe Tokens)
 - Avancerad rapportering
-- Co-creation (versionshistorik och pull requests för idéer — Fas 1.5 iteration 2)
+- Co-creation (versionshistorik och pull requests för idéer — Fas 1.5, prioritet höjd i v2.6, se punkt 10)
 
 ---
 
@@ -1703,16 +1716,16 @@ För att komma till marknad snabbast möjligt begränsas MVP till:
 | Internationell motsvarighet till den svenska stiftelse-/AB-strukturen (se även tidigare fråga om "helägt AB") för verklig global skalning | Öppen |
 | Arbetsrättslig och skattemässig status för tokenintjäning som blir till pengar — anställd, uppdragstagare eller volontär i olika jurisdiktioner? | Öppen |
 | Strategi för att lösa cold start-problemet — hur nås de första ~100 aktiva projekten och ~1000 medlemmarna innan nätverkseffekten bär plattformen själv? | Öppen |
-| Google-inloggning är prioriterad som MVP i 4b, men bara magic link (Resend) är implementerat i nuvarande kod — ska Google-inloggning prioriteras innan lansering? | Öppen |
-| §9 anger att Kanban i MVP ska vara utan tokenutdelning, men Tribe Tokens/GT (Fas 2.8) är redan fullt implementerat i koden — bör §9:s MVP-scope uppdateras för att spegla detta, eller bör tokenutdelningen stängas av tills övriga MVP-delar är klara? | Öppen |
-| Idéverkstaden (Fas 1.2 — kollaborativ trådbaserad idégenerering med `@AI`) saknar helt kodmässig grund, trots att det är en av de mest utförligt specificerade sektionerna i detta dokument — vilken prioritet ska den ges relativt övriga ofärdiga faser? | Öppen |
-| Granskningsrådet (Fas 2.97) saknar valprocess, ledamöter och uteslutningsmekanism i koden — flaggning av projekt/innehåll finns redan (Fas 2.97/5.76), men själva rådet gör det inte. Blockar detta lansering av crowdfunding och vinstdelning, som förutsätter en fungerande tvistlösningsinstans? | Öppen |
-| `legal_type` och hela ägarstrukturen i 4c saknar motsvarighet i databasschemat — bör detta byggas innan crowdfunding (Fas 3) eller vinstdelning (4a) går live, givet att fördelningslogiken i 4a förutsätter `legal_type`? | Öppen |
-| Projektchatt, diskussionsforum, videomöten och kalendersynkronisering (Fas 2.5) saknas helt i koden — enbart privata meddelanden (DM) och notifikationer är byggda. Räcker DM för lansering, eller krävs projektchatt/forum innan Fas 2.5 kan anses klar? | Öppen |
-| Impact-fondens kapitalomfördelningsflöde (`impact_fund_ledger`, Fas 2.96) saknas i koden trots att impact-mätning redan finns — bör detta byggas i samma veva som vinstdelningslogiken i 4a, eftersom flödena är direkt beroende av varandra? | Öppen |
-| E2E-kryptering av privata meddelanden krävs uttryckligen i 5.30, men är inte implementerad i nuvarande DM-funktion — ska kravet mjukas upp, eller krävs det innan DM kan anses produktionsklar? | Öppen |
-| Idéflödets co-creation (versionshistorik, förslag à la pull request) och automatisk idé→projekt-pipeline (Fas 1.5) saknas i koden — redan noterat som "iteration 2" i §9, men bekräftat här som fortsatt öppet efter kodgranskning. | Öppen |
-| PWA/offline-stöd (5.75) saknas i koden — lägre prioritet, men noterat som gap mot Fas 5:s tillgänglighetskrav. | Öppen |
+| Google-inloggning är prioriterad som MVP i 4b, men bara magic link (Resend) är implementerat i nuvarande kod — ska Google-inloggning prioriteras innan lansering? | **Väntar (v2.6): Nedprioriterat för nu — hanteras senare, inte blockerande för övrigt arbete.** |
+| §9 anger att Kanban i MVP ska vara utan tokenutdelning, men Tribe Tokens/GT (Fas 2.8) är redan fullt implementerat i koden — bör §9:s MVP-scope uppdateras för att spegla detta, eller bör tokenutdelningen stängas av tills övriga MVP-delar är klara? | **Löst (v2.6): §9 uppdaterat — Tribe Tokens & GT flyttat till "Inkluderat i MVP" för att spegla att det redan är byggt och i drift.** |
+| Idéverkstaden (Fas 1.2 — kollaborativ trådbaserad idégenerering med `@AI`) saknar helt kodmässig grund, trots att det är en av de mest utförligt specificerade sektionerna i detta dokument — vilken prioritet ska den ges relativt övriga ofärdiga faser? | **Löst (v2.6): Hög prioritet — nästa gap att bygga.** |
+| Granskningsrådet (Fas 2.97) saknar valprocess, ledamöter och uteslutningsmekanism i koden — flaggning av projekt/innehåll finns redan (Fas 2.97/5.76), men själva rådet gör det inte. Blockar detta lansering av crowdfunding och vinstdelning, som förutsätter en fungerande tvistlösningsinstans? | **Löst (v2.6): Ja, blockerande — crowdfunding och vinstdelning ska inte lanseras förrän Granskningsrådet finns på plats som tvistlösningsinstans. Hög prioritet att bygga.** |
+| `legal_type` och hela ägarstrukturen i 4c saknar motsvarighet i databasschemat — bör detta byggas innan crowdfunding (Fas 3) eller vinstdelning (4a) går live, givet att fördelningslogiken i 4a förutsätter `legal_type`? | **Löst (v2.6): Ja, blockerande — `legal_type` måste finnas på plats innan crowdfunding/vinstdelning lanseras, eftersom 4a:s fördelningslogik förutsätter det.** |
+| Projektchatt, diskussionsforum, videomöten och kalendersynkronisering (Fas 2.5) saknas helt i koden — enbart privata meddelanden (DM) och notifikationer är byggda (`kanaler`-rutten är bara en redirect-alias till DM-systemet, ingen egen kanalmodell). Räcker DM för lansering, eller krävs projektchatt/forum innan Fas 2.5 kan anses klar? | **Löst (v2.6): En riktig projektchattkanal (dedikerad kanalmodell, automatiskt skapad per projekt) krävs innan Fas 2.5 anses klar — dagens `kanaler`-redirect till DM-systemet räcker inte. Forum, videomöten och kalendersync kan vänta.** |
+| Impact-fondens kapitalomfördelningsflöde (`impact_fund_ledger`, Fas 2.96) saknas i koden trots att impact-mätning redan finns — bör detta byggas i samma veva som vinstdelningslogiken i 4a, eftersom flödena är direkt beroende av varandra? | **Löst (v2.6): Ja — byggs tillsammans med vinstdelningslogiken i 4a som ett sammanhållet arbete.** |
+| E2E-kryptering av privata meddelanden krävs uttryckligen i 5.30, men är inte implementerad i nuvarande DM-funktion — ska kravet mjukas upp, eller krävs det innan DM kan anses produktionsklar? | **Löst (v2.6): Kravet mjukat upp — 5.30 och 5.31 nedgraderar E2E från krav till möjlig framtida förbättring; kryptering i vila/transit (databas + TLS) räcker för nu.** |
+| Idéflödets co-creation (versionshistorik, förslag à la pull request) och automatisk idé→projekt-pipeline (Fas 1.5) saknas i koden — redan noterat som "iteration 2" i §9, men bekräftat här som fortsatt öppet efter kodgranskning. | **Löst (v2.6): Prioritet höjd — flyttas upp bland de närmast liggande gapen, tidigare än §9:s ursprungliga "iteration 2"-placering.** |
+| PWA/offline-stöd (5.75) saknas i koden — lägre prioritet, men noterat som gap mot Fas 5:s tillgänglighetskrav. | **Löst (v2.6): Låg prioritet bekräftad — byggs efter övriga högprioriterade gap.** |
 
 ---
 
