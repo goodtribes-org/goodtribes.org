@@ -728,6 +728,7 @@ model Milestone {
 
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdBy User    @relation("MilestoneCreatedBy", fields: [createdById], references: [id])
+  expenses  FundingExpense[] @relation("ExpenseMilestone")
 }
 
 model ProjectInvite {
@@ -799,18 +800,20 @@ model ActivityEvent {
 }
 
 model FundingCampaign {
-  id              String    @id @default(cuid())
-  projectId       String    @unique
-  title           String
-  description     String?
-  goal            Int
-  currency        String    @default("SEK")
-  status          String    @default("active")
-  campaignType    String    @default("donation")
-  deadline        DateTime?
-  platformFee     Float     @default(5)
-  stripeAccountId String?
-  createdAt       DateTime  @default(now())
+  id                     String    @id @default(cuid())
+  projectId              String    @unique
+  title                  String
+  description            String?
+  goal                   Int
+  currency               String    @default("SEK")
+  status                 String    @default("active")
+  campaignType           String    @default("donation") // "donation" | "reward" | "token"
+  tokenExchangeRate      Float?    // e.g. 100 -> "100 SEK = 1 Tribe Token"; only meaningful when campaignType == "token"
+  deadline               DateTime?
+  platformFee            Float     @default(5)
+  stripeAccountId        String?
+  stripeOnboardingStatus String    @default("not_started") // "not_started" | "pending" | "complete", driven by the account.updated webhook
+  createdAt              DateTime  @default(now())
 
   project     Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   pledges     FundingPledge[]
@@ -819,21 +822,24 @@ model FundingCampaign {
 }
 
 model FundingPledge {
-  id              String   @id @default(cuid())
-  campaignId      String
-  userId          String
-  amount          Int
-  message         String?
-  stripeSessionId String?
-  pledgeStatus    String   @default("confirmed")
-  rewardTierId    String?
-  createdAt       DateTime @default(now())
+  id                String   @id @default(cuid())
+  campaignId        String
+  userId            String
+  amount            Int
+  message           String?
+  stripeSessionId   String?  @unique
+  pledgeStatus      String   @default("confirmed")
+  rewardTierId      String?
+  paymentMethodType String?  // mirrors PaymentIntent.payment_method_types[0], e.g. "card" | "klarna" | "bancontact"
+  tokenLedgerId     String?  @unique
+  createdAt         DateTime @default(now())
 
-  campaign   FundingCampaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  user       User               @relation("FundingPledges", fields: [userId], references: [id], onDelete: Cascade)
-  rewardTier FundingRewardTier? @relation(fields: [rewardTierId], references: [id], onDelete: SetNull)
+  campaign    FundingCampaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user        User               @relation("FundingPledges", fields: [userId], references: [id], onDelete: Cascade)
+  rewardTier  FundingRewardTier? @relation(fields: [rewardTierId], references: [id], onDelete: SetNull)
+  tokenLedger TokenLedger?       @relation("PledgeTokenMint", fields: [tokenLedgerId], references: [id], onDelete: SetNull)
 
-  @@unique([campaignId, userId])
+  @@index([campaignId, userId])
 }
 
 model CalendarEvent {
@@ -877,6 +883,7 @@ model TokenLedger {
   reason       String
   createdAt    DateTime    @default(now())
   gtMirrors    GtLedger[]  @relation("GtLedgerSource")
+  pledgeMint   FundingPledge? @relation("PledgeTokenMint")
 
   @@index([userId])
   @@index([projectSlug])
@@ -1252,8 +1259,11 @@ model FundingExpense {
   receiptUrl  String?
   date        DateTime        @default(now())
   createdAt   DateTime        @default(now())
+  milestoneId String?
+  milestone   Milestone?      @relation("ExpenseMilestone", fields: [milestoneId], references: [id], onDelete: SetNull)
 
   @@index([campaignId])
+  @@index([milestoneId])
 }
 
 model ImpactMetric {

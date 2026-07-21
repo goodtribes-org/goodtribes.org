@@ -24,6 +24,14 @@ frontend:
   #   NEXT_PUBLIC_MEILI_SEARCH_KEY
   #   S3_ACCESS_KEY         (MinIO root user / S3 access key)
   #   S3_SECRET_KEY         (MinIO root password / S3 secret key)
+  #   STRIPE_SECRET_KEY
+  #   STRIPE_WEBHOOK_SECRET
+  #   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY   (not actually secret, but Next.js inlines NEXT_PUBLIC_*
+  #                                         vars at *build* time — a runtime envFrom secretRef here
+  #                                         does nothing for the client bundle. It's wired as a
+  #                                         Docker build ARG in .github/workflows/docker-image.yml
+  #                                         instead; this entry is just tracking that the value
+  #                                         itself still needs to exist somewhere, e.g. a repo secret)
 
 backend:
   replicaCount: 1

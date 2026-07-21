@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { sendEmail } from "@/lib/email";
 import { formatCurrency } from "@/lib/currency";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { awardTokens } from "@/lib/tokens";
 
 const APP_URL = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
 
@@ -25,8 +26,14 @@ export async function createCampaign(projectId: string, slug: string, formData: 
   const deadlineRaw = formData.get("deadline") as string | null;
   const deadline = deadlineRaw ? new Date(deadlineRaw) : null;
   const platformFee = parseFloat((formData.get("platformFee") as string) || "5");
+  const tokenExchangeRateRaw = parseFloat((formData.get("tokenExchangeRate") as string) || "");
+  const tokenExchangeRate =
+    campaignType === "token" && !isNaN(tokenExchangeRateRaw) && tokenExchangeRateRaw > 0
+      ? tokenExchangeRateRaw
+      : null;
 
   if (!title || isNaN(goal) || goal <= 0) return;
+  if (campaignType === "token" && !tokenExchangeRate) return;
 
   // Parse reward tiers for reward-type campaigns
   const tierTitles = formData.getAll("tierTitle") as string[];
@@ -55,6 +62,7 @@ export async function createCampaign(projectId: string, slug: string, formData: 
       goal,
       currency,
       campaignType,
+      tokenExchangeRate,
       deadline,
       platformFee,
       ...(rewardTiers.length > 0 && {
@@ -75,47 +83,54 @@ export async function pledge(campaignId: string, slug: string, formData: FormDat
 
   if (isNaN(amount) || amount <= 0) return;
 
-  const isNew = !(await prisma.fundingPledge.findUnique({
-    where: { campaignId_userId: { campaignId, userId: session.user.id } },
-    select: { id: true },
-  }));
-
-  await prisma.fundingPledge.upsert({
-    where: { campaignId_userId: { campaignId, userId: session.user.id } },
-    create: { campaignId, userId: session.user.id, amount, message },
-    update: { amount, message },
-  });
-
-  if (isNew) {
-    const [pledger, campaign] = await Promise.all([
-      prisma.user.findUnique({ where: { id: session.user.id }, select: { name: true } }),
-      prisma.fundingCampaign.findUnique({
-        where: { id: campaignId },
-        include: {
-          project: {
-            select: {
-              title: true,
-              members: {
-                where: { role: { in: PROJECT_LEAD_ROLES } },
-                include: { user: { select: { email: true, name: true } } },
-              },
-            },
+  const campaign = await prisma.fundingCampaign.findUnique({
+    where: { id: campaignId },
+    include: {
+      project: {
+        select: {
+          title: true,
+          slug: true,
+          members: {
+            where: { role: { in: PROJECT_LEAD_ROLES } },
+            include: { user: { select: { email: true, name: true } } },
           },
         },
-      }),
-    ]);
+      },
+    },
+  });
+  if (!campaign) return;
 
-    if (campaign) {
-      const locale = await getLocale().catch(() => "en");
-      const fmtCurrency = (n: number) => formatCurrency(n, campaign.currency, locale);
+  await prisma.$transaction(async (tx) => {
+    const pledgeRow = await tx.fundingPledge.create({
+      data: { campaignId, userId: session.user!.id, amount, message },
+    });
 
-      await Promise.all(
-        campaign.project.members.map((m) =>
-          m.user.email
-            ? sendEmail({
-                to: m.user.email,
-                subject: `New pledge for ${campaign.project.title}`,
-                html: `
+    if (campaign.campaignType === "token" && campaign.tokenExchangeRate) {
+      const tokens = amount / campaign.tokenExchangeRate;
+      const ledgerRow = await awardTokens(tx, {
+        userId: session.user!.id,
+        projectSlug: campaign.project.slug,
+        tokens,
+        reason: `Token-baserad finansiering: ${campaign.title}`,
+      });
+      await tx.fundingPledge.update({
+        where: { id: pledgeRow.id },
+        data: { tokenLedgerId: ledgerRow.id },
+      });
+    }
+  });
+
+  const pledger = await prisma.user.findUnique({ where: { id: session.user.id }, select: { name: true } });
+  const locale = await getLocale().catch(() => "en");
+  const fmtCurrency = (n: number) => formatCurrency(n, campaign.currency, locale);
+
+  await Promise.all(
+    campaign.project.members.map((m) =>
+      m.user.email
+        ? sendEmail({
+            to: m.user.email,
+            subject: `New pledge for ${campaign.project.title}`,
+            html: `
 <div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#1a2e2a">
   <h2 style="font-size:20px;margin-bottom:8px">New pledge received</h2>
   <p style="color:#4a5e5a;line-height:1.6">
@@ -128,12 +143,10 @@ export async function pledge(campaignId: string, slug: string, formData: FormDat
     View campaign &rarr;
   </a>
 </div>`,
-              })
-            : Promise.resolve()
-        )
-      );
-    }
-  }
+          })
+        : Promise.resolve()
+    )
+  );
 
   revalidatePath(`/projects/${slug}/funding`);
 }
@@ -165,11 +178,18 @@ export async function addExpense(campaignId: string, slug: string, formData: For
   const title = (formData.get("title") as string).trim();
   const amount = parseInt(formData.get("amount") as string, 10);
   const description = (formData.get("description") as string | null)?.trim() || null;
+  const milestoneIdRaw = (formData.get("milestoneId") as string | null) || null;
 
   if (!title || isNaN(amount) || amount <= 0) return;
 
+  const milestoneId =
+    milestoneIdRaw &&
+    (await prisma.milestone.findFirst({ where: { id: milestoneIdRaw, projectId: campaign.project.id }, select: { id: true } }))
+      ? milestoneIdRaw
+      : null;
+
   await prisma.fundingExpense.create({
-    data: { campaignId, title, amount, description },
+    data: { campaignId, title, amount, description, milestoneId },
   });
 
   revalidatePath(`/projects/${slug}/funding`);

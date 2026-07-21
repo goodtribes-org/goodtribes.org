@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma"
+import { awardTokens } from "@/lib/tokens";
 import Stripe from "stripe";
+import { Prisma } from "@prisma/client";
 
 export const runtime = "nodejs";
 
@@ -37,11 +39,20 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  if (event.type === "account.updated") {
+    const account = event.data.object as Stripe.Account;
+    const status = account.charges_enabled && account.details_submitted ? "complete" : "pending";
+    await prisma.fundingCampaign.updateMany({
+      where: { stripeAccountId: account.id },
+      data: { stripeOnboardingStatus: status },
+    });
+  }
+
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const meta = session.metadata ?? {};
 
-    const { campaignId, userId, amount, rewardTierId, message } = meta;
+    const { campaignId, userId, amount, rewardTierId, message, campaignType, tokenExchangeRate } = meta;
 
     if (!campaignId || !userId || !amount) {
       return NextResponse.json(
@@ -50,23 +61,52 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await prisma.fundingPledge.upsert({
-      where: { campaignId_userId: { campaignId, userId } },
-      create: {
-        campaignId,
-        userId,
-        amount: parseInt(amount, 10),
-        message: message || null,
-        rewardTierId: rewardTierId || null,
-        stripeSessionId: session.id,
-        pledgeStatus: "confirmed",
-      },
-      update: {
-        amount: parseInt(amount, 10),
-        stripeSessionId: session.id,
-        pledgeStatus: "confirmed",
-      },
-    });
+    const paymentIntent =
+      typeof session.payment_intent === "string"
+        ? await stripe.paymentIntents.retrieve(session.payment_intent)
+        : session.payment_intent;
+    const paymentMethodType = paymentIntent?.payment_method_types?.[0] ?? null;
+
+    try {
+      await prisma.$transaction(async (tx) => {
+        const pledge = await tx.fundingPledge.create({
+          data: {
+            campaignId,
+            userId,
+            amount: parseInt(amount, 10),
+            message: message || null,
+            rewardTierId: rewardTierId || null,
+            stripeSessionId: session.id,
+            pledgeStatus: "confirmed",
+            paymentMethodType,
+          },
+        });
+
+        if (campaignType === "token" && tokenExchangeRate) {
+          const campaign = await tx.fundingCampaign.findUniqueOrThrow({
+            where: { id: campaignId },
+            include: { project: { select: { slug: true } } },
+          });
+          const tokens = parseInt(amount, 10) / parseFloat(tokenExchangeRate);
+          const ledgerRow = await awardTokens(tx, {
+            userId,
+            projectSlug: campaign.project.slug,
+            tokens,
+            reason: `Token-baserad finansiering: ${campaign.title}`,
+          });
+          await tx.fundingPledge.update({
+            where: { id: pledge.id },
+            data: { tokenLedgerId: ledgerRow.id },
+          });
+        }
+      });
+    } catch (err) {
+      // stripeSessionId is unique — a redelivered webhook hits this and should
+      // no-op rather than create a second pledge / double-mint tokens.
+      if (!(err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002")) {
+        throw err;
+      }
+    }
   }
 
   return NextResponse.json({ received: true }, { status: 200 });

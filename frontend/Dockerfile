@@ -13,6 +13,11 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY frontend/ .
 ENV NODE_ENV=production
+# Next.js inlines NEXT_PUBLIC_* vars into the client bundle at build time, not
+# runtime — a plain docker-compose/Helm env var arriving after this point is
+# too late, so it must come in as a build ARG here instead.
+ARG NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=$NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 RUN npx prisma generate
 RUN npm run build
 

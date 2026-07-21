@@ -18,7 +18,7 @@ type Props = {
   currency: string;
   rewardTiers?: RewardTier[];
   platformFee: number;
-  existingPledgeAmount?: number;
+  tokenExchangeRate?: number;
 };
 
 export default function PledgeForm({
@@ -26,13 +26,11 @@ export default function PledgeForm({
   currency,
   rewardTiers,
   platformFee,
-  existingPledgeAmount,
+  tokenExchangeRate,
 }: Props) {
   const locale = useLocale();
   const fmt = (amount: number, currency: string) => formatCurrency(amount, currency, locale);
-  const [selectedAmount, setSelectedAmount] = useState<number>(
-    existingPledgeAmount ?? 0
-  );
+  const [selectedAmount, setSelectedAmount] = useState<number>(0);
   const [selectedTierId, setSelectedTierId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -175,6 +173,11 @@ export default function PledgeForm({
               {fmt(selectedAmount - feeAmount, currency)}
             </span>{" "}
             netto till projektet
+          </p>
+        )}
+        {tokenExchangeRate && selectedAmount > 0 && (
+          <p className="text-xs text-seagrass mt-1 font-medium">
+            Du får ≈ {(selectedAmount / tokenExchangeRate).toFixed(2)} Tribe Tokens
           </p>
         )}
       </div>

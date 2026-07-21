@@ -39,6 +39,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Kampanj hittades inte" }, { status: 404 });
   }
 
+  if (!campaign.stripeAccountId || campaign.stripeOnboardingStatus !== "complete") {
+    return NextResponse.json(
+      { error: "Projektet har inte anslutit ett Stripe-konto än", code: "connect_not_ready" },
+      { status: 503 }
+    );
+  }
+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
   const platformFee = amount * (campaign.platformFee / 100);
@@ -46,7 +53,7 @@ export async function POST(request: NextRequest) {
 
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "payment",
-    payment_method_types: ["card"],
+    payment_method_types: buildPaymentMethods(campaign.currency),
     line_items: [
       {
         price_data: {
@@ -61,6 +68,10 @@ export async function POST(request: NextRequest) {
         quantity: 1,
       },
     ],
+    payment_intent_data: {
+      application_fee_amount: platformFeeAmount,
+      transfer_data: { destination: campaign.stripeAccountId },
+    },
     success_url:
       process.env.NEXTAUTH_URL +
       "/projects/" +
@@ -78,8 +89,21 @@ export async function POST(request: NextRequest) {
       rewardTierId: rewardTierId ?? "",
       message: message ?? "",
       platformFeeAmount: platformFeeAmount.toString(),
+      campaignType: campaign.campaignType,
+      tokenExchangeRate: campaign.tokenExchangeRate?.toString() ?? "",
     },
   });
 
   return NextResponse.json({ sessionId: checkoutSession.id, url: checkoutSession.url });
+}
+
+// Klarna and Bancontact each only support a subset of currencies — build the
+// method list from the campaign's currency instead of hardcoding one static
+// set, since Stripe rejects a Checkout Session offering an incompatible method.
+function buildPaymentMethods(currency: string): Stripe.Checkout.SessionCreateParams.PaymentMethodType[] {
+  const methods: Stripe.Checkout.SessionCreateParams.PaymentMethodType[] = ["card"];
+  const upper = currency.toUpperCase();
+  if (["SEK", "EUR", "DKK", "NOK", "GBP", "USD"].includes(upper)) methods.push("klarna");
+  if (upper === "EUR") methods.push("bancontact");
+  return methods;
 }

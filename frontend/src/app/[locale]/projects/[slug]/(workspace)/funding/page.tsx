@@ -10,6 +10,7 @@ import { isLeadRole } from "@/lib/authz";
 import { formatCurrency, formatSecondaryConversion, suggestCurrencyForCountry } from "@/lib/currency";
 import { createCampaign, pledge, closeCampaign, addExpense } from "./actions";
 import PledgeForm from "./PledgeForm";
+import ConnectStripeButton from "./ConnectStripeButton";
 
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -35,6 +36,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
     where: { slug },
     include: {
       members: userId ? { where: { userId } } : { where: { role: "FOUNDER" } },
+      milestones: { select: { id: true, title: true }, orderBy: { createdAt: "asc" } },
       fundingCampaign: {
         include: {
           pledges: {
@@ -42,7 +44,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
             orderBy: { createdAt: "desc" },
           },
           rewardTiers: { orderBy: { sortOrder: "asc" }, include: { _count: { select: { pledges: true } } } },
-          expenses: { orderBy: { date: "desc" } },
+          expenses: { orderBy: { date: "desc" }, include: { milestone: { select: { title: true } } } },
         },
       },
     },
@@ -58,7 +60,8 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
   const confirmedPledges = campaign?.pledges.filter((p) => p.pledgeStatus === "confirmed") ?? [];
   const raised = confirmedPledges.reduce((s, p) => s + p.amount, 0);
   const pct = campaign ? Math.min(100, Math.round((raised / campaign.goal) * 100)) : 0;
-  const myPledge = campaign?.pledges.find((p) => p.userId === userId);
+  const myPledges = campaign?.pledges.filter((p) => p.userId === userId && p.pledgeStatus === "confirmed") ?? [];
+  const myTotal = myPledges.reduce((s, p) => s + p.amount, 0);
 
   const progressColor =
     pct >= 100 ? "bg-emerald-500" : pct >= 50 ? "bg-amber-400" : "bg-seagrass";
@@ -156,6 +159,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                 >
                   <option value="donation">Donation</option>
                   <option value="reward">Belöningsnivåer</option>
+                  <option value="token">Token-baserad</option>
                 </select>
               </div>
               <div>
@@ -166,6 +170,21 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                   className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass"
                 />
               </div>
+            </div>
+
+            {/* Token exchange rate (only meaningful for token-based campaigns) */}
+            <div>
+              <label className="block text-xs font-medium text-dark-slate/60 mb-1">
+                Växelkurs (endast för token-baserad finansiering)
+              </label>
+              <input
+                name="tokenExchangeRate"
+                type="number"
+                min="1"
+                step="0.01"
+                placeholder="t.ex. 100 (100 kr = 1 Tribe Token)"
+                className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass"
+              />
             </div>
 
             {/* Platform fee (read-only) */}
@@ -318,6 +337,17 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
               </div>
             </div>
 
+            {/* Stripe Connect onboarding (owner/admin only) */}
+            {isOwnerOrAdmin && stripeReady && campaign.stripeOnboardingStatus !== "complete" && (
+              <div className="border-t border-muted-teal/20 pt-5">
+                <ConnectStripeButton
+                  campaignId={campaign.id}
+                  slug={slug}
+                  status={campaign.stripeOnboardingStatus}
+                />
+              </div>
+            )}
+
             {/* Pledge section */}
             {campaign.status === "active" && (
               <div className="border-t border-muted-teal/20 pt-5">
@@ -325,11 +355,11 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                   <p className="text-sm text-dark-slate/50">
                     <a href="/login" className="text-coral hover:underline">Logga in</a> för att stödja kampanjen.
                   </p>
-                ) : stripeReady ? (
+                ) : stripeReady && campaign.stripeOnboardingStatus === "complete" ? (
                   <>
                     <p className="text-sm font-medium text-dark-slate mb-3">
-                      {myPledge
-                        ? `Du har bidragit med ${fmt(myPledge.amount, campaign.currency)}`
+                      {myTotal > 0
+                        ? `Du har bidragit med totalt ${fmt(myTotal, campaign.currency)} (${myPledges.length} bidrag)`
                         : "Stöd projektet"}
                     </p>
                     <PledgeForm
@@ -348,7 +378,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                           : undefined
                       }
                       platformFee={campaign.platformFee}
-                      existingPledgeAmount={myPledge?.amount}
+                      tokenExchangeRate={campaign.tokenExchangeRate ?? undefined}
                     />
                   </>
                 ) : (
@@ -357,8 +387,8 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                       <span>Betalning ej konfigurerad — pledges är manuella</span>
                     </div>
                     <p className="text-sm font-medium text-dark-slate">
-                      {myPledge
-                        ? `Din pledge: ${fmt(myPledge.amount, campaign.currency)} — uppdatera nedan`
+                      {myTotal > 0
+                        ? `Du har bidragit med totalt ${fmt(myTotal, campaign.currency)} (${myPledges.length} bidrag) — lägg till fler nedan`
                         : "Pledga ditt stöd"}
                     </p>
                     <form action={pledge.bind(null, campaign.id, slug)} className="space-y-3">
@@ -367,7 +397,6 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                           name="amount"
                           type="number"
                           min="1"
-                          defaultValue={myPledge?.amount ?? ""}
                           placeholder={`Belopp (${campaign.currency})`}
                           required
                           className="flex-1 border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass"
@@ -376,16 +405,25 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                           type="submit"
                           className="bg-seagrass text-white text-sm font-medium px-4 py-2 rounded-md hover:opacity-90 transition-opacity whitespace-nowrap"
                         >
-                          {myPledge ? "Uppdatera" : "Pledga"}
+                          Pledga
                         </button>
                       </div>
                       <input
                         name="message"
                         className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass"
                         placeholder="Meddelande (valfritt)"
-                        defaultValue={myPledge?.message ?? ""}
                       />
                     </form>
+                    {myPledges.length > 0 && (
+                      <ul className="text-xs text-dark-slate/50 space-y-1 pt-1">
+                        {myPledges.map((p) => (
+                          <li key={p.id}>
+                            {fmt(p.amount, campaign.currency)}
+                            {p.message ? ` — "${p.message}"` : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 )}
               </div>
@@ -452,6 +490,11 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                         )}
                         <p className="text-xs text-dark-slate/30 mt-0.5">
                           {new Date(exp.date).toLocaleDateString("sv-SE")}
+                          {exp.milestone && (
+                            <span className="ml-2 inline-block bg-dry-sage text-dark-slate/60 px-1.5 py-0.5 rounded">
+                              {exp.milestone.title}
+                            </span>
+                          )}
                         </p>
                       </div>
                       <span className="text-sm font-semibold text-dark-slate flex-shrink-0">
@@ -505,6 +548,18 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                           className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass"
                         />
                       </div>
+                      <div className="col-span-2">
+                        <select
+                          name="milestoneId"
+                          defaultValue=""
+                          className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass bg-white"
+                        >
+                          <option value="">Ingen milstolpe</option>
+                          {project.milestones.map((m) => (
+                            <option key={m.id} value={m.id}>{m.title}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                     <button
                       type="submit"
@@ -514,6 +569,15 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                     </button>
                   </form>
                 </div>
+              )}
+
+              {isOwnerOrAdmin && (
+                <a
+                  href={`/api/projects/${slug}/funding/export`}
+                  className="inline-block mt-3 text-xs font-medium text-dark-slate/50 hover:text-dark-slate underline"
+                >
+                  Exportera rapport (CSV)
+                </a>
               )}
             </section>
           )}
