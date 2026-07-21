@@ -14,6 +14,7 @@ import { SdgIcon } from "@/components/SdgIcon";
 import Tooltip from "@/components/Tooltip";
 import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import ProjectTabNav from "./ProjectTabNav";
+import GettingStartedChecklist from "./GettingStartedChecklist";
 import { isLeadRole } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
@@ -192,7 +193,7 @@ export default async function ProjectDetailPage({
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-  const [latestUpdate, fundingCampaign, monthEvents, userJoinRequest, kanbanCards, recentChannelMessages, tokenTotals] =
+  const [latestUpdate, fundingCampaign, monthEvents, userJoinRequest, kanbanCards, recentChannelMessages, tokenTotals, checklistItems] =
     await Promise.all([
       prisma.blogPost.findFirst({
         where: { projectSlug: slug },
@@ -258,6 +259,12 @@ export default async function ProjectDetailPage({
         orderBy: { _sum: { tokens: "desc" } },
         take: 5,
       }),
+      project.phase === "IDEA" || project.phase === "PROJECT"
+        ? prisma.initiativeChecklistItem.findMany({
+            where: { projectId: project.id, completedAt: { not: null } },
+            select: { itemKey: true },
+          })
+        : Promise.resolve([]),
     ]);
 
   const raised =
@@ -437,6 +444,15 @@ export default async function ProjectDetailPage({
           <ProjectTabNav slug={slug} isOwner={!!isOwnerOrAdmin} isCommercial={isCommercialLegalType(project.legalType)} />
         </div>
       </div>
+
+      {isOwnerOrAdmin && !project.checklistDismissedAt && (project.phase === "IDEA" || project.phase === "PROJECT") && (
+        <GettingStartedChecklist
+          projectId={project.id}
+          slug={slug}
+          phase={project.phase}
+          completedKeys={checklistItems.map((c) => c.itemKey)}
+        />
+      )}
 
       {isOwnerOrAdmin && project.joinRequests.length > 0 && (
         <div className="mb-8">

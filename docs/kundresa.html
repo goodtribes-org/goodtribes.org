@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="sv" data-palette="#097809,#ff6600">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kundresan på GoodTribes.org</title>
+<style>
+  :root {
+    --coral: #ff6600;
+    --dark-slate: #254441;
+    --seagrass: #097809;
+    --muted-teal: #9ca3af;
+    --dry-sage: #b2b09b;
+    --watermelon: #d10505;
+    --surface: #fcfcfb;
+    --ink: #254441;
+    --ink-muted: #5c6b68;
+    --coral-tint: #fff1e8;
+    --seagrass-tint: #eaf5ea;
+    --amber-tint: #fff8e6;
+    --amber-ink: #92400e;
+    --emerald-tint: #e9f7ef;
+    --emerald-ink: #0f6b3f;
+    --red-tint: #fdecec;
+    --red-ink: #b91c1c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 32px 20px 80px;
+  }
+  h1 {
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0 0 4px;
+    text-align: center;
+  }
+  .subtitle {
+    text-align: center;
+    color: var(--ink-muted);
+    font-size: 14px;
+    margin: 0 0 28px;
+  }
+  .legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin: 0 auto 40px;
+    max-width: 900px;
+    font-size: 12.5px;
+    color: var(--ink-muted);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+  .journeys {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  @media (max-width: 860px) {
+    .journeys { grid-template-columns: 1fr; }
+  }
+  .journey-title {
+    font-size: 15px;
+    font-weight: 700;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+  .journey-title.j1 { background: var(--seagrass-tint); border: 1px solid color-mix(in srgb, var(--seagrass) 35%, transparent); }
+  .journey-title.j2 { background: var(--coral-tint); border: 1px solid color-mix(in srgb, var(--coral) 35%, transparent); }
+  .flow { display: flex; flex-direction: column; align-items: center; }
+  .node {
+    width: 100%;
+    max-width: 380px;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13.5px;
+    line-height: 1.4;
+    position: relative;
+    background: #fff;
+    border: 1.5px solid var(--muted-teal);
+  }
+  .node.start, .node.end {
+    border-radius: 999px;
+    text-align: center;
+    font-weight: 700;
+    padding: 10px 20px;
+  }
+  .j1 .node.start, .j1 .node.end { background: var(--seagrass-tint); border-color: var(--seagrass); }
+  .j2 .node.start, .j2 .node.end { background: var(--coral-tint); border-color: var(--coral); }
+  .node.step { border-left: 4px solid var(--muted-teal); }
+  .j1-flow .node.step { border-left-color: var(--seagrass); }
+  .j2-flow .node.step { border-left-color: var(--coral); }
+  .node.gate {
+    background: var(--amber-tint);
+    border-color: #d9a441;
+    border-left: 4px solid #d9a441;
+  }
+  .node.gate .badge { color: var(--amber-ink); }
+  .node .step-num {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-muted);
+    display: block;
+    margin-bottom: 3px;
+  }
+  .node .file-ref {
+    display: block;
+    margin-top: 6px;
+    font-size: 10.5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--ink-muted);
+    word-break: break-all;
+  }
+  .node .gap-note {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--red-ink);
+    background: var(--red-tint);
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .arrow {
+    width: 2px;
+    height: 22px;
+    background: var(--muted-teal);
+    position: relative;
+    margin: 2px 0;
+  }
+  .arrow::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 7px solid var(--muted-teal);
+  }
+  .branch-wrap {
+    display: flex;
+    gap: 14px;
+    width: 100%;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .branch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+  }
+  .branch-label {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 8px;
+    white-space: nowrap;
+  }
+  .branch-label.pos { background: var(--emerald-tint); color: var(--emerald-ink); }
+  .branch-label.neg { background: var(--red-tint); color: var(--red-ink); }
+  .branch-label.alt { background: var(--amber-tint); color: var(--amber-ink); }
+  footer {
+    text-align: center;
+    margin-top: 60px;
+    font-size: 11.5px;
+    color: var(--ink-muted);
+  }
+</style>
+</head>
+<body>
+
+<h1>Kundresan på GoodTribes.org</h1>
+<p class="subtitle">Baserad på faktisk implementation i kodbasen (juli 2026) — inte bara PRD-ambition</p>
+
+<div class="legend">
+  <div class="legend-item"><span class="swatch" style="background:var(--seagrass)"></span> Ny volontär/bidragsgivare</div>
+  <div class="legend-item"><span class="swatch" style="background:var(--coral)"></span> Projektinitiativtagare</div>
+  <div class="legend-item"><span class="swatch" style="background:#d9a441"></span> Godkännande-grind</div>
+  <div class="legend-item"><span class="swatch" style="background:var(--red-ink)"></span> Ej implementerad i PRD</div>
+</div>
+
+<div class="journeys">
+
+  <!-- JOURNEY 1: NEW VOLUNTEER -->
+  <div class="j1">
+    <div class="journey-title j1">🙋 Ny volontär / bidragsgivare</div>
+    <div class="flow j1-flow">
+
+      <div class="node start">Första besöket</div>
+      <div class="arrow"></div>
+
+      <div class="node step">
+        <span class="step-num">Steg 1 — Registrering</span>
+        Magic link via e-post (Resend + NextAuth)
+        <span class="file-ref">auth.ts, auth.config.ts</span>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node step">
+        <span class="step-num">Steg 2 — Ny användare → automatisk redirect</span>
+        Fyller i profil: namn, bio, tillgänglighet, land, kompetenser, SDG-intressen
+        <span class="file-ref">profile/setup/page.tsx → ProfileSetupForm.tsx</span>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node step">
+        <span class="step-num">Steg 3 — Onboarding-guide</span>
+        Väljer mål: "Starta ett projekt" / "Gå med i ett projekt" / "Utforska plattformen"
+        <span class="file-ref">onboarding/page.tsx → OnboardingWizard.tsx</span>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="branch-wrap">
+        <div class="branch">
+          <div class="branch-label alt">Valde "Gå med"</div>
+          <div class="node step">
+            <span class="step-num">Steg 4a — Matchning</span>
+            Dashboard föreslår projekt baserat på kompetenser + SDG-intressen
+            <span class="file-ref">dashboard/page.tsx</span>
+          </div>
+        </div>
+        <div class="branch">
+          <div class="branch-label alt">Valde "Utforska"</div>
+          <div class="node step">
+            <span class="step-num">Steg 4b — Bläddra</span>
+            Filtrerar projekt fritt: kategori, SDG, sökord, fas
+            <span class="file-ref">projects/page.tsx</span>
+          </div>
+        </div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node step">
+        <span class="step-num">Steg 5 — Ansök om medlemskap</span>
+        Skickar en ansökan med meddelande till projektets ledare
+        <span class="file-ref">JoinSection.tsx → requestToJoin()</span>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node gate">
+        <span class="step-num">Steg 6 — Godkännande-grind</span>
+        Projektledare granskar ansökan (kontrollerar även ev. uteslutning från Granskningsrådet)
+        <span class="file-ref">members/page.tsx → respondToJoinRequest()</span>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="branch-wrap">
+        <div class="branch">
+          <div class="branch-label pos">Godkänd</div>
+          <div class="node step" style="width:100%">
+            Blir medlem — notifiering + mejl
+          </div>
+        </div>
+        <div class="branch">
+          <div class="branch-label neg">Avvisad</div>
+          <div class="node step" style="width:100%">
+            Notifiering, länk tillbaka till /projects
+          </div>
+        </div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node step">
+        <span class="step-num">Genväg (kräver inget godkännande)</span>
+        Vem som helst kan klicka sig direkt till ett Kanban-kort flaggat "öppet för allmänheten" och claima det
+        <span class="file-ref">kanban/actions.ts → claimCard()</span>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node step">
+        <span class="step-num">Steg 7 — Första bidraget</span>
+        Tar en Kanban-uppgift → bockar av delmoment → flyttar till Review → ledare godkänner → Klar
+        <span class="file-ref">KanbanBoard.tsx, kanbanMove.ts</span>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node end">🎉 Tribe Tokens utbetalas + notifiering</div>
+    </div>
+  </div>
+
+  <!-- JOURNEY 2: PROJECT INITIATOR -->
+  <div class="j2">
+    <div class="journey-title j2">🚀 Projektinitiativtagare</div>
+    <div class="flow j2-flow">
+
+      <div class="node start">Har en idé</div>
+      <div class="arrow"></div>
+
+      <div class="branch-wrap">
+        <div class="branch">
+          <div class="branch-label alt">Postar idé först</div>
+          <div class="node step">
+            <span class="step-num">Steg 1 (valfritt)</span>
+            Skapar en idé i Idéverkstaden — genomgår open → review → shortlisted → approved
+            <span class="file-ref">ideas/new/actions.ts → createIdea()</span>
+          </div>
+        </div>
+        <div class="branch">
+          <div class="branch-label alt">Hoppar över idé</div>
+          <div class="node step">
+            Går direkt till projektskapande (t.ex. via onboarding "Starta ett projekt")
+          </div>
+        </div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node step">
+        <span class="step-num">Steg 2 — Skapa projekt</span>
+        Titel, kategori, SDG-mål, juridisk form, behövda kompetenser, synlighet
+        <span class="file-ref">projects/new/NewProjectForm.tsx → createProject()</span>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node step">
+        <span class="step-num">Steg 3 — Projektet skapas</span>
+        Blir FOUNDER, 3 standardkanaler skapas, indexeras i sök
+        <span class="file-ref">projects/new/actions.ts</span>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node step">
+        Landar direkt på projektsidans huvudflik
+        <span class="gap-note">PRD 5.71:s "dina tre första steg"-checklista finns inte — bara en generisk startchecklista på Dashboard som försvinner så fort projektet finns</span>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="branch-wrap">
+        <div class="branch">
+          <div class="branch-label alt">Bjuder in</div>
+          <div class="node step">
+            <span class="step-num">Steg 4a — Aktiv rekrytering</span>
+            Skickar inbjudan med 7 dagars token-länk
+            <span class="file-ref">invite/actions.ts → sendInvite()</span>
+          </div>
+        </div>
+        <div class="branch">
+          <div class="branch-label alt">Väntar in</div>
+          <div class="node step">
+            <span class="step-num">Steg 4b — Passiv rekrytering</span>
+            Granskar inkommande ansökningar (samma flöde som Volontär steg 6)
+          </div>
+        </div>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node step">
+        <span class="step-num">Steg 5 — Bygger och driver projektet</span>
+        Uppgifter (Kanban) → Omröstningar → Bidrag/Crowdfunding → Impact-mätning
+        <span class="file-ref">ProjectTabNav.tsx (Verktyg-menyn)</span>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node step">
+        <span class="step-num">Steg 6 — Skalning (vid mognad ≥ 70)</span>
+        Startar lokala instanser i nya regioner, ser nätverksdashboard med karta + jämförelse
+        <span class="file-ref">scale/page.tsx, NetworkDashboard.tsx</span>
+      </div>
+      <div class="arrow"></div>
+
+      <div class="node end">🌍 Partnerskap med organisationer + global etablering</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Genererad från kodbasens faktiska flöden — inte en aspirationsbild. Röda "ej implementerad"-etiketter markerar där PRD:t beskriver mer än vad som byggts.
+</footer>
+
+</body>
+</html>

@@ -488,6 +488,7 @@ model Project {
   summary     String?
   description String?
   phase       ProjectPhase @default(IDEA)
+  checklistDismissedAt DateTime?
   archivedAt  DateTime?
   visibility  String   @default("public")
   category    String?

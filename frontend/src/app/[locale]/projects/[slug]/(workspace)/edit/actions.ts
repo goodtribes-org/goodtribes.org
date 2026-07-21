@@ -85,7 +85,7 @@ export async function advanceProjectPhase(slug: string) {
   }
 
   await prisma.$transaction([
-    prisma.project.update({ where: { slug }, data: { phase: nextPhase } }),
+    prisma.project.update({ where: { slug }, data: { phase: nextPhase, checklistDismissedAt: null } }),
     prisma.phaseTransition.create({
       data: {
         projectId: project.id,
@@ -133,6 +133,7 @@ export async function toggleChecklistItem(slug: string, phase: "IDEA" | "PROJECT
     await prisma.initiativeChecklistItem.deleteMany({ where: { projectId: project.id, itemKey } });
   }
 
+  revalidatePath(`/projects/${slug}`);
   revalidatePath(`/projects/${slug}/edit`);
 }
 
