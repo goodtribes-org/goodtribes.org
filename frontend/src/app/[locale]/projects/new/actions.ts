@@ -8,6 +8,37 @@ import { indexDocuments } from "@/lib/meili";
 import { suggestSdgGoals } from "@/lib/claude";
 import { logOrgActivity } from "@/lib/activity";
 import { isValidLegalType } from "@/lib/legalType";
+import { awardTokens, mintDirectGt, SANDBOX_GT_POOL, SANDBOX_LIFT_TRIBE_TOKEN_POOL } from "@/lib/tokens";
+import { getSandboxRoomContributorWeights } from "@/lib/rooms";
+
+// Sandlådan (Utvecklingsfas 1.2): mints GT + fresh Tribe Tokens in the new
+// project for a sandbox room's contributors, proportional to their message
+// share — the full lift token economy (see also fork/actions.ts's fork
+// path and ideas/new/actions.ts's GT-only lift-to-Idéflödet step).
+async function mintSandboxLiftTokens(roomId: string, projectSlug: string, opts?: { skipGt?: boolean }) {
+  const contributors = await getSandboxRoomContributorWeights(roomId);
+  const totalWeight = contributors.reduce((sum, c) => sum + c.weight, 0);
+  if (totalWeight === 0) return;
+
+  await prisma.$transaction(async (tx) => {
+    for (const c of contributors) {
+      const share = c.weight / totalWeight;
+      if (!opts?.skipGt) {
+        await mintDirectGt(tx, {
+          userId: c.userId,
+          tokens: SANDBOX_GT_POOL * share,
+          reason: "Sandlåda: bidrag lyft till projekt",
+        });
+      }
+      await awardTokens(tx, {
+        userId: c.userId,
+        projectSlug,
+        tokens: SANDBOX_LIFT_TRIBE_TOKEN_POOL * share,
+        reason: "Sandlåda-bidrag vid lyft",
+      });
+    }
+  });
+}
 
 export async function getSdgSuggestions(
   description: string
@@ -78,10 +109,24 @@ export async function createProject(formData: FormData) {
 
       if (ideaId) {
         await prisma.idea.update({ where: { id: ideaId }, data: { status: "converted" } }).catch(() => {});
+
+        // Sandlådan: if this Idea originated from a sandbox thread, GT was
+        // already given when it was lifted to the Idéflödet (see
+        // ideas/new/actions.ts) — only the fresh Tribe Tokens are still due.
+        const originRoom = await prisma.room.findFirst({ where: { convertedToIdeaId: ideaId, isSandbox: true } });
+        if (originRoom) {
+          await mintSandboxLiftTokens(originRoom.id, project.slug, { skipGt: true });
+        }
       }
 
       if (fromThreadId) {
-        await prisma.room.update({ where: { id: fromThreadId }, data: { convertedToProjectId: project.id } }).catch(() => {});
+        const room = await prisma.room
+          .update({ where: { id: fromThreadId }, data: { convertedToProjectId: project.id } })
+          .catch(() => null);
+
+        if (room?.isSandbox) {
+          await mintSandboxLiftTokens(fromThreadId, project.slug);
+        }
       }
 
       await indexDocuments("projects", [

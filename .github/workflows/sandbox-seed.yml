@@ -1,0 +1,17 @@
+name: Sandbox Seed
+
+on:
+  schedule:
+    # Every day at 07:00 UTC
+    - cron: "0 7 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger sandbox-seed endpoint
+        run: |
+          curl -sf -X POST "${{ vars.APP_URL }}/api/cron/sandbox-seed" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"

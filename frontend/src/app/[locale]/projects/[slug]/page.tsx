@@ -177,6 +177,9 @@ export default async function ProjectDetailPage({
         include: { skill: { select: { id: true, name: true, slug: true } } },
         orderBy: { addedAt: "asc" },
       },
+      forkedFromProject: { select: { title: true, slug: true } },
+      forkedFromSandboxThread: { select: { name: true } },
+      forks: { select: { title: true, slug: true } },
     },
   });
   if (!project) notFound();
@@ -443,6 +446,45 @@ export default async function ProjectDetailPage({
         <div className="px-6">
           <ProjectTabNav slug={slug} isOwner={!!isOwnerOrAdmin} isCommercial={isCommercialLegalType(project.legalType)} />
         </div>
+      </div>
+
+      {(project.forkedFromProject || project.forkedFromSandboxThread) && (
+        <div className="max-w-2xl mx-auto mb-4 px-4 text-sm text-dark-slate/60 text-center">
+          Gaffling
+          {project.forkedFromProject && (
+            <>
+              {" av "}
+              <Link href={`/projects/${project.forkedFromProject.slug}`} className="text-seagrass hover:underline">
+                {project.forkedFromProject.title}
+              </Link>
+            </>
+          )}
+          {project.forkedFromSandboxThread && !project.forkedFromProject && (
+            <> av en tråd från Sandlådan ({project.forkedFromSandboxThread.name ?? "namnlös tråd"})</>
+          )}
+        </div>
+      )}
+
+      <div className="max-w-2xl mx-auto mb-6 px-4 flex items-center justify-center gap-4 text-sm">
+        <Link
+          href={`/fork/new?sourceType=project&sourceId=${slug}`}
+          className="text-dark-slate/50 hover:text-seagrass transition-colors"
+        >
+          Gaffla detta projekt →
+        </Link>
+        {project.forks.length > 0 && (
+          <span className="text-dark-slate/40">
+            {project.forks.length} {project.forks.length === 1 ? "fork" : "forkar"}:{" "}
+            {project.forks.map((f, i) => (
+              <span key={f.slug}>
+                {i > 0 && ", "}
+                <Link href={`/projects/${f.slug}`} className="text-seagrass hover:underline">
+                  {f.title}
+                </Link>
+              </span>
+            ))}
+          </span>
+        )}
       </div>
 
       {isOwnerOrAdmin && !project.checklistDismissedAt && (project.phase === "IDEA" || project.phase === "PROJECT") && (

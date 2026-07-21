@@ -42,6 +42,26 @@ export async function awardTokens(
   return ledgerRow;
 }
 
+// PRD 4a Steg 2/Sandlådan (Utvecklingsfas 1.2): a GT mint that isn't a
+// mirror of a Tribe Token award — for recognizing a contribution that has
+// no project yet (Sandlådan activity before it's lifted/forked), where
+// awardTokens' projectSlug requirement doesn't apply.
+export async function mintDirectGt(
+  tx: Prisma.TransactionClient,
+  params: { userId: string; tokens: number; reason: string }
+) {
+  return tx.gtLedger.create({
+    data: { userId: params.userId, tokens: params.tokens, reason: params.reason },
+  });
+}
+
+// Sandlådan token pool sizes at lift/fork (PRD leaves the exact amount an
+// open question — provisional placeholders, same spirit as Granskningsrådet's
+// hardcoded seat count/term length; split proportionally across credited
+// contributors by their share of the room's message count.
+export const SANDBOX_GT_POOL = 20;
+export const SANDBOX_LIFT_TRIBE_TOKEN_POOL = 20;
+
 export const CREATOR_BONUS_TOKENS = 5;
 export const APPROVER_BONUS_TOKENS = 5;
 

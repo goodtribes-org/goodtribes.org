@@ -2,6 +2,20 @@ import { prisma } from "@/lib/prisma";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import type { Room } from "@prisma/client";
 
+// Sandlådan (Utvecklingsfas 1.2): each human message-author's share of a
+// sandbox room's activity, used as the proportional weight for GT/Tribe
+// Token minting at lift or fork — computed on demand rather than tracked in
+// a running-counter table, since it's only ever read once (at the lift/fork
+// moment).
+export async function getSandboxRoomContributorWeights(roomId: string): Promise<{ userId: string; weight: number }[]> {
+  const counts = await prisma.message.groupBy({
+    by: ["authorId"],
+    where: { roomId, isAi: false },
+    _count: { _all: true },
+  });
+  return counts.map((c) => ({ userId: c.authorId, weight: c._count._all }));
+}
+
 export async function findOrCreateDmRoom(userIdA: string, userIdB: string): Promise<string> {
   if (userIdA === userIdB) throw new Error("Cannot message yourself");
 

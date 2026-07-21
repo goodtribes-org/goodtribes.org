@@ -74,11 +74,12 @@ export async function proposeProfitDistribution(formData: FormData) {
 }
 
 // Stiftelsen's actual execution of a member-approved distribution: splits
-// the audited profit into the three PRD 4a shares, creates one
-// PersonalProfitAllocation per Tribe Token holder (proportional to their
-// balance in the distributing project, floored to whole SEK — any leftover
-// from flooring is folded into the Impact-fond's inflow, never lost), and
-// logs the Impact-fond's share as a real ledger row.
+// the audited profit into the three PRD 4a shares, carves out a fork
+// compensation slice for any ForkProfitShare rows (PRD 4f) before creating
+// one PersonalProfitAllocation per Tribe Token holder for the rest
+// (proportional to their balance in the distributing project, floored to
+// whole SEK — any leftover from flooring is folded into the Impact-fond's
+// inflow, never lost), and logs the Impact-fond's share as a real ledger row.
 export async function executeProfitDistribution(proposalId: string) {
   const adminId = await requireAdmin();
 
@@ -91,6 +92,23 @@ export async function executeProfitDistribution(proposalId: string) {
   const operationsShareSek = Math.round((proposal.auditedProfitSek * proposal.proposedOperationsPct) / 100);
   const impactFundShareSek = Math.round((proposal.auditedProfitSek * proposal.proposedImpactFundPct) / 100);
   const remainingShareSek = proposal.auditedProfitSek - operationsShareSek - impactFundShareSek;
+
+  // PRD 4f: if this project is a fork, a slice of its Steg-2 remainder goes
+  // to the original project's contributors first, split among them by their
+  // ForkProfitShare.sharePercent (proportional to their original stake).
+  // FORK_RESERVED_PCT (the size of that slice) isn't specified in the PRD —
+  // provisional, same spirit as other hardcoded placeholders this session
+  // (Granskningsrådet's seat count, Sandlådan's GT pool sizes).
+  const FORK_RESERVED_PCT = 10;
+  const forkShares = await prisma.forkProfitShare.findMany({ where: { forkedProjectId: proposal.projectId } });
+  const forkReservedSek = forkShares.length > 0 ? Math.floor((remainingShareSek * FORK_RESERVED_PCT) / 100) : 0;
+  const forkAllocations = forkShares.map((f) => ({
+    userId: f.originalContributorUserId,
+    amountAvailableSek: Math.floor((forkReservedSek * f.sharePercent) / 100),
+  }));
+  const forkAllocatedSoFar = forkAllocations.reduce((sum, a) => sum + a.amountAvailableSek, 0);
+
+  const holderRemainderSek = remainingShareSek - forkAllocatedSoFar;
 
   const holderTotals = await prisma.tokenLedger.groupBy({
     by: ["userId"],
@@ -106,13 +124,14 @@ export async function executeProfitDistribution(proposalId: string) {
   allocationDeadline.setDate(allocationDeadline.getDate() + 30); // PRD's own example figure (4a Steg 2)
 
   let allocatedSoFar = 0;
-  const allocations = holders.map((h) => {
+  const holderAllocations = holders.map((h) => {
     const amountAvailableSek =
-      totalTokens > 0 ? Math.floor((h.balance / totalTokens) * remainingShareSek) : 0;
+      totalTokens > 0 ? Math.floor((h.balance / totalTokens) * holderRemainderSek) : 0;
     allocatedSoFar += amountAvailableSek;
     return { userId: h.userId, amountAvailableSek, allocationDeadline };
   });
-  const roundingRemainder = remainingShareSek - allocatedSoFar;
+  const roundingRemainder = remainingShareSek - forkAllocatedSoFar - allocatedSoFar;
+  const allocations = [...forkAllocations.map((a) => ({ ...a, allocationDeadline })), ...holderAllocations];
 
   await prisma.$transaction(async (tx) => {
     const distribution = await tx.profitDistribution.create({

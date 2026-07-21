@@ -171,6 +171,10 @@ model User {
   initiatedPartnerships        Partnership[]               @relation("PartnershipInitiatedBy")
   respondedPartnerships        Partnership[]               @relation("PartnershipRespondedBy")
   createdMindMaps              MindMap[]                   @relation("CreatedMindMaps")
+  forkContributorCredits        ForkContributorCredit[]    @relation("ForkContributorCredits")
+  forkProfitSharesAsContributor ForkProfitShare[]          @relation("ForkProfitShareContributor")
+  forkTokenGrantsAsContributor  ForkTokenGrant[]           @relation("ForkTokenGrantContributor")
+  forkTokenGrantsGiven          ForkTokenGrant[]           @relation("ForkTokenGrantsGivenBy")
 }
 
 model Skill {
@@ -500,6 +504,14 @@ model Project {
   legalType   LegalType @default(NONPROFIT_UMBRELLA)
   commercialUmbrellaEntityId String?
   commercialUmbrellaEntity   CommercialUmbrellaEntity? @relation(fields: [commercialUmbrellaEntityId], references: [id], onDelete: SetNull)
+  // PRD 4f: a permissionless copy of this project (or of a Sandlådan Room,
+  // see forkedFromSandboxThreadId), independent of ProjectInstance's
+  // permissioned franchising model — at most one of the two is set.
+  forkedFromProjectId       String?
+  forkedFromProject         Project?  @relation("ProjectForks", fields: [forkedFromProjectId], references: [id], onDelete: SetNull)
+  forks                     Project[] @relation("ProjectForks")
+  forkedFromSandboxThreadId String?
+  forkedFromSandboxThread   Room?     @relation("SandboxThreadForks", fields: [forkedFromSandboxThreadId], references: [id], onDelete: SetNull)
   ownerId     String
   orgId       String?
   createdAt   DateTime @default(now())
@@ -547,6 +559,10 @@ model Project {
   impactFundPayouts           ImpactFundLedger[]          @relation("ImpactFundPayouts")
   impactFundPollOptions       PlatformPollOption[]        @relation("ImpactFundPollOptionProjects")
   partnerships                Partnership[]               @relation("ProjectPartnerships")
+  forkProfitSharesReceived    ForkProfitShare[]           @relation("ForkProfitShareOriginalProject")
+  forkContributorCredits      ForkContributorCredit[]     @relation("ForkContributorCreditForkedProject")
+  forkProfitSharesGiven       ForkProfitShare[]           @relation("ForkProfitShareForkedProject")
+  forkTokenGrantsGiven        ForkTokenGrant[]            @relation("ForkTokenGrantForkedProject")
 }
 
 model ProjectSkill {
@@ -1636,6 +1652,14 @@ enum RoomParticipantRole {
   MEMBER
 }
 
+// Sandlådan (Utvecklingsfas 1.2): whether a Room's opening content came from
+// a person or was proactively AI-seeded (see /api/cron/sandbox-seed) — only
+// meaningful when isSandbox is true.
+enum RoomOrigin {
+  HUMAN
+  AI_SEED
+}
+
 model Room {
   id             String            @id @default(cuid())
   type           RoomType
@@ -1651,11 +1675,17 @@ model Room {
   pinned         Boolean           @default(false)
   createdAt      DateTime          @default(now())
   lastMessageAt  DateTime          @default(now())
+  // Sandlådan — see enum RoomOrigin above. isSandbox is independent of
+  // RoomType: a sandbox thread is still an IDEA_THREAD, just permanently
+  // labeled and eligible for AI-seeding.
+  isSandbox      Boolean           @default(false)
+  origin         RoomOrigin        @default(HUMAN)
 
   convertedToIdeaId    String?  @unique
   convertedToIdea      Idea?    @relation("RoomConvertedToIdea", fields: [convertedToIdeaId], references: [id], onDelete: SetNull)
   convertedToProjectId String?  @unique
   convertedToProject   Project? @relation("RoomConvertedToProject", fields: [convertedToProjectId], references: [id], onDelete: SetNull)
+  forkedToProjects     Project[] @relation("SandboxThreadForks")
 
   participants RoomParticipant[]
   messages     Message[]
@@ -1666,6 +1696,57 @@ model Room {
   @@index([projectId])
   @@index([organisationId])
   @@index([lastMessageAt])
+}
+
+// PRD 4f: lineage record for a fork — every original contributor (project
+// TokenLedger holders, or a sandbox Room's message authors) is credited here
+// regardless of whether they also received a profit share or token grant.
+model ForkContributorCredit {
+  id                String   @id @default(cuid())
+  forkedProjectId   String
+  forkedProject     Project  @relation("ForkContributorCreditForkedProject", fields: [forkedProjectId], references: [id], onDelete: Cascade)
+  originalProjectId String?
+  creditedUserId    String
+  creditedUser      User     @relation("ForkContributorCredits", fields: [creditedUserId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+
+  @@index([forkedProjectId])
+}
+
+// PRD 4f: the mandatory compensation floor — proportional to the
+// contributor's Tribe Token stake in the original project at fork time.
+// Consumed by executeProfitDistribution (site-admin/profit-distribution)
+// before the fork's own TokenLedger holders get their split.
+model ForkProfitShare {
+  id                        String   @id @default(cuid())
+  forkedProjectId           String
+  forkedProject             Project  @relation("ForkProfitShareForkedProject", fields: [forkedProjectId], references: [id], onDelete: Cascade)
+  originalProjectId         String
+  originalProject           Project  @relation("ForkProfitShareOriginalProject", fields: [originalProjectId], references: [id], onDelete: Cascade)
+  originalContributorUserId String
+  originalContributor       User     @relation("ForkProfitShareContributor", fields: [originalContributorUserId], references: [id], onDelete: Cascade)
+  sharePercent              Float
+  createdAt                 DateTime @default(now())
+
+  @@index([forkedProjectId])
+}
+
+// PRD 4f: the forker's entirely optional, self-chosen top-up — real, newly
+// minted Tribe Tokens in the forked project (see awardTokens in lib/tokens.ts),
+// never a transfer of the contributor's original tokens.
+model ForkTokenGrant {
+  id                        String   @id @default(cuid())
+  forkedProjectId           String
+  forkedProject             Project  @relation("ForkTokenGrantForkedProject", fields: [forkedProjectId], references: [id], onDelete: Cascade)
+  originalProjectId         String
+  originalContributorUserId String
+  originalContributor       User     @relation("ForkTokenGrantContributor", fields: [originalContributorUserId], references: [id], onDelete: Cascade)
+  tribeTokensGranted        Float
+  grantedById               String
+  grantedBy                 User     @relation("ForkTokenGrantsGivenBy", fields: [grantedById], references: [id], onDelete: Cascade)
+  createdAt                 DateTime @default(now())
+
+  @@index([forkedProjectId])
 }
 
 model RoomParticipant {

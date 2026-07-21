@@ -56,22 +56,32 @@ export default async function IdeaThreadPage({
         <Link href="/ideaverkstad" className="text-sm text-dark-slate/50 hover:text-dark-slate">
           ← Idéverkstaden
         </Link>
-        {!alreadyConverted && (
-          <div className="flex gap-2">
+        <div className="flex gap-2">
+          {!alreadyConverted && (
+            <>
+              <Link
+                href={`/ideas/new?fromThread=${roomId}`}
+                className="px-3 py-1.5 text-xs font-medium rounded border border-muted-teal text-dark-slate/70 hover:border-seagrass hover:text-seagrass transition-colors"
+              >
+                Spara till Idéflödet
+              </Link>
+              <Link
+                href={`/projects/new?fromThread=${roomId}`}
+                className="px-3 py-1.5 text-xs font-medium rounded bg-coral text-white hover:bg-watermelon transition-colors"
+              >
+                Konvertera till projekt
+              </Link>
+            </>
+          )}
+          {access.room.isSandbox && (
             <Link
-              href={`/ideas/new?fromThread=${roomId}`}
-              className="px-3 py-1.5 text-xs font-medium rounded border border-muted-teal text-dark-slate/70 hover:border-seagrass hover:text-seagrass transition-colors"
+              href={`/fork/new?sourceType=sandboxRoom&sourceId=${roomId}`}
+              className="px-3 py-1.5 text-xs font-medium rounded border border-amber-300 text-amber-700 hover:border-amber-500 transition-colors"
             >
-              Spara till Idéflödet
+              Gaffla till projekt
             </Link>
-            <Link
-              href={`/projects/new?fromThread=${roomId}`}
-              className="px-3 py-1.5 text-xs font-medium rounded bg-coral text-white hover:bg-watermelon transition-colors"
-            >
-              Konvertera till projekt
-            </Link>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <MindMapSection
@@ -90,6 +100,7 @@ export default async function IdeaThreadPage({
           name: access.room.name,
           postingPolicy: access.room.postingPolicy,
           otherUsers: [],
+          isSandbox: access.room.isSandbox,
         }}
         initialMessages={messages.map((m) => ({
           ...m,
