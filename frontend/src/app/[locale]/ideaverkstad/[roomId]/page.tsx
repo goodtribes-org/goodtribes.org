@@ -8,6 +8,8 @@ import { redirect, notFound } from "next/navigation";
 import { getRoomAccess } from "@/lib/roomAuth";
 import { getRoomMentionables } from "@/lib/rooms";
 import { RoomShell } from "@/app/[locale]/messages/[roomId]/RoomShell";
+import MindMapSection from "./MindMapSection";
+import type { Node, Edge } from "@xyflow/react";
 
 export const metadata: Metadata = {
   title: "Idésession — Idéverkstaden",
@@ -27,7 +29,7 @@ export default async function IdeaThreadPage({
   if (!access || access.room.type !== "IDEA_THREAD") notFound();
   if (!access.canRead) notFound();
 
-  const [room, messages, mentionables] = await Promise.all([
+  const [room, messages, mentionables, mindMap] = await Promise.all([
     prisma.room.findUnique({
       where: { id: roomId },
       select: { convertedToIdeaId: true, convertedToProjectId: true },
@@ -43,6 +45,7 @@ export default async function IdeaThreadPage({
       take: 200,
     }),
     getRoomMentionables(access.room, userId),
+    prisma.mindMap.findUnique({ where: { roomId } }),
   ]);
 
   const alreadyConverted = !!room?.convertedToIdeaId || !!room?.convertedToProjectId;
@@ -70,6 +73,15 @@ export default async function IdeaThreadPage({
           </div>
         )}
       </div>
+
+      <MindMapSection
+        roomId={roomId}
+        initialMindMap={
+          mindMap
+            ? { id: mindMap.id, nodes: mindMap.nodes as unknown as Node[], edges: mindMap.edges as unknown as Edge[] }
+            : null
+        }
+      />
 
       <RoomShell
         room={{

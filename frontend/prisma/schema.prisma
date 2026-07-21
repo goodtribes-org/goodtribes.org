@@ -170,6 +170,7 @@ model User {
   openedImpactFundRounds       ImpactFundAllocationRound[] @relation("OpenedImpactFundRounds")
   initiatedPartnerships        Partnership[]               @relation("PartnershipInitiatedBy")
   respondedPartnerships        Partnership[]               @relation("PartnershipRespondedBy")
+  createdMindMaps              MindMap[]                   @relation("CreatedMindMaps")
 }
 
 model Skill {
@@ -627,6 +628,7 @@ model Idea {
   followers        IdeaFollower[]
   comments         IdeaComment[]
   convertedFromRoom Room?            @relation("RoomConvertedToIdea")
+  mindMap          MindMap?
 }
 
 model IdeaVote {
@@ -662,6 +664,27 @@ model IdeaFollower {
   user User @relation("IdeaFollowers", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([ideaId, userId])
+}
+
+// An AI-drafted, user-editable mind map attached to either an Idéverkstad
+// brainstorm thread (Room, type IDEA_THREAD) or a published Idea — exactly
+// one of roomId/ideaId is set, checked at the application layer (same loose
+// nullable-pair convention as ActivityEvent.projectId?/organisationId?).
+// One map per source for now — regenerating overwrites rather than
+// versioning, keeping the MVP schema/UI simple.
+model MindMap {
+  id          String   @id @default(cuid())
+  roomId      String?  @unique
+  room        Room?    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  ideaId      String?  @unique
+  idea        Idea?    @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  title       String
+  nodes       Json     // react-flow Node[] shape: [{id, position: {x,y}, data: {label}}]
+  edges       Json     // react-flow Edge[] shape: [{id, source, target, label?}]
+  createdById String
+  createdBy   User     @relation("CreatedMindMaps", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model ProjectJoinRequest {
@@ -1636,6 +1659,7 @@ model Room {
 
   participants RoomParticipant[]
   messages     Message[]
+  mindMap      MindMap?
 
   @@unique([projectId, name])
   @@unique([organisationId, name])
