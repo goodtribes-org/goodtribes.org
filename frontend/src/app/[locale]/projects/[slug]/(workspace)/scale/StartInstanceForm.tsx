@@ -10,6 +10,7 @@ interface Props {
 export default function StartInstanceForm({ parentSlug }: Props) {
   const router = useRouter();
   const [region, setRegion] = useState("");
+  const [country, setCountry] = useState("");
   const [projectTitle, setProjectTitle] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,14 +18,19 @@ export default function StartInstanceForm({ parentSlug }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!region.trim() || !projectTitle.trim()) return;
+    if (!region.trim() || !country.trim() || !projectTitle.trim()) return;
     setSubmitting(true);
     setError(null);
     try {
       const res = await fetch("/api/projects/instances", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ parentSlug, region: region.trim(), projectTitle: projectTitle.trim() }),
+        body: JSON.stringify({
+          parentSlug,
+          region: region.trim(),
+          country: country.trim(),
+          projectTitle: projectTitle.trim(),
+        }),
       });
       if (res.ok) {
         setSuccess(true);
@@ -71,7 +77,20 @@ export default function StartInstanceForm({ parentSlug }: Props) {
           type="text"
           value={region}
           onChange={(e) => setRegion(e.target.value)}
-          placeholder="t.ex. Stockholm, Sverige"
+          placeholder="t.ex. Stockholm"
+          required
+          className="w-full px-3 py-2 text-sm border border-muted-teal/40 rounded bg-white text-dark-slate placeholder-dark-slate/30 focus:outline-none focus:border-seagrass"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-dark-slate/70 mb-1">
+          Land
+        </label>
+        <input
+          type="text"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+          placeholder="t.ex. Sverige"
           required
           className="w-full px-3 py-2 text-sm border border-muted-teal/40 rounded bg-white text-dark-slate placeholder-dark-slate/30 focus:outline-none focus:border-seagrass"
         />
@@ -79,7 +98,7 @@ export default function StartInstanceForm({ parentSlug }: Props) {
       {error && <p className="text-xs text-red-500">{error}</p>}
       <button
         type="submit"
-        disabled={submitting || !region.trim() || !projectTitle.trim()}
+        disabled={submitting || !region.trim() || !country.trim() || !projectTitle.trim()}
         className="px-4 py-2 rounded bg-coral text-white text-sm font-bold hover:bg-watermelon disabled:opacity-50 transition-colors"
       >
         {submitting ? "Skickar..." : "Ansök om instans"}

@@ -287,6 +287,14 @@ export default async function OrgDetailPage({
                 Workspace
               </Link>
             )}
+            {isMemberOrOwner && (
+              <Link
+                href={`/org/${slug}/partnerships`}
+                className="px-3 py-1.5 rounded border border-muted-teal text-xs font-medium text-dark-slate/70 hover:text-dark-slate hover:border-dark-slate/40 transition-colors"
+              >
+                Partnerskap
+              </Link>
+            )}
             {userId && !isOwner && (
               <OrgReviewButton organisationId={org.id} orgName={org.name} />
             )}

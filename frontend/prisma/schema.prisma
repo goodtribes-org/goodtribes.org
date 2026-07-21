@@ -168,6 +168,8 @@ model User {
   personalProfitAllocations    PersonalProfitAllocation[]
   recordedImpactFundEntries    ImpactFundLedger[]         @relation("RecordedImpactFundEntries")
   openedImpactFundRounds       ImpactFundAllocationRound[] @relation("OpenedImpactFundRounds")
+  initiatedPartnerships        Partnership[]               @relation("PartnershipInitiatedBy")
+  respondedPartnerships        Partnership[]               @relation("PartnershipRespondedBy")
 }
 
 model Skill {
@@ -200,6 +202,7 @@ model Organisation {
   slug        String   @unique
   description String?
   category    String?
+  country     String?  // free text, normalized via lib/geo.ts — real geography signal for partnership matchmaking
   imageUrl    String?
   isPublic    Boolean  @default(true)
   verified    Boolean  @default(false)
@@ -221,6 +224,7 @@ model Organisation {
   reviews        OrganisationReview[]      @relation("OrganisationReviews")
   files          File[]                    @relation("OrganisationFiles")
   activityEvents ActivityEvent[]
+  partnerships   Partnership[]             @relation("OrganisationPartnerships")
 }
 
 model OrganisationFlag {
@@ -540,6 +544,7 @@ model Project {
   profitDistributions         ProfitDistribution[]
   impactFundPayouts           ImpactFundLedger[]          @relation("ImpactFundPayouts")
   impactFundPollOptions       PlatformPollOption[]        @relation("ImpactFundPollOptionProjects")
+  partnerships                Partnership[]               @relation("ProjectPartnerships")
 }
 
 model ProjectSkill {
@@ -1266,6 +1271,36 @@ model FundingExpense {
   @@index([milestoneId])
 }
 
+// PRD 5.68 — a project<->organisation sponsor/partner/supporter link. Requires
+// symmetric consent: whichever side didn't propose it must accept before
+// status flips to "active" and it becomes publicly visible / usable for
+// matchmaking exclusion (see proposePartnership/respondToPartnership in
+// lib/actions/partnerships.ts). Either side can revoke unilaterally once
+// active — same leave-anytime spirit as OrganisationMember/ProjectMember.
+model Partnership {
+  id             String    @id @default(cuid())
+  projectId      String
+  organisationId String
+  type           String    @default("partner") // "sponsor" | "partner" | "supporter"
+  description    String?
+  status         String    @default("pending")  // "pending" | "active" | "declined" | "revoked"
+  proposedBy     String    // "org" | "project" — who initiated, so the initiator can't also accept
+  initiatedById  String
+  respondedById  String?
+  respondedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  project      Project      @relation("ProjectPartnerships", fields: [projectId], references: [id], onDelete: Cascade)
+  organisation Organisation @relation("OrganisationPartnerships", fields: [organisationId], references: [id], onDelete: Cascade)
+  initiatedBy  User         @relation("PartnershipInitiatedBy", fields: [initiatedById], references: [id])
+  respondedBy  User?        @relation("PartnershipRespondedBy", fields: [respondedById], references: [id])
+
+  @@unique([projectId, organisationId])
+  @@index([organisationId])
+  @@index([projectId])
+}
+
 model ImpactMetric {
   id           String         @id @default(cuid())
   projectSlug  String
@@ -1353,6 +1388,7 @@ model ProjectInstance {
   childSlug    String   @unique
   child        Project  @relation("ChildInstance", fields: [childSlug], references: [slug], onDelete: Cascade)
   region       String
+  country      String?  // free text, normalized via lib/geo.ts same as User.country — powers the network dashboard's world map
   status       String   @default("pending")
   approvedById String?
   approvedBy   User?    @relation("ApprovedInstances", fields: [approvedById], references: [id])

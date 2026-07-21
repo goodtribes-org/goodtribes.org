@@ -4,7 +4,10 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import ReplicationToggle from "./ReplicationToggle";
 import StartInstanceForm from "./StartInstanceForm";
+import InstanceReviewPanel from "./InstanceReviewPanel";
+import NetworkDashboard from "./NetworkDashboard";
 import { isLeadRole } from "@/lib/authz";
+import { getNetworkStats } from "@/lib/networkStats";
 
 
 export default async function ScalePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -34,6 +37,10 @@ export default async function ScalePage({ params }: { params: Promise<{ slug: st
   const userId = session?.user?.id;
   const userMembership = project.members.find((m) => m.userId === userId);
   const isOwnerOrAdmin = isLeadRole(userMembership?.role);
+
+  const pendingInstances = project.parentInstances.filter((inst) => inst.status === "pending");
+  const approvedInstances = project.parentInstances.filter((inst) => inst.status === "approved");
+  const networkStats = approvedInstances.length > 0 ? await getNetworkStats(slug) : null;
 
   // Check if user already has a pending/active instance from this parent
   const existingInstance = userId
@@ -103,6 +110,14 @@ export default async function ScalePage({ params }: { params: Promise<{ slug: st
         </div>
       )}
 
+      {isOwnerOrAdmin && pendingInstances.length > 0 && (
+        <InstanceReviewPanel instances={pendingInstances} />
+      )}
+
+      {networkStats && (
+        <NetworkDashboard stats={networkStats} parentSlug={slug} isOwnerOrAdmin={isOwnerOrAdmin} />
+      )}
+
       {project.parentInstances.length > 0 && (
         <div className="mb-8">
           <h2 className="text-sm font-semibold text-dark-slate mb-3">Aktiva instanser ({project.parentInstances.length})</h2>
@@ -113,7 +128,9 @@ export default async function ScalePage({ params }: { params: Promise<{ slug: st
                   <Link href={`/projects/${inst.child.slug}`} className="text-sm font-medium text-seagrass hover:underline">
                     {inst.child.title}
                   </Link>
-                  <span className="ml-2 text-xs text-dark-slate/50">{inst.region}</span>
+                  <span className="ml-2 text-xs text-dark-slate/50">
+                    {inst.region}{inst.country ? `, ${inst.country}` : ""}
+                  </span>
                 </div>
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                   inst.status === "approved" ? "bg-green-100 text-green-700" :

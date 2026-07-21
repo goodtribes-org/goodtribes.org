@@ -23,6 +23,7 @@ export default async function EditOrgPage({ params }: { params: Promise<{ slug: 
         isPublic: true,
         ownerId: true,
         category: true,
+        country: true,
         neededSkills: { select: { skillId: true } },
       },
     }),
@@ -44,6 +45,7 @@ export default async function EditOrgPage({ params }: { params: Promise<{ slug: 
         imageUrl={org.imageUrl}
         isPublic={org.isPublic}
         category={org.category}
+        country={org.country}
         skills={skills}
         currentSkillIds={org.neededSkills.map((s) => s.skillId)}
       />

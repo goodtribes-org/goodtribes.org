@@ -19,9 +19,14 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { parentSlug, region, projectTitle } = body as { parentSlug?: string; region?: string; projectTitle?: string };
-  if (!parentSlug || !region || !projectTitle) {
-    return NextResponse.json({ error: "parentSlug, region och projectTitle krävs" }, { status: 400 });
+  const { parentSlug, region, country, projectTitle } = body as {
+    parentSlug?: string;
+    region?: string;
+    country?: string;
+    projectTitle?: string;
+  };
+  if (!parentSlug || !region || !country || !projectTitle) {
+    return NextResponse.json({ error: "parentSlug, region, country och projectTitle krävs" }, { status: 400 });
   }
 
   const parent = await prisma.project.findUnique({ where: { slug: parentSlug } });
@@ -77,6 +82,7 @@ export async function POST(req: NextRequest) {
       parentSlug,
       childSlug,
       region,
+      country,
       status: "pending",
     },
   });

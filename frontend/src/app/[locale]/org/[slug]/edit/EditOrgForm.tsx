@@ -13,6 +13,7 @@ type Props = {
   imageUrl: string | null;
   isPublic: boolean;
   category: string | null;
+  country: string | null;
   skills: { id: string; name: string; slug: string }[];
   currentSkillIds: string[];
 };
@@ -24,6 +25,7 @@ export default function EditOrgForm({
   imageUrl,
   isPublic,
   category,
+  country,
   skills,
   currentSkillIds,
 }: Props) {
@@ -87,6 +89,20 @@ export default function EditOrgForm({
             <option value="">— none —</option>
             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
+        </div>
+
+        <div>
+          <label htmlFor="country" className="block text-sm font-medium text-dark-slate mb-1">
+            Land <span className="text-dark-slate/50 font-normal">(valfritt — används för partnerskapsmatchning)</span>
+          </label>
+          <input
+            id="country"
+            name="country"
+            type="text"
+            defaultValue={country ?? ""}
+            placeholder="t.ex. Sverige"
+            className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
+          />
         </div>
 
         {skills.length > 0 && (

@@ -24,6 +24,7 @@ const TOOLS_TABS = [
   { label: "AI Granskning", href: "/ai-review" },
   { label: "Alumni",        href: "/alumni" },
   { label: "Skalning",      href: "/scale" },
+  { label: "Partnerskap",   href: "/partnerships" },
   { label: "Juridisk form", href: "/legal-type" },
   { label: "Vinstfördelning", href: "/profit-distribution", commercialOnly: true },
 ];
