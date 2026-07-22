@@ -10,6 +10,7 @@ import { htmlToPreviewText } from "@/lib/renderBody";
 import SortToggleContainer from "@/components/SortToggleContainer";
 import Pagination from "@/components/Pagination";
 import ProjectCard from "@/components/ProjectCard";
+import SandboxHero from "./SandboxHero";
 
 export const metadata: Metadata = {
   title: "Sandbox — GoodTribes.org",
@@ -106,17 +107,9 @@ export default async function SandboxPage({
 
   return (
     <div className="relative -mt-8 -mb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f8f8f8" }}>
-    <div className="max-w-6xl mx-auto px-6 pt-8 pb-12">
-      <div className="border-2 border-amber-300 bg-amber-50 rounded-lg p-4 mb-6">
-        <p className="text-sm font-semibold text-amber-900">🧪 Sandbox — experimentell zon</p>
-        <p className="text-xs text-amber-800 mt-1">
-          Riktiga projekt, men märkta som experimentella — testa en idé fritt innan du (eller någon annan)
-          gör den till ett vanligt projekt. Allt här kan vara AI-genererat, halvfärdigt eller under test —
-          vem som helst kan gaffla ett projekt utan tillstånd.
-        </p>
-      </div>
-
-      <div className="flex items-center justify-between mb-6">
+    <SandboxHero />
+    <div className="max-w-6xl mx-auto px-6 pb-12">
+      <div className="flex items-center justify-between mb-6 mt-2">
         <div>
           <h1 className="text-2xl font-bold text-dark-slate">Sandbox</h1>
           <p className="text-sm text-dark-slate/50 mt-1">
