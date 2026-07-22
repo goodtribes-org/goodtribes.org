@@ -14,7 +14,7 @@ import { SdgIcon } from "@/components/SdgIcon";
 import Tooltip from "@/components/Tooltip";
 import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import ProjectTabNav from "./ProjectTabNav";
-import GettingStartedChecklist from "./GettingStartedChecklist";
+import PhaseJourneyWidget from "./PhaseJourneyWidget";
 import { isLeadRole } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
@@ -487,15 +487,6 @@ export default async function ProjectDetailPage({
         )}
       </div>
 
-      {isOwnerOrAdmin && !project.checklistDismissedAt && (project.phase === "IDEA" || project.phase === "PROJECT") && (
-        <GettingStartedChecklist
-          projectId={project.id}
-          slug={slug}
-          phase={project.phase}
-          completedKeys={checklistItems.map((c) => c.itemKey)}
-        />
-      )}
-
       {isOwnerOrAdmin && project.joinRequests.length > 0 && (
         <div className="mb-8">
           <JoinRequestsPanel requests={project.joinRequests} slug={slug} />
@@ -722,6 +713,13 @@ export default async function ProjectDetailPage({
               </section>
             );
           })()}
+
+          <PhaseJourneyWidget
+            slug={slug}
+            phase={project.phase}
+            completedKeys={checklistItems.map((c) => c.itemKey)}
+            canEdit={!!isOwnerOrAdmin}
+          />
 
           {/* Uppgifter widget */}
           {(() => {

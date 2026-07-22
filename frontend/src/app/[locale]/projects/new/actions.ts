@@ -70,7 +70,7 @@ export async function createProject(formData: FormData) {
   const legalTypeRaw = (formData.get("legalType") as string | null)?.trim() || "";
   const legalType = isValidLegalType(legalTypeRaw) ? legalTypeRaw : "NONPROFIT_UMBRELLA";
 
-  if (!title) return;
+  if (!title) throw new Error("Projektnamn krävs.");
 
   const baseSlug = slugify(title) || "project";
   let slug = "";
@@ -148,5 +148,5 @@ export async function createProject(formData: FormData) {
     }
   }
 
-  redirect(`/projects/${slug}`);
+  redirect(`/projects/${slug}/guide`);
 }

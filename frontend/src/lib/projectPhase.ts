@@ -40,15 +40,17 @@ export function getNextPhase(current: ProjectPhaseValue): ProjectPhaseValue | nu
 // progress checklist, not separate phase values. peer_feedback_requested is
 // informative only, never a gate (idea -> project is always the
 // initiator's own call).
-export const INITIATIVE_CHECKLIST_ITEMS: Record<"IDEA" | "PROJECT", { key: string; label: string }[]> = {
+export const INITIATIVE_CHECKLIST_ITEMS: Record<"IDEA" | "PROJECT", { key: string; label: string; href?: string }[]> = {
   IDEA: [
-    { key: "dream_defined", label: "Idén är formulerad" },
-    { key: "peer_feedback_requested", label: "Feedback efterfrågad (valfritt)" },
+    { key: "dream_defined", label: "Beskriv idén" },
+    { key: "ai_reviewed", label: "Be AI granska idén" },
+    { key: "peer_feedback_requested", label: "Bjud in vänner att ge feedback" },
+    { key: "lean_canvas_created", label: "Gör en Lean Canvas", href: "lean-canvas" },
   ],
   PROJECT: [
-    { key: "todo_created", label: "Att-göra-lista skapad" },
-    { key: "collaborators_invited", label: "Medskapare inbjudna" },
-    { key: "team_formed", label: "Team format" },
-    { key: "resources_secured", label: "Resurser säkrade" },
+    { key: "todo_created", label: "Fyll på med arbetsuppgifter" },
+    { key: "collaborators_invited", label: "Bjud in medskapare" },
+    { key: "team_formed", label: "Formera team" },
+    { key: "resources_secured", label: "Säkra resurser" },
   ],
 };

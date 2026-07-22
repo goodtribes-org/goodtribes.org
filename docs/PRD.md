@@ -1,9 +1,15 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 4.8 (Draft)
+**Version:** 4.9 (Draft)
 **Datum:** 2026-07-22
 **Status:** Under utveckling
+
+**Ändringar i v4.9:**
+- **Beslutat: v4.7:s sammanslagning av `idea`- och `project`-faserna rullas tillbaka.** `projects.phase` behåller alla sju värden (`idea`, `project`, `pilot`, `production`, `establish`, `scale`, `impact`) och Utvecklingsfas 1.5:s fristående idé-modell (`ideas`, `idea_votes`, `idea_comments`, `idea_revisions`) behålls också, skild från `projects` — implementationen bygger vidare på den redan befintliga, aldrig migrerade datamodellen istället för att genomföra v4.7:s riskfyllda schemamigrering. 4d och Utvecklingsfas 1.5 nedan är återställda till sin lydelse innan v4.7. v4.8:s Sandbox-namnbyte påverkas inte — det var en separat, orelaterad ändring.
+- De två nya delstegen från v4.7 behålls däremot, nu kopplade till den riktiga (aldrig borttagna) `idea`-fasen istället för en påhittad delgrupp: `idea`-checklistan är `dream_defined` ("Beskriv idén"), `ai_reviewed` ("Be AI granska idén", ny), `peer_feedback_requested` ("Bjud in vänner att ge feedback"), `lean_canvas_created` ("Gör en Lean Canvas", ny). `project`-checklistan är oförändrad: `todo_created`, `collaborators_invited`, `team_formed`, `resources_secured`.
+- **Beslutat:** att skapa ett projekt kräver fortsatt bara ett namn (redan sant sedan tidigare, se 5.3) — men efter skapandet möts initiativtagaren nu av en **idé-guide**: en valfri, stegvis genomgång av `idea`-fasens fyra delsteg (beskriv idén, be AI granska den, bjud in vänner, gör en Lean Canvas). Guiden kan hoppas över helt och hållet — då hamnar man direkt på sitt nya, tomma projekt precis som idag.
+- **Beslutat:** fas- och stegwidgeten (se produktimplikation i 4d) är inte längre gömd bakom en "kom igång"-ruta synlig bara för ägare/admin. Den visas nu för alla besökare i projektets sidopanel, direkt under "Arbete" (Kanban-sammanfattningen) och ovanför "Uppgifter" — vem som helst kan se var i resan projektet befinner sig, men bara initiativtagaren/leads kan bocka av delsteg (samma rollkontroll som redan gäller för `toggleChecklistItem`).
 
 **Ändringar i v4.8:**
 - **Beslutat:** Sandlådan döpt om till **Sandbox** genomgående — sidan (`/sandladan` → `/sandbox`), navigeringen och samtliga omnämnanden i detta dokument. Ingen funktionell ändring, bara ett namnbyte (inklusive böjda former: `Sandlådans` → `Sandboxs`, `sandlåde-`-sammansättningar → `sandbox-`-sammansättningar, t.ex. `sandbox-innehåll`, `sandbox-tråd`).
@@ -355,10 +361,10 @@ Integrerar direkt med databasen, hanterar sessioner och JWT-tokens automatiskt o
 | Läsa projektsidor | ❌ Öppet för alla |
 | Läsa blogginlägg | ❌ Öppet för alla |
 | Läsa wiki | ❌ Öppet för alla |
-| Bläddra bland projekt i idé-fasen | ❌ Öppet för alla |
+| Bläddra i idéflödet | ❌ Öppet för alla |
 | Filtrera och söka projekt | ❌ Öppet för alla |
 | Använda idégenereringsverktyget | ✅ Kräver inloggning |
-| Rösta på projekt i idé-fasen | ✅ Kräver inloggning |
+| Rösta på idéer | ✅ Kräver inloggning |
 | Kommentera | ✅ Kräver inloggning |
 | Skapa projekt | ✅ Kräver inloggning |
 | Bidra till projekt | ✅ Kräver inloggning |
@@ -502,7 +508,7 @@ En svensk stiftelse får driva näringsverksamhet, men hur det görs avgör skat
 
 ## 4d. Initiativets livscykel (fasmodell)
 
-Varje initiativ på GoodTribes — oavsett om det startar som en lös idé eller som ett färdigt koncept som är redo att köra — rör sig genom samma sex faser. Faserna representerar mognadsgrad, inte separata verktyg: ett initiativ är alltid samma underliggande objekt i databasen, bara med olika `phase`-värde.
+Varje initiativ på GoodTribes — oavsett om det startar som en lös idé eller som ett färdigt koncept som är redo att köra — rör sig genom samma sju faser. Faserna representerar mognadsgrad, inte separata verktyg: ett initiativ är alltid samma underliggande objekt i databasen, bara med olika `phase`-värde.
 
 **Designprincip:** användaren ska kunna starta där den befinner sig. Ny idé → börja i `idea`. Redan validerad lösning i drift → skapa initiativet direkt i `production`. Alla faser är alltid tillgängliga som startpunkt; inget tvingar en användare att passera faser den redan klarat av utanför plattformen.
 
@@ -512,7 +518,8 @@ Varje initiativ på GoodTribes — oavsett om det startar som en lös idé eller
 
 | Värde (enum) | Svensk etikett | Beskrivning |
 |---|---|---|
-| `idea` | Idé | Från lös idé till redo-att-bygga-projekt i ett sammanhållet flöde: idéformulering (AI-assisterad, se Utvecklingsfas 1.2/1.5), peer feedback, community-feedback, uppgiftsnedbrytning, medskapare, team och resurser — se delstegsgrupperna nedan |
+| `idea` | Idé | AI-assisterad idéfas (se Utvecklingsfas 1.2/1.5), peer review, community-feedback |
+| `project` | Projekt | Uppgiftsnedbrytning (to-do), bjuda in medskapare, formera team, säkra resurser |
 | `pilot` | Pilot | Utveckling och pilot i liten skala (prototyp) |
 | `production` | Produktion | Skarp drift |
 | `establish` | Etablera | Stabil lokal verksamhet |
@@ -534,28 +541,28 @@ phase_transitions
 
 Den fasmodell och de delsteg som beskrivs nedan (och den widget som visar dem, se produktimplikation nedan) är en **vägledning för användaren, inte en tvingande arbetsordning.** Detta gäller på två nivåer, med olika grad av flexibilitet:
 
-- **Fasövergångarna (`idea` → `pilot` → ...) är och förblir gated**, enligt gating-tabellen nedan — de styr vilka funktioner som låses upp och kan inte hoppas över.
+- **Fasövergångarna (`idea` → `project` → `pilot` → ...) är och förblir gated**, enligt gating-tabellen nedan — de styr vilka funktioner som låses upp och kan inte hoppas över.
 - **Delstegen inom en fas (checklistan, t.ex. `dream_defined`, `peer_feedback_requested`, `todo_created`) är däremot fria till ordning och valfria att bocka av.** Användaren kan göra dem i vilken ordning som helst, hoppa över dem, eller gå direkt till fasövergången utan att ha bockat av alla — checklistan är en hjälp att se vad som brukar behövas, inte en spärr. Widgeten visar väg och framsteg ("2 av 5 klara"), men låser aldrig ett steg bakom ett annat.
 
 Detta skiljer sig medvetet från t.ex. gating-tabellen mellan faser, som fortsatt är strikt. Om detta blir förvirrande i praktiken (användare som inte förstår varför vissa steg är låsta och andra inte) är det en öppen fråga att följa upp efter lansering — se punkt 10.
 
 ---
 
-**Delsteg inom den sammanslagna `idea`-fasen (UI-checklista, inte egna enum-värden)**
+**Delsteg inom `idea`- och `project`-faserna (UI-checklista, inte egna enum-värden)**
 
-`idea` och `project` var tidigare två separata faser, men eftersom övergången mellan dem aldrig var en riktig gate (initiativtagaren beslutar alltid själv, se v3.3) är de slagits ihop till en enda fas (v4.7). Delstegen finns kvar som en checklista/progress-bar, nu grupperad under två numrerade rubriker i widgeten istället för under två `phase`-värden — annars får `phase`-fältet 11+ värden där flertalet bara betyder "fortfarande i idé-fasen, delsteg X", vilket gör frågor som "visa alla aktiva projekt" svåra att uttrycka.
+Dessa var ursprungligen skissade som egna toppnivåfaser (idea/dream, peer review, to-do, invite, team, resources) men fungerar bättre som en checklista/progress-bar inuti `idea` och `project` — annars får `phase`-fältet 11+ värden där flertalet bara betyder "fortfarande i projektfasen, delsteg X", vilket gör frågor som "visa alla aktiva projekt" svåra att uttrycka.
 
 ```
 initiative_checklist_items
-  id, project_id, group_number (1 | 2), item_key, completed_at, completed_by
+  id, project_id, phase (idea | project), item_key, completed_at, completed_by
 ```
 
-| `group_number` | Rubrik i widgeten | `item_key`-värden |
-|---|---|---|
-| `1` | Idéfasen | `dream_defined` ("Beskriv idén"), `ai_reviewed` ("Be AI granska idén" *(ny, v4.7)* — återanvänder `@AI` från Idéverkstaden, se 5.10), `peer_feedback_requested` ("Bjud in vänner att ge feedback", valfritt, se nedan), `lean_canvas_created` ("Gör en Lean Canvas" *(ny, v4.7)* — länkar till planeringsverktyget i Sandbox, se 5.10) |
-| `2` | Projektfas | `todo_created` ("Fyll på med arbetsuppgifter"), `collaborators_invited` ("Bjud in medskapare"), `team_formed` ("Formera team"), `resources_secured` ("Säkra resurser") |
+| `phase` | `item_key`-värden |
+|---|---|
+| `idea` | `dream_defined` ("Beskriv idén"), `ai_reviewed` ("Be AI granska idén" *(ny, v4.7)* — återanvänder `@AI` från Idéverkstaden, se 5.10), `peer_feedback_requested` ("Bjud in vänner att ge feedback", valfritt, se nedan), `lean_canvas_created` ("Gör en Lean Canvas" *(ny, v4.7)* — länkar till planeringsverktyget i Sandbox, se 5.10) |
+| `project` | `todo_created` ("Fyll på med arbetsuppgifter"), `collaborators_invited` ("Bjud in medskapare"), `team_formed` ("Formera team"), `resources_secured` ("Säkra resurser") |
 
-**Peer review är valfri feedback, inte ett godkännandekrav.** Community-feedback (via idéflödet, se Utvecklingsfas 1.2/1.5) kan hjälpa initiativtagaren att förbättra idén, men ingen extern granskning eller antal granskare krävs för att gå vidare i checklistan. `peer_feedback_requested` är därför bara en informativ markering — inte en spärr — och ersätter det tidigare `peer_review_approved`, som antydde ett godkännandekrav som inte längre gäller.
+**Peer review är valfri feedback, inte ett godkännandekrav — beslutet om `idea → project` tas alltid av initiativtagaren själv.** Community-feedback (via idéflödet, se Utvecklingsfas 1.2/1.5) kan hjälpa initiativtagaren att förbättra idén, men ingen extern granskning eller antal granskare krävs för att gå vidare. `peer_feedback_requested` är därför bara en informativ markering — inte en spärr — och ersätter det tidigare `peer_review_approved`, som antydde ett godkännandekrav som inte längre gäller.
 
 **Peer feedback vs. Granskningsrådet — två separata mekanismer:** även om peer feedback inte är ett krav, är det fortfarande värt att skilja den från Granskningsrådet (se Utvecklingsfas 2.97), eftersom de har helt olika syften:
 
@@ -575,7 +582,8 @@ Detta är inte längre en öppen fråga — se punkt 10.
 
 | Övergång | Krav för att låsa upp | Status |
 |---|---|---|
-| `idea` → `pilot` | Initiativtagaren beslutar själv att idén/projektet är redo — inget krav på extern granskning eller antal granskare (peer feedback, se ovan, är valfri och påverkar inte beslutet) — samt att team är tilldelat och budget/resurser definierade (`team_formed` + `resources_secured` i delstegschecklistan, se ovan) | **Beslutat (v4.7)** — sammanslagning av tidigare `idea → project` (Beslutat v3.3) och `project → pilot` (Beslutat) |
+| `idea` → `project` | Initiativtagaren beslutar själv — inget krav på extern granskning eller antal granskare. Peer feedback (se ovan) är valfri och påverkar inte beslutet. | **Beslutat (v3.3)** |
+| `project` → `pilot` | Team tilldelat + budget/resurser definierade | Beslutat |
 | `pilot` → `production` | Tribe Token-röstning bland projektmedlemmar godkänner pilotresultatet (se Utvecklingsfas 2.95) + minst en milstolpe markerad klar (se 5.74) + `resources_secured` uppfyllt för fortsatt drift | **Föreslaget — ej formellt beslutat, se punkt 10** |
 | `production` → `establish` | Projektpuls (se 5.74) stabil över ett tröskelvärde i N sammanhängande månader, utan öppet allvarligt ärende hos Granskningsrådet (se 5.55) | **Föreslaget — svagast underbyggt av de tre, tröskelvärde N och ev. variation per `legal_type` (se 4c) kräver styrelsediskussion, se punkt 10** |
 | `establish` → `scale` | Initiativtagare initierar regional replikering eller självvald uppdelning (se 5.65) | Beslutat |
@@ -589,7 +597,8 @@ Detta är inte längre en öppen fråga — se punkt 10.
 
 | Övergång | Låser upp |
 |---|---|
-| `idea` → `pilot` | Tribe Tokens börjar delas ut för uppgifter (se Utvecklingsfas 2.8) — Kanban, chatt och wiki finns redan tillgängliga från projektstart (se 5.3), oavsett fas |
+| `idea` → `project` | Kanban-board skapas (se Utvecklingsfas 1), `initiativtagare`-roll tilldelas formellt |
+| `project` → `pilot` | Tribe Tokens börjar delas ut för uppgifter (se Utvecklingsfas 2.8) |
 | `pilot` → `production` | Skarp driftmiljö aktiveras för projektet *(exakt vilka funktioner — ej slutgiltigt beslutat, se punkt 10)* |
 | `establish` → `scale` | Crowdfunding-modul (se Utvecklingsfas 3) + regional replikering & självvald uppdelning (se Utvecklingsfas 4, 5.65) |
 | `scale` → `impact` | Impact-rapportering, publik impact-dashboard |
@@ -598,24 +607,9 @@ Detta är inte längre en öppen fråga — se punkt 10.
 
 **Produktimplikation — fas- och stegwidget**
 
-Projektsidan visar en widget med hela vägen (Idé → Pilot → Produktion → Etablera → Skala → Impact), där varje fas kan expanderas för att se sina delsteg. Widgeten är en visuell guide och framstegsindikator — se "UI-princip" ovan för vad som är låst (fasövergångar) och vad som är fritt (delsteg inom en fas).
+Projektsidan visar en widget med hela vägen (Idé → Projekt → Pilot → Produktion → Etablera → Skala → Impact), där varje fas kan expanderas för att se sina delsteg. Widgeten är en visuell guide och framstegsindikator — se "UI-princip" ovan för vad som är låst (fasövergångar) och vad som är fritt (delsteg inom en fas).
 
-Inom `idea`-fasen visas delstegen i två numrerade grupper, så att hela vägen från lös idé till "redo att bygga" känns sammanhållen i en enda widget:
-
-```
-1. Idéfasen
-   1.1 Beskriv idén
-   1.2 Be AI granska idén
-   1.3 Bjud in vänner att ge feedback
-   1.4 Gör en Lean Canvas
-2. Projektfas
-   2.1 Fyll på med arbetsuppgifter
-   2.2 Bjud in medskapare
-   2.3 Formera team
-   2.4 Säkra resurser
-```
-
-Numreringen är bara en visuell gruppering (`group_number` i `initiative_checklist_items`, se nedan) — den ändrar inte gating-reglerna: alla åtta delsteg ovan är fortfarande fria till ordning och valfria, precis som tidigare (se "UI-princip" ovan).
+**Beslutat (v4.9):** widgeten är inte längre gömd bakom en "kom igång"-ruta synlig bara för ägare/admin — den visas för alla besökare, direkt i projektsidans sidopanel under "Arbete" (Kanban-sammanfattningen) och ovanför "Uppgifter". Vem som helst kan se var i resan projektet befinner sig; bara initiativtagaren/leads kan bocka av delsteg (samma rollkontroll som redan gäller för avbockning av checklistan).
 
 ---
 
@@ -623,15 +617,13 @@ Numreringen är bara en visuell gruppering (`group_number` i `initiative_checkli
 
 ```
 projects
-  phase (idea | pilot | production | establish | scale | impact) — ersätter tidigare status-fält, se 7
+  phase (idea | project | pilot | production | establish | scale | impact) — ersätter tidigare status-fält, se 7
 
 phase_transitions
   id, project_id, from_phase (nullable), to_phase, changed_by, changed_at
 
 initiative_checklist_items
-  id, project_id, group_number (1 | 2), item_key, completed_at, completed_by
-  -- grupp 1 = "Idéfasen" (dream_defined, ai_reviewed, peer_feedback_requested, lean_canvas_created)
-  -- grupp 2 = "Projektfas" (todo_created, collaborators_invited, team_formed, resources_secured)
+  id, project_id, phase (idea | project), item_key, completed_at, completed_by
 
 impact_reports
   id, project_id, sdg_goals[], metric_description, metric_value, verified_by, verified_at, created_at
@@ -1093,9 +1085,9 @@ AI läser hela trådens konversationshistorik och svarar kontextuellt — som en
 - Tråden fortsätter tills initiativtagaren är nöjd
 
 **Steg 5 — Spara och agera**
-- Tråden konverteras till ett nytt projekt i `idea`-fasen (se 4d) — med AI som automatiskt genererar projektbeskrivning, milstolpar och startuppgifter. Det är den enda vägen framåt: en idé är redan ett projekt, bara i sin tidigaste fas (se Utvecklingsfas 1.5)
-- Projektet är därefter öppet för fortsatt community-feedback, röstning och co-creation, precis som alla andra idé-fas-projekt (se Utvecklingsfas 1.5)
-- Alla som deltagit i tråden notifieras när projektet skapas och erbjuds att gå med
+- En idé kan sparas till Idéflödet (Utvecklingsfas 1.5) för vidare community-feedback
+- Eller konverteras direkt till ett nytt projekt — med AI som automatiskt genererar projektbeskrivning, milstolpar och startuppgifter
+- Alla som deltagit i tråden notifieras när ett projekt skapas och erbjuds att gå med
 
 ---
 
@@ -1117,7 +1109,7 @@ Ett tydligt avgränsat, öppet deklarerat område där GoodTribes själva blanda
 - **Vad som blandas där:** AI-genererade problemställningar och idéfrön (för att ge volym och liv), användarnas egna trådar och kommentarer, fristående planeringsverktyg (se nedan), samt piloter av nya plattformsfunktioner som ännu inte är redo för full lansering
 - **Tydlig, permanent märkning** — inte en subtil färgnyans, utan en konsekvent, väl synlig indikation (t.ex. rubrik, bakgrundston och etikett) som gör klart att man är i Sandbox, på varje sida och i varje tråd där
 - **Ingen retroaktiv gissning krävs** — istället för att fråga "är detta AI eller människa?" post för post, är hela zonen deklarerad som en plats där båda blandas fritt och öppet
-- **Lyft till ett projekt** — precis som i Idéverkstaden (se 5.10, Steg 5) kan en tråd i Sandbox "lyftas" till ett projekt i `idea`-fasen (se 4d) — samma mekanik (`converted_to_project_id`) återanvänds. Projektet är därefter öppet för bredare community-feedback och co-creation precis som alla andra idé-fas-projekt (se Utvecklingsfas 1.5) — ingen separat "Idéflödet"-destination behövs längre. "Lyft" är alltid den ursprungliga bidragsgivarens/initiativtagarens eget val.
+- **Lyft till strukturerad idé eller projekt** — precis som i Idéverkstaden (se 5.16) kan en tråd i Sandbox "lyftas" till Idéflödet (Utvecklingsfas 1.5) för bredare feedback, eller konverteras direkt till ett projekt i `idea`-fasen (se 4d) — samma mekanik (`converted_to_project_id`) återanvänds. "Lyft" är alltid den ursprungliga bidragsgivarens/initiativtagarens eget val.
 - **Fork av sandbox-innehåll** — som ett alternativ till att lyfta en tråd kan vem som helst istället **gaffla** den till ett eget, fristående projekt (se 4f) — permissionless, utan tillstånd från den som postade ursprungligen. Samma kompensationsprincip (vinstandel, valfria tokens, kreditering, se 4f) gäller.
 - **Funktionspiloter** — nya tjänster eller funktioner kan testas skarpt med riktiga, informerade användare i Sandbox innan de rullas ut brett, tydligt märkta som "Experimentell funktion — testas i Sandbox"
 - **Bestående funktion, inte bara lanseringsknuff** — Sandbox finns kvar även efter att organisk aktivitet tagit fart, som ett permanent, friare inkubatorlager ovanför den strukturerade plattformen
@@ -1152,7 +1144,7 @@ Aktivitet i Sandbox ska räknas och belönas — men *vilken* tokentyp kräver e
 
 - **Sandbox-aktivitet räknas löpande som GT (GoodTribes Token), inte Tribe Tokens** — eftersom Tribe Tokens kräver ett `project_id` för att ge mening, och sandbox-innehåll ofta saknar projekt tills det lyfts eller gafflas. GT fungerar här som ett bokfört, ännu inte inlöst bidrag snarare än ett direkt värde i sig (se 5.41 för samma princip vid GoodTribes eget bidrag).
 - **Belöningen är densamma oavsett om resultatet blir kommersiellt eller ideellt.** Vid lyft eller fork till ett riktigt projekt tilldelas bidragsgivare som krediterats (`idea_contributors`, `fork_contributor_credits`) **nymyntade Tribe Tokens** i det nya projektet, proportionellt mot sitt dokumenterade bidrag. Eftersom Tribe Tokens alltid ger rösträtt (se 2.95) — och *dessutom* automatiskt ger rätt till vinstandel om/när projektet är eller blir kommersiellt (se 5.36, 4a) — behövs ingen separat regel för de två utfallen: samma mekanism täcker båda. Detta är alltså en ny mynting i det nya projektet, inte en växling av redan intjänad GT (håller sig innanför principen i 4c att tokens aldrig konverteras mellan nivåer eller projekt).
-- **Förslag — utfallsbaserad mintning, inte per inlägg:** GT tilldelas när ett bidrag leder till ett konkret utfall (tråden lyfts till ett projekt eller gafflas), snarare än för varje enskilt inlägg. Sandbox är medvetet lågtröskel och friare modererad (se öppen fråga ovan om Granskningsrådet) — att ge GT per inlägg riskerar spam/farming på ett sätt som är svårare att fånga i efterhand än i resten av plattformen. *(Föreslaget, ej slutgiltigt beslutat — se punkt 10.)*
+- **Förslag — utfallsbaserad mintning, inte per inlägg:** GT tilldelas när ett bidrag leder till ett konkret utfall (tråden lyfts till Idéflödet, konverteras till projekt, eller gafflas), snarare än för varje enskilt inlägg. Sandbox är medvetet lågtröskel och friare modererad (se öppen fråga ovan om Granskningsrådet) — att ge GT per inlägg riskerar spam/farming på ett sätt som är svårare att fånga i efterhand än i resten av plattformen. *(Föreslaget, ej slutgiltigt beslutat — se punkt 10.)*
 - Gäller lika för trådar och canvas-verktyg (Lean Canvas m.fl., se ovan) — samma modell, GT bokförs vid bidrag, riktiga Tribe Tokens mintas vid promotion till projekt.
 
 *(Öppen fråga — se punkt 10: exakt GT-belopp per sandbox-bidrag, samt om utfallsbaserad mintning är rätt avvägning eller om viss GT ändå bör ges löpande för aktivt deltagande.)*
@@ -1228,48 +1220,51 @@ idea_thread_participants
 
 ### Utvecklingsfas 1.5 — Öppen Innovation
 
-Målet är att låta vem som helst bidra till och forma projekt som fortfarande är i `idea`-fasen (se 4d) — innan de mognar till `pilot`. **En idé är inte längre en egen, fristående entitet — en idé är redan ett projekt**, bara i sin tidigaste fas (se v4.7, som slog ihop de tidigare separata faserna `idea` och `project`). Det här är fortfarande plattformens "idéinkubator" och en central differentiator mot konkurrenter, bara byggt ovanpå samma `projects`-tabell som allt annat, inte en parallell datamodell.
+Målet är att låta vem som helst bidra med idéer och forma dem tillsammans — innan de blir formella projekt. Detta är plattformens "idéinkubator" och en central differentiator mot konkurrenter.
 
-**5.13 Projekt i idé-fasen — öppen discovery**
-- Projekt i `idea`-fasen är, precis som alla andra publika projekt, öppna för alla att läsa — ingen inloggning krävs
-- Syns i den vanliga projektdiscoveryn (se 5.21), filtrerbara på fas, kategori, popularitet (röster) och datum — ingen separat "idésida" eller egen URL-struktur behövs
-- Ingen separat "skapa idé"-väg i navigationen — enda vägen in är "Skapa projekt" (se 5.3), som redan startar i `idea`-fasen som standard
+**5.13 Idéflöde (Ideas Feed)**
+- Öppet för alla — ingen inloggning krävs för att läsa
+- Vem som helst kan posta en idé med titel, beskrivning och kategori
+- Idéer är sökbara och filtrerbara per kategori, popularitet och datum
+- Varje idé får en unik publik URL som kan delas
 
 **5.14 Feedback & röstning**
-- Tumme upp / tumme ner eller poängsystem (t.ex. 1–5) på projekt i idé-fasen
+- Tumme upp / tumme ner eller poängsystem (t.ex. 1–5)
 - Kommentarsfält med trådade svar
 - "Byggande kommentarer" — markera sitt inlägg som konstruktivt förslag
-- Populäraste idé-fas-projekten lyfts i ett topplistflöde
-- Skiljer sig från Utvecklingsfas 2.95:s Tribe Token-viktade omröstningar — den här röstningen är öppen, informell popularitetsfeedback under idé-fasen, inte ett bindande projektbeslut
+- Populäraste idéerna lyfts i ett topplistflöde
 
 **5.15 Co-creation**
-- Vem som helst kan föreslå ändringar i beskrivningen för ett projekt som fortfarande är i idé-fasen (pull request-liknande)
+- Vem som helst kan föreslå ändringar i en idés beskrivning (pull request-liknande)
 - Initiativtagaren godkänner eller avvisar förslag
-- Versionshistorik — se hur beskrivningen utvecklats över tid
-- Flera bidragsgivare kan listas som medförfattare (`idea_contributors`) — samma tabell som Sandboxs lyft-/fork-kreditering återanvänder (se Utvecklingsfas 1.2)
-- Den här öppna redigeringsmodellen gäller specifikt idé-fasen — när projektet går vidare till `pilot` (se 4d:s gating) tar den vanliga roll- och behörighetsmodellen (5.5/5.9) över
+- Versionshistorik — se hur idén utvecklats över tid
+- Flera bidragsgivare kan listas som medförfattare
 
-**5.16 Övergång ut ur idé-fasen**
-- Ingen separat "befordran" behövs längre — projektet är redan samma objekt hela vägen igenom. Övergången `idea → pilot` styrs av gating-regeln i 4d (team tilldelat + resurser säkrade), inte av ett eget steg här
-- Bidragsgivare som krediterats under idé-fasen (`idea_contributors`) behåller sin kreditering och sitt underlag för proportionell Tribe Token-mintning när projektet fortsätter (se Utvecklingsfas 2.8)
+**5.16 Idé → Projekt-pipeline**
+- En idé kan med ett klick "befordras" till ett formellt projekt
+- Idéns beskrivning, kategori och bidragsgivare följer med automatiskt
+- Bidragsgivare till idén notifieras och erbjuds att gå med i projektet
+- Idésidan arkiveras och länkas till det nya projektet ("Ursprung: Idé #42")
 
-**5.17 Databasutökning för idé-fasen**
+**5.17 Databasutökning för idéer**
 
 ```
-project_idea_votes
-  id, project_id, user_id, value (+1 | -1), created_at
+ideas
+  id, title, description, category, author_id, status (open | promoted | archived)
+  created_at, promoted_to_project_id
 
-project_idea_comments
-  id, project_id, parent_id, author_id, body, type (comment | suggestion), created_at
+idea_votes
+  id, idea_id, user_id, value (+1 | -1), created_at
 
-project_idea_revisions
-  id, project_id, proposed_by, diff, status (pending | accepted | rejected), created_at
+idea_comments
+  id, idea_id, parent_id, author_id, body, type (comment | suggestion), created_at
+
+idea_revisions
+  id, idea_id, proposed_by, diff, status (pending | accepted | rejected), created_at
 
 idea_contributors
-  id, project_id, user_id, role (author | co-author | contributor)
+  id, idea_id, user_id, role (author | co-author | contributor)
 ```
-
-*(Ersätter den tidigare fristående `ideas`-tabellen, se v4.7 — samtliga fält pekar nu mot `project_id` istället för ett eget `idea_id`, eftersom en idé alltid redan är ett projekt.)*
 
 ---
 
@@ -2115,7 +2110,7 @@ organizations
 
 projects
   id, title, description, visibility, category, initiator_user_id, org_id, created_at
-  phase (idea | pilot | production | establish | scale | impact) — se 4d
+  phase (idea | project | pilot | production | establish | scale | impact) — se 4d
   legal_type (commercial_umbrella | commercial_ab | nonprofit_umbrella | nonprofit_own_assoc) — se 4c
 commercial_umbrella_entity_id (nullable) — se 4c
 
@@ -2123,7 +2118,7 @@ phase_transitions
   id, project_id, from_phase (nullable), to_phase, changed_by, changed_at — se 4d
 
 initiative_checklist_items
-  id, project_id, group_number (1 | 2), item_key, completed_at, completed_by — se 4d
+  id, project_id, phase (idea | project), item_key, completed_at, completed_by — se 4d
 
 impact_reports
   id, project_id, sdg_goals[], metric_description, metric_value, verified_by, verified_at, created_at — se 4d
@@ -2183,7 +2178,7 @@ För att komma till marknad snabbast möjligt begränsas MVP till:
 - Enkla användarprofiler
 - Projektdiscovery (sök + filter)
 - Offentlig projektsida
-- Projekt i idé-fasen med röstning och kommentarer (Utvecklingsfas 1.5 grundnivå)
+- Idéflöde med röstning och kommentarer (Utvecklingsfas 1.5 grundnivå)
 - Tribe Tokens & GT (se Utvecklingsfas 2.8) — prioritetsbaserad tokenutdelning på Kanban-uppgifter *(tillagd i v2.6 — redan byggt och i drift, se punkt 10)*
 
 **Ej inkluderat i MVP:**
