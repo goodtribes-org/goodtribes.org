@@ -144,10 +144,10 @@ export async function toggleSandbox(slug: string) {
   revalidatePath("/sandbox");
 }
 
-// Toggles a single IDEA/PROJECT checklist item (PRD 4d). Rows are created
+// Toggles a single IDEA/SPRINT checklist item (PRD 4d). Rows are created
 // on demand — there's no pre-seeded row per item, so toggling "on" upserts
 // and toggling "off" deletes.
-export async function toggleChecklistItem(slug: string, phase: "IDEA" | "PROJECT", itemKey: string, done: boolean) {
+export async function toggleChecklistItem(slug: string, phase: "IDEA" | "SPRINT", itemKey: string, done: boolean) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 

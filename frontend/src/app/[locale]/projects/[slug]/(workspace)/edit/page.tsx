@@ -33,7 +33,7 @@ export default async function EditProjectPage({
   if (!project) redirect("/projects");
 
   const checklistItems =
-    project.phase === "IDEA" || project.phase === "PROJECT"
+    project.phase === "IDEA" || project.phase === "SPRINT"
       ? await prisma.initiativeChecklistItem.findMany({
           where: { projectId: project.id, completedAt: { not: null } },
           select: { itemKey: true },

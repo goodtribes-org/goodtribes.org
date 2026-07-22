@@ -23,7 +23,7 @@ enum ProjectRole {
 
 enum ProjectPhase {
   IDEA
-  PROJECT
+  SPRINT
   PILOT
   PRODUCTION
   ESTABLISH

@@ -12,7 +12,7 @@ interface Props {
 }
 
 // Fas- och stegwidget (PRD 4d) — the full seven-phase journey, visible to
-// every visitor. Only the idea/project phases have a checklist today; only
+// every visitor. Only the idea/sprint phases have a checklist today; only
 // leads (canEdit) can actually toggle items, everyone else sees read-only
 // ticks so nothing looks clickable-but-broken.
 export default function PhaseJourneyWidget({ slug, phase, completedKeys, canEdit }: Props) {
@@ -20,7 +20,7 @@ export default function PhaseJourneyWidget({ slug, phase, completedKeys, canEdit
   const [isPending, startTransition] = useTransition();
 
   const currentIndex = PROJECT_PHASES.findIndex((p) => p.value === phase);
-  const checklist = phase === "IDEA" || phase === "PROJECT" ? INITIATIVE_CHECKLIST_ITEMS[phase] : null;
+  const checklist = phase === "IDEA" || phase === "SPRINT" ? INITIATIVE_CHECKLIST_ITEMS[phase] : null;
 
   function handleToggle(itemKey: string, done: boolean) {
     if (!canEdit || !checklist) return;
@@ -29,7 +29,7 @@ export default function PhaseJourneyWidget({ slug, phase, completedKeys, canEdit
       if (done) next.add(itemKey); else next.delete(itemKey);
       return next;
     });
-    startTransition(() => toggleChecklistItem(slug, phase as "IDEA" | "PROJECT", itemKey, done));
+    startTransition(() => toggleChecklistItem(slug, phase as "IDEA" | "SPRINT", itemKey, done));
   }
 
   return (

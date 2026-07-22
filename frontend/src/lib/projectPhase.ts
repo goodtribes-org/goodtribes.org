@@ -3,7 +3,7 @@
 // ProjectPhaseAdvance and PhaseTransition).
 export const PROJECT_PHASES = [
   { value: "IDEA", label: "Idé", color: "bg-dry-sage/40 text-dark-slate/70" },
-  { value: "PROJECT", label: "Projekt", color: "bg-yellow-100 text-yellow-800" },
+  { value: "SPRINT", label: "Sprint", color: "bg-yellow-100 text-yellow-800" },
   { value: "PILOT", label: "Pilot", color: "bg-orange-100 text-orange-800" },
   { value: "PRODUCTION", label: "Produktion", color: "bg-blue-100 text-blue-800" },
   { value: "ESTABLISH", label: "Etablera", color: "bg-teal-100 text-teal-800" },
@@ -36,18 +36,18 @@ export function getNextPhase(current: ProjectPhaseValue): ProjectPhaseValue | nu
   return next ? next.value : null;
 }
 
-// Checklist sub-steps within the IDEA and PROJECT phases (PRD 4d) — a UI
+// Checklist sub-steps within the IDEA and SPRINT phases (PRD 4d) — a UI
 // progress checklist, not separate phase values. peer_feedback_requested is
-// informative only, never a gate (idea -> project is always the
+// informative only, never a gate (idea -> sprint is always the
 // initiator's own call).
-export const INITIATIVE_CHECKLIST_ITEMS: Record<"IDEA" | "PROJECT", { key: string; label: string; href?: string }[]> = {
+export const INITIATIVE_CHECKLIST_ITEMS: Record<"IDEA" | "SPRINT", { key: string; label: string; href?: string }[]> = {
   IDEA: [
     { key: "dream_defined", label: "Beskriv idén" },
     { key: "ai_reviewed", label: "Be AI granska idén" },
     { key: "peer_feedback_requested", label: "Bjud in vänner att ge feedback" },
     { key: "lean_canvas_created", label: "Gör en Lean Canvas", href: "lean-canvas" },
   ],
-  PROJECT: [
+  SPRINT: [
     { key: "todo_created", label: "Fyll på med arbetsuppgifter" },
     { key: "collaborators_invited", label: "Bjud in medskapare" },
     { key: "team_formed", label: "Formera team" },

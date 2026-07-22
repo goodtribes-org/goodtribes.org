@@ -1,13 +1,16 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 4.9 (Draft)
+**Version:** 4.10 (Draft)
 **Datum:** 2026-07-22
 **Status:** Under utveckling
 
+**Ändringar i v4.10:**
+- **Beslutat:** livscykelfasen `project` (se 4d) döpt om till **`sprint`** genomgående, i hela dokumentet (inklusive tidigare changelog-poster). Namnet krockade med Project-entiteten (`projects`-tabellen) som representerar hela initiativet från idé till impact, inte bara ett enskilt skede av det — "projekt" ska hädanefter alltid syfta på hela flödet/initiativet, aldrig på en enskild fas inom det. `projects.phase`-enumets värde `project` → `sprint` (databasnivå: `ALTER TYPE ... RENAME VALUE`, ingen datamigrering krävs — befintliga rader byter etikett automatiskt). Checklistan som tidigare kallades `project`-checklistan heter nu `sprint`-checklistan, samma innehåll (`todo_created`, `collaborators_invited`, `team_formed`, `resources_secured`).
+
 **Ändringar i v4.9:**
-- **Beslutat: v4.7:s sammanslagning av `idea`- och `project`-faserna rullas tillbaka.** `projects.phase` behåller alla sju värden (`idea`, `project`, `pilot`, `production`, `establish`, `scale`, `impact`) och Utvecklingsfas 1.5:s fristående idé-modell (`ideas`, `idea_votes`, `idea_comments`, `idea_revisions`) behålls också, skild från `projects` — implementationen bygger vidare på den redan befintliga, aldrig migrerade datamodellen istället för att genomföra v4.7:s riskfyllda schemamigrering. 4d och Utvecklingsfas 1.5 nedan är återställda till sin lydelse innan v4.7. v4.8:s Sandbox-namnbyte påverkas inte — det var en separat, orelaterad ändring.
-- De två nya delstegen från v4.7 behålls däremot, nu kopplade till den riktiga (aldrig borttagna) `idea`-fasen istället för en påhittad delgrupp: `idea`-checklistan är `dream_defined` ("Beskriv idén"), `ai_reviewed` ("Be AI granska idén", ny), `peer_feedback_requested` ("Bjud in vänner att ge feedback"), `lean_canvas_created` ("Gör en Lean Canvas", ny). `project`-checklistan är oförändrad: `todo_created`, `collaborators_invited`, `team_formed`, `resources_secured`.
+- **Beslutat: v4.7:s sammanslagning av `idea`- och `sprint`-faserna rullas tillbaka.** `projects.phase` behåller alla sju värden (`idea`, `sprint`, `pilot`, `production`, `establish`, `scale`, `impact`) och Utvecklingsfas 1.5:s fristående idé-modell (`ideas`, `idea_votes`, `idea_comments`, `idea_revisions`) behålls också, skild från `projects` — implementationen bygger vidare på den redan befintliga, aldrig migrerade datamodellen istället för att genomföra v4.7:s riskfyllda schemamigrering. 4d och Utvecklingsfas 1.5 nedan är återställda till sin lydelse innan v4.7. v4.8:s Sandbox-namnbyte påverkas inte — det var en separat, orelaterad ändring.
+- De två nya delstegen från v4.7 behålls däremot, nu kopplade till den riktiga (aldrig borttagna) `idea`-fasen istället för en påhittad delgrupp: `idea`-checklistan är `dream_defined` ("Beskriv idén"), `ai_reviewed` ("Be AI granska idén", ny), `peer_feedback_requested` ("Bjud in vänner att ge feedback"), `lean_canvas_created` ("Gör en Lean Canvas", ny). `sprint`-checklistan är oförändrad: `todo_created`, `collaborators_invited`, `team_formed`, `resources_secured`.
 - **Beslutat:** att skapa ett projekt kräver fortsatt bara ett namn (redan sant sedan tidigare, se 5.3) — men efter skapandet möts initiativtagaren nu av en **idé-guide**: en valfri, stegvis genomgång av `idea`-fasens fyra delsteg (beskriv idén, be AI granska den, bjud in vänner, gör en Lean Canvas). Guiden kan hoppas över helt och hållet — då hamnar man direkt på sitt nya, tomma projekt precis som idag.
 - **Beslutat:** fas- och stegwidgeten (se produktimplikation i 4d) är inte längre gömd bakom en "kom igång"-ruta synlig bara för ägare/admin. Den visas nu för alla besökare i projektets sidopanel, direkt under "Arbete" (Kanban-sammanfattningen) och ovanför "Uppgifter" — vem som helst kan se var i resan projektet befinner sig, men bara initiativtagaren/leads kan bocka av delsteg (samma rollkontroll som redan gäller för `toggleChecklistItem`).
 
@@ -17,11 +20,11 @@
 - Databastabellnamn som redan var engelska (`sandbox_feature_pilots`, `is_sandbox`, `sandbox_thread_lifted` m.fl.) påverkas inte — de använde redan "sandbox".
 
 **Ändringar i v4.7:**
-- **Beslutat:** `idea`- och `project`-faserna (se 4d) slås ihop till en enda fas, `idea` — fasenumret på `projects.phase` minskar från sju till sex värden. Löser att övergången `idea → project` ändå aldrig var en riktig gate (initiativtagaren beslutar alltid själv, se v3.3) — nu är hela vägen från lös idé till "redo att bygga" ett enda sammanhållet flöde i en widget, inte två faser med en osynlig gräns mellan sig.
-- Delstegen inom den sammanslagna `idea`-fasen grupperas i widgeten under två numrerade rubriker istället för att vara knutna till separata `phase`-värden: **1. Idéfasen** (`dream_defined`, nya `ai_reviewed`, `peer_feedback_requested`, nya `lean_canvas_created`) och **2. Projektfas** (`todo_created`, `collaborators_invited`, `team_formed`, `resources_secured`). Fortfarande fria till ordning och valfria att bocka av, se UI-princip i 4d.
+- **Beslutat:** `idea`- och `sprint`-faserna (se 4d) slås ihop till en enda fas, `idea` — fasenumret på `projects.phase` minskar från sju till sex värden. Löser att övergången `idea → sprint` ändå aldrig var en riktig gate (initiativtagaren beslutar alltid själv, se v3.3) — nu är hela vägen från lös idé till "redo att bygga" ett enda sammanhållet flöde i en widget, inte två faser med en osynlig gräns mellan sig.
+- Delstegen inom den sammanslagna `idea`-fasen grupperas i widgeten under två numrerade rubriker istället för att vara knutna till separata `phase`-värden: **1. Idéfasen** (`dream_defined`, nya `ai_reviewed`, `peer_feedback_requested`, nya `lean_canvas_created`) och **2. Sprintfas** (`todo_created`, `collaborators_invited`, `team_formed`, `resources_secured`). Fortfarande fria till ordning och valfria att bocka av, se UI-princip i 4d.
 - Två nya delsteg tillagda: `ai_reviewed` ("Be AI granska idén", återanvänder `@AI`-funktionen från Idéverkstaden, se 5.10) och `lean_canvas_created` ("Gör en Lean Canvas", länkar till planeringsverktyget i Sandbox, se 5.10).
-- `initiative_checklist_items.phase` bytt till `group_number (1 | 2)`, eftersom kolumnen tidigare pekade mot ett `phase`-värde (`idea`/`project`) som inte längre finns kvar som separata faser i enumet
-- Gating-tabellen i 4d: tidigare separata rader `idea → project` (Beslutat v3.3) och `project → pilot` (Beslutat) slås ihop till en enda rad `idea → pilot`, med samma krav som gamla `project → pilot` (team + resurser på plats) plus principen från v3.3 att själva beslutet aldrig kräver extern granskning
+- `initiative_checklist_items.phase` bytt till `group_number (1 | 2)`, eftersom kolumnen tidigare pekade mot ett `phase`-värde (`idea`/`sprint`) som inte längre finns kvar som separata faser i enumet
+- Gating-tabellen i 4d: tidigare separata rader `idea → sprint` (Beslutat v3.3) och `sprint → pilot` (Beslutat) slås ihop till en enda rad `idea → pilot`, med samma krav som gamla `sprint → pilot` (team + resurser på plats) plus principen från v3.3 att själva beslutet aldrig kräver extern granskning
 - **Beslutat:** ingen fristående "skapa idé"-väg längre — bara "Skapa projekt" (se 5.3), som startar direkt i den sammanslagna `idea`-fasen. Utvecklingsfas 1.5 (Öppen Innovation, 5.13–5.17) skrivits om i linje med detta: den tidigare fristående `ideas`-tabellen (med egen röstning, kommentarer och en separat "befordra till projekt"-mekanism) tas bort — en idé är redan ett projekt i `idea`-fasen, synligt i den vanliga projektdiscoveryn, med samma öppna röstning/kommentarer/co-creation som tidigare men riktad mot `project_id` istället för ett eget `idea_id`
 - Motsvarande borttaget i navigationen: "Ny idé" ur Skapa-menyn och "Idéer" ur Utforska-menyn — Idéverkstaden och Sandbox (redan tillagda i Utforska, se v4.6) påverkas inte, de är separata mekanismer
 - *(Notera: nuvarande kod har fortfarande en egen `Idea`-Prisma-modell skild från `Project`, med egna sidor `/ideas`, `/ideas/new`, `/ideas/[id]`. Den faktiska sammanslagningen av datamodellen är en separat, större migrering — inte gjord i samma steg som detta PRD-beslut.)*
@@ -53,7 +56,7 @@
 - Ny databasutökning: `idea_threads.origin`/`is_sandbox` samt `sandbox_feature_pilots`
 
 **Ändringar i v4.2:**
-- Ny subsektion i 4d: "UI-princip — guide, inte tvång". Klargör att fas-/stegwidgeten (den som visar Idé → Projekt → Pilot → ... med delsteg) är en vägledning, inte en tvingande sekvens: **fasövergångarna förblir gated** enligt gating-tabellen, men **delstegen inom en fas (checklistan) är fria till ordning och valfria** — användaren kan hoppa över eller gå direkt till nästa fasövergång utan att ha bockat av alla delsteg
+- Ny subsektion i 4d: "UI-princip — guide, inte tvång". Klargör att fas-/stegwidgeten (den som visar Idé → Sprint → Pilot → ... med delsteg) är en vägledning, inte en tvingande sekvens: **fasövergångarna förblir gated** enligt gating-tabellen, men **delstegen inom en fas (checklistan) är fria till ordning och valfria** — användaren kan hoppa över eller gå direkt till nästa fasövergång utan att ha bockat av alla delsteg
 - Ny "Produktimplikation — fas- och stegwidget" i 4d: beskriver widgeten som visar hela vägen med expanderbara delsteg per fas
 - Ny öppen fråga i punkt 10: om denna flexibilitet (låsta fasövergångar men fria delsteg) riskerar att förvirra användare i praktiken — flaggad för uppföljning med användartester efter lansering, inte ett beslut som kan verifieras i förväg
 
@@ -92,7 +95,7 @@
 - Fem nya öppna frågor tillagda i punkt 10 om fork-funktionens detaljer (vem får gaffla, vilken fas/legal_type det resulterande projektet får, ägarskap av organisation, om vinstdelningsmodellen även gäller Scenario A)
 
 **Ändringar i v3.3:**
-- **Beslutat:** `idea` → `project` kräver ingen extern granskning. Initiativtagaren beslutar alltid själv om idén är redo att bli projekt — tar bort det tidigare förslaget om "peer review godkänd av minst N granskare". Se 4d.
+- **Beslutat:** `idea` → `sprint` kräver ingen extern granskning. Initiativtagaren beslutar alltid själv om idén är redo att gå vidare till sprint-fasen — tar bort det tidigare förslaget om "peer review godkänd av minst N granskare". Se 4d.
 - `peer_review_approved` (checklista, `idea`-fasen) ersatt med `peer_feedback_requested` — en valfri, informativ markering utan koppling till fasövergången. Jämförelsetabellen peer feedback vs. Granskningsrådet uppdaterad i linje med detta.
 - **Beslutat:** Granskningsrådet agerar reaktivt, inte proaktivt — granskar inte projekt eller crowdfunding-kampanjer i förväg, endast vid inkommen anmälan. Tillagt i 5.54. Det tidigare beslutet att Granskningsrådet som institution måste finnas på plats innan crowdfunding-funktionen lanseras på plattformsnivå kvarstår oförändrat — det är en separat fråga om beredskap, inte förhandsgranskning per kampanj.
 
@@ -114,7 +117,7 @@
 - `exclusion_cases`-schemat (5.55) omstrukturerat: separata nullable-fält för `reported_user_id` / `reported_project_id` / `reported_org_id`, samt ett eget `scope_project_id` för att skilja "uteslutning från ett projekt" från "vem anmälan gäller" — tidigare version blandade ihop dessa två betydelser i samma fält
 
 **Ändringar i v2.9:**
-- Namnkonflikten från v2.7/v2.8 löst: plattformens utrullningsordning bytt från "Fas X" till **"Utvecklingsfas X"** genomgående (91 förekomster) — särskiljer nu tydligt från livscykelfaserna i 4d (`idea`, `project`, `pilot`, `production`, `establish`, `scale`, `impact`), som fortsatt kallas "fas" i löptext eftersom sammanhanget redan är otvetydigt där
+- Namnkonflikten från v2.7/v2.8 löst: plattformens utrullningsordning bytt från "Fas X" till **"Utvecklingsfas X"** genomgående (91 förekomster) — särskiljer nu tydligt från livscykelfaserna i 4d (`idea`, `sprint`, `pilot`, `production`, `establish`, `scale`, `impact`), som fortsatt kallas "fas" i löptext eftersom sammanhanget redan är otvetydigt där
 - Öppen fråga i punkt 10 om namnkonflikten markerad som löst
 
 **Ändringar i v2.8:**
@@ -122,7 +125,7 @@
 - Namnkonflikten mellan livscykelfaserna (4d) och "Fas"-numreringen (§11) kvarstår som öppen fråga — se punkt 10.
 
 **Ändringar i v2.7:**
-- Ny sektion 4d: Initiativets livscykel (fasmodell) — formaliserar `projects.phase` som en 7-värdes enum (`idea`, `project`, `pilot`, `production`, `establish`, `scale`, `impact`), ersätter det tidigare enkla statusfältet `Idé / Aktiv / Avslutad` i 5.1
+- Ny sektion 4d: Initiativets livscykel (fasmodell) — formaliserar `projects.phase` som en 7-värdes enum (`idea`, `sprint`, `pilot`, `production`, `establish`, `scale`, `impact`), ersätter det tidigare enkla statusfältet `Idé / Aktiv / Avslutad` i 5.1
 - §5.1 uppdaterat för att peka mot 4d istället för att definiera status inline
 - §7 databasschema uppdaterat: `projects.status` → `projects.phase` (enum), nya tabeller `phase_transitions` och `initiative_checklist_items`
 - Nya öppna frågor tillagda i punkt 10: tre av sex gating-villkor mellan faserna är ännu inte beslutade (pilot→production, production→establish, scale→impact)
@@ -519,7 +522,7 @@ Varje initiativ på GoodTribes — oavsett om det startar som en lös idé eller
 | Värde (enum) | Svensk etikett | Beskrivning |
 |---|---|---|
 | `idea` | Idé | AI-assisterad idéfas (se Utvecklingsfas 1.2/1.5), peer review, community-feedback |
-| `project` | Projekt | Uppgiftsnedbrytning (to-do), bjuda in medskapare, formera team, säkra resurser |
+| `sprint` | Sprint | Uppgiftsnedbrytning (to-do), bjuda in medskapare, formera team, säkra resurser |
 | `pilot` | Pilot | Utveckling och pilot i liten skala (prototyp) |
 | `production` | Produktion | Skarp drift |
 | `establish` | Etablera | Stabil lokal verksamhet |
@@ -541,28 +544,28 @@ phase_transitions
 
 Den fasmodell och de delsteg som beskrivs nedan (och den widget som visar dem, se produktimplikation nedan) är en **vägledning för användaren, inte en tvingande arbetsordning.** Detta gäller på två nivåer, med olika grad av flexibilitet:
 
-- **Fasövergångarna (`idea` → `project` → `pilot` → ...) är och förblir gated**, enligt gating-tabellen nedan — de styr vilka funktioner som låses upp och kan inte hoppas över.
+- **Fasövergångarna (`idea` → `sprint` → `pilot` → ...) är och förblir gated**, enligt gating-tabellen nedan — de styr vilka funktioner som låses upp och kan inte hoppas över.
 - **Delstegen inom en fas (checklistan, t.ex. `dream_defined`, `peer_feedback_requested`, `todo_created`) är däremot fria till ordning och valfria att bocka av.** Användaren kan göra dem i vilken ordning som helst, hoppa över dem, eller gå direkt till fasövergången utan att ha bockat av alla — checklistan är en hjälp att se vad som brukar behövas, inte en spärr. Widgeten visar väg och framsteg ("2 av 5 klara"), men låser aldrig ett steg bakom ett annat.
 
 Detta skiljer sig medvetet från t.ex. gating-tabellen mellan faser, som fortsatt är strikt. Om detta blir förvirrande i praktiken (användare som inte förstår varför vissa steg är låsta och andra inte) är det en öppen fråga att följa upp efter lansering — se punkt 10.
 
 ---
 
-**Delsteg inom `idea`- och `project`-faserna (UI-checklista, inte egna enum-värden)**
+**Delsteg inom `idea`- och `sprint`-faserna (UI-checklista, inte egna enum-värden)**
 
-Dessa var ursprungligen skissade som egna toppnivåfaser (idea/dream, peer review, to-do, invite, team, resources) men fungerar bättre som en checklista/progress-bar inuti `idea` och `project` — annars får `phase`-fältet 11+ värden där flertalet bara betyder "fortfarande i projektfasen, delsteg X", vilket gör frågor som "visa alla aktiva projekt" svåra att uttrycka.
+Dessa var ursprungligen skissade som egna toppnivåfaser (idea/dream, peer review, to-do, invite, team, resources) men fungerar bättre som en checklista/progress-bar inuti `idea` och `sprint` — annars får `phase`-fältet 11+ värden där flertalet bara betyder "fortfarande i sprintfasen, delsteg X", vilket gör frågor som "visa alla aktiva projekt" svåra att uttrycka.
 
 ```
 initiative_checklist_items
-  id, project_id, phase (idea | project), item_key, completed_at, completed_by
+  id, project_id, phase (idea | sprint), item_key, completed_at, completed_by
 ```
 
 | `phase` | `item_key`-värden |
 |---|---|
 | `idea` | `dream_defined` ("Beskriv idén"), `ai_reviewed` ("Be AI granska idén" *(ny, v4.7)* — återanvänder `@AI` från Idéverkstaden, se 5.10), `peer_feedback_requested` ("Bjud in vänner att ge feedback", valfritt, se nedan), `lean_canvas_created` ("Gör en Lean Canvas" *(ny, v4.7)* — länkar till planeringsverktyget i Sandbox, se 5.10) |
-| `project` | `todo_created` ("Fyll på med arbetsuppgifter"), `collaborators_invited` ("Bjud in medskapare"), `team_formed` ("Formera team"), `resources_secured` ("Säkra resurser") |
+| `sprint` | `todo_created` ("Fyll på med arbetsuppgifter"), `collaborators_invited` ("Bjud in medskapare"), `team_formed` ("Formera team"), `resources_secured` ("Säkra resurser") |
 
-**Peer review är valfri feedback, inte ett godkännandekrav — beslutet om `idea → project` tas alltid av initiativtagaren själv.** Community-feedback (via idéflödet, se Utvecklingsfas 1.2/1.5) kan hjälpa initiativtagaren att förbättra idén, men ingen extern granskning eller antal granskare krävs för att gå vidare. `peer_feedback_requested` är därför bara en informativ markering — inte en spärr — och ersätter det tidigare `peer_review_approved`, som antydde ett godkännandekrav som inte längre gäller.
+**Peer review är valfri feedback, inte ett godkännandekrav — beslutet om `idea → sprint` tas alltid av initiativtagaren själv.** Community-feedback (via idéflödet, se Utvecklingsfas 1.2/1.5) kan hjälpa initiativtagaren att förbättra idén, men ingen extern granskning eller antal granskare krävs för att gå vidare. `peer_feedback_requested` är därför bara en informativ markering — inte en spärr — och ersätter det tidigare `peer_review_approved`, som antydde ett godkännandekrav som inte längre gäller.
 
 **Peer feedback vs. Granskningsrådet — två separata mekanismer:** även om peer feedback inte är ett krav, är det fortfarande värt att skilja den från Granskningsrådet (se Utvecklingsfas 2.97), eftersom de har helt olika syften:
 
@@ -582,8 +585,8 @@ Detta är inte längre en öppen fråga — se punkt 10.
 
 | Övergång | Krav för att låsa upp | Status |
 |---|---|---|
-| `idea` → `project` | Initiativtagaren beslutar själv — inget krav på extern granskning eller antal granskare. Peer feedback (se ovan) är valfri och påverkar inte beslutet. | **Beslutat (v3.3)** |
-| `project` → `pilot` | Team tilldelat + budget/resurser definierade | Beslutat |
+| `idea` → `sprint` | Initiativtagaren beslutar själv — inget krav på extern granskning eller antal granskare. Peer feedback (se ovan) är valfri och påverkar inte beslutet. | **Beslutat (v3.3)** |
+| `sprint` → `pilot` | Team tilldelat + budget/resurser definierade | Beslutat |
 | `pilot` → `production` | Tribe Token-röstning bland projektmedlemmar godkänner pilotresultatet (se Utvecklingsfas 2.95) + minst en milstolpe markerad klar (se 5.74) + `resources_secured` uppfyllt för fortsatt drift | **Föreslaget — ej formellt beslutat, se punkt 10** |
 | `production` → `establish` | Projektpuls (se 5.74) stabil över ett tröskelvärde i N sammanhängande månader, utan öppet allvarligt ärende hos Granskningsrådet (se 5.55) | **Föreslaget — svagast underbyggt av de tre, tröskelvärde N och ev. variation per `legal_type` (se 4c) kräver styrelsediskussion, se punkt 10** |
 | `establish` → `scale` | Initiativtagare initierar regional replikering eller självvald uppdelning (se 5.65) | Beslutat |
@@ -597,8 +600,8 @@ Detta är inte längre en öppen fråga — se punkt 10.
 
 | Övergång | Låser upp |
 |---|---|
-| `idea` → `project` | Kanban-board skapas (se Utvecklingsfas 1), `initiativtagare`-roll tilldelas formellt |
-| `project` → `pilot` | Tribe Tokens börjar delas ut för uppgifter (se Utvecklingsfas 2.8) |
+| `idea` → `sprint` | Kanban-board skapas (se Utvecklingsfas 1), `initiativtagare`-roll tilldelas formellt |
+| `sprint` → `pilot` | Tribe Tokens börjar delas ut för uppgifter (se Utvecklingsfas 2.8) |
 | `pilot` → `production` | Skarp driftmiljö aktiveras för projektet *(exakt vilka funktioner — ej slutgiltigt beslutat, se punkt 10)* |
 | `establish` → `scale` | Crowdfunding-modul (se Utvecklingsfas 3) + regional replikering & självvald uppdelning (se Utvecklingsfas 4, 5.65) |
 | `scale` → `impact` | Impact-rapportering, publik impact-dashboard |
@@ -607,7 +610,7 @@ Detta är inte längre en öppen fråga — se punkt 10.
 
 **Produktimplikation — fas- och stegwidget**
 
-Projektsidan visar en widget med hela vägen (Idé → Projekt → Pilot → Produktion → Etablera → Skala → Impact), där varje fas kan expanderas för att se sina delsteg. Widgeten är en visuell guide och framstegsindikator — se "UI-princip" ovan för vad som är låst (fasövergångar) och vad som är fritt (delsteg inom en fas).
+Projektsidan visar en widget med hela vägen (Idé → Sprint → Pilot → Produktion → Etablera → Skala → Impact), där varje fas kan expanderas för att se sina delsteg. Widgeten är en visuell guide och framstegsindikator — se "UI-princip" ovan för vad som är låst (fasövergångar) och vad som är fritt (delsteg inom en fas).
 
 **Beslutat (v4.9):** widgeten är inte längre gömd bakom en "kom igång"-ruta synlig bara för ägare/admin — den visas för alla besökare, direkt i projektsidans sidopanel under "Arbete" (Kanban-sammanfattningen) och ovanför "Uppgifter". Vem som helst kan se var i resan projektet befinner sig; bara initiativtagaren/leads kan bocka av delsteg (samma rollkontroll som redan gäller för avbockning av checklistan).
 
@@ -617,13 +620,13 @@ Projektsidan visar en widget med hela vägen (Idé → Projekt → Pilot → Pro
 
 ```
 projects
-  phase (idea | project | pilot | production | establish | scale | impact) — ersätter tidigare status-fält, se 7
+  phase (idea | sprint | pilot | production | establish | scale | impact) — ersätter tidigare status-fält, se 7
 
 phase_transitions
   id, project_id, from_phase (nullable), to_phase, changed_by, changed_at
 
 initiative_checklist_items
-  id, project_id, phase (idea | project), item_key, completed_at, completed_by
+  id, project_id, phase (idea | sprint), item_key, completed_at, completed_by
 
 impact_reports
   id, project_id, sdg_goals[], metric_description, metric_value, verified_by, verified_at, created_at
@@ -762,7 +765,7 @@ Målet är att ge initiativtagare ett kraftfullt men enkelt verktyg för att dri
 **5.1 Projektsida**
 - Titel, beskrivning, kategori och taggar
 - Projektbild / banner
-- **Fas** — se 4d för fullständig fasmodell (`idea` / `project` / `pilot` / `production` / `establish` / `scale` / `impact`)
+- **Fas** — se 4d för fullständig fasmodell (`idea` / `sprint` / `pilot` / `production` / `establish` / `scale` / `impact`)
 - Offentlig eller privat synlighet
 - **Agenda 2030-mål** — visuella symboler som visar vilka av FN:s 17 globala mål projektet kopplas mot
 

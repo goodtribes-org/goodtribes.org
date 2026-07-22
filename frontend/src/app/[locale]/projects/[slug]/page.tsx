@@ -261,7 +261,7 @@ export default async function ProjectDetailPage({
         orderBy: { _sum: { tokens: "desc" } },
         take: 5,
       }),
-      project.phase === "IDEA" || project.phase === "PROJECT"
+      project.phase === "IDEA" || project.phase === "SPRINT"
         ? prisma.initiativeChecklistItem.findMany({
             where: { projectId: project.id, completedAt: { not: null } },
             select: { itemKey: true },
