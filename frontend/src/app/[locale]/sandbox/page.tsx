@@ -105,7 +105,8 @@ export default async function SandboxPage({
   const rawParams = { sort: sortParam, page: pageStr };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="relative -mt-8 -mb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f8f8f8" }}>
+    <div className="max-w-6xl mx-auto px-6 pt-8 pb-12">
       <div className="border-2 border-amber-300 bg-amber-50 rounded-lg p-4 mb-6">
         <p className="text-sm font-semibold text-amber-900">🧪 Sandbox — experimentell zon</p>
         <p className="text-xs text-amber-800 mt-1">
@@ -199,6 +200,7 @@ export default async function SandboxPage({
           </div>
         )}
       </section>
+    </div>
     </div>
   );
 }
