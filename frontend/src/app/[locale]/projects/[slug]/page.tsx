@@ -460,7 +460,7 @@ export default async function ProjectDetailPage({
             </>
           )}
           {project.forkedFromSandboxThread && !project.forkedFromProject && (
-            <> av en tråd från Sandlådan ({project.forkedFromSandboxThread.name ?? "namnlös tråd"})</>
+            <> av en tråd från Sandbox ({project.forkedFromSandboxThread.name ?? "namnlös tråd"})</>
           )}
         </div>
       )}

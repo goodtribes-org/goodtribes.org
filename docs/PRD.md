@@ -1,9 +1,55 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 4.1 (Draft)
-**Datum:** 2026-07-20
+**Version:** 4.8 (Draft)
+**Datum:** 2026-07-22
 **Status:** Under utveckling
+
+**Ändringar i v4.8:**
+- **Beslutat:** Sandlådan döpt om till **Sandbox** genomgående — sidan (`/sandladan` → `/sandbox`), navigeringen och samtliga omnämnanden i detta dokument. Ingen funktionell ändring, bara ett namnbyte (inklusive böjda former: `Sandlådans` → `Sandboxs`, `sandlåde-`-sammansättningar → `sandbox-`-sammansättningar, t.ex. `sandbox-innehåll`, `sandbox-tråd`).
+- I navigeringen flyttades Sandbox samtidigt från att ligga under Utforska-menyn till en egen länk på samma nivå som Skapa och Utforska.
+- Databastabellnamn som redan var engelska (`sandbox_feature_pilots`, `is_sandbox`, `sandbox_thread_lifted` m.fl.) påverkas inte — de använde redan "sandbox".
+
+**Ändringar i v4.7:**
+- **Beslutat:** `idea`- och `project`-faserna (se 4d) slås ihop till en enda fas, `idea` — fasenumret på `projects.phase` minskar från sju till sex värden. Löser att övergången `idea → project` ändå aldrig var en riktig gate (initiativtagaren beslutar alltid själv, se v3.3) — nu är hela vägen från lös idé till "redo att bygga" ett enda sammanhållet flöde i en widget, inte två faser med en osynlig gräns mellan sig.
+- Delstegen inom den sammanslagna `idea`-fasen grupperas i widgeten under två numrerade rubriker istället för att vara knutna till separata `phase`-värden: **1. Idéfasen** (`dream_defined`, nya `ai_reviewed`, `peer_feedback_requested`, nya `lean_canvas_created`) och **2. Projektfas** (`todo_created`, `collaborators_invited`, `team_formed`, `resources_secured`). Fortfarande fria till ordning och valfria att bocka av, se UI-princip i 4d.
+- Två nya delsteg tillagda: `ai_reviewed` ("Be AI granska idén", återanvänder `@AI`-funktionen från Idéverkstaden, se 5.10) och `lean_canvas_created` ("Gör en Lean Canvas", länkar till planeringsverktyget i Sandbox, se 5.10).
+- `initiative_checklist_items.phase` bytt till `group_number (1 | 2)`, eftersom kolumnen tidigare pekade mot ett `phase`-värde (`idea`/`project`) som inte längre finns kvar som separata faser i enumet
+- Gating-tabellen i 4d: tidigare separata rader `idea → project` (Beslutat v3.3) och `project → pilot` (Beslutat) slås ihop till en enda rad `idea → pilot`, med samma krav som gamla `project → pilot` (team + resurser på plats) plus principen från v3.3 att själva beslutet aldrig kräver extern granskning
+- **Beslutat:** ingen fristående "skapa idé"-väg längre — bara "Skapa projekt" (se 5.3), som startar direkt i den sammanslagna `idea`-fasen. Utvecklingsfas 1.5 (Öppen Innovation, 5.13–5.17) skrivits om i linje med detta: den tidigare fristående `ideas`-tabellen (med egen röstning, kommentarer och en separat "befordra till projekt"-mekanism) tas bort — en idé är redan ett projekt i `idea`-fasen, synligt i den vanliga projektdiscoveryn, med samma öppna röstning/kommentarer/co-creation som tidigare men riktad mot `project_id` istället för ett eget `idea_id`
+- Motsvarande borttaget i navigationen: "Ny idé" ur Skapa-menyn och "Idéer" ur Utforska-menyn — Idéverkstaden och Sandbox (redan tillagda i Utforska, se v4.6) påverkas inte, de är separata mekanismer
+- *(Notera: nuvarande kod har fortfarande en egen `Idea`-Prisma-modell skild från `Project`, med egna sidor `/ideas`, `/ideas/new`, `/ideas/[id]`. Den faktiska sammanslagningen av datamodellen är en separat, större migrering — inte gjord i samma steg som detta PRD-beslut.)*
+
+**Ändringar i v4.6:**
+- "Tokens i Sandbox" förtydligad med en uttalad grundprincip: **tokens som delas ut i Sandbox är värdelösa (ingen rösträtt, ingen vinstandel) förrän det de tillhör lyfts eller gafflas till den strukturerade delen av plattformen.**
+- **Beslutat:** belöningen vid lyft är densamma oavsett om det resulterande projektet blir kommersiellt eller ideellt — eftersom nymyntade Tribe Tokens alltid ger rösträtt, och automatiskt ger vinstandel också om/när projektet blir kommersiellt (se 5.36), krävs ingen separat regel för de två fallen. Detta ersätter behovet av en särskild vinstdelningsregel för sandbox-ursprung.
+
+**Ändringar i v4.5:**
+- Ny subsektion "Tokens i Sandbox" (Utvecklingsfas 1.2). **Beslutat:** sandbox-aktivitet ger GT, inte Tribe Tokens — eftersom Tribe Tokens kräver ett projekt för att ge mening, och sandbox-innehåll ofta saknar det. Vid lyft/fork till ett riktigt projekt kan krediterade bidragsgivare även få nymyntade Tribe Tokens i det nya projektet, proportionellt mot dokumenterat bidrag.
+- **Föreslaget, ej slutgiltigt beslutat:** GT mintas utfallsbaserat (när en tråd faktiskt lyfts/gafflas/konverteras) snarare än per inlägg, för att undvika spam/farming i en medvetet lågtröskelzon. Ny öppen fråga i punkt 10.
+- `idea_contributors`/`fork_contributor_credits` utökade med `contribution_weight` som underlag för proportionell mintning
+
+**Ändringar i v4.4:**
+- **Namnkollision löst mellan 4f (Fork) och 5.65 (Projekt-franchising)**, som tidigare båda använde ordet "fork" för två olika saker:
+  - **Skalning (5.65)** = initiativtagaren själv initierar regional replikering ELLER självvald uppdelning av sitt eget projekt (den senare, med organisation i toppen, flyttad hit från 4f:s tidigare "Scenario A")
+  - **Fork (4f)** = permissionless kopia av vem som helst, oavsett tillstånd — 4f innehåller nu bara denna enda mekanism, ingen scenario-uppdelning längre
+- 5.65 omdöpt till "Projekt-franchising & självvald uppdelning", ordet "forka" borttaget därifrån för att undvika kollision
+- 4d:s gating-regel och upplåsningstabell för `establish → scale` uppdaterad till att inte längre använda ordet "fork"
+- Verktygsbiblioteket (Lean Canvas, kundresa, fristående AI-idégenerering) — tidigare bara diskuterat i chatt, aldrig infört i dokumentet — infört nu som en del av **Sandboxs** innehåll snarare än en egen sektion, i linje med att det är experimentellt/informellt till sin natur
+- Ny koppling: innehåll i Sandbox kan nu antingen "lyftas" (av upphovspersonen själv) eller **gafflas** (av vem som helst, via 4f) till ett riktigt projekt — två olika vägar med olika grad av tillstånd
+- Öppna frågor i punkt 10 uppdaterade i linje med omstruktureringen
+
+**Ändringar i v4.3:**
+- Ny subsektion i Utvecklingsfas 1.2: "Sandbox — kreativt kaos". Ett tydligt märkt, öppet deklarerat experimentellt område som blandar AI-genererat innehåll, användarbidrag och piloter av nya plattformsfunktioner — löser cold start (se 4e) utan att kompromissa med kärnvärdet Öppenhet (§4)
+- **Beslutat:** total transparens — Sandbox är permanent och konsekvent märkt som experimentell zon, inget smygande eller obetecknad blandning av AI/mänskligt innehåll
+- **Beslutat:** bestående funktion, inte bara en lanseringsmekanism — finns kvar som ett friare inkubatorlager även efter att organisk aktivitet tagit fart
+- Ny öppen fråga i punkt 10 om Granskningsrådets tillämpning i Sandbox givet högre volym och mer experimentell karaktär
+- Ny databasutökning: `idea_threads.origin`/`is_sandbox` samt `sandbox_feature_pilots`
+
+**Ändringar i v4.2:**
+- Ny subsektion i 4d: "UI-princip — guide, inte tvång". Klargör att fas-/stegwidgeten (den som visar Idé → Projekt → Pilot → ... med delsteg) är en vägledning, inte en tvingande sekvens: **fasövergångarna förblir gated** enligt gating-tabellen, men **delstegen inom en fas (checklistan) är fria till ordning och valfria** — användaren kan hoppa över eller gå direkt till nästa fasövergång utan att ha bockat av alla delsteg
+- Ny "Produktimplikation — fas- och stegwidget" i 4d: beskriver widgeten som visar hela vägen med expanderbara delsteg per fas
+- Ny öppen fråga i punkt 10: om denna flexibilitet (låsta fasövergångar men fria delsteg) riskerar att förvirra användare i praktiken — flaggad för uppföljning med användartester efter lansering, inte ett beslut som kan verifieras i förväg
 
 **Ändringar i v4.1:**
 - Återinfört och utvidgat reconciliation-fixen mellan 4f (fork) och 4c som föll bort i en tidigare redigering (se v3.8): forkade projekt defaultar alltid till `nonprofit_umbrella`, ingen genväg runt 4c:s övergångsprocess — nu uppdaterad för att även täcka den nya `commercial_umbrella`-nivån (ett original som var `commercial_umbrella` eller `commercial_ab` ger ingen automatisk plats i samma struktur för forken)
@@ -309,10 +355,10 @@ Integrerar direkt med databasen, hanterar sessioner och JWT-tokens automatiskt o
 | Läsa projektsidor | ❌ Öppet för alla |
 | Läsa blogginlägg | ❌ Öppet för alla |
 | Läsa wiki | ❌ Öppet för alla |
-| Bläddra i idéflödet | ❌ Öppet för alla |
+| Bläddra bland projekt i idé-fasen | ❌ Öppet för alla |
 | Filtrera och söka projekt | ❌ Öppet för alla |
 | Använda idégenereringsverktyget | ✅ Kräver inloggning |
-| Rösta på idéer | ✅ Kräver inloggning |
+| Rösta på projekt i idé-fasen | ✅ Kräver inloggning |
 | Kommentera | ✅ Kräver inloggning |
 | Skapa projekt | ✅ Kräver inloggning |
 | Bidra till projekt | ✅ Kräver inloggning |
@@ -456,7 +502,7 @@ En svensk stiftelse får driva näringsverksamhet, men hur det görs avgör skat
 
 ## 4d. Initiativets livscykel (fasmodell)
 
-Varje initiativ på GoodTribes — oavsett om det startar som en lös idé eller som ett färdigt koncept som är redo att köra — rör sig genom samma sju faser. Faserna representerar mognadsgrad, inte separata verktyg: ett initiativ är alltid samma underliggande objekt i databasen, bara med olika `phase`-värde.
+Varje initiativ på GoodTribes — oavsett om det startar som en lös idé eller som ett färdigt koncept som är redo att köra — rör sig genom samma sex faser. Faserna representerar mognadsgrad, inte separata verktyg: ett initiativ är alltid samma underliggande objekt i databasen, bara med olika `phase`-värde.
 
 **Designprincip:** användaren ska kunna starta där den befinner sig. Ny idé → börja i `idea`. Redan validerad lösning i drift → skapa initiativet direkt i `production`. Alla faser är alltid tillgängliga som startpunkt; inget tvingar en användare att passera faser den redan klarat av utanför plattformen.
 
@@ -466,8 +512,7 @@ Varje initiativ på GoodTribes — oavsett om det startar som en lös idé eller
 
 | Värde (enum) | Svensk etikett | Beskrivning |
 |---|---|---|
-| `idea` | Idé | AI-assisterad idéfas (se Utvecklingsfas 1.2/1.5), peer review, community-feedback |
-| `project` | Projekt | Uppgiftsnedbrytning (to-do), bjuda in medskapare, formera team, säkra resurser |
+| `idea` | Idé | Från lös idé till redo-att-bygga-projekt i ett sammanhållet flöde: idéformulering (AI-assisterad, se Utvecklingsfas 1.2/1.5), peer feedback, community-feedback, uppgiftsnedbrytning, medskapare, team och resurser — se delstegsgrupperna nedan |
 | `pilot` | Pilot | Utveckling och pilot i liten skala (prototyp) |
 | `production` | Produktion | Skarp drift |
 | `establish` | Etablera | Stabil lokal verksamhet |
@@ -485,21 +530,32 @@ phase_transitions
 
 ---
 
-**Delsteg inom `idea`- och `project`-faserna (UI-checklista, inte egna enum-värden)**
+**UI-princip — guide, inte tvång**
 
-Dessa var ursprungligen skissade som egna toppnivåfaser (idea/dream, peer review, to-do, invite, team, resources) men fungerar bättre som en checklista/progress-bar inuti `idea` och `project` — annars får `phase`-fältet 11+ värden där flertalet bara betyder "fortfarande i projektfasen, delsteg X", vilket gör frågor som "visa alla aktiva projekt" svåra att uttrycka.
+Den fasmodell och de delsteg som beskrivs nedan (och den widget som visar dem, se produktimplikation nedan) är en **vägledning för användaren, inte en tvingande arbetsordning.** Detta gäller på två nivåer, med olika grad av flexibilitet:
+
+- **Fasövergångarna (`idea` → `pilot` → ...) är och förblir gated**, enligt gating-tabellen nedan — de styr vilka funktioner som låses upp och kan inte hoppas över.
+- **Delstegen inom en fas (checklistan, t.ex. `dream_defined`, `peer_feedback_requested`, `todo_created`) är däremot fria till ordning och valfria att bocka av.** Användaren kan göra dem i vilken ordning som helst, hoppa över dem, eller gå direkt till fasövergången utan att ha bockat av alla — checklistan är en hjälp att se vad som brukar behövas, inte en spärr. Widgeten visar väg och framsteg ("2 av 5 klara"), men låser aldrig ett steg bakom ett annat.
+
+Detta skiljer sig medvetet från t.ex. gating-tabellen mellan faser, som fortsatt är strikt. Om detta blir förvirrande i praktiken (användare som inte förstår varför vissa steg är låsta och andra inte) är det en öppen fråga att följa upp efter lansering — se punkt 10.
+
+---
+
+**Delsteg inom den sammanslagna `idea`-fasen (UI-checklista, inte egna enum-värden)**
+
+`idea` och `project` var tidigare två separata faser, men eftersom övergången mellan dem aldrig var en riktig gate (initiativtagaren beslutar alltid själv, se v3.3) är de slagits ihop till en enda fas (v4.7). Delstegen finns kvar som en checklista/progress-bar, nu grupperad under två numrerade rubriker i widgeten istället för under två `phase`-värden — annars får `phase`-fältet 11+ värden där flertalet bara betyder "fortfarande i idé-fasen, delsteg X", vilket gör frågor som "visa alla aktiva projekt" svåra att uttrycka.
 
 ```
 initiative_checklist_items
-  id, project_id, phase (idea | project), item_key, completed_at, completed_by
+  id, project_id, group_number (1 | 2), item_key, completed_at, completed_by
 ```
 
-| `phase` | `item_key`-värden |
-|---|---|
-| `idea` | `dream_defined`, `peer_feedback_requested` *(valfritt, se nedan)* |
-| `project` | `todo_created`, `collaborators_invited`, `team_formed`, `resources_secured` |
+| `group_number` | Rubrik i widgeten | `item_key`-värden |
+|---|---|---|
+| `1` | Idéfasen | `dream_defined` ("Beskriv idén"), `ai_reviewed` ("Be AI granska idén" *(ny, v4.7)* — återanvänder `@AI` från Idéverkstaden, se 5.10), `peer_feedback_requested` ("Bjud in vänner att ge feedback", valfritt, se nedan), `lean_canvas_created` ("Gör en Lean Canvas" *(ny, v4.7)* — länkar till planeringsverktyget i Sandbox, se 5.10) |
+| `2` | Projektfas | `todo_created` ("Fyll på med arbetsuppgifter"), `collaborators_invited` ("Bjud in medskapare"), `team_formed` ("Formera team"), `resources_secured` ("Säkra resurser") |
 
-**Peer review är valfri feedback, inte ett godkännandekrav — beslutet om `idea → project` tas alltid av initiativtagaren själv.** Community-feedback (via idéflödet, se Utvecklingsfas 1.2/1.5) kan hjälpa initiativtagaren att förbättra idén, men ingen extern granskning eller antal granskare krävs för att gå vidare. `peer_feedback_requested` är därför bara en informativ markering — inte en spärr — och ersätter det tidigare `peer_review_approved`, som antydde ett godkännandekrav som inte längre gäller.
+**Peer review är valfri feedback, inte ett godkännandekrav.** Community-feedback (via idéflödet, se Utvecklingsfas 1.2/1.5) kan hjälpa initiativtagaren att förbättra idén, men ingen extern granskning eller antal granskare krävs för att gå vidare i checklistan. `peer_feedback_requested` är därför bara en informativ markering — inte en spärr — och ersätter det tidigare `peer_review_approved`, som antydde ett godkännandekrav som inte längre gäller.
 
 **Peer feedback vs. Granskningsrådet — två separata mekanismer:** även om peer feedback inte är ett krav, är det fortfarande värt att skilja den från Granskningsrådet (se Utvecklingsfas 2.97), eftersom de har helt olika syften:
 
@@ -519,11 +575,10 @@ Detta är inte längre en öppen fråga — se punkt 10.
 
 | Övergång | Krav för att låsa upp | Status |
 |---|---|---|
-| `idea` → `project` | Initiativtagaren beslutar själv — inget krav på extern granskning eller antal granskare. Peer feedback (se ovan) är valfri och påverkar inte beslutet. | **Beslutat (v3.3)** |
-| `project` → `pilot` | Team tilldelat + budget/resurser definierade | Beslutat |
+| `idea` → `pilot` | Initiativtagaren beslutar själv att idén/projektet är redo — inget krav på extern granskning eller antal granskare (peer feedback, se ovan, är valfri och påverkar inte beslutet) — samt att team är tilldelat och budget/resurser definierade (`team_formed` + `resources_secured` i delstegschecklistan, se ovan) | **Beslutat (v4.7)** — sammanslagning av tidigare `idea → project` (Beslutat v3.3) och `project → pilot` (Beslutat) |
 | `pilot` → `production` | Tribe Token-röstning bland projektmedlemmar godkänner pilotresultatet (se Utvecklingsfas 2.95) + minst en milstolpe markerad klar (se 5.74) + `resources_secured` uppfyllt för fortsatt drift | **Föreslaget — ej formellt beslutat, se punkt 10** |
 | `production` → `establish` | Projektpuls (se 5.74) stabil över ett tröskelvärde i N sammanhängande månader, utan öppet allvarligt ärende hos Granskningsrådet (se 5.55) | **Föreslaget — svagast underbyggt av de tre, tröskelvärde N och ev. variation per `legal_type` (se 4c) kräver styrelsediskussion, se punkt 10** |
-| `establish` → `scale` | Initiativtagare initierar fork/replikering till ny region | Beslutat |
+| `establish` → `scale` | Initiativtagare initierar regional replikering eller självvald uppdelning (se 5.65) | Beslutat |
 | `scale` → `impact` | Minst en replikerad instans (fork) har själv nått `establish` + mätbara SDG-resultat rapporterade och verifierade (kräver ny `impact_reports`-tabell, se nedan) | **Föreslaget — ej formellt beslutat, se punkt 10** |
 
 > Rader markerade "Öppen" ska INTE tolkas som spec av Claude Code. Bygg gating-logiken som ett konfigurerbart regelverk (t.ex. en funktion per övergång) snarare än hårdkodade villkor, så att öppna rader kan fyllas i utan omskrivning.
@@ -534,11 +589,33 @@ Detta är inte längre en öppen fråga — se punkt 10.
 
 | Övergång | Låser upp |
 |---|---|
-| `idea` → `project` | Kanban-board skapas (se Utvecklingsfas 1), `initiativtagare`-roll tilldelas formellt |
-| `project` → `pilot` | Tribe Tokens börjar delas ut för uppgifter (se Utvecklingsfas 2.8) |
+| `idea` → `pilot` | Tribe Tokens börjar delas ut för uppgifter (se Utvecklingsfas 2.8) — Kanban, chatt och wiki finns redan tillgängliga från projektstart (se 5.3), oavsett fas |
 | `pilot` → `production` | Skarp driftmiljö aktiveras för projektet *(exakt vilka funktioner — ej slutgiltigt beslutat, se punkt 10)* |
-| `establish` → `scale` | Crowdfunding-modul (se Utvecklingsfas 3) + regional fork-funktion (se Utvecklingsfas 4) |
+| `establish` → `scale` | Crowdfunding-modul (se Utvecklingsfas 3) + regional replikering & självvald uppdelning (se Utvecklingsfas 4, 5.65) |
 | `scale` → `impact` | Impact-rapportering, publik impact-dashboard |
+
+---
+
+**Produktimplikation — fas- och stegwidget**
+
+Projektsidan visar en widget med hela vägen (Idé → Pilot → Produktion → Etablera → Skala → Impact), där varje fas kan expanderas för att se sina delsteg. Widgeten är en visuell guide och framstegsindikator — se "UI-princip" ovan för vad som är låst (fasövergångar) och vad som är fritt (delsteg inom en fas).
+
+Inom `idea`-fasen visas delstegen i två numrerade grupper, så att hela vägen från lös idé till "redo att bygga" känns sammanhållen i en enda widget:
+
+```
+1. Idéfasen
+   1.1 Beskriv idén
+   1.2 Be AI granska idén
+   1.3 Bjud in vänner att ge feedback
+   1.4 Gör en Lean Canvas
+2. Projektfas
+   2.1 Fyll på med arbetsuppgifter
+   2.2 Bjud in medskapare
+   2.3 Formera team
+   2.4 Säkra resurser
+```
+
+Numreringen är bara en visuell gruppering (`group_number` i `initiative_checklist_items`, se nedan) — den ändrar inte gating-reglerna: alla åtta delsteg ovan är fortfarande fria till ordning och valfria, precis som tidigare (se "UI-princip" ovan).
 
 ---
 
@@ -546,13 +623,15 @@ Detta är inte längre en öppen fråga — se punkt 10.
 
 ```
 projects
-  phase (idea | project | pilot | production | establish | scale | impact) — ersätter tidigare status-fält, se 7
+  phase (idea | pilot | production | establish | scale | impact) — ersätter tidigare status-fält, se 7
 
 phase_transitions
   id, project_id, from_phase (nullable), to_phase, changed_by, changed_at
 
 initiative_checklist_items
-  id, project_id, phase (idea | project), item_key, completed_at, completed_by
+  id, project_id, group_number (1 | 2), item_key, completed_at, completed_by
+  -- grupp 1 = "Idéfasen" (dream_defined, ai_reviewed, peer_feedback_requested, lean_canvas_created)
+  -- grupp 2 = "Projektfas" (todo_created, collaborators_invited, team_formed, resources_secured)
 
 impact_reports
   id, project_id, sdg_goals[], metric_description, metric_value, verified_by, verified_at, created_at
@@ -612,36 +691,36 @@ founder_cohort_invites
 
 ## 4f. Fork-funktion
 
-Inspirerat av GitHub ska projekt kunna "gafflas" — kopieras till ett nytt, oberoende projekt. Detta är en annan mekanism än den regionala replikering som redan beskrivs för `establish → scale` (se 4d, Utvecklingsfas 4), där initiativtagaren själv initierar expansion till en ny region. Fork-funktionen i denna sektion är bredare och täcker två skilda scenarier:
+Inspirerat av GitHub ska ett projekt kunna "gafflas" av vem som helst — kopieras till ett nytt, oberoende projekt utan tillstånd från initiativtagaren. Detta är principiellt skilt från **Skalning** (se Utvecklingsfas 4, 5.65), där initiativtagaren *själv* väljer att dela upp sitt växande projekt i flera under en gemensam organisation — de två begreppen använde tidigare båda ordet "fork", vilket skapade en namnkollision. Nu är de tydligt åtskilda:
 
-**Scenario A — Självvald uppdelning**
-Initiativtagaren väljer själv att dela upp ett växande projekt i flera. Flödet: (1) skapa en organisation om den inte redan finns, (2) gaffla det befintliga projektet till ett eller flera nya projekt placerade under organisationen (`org_id` sätts vid gafflingen).
+- **Skalning** = initiativtagaren själv initierar uppdelning/expansion av sitt eget projekt (se 5.65)
+- **Fork** = vem som helst kopierar projektet, utan tillstånd — typiskt vid dissens ("jag tycker projektet går åt fel håll"), men motivet kan också vara nyfikenhet eller att testa en egen variant
 
-**Scenario B — Dissens-fork**
-En medlem (inte nödvändigtvis initiativtagaren) gafflar projektet för att de anser att det går åt fel håll. Resulterar i ett nytt, fristående projekt (eller under gafflarens egen organisation, om denne har en).
-
-Båda scenarierna delar samma underliggande mekanism — kopiera projektets snapshot till ett nytt `project_id` — men skiljer sig åt i vem som initierar och vart resultatet placeras.
+En fork resulterar alltid i ett nytt, fristående projekt (eller under gafflarens egen organisation, om denne har en) — aldrig en "instans" kopplad till ett globalt nätverk under originalet, vilket särskiljer det från Skalningens `project_instances`-modell.
 
 ---
 
-**Beslutat — Kompensation vid dissens-fork (Scenario B)**
+**Beslutat — Kompensation vid fork**
 
 - **Obligatorisk miniminivå: vinstandel.** Om det forkade projektet någon gång blir vinstdrivande (`commercial_ab`, se 4c), avsätts automatiskt en andel av dess framtida vinstdelning (se 4a, Steg 2) till originalprojektets bidragsgivare, proportionellt mot deras Tribe Token-innehav i originalet vid gaffeltillfället. Detta rör sig i riktig valuta via Stripe Connect, inte som tokentransaktion — bryter alltså inte mot principen att tokens aldrig växlas mot pengar. Detta gäller alltid, oavsett vad gafflaren väljer nedan.
 - **Valfritt tillägg: rösträtt via nymyntade tokens.** Utöver miniminivån kan personen som gafflar **själv välja** att även ge Tribe Tokens (och därmed rösträtt, se Utvecklingsfas 2.95) i det nya projektet till en eller flera av originalprojektets medlemmar. Detta är alltid ett aktivt, frivilligt val av gafflaren — aldrig automatiskt eller ett krav. Eftersom det handlar om nymyntade tokens i det nya projektet (inte en flytt eller växling av befintliga tokens) bryter detta inte mot principen att Tribe Tokens är strikt projektlokala (se 4c).
 - **Synlig härstamning och kreditering är obligatoriskt.** Det nya projektet ska tydligt visa att det är en fork av originalprojektet, med länk till detta, samt kreditera de medlemmar som bidrog till originalet.
 
-*(Öppet — se punkt 10: gäller samma kompensationsmodell Scenario A (självvald uppdelning), eller är det bara relevant vid dissens eftersom det där ofta är samma team/initiativtagare på båda sidor?)*
-
 ---
 
 **Beslutat (v4.1) — `legal_type` vid fork, reconciliation med 4c**
 
-Fork-funktionen kopierar ett projekts *data* (snapshot, medlemskap, historik) till ett nytt `project_id` — men den kopierar aldrig en juridisk person eller en plats i ett befintligt AB. Det forkade projektet är alltid en juridiskt blank slate, oavsett vilken `legal_type` originalet hade — inklusive originalet var `commercial_umbrella` eller `commercial_ab` (se den nya tvånivåstrukturen för kommersiella projekt ovan):
+Fork-funktionen kopierar ett projekts *data* (snapshot, medlemskap, historik) till ett nytt `project_id` — men den kopierar aldrig en juridisk person eller en plats i ett befintligt AB. Det forkade projektet är alltid en juridiskt blank slate, oavsett vilken `legal_type` originalet hade — inklusive om originalet var `commercial_umbrella` eller `commercial_ab` (se den nya tvånivåstrukturen för kommersiella projekt i 4c):
 
-- **Default vid skapande: `nonprofit_umbrella`, för alla forkar, i båda scenarierna, oavsett originalets `legal_type`.** Detta är samma default som gäller för varje nyskapat projekt på plattformen — den lägsta juridiska tröskeln, inget särfall för forkar. Att sätta denna default kräver ingen handling från Stiftelsen vid gaffeltillfället, eftersom `nonprofit_umbrella` är projektets normala vilostatus — det är inte en *övergång* i 4c:s mening, bara startvärdet.
+- **Default vid skapande: `nonprofit_umbrella`, för alla forkar, oavsett originalets `legal_type`.** Detta är samma default som gäller för varje nyskapat projekt på plattformen — den lägsta juridiska tröskeln, inget särfall för forkar. Att sätta denna default kräver ingen handling från Stiftelsen vid gaffeltillfället, eftersom `nonprofit_umbrella` är projektets normala vilostatus — det är inte en *övergång* i 4c:s mening, bara startvärdet.
 - **Ingen genväg runt 4c:s övergångsprocess.** Vill det forkade projektets medlemmar senare bli `commercial_umbrella` (ansluta som produktlinje under ett paraply-AB), eget `commercial_ab`, eller `nonprofit_own_assoc`, gäller exakt samma process som för alla andra projekt: röstning bland forkens medlemmar + Stiftelsen genomför den faktiska juridiska övergången (`legal_type_change_requests`, se 4c).
-- **Specialfall — originalet var `commercial_umbrella` eller `commercial_ab`:** forken ärver *inte* originalets plats i ett paraply-AB eller dess eget aktiebolag. Att originalet redan är en produktlinje under ett paraply-AB, eller ett eget helägt AB, ger ingen automatisk plats för forken i samma struktur — anslutning eller nybildning kräver samma beslutsprocess som för ett helt nytt projekt utan fork-koppling.
-- **Gäller lika för Scenario A och B.** Vem som initierar forken (initiativtagaren själv vid självvald uppdelning, eller en dissenterande medlem) påverkar inte den juridiska processen ovan.
+- **Specialfall — originalet var `commercial_umbrella` eller `commercial_ab`:** forken ärver *inte* originalets plats i ett paraply-AB eller dess eget aktiebolag. Anslutning eller nybildning kräver samma beslutsprocess som för ett helt nytt projekt utan fork-koppling.
+
+---
+
+**Fork av innehåll i Sandbox**
+
+Fork-mekanismen gäller inte bara etablerade projekt — en tråd eller idé i Sandbox (se Utvecklingsfas 1.2) kan också gafflas ut till ett eget, fristående projekt av vem som helst, som ett alternativ till att "lyfta" den via den vanliga promotion-vägen. Skillnaden: att "lyfta" en tråd är den ursprungliga bidragsgivarens/initiativtagarens egna val (se Sandbox, Utvecklingsfas 1.2), medan en fork av sandbox-innehåll kan göras av vem som helst, utan tillstånd — samma permissionless-princip som fork av riktiga projekt.
 
 ---
 
@@ -649,11 +728,10 @@ Fork-funktionen kopierar ett projekts *data* (snapshot, medlemskap, historik) ti
 
 | Fråga | Status |
 |---|---|
-| Vem får initiera en dissens-fork — vem som helst som följer projektet, eller krävs tidigare aktivt bidrag (Tribe Tokens intjänade)? | **Beslutat (v3.5): Vem som helst, permissionless precis som på GitHub — inget krav på tidigare aktivt bidrag.** |
+| Vem får initiera en fork — vem som helst som följer projektet, eller krävs tidigare aktivt bidrag (Tribe Tokens intjänade)? | **Beslutat (v3.5): Vem som helst, permissionless precis som på GitHub — inget krav på tidigare aktivt bidrag.** |
 | Vilken fas (se 4d) hamnar det forkade projektet i — samma fas som originalet hade vid gaffeltillfället, eller alltid `idea`? | **Beslutat (v3.7): Fork tillåts oavsett fas — `idea` t.o.m. `impact`. Det forkade projektet ärver originalets fas vid gaffeltillfället, med egen fasövergångshistorik framåt.** |
-| Vilken `legal_type` (se 4c) får det forkade projektet vid skapande, om originalet var `commercial_umbrella` eller `commercial_ab` (ägt av/anslutet till Stiftelsen, som inte automatiskt gäller forken)? | **Beslutat (v4.1): `nonprofit_umbrella` som default för alla forkar, ingen genväg runt 4c:s vanliga övergångsprocess. Se ny sektion ovan.** |
-| Vem äger organisationen som skapas vid Scenario A — automatiskt samma initiativtagare som originalprojektet, eller kan flera av originalets medlemmar bli medgrundare? | **Beslutat (v3.5): Samma initiativtagare som originalprojektet.** |
-| Blandas Granskningsrådet in vid en dissens-fork? | Löst: Nej, i linje med den reaktiva principen (se 5.54) — en fork är aldrig i sig ett regelbrott, bara en funktion. Rådet blandas bara in om någon faktiskt anmäler något |
+| Vilken `legal_type` (se 4c) får det forkade projektet vid skapande, om originalet var `commercial_umbrella` eller `commercial_ab` (ägt av/anslutet till Stiftelsen, som inte automatiskt gäller forken)? | **Beslutat (v4.1): `nonprofit_umbrella` som default för alla forkar, ingen genväg runt 4c:s vanliga övergångsprocess. Se ovan.** |
+| Blandas Granskningsrådet in vid en fork? | Löst: Nej, i linje med den reaktiva principen (se 5.54) — en fork är aldrig i sig ett regelbrott, bara en funktion. Rådet blandas bara in om någon faktiskt anmäler något |
 
 ---
 
@@ -661,7 +739,8 @@ Fork-funktionen kopierar ett projekts *data* (snapshot, medlemskap, historik) ti
 
 ```
 projects
-  forked_from_project_id (nullable), fork_type (self_split | dissent) — kompletterar befintliga fält, se 7
+  forked_from_project_id (nullable) — kompletterar befintliga fält, se 7
+  forked_from_sandbox_thread_id (nullable) — sätts om forken utgår från en sandbox-tråd snarare än ett etablerat projekt
   -- legal_type sätts alltid till nonprofit_umbrella vid gaffling, oavsett originalets legal_type — se "Beslutat (v4.1)" ovan
 
 fork_contributor_credits
@@ -1014,9 +1093,9 @@ AI läser hela trådens konversationshistorik och svarar kontextuellt — som en
 - Tråden fortsätter tills initiativtagaren är nöjd
 
 **Steg 5 — Spara och agera**
-- En idé kan sparas till Idéflödet (Utvecklingsfas 1.5) för vidare community-feedback
-- Eller konverteras direkt till ett nytt projekt — med AI som automatiskt genererar projektbeskrivning, milstolpar och startuppgifter
-- Alla som deltagit i tråden notifieras när ett projekt skapas och erbjuds att gå med
+- Tråden konverteras till ett nytt projekt i `idea`-fasen (se 4d) — med AI som automatiskt genererar projektbeskrivning, milstolpar och startuppgifter. Det är den enda vägen framåt: en idé är redan ett projekt, bara i sin tidigaste fas (se Utvecklingsfas 1.5)
+- Projektet är därefter öppet för fortsatt community-feedback, röstning och co-creation, precis som alla andra idé-fas-projekt (se Utvecklingsfas 1.5)
+- Alla som deltagit i tråden notifieras när projektet skapas och erbjuds att gå med
 
 ---
 
@@ -1025,6 +1104,88 @@ AI läser hela trådens konversationshistorik och svarar kontextuellt — som en
 - Bara projektmedlemmar ser och deltar
 - AI har tillgång till projektets befintliga kontext: beskrivning, milstolpar, uppgifter och wiki
 - Används för: lösa utmaningar, hitta nya angreppssätt, planera nästa fas
+
+---
+
+**Sandbox — kreativt kaos**
+
+Ett tydligt avgränsat, öppet deklarerat område där GoodTribes själva blandar AI-genererat innehåll med användarbidrag, och testar nya tjänster, funktioner och idéer innan de eventuellt lyfts in i den strukturerade delen av plattformen. Detta löser cold start-problemet (se 4e) genom att rummet aldrig känns tomt, samtidigt som det bevarar plattformens kärnvärde Öppenhet (§4).
+
+**Grundprincip — total transparens, inget smygande**
+> Sandbox är märkt tydligt och konsekvent som experimentell zon. Besökare vet alltid att de befinner sig där, och att innehåll och funktioner där kan vara AI-genererade, halvfärdiga eller under test. Detta gäller genomgående — aldrig en engångsdisclaimer som glöms bort.
+
+- **Vad som blandas där:** AI-genererade problemställningar och idéfrön (för att ge volym och liv), användarnas egna trådar och kommentarer, fristående planeringsverktyg (se nedan), samt piloter av nya plattformsfunktioner som ännu inte är redo för full lansering
+- **Tydlig, permanent märkning** — inte en subtil färgnyans, utan en konsekvent, väl synlig indikation (t.ex. rubrik, bakgrundston och etikett) som gör klart att man är i Sandbox, på varje sida och i varje tråd där
+- **Ingen retroaktiv gissning krävs** — istället för att fråga "är detta AI eller människa?" post för post, är hela zonen deklarerad som en plats där båda blandas fritt och öppet
+- **Lyft till ett projekt** — precis som i Idéverkstaden (se 5.10, Steg 5) kan en tråd i Sandbox "lyftas" till ett projekt i `idea`-fasen (se 4d) — samma mekanik (`converted_to_project_id`) återanvänds. Projektet är därefter öppet för bredare community-feedback och co-creation precis som alla andra idé-fas-projekt (se Utvecklingsfas 1.5) — ingen separat "Idéflödet"-destination behövs längre. "Lyft" är alltid den ursprungliga bidragsgivarens/initiativtagarens eget val.
+- **Fork av sandbox-innehåll** — som ett alternativ till att lyfta en tråd kan vem som helst istället **gaffla** den till ett eget, fristående projekt (se 4f) — permissionless, utan tillstånd från den som postade ursprungligen. Samma kompensationsprincip (vinstandel, valfria tokens, kreditering, se 4f) gäller.
+- **Funktionspiloter** — nya tjänster eller funktioner kan testas skarpt med riktiga, informerade användare i Sandbox innan de rullas ut brett, tydligt märkta som "Experimentell funktion — testas i Sandbox"
+- **Bestående funktion, inte bara lanseringsknuff** — Sandbox finns kvar även efter att organisk aktivitet tagit fart, som ett permanent, friare inkubatorlager ovanför den strukturerade plattformen
+
+*(Öppen fråga — se punkt 10: gäller Granskningsrådets reaktiva princip (se 5.54) även innehåll i Sandbox, eller behövs en lättare, snabbare moderering där givet den högre volymen och mer experimentella karaktären?)*
+
+---
+
+**Planeringsverktyg i Sandbox**
+
+Ett bibliotek med fristående planerings- och idégenereringsverktyg, som en del av Sandboxs kreativa kaos snarare än en egen sektion av plattformen. Fungerar som en lågtröskel-ingång för att testa och forma en idé.
+
+- Varje verktygsinstans (t.ex. en ifylld Lean Canvas) skapas antingen **privat** (bara skaparen ser den) eller **delbar/kollaborativ** (flera kan redigera tillsammans) — användaren väljer detta vid skapande
+- En ifylld canvas kan när som helst **"lyftas" eller "gafflas"** till ett riktigt projekt i `idea`-fasen (se 4d och ovan) — innehållet förifyller projektets grundfält (titel, beskrivning, målgrupp, ev. SDG-koppling)
+
+| Verktyg | Syfte |
+|---|---|
+| Lean Canvas | Enkelsidig affärs-/idémodell — problem, lösning, målgrupp, kanaler, intäkter |
+| Kundresa (Customer Journey Map) | Kartlägga målgruppens steg, behov och kontaktpunkter |
+| AI-assisterad idégenerering | Samma AI-drivna brainstorming som redan finns i idéflödet (se ovan), tillgänglig fristående |
+
+*(Öppen fråga — se punkt 10: exakt vilka ytterligare ramverk, t.ex. Business Model Canvas eller SWOT, som ska ingå från start vs. läggas till senare är inte bestämt.)*
+
+---
+
+**Tokens i Sandbox**
+
+Aktivitet i Sandbox ska räknas och belönas — men *vilken* tokentyp kräver eftertanke, eftersom Tribe Tokens är strikt projektlokala (se 4c, Utvecklingsfas 2.8) och sandbox-innehåll ofta inte är kopplat till något projekt än.
+
+**Grundprincip — värdelöst tills lyft, sedan riktigt**
+> Tokens som delas ut i Sandbox har inget värde (ingen rösträtt, ingen vinstandel) förrän det de tillhör faktiskt lyfts eller gafflas till den strukturerade delen av GoodTribes. Vid det tillfället konverteras dokumenterat bidrag till riktiga, nymyntade Tribe Tokens i det nya projektet — som sedan fungerar precis som alla andra Tribe Tokens.
+
+- **Sandbox-aktivitet räknas löpande som GT (GoodTribes Token), inte Tribe Tokens** — eftersom Tribe Tokens kräver ett `project_id` för att ge mening, och sandbox-innehåll ofta saknar projekt tills det lyfts eller gafflas. GT fungerar här som ett bokfört, ännu inte inlöst bidrag snarare än ett direkt värde i sig (se 5.41 för samma princip vid GoodTribes eget bidrag).
+- **Belöningen är densamma oavsett om resultatet blir kommersiellt eller ideellt.** Vid lyft eller fork till ett riktigt projekt tilldelas bidragsgivare som krediterats (`idea_contributors`, `fork_contributor_credits`) **nymyntade Tribe Tokens** i det nya projektet, proportionellt mot sitt dokumenterade bidrag. Eftersom Tribe Tokens alltid ger rösträtt (se 2.95) — och *dessutom* automatiskt ger rätt till vinstandel om/när projektet är eller blir kommersiellt (se 5.36, 4a) — behövs ingen separat regel för de två utfallen: samma mekanism täcker båda. Detta är alltså en ny mynting i det nya projektet, inte en växling av redan intjänad GT (håller sig innanför principen i 4c att tokens aldrig konverteras mellan nivåer eller projekt).
+- **Förslag — utfallsbaserad mintning, inte per inlägg:** GT tilldelas när ett bidrag leder till ett konkret utfall (tråden lyfts till ett projekt eller gafflas), snarare än för varje enskilt inlägg. Sandbox är medvetet lågtröskel och friare modererad (se öppen fråga ovan om Granskningsrådet) — att ge GT per inlägg riskerar spam/farming på ett sätt som är svårare att fånga i efterhand än i resten av plattformen. *(Föreslaget, ej slutgiltigt beslutat — se punkt 10.)*
+- Gäller lika för trådar och canvas-verktyg (Lean Canvas m.fl., se ovan) — samma modell, GT bokförs vid bidrag, riktiga Tribe Tokens mintas vid promotion till projekt.
+
+*(Öppen fråga — se punkt 10: exakt GT-belopp per sandbox-bidrag, samt om utfallsbaserad mintning är rätt avvägning eller om viss GT ändå bör ges löpande för aktivt deltagande.)*
+
+**Databasutökning — Sandbox**
+
+```
+idea_threads
+  origin (human | ai_seed), is_sandbox (bool) — kompletterar befintlig tabell, se 5.12
+
+sandbox_feature_pilots
+  id, feature_key, description, status (piloting | rolled_out | discontinued)
+  started_at, ended_at, created_by
+
+canvas_instances
+  id, tool_type (lean_canvas | customer_journey | ai_ideation), owner_user_id
+  visibility (private | shared), created_at, updated_at
+
+canvas_collaborators
+  id, canvas_instance_id, user_id, role (editor | viewer), added_at
+
+canvas_field_values
+  id, canvas_instance_id, field_key, field_value, updated_at, updated_by
+
+canvas_promotions
+  id, canvas_instance_id, promoted_to_project_id (nullable), forked_to_project_id (nullable)
+  promoted_by, promoted_at
+
+-- Tokens i Sandbox återanvänder befintliga tabeller (se Utvecklingsfas 2.8, 5.37):
+-- platform_token_ledger (GT) — reason = 'sandbox_thread_lifted' | 'sandbox_thread_forked' | 'sandbox_canvas_promoted'
+-- idea_contributors / fork_contributor_credits utökas med:
+--   contribution_weight (numeric) — underlag för proportionell Tribe Token-mintning vid promotion till projekt
+```
 
 ---
 
@@ -1067,51 +1228,48 @@ idea_thread_participants
 
 ### Utvecklingsfas 1.5 — Öppen Innovation
 
-Målet är att låta vem som helst bidra med idéer och forma dem tillsammans — innan de blir formella projekt. Detta är plattformens "idéinkubator" och en central differentiator mot konkurrenter.
+Målet är att låta vem som helst bidra till och forma projekt som fortfarande är i `idea`-fasen (se 4d) — innan de mognar till `pilot`. **En idé är inte längre en egen, fristående entitet — en idé är redan ett projekt**, bara i sin tidigaste fas (se v4.7, som slog ihop de tidigare separata faserna `idea` och `project`). Det här är fortfarande plattformens "idéinkubator" och en central differentiator mot konkurrenter, bara byggt ovanpå samma `projects`-tabell som allt annat, inte en parallell datamodell.
 
-**5.13 Idéflöde (Ideas Feed)**
-- Öppet för alla — ingen inloggning krävs för att läsa
-- Vem som helst kan posta en idé med titel, beskrivning och kategori
-- Idéer är sökbara och filtrerbara per kategori, popularitet och datum
-- Varje idé får en unik publik URL som kan delas
+**5.13 Projekt i idé-fasen — öppen discovery**
+- Projekt i `idea`-fasen är, precis som alla andra publika projekt, öppna för alla att läsa — ingen inloggning krävs
+- Syns i den vanliga projektdiscoveryn (se 5.21), filtrerbara på fas, kategori, popularitet (röster) och datum — ingen separat "idésida" eller egen URL-struktur behövs
+- Ingen separat "skapa idé"-väg i navigationen — enda vägen in är "Skapa projekt" (se 5.3), som redan startar i `idea`-fasen som standard
 
 **5.14 Feedback & röstning**
-- Tumme upp / tumme ner eller poängsystem (t.ex. 1–5)
+- Tumme upp / tumme ner eller poängsystem (t.ex. 1–5) på projekt i idé-fasen
 - Kommentarsfält med trådade svar
 - "Byggande kommentarer" — markera sitt inlägg som konstruktivt förslag
-- Populäraste idéerna lyfts i ett topplistflöde
+- Populäraste idé-fas-projekten lyfts i ett topplistflöde
+- Skiljer sig från Utvecklingsfas 2.95:s Tribe Token-viktade omröstningar — den här röstningen är öppen, informell popularitetsfeedback under idé-fasen, inte ett bindande projektbeslut
 
 **5.15 Co-creation**
-- Vem som helst kan föreslå ändringar i en idés beskrivning (pull request-liknande)
+- Vem som helst kan föreslå ändringar i beskrivningen för ett projekt som fortfarande är i idé-fasen (pull request-liknande)
 - Initiativtagaren godkänner eller avvisar förslag
-- Versionshistorik — se hur idén utvecklats över tid
-- Flera bidragsgivare kan listas som medförfattare
+- Versionshistorik — se hur beskrivningen utvecklats över tid
+- Flera bidragsgivare kan listas som medförfattare (`idea_contributors`) — samma tabell som Sandboxs lyft-/fork-kreditering återanvänder (se Utvecklingsfas 1.2)
+- Den här öppna redigeringsmodellen gäller specifikt idé-fasen — när projektet går vidare till `pilot` (se 4d:s gating) tar den vanliga roll- och behörighetsmodellen (5.5/5.9) över
 
-**5.16 Idé → Projekt-pipeline**
-- En idé kan med ett klick "befordras" till ett formellt projekt
-- Idéns beskrivning, kategori och bidragsgivare följer med automatiskt
-- Bidragsgivare till idén notifieras och erbjuds att gå med i projektet
-- Idésidan arkiveras och länkas till det nya projektet ("Ursprung: Idé #42")
+**5.16 Övergång ut ur idé-fasen**
+- Ingen separat "befordran" behövs längre — projektet är redan samma objekt hela vägen igenom. Övergången `idea → pilot` styrs av gating-regeln i 4d (team tilldelat + resurser säkrade), inte av ett eget steg här
+- Bidragsgivare som krediterats under idé-fasen (`idea_contributors`) behåller sin kreditering och sitt underlag för proportionell Tribe Token-mintning när projektet fortsätter (se Utvecklingsfas 2.8)
 
-**5.17 Databasutökning för idéer**
+**5.17 Databasutökning för idé-fasen**
 
 ```
-ideas
-  id, title, description, category, author_id, status (open | promoted | archived)
-  created_at, promoted_to_project_id
+project_idea_votes
+  id, project_id, user_id, value (+1 | -1), created_at
 
-idea_votes
-  id, idea_id, user_id, value (+1 | -1), created_at
+project_idea_comments
+  id, project_id, parent_id, author_id, body, type (comment | suggestion), created_at
 
-idea_comments
-  id, idea_id, parent_id, author_id, body, type (comment | suggestion), created_at
-
-idea_revisions
-  id, idea_id, proposed_by, diff, status (pending | accepted | rejected), created_at
+project_idea_revisions
+  id, project_id, proposed_by, diff, status (pending | accepted | rejected), created_at
 
 idea_contributors
-  id, idea_id, user_id, role (author | co-author | contributor)
+  id, project_id, user_id, role (author | co-author | contributor)
 ```
+
+*(Ersätter den tidigare fristående `ideas`-tabellen, se v4.7 — samtliga fält pekar nu mot `project_id` istället för ett eget `idea_id`, eftersom en idé alltid redan är ett projekt.)*
 
 ---
 
@@ -1729,16 +1887,23 @@ När initiativtagaren initierar skalning genererar AI en skräddarsydd skalnings
 - **Riskbedömning** — kulturella, juridiska och operativa risker per målregion
 - **Partnerförslag** — AI söker efter organisationer och projekt på GoodTribes som kan vara naturliga partners
 
-**5.65 Projekt-franchising**
+**5.65 Projekt-franchising & självvald uppdelning**
 
-Ett projekt kan officiellt öppna sig för replikering — andra användare kan "forka" projektet till en ny geografi.
+Ett projekt kan officiellt öppna sig för replikering — andra användare kan ansöka om att öppna en regional instans av projektet. Detta skiljer sig medvetet från Fork-funktionen (se 4f): här initierar och godkänner initiativtagaren själva expansionen, och instanserna hör ihop i ett gemensamt nätverk — det är inte en permissionless kopia.
 
+*Regional replikering (flera geografiska instanser av samma projekt):*
 - Initiativtagaren aktiverar "Öppen för replikering" på projektsidan
 - Intresserade användare ansöker om att starta en lokal instans
 - Godkänd instans får: projektets wiki, milstolpar och uppgiftsmallar som startpunkt
 - Alla instanser kopplas till ett globalt nätverk under ursprungsprojektet — oavsett om ursprungsprojektet är kommersiellt eller ideellt (se 4c), varje instans har sin egen juridiska form
 - Ursprungsprojektet kan sätta riktlinjer som alla instanser måste följa
 - Instansernas framsteg och tokens är synliga i ett globalt dashboard
+
+*Självvald uppdelning (ett växande projekt delar upp sig i flera under en gemensam organisation):*
+- Initiativtagaren väljer själv att dela upp sitt projekt i flera delprojekt, i takt med att verksamheten växer och naturligt separeras i olika grenar
+- Flödet: (1) en organisation skapas om den inte redan finns (`organizations`, se §7), med samma initiativtagare som huvudprojektet, (2) delprojekten skapas som nya, självständiga projekt kopplade till organisationen (`org_id` sätts)
+- Till skillnad från regional replikering ovan handlar detta inte om samma projekt på flera platser, utan om att splittra ett och samma växande initiativ i flera separata, men organisatoriskt sammanhållna, projekt
+- Delprojekten ärver *ingen* automatisk juridisk koppling till ursprungsprojektets `legal_type` (samma princip som för fork, se 4f) — varje delprojekt gör sitt eget val av juridisk form via den vanliga övergångsprocessen (4c)
 
 **5.66 Globalt nätverksdashboard**
 
@@ -1788,6 +1953,8 @@ project_maturity
 project_instances
   id, parent_project_id, child_project_id, region, status (pending | active | paused)
   approved_by, created_at
+  -- används för regional replikering. Självvald uppdelning (se 5.65) kräver ingen egen tabell —
+  -- återanvänder organizations och projects.org_id (se §7)
 
 impact_metrics
   id, project_id, label, unit, target_value, current_value, updated_at
@@ -1948,7 +2115,7 @@ organizations
 
 projects
   id, title, description, visibility, category, initiator_user_id, org_id, created_at
-  phase (idea | project | pilot | production | establish | scale | impact) — se 4d
+  phase (idea | pilot | production | establish | scale | impact) — se 4d
   legal_type (commercial_umbrella | commercial_ab | nonprofit_umbrella | nonprofit_own_assoc) — se 4c
 commercial_umbrella_entity_id (nullable) — se 4c
 
@@ -1956,7 +2123,7 @@ phase_transitions
   id, project_id, from_phase (nullable), to_phase, changed_by, changed_at — se 4d
 
 initiative_checklist_items
-  id, project_id, phase (idea | project), item_key, completed_at, completed_by — se 4d
+  id, project_id, group_number (1 | 2), item_key, completed_at, completed_by — se 4d
 
 impact_reports
   id, project_id, sdg_goals[], metric_description, metric_value, verified_by, verified_at, created_at — se 4d
@@ -2016,7 +2183,7 @@ För att komma till marknad snabbast möjligt begränsas MVP till:
 - Enkla användarprofiler
 - Projektdiscovery (sök + filter)
 - Offentlig projektsida
-- Idéflöde med röstning och kommentarer (Utvecklingsfas 1.5 grundnivå)
+- Projekt i idé-fasen med röstning och kommentarer (Utvecklingsfas 1.5 grundnivå)
 - Tribe Tokens & GT (se Utvecklingsfas 2.8) — prioritetsbaserad tokenutdelning på Kanban-uppgifter *(tillagd i v2.6 — redan byggt och i drift, se punkt 10)*
 
 **Ej inkluderat i MVP:**
@@ -2084,9 +2251,13 @@ För att komma till marknad snabbast möjligt begränsas MVP till:
 | Fork-funktion (se 4f) — vem får initiera en dissens-fork? Krävs tidigare aktivt bidrag i originalprojektet? | **Beslutat (v3.5): Vem som helst, permissionless — inget krav på tidigare bidrag.** |
 | Fork-funktion (se 4f) — vilken fas (4d) hamnar ett forkat projekt i? | **Beslutat (v3.7): Fork tillåts oavsett vilken fas originalprojektet befinner sig i (`idea` t.o.m. `impact`). Det forkade projektet ärver originalets fas vid gaffeltillfället, med egen fasövergångshistorik framåt.** |
 | Fork-funktion (se 4f) — vilken `legal_type` (4c) får ett forkat projekt vid skapande om originalet var `commercial_umbrella` eller `commercial_ab`? | **Beslutat (v4.1): `nonprofit_umbrella` som default för alla forkar. Forken ärver aldrig originalets plats i ett paraply-AB eller dess eget aktiebolag — vill forken bli kommersiell krävs 4c:s vanliga övergångsprocess, ingen genväg.** |
-| Fork-funktion (se 4f) — vem äger organisationen som skapas vid självvald uppdelning (Scenario A)? | **Beslutat (v3.5): Samma initiativtagare som originalprojektet.** |
-| Fork-funktion (se 4f) — gäller vinstdelningsmodellen för dissens-fork (Scenario B) även vid självvald uppdelning (Scenario A)? | Öppen |
+| Självvald uppdelning (se 5.65, flyttad från 4f i v4.4 — se namnkollision löst) — vem äger organisationen som skapas? | **Beslutat (v3.5): Samma initiativtagare som originalprojektet.** |
+| Gäller fork-funktionens kompensationsmodell (vinstandel, se 4f) även vid självvald uppdelning (5.65)? | **Löst (v4.4): Nej, ej längre relevant — självvald uppdelning är nu en egen mekanism under 5.65, skild från fork (4f). Eftersom det typiskt är samma team/initiativtagare på båda sidor av en uppdelning finns ingen naturlig "kompensation till original" att reglera. Se 4f/5.65 för den nya åtskillnaden.** |
+| Planeringsverktyg i Sandbox (se Utvecklingsfas 1.2) — exakt vilka ytterligare ramverk (t.ex. Business Model Canvas, SWOT) ska ingå från start vs. läggas till senare? | Öppen |
+| Tokens i Sandbox (se Utvecklingsfas 1.2) — exakt GT-belopp per bidrag, samt om utfallsbaserad mintning (vid lyft/fork) är rätt avvägning mot löpande GT för aktivt deltagande | **Föreslaget: utfallsbaserad mintning, för att undvika spam/farming i en medvetet lågtröskelzon. Ej slutgiltigt beslutat, se Sandbox.** |
 | Fullföljdskravet för allmännyttig stiftelse (se 4c) — stämmer den planerade utdelningstakten i `impact_fund_ledger`/4a faktiskt överens med Skatteverkets krav på ca 75–80% över en rullande 5-årsperiod? | Öppen — kräver avstämning med jurist/revisor, ingen siffra verifierad |
+| Fas- och stegwidgeten (se 4d) — riskerar den bli förvirrande i praktiken när fasövergångar är låsta men delsteg inom en fas är fritt valbara? Bör följas upp efter lansering med användartester. | Öppen — designbeslut fattat (guide, inte tvång), men UX-utfallet är overifierat |
+| Sandbox (se Utvecklingsfas 1.2) — gäller Granskningsrådets reaktiva princip (5.54) fullt ut, eller behövs en lättare/snabbare moderering givet högre volym och mer experimentellt innehåll? | Öppen |
 
 ---
 

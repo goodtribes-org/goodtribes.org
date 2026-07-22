@@ -7,7 +7,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Sandlådan — GoodTribes.org",
+  title: "Sandbox — GoodTribes.org",
   description: "Ett experimentellt område som blandar AI-genererat innehåll med användarbidrag.",
 };
 
@@ -21,7 +21,7 @@ function timeAgo(date: Date): string {
   return `${Math.floor(h / 24)} dagar sedan`;
 }
 
-export default async function SandladanPage() {
+export default async function SandboxPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -37,7 +37,7 @@ export default async function SandladanPage() {
   return (
     <div className="max-w-3xl mx-auto">
       <div className="border-2 border-amber-300 bg-amber-50 rounded-lg p-4 mb-6">
-        <p className="text-sm font-semibold text-amber-900">🧪 Sandlådan — experimentell zon</p>
+        <p className="text-sm font-semibold text-amber-900">🧪 Sandbox — experimentell zon</p>
         <p className="text-xs text-amber-800 mt-1">
           Här blandas AI-genererade problemställningar fritt med riktiga användarbidrag, och nya plattformsfunktioner
           testas innan de lanseras brett. Allt här kan vara AI-genererat, halvfärdigt eller under test — vem som
@@ -47,7 +47,7 @@ export default async function SandladanPage() {
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-dark-slate">Sandlådan</h1>
+          <h1 className="text-2xl font-bold text-dark-slate">Sandbox</h1>
           <p className="text-sm text-dark-slate/50 mt-1">
             Bolla vidare på ett AI-frö, eller posta ditt eget — samma idéverkstad-flöde, bara friare.
           </p>

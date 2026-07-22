@@ -184,7 +184,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
 
         {room.isSandbox && (
           <div className="px-5 py-2 bg-amber-50 border-b border-amber-200 text-xs text-amber-800 shrink-0">
-            🧪 <span className="font-semibold">Sandlådan — experimentell zon.</span> Innehåll här kan vara
+            🧪 <span className="font-semibold">Sandbox — experimentell zon.</span> Innehåll här kan vara
             AI-genererat, halvfärdigt eller under test. Vem som helst kan gaffla det till ett eget projekt.
           </div>
         )}

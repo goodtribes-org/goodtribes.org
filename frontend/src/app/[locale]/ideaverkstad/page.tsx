@@ -51,8 +51,8 @@ export default async function IdeaverkstadPage() {
         </Link>
       </div>
 
-      <Link href="/sandladan" className="block text-sm text-amber-700 hover:underline mb-6">
-        🧪 Prova Sandlådan — vårt experimentella idéområde med AI-genererade problemställningar →
+      <Link href="/sandbox" className="block text-sm text-amber-700 hover:underline mb-6">
+        🧪 Prova Sandbox — vårt experimentella idéområde med AI-genererade problemställningar →
       </Link>
 
       {rooms.length === 0 ? (

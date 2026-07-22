@@ -61,7 +61,6 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
           {create && (
             <div className="absolute top-full left-0 mt-1 bg-white border border-muted-teal rounded-xl shadow-lg py-1.5 min-w-48 z-50">
               <a href="/projects/new" onClick={navLink("/projects/new", () => setCreate(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createNewProject")}</a>
-              <a href="/ideas/new" onClick={navLink("/ideas/new", () => setCreate(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createNewIdea")}</a>
               <a href="/org/new" onClick={navLink("/org/new", () => setCreate(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createNewOrg")}</a>
             </div>
           )}
@@ -83,9 +82,7 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
           {discover && (
             <div className="absolute top-full left-0 mt-1 bg-white border border-muted-teal rounded-xl shadow-lg py-1.5 min-w-48 z-50">
               <a href="/projects" onClick={navLink("/projects", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverProjects")}</a>
-              <a href="/ideas" onClick={navLink("/ideas", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverIdeas")}</a>
               <a href="/ideaverkstad" onClick={navLink("/ideaverkstad", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverIdeaverkstad")}</a>
-              <a href="/sandladan" onClick={navLink("/sandladan", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverSandladan")}</a>
               <a href="/org" onClick={navLink("/org", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverOrgs")}</a>
               <a href="/micro-tasks" onClick={navLink("/micro-tasks", () => setDiscover(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("discoverMicroTasks")}</a>
               <div className="my-1 border-t border-muted-teal/20" />
@@ -94,6 +91,15 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
             </div>
           )}
         </div>
+
+        {/* Sandbox (top-level link, same rank as Create/Discover) — visually called out as its own separate area of the site */}
+        <a
+          href="/sandbox"
+          onClick={navLink("/sandbox", () => {})}
+          className="rounded-full ring-2 ring-watermelon px-3 py-1 font-bold text-watermelon hover:bg-watermelon hover:text-white transition-colors whitespace-nowrap"
+        >
+          {t("sandbox")}
+        </a>
       </div>
 
       {/* Mobile hamburger */}
@@ -119,18 +125,23 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
           <nav className="max-w-6xl mx-auto px-6 py-3 flex flex-col">
             <p className="pt-1 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">{t("create")}</p>
             <a href="/projects/new" onClick={navLink("/projects/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewProject")}</a>
-            <a href="/ideas/new" onClick={navLink("/ideas/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewIdea")}</a>
             <a href="/org/new" onClick={navLink("/org/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewOrg")}</a>
 
             <p className="pt-3 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">{t("discover")}</p>
             <a href="/projects" onClick={navLink("/projects", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverProjects")}</a>
-            <a href="/ideas" onClick={navLink("/ideas", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverIdeas")}</a>
             <a href="/ideaverkstad" onClick={navLink("/ideaverkstad", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverIdeaverkstad")}</a>
-            <a href="/sandladan" onClick={navLink("/sandladan", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverSandladan")}</a>
             <a href="/org" onClick={navLink("/org", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverOrgs")}</a>
             <a href="/micro-tasks" onClick={navLink("/micro-tasks", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverMicroTasks")}</a>
             <a href="/skill" onClick={navLink("/skill", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverSkills")}</a>
             <a href="/mentors" onClick={navLink("/mentors", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("discoverMentors")}</a>
+
+            <a
+              href="/sandbox"
+              onClick={navLink("/sandbox", () => setOpen(false))}
+              className="self-start mt-3 mb-3 rounded-full ring-2 ring-watermelon px-3 py-1 font-bold text-watermelon hover:bg-watermelon hover:text-white transition-colors"
+            >
+              {t("sandbox")}
+            </a>
 
             {session?.user ? (
               <>

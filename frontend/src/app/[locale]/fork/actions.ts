@@ -81,7 +81,7 @@ export async function forkProject(sourceType: "project" | "sandboxRoom", sourceI
     });
 
     sandboxThreadId = room.id;
-    title = titleOverride || room.name || "Gafflad idé från Sandlådan";
+    title = titleOverride || room.name || "Gafflad idé från Sandbox";
     summary = null;
     description = openingMessage ? stripHtml(openingMessage.body) : null;
     category = null;
