@@ -112,6 +112,38 @@ export async function advanceProjectPhase(slug: string) {
   revalidatePath(`/projects/${slug}/edit`);
 }
 
+// Graduates a project out of Sandbox — no separate "lift" step exists
+// (a sandbox project is already a real project), this just flips the flag
+// so it appears in normal discovery instead of /sandbox. Lead-only,
+// one-directional (no "un-graduate" — same trust level as advanceProjectPhase).
+export async function toggleSandbox(slug: string) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const project = await prisma.project.findUnique({ where: { slug } });
+  if (!project) redirect("/projects");
+  if (!(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) redirect(`/projects/${slug}`);
+  if (!project.isSandbox) return;
+
+  await prisma.project.update({ where: { slug }, data: { isSandbox: false } });
+
+  if (project.visibility === "public") {
+    await indexDocuments("projects", [{
+      id: `project-${slug}`,
+      type: "project",
+      title: project.title,
+      description: project.description ?? "",
+      url: `/projects/${slug}`,
+      phase: project.phase,
+      sdgGoals: project.sdgGoals,
+    }]);
+  }
+
+  revalidatePath(`/projects/${slug}`);
+  revalidatePath(`/projects/${slug}/edit`);
+  revalidatePath("/sandbox");
+}
+
 // Toggles a single IDEA/PROJECT checklist item (PRD 4d). Rows are created
 // on demand — there's no pre-seeded row per item, so toggling "on" upserts
 // and toggling "off" deletes.

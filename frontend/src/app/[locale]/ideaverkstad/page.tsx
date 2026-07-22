@@ -26,7 +26,7 @@ export default async function IdeaverkstadPage() {
   if (!session?.user?.id) redirect("/login");
 
   const rooms = await prisma.room.findMany({
-    where: { type: "IDEA_THREAD", projectId: null, isSandbox: false },
+    where: { type: "IDEA_THREAD", projectId: null },
     orderBy: { lastMessageAt: "desc" },
     take: 50,
     include: {

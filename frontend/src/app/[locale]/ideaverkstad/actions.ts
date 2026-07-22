@@ -12,11 +12,12 @@ export async function createIdeaThread(formData: FormData) {
 
   const problem = (formData.get("problem") as string | null)?.trim();
   if (!problem) return;
+  const imageUrl = (formData.get("imageUrl") as string | null)?.trim() || null;
 
   const name = problem.length > 80 ? `${problem.slice(0, 80)}…` : problem;
 
   const room = await prisma.room.create({
-    data: { type: "IDEA_THREAD", name },
+    data: { type: "IDEA_THREAD", name, imageUrl },
   });
 
   // sendRoomMessage lazily registers the sender as a RoomParticipant for

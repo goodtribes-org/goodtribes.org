@@ -73,14 +73,6 @@ export default async function IdeaThreadPage({
               </Link>
             </>
           )}
-          {access.room.isSandbox && (
-            <Link
-              href={`/fork/new?sourceType=sandboxRoom&sourceId=${roomId}`}
-              className="px-3 py-1.5 text-xs font-medium rounded border border-amber-300 text-amber-700 hover:border-amber-500 transition-colors"
-            >
-              Gaffla till projekt
-            </Link>
-          )}
         </div>
       </div>
 
@@ -100,7 +92,6 @@ export default async function IdeaThreadPage({
           name: access.room.name,
           postingPolicy: access.room.postingPolicy,
           otherUsers: [],
-          isSandbox: access.room.isSandbox,
         }}
         initialMessages={messages.map((m) => ({
           ...m,

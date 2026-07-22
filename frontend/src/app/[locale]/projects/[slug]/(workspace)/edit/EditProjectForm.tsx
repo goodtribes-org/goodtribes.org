@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef } from "react";
-import { updateProject, deleteProject, advanceProjectPhase, toggleChecklistItem } from "./actions";
+import { updateProject, deleteProject, advanceProjectPhase, toggleSandbox, toggleChecklistItem } from "./actions";
 import { getSdgSuggestions } from "@/app/[locale]/projects/new/actions";
 import FileUpload from "@/components/FileUpload";
 import RichTextEditor from "@/components/RichTextEditor";
@@ -21,6 +21,7 @@ interface Props {
     summary: string | null;
     description: string | null;
     phase: string;
+    isSandbox: boolean;
     visibility: string;
     category: string | null;
     tags: string[];
@@ -38,6 +39,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
   const [isPending, startTransition] = useTransition();
   const [isSuggesting, startSuggesting] = useTransition();
   const [isAdvancing, startAdvancing] = useTransition();
+  const [isGraduating, startGraduating] = useTransition();
   const [isTogglingChecklist, startTogglingChecklist] = useTransition();
   const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedChecklistKeys));
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -180,6 +182,23 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
           <span className="text-xs text-dark-slate/40 flex-shrink-0">Sista fasen uppnådd</span>
         )}
       </div>
+
+      {initial.isSandbox && (
+        <div className="border-2 border-amber-300 bg-amber-50/40 rounded-md p-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-dark-slate">🧪 Sandbox-projekt</p>
+            <p className="text-xs text-dark-slate/60 mt-0.5">Redo att lämna Sandbox? Det finns inget separat "lyft"-steg — det här är redan ett riktigt projekt.</p>
+          </div>
+          <button
+            type="button"
+            disabled={isGraduating}
+            onClick={() => startGraduating(() => toggleSandbox(slug))}
+            className="text-sm font-medium text-amber-700 border border-amber-400 rounded-md px-4 py-2 hover:bg-amber-100 transition-colors disabled:opacity-60 flex-shrink-0"
+          >
+            {isGraduating ? "Sparar…" : "Gör till ett riktigt projekt"}
+          </button>
+        </div>
+      )}
 
       {checklist && (
         <div className="border border-muted-teal rounded-md p-4">

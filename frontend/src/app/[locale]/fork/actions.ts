@@ -4,96 +4,43 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { slugify } from "@/lib/slugify";
-import { awardTokens, mintDirectGt, SANDBOX_GT_POOL, SANDBOX_LIFT_TRIBE_TOKEN_POOL } from "@/lib/tokens";
-import { getSandboxRoomContributorWeights } from "@/lib/rooms";
-import type { ProjectPhase } from "@prisma/client";
-
-function stripHtml(body: string): string {
-  return body.replace(/<[^>]*>/g, "").trim();
-}
+import { awardTokens } from "@/lib/tokens";
 
 interface Contributor {
   userId: string;
   weight: number;
 }
 
-// PRD 4f: permissionless — any logged-in user may fork any project, or any
-// Sandlådan Room (see Utvecklingsfas 1.2), without permission from the
-// original. Mirrors createProject's copy shape (projects/new/actions.ts)
-// plus WikiPage/ProjectSkill carryover and mandatory contributor
+// PRD 4f: permissionless — any logged-in user may fork any project (sandbox
+// or not — a sandbox project is a real project, so this already covers it),
+// without permission from the original. Mirrors createProjectRecord's copy
+// shape plus WikiPage/ProjectSkill carryover and mandatory contributor
 // compensation — never a shortcut around 4c's legal_type process (always
 // NONPROFIT_UMBRELLA at creation, regardless of the source's legalType).
-export async function forkProject(sourceType: "project" | "sandboxRoom", sourceId: string, formData: FormData) {
+export async function forkProject(sourceSlug: string, formData: FormData) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
 
-  let title: string;
-  let summary: string | null;
-  let description: string | null;
-  let category: string | null;
-  let tags: string[];
-  let sdgGoals: number[];
-  let imageUrl: string | null;
-  let phase: ProjectPhase;
-  let originalProjectId: string | null = null;
-  let sandboxThreadId: string | null = null;
-  let wikiPagesToCopy: { slug: string; title: string; order: number; content: string }[] = [];
-  let skillIdsToCopy: string[] = [];
-  let contributors: Contributor[] = [];
+  const source = await prisma.project.findUnique({
+    where: { slug: sourceSlug },
+    include: { wikiPages: true, neededSkills: true },
+  });
+  if (!source) throw new Error("Project not found");
 
   const titleOverride = (formData.get("title") as string | null)?.trim() || null;
+  const title = titleOverride || `${source.title} (fork)`;
+  const wikiPagesToCopy = source.wikiPages.map((w) => ({ slug: w.slug, title: w.title, order: w.order, content: w.content }));
+  const skillIdsToCopy = source.neededSkills.map((s) => s.skillId);
 
-  if (sourceType === "project") {
-    const source = await prisma.project.findUnique({
-      where: { slug: sourceId },
-      include: { wikiPages: true, neededSkills: true },
-    });
-    if (!source) throw new Error("Project not found");
-
-    originalProjectId = source.id;
-    title = titleOverride || `${source.title} (fork)`;
-    summary = source.summary;
-    description = source.description;
-    category = source.category;
-    tags = source.tags;
-    sdgGoals = source.sdgGoals;
-    imageUrl = source.imageUrl;
-    phase = source.phase;
-    wikiPagesToCopy = source.wikiPages.map((w) => ({ slug: w.slug, title: w.title, order: w.order, content: w.content }));
-    skillIdsToCopy = source.neededSkills.map((s) => s.skillId);
-
-    const holderTotals = await prisma.tokenLedger.groupBy({
-      by: ["userId"],
-      where: { projectSlug: source.slug },
-      _sum: { tokens: true },
-    });
-    contributors = holderTotals
-      .map((h) => ({ userId: h.userId, weight: h._sum.tokens ?? 0 }))
-      .filter((c) => c.weight > 0);
-  } else {
-    const room = await prisma.room.findUnique({ where: { id: sourceId } });
-    if (!room || !room.isSandbox) throw new Error("Sandbox room not found");
-
-    const openingMessage = await prisma.message.findFirst({
-      where: { roomId: room.id },
-      orderBy: { createdAt: "asc" },
-    });
-
-    sandboxThreadId = room.id;
-    title = titleOverride || room.name || "Gafflad idé från Sandbox";
-    summary = null;
-    description = openingMessage ? stripHtml(openingMessage.body) : null;
-    category = null;
-    tags = [];
-    sdgGoals = [];
-    imageUrl = null;
-    phase = "IDEA";
-
-    contributors = await getSandboxRoomContributorWeights(room.id);
-  }
-
-  if (!title) return;
+  const holderTotals = await prisma.tokenLedger.groupBy({
+    by: ["userId"],
+    where: { projectSlug: source.slug },
+    _sum: { tokens: true },
+  });
+  const contributors: Contributor[] = holderTotals
+    .map((h) => ({ userId: h.userId, weight: h._sum.tokens ?? 0 }))
+    .filter((c) => c.weight > 0);
 
   const totalWeight = contributors.reduce((sum, c) => sum + c.weight, 0);
   const baseSlug = slugify(title) || "project";
@@ -107,18 +54,17 @@ export async function forkProject(sourceType: "project" | "sandboxRoom", sourceI
           data: {
             slug: candidate,
             title,
-            summary,
-            description,
-            category,
-            tags,
-            sdgGoals,
-            phase,
+            summary: source.summary,
+            description: source.description,
+            category: source.category,
+            tags: source.tags,
+            sdgGoals: source.sdgGoals,
+            phase: source.phase,
             visibility: "public",
             legalType: "NONPROFIT_UMBRELLA",
             ownerId: userId,
-            ...(imageUrl ? { imageUrl } : {}),
-            ...(originalProjectId ? { forkedFromProjectId: originalProjectId } : {}),
-            ...(sandboxThreadId ? { forkedFromSandboxThreadId: sandboxThreadId } : {}),
+            forkedFromProjectId: source.id,
+            ...(source.imageUrl ? { imageUrl: source.imageUrl } : {}),
           },
         });
 
@@ -155,19 +101,17 @@ export async function forkProject(sourceType: "project" | "sandboxRoom", sourceI
 
         for (const c of contributors) {
           await tx.forkContributorCredit.create({
-            data: { forkedProjectId: project.id, originalProjectId, creditedUserId: c.userId },
+            data: { forkedProjectId: project.id, originalProjectId: source.id, creditedUserId: c.userId },
           });
         }
 
-        // Mandatory compensation floor — only meaningful for a project source,
-        // since that's the only case with an existing Tribe Token stake to be
-        // proportional to (PRD 4f).
-        if (originalProjectId && totalWeight > 0) {
+        // Mandatory compensation floor, proportional to prior Tribe Token stake (PRD 4f).
+        if (totalWeight > 0) {
           for (const c of contributors) {
             await tx.forkProfitShare.create({
               data: {
                 forkedProjectId: project.id,
-                originalProjectId,
+                originalProjectId: source.id,
                 originalContributorUserId: c.userId,
                 sharePercent: (c.weight / totalWeight) * 100,
               },
@@ -182,7 +126,7 @@ export async function forkProject(sourceType: "project" | "sandboxRoom", sourceI
               await tx.forkTokenGrant.create({
                 data: {
                   forkedProjectId: project.id,
-                  originalProjectId,
+                  originalProjectId: source.id,
                   originalContributorUserId: c.userId,
                   tribeTokensGranted: grantAmount,
                   grantedById: userId,
@@ -195,29 +139,6 @@ export async function forkProject(sourceType: "project" | "sandboxRoom", sourceI
                 reason: "Fork-tilldelning från gafflare",
               });
             }
-          }
-        }
-
-        // Sandlådan (Utvecklingsfas 1.2): forking a sandbox thread has no
-        // profit-share concept (no prior Tribe Token stake to be
-        // proportional to), but its contributors still earn GT for the
-        // sandbox activity itself plus fresh Tribe Tokens in the new project
-        // — the same lift/fork token economy as createIdea/createProject
-        // below, triggered here since a fork is itself a form of "outcome."
-        if (sandboxThreadId && totalWeight > 0) {
-          for (const c of contributors) {
-            const share = c.weight / totalWeight;
-            await mintDirectGt(tx, {
-              userId: c.userId,
-              tokens: SANDBOX_GT_POOL * share,
-              reason: "Sandlåda: bidrag gafflat till projekt",
-            });
-            await awardTokens(tx, {
-              userId: c.userId,
-              projectSlug: project.slug,
-              tokens: SANDBOX_LIFT_TRIBE_TOKEN_POOL * share,
-              reason: "Sandlåda-bidrag vid fork",
-            });
           }
         }
 

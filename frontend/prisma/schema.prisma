@@ -495,6 +495,10 @@ model Project {
   phase       ProjectPhase @default(IDEA)
   checklistDismissedAt DateTime?
   archivedAt  DateTime?
+  // Sandbox — a real, fully-functional project, just flagged as an
+  // experimental/playground one (see /sandbox). No separate "lift" step:
+  // graduating out of sandbox is just flipping this back to false.
+  isSandbox   Boolean  @default(false)
   visibility  String   @default("public")
   category    String?
   tags        String[]
@@ -504,14 +508,11 @@ model Project {
   legalType   LegalType @default(NONPROFIT_UMBRELLA)
   commercialUmbrellaEntityId String?
   commercialUmbrellaEntity   CommercialUmbrellaEntity? @relation(fields: [commercialUmbrellaEntityId], references: [id], onDelete: SetNull)
-  // PRD 4f: a permissionless copy of this project (or of a Sandlådan Room,
-  // see forkedFromSandboxThreadId), independent of ProjectInstance's
-  // permissioned franchising model — at most one of the two is set.
+  // PRD 4f: a permissionless copy of this project, independent of
+  // ProjectInstance's permissioned franchising model.
   forkedFromProjectId       String?
   forkedFromProject         Project?  @relation("ProjectForks", fields: [forkedFromProjectId], references: [id], onDelete: SetNull)
   forks                     Project[] @relation("ProjectForks")
-  forkedFromSandboxThreadId String?
-  forkedFromSandboxThread   Room?     @relation("SandboxThreadForks", fields: [forkedFromSandboxThreadId], references: [id], onDelete: SetNull)
   ownerId     String
   orgId       String?
   createdAt   DateTime @default(now())
@@ -1652,19 +1653,14 @@ enum RoomParticipantRole {
   MEMBER
 }
 
-// Sandlådan (Utvecklingsfas 1.2): whether a Room's opening content came from
-// a person or was proactively AI-seeded (see /api/cron/sandbox-seed) — only
-// meaningful when isSandbox is true.
-enum RoomOrigin {
-  HUMAN
-  AI_SEED
-}
-
 model Room {
   id             String            @id @default(cuid())
   type           RoomType
   name           String?
   description    String?
+  // Cover image for the thread's topic (e.g. an idea-thread's subject
+  // matter) — never a participant's photo, see IDEA_THREAD card display.
+  imageUrl       String?
   pairKey        String?           @unique
   projectId      String?
   project        Project?          @relation("ProjectRooms", fields: [projectId], references: [id], onDelete: Cascade)
@@ -1675,17 +1671,11 @@ model Room {
   pinned         Boolean           @default(false)
   createdAt      DateTime          @default(now())
   lastMessageAt  DateTime          @default(now())
-  // Sandlådan — see enum RoomOrigin above. isSandbox is independent of
-  // RoomType: a sandbox thread is still an IDEA_THREAD, just permanently
-  // labeled and eligible for AI-seeding.
-  isSandbox      Boolean           @default(false)
-  origin         RoomOrigin        @default(HUMAN)
 
   convertedToIdeaId    String?  @unique
   convertedToIdea      Idea?    @relation("RoomConvertedToIdea", fields: [convertedToIdeaId], references: [id], onDelete: SetNull)
   convertedToProjectId String?  @unique
   convertedToProject   Project? @relation("RoomConvertedToProject", fields: [convertedToProjectId], references: [id], onDelete: SetNull)
-  forkedToProjects     Project[] @relation("SandboxThreadForks")
 
   participants RoomParticipant[]
   messages     Message[]

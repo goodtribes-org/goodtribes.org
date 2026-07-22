@@ -5,61 +5,35 @@ import { forkProject } from "../actions";
 export default async function ForkNewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sourceType?: string; sourceId?: string }>;
+  searchParams: Promise<{ sourceId?: string }>;
 }) {
-  const { sourceType, sourceId } = await searchParams;
-  if ((sourceType !== "project" && sourceType !== "sandboxRoom") || !sourceId) notFound();
+  const { sourceId } = await searchParams;
+  if (!sourceId) notFound();
 
-  let sourceTitle: string;
-  let contributors: { userId: string; name: string; weight: number; sharePercent: number }[] = [];
+  const source = await prisma.project.findUnique({ where: { slug: sourceId }, select: { title: true } });
+  if (!source) notFound();
+  const sourceTitle = source.title;
 
-  if (sourceType === "project") {
-    const source = await prisma.project.findUnique({ where: { slug: sourceId }, select: { title: true } });
-    if (!source) notFound();
-    sourceTitle = source.title;
-
-    const holderTotals = await prisma.tokenLedger.groupBy({
-      by: ["userId"],
-      where: { projectSlug: sourceId },
-      _sum: { tokens: true },
-    });
-    const withBalance = holderTotals
-      .map((h) => ({ userId: h.userId, weight: h._sum.tokens ?? 0 }))
-      .filter((c) => c.weight > 0);
-    const totalWeight = withBalance.reduce((sum, c) => sum + c.weight, 0);
-    const users = await prisma.user.findMany({
-      where: { id: { in: withBalance.map((c) => c.userId) } },
-      select: { id: true, name: true },
-    });
-    const nameMap = Object.fromEntries(users.map((u) => [u.id, u.name ?? "Okänd"]));
-    contributors = withBalance.map((c) => ({
-      userId: c.userId,
-      name: nameMap[c.userId] ?? "Okänd",
-      weight: c.weight,
-      sharePercent: totalWeight > 0 ? (c.weight / totalWeight) * 100 : 0,
-    }));
-  } else {
-    const room = await prisma.room.findUnique({ where: { id: sourceId }, select: { name: true, isSandbox: true } });
-    if (!room || !room.isSandbox) notFound();
-    sourceTitle = room.name ?? "Sandlådetråd";
-
-    const authorCounts = await prisma.message.groupBy({
-      by: ["authorId"],
-      where: { roomId: sourceId, isAi: false },
-      _count: { _all: true },
-    });
-    const users = await prisma.user.findMany({
-      where: { id: { in: authorCounts.map((a) => a.authorId) } },
-      select: { id: true, name: true },
-    });
-    const nameMap = Object.fromEntries(users.map((u) => [u.id, u.name ?? "Okänd"]));
-    contributors = authorCounts.map((a) => ({
-      userId: a.authorId,
-      name: nameMap[a.authorId] ?? "Okänd",
-      weight: a._count._all,
-      sharePercent: 0,
-    }));
-  }
+  const holderTotals = await prisma.tokenLedger.groupBy({
+    by: ["userId"],
+    where: { projectSlug: sourceId },
+    _sum: { tokens: true },
+  });
+  const withBalance = holderTotals
+    .map((h) => ({ userId: h.userId, weight: h._sum.tokens ?? 0 }))
+    .filter((c) => c.weight > 0);
+  const totalWeight = withBalance.reduce((sum, c) => sum + c.weight, 0);
+  const users = await prisma.user.findMany({
+    where: { id: { in: withBalance.map((c) => c.userId) } },
+    select: { id: true, name: true },
+  });
+  const nameMap = Object.fromEntries(users.map((u) => [u.id, u.name ?? "Okänd"]));
+  const contributors = withBalance.map((c) => ({
+    userId: c.userId,
+    name: nameMap[c.userId] ?? "Okänd",
+    weight: c.weight,
+    sharePercent: totalWeight > 0 ? (c.weight / totalWeight) * 100 : 0,
+  }));
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -72,7 +46,7 @@ export default async function ForkNewPage({
         </p>
       </div>
 
-      <form action={forkProject.bind(null, sourceType, sourceId)} className="space-y-6">
+      <form action={forkProject.bind(null, sourceId)} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-dark-slate mb-1">Titel på det nya projektet</label>
           <input
@@ -83,7 +57,7 @@ export default async function ForkNewPage({
           />
         </div>
 
-        {sourceType === "project" && contributors.length > 0 && (
+        {contributors.length > 0 && (
           <div>
             <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-2">
               Bidragsgivare i originalet

@@ -5,8 +5,6 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { indexDocuments } from "@/lib/meili";
 import { suggestSdgGoals } from "@/lib/claude";
-import { mintDirectGt, SANDBOX_GT_POOL } from "@/lib/tokens";
-import { getSandboxRoomContributorWeights } from "@/lib/rooms";
 
 export async function getSdgSuggestions(
   description: string
@@ -44,29 +42,9 @@ export async function createIdea(formData: FormData) {
   });
 
   if (fromThreadId) {
-    const room = await prisma.room
+    await prisma.room
       .update({ where: { id: fromThreadId }, data: { convertedToIdeaId: idea.id } })
       .catch(() => null);
-
-    // Sandlådan (Utvecklingsfas 1.2): no project exists yet at this point, so
-    // only the GT recognition happens here — fresh Tribe Tokens follow later
-    // if/when this Idea itself becomes a Project (see createProject's
-    // ideaId branch).
-    if (room?.isSandbox) {
-      const contributors = await getSandboxRoomContributorWeights(fromThreadId);
-      const totalWeight = contributors.reduce((sum, c) => sum + c.weight, 0);
-      if (totalWeight > 0) {
-        await prisma.$transaction(async (tx) => {
-          for (const c of contributors) {
-            await mintDirectGt(tx, {
-              userId: c.userId,
-              tokens: SANDBOX_GT_POOL * (c.weight / totalWeight),
-              reason: "Sandlåda: bidrag lyft till Idéflödet",
-            });
-          }
-        });
-      }
-    }
   }
 
   if (status === "open") {

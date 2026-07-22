@@ -178,7 +178,6 @@ export default async function ProjectDetailPage({
         orderBy: { addedAt: "asc" },
       },
       forkedFromProject: { select: { title: true, slug: true } },
-      forkedFromSandboxThread: { select: { name: true } },
       forks: { select: { title: true, slug: true } },
     },
   });
@@ -448,26 +447,19 @@ export default async function ProjectDetailPage({
         </div>
       </div>
 
-      {(project.forkedFromProject || project.forkedFromSandboxThread) && (
+      {project.forkedFromProject && (
         <div className="max-w-2xl mx-auto mb-4 px-4 text-sm text-dark-slate/60 text-center">
           Gaffling
-          {project.forkedFromProject && (
-            <>
-              {" av "}
-              <Link href={`/projects/${project.forkedFromProject.slug}`} className="text-seagrass hover:underline">
-                {project.forkedFromProject.title}
-              </Link>
-            </>
-          )}
-          {project.forkedFromSandboxThread && !project.forkedFromProject && (
-            <> av en tråd från Sandbox ({project.forkedFromSandboxThread.name ?? "namnlös tråd"})</>
-          )}
+          {" av "}
+          <Link href={`/projects/${project.forkedFromProject.slug}`} className="text-seagrass hover:underline">
+            {project.forkedFromProject.title}
+          </Link>
         </div>
       )}
 
       <div className="max-w-2xl mx-auto mb-6 px-4 flex items-center justify-center gap-4 text-sm">
         <Link
-          href={`/fork/new?sourceType=project&sourceId=${slug}`}
+          href={`/fork/new?sourceId=${slug}`}
           className="text-dark-slate/50 hover:text-seagrass transition-colors"
         >
           Gaffla detta projekt →

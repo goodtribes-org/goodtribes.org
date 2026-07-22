@@ -64,6 +64,7 @@ export default async function EditProjectPage({
           summary: (project as typeof project & { summary: string | null }).summary,
           description: project.description,
           phase: project.phase,
+          isSandbox: project.isSandbox,
           visibility: project.visibility,
           category: project.category,
           tags: project.tags,

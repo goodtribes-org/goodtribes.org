@@ -32,15 +32,23 @@ const PHASE_LABEL_SV: Record<string, string> = {
   IMPACT: "Impact",
 };
 
-export default function ProjectCard({ project }: { project: ProjectCardData }) {
+export default function ProjectCard({
+  project,
+  variant = "default",
+}: {
+  project: ProjectCardData;
+  variant?: "default" | "sandbox";
+}) {
   const primarySdg = project.sdgGoals[0];
-  const tint = primarySdg ? SDG_COLORS[primarySdg] : "#43aa8b";
+  const tint = variant === "sandbox" ? "#f59e0b" : primarySdg ? SDG_COLORS[primarySdg] : "#43aa8b";
   const stageLabel = project.archivedAt ? "Avslutat" : PHASE_LABEL_SV[project.phase] ?? project.phase;
 
   return (
     <a
       href={`/projects/${project.slug}`}
-      className="rounded-lg overflow-hidden border border-muted-teal/40 hover:shadow-md transition-shadow bg-white flex flex-col"
+      className={`rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-white flex flex-col ${
+        variant === "sandbox" ? "border-2 border-amber-300 hover:border-amber-400" : "border border-muted-teal/40"
+      }`}
     >
       <div className="relative aspect-[4/3] w-full">
         {project.imageUrl ? (
