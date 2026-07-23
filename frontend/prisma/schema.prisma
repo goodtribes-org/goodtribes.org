@@ -124,6 +124,8 @@ model User {
   proposedIdeaRevisions   IdeaRevision[]            @relation("ProposedIdeaRevisions")
   decidedIdeaRevisions    IdeaRevision[]            @relation("DecidedIdeaRevisions")
   ideaContributions       IdeaContributor[]         @relation("IdeaContributions")
+  authoredSuggestions     Suggestion[]              @relation("AuthoredSuggestions")
+  reviewedSuggestions     Suggestion[]              @relation("SuggestionReviewer")
   approvedInstances       ProjectInstance[]         @relation("ApprovedInstances")
   alumni                  ProjectAlumni[]           @relation("AlumniUsers")
   mentorProfile           Mentor?                   @relation("MentorProfile")
@@ -1721,6 +1723,24 @@ model ContentFlag {
 
   @@unique([targetType, targetId, flaggedById])
   @@index([targetType, targetId])
+  @@index([status])
+}
+
+// Platform-wide improvement suggestions ("Ge förslag på förbättringar") —
+// a private author<->admin channel, never shown to other users, unlike the
+// public Ideas feed. Any logged-in user, not project-membership-gated.
+model Suggestion {
+  id           String    @id @default(cuid())
+  authorId     String
+  author       User      @relation("AuthoredSuggestions", fields: [authorId], references: [id], onDelete: Cascade)
+  body         String    @db.Text
+  status       String    @default("pending") // pending | reviewed | dismissed
+  reviewedById String?
+  reviewedBy   User?     @relation("SuggestionReviewer", fields: [reviewedById], references: [id])
+  decisionNote String?   @db.Text
+  reviewedAt   DateTime?
+  createdAt    DateTime  @default(now())
+
   @@index([status])
 }
 

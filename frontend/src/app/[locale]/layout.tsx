@@ -135,6 +135,7 @@ export default async function LocaleLayout({
                   <Link href="/about" className="hover:text-dark-slate transition-colors">{t("about")}</Link>
                   <Link href="/privacy" className="hover:text-dark-slate transition-colors">{t("privacy")}</Link>
                   <a href="mailto:hej@goodtribes.org" className="hover:text-dark-slate transition-colors">{t("contact")}</a>
+                  <Link href="/suggestions" className="hover:text-dark-slate transition-colors">{t("suggestions")}</Link>
                 </nav>
               </div>
               <div className="border-t border-muted-teal/20">
