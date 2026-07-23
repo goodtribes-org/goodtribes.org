@@ -16,6 +16,14 @@ const NAV = [
   { href: "/site-admin/impact-fund", label: "Impact-fond" },
 ];
 
+// Strapi owns editorial copy (About/Privacy/Terms, see CLAUDE.md) via its
+// own admin UI — no in-app editor here, just a way to reach it. The
+// ingress routes /admin on the same host straight to the Strapi backend
+// (see chart/templates/ingress.yaml), so a plain relative link works in
+// production; in local dev, use http://localhost:1337/admin directly
+// instead (Strapi runs on its own port there, not behind a shared proxy).
+const STRAPI_ADMIN_HREF = "/admin";
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session?.user?.id || !(await isSiteAdmin(session.user.id))) {
@@ -35,6 +43,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               {item.label}
             </Link>
           ))}
+          <a
+            href={STRAPI_ADMIN_HREF}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-dark-slate/60 hover:text-dark-slate py-3 transition-colors"
+          >
+            Strapi ↗
+          </a>
         </nav>
       </div>
       {children}
