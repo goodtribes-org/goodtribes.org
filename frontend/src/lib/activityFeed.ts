@@ -43,13 +43,21 @@ const columnLabel: Record<string, string> = {
 
 // Each source is fetched independently and over-fetched, then merged/sorted/sliced by the
 // caller — so `perSourceLimit` should be at least as large as the window the caller needs.
-export async function fetchActivityItems(perSourceLimit: number): Promise<PulseItem[]> {
+//
+// `opts.projectId`/`projectSlug` switch every source from "public, site-wide" to "just this
+// project" — see docs/PRD.md's "Flöde i projekten" entry. Two sources don't make sense scoped
+// to a single project and are skipped entirely in that mode: `project` (new-project
+// announcements) and `idea`/`ideaComment` (ideas aren't tied to a project in this schema).
+export async function fetchActivityItems(
+  perSourceLimit: number,
+  opts?: { projectId: string; projectSlug: string }
+): Promise<PulseItem[]> {
   const LIMIT = perSourceLimit;
 
   const [feedPosts, blogPosts, milestones, projects, ideas, activities, channelMessages, kanbanComments, ideaComments] =
     await Promise.all([
       prisma.feedPost.findMany({
-        where: { hiddenAt: null },
+        where: opts ? { hiddenAt: null, projectId: opts.projectId } : { hiddenAt: null, projectId: null },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
@@ -58,7 +66,7 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
         },
       }),
       prisma.blogPost.findMany({
-        where: { project: { visibility: "public" } },
+        where: opts ? { projectSlug: opts.projectSlug } : { project: { visibility: "public" } },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
@@ -68,7 +76,9 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
         },
       }),
       prisma.milestone.findMany({
-        where: { status: "done", project: { visibility: "public" } },
+        where: opts
+          ? { status: "done", projectId: opts.projectId }
+          : { status: "done", project: { visibility: "public" } },
         orderBy: { updatedAt: "desc" },
         take: LIMIT,
         select: {
@@ -77,28 +87,32 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
           project: { select: { id: true, title: true, slug: true, imageUrl: true } },
         },
       }),
-      prisma.project.findMany({
-        where: { visibility: "public" },
-        orderBy: { createdAt: "desc" },
-        take: LIMIT,
-        select: {
-          id: true, title: true, slug: true, createdAt: true, imageUrl: true,
-          owner: { select: { name: true, image: true } },
-        },
-      }),
-      prisma.idea.findMany({
-        where: { hiddenAt: null },
-        orderBy: { createdAt: "desc" },
-        take: LIMIT,
-        select: {
-          id: true, title: true, problem: true, solution: true, createdAt: true,
-          author: { select: { name: true, image: true } },
-        },
-      }),
+      opts
+        ? Promise.resolve([])
+        : prisma.project.findMany({
+            where: { visibility: "public" },
+            orderBy: { createdAt: "desc" },
+            take: LIMIT,
+            select: {
+              id: true, title: true, slug: true, createdAt: true, imageUrl: true,
+              owner: { select: { name: true, image: true } },
+            },
+          }),
+      opts
+        ? Promise.resolve([])
+        : prisma.idea.findMany({
+            where: { hiddenAt: null },
+            orderBy: { createdAt: "desc" },
+            take: LIMIT,
+            select: {
+              id: true, title: true, problem: true, solution: true, createdAt: true,
+              author: { select: { name: true, image: true } },
+            },
+          }),
       prisma.activityEvent.findMany({
         where: {
           type: { in: ["task_completed", "task_created", "task_moved", "todo_completed", "member_joined"] },
-          project: { visibility: "public" },
+          ...(opts ? { projectId: opts.projectId } : { project: { visibility: "public" } }),
         },
         orderBy: { createdAt: "desc" },
         take: LIMIT * 2,
@@ -112,7 +126,9 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
         where: {
           threadParentId: null,
           hiddenAt: null,
-          room: { type: "PROJECT_CHANNEL", project: { visibility: "public" } },
+          room: opts
+            ? { type: "PROJECT_CHANNEL", projectId: opts.projectId }
+            : { type: "PROJECT_CHANNEL", project: { visibility: "public" } },
         },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
@@ -123,7 +139,10 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
         },
       }),
       prisma.kanbanCardComment.findMany({
-        where: { hiddenAt: null, card: { project: { visibility: "public" } } },
+        where: {
+          hiddenAt: null,
+          card: opts ? { projectSlug: opts.projectSlug } : { project: { visibility: "public" } },
+        },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
@@ -137,16 +156,18 @@ export async function fetchActivityItems(perSourceLimit: number): Promise<PulseI
           },
         },
       }),
-      prisma.ideaComment.findMany({
-        where: { hiddenAt: null },
-        orderBy: { createdAt: "desc" },
-        take: LIMIT,
-        select: {
-          id: true, content: true, createdAt: true,
-          author: { select: { name: true, image: true } },
-          idea: { select: { id: true, title: true } },
-        },
-      }),
+      opts
+        ? Promise.resolve([])
+        : prisma.ideaComment.findMany({
+            where: { hiddenAt: null },
+            orderBy: { createdAt: "desc" },
+            take: LIMIT,
+            select: {
+              id: true, content: true, createdAt: true,
+              author: { select: { name: true, image: true } },
+              idea: { select: { id: true, title: true } },
+            },
+          }),
     ]);
 
   // Only the most recent comment per card becomes its own activity item — further replies

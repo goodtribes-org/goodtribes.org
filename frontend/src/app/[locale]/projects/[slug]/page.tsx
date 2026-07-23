@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -152,10 +152,13 @@ export async function generateMetadata({
 
 export default async function ProjectDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<{ view?: string }>;
 }) {
   const { locale, slug } = await params;
+  const { view } = await searchParams;
   const session = await auth();
 
   const project = await prisma.project.findUnique({
@@ -187,6 +190,15 @@ export default async function ProjectDetailPage({
   const userMembership = project.members.find((m) => m.user.id === userId);
   const isOwnerOrAdmin = isLeadRole(userMembership?.role);
   const isMember = !!userMembership;
+
+  // "Flöde i projekten" — real members (excludes the lightweight FOLLOWER
+  // relationship) land on the project's own feed by default; ?view=overview
+  // (used by the "Projektet" tab itself) opts back into this page so the
+  // tab never redirect-loops back to the feed.
+  const isRealMember = isMember && userMembership?.role !== "FOLLOWER";
+  if (isRealMember && view !== "overview") {
+    redirect(`/projects/${slug}/activity`);
+  }
 
   const { likeCount, liked, comments } = await getLikeCommentData("project", project.id, userId ?? null);
 

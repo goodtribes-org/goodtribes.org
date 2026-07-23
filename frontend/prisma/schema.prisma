@@ -555,6 +555,7 @@ model Project {
   wikiPages          WikiPage[]
   neededSkills       ProjectSkill[]
   files              File[]               @relation("ProjectFiles")
+  feedPosts          FeedPost[]
   fundingCampaign    FundingCampaign?
   rooms              Room[]               @relation("ProjectRooms")
   calendarEvents     CalendarEvent[]      @relation("ProjectCalendarEvents")
@@ -1882,6 +1883,11 @@ model FeedPost {
   author       User     @relation("AuthoredFeedPosts", fields: [authorId], references: [id], onDelete: Cascade)
   body         String
   imageUrl     String?
+  // Null = a post on the global site-wide feed (today's only behavior).
+  // Set = posted from within a project's own scoped feed — never shown on
+  // the global feed, see lib/activityFeed.ts's project-scope mode.
+  projectId    String?
+  project      Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   hiddenAt     DateTime?
@@ -1889,6 +1895,7 @@ model FeedPost {
   hiddenReason ContentHideReason?
 
   @@index([createdAt])
+  @@index([projectId])
 }
 
 // Likes on any feed item (FeedPost, BlogPost, Milestone, Project, Idea,

@@ -2,10 +2,8 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import { auth } from "@/auth";
-import PostComposer from "@/components/PostComposer";
-import ActivityPulseItem from "@/components/ActivityPulseItem";
-import Pagination from "@/components/Pagination";
-import { fetchActivityItems, getFeedInteractionData, MEMBERSHIP_GATED_TARGET_TYPES } from "@/lib/activityFeed";
+import ActivityFeed from "@/components/ActivityFeed";
+import { fetchActivityItems, getFeedInteractionData } from "@/lib/activityFeed";
 
 export const metadata: Metadata = {
   title: "Plattformsflöde — GoodTribes.org",
@@ -40,46 +38,20 @@ export default async function FeedPage({
         <p className="text-sm text-dark-slate/50 mt-1">Senaste aktivitet från hela GoodTribes</p>
       </div>
 
-      {page === 1 && <PostComposer isLoggedIn={isLoggedIn} />}
-
-      {pageItems.length === 0 ? (
-        <div className="border border-dashed border-muted-teal/40 rounded-lg p-12 text-center">
-          <p className="text-dark-slate/40 text-sm">Ingen aktivitet ännu.</p>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {pageItems.map((item) => {
-            const key = `${item.targetType}:${item.targetId}`;
-            const isMemberOfProject = !!item.projectId && memberProjectIds.has(item.projectId);
-            const canJoin = isLoggedIn && !!item.projectId && !isMemberOfProject;
-            const requiresMembership = MEMBERSHIP_GATED_TARGET_TYPES.has(item.targetType);
-            const joinCta =
-              requiresMembership && !isMemberOfProject && item.projectId && item.projectSlug
-                ? {
-                    projectId: item.projectId,
-                    slug: item.projectSlug,
-                    existingStatus: pendingJoinProjectIds.has(item.projectId) ? "pending" : null,
-                  }
-                : null;
-            return (
-              <ActivityPulseItem
-                key={item.id}
-                item={item}
-                isLoggedIn={isLoggedIn}
-                canJoin={canJoin}
-                requiresMembership={requiresMembership}
-                isProjectMember={isMemberOfProject}
-                joinCta={joinCta}
-                initialLikeCount={likeCountByTarget.get(key) ?? 0}
-                initialLiked={likedByMe.has(key)}
-                initialComments={commentsByTarget.get(key) ?? []}
-              />
-            );
-          })}
-        </div>
-      )}
-
-      <Pagination page={page} total={total} perPage={PAGE_SIZE} searchParams={{ page: pageStr }} basePath="/feed" />
+      <ActivityFeed
+        pageItems={pageItems}
+        isLoggedIn={isLoggedIn}
+        page={page}
+        pageStr={pageStr}
+        total={total}
+        perPage={PAGE_SIZE}
+        basePath="/feed"
+        likeCountByTarget={likeCountByTarget}
+        likedByMe={likedByMe}
+        commentsByTarget={commentsByTarget}
+        memberProjectIds={memberProjectIds}
+        pendingJoinProjectIds={pendingJoinProjectIds}
+      />
     </div>
   );
 }

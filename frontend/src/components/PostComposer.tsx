@@ -7,7 +7,7 @@ import { createFeedPost } from "@/app/actions";
 
 const IMAGE_SIZE_LIMIT = 5 * 1024 * 1024;
 
-export default function PostComposer({ isLoggedIn }: { isLoggedIn: boolean }) {
+export default function PostComposer({ isLoggedIn, projectId }: { isLoggedIn: boolean; projectId?: string }) {
   const [pending, startTransition] = useTransition();
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -62,7 +62,11 @@ export default function PostComposer({ isLoggedIn }: { isLoggedIn: boolean }) {
     const body = textRef.current?.value ?? "";
     if (!body.trim() && !imageUrl) return;
     startTransition(async () => {
-      await createFeedPost(body, imageUrl);
+      const result = await createFeedPost(body, imageUrl, projectId);
+      if (result && "error" in result) {
+        setError(result.error);
+        return;
+      }
       if (textRef.current) textRef.current.value = "";
       setImageUrl(null);
     });

@@ -11,8 +11,9 @@ import { sendRoomMessage, toggleReaction } from "@/app/[locale]/messages/actions
 import { FEED_LIKE_EMOJI } from "@/lib/activityFeed";
 import { guardSocialAction } from "@/lib/socialActionGuard";
 import { runProactiveModeration } from "@/lib/proactiveModeration";
+import { isRealMember } from "@/lib/authz";
 
-export async function createFeedPost(body: string, imageUrl?: string | null) {
+export async function createFeedPost(body: string, imageUrl?: string | null, projectId?: string | null) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
   const trimmed = body.trim();
@@ -21,8 +22,14 @@ export async function createFeedPost(body: string, imageUrl?: string | null) {
   const guard = await guardSocialAction(session.user.id, "post");
   if (!guard.ok) return { error: guard.error, code: guard.code };
 
+  // Posting into a project's own feed is a member privilege, unlike the
+  // unrestricted global composer.
+  if (projectId && !(await isRealMember(projectId, session.user.id))) {
+    return { error: "Only project members can post here" };
+  }
+
   const post = await prisma.feedPost.create({
-    data: { authorId: session.user.id, body: trimmed, imageUrl: imageUrl || null },
+    data: { authorId: session.user.id, body: trimmed, imageUrl: imageUrl || null, projectId: projectId || null },
   });
 
   await runProactiveModeration({
@@ -34,6 +41,11 @@ export async function createFeedPost(body: string, imageUrl?: string | null) {
   });
 
   revalidatePath("/");
+  revalidatePath("/feed");
+  if (projectId) {
+    const project = await prisma.project.findUnique({ where: { id: projectId }, select: { slug: true } });
+    if (project) revalidatePath(`/projects/${project.slug}/activity`);
+  }
 }
 
 export async function toggleFeedLike(targetType: string, targetId: string) {

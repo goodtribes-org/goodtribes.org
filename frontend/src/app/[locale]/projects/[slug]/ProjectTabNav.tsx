@@ -6,7 +6,12 @@ import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 
 const MAIN_TABS = [
-  { label: "Projektet",     href: "" },
+  { label: "Flöde",         href: "/activity" },
+  // linkHref carries ?view=overview to opt out of the real-member
+  // auto-redirect on the bare project root (see projects/[slug]/page.tsx),
+  // while href stays "" so isActive() still matches on pathname alone —
+  // usePathname() never includes the query string.
+  { label: "Projektet",     href: "", linkHref: "?view=overview" },
   { label: "Uppgifter",     href: "/tasks" },
   { label: "Kalender",      href: "/calendar" },
   { label: "Kommunikation", href: "/kanaler", absolute: true },
@@ -150,7 +155,7 @@ export default function ProjectTabNav({
       {MAIN_TABS.map((tab) => (
         <Link
           key={tab.href}
-          href={tab.absolute ? `/messages?project=${slug}` : `${base}${tab.href}`}
+          href={tab.absolute ? `/messages?project=${slug}` : `${base}${tab.linkHref ?? tab.href}`}
           className={tabClass(isActive(tab.href))}
         >
           {tab.label}

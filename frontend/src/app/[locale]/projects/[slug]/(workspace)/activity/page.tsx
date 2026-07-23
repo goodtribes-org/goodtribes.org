@@ -1,49 +1,71 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { prisma } from "@/lib/prisma"
+import { auth } from "@/auth";
 import type { Metadata } from "next";
-import ActivityTimeline, { type EventMeta } from "@/components/ActivityTimeline";
+import ActivityFeed from "@/components/ActivityFeed";
+import { fetchActivityItems, getFeedInteractionData } from "@/lib/activityFeed";
 
+const PAGE_SIZE = 20;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) return {};
-  return { title: `${project.title} — Activity — GoodTribes.org` };
+  return { title: `${project.title} — Flöde — GoodTribes.org` };
 }
 
-const EVENT_META: EventMeta = {
-  member_joined:        { icon: "👤", label: (_, a) => `${a} joined the project` },
-  update_posted:        { icon: "📝", label: (p, a) => `${a} posted an update: "${p.title}"` },
-  milestone_added:      { icon: "🏁", label: (p, a) => `${a} added milestone: "${p.title}"` },
-  milestone_completed:  { icon: "✅", label: (p, a) => `${a} completed milestone: "${p.title}"` },
-};
-
-export default async function ActivityPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ProjectActivityPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string }>;
+}) {
   const { slug } = await params;
+  const { page: pageStr } = await searchParams;
+  const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
 
-  const project = await prisma.project.findUnique({ where: { slug }, select: { title: true, id: true } });
+  const [session, project] = await Promise.all([
+    auth(),
+    prisma.project.findUnique({ where: { slug }, select: { id: true, title: true } }),
+  ]);
   if (!project) notFound();
 
-  const events = await prisma.activityEvent.findMany({
-    where: { projectId: project.id },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    include: { user: { select: { name: true } } },
-  });
+  // Each source is over-fetched up to the current page's window, so `total` (and thus
+  // pagination) grows as the user pages further rather than reflecting the true lifetime count.
+  const allItems = await fetchActivityItems(page * PAGE_SIZE, { projectId: project.id, projectSlug: slug });
+  const total = allItems.length;
+  const pageItems = allItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const isLoggedIn = !!session?.user?.id;
+  const { likeCountByTarget, likedByMe, commentsByTarget, memberProjectIds, pendingJoinProjectIds } =
+    await getFeedInteractionData(pageItems, session?.user?.id ?? null);
 
   return (
-    <div>
-      <div className="mb-4">
-        <Link href={`/projects/${slug}`} className="text-xs text-dark-slate/40 hover:text-dark-slate">
-          ← {project.title}
-        </Link>
-        <h1 className="text-xl font-bold text-dark-slate mt-0.5">Activity</h1>
+    <div className="max-w-2xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-dark-slate">Flöde</h1>
+        <p className="text-sm text-dark-slate/50 mt-1">Senaste aktivitet i {project.title}</p>
       </div>
 
-      <ActivityTimeline events={events} eventMeta={EVENT_META} />
+      <ActivityFeed
+        pageItems={pageItems}
+        isLoggedIn={isLoggedIn}
+        page={page}
+        pageStr={pageStr}
+        total={total}
+        perPage={PAGE_SIZE}
+        basePath={`/projects/${slug}/activity`}
+        likeCountByTarget={likeCountByTarget}
+        likedByMe={likedByMe}
+        commentsByTarget={commentsByTarget}
+        memberProjectIds={memberProjectIds}
+        pendingJoinProjectIds={pendingJoinProjectIds}
+        projectId={project.id}
+        emptyMessage="Ingen aktivitet i projektet ännu."
+      />
     </div>
   );
 }
