@@ -9,6 +9,7 @@ export type ProjectCardData = {
   description: string | null;
   phase: string;
   archivedAt: Date | string | null;
+  isSandbox?: boolean;
   imageUrl: string | null;
   sdgGoals: number[];
   legalType: string;
@@ -34,20 +35,25 @@ const PHASE_LABEL_SV: Record<string, string> = {
 
 export default function ProjectCard({
   project,
-  variant = "default",
+  variant,
 }: {
   project: ProjectCardData;
   variant?: "default" | "sandbox";
 }) {
+  // Falls back to the project's own isSandbox flag when the caller doesn't
+  // pin a variant explicitly — listing pages that mix real and sandbox
+  // projects together (homepage, /projects) rely on this so real projects
+  // stand out with a green border instead of all looking the same.
+  const effectiveVariant = variant ?? (project.isSandbox ? "sandbox" : "default");
   const primarySdg = project.sdgGoals[0];
-  const tint = variant === "sandbox" ? "#f59e0b" : primarySdg ? SDG_COLORS[primarySdg] : "#43aa8b";
+  const tint = effectiveVariant === "sandbox" ? "#f59e0b" : primarySdg ? SDG_COLORS[primarySdg] : "#43aa8b";
   const stageLabel = project.archivedAt ? "Avslutat" : PHASE_LABEL_SV[project.phase] ?? project.phase;
 
   return (
     <a
       href={`/projects/${project.slug}`}
       className={`rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-white flex flex-col ${
-        variant === "sandbox" ? "border-2 border-amber-300 hover:border-amber-400" : "border border-muted-teal/40"
+        effectiveVariant === "sandbox" ? "border-2 border-amber-300 hover:border-amber-400" : "border border-seagrass/40 hover:border-seagrass"
       }`}
     >
       <div className="relative aspect-[4/3] w-full">
