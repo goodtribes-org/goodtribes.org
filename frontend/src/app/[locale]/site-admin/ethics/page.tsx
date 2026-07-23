@@ -58,7 +58,7 @@ export default async function EthicsAdminPage() {
           title: project.title,
           slug: project.slug,
           reason: f.reason,
-          flaggedByLabel: f.flaggedBy.name ?? f.flaggedBy.email,
+          flaggedByLabel: f.flaggedBy ? f.flaggedBy.name ?? f.flaggedBy.email : "Automatiskt (system)",
           createdAt: f.createdAt,
         };
       }),

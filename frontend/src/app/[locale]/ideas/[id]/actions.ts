@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notify";
 import { isSiteAdmin } from "@/lib/authz";
 import { promoteIdeaToProject } from "@/lib/promoteIdea";
+import { guardSocialAction } from "@/lib/socialActionGuard";
+import { runProactiveModeration } from "@/lib/proactiveModeration";
 
 
 export async function toggleVote(ideaId: string) {
@@ -131,10 +133,22 @@ export async function setIdeaStatus(ideaId: string, newStatus: string) {
 export async function addComment(ideaId: string, content: string) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
-  if (!content.trim()) return { error: "Comment is empty" };
+  const trimmed = content.trim();
+  if (!trimmed) return { error: "Comment is empty" };
 
-  await prisma.ideaComment.create({
-    data: { ideaId, authorId: session.user.id, content: content.trim() },
+  const guard = await guardSocialAction(session.user.id, "comment");
+  if (!guard.ok) return { error: guard.error, code: guard.code };
+
+  const comment = await prisma.ideaComment.create({
+    data: { ideaId, authorId: session.user.id, content: trimmed },
+  });
+
+  await runProactiveModeration({
+    targetType: "IdeaComment",
+    targetId: comment.id,
+    authorId: session.user.id,
+    text: trimmed,
+    url: `/ideas/${ideaId}`,
   });
 
   const idea = await prisma.idea.findUnique({ where: { id: ideaId }, select: { title: true, authorId: true } });

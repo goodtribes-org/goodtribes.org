@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rateLimit";
 
-const LIMITS = { like: 30, comment: 10, flag: 5 } as const;
+const LIMITS = { like: 30, comment: 10, flag: 5, post: 5, message: 30 } as const;
 
 export type SocialAction = keyof typeof LIMITS;
 

@@ -70,7 +70,7 @@ export default async function ContentFlagsAdminPage() {
                     <span className="font-medium text-dark-slate/80">{REASON_LABELS[flag.reason] ?? flag.reason}</span>
                     {flag.note ? `: ${flag.note}` : ""} — flaggad av{" "}
                     <span className="font-medium text-dark-slate/70">
-                      {flag.flaggedBy.name ?? flag.flaggedBy.email}
+                      {flag.flaggedBy ? flag.flaggedBy.name ?? flag.flaggedBy.email : "Automatiskt (system)"}
                     </span>{" "}
                     · {flag.createdAt.toLocaleDateString("sv-SE")}
                   </li>

@@ -8,6 +8,8 @@ import { getRoomAccess } from "@/lib/roomAuth";
 import { publishToRoom } from "@/lib/redis";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { triggerAiThreadReply } from "@/lib/aiThreadReply";
+import { guardSocialAction } from "@/lib/socialActionGuard";
+import { runProactiveModeration } from "@/lib/proactiveModeration";
 import {
   findOrCreateDmRoom,
   createGroupRoom,
@@ -67,6 +69,9 @@ export async function sendRoomMessage(roomId: string, body: string, threadParent
   if (!access?.canPost) throw new Error("Forbidden");
   assertValidBody(body);
 
+  const guard = await guardSocialAction(userId, "message");
+  if (!guard.ok) throw new Error(guard.error);
+
   const message = await prisma.message.create({
     data: { roomId, authorId: userId, body, threadParentId },
     include: {
@@ -74,6 +79,14 @@ export async function sendRoomMessage(roomId: string, body: string, threadParent
       reactions: { select: { emoji: true, userId: true } },
       _count: { select: { threadReplies: true } },
     },
+  });
+
+  await runProactiveModeration({
+    targetType: "Message",
+    targetId: message.id,
+    authorId: userId,
+    text: body.replace(/<[^>]*>/g, ""),
+    url: `/messages/${roomId}`,
   });
 
   await prisma.room.update({ where: { id: roomId }, data: { lastMessageAt: new Date() } });

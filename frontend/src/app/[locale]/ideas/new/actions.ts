@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { indexDocuments } from "@/lib/meili";
 import { suggestSdgGoals } from "@/lib/claude";
+import { guardSocialAction } from "@/lib/socialActionGuard";
+import { runProactiveModeration } from "@/lib/proactiveModeration";
 
 export async function getSdgSuggestions(
   description: string
@@ -19,6 +21,12 @@ export async function createIdea(formData: FormData) {
 
   const title = (formData.get("title") as string).trim();
   if (!title) return;
+
+  // Matches this function's existing silent-return convention above for
+  // validation failures — there's no error-surfacing path back to
+  // NewIdeaForm today (its return value is ignored, see form action).
+  const guard = await guardSocialAction(session.user.id, "post");
+  if (!guard.ok) return;
 
   const problem = (formData.get("problem") as string | null)?.trim() || null;
   const solution = (formData.get("solution") as string | null)?.trim() || null;
@@ -44,6 +52,14 @@ export async function createIdea(formData: FormData) {
   await prisma.ideaContributor
     .create({ data: { ideaId: idea.id, userId: session.user.id, role: "author" } })
     .catch(() => {});
+
+  await runProactiveModeration({
+    targetType: "Idea",
+    targetId: idea.id,
+    authorId: session.user.id,
+    text: [title, problem, solution].filter(Boolean).join("\n\n"),
+    url: `/ideas/${idea.id}`,
+  });
 
   if (fromThreadId) {
     await prisma.room

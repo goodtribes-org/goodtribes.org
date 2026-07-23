@@ -10,6 +10,7 @@ import {
 import { sendRoomMessage, toggleReaction } from "@/app/[locale]/messages/actions";
 import { FEED_LIKE_EMOJI } from "@/lib/activityFeed";
 import { guardSocialAction } from "@/lib/socialActionGuard";
+import { runProactiveModeration } from "@/lib/proactiveModeration";
 
 export async function createFeedPost(body: string, imageUrl?: string | null) {
   const session = await auth();
@@ -17,8 +18,19 @@ export async function createFeedPost(body: string, imageUrl?: string | null) {
   const trimmed = body.trim();
   if (!trimmed && !imageUrl) return { error: "Post is empty" };
 
-  await prisma.feedPost.create({
+  const guard = await guardSocialAction(session.user.id, "post");
+  if (!guard.ok) return { error: guard.error, code: guard.code };
+
+  const post = await prisma.feedPost.create({
     data: { authorId: session.user.id, body: trimmed, imageUrl: imageUrl || null },
+  });
+
+  await runProactiveModeration({
+    targetType: "FeedPost",
+    targetId: post.id,
+    authorId: session.user.id,
+    text: trimmed,
+    url: "/feed",
   });
 
   revalidatePath("/");

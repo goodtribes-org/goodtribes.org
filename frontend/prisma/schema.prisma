@@ -65,6 +65,7 @@ enum FlagStatus {
 enum ContentHideReason {
   AUTO_FLAG_THRESHOLD
   ADMIN_ACTION
+  AUTO_SPAM_DETECTED
 }
 
 model User {
@@ -1682,8 +1683,11 @@ model ContentFlag {
   id           String     @id @default(cuid())
   targetType   String
   targetId     String
-  flaggedById  String
-  flaggedBy    User       @relation("ContentFlaggedBy", fields: [flaggedById], references: [id], onDelete: Cascade)
+  // Nullable: a system-generated flag (source "AUTO", see proactiveModeration.ts)
+  // has no human reporter.
+  flaggedById  String?
+  flaggedBy    User?      @relation("ContentFlaggedBy", fields: [flaggedById], references: [id], onDelete: Cascade)
+  source       String     @default("USER") // USER | AUTO
   reason       FlagReason
   note         String?
   status       FlagStatus @default(PENDING)

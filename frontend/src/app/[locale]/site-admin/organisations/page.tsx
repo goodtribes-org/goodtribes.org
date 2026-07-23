@@ -63,7 +63,7 @@ export default async function OrganisationsAdminPage() {
           name: org.name,
           slug: org.slug,
           reason: f.reason,
-          flaggedByLabel: f.flaggedBy.name ?? f.flaggedBy.email,
+          flaggedByLabel: f.flaggedBy ? f.flaggedBy.name ?? f.flaggedBy.email : "Automatiskt (system)",
           createdAt: f.createdAt,
         };
       }),
