@@ -66,6 +66,42 @@ export default function KanbanBoard({
   const [filterPriority, setFilterPriority] = useState("");
   const [filterAssignee, setFilterAssignee] = useState("");
   const [, startTransition] = useTransition();
+  // One tri-state choice per column — normal (full), narrow (still a real
+  // drop target, card list just not shown, for columns like Done that
+  // otherwise pile up), or hidden (not rendered at all). Stored as a single
+  // per-project map so a column is always in exactly one state, never both
+  // "hidden" and "narrow" at once.
+  type ColumnMode = "normal" | "narrow" | "hidden";
+  const [columnModes, setColumnModes] = useState<Record<string, ColumnMode>>({});
+  const [hiddenColumnsMenuOpen, setHiddenColumnsMenuOpen] = useState(false);
+
+  const columnModesStorageKey = `kanban-column-modes-${projectSlug}`;
+
+  useEffect(() => {
+    const saved = localStorage.getItem(columnModesStorageKey);
+    if (!saved) return;
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === "object") setColumnModes(parsed);
+    } catch {
+      // ignore malformed/stale localStorage value
+    }
+  }, [columnModesStorageKey]);
+
+  function setColumnMode(colKey: string, mode: ColumnMode) {
+    setColumnModes((prev) => {
+      // never hide the last visible column
+      if (mode === "hidden") {
+        const visibleCount = COLUMNS.filter((c) => (prev[c.key] ?? "normal") !== "hidden").length;
+        if (visibleCount <= 1) return prev;
+      }
+      const next = { ...prev, [colKey]: mode };
+      localStorage.setItem(columnModesStorageKey, JSON.stringify(next));
+      return next;
+    });
+  }
+
+  const hiddenColumnKeys = COLUMNS.filter((c) => columnModes[c.key] === "hidden").map((c) => c.key);
 
   function openNewCard(colKey: string) {
     setEditingCard({
@@ -427,13 +463,42 @@ export default function KanbanBoard({
           )}
         </div>
 
+        {hiddenColumnKeys.length > 0 && (
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setHiddenColumnsMenuOpen((v) => !v)}
+              className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 hover:border-gray-400 transition-colors"
+            >
+              Dolda kolumner ({hiddenColumnKeys.length})
+            </button>
+            {hiddenColumnsMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setHiddenColumnsMenuOpen(false)} />
+                <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[160px]">
+                  {COLUMNS.filter((col) => hiddenColumnKeys.includes(col.key)).map((col) => (
+                    <button
+                      key={col.key}
+                      type="button"
+                      onClick={() => setColumnMode(col.key, "normal")}
+                      className="w-full text-left text-sm px-3 py-1.5 text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Visa {col.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
         {viewToggle && <div className="shrink-0">{viewToggle}</div>}
       </div>
 
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="overflow-x-auto pb-4">
           <div className="flex gap-3 w-full">
-            {COLUMNS.map((col) => (
+            {COLUMNS.filter((col) => columnModes[col.key] !== "hidden").map((col) => (
               <KanbanColumn
                 key={col.key}
                 col={col}
@@ -448,6 +513,8 @@ export default function KanbanBoard({
                 onOpenCard={setEditingCard}
                 onAddCard={handleAdd}
                 onClearColumn={handleClearColumn}
+                mode={columnModes[col.key] ?? "normal"}
+                onSetMode={setColumnMode}
                 runningAI={runningAI}
                 onRunAI={handleRunAI}
                 onSubtasksChanged={handleCardSubtasksSynced}

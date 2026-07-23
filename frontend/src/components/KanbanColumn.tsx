@@ -7,6 +7,14 @@ import { clearColumnCards } from "@/app/[locale]/projects/[slug]/(workspace)/kan
 import { type Card, type Subtask } from "./kanbanShared";
 import { KanbanCardItem } from "./KanbanCardItem";
 
+type ColumnMode = "normal" | "narrow" | "hidden";
+
+const MODE_OPTIONS: { value: ColumnMode; label: string }[] = [
+  { value: "normal", label: "Vanlig" },
+  { value: "narrow", label: "Smal" },
+  { value: "hidden", label: "Dold" },
+];
+
 function KanbanColumnImpl({
   col,
   cards,
@@ -20,6 +28,8 @@ function KanbanColumnImpl({
   onOpenCard,
   onAddCard,
   onClearColumn,
+  mode = "normal",
+  onSetMode,
   runningAI,
   onRunAI,
   onSubtasksChanged,
@@ -37,6 +47,8 @@ function KanbanColumnImpl({
   onOpenCard: (card: Card) => void;
   onAddCard: (card: Card) => void;
   onClearColumn: (colKey: string) => void;
+  mode?: ColumnMode;
+  onSetMode?: (colKey: string, mode: ColumnMode) => void;
   runningAI: Set<string>;
   onRunAI: (cardId: string, agentType: string, additionalContext: string) => void;
   onSubtasksChanged: (cardId: string, subtasks: Subtask[]) => void;
@@ -45,6 +57,7 @@ function KanbanColumnImpl({
  {
   const { setNodeRef, isOver } = useDroppable({ id: col.key });
   const [menuOpen, setMenuOpen] = useState(false);
+  const [modeMenuOpen, setModeMenuOpen] = useState(false);
   const openSubtaskCount = cards.reduce(
     (sum, c) => sum + (c.subtasks?.filter((s) => !s.done).length ?? 0),
     0
@@ -58,6 +71,85 @@ function KanbanColumnImpl({
     clearColumnCards(projectSlug, col.key).then((result) => {
       if (result && "error" in result) alert("Kunde inte rensa kolumnen. Du måste vara admin eller founder i projektet.");
     });
+  }
+
+  const modeMenu = onSetMode && (
+    <div className="relative">
+      <button
+        onClick={() => setModeMenuOpen((v) => !v)}
+        aria-label="Kolumnvy"
+        title="Vanlig, smal eller dold"
+        className="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-white border border-transparent hover:border-gray-200 transition-all"
+      >
+        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+        </svg>
+      </button>
+      {modeMenuOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setModeMenuOpen(false)} />
+          <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[120px]">
+            {MODE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => { onSetMode(col.key, opt.value); setModeMenuOpen(false); }}
+                className={`w-full text-left text-sm px-3 py-1.5 transition-colors ${
+                  mode === opt.value ? "text-dark-slate font-semibold bg-gray-50" : "text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+
+  // Narrow: not the fully-hidden state ("hidden" columns aren't rendered at
+  // all, see KanbanBoard) — stays a real drop target (setNodeRef/
+  // SortableContext still attached) so finished cards can still be dragged
+  // in, it just doesn't render the card list. For columns like Done that
+  // otherwise pile up and dominate the board.
+  if (mode === "narrow") {
+    return (
+      <div className="flex flex-col w-12 shrink-0">
+        <div className="h-1 rounded-t-lg" style={{ backgroundColor: col.color }} />
+        <div
+          className="flex flex-col items-center gap-1 px-1 py-2 border-x border-gray-200"
+          style={{ backgroundColor: `${col.color}12`, borderTop: `1px solid ${col.color}22` }}
+        >
+          <button
+            type="button"
+            onClick={() => onSetMode?.(col.key, "normal")}
+            aria-label={`Expandera ${col.label}`}
+            title={`Expandera ${col.label} (${cards.length} kort)`}
+            className="w-6 h-6 flex items-center justify-center rounded text-gray-500 hover:text-gray-800 hover:bg-white transition-all"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+          {modeMenu}
+        </div>
+        <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+          <div
+            ref={setNodeRef}
+            data-testid={`kanban-drop-${col.key}`}
+            className="flex-1 min-h-32 border-x border-b border-gray-200 rounded-b-lg flex flex-col items-center pt-3 gap-2 transition-colors"
+            style={{ backgroundColor: isOver ? `${col.color}30` : `${col.color}12` }}
+          >
+            <span className="text-xs font-semibold text-gray-500 bg-white/70 rounded-full w-5 h-5 flex items-center justify-center" title="Antal kort">
+              {cards.length}
+            </span>
+            <span className="text-xs font-semibold text-gray-600 [writing-mode:vertical-rl] rotate-180">
+              {col.label}
+            </span>
+          </div>
+        </SortableContext>
+      </div>
+    );
   }
 
   return (
@@ -85,6 +177,7 @@ function KanbanColumnImpl({
               Lägg till
             </button>
           )}
+          {modeMenu}
           {isLoggedIn && isLead && (
             <button
               onClick={() => setMenuOpen((v) => !v)}
@@ -114,6 +207,7 @@ function KanbanColumnImpl({
       <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
         <div
           ref={setNodeRef}
+          data-testid={`kanban-drop-${col.key}`}
           className="flex-1 min-h-32 p-2 border-x border-b border-gray-200 rounded-b-lg flex flex-col gap-2 transition-colors"
           style={{ backgroundColor: isOver ? `${col.color}30` : `${col.color}12` }}
         >
