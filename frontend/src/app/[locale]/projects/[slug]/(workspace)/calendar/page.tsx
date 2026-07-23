@@ -9,7 +9,7 @@ import GanttView from "@/components/GanttView";
 import { isLeadRole } from "@/lib/authz";
 import Tooltip from "@/components/Tooltip";
 import { toggleMilestone, deleteMilestone } from "../milestones/actions";
-import { updateCard } from "../kanban/actions";
+import { updateCard, moveCard, addCardDependency, removeCardDependency } from "../kanban/actions";
 
 
 export async function generateMetadata({
@@ -157,7 +157,11 @@ export default async function CalendarPage({
     // Gantt: all kanban cards
     prisma.kanbanCard.findMany({
       where: { projectSlug: slug },
-      select: { id: true, title: true, column: true, priority: true, startDate: true, dueDate: true, description: true, assignee: { select: { name: true } } },
+      select: {
+        id: true, title: true, column: true, priority: true, startDate: true, dueDate: true, description: true,
+        assignee: { select: { name: true } },
+        dependencies: { select: { dependsOnId: true } },
+      },
       orderBy: [{ column: "asc" }, { order: "asc" }],
     }),
     // Gantt: all todo items
@@ -535,7 +539,7 @@ export default async function CalendarPage({
           ) : (
             <div style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
               <GanttView
-                cards={allKanbanCards}
+                cards={allKanbanCards.map((c) => ({ ...c, dependsOnIds: c.dependencies.map((d) => d.dependsOnId) }))}
                 todos={allTodoItems}
                 milestones={allMilestones.map((m) => ({
                   id: m.id,
@@ -546,6 +550,9 @@ export default async function CalendarPage({
                 projectSlug={slug}
                 isOwnerOrAdmin={isOwnerOrAdmin}
                 onUpdateCard={updateCard}
+                onMoveCard={moveCard}
+                onAddDependency={addCardDependency}
+                onRemoveDependency={removeCardDependency}
               />
             </div>
           )}

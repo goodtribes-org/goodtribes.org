@@ -419,9 +419,27 @@ model KanbanCard {
   subtasks        KanbanCardSubtask[]
   comments        KanbanCardComment[]
   priorityChanges KanbanCardPriorityChange[]
+  dependencies    KanbanCardDependency[]     @relation("CardDependsOn")
+  dependents      KanbanCardDependency[]     @relation("CardDependencyOf")
 
   @@index([projectSlug, column])
   @@index([openToPublic, assigneeId])
+}
+
+// PRD Gantt "koppla arbetsuppgifter till varandra" — a card can depend on
+// (be blocked by) other cards. Visual/manual only: no automatic date
+// cascading when a predecessor's date moves, see GanttView.
+model KanbanCardDependency {
+  id          String     @id @default(cuid())
+  cardId      String
+  card        KanbanCard @relation("CardDependsOn", fields: [cardId], references: [id], onDelete: Cascade)
+  dependsOnId String
+  dependsOn   KanbanCard @relation("CardDependencyOf", fields: [dependsOnId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+
+  @@unique([cardId, dependsOnId])
+  @@index([cardId])
+  @@index([dependsOnId])
 }
 
 model KanbanCardSubtask {

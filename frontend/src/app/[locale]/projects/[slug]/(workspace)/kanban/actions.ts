@@ -528,3 +528,69 @@ export async function clearColumnCards(projectSlug: string, column: string) {
   revalidatePath(`/projects/${projectSlug}/tasks`);
   return { ok: true };
 }
+
+// Gantt "koppla arbetsuppgifter till varandra" — cardId depends on (is
+// blocked by) dependsOnId. Visual/manual only: adding an edge never touches
+// dates, see GanttView. Auth mirrors updateCard's existing looseness for
+// this same edit popover (logged in only, no stricter member check).
+async function wouldCreateCycle(cardId: string, dependsOnId: string): Promise<boolean> {
+  // BFS from dependsOnId through ITS predecessors — if we ever reach
+  // cardId, adding cardId -> dependsOnId would close a cycle.
+  const visited = new Set<string>();
+  let frontier = [dependsOnId];
+  while (frontier.length > 0) {
+    if (frontier.includes(cardId)) return true;
+    const rows = await prisma.kanbanCardDependency.findMany({
+      where: { cardId: { in: frontier } },
+      select: { dependsOnId: true },
+    });
+    frontier = rows.map((r) => r.dependsOnId).filter((id) => !visited.has(id));
+    frontier.forEach((id) => visited.add(id));
+  }
+  return false;
+}
+
+export async function addCardDependency(cardId: string, dependsOnId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+  if (cardId === dependsOnId) return { error: "A task can't depend on itself" };
+
+  const [card, dependsOn] = await Promise.all([
+    prisma.kanbanCard.findUnique({ where: { id: cardId }, select: { projectSlug: true } }),
+    prisma.kanbanCard.findUnique({ where: { id: dependsOnId }, select: { projectSlug: true } }),
+  ]);
+  if (!card || !dependsOn) return { error: "Card not found" };
+  if (card.projectSlug !== dependsOn.projectSlug) return { error: "Cards must be in the same project" };
+
+  if (await wouldCreateCycle(cardId, dependsOnId)) {
+    return { error: "That would create a circular dependency" };
+  }
+
+  await prisma.kanbanCardDependency.upsert({
+    where: { cardId_dependsOnId: { cardId, dependsOnId } },
+    create: { cardId, dependsOnId },
+    update: {},
+  });
+
+  revalidatePath(`/projects/${card.projectSlug}/kanban`);
+  revalidatePath(`/projects/${card.projectSlug}/tasks`);
+  revalidatePath(`/projects/${card.projectSlug}/calendar`);
+  return { ok: true };
+}
+
+export async function removeCardDependency(cardId: string, dependsOnId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+
+  const card = await prisma.kanbanCard.findUnique({ where: { id: cardId }, select: { projectSlug: true } });
+  if (!card) return { error: "Card not found" };
+
+  await prisma.kanbanCardDependency
+    .delete({ where: { cardId_dependsOnId: { cardId, dependsOnId } } })
+    .catch(() => {});
+
+  revalidatePath(`/projects/${card.projectSlug}/kanban`);
+  revalidatePath(`/projects/${card.projectSlug}/tasks`);
+  revalidatePath(`/projects/${card.projectSlug}/calendar`);
+  return { ok: true };
+}

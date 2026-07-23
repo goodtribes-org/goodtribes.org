@@ -5,7 +5,9 @@ import Link from "next/link";
 import KanbanBoard, { type Member } from "@/components/KanbanBoard";
 import TaskListView from "@/components/TaskListView";
 import GanttView from "@/components/GanttView";
-import { updateCard } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
+import { updateCard, moveCard, addCardDependency, removeCardDependency } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
+
+type Milestone = { id: string; title: string; dueDate: Date | string | null; status: string };
 
 type Card = {
   id: string;
@@ -33,6 +35,7 @@ type Card = {
     attemptNumber: number;
     completedAt: Date | string | null;
   }>;
+  dependencies?: Array<{ dependsOnId: string }>;
 };
 
 type Columns = {
@@ -53,6 +56,7 @@ export default function TasksPage({
   isMember,
   isLead,
   members,
+  milestones,
   openCardId,
   helpHref,
 }: {
@@ -63,6 +67,7 @@ export default function TasksPage({
   isMember: boolean;
   isLead: boolean;
   members: Member[];
+  milestones: Milestone[];
   openCardId?: string | null;
   helpHref: string;
 }) {
@@ -162,11 +167,18 @@ export default function TasksPage({
         <div>
           <div className="flex justify-end mb-4">{viewToggle}</div>
           <GanttView
-            cards={Object.values(initialColumns).flat().map(c => ({ ...c, startDate: c.startDate ?? null }))}
-            milestones={[]}
+            cards={Object.values(initialColumns).flat().map(c => ({
+              ...c,
+              startDate: c.startDate ?? null,
+              dependsOnIds: c.dependencies?.map((d) => d.dependsOnId) ?? [],
+            }))}
+            milestones={milestones}
             projectSlug={projectSlug}
-            isOwnerOrAdmin={isLoggedIn}
+            isOwnerOrAdmin={isLead}
             onUpdateCard={updateCard}
+            onMoveCard={moveCard}
+            onAddDependency={addCardDependency}
+            onRemoveDependency={removeCardDependency}
           />
         </div>
       )}

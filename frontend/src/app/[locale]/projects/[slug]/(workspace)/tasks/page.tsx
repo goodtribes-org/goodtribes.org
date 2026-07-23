@@ -25,6 +25,7 @@ export default async function TasksRoutePage({
   const project = await prisma.project.findUnique({
     where: { slug },
     select: {
+      id: true,
       title: true,
       members: { include: { user: { select: { id: true, name: true, image: true } } } },
     },
@@ -58,6 +59,7 @@ export default async function TasksRoutePage({
           completedAt: true,
         },
       },
+      dependencies: { select: { dependsOnId: true } },
     },
   });
 
@@ -115,6 +117,11 @@ export default async function TasksRoutePage({
 
   const members = project.members.map((m) => ({ id: m.user.id, name: m.user.name, image: m.user.image }));
 
+  const milestones = await prisma.milestone.findMany({
+    where: { projectId: project.id },
+    select: { id: true, title: true, dueDate: true, status: true },
+  });
+
   const helpGuide = await prisma.academyGuide.findFirst({
     where: { title: "Så använder du Kanban", published: true },
     select: { id: true },
@@ -132,6 +139,7 @@ export default async function TasksRoutePage({
           isMember={isMember}
           isLead={isLead}
           members={members}
+          milestones={milestones}
           openCardId={openCardId ?? null}
           helpHref={helpHref}
         />
