@@ -14,6 +14,8 @@ import { SDG_LABELS_EN } from "@/lib/sdg";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
 import ShareButton from "@/components/ShareButton";
 import IdeaMindMapSection from "./IdeaMindMapSection";
+import IdeaRevisions from "./IdeaRevisions";
+import IdeaPromoteButton from "./IdeaPromoteButton";
 import type { Node, Edge } from "@xyflow/react";
 
 const STATUS_STEPS = ["open", "review", "shortlisted", "approved", "converted"];
@@ -73,6 +75,15 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           include: { author: { select: { name: true, image: true } } },
         },
         mindMap: true,
+        contributors: {
+          include: { user: { select: { id: true, name: true, image: true } } },
+          orderBy: { addedAt: "asc" },
+        },
+        revisions: {
+          include: { proposedBy: { select: { name: true } } },
+          orderBy: { createdAt: "desc" },
+        },
+        promotedToProject: { select: { slug: true } },
       },
     }),
   ]);
@@ -207,6 +218,22 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
             <span>{idea.viewCount} views</span>
           </div>
 
+          {/* Contributors */}
+          {idea.contributors.filter((c) => c.userId !== idea.author.id).length > 0 && (
+            <div className="flex items-center gap-2 mb-6 -mt-3">
+              <span className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider">Co-authors:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {idea.contributors
+                  .filter((c) => c.userId !== idea.author.id)
+                  .map((c) => (
+                    <span key={c.id} className="text-xs bg-dry-sage text-dark-slate/60 px-2.5 py-1 rounded-full">
+                      {c.user.name ?? "Unknown"}
+                    </span>
+                  ))}
+              </div>
+            </div>
+          )}
+
           {/* Tags */}
           {idea.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-6">
@@ -243,6 +270,19 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
               </div>
             </section>
           )}
+
+          <IdeaRevisions
+            ideaId={idea.id}
+            revisions={idea.revisions.map((r) => ({
+              id: r.id,
+              proposedDescription: r.proposedDescription,
+              status: r.status,
+              createdAt: r.createdAt.toISOString(),
+              proposedBy: { name: r.proposedBy.name },
+            }))}
+            isLoggedIn={!!userId}
+            canDecide={isAuthor || isModerator}
+          />
 
           <IdeaMindMapSection
             ideaId={idea.id}
@@ -287,19 +327,34 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           )}
 
           {/* Convert to project CTA */}
-          {idea.status === "approved" && userId && (
+          {idea.promotedToProject ? (
             <div className="mb-8 p-5 border-2 border-dashed border-seagrass/40 rounded-xl bg-seagrass/5">
-              <p className="text-sm font-semibold text-dark-slate mb-1">This idea has been approved!</p>
-              <p className="text-sm text-dark-slate/60 mb-3">
-                Ready to turn it into a real project and recruit volunteers?
-              </p>
+              <p className="text-sm font-semibold text-dark-slate mb-1">This idea became a project!</p>
               <Link
-                href={`/projects/new?from=${idea.id}&title=${encodeURIComponent(idea.title)}`}
+                href={`/projects/${idea.promotedToProject.slug}`}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-seagrass text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
               >
-                Create project from this idea →
+                View the project →
               </Link>
             </div>
+          ) : (
+            idea.status === "approved" &&
+            userId &&
+            (isAuthor || isModerator) && (
+              <div className="mb-8 p-5 border-2 border-dashed border-seagrass/40 rounded-xl bg-seagrass/5">
+                <p className="text-sm font-semibold text-dark-slate mb-1">This idea has been approved!</p>
+                <p className="text-sm text-dark-slate/60 mb-3">
+                  Ready to turn it into a real project and recruit volunteers?
+                </p>
+                <IdeaPromoteButton ideaId={idea.id} />
+                <Link
+                  href={`/projects/new?from=${idea.id}&title=${encodeURIComponent(idea.title)}`}
+                  className="inline-block mt-2 text-xs text-dark-slate/50 hover:text-dark-slate hover:underline"
+                >
+                  Customize the details before creating it →
+                </Link>
+              </div>
+            )
           )}
 
           {!userId && (

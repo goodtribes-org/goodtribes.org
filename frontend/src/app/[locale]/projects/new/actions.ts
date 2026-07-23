@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { suggestSdgGoals } from "@/lib/claude";
 import { logOrgActivity } from "@/lib/activity";
 import { createProjectRecord } from "@/lib/createProject";
+import { linkPromotedProject } from "@/lib/promoteIdea";
 
 export async function getSdgSuggestions(
   description: string
@@ -48,7 +49,7 @@ export async function createProject(formData: FormData) {
   }
 
   if (ideaId) {
-    await prisma.idea.update({ where: { id: ideaId }, data: { status: "converted" } }).catch(() => {});
+    await linkPromotedProject(ideaId, project.id, userId);
   }
 
   if (fromThreadId) {

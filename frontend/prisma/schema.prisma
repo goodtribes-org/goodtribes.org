@@ -120,6 +120,9 @@ model User {
   pollVotes               PollVote[]                @relation("UserPollVotes")
   impactUpdates           ImpactUpdate[]            @relation("ImpactUpdates")
   verifiedImpactReports   ImpactReport[]            @relation("VerifiedImpactReports")
+  proposedIdeaRevisions   IdeaRevision[]            @relation("ProposedIdeaRevisions")
+  decidedIdeaRevisions    IdeaRevision[]            @relation("DecidedIdeaRevisions")
+  ideaContributions       IdeaContributor[]         @relation("IdeaContributions")
   approvedInstances       ProjectInstance[]         @relation("ApprovedInstances")
   alumni                  ProjectAlumni[]           @relation("AlumniUsers")
   mentorProfile           Mentor?                   @relation("MentorProfile")
@@ -540,6 +543,7 @@ model Project {
   polls              Poll[]               @relation("ProjectPolls")
   impactMetrics      ImpactMetric[]       @relation("ProjectImpactMetrics")
   impactReports      ImpactReport[]       @relation("ProjectImpactReports")
+  promotedFromIdea   Idea?                @relation("IdeaPromotedToProject")
   maturity           ProjectMaturity?     @relation("ProjectMaturity")
   leanCanvas         LeanCanvas?          @relation("ProjectLeanCanvas")
   leanCanvasComments LeanCanvasComment[]  @relation("ProjectLeanCanvasComments")
@@ -648,6 +652,48 @@ model Idea {
   comments         IdeaComment[]
   convertedFromRoom Room?            @relation("RoomConvertedToIdea")
   mindMap          MindMap?
+  revisions        IdeaRevision[]
+  contributors     IdeaContributor[]
+  // PRD 5.16 — one-click idea->project pipeline. Idea holds the unique FK
+  // (same role Room plays for convertedToProjectId/convertedToIdeaId).
+  promotedToProjectId String?  @unique
+  promotedToProject   Project? @relation("IdeaPromotedToProject", fields: [promotedToProjectId], references: [id], onDelete: SetNull)
+}
+
+// PRD 5.15 co-creation — a pull-request-style proposed edit to an idea's
+// description. No diff format: full proposed value + a snapshot of what it
+// replaced, matching every other content model in this schema.
+model IdeaRevision {
+  id                  String    @id @default(cuid())
+  ideaId              String
+  idea                Idea      @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  proposedDescription String    @db.Text
+  previousDescription String?   @db.Text
+  status              String    @default("pending") // pending | accepted | rejected
+  proposedById        String
+  proposedBy          User      @relation("ProposedIdeaRevisions", fields: [proposedById], references: [id], onDelete: Cascade)
+  decisionNote        String?   @db.Text
+  decidedById         String?
+  decidedBy           User?     @relation("DecidedIdeaRevisions", fields: [decidedById], references: [id], onDelete: SetNull)
+  decidedAt           DateTime?
+  createdAt           DateTime  @default(now())
+
+  @@index([ideaId])
+}
+
+// PRD 5.15 — the author (from idea creation) plus anyone whose proposed
+// revision was accepted. Endorsements/votes never populate this — only
+// actual accepted contributions do.
+model IdeaContributor {
+  id        String   @id @default(cuid())
+  ideaId    String
+  idea      Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation("IdeaContributions", fields: [userId], references: [id], onDelete: Cascade)
+  role      String   @default("contributor") // author | co-author
+  addedAt   DateTime @default(now())
+
+  @@unique([ideaId, userId])
 }
 
 model IdeaVote {

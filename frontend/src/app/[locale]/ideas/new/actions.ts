@@ -41,6 +41,10 @@ export async function createIdea(formData: FormData) {
     },
   });
 
+  await prisma.ideaContributor
+    .create({ data: { ideaId: idea.id, userId: session.user.id, role: "author" } })
+    .catch(() => {});
+
   if (fromThreadId) {
     await prisma.room
       .update({ where: { id: fromThreadId }, data: { convertedToIdeaId: idea.id } })
