@@ -101,7 +101,7 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
         <div ref={sandboxRef} className="relative">
           <button
             onClick={() => setSandbox((v) => !v)}
-            className="flex items-center gap-1 rounded-full ring-2 ring-watermelon px-3 py-1 font-bold text-watermelon hover:bg-watermelon hover:text-white transition-colors whitespace-nowrap"
+            className="flex items-center gap-1 rounded-full ring-1 ring-watermelon px-3 py-1 font-bold text-watermelon hover:bg-watermelon hover:text-white transition-colors whitespace-nowrap"
           >
             {t("sandbox")}
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`w-3 h-3 mt-0.5 transition-transform ${sandbox ? "rotate-180" : ""}`}>
@@ -155,7 +155,7 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
             <a
               href="/sandbox"
               onClick={navLink("/sandbox", () => setOpen(false))}
-              className="self-start mt-3 rounded-full ring-2 ring-watermelon px-3 py-1 font-bold text-watermelon hover:bg-watermelon hover:text-white transition-colors"
+              className="self-start mt-3 rounded-full ring-1 ring-watermelon px-3 py-1 font-bold text-watermelon hover:bg-watermelon hover:text-white transition-colors"
             >
               {t("sandbox")}
             </a>
