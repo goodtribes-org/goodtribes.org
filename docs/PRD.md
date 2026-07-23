@@ -1,9 +1,15 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 4.10 (Draft)
-**Datum:** 2026-07-22
+**Version:** 4.12 (Draft)
+**Datum:** 2026-07-23
 **Status:** Under utveckling
+
+**Ändringar i v4.12:**
+- **Byggt:** `ImpactReport`-modellen (`impact_reports` i 4d) tillagd i Prisma-schemat — `projectId`, `sdgGoals[]`, `metricDescription`, `metricValue`, `verifiedById`/`verifiedAt` (nullable tills en verifierare, t.ex. Granskningsrådet eller site-admin, godkänner rapporten), `createdAt`. Migration `20260723090000_impact_reports`. Detta är bara datamodellen — själva `scale`→`impact`-gatingregeln som konsumerar tabellen är fortsatt "Föreslaget — ej beslutat" (se 4d/§10), och inget UI för att skapa/verifiera rapporter är byggt än.
+
+**Ändringar i v4.11:**
+- §12 "Nästa steg" skriven om helt. Föregående lista (sätta upp Next.js/Supabase-projekt, bygga inloggning, designa databasschema osv.) var kvar sedan dokumentets allra första version och beskrev inte längre verkligheten — kodbasen implementerar redan Utvecklingsfas 1–5 i stort, inklusive Granskningsrådet, Impact-fonden, Tribe Tokens, crowdfunding och fork-funktionen. Den nya listan speglar de faktiska kvarvarande gapen efter en genomgång av kod mot detta dokument: `impact_reports`-tabellen (krävs för `scale`→`impact`-gating, se 4d) saknas i schemat, de tre "Föreslaget — ej beslutat"-gatingvillkoren i 4d kräver ett formellt styrelsebeslut, innehållsmodereringen är fortsatt bara reaktiv (flaggning) utan proaktivt spamskydd, Utvecklingsfas 1.5:s co-creation (versionshistorik/idé-förslag) och automatiska idé→projekt-pipeline är obyggda, SSO/SAML och upphandlingsvänliga funktioner för institutioner är obyggda, samt de tre produktionsblockerande driftsgapen från "Known Issues" i CLAUDE.md (`REDIS_URL`, Strapi-schemaseparation, Stripe-nycklar) kvarstår.
 
 **Ändringar i v4.10:**
 - **Beslutat:** livscykelfasen `project` (se 4d) döpt om till **`sprint`** genomgående, i hela dokumentet (inklusive tidigare changelog-poster). Namnet krockade med Project-entiteten (`projects`-tabellen) som representerar hela initiativet från idé till impact, inte bara ett enskilt skede av det — "projekt" ska hädanefter alltid syfta på hela flödet/initiativet, aldrig på en enskild fas inom det. `projects.phase`-enumets värde `project` → `sprint` (databasnivå: `ALTER TYPE ... RENAME VALUE`, ingen datamigrering krävs — befintliga rader byter etikett automatiskt). Checklistan som tidigare kallades `project`-checklistan heter nu `sprint`-checklistan, samma innehåll (`todo_created`, `collaborators_invited`, `team_formed`, `resources_secured`).
@@ -2278,14 +2284,16 @@ Genomgående i alla faser:
 
 ## 12. Nästa steg
 
-1. Validera PRD med intressenter
-2. Låt jurist granska avtalsmallarna för kommersiella och ideella projekt (se 4c) samt gränsdragningen för tokensystemet (Utvecklingsfas 2.8)
-3. Sätt upp Next.js + Supabase-projekt
-4. Implementera autentisering (Google + magic link)
-5. Bygg registreringsflöde och användarprofil
-6. Designa databasschema i detalj
-7. Bygg projektsida + Kanban (MVP Utvecklingsfas 1)
-8. Lansera intern beta
+*(Uppdaterad v4.11 — se ändringslogg. Kodbasen har redan byggt MVP:n och merparten av Utvecklingsfas 1–5; listan nedan är de gap som återstår, inte en startlista.)*
+
+1. **Formalisera gating-villkoren i 4d** — de tre övergångarna `pilot`→`production`, `production`→`establish` och `scale`→`impact` är fortfarande bara "Föreslaget", inte styrelsebeslutade. Blockerar inget kodarbete i sig (gatingfunktionerna är byggda som ett konfigurerbart regelverk, se 4d), men bör beslutas innan projekt i praktiken börjar nå de faserna.
+2. ~~Bygg `impact_reports`-tabellen~~ **Klart (v4.12)** — `ImpactReport`-modellen finns nu i schemat. Kvarstår: UI för att skapa och verifiera rapporter, samt att koppla den till den faktiska `scale`→`impact`-gatinglogiken när den beslutas (se punkt 1).
+3. **Låt jurist granska avtalsmallarna** för kommersiella och ideella projekt (se 4c) samt gränsdragningen för tokensystemet (Utvecklingsfas 2.8) — fortfarande inte gjort.
+4. **Proaktiv innehållsmoderering** — idag finns bara reaktiv flaggning (`ContentFlag`/Granskningsrådet); inget automatiskt spamskydd eller filter för olämpligt innehåll (se §10).
+5. **Idéflödets co-creation** (Utvecklingsfas 1.5) — versionshistorik och pull request-liknande förslag på idéer, samt en automatisk idé→projekt-pipeline, är inte byggda trots att de är detaljerat specificerade.
+6. **SSO/SAML-inloggning och upphandlingsvänliga funktioner** (fakturering, DPA, SLA) för offentlig sektor/akademia/företagskunder — obyggt, se §10.
+7. **Följ upp fas- och stegwidgeten efter lansering** — designbeslutet (guide, inte tvång, se 4d) är fattat men UX-utfallet är overifierat med riktiga användare.
+8. **Åtgärda de tre driftsgapen i produktion** (se "Known Issues" i CLAUDE.md): `REDIS_URL` saknas i `goodtribes-secret` (livechatt uppdateras inte live utan omladdning), Strapi delar fortfarande `public`-schemat med Prisma i produktion (måste separeras innan `chart/values.yaml` uppdateras, annars raderas produktionens Strapi-innehåll), och Stripe-nycklar saknas i produktion (crowdfunding kör bara manuellt pledge-läge, inga riktiga betalningar).
 
 ---
 

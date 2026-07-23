@@ -119,6 +119,7 @@ model User {
   createdPolls            Poll[]                    @relation("CreatedPolls")
   pollVotes               PollVote[]                @relation("UserPollVotes")
   impactUpdates           ImpactUpdate[]            @relation("ImpactUpdates")
+  verifiedImpactReports   ImpactReport[]            @relation("VerifiedImpactReports")
   approvedInstances       ProjectInstance[]         @relation("ApprovedInstances")
   alumni                  ProjectAlumni[]           @relation("AlumniUsers")
   mentorProfile           Mentor?                   @relation("MentorProfile")
@@ -538,6 +539,7 @@ model Project {
   tokenLedger        TokenLedger[]        @relation("ProjectTokenLedger")
   polls              Poll[]               @relation("ProjectPolls")
   impactMetrics      ImpactMetric[]       @relation("ProjectImpactMetrics")
+  impactReports      ImpactReport[]       @relation("ProjectImpactReports")
   maturity           ProjectMaturity?     @relation("ProjectMaturity")
   leanCanvas         LeanCanvas?          @relation("ProjectLeanCanvas")
   leanCanvasComments LeanCanvasComment[]  @relation("ProjectLeanCanvasComments")
@@ -1369,6 +1371,25 @@ model ImpactUpdate {
   createdAt      DateTime     @default(now())
 
   @@index([impactMetricId])
+}
+
+// PRD 4d — verified SDG outcome reports a fork must produce to unlock the
+// `scale` -> `impact` phase transition. Distinct from ImpactMetric/ImpactUpdate
+// (self-reported, ongoing progress tracking): a report is a discrete,
+// externally verified claim of impact.
+model ImpactReport {
+  id                String    @id @default(cuid())
+  projectId         String
+  project           Project   @relation("ProjectImpactReports", fields: [projectId], references: [id], onDelete: Cascade)
+  sdgGoals          Int[]
+  metricDescription String
+  metricValue       Float
+  verifiedById      String?
+  verifiedBy        User?     @relation("VerifiedImpactReports", fields: [verifiedById], references: [id])
+  verifiedAt        DateTime?
+  createdAt         DateTime  @default(now())
+
+  @@index([projectId])
 }
 
 model ProjectMaturity {
