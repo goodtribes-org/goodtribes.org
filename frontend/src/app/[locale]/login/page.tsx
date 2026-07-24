@@ -1,7 +1,7 @@
-import { signIn } from "@/auth";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import Link from "next/link";
+import LoginForm from "./LoginForm";
 
 export default async function LoginPage({
   searchParams,
@@ -12,15 +12,6 @@ export default async function LoginPage({
   if (session) redirect("/");
 
   const params = await searchParams;
-
-  async function handleSignIn(formData: FormData) {
-    "use server";
-    const email = formData.get("email") as string;
-    await signIn("resend", {
-      email,
-      redirectTo: params.callbackUrl ?? "/",
-    });
-  }
 
   return (
     <div className="max-w-sm mx-auto mt-16">
@@ -35,28 +26,7 @@ export default async function LoginPage({
         </div>
       )}
 
-      <form action={handleSignIn} className="flex flex-col gap-4">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-dark-slate mb-1">
-            Email address
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            placeholder="you@example.com"
-            className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-coral text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-watermelon transition-colors"
-        >
-          Send login link
-        </button>
-      </form>
+      <LoginForm callbackUrl={params.callbackUrl ?? "/"} />
 
       <p className="mt-6 text-sm text-dark-slate/60 text-center">
         New here?{" "}
