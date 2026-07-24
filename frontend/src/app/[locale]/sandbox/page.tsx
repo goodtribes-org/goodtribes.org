@@ -2,8 +2,6 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { htmlToPreviewText } from "@/lib/renderBody";
@@ -34,9 +32,6 @@ export default async function SandboxPage({
 }: {
   searchParams: Promise<{ sort?: string; page?: string }>;
 }) {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-
   const { sort: sortParam, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
