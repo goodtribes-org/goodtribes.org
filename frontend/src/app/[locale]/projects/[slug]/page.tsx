@@ -15,7 +15,7 @@ import Tooltip from "@/components/Tooltip";
 import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import ProjectTabNav from "./ProjectTabNav";
 import PhaseJourneyWidget from "./PhaseJourneyWidget";
-import { isLeadRole } from "@/lib/authz";
+import { isLeadRole, isSiteAdmin } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
 import ShareButton from "@/components/ShareButton";
@@ -188,7 +188,9 @@ export default async function ProjectDetailPage({
 
   const userId = session?.user?.id;
   const userMembership = project.members.find((m) => m.user.id === userId);
-  const isOwnerOrAdmin = isLeadRole(userMembership?.role);
+  // Site admins get the same project-level admin controls as a founder —
+  // established precedent, see requireProjectRole's allowSiteAdmin default.
+  const isOwnerOrAdmin = isLeadRole(userMembership?.role) || (!!userId && (await isSiteAdmin(userId)));
   const isMember = !!userMembership;
 
   // "Flöde i projekten" — real members (excludes the lightweight FOLLOWER
