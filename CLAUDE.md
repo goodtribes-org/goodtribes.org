@@ -101,6 +101,23 @@ Content types are managed via the Strapi admin UI and stored under `src/api/`. R
 
 Frontend fetches editorial page content (About/Privacy/Terms) from Strapi via `NEXT_PUBLIC_STRAPI_URL` using `STRAPI_API_TOKEN` (`frontend/src/lib/strapi.ts`), falling back to hardcoded copy in the page component if Strapi has no published entry yet or is unreachable — so a fresh Strapi instance with empty content-types doesn't break these pages. Full-text search goes directly to Meilisearch from the browser using `NEXT_PUBLIC_MEILI_SEARCH_KEY` (read-only). Auth sessions are stored in PostgreSQL via Prisma (separate from Strapi's own tables).
 
+## Product domain model
+
+The sections above cover infra; this is a map of the actual product built on top of it, grown across many sessions — read `frontend/prisma/schema.prisma` for exact fields, this is just where to look. Product entities live entirely in Prisma (see Strapi's scope note above), organized around `Project` as the central entity:
+
+- **Project lifecycle** — `Project.phase` (`ProjectPhase` enum: `IDEA → SPRINT → PILOT → PRODUCTION → ESTABLISH → SCALE → IMPACT`; note `SPRINT` was renamed from `PROJECT` — don't reuse the old name), rendered as a numbered journey widget (`PhaseJourneyWidget.tsx`). `Project.isSandbox` just flags a project as an experimental/playground one (the `/sandbox` area) — there is no separate sandbox data model; graduating out of sandbox is flipping the flag back to `false`. (An earlier chat-thread-based `Room.isSandbox`/`Room.origin` design was fully removed when Sandbox was rebuilt on real `Project` rows — don't resurrect those field names.)
+- **Legal structure (PRD 4c)** — `Project.legalType` (`LegalType` enum: commercial paraply-AB/eget AB, ideellt paraply/egen förening), `CommercialUmbrellaEntity`, `LegalTypeChangeRequest` (member-voted, site-admin-executed transition).
+- **Fork (PRD 4f)** — `Project.forkedFromProjectId`/`forks`, `ForkContributorCredit`/`ForkProfitShare`/`ForkTokenGrant` — a permissionless copy of any project, crediting and compensating the original's Tribe Token holders. (Forking a sandbox *thread* no longer exists as a concept — only forking a `Project`, sandbox or not.)
+- **Tokens** — `TokenLedger` (Tribe Tokens, project-scoped) and `GtLedger` (GoodTribes Token, platform-wide, always a 10% mirror of a Tribe Token award — see `awardTokens` in `src/lib/tokens.ts`). `Poll`/`PollVote` are project-scoped and Tribe-Token-weighted; `PlatformPoll`/`PlatformPollVote` are platform-wide and GT-weighted (Granskningsrådet elections, Impact-fund allocation rounds).
+- **Impact-fund & profit distribution (PRD 4a)** — `ProfitDistributionProposal` → member vote → `ProfitDistribution` (site-admin executed) → `PersonalProfitAllocation` per Tribe Token holder; `ImpactFundLedger`/`ImpactFundAllocationRound` for the fund's own in/out flow.
+- **Granskningsrådet (PRD 2.97)** — `ReviewCouncilMember` (elected via `PlatformPoll`), `ExclusionCase`/`ExclusionCaseVote` for reported rule violations.
+- **Idéflödet & Idéverkstaden (PRD 1.2/1.5)** — two separate, both still-live features: `Idea` (+ `IdeaRevision`/`IdeaContributor` co-creation, one-click promotion to a `Project`) is the public idea feed; `Room{type: IDEA_THREAD}` is Idéverkstaden's collaborative chat-based brainstorming, with an `@AI` participant and AI-generated `MindMap`s.
+- **Scaling & partnerships (PRD Fas 4)** — `ProjectInstance` (regional franchise instances), `Partnership` (org↔project), `ProjectMaturity` (0-100 score driving the phase-advance prompt).
+- **Feedback loop** — `Suggestion` (private free-text feedback, any logged-in user → `/suggestions`) triaged by site-admins at `/site-admin/suggestions`; separate from the public `Idea` feed and from `ContentFlag`'s moderation pipeline.
+- **AI features** — every one is gated on `ANTHROPIC_API_KEY` and degrades gracefully (feature just unavailable, never a crash) when it's unset: mindmap generation, the AI kanban agent, project maturity/network-insight reports, task-estimate suggestions, Idéverkstaden's `@AI` participant, and the daily `sandbox-seed` cron that AI-generates new Sandbox `Project` rows to seed cold start.
+
+All of the above ships through the same migration discipline and post-plan validation checklist described elsewhere in this file — there's no separate process for "product" vs "infra" changes.
+
 ## Post-plan validation (run after every plan is implemented)
 
 After implementing any plan, always run this checklist in order:
