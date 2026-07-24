@@ -101,7 +101,7 @@ export default async function SandboxPage({
   const rawParams = { sort: sortParam, page: pageStr };
 
   return (
-    <div className="relative -mt-8 -mb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f8f8f8" }}>
+    <div className="relative -mt-8 -mb-12 flex-1" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f8f8f8" }}>
     <SandboxHero />
     <div className="max-w-6xl mx-auto px-6 pb-12">
       <div className="flex items-center justify-between mb-6 mt-2">

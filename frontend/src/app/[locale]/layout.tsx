@@ -86,10 +86,10 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={`bg-white ${inter.className}`}>
-      <body className="min-h-screen bg-white text-dark-slate">
+      <body className="min-h-screen bg-white text-dark-slate flex flex-col">
         <NextIntlClientProvider>
           <SessionProvider session={session}>
-            <header className="border-b border-muted-teal">
+            <header className="border-b border-muted-teal shrink-0">
               <nav className="w-full pl-3 pr-6 py-3 flex items-center gap-6">
                 <Link href="/" className="shrink-0 flex items-center gap-2.5">
                   <Image
@@ -114,8 +114,8 @@ export default async function LocaleLayout({
                 <AuthNav />
               </nav>
             </header>
-            <main className="max-w-6xl mx-auto px-6 pt-8 pb-12">{children}</main>
-            <footer className="border-t border-muted-teal/30 mt-16 bg-dry-sage/10">
+            <main className="max-w-6xl mx-auto px-6 pt-8 pb-12 w-full flex-1 flex flex-col">{children}</main>
+            <footer className="border-t border-muted-teal/30 bg-dry-sage/10 shrink-0">
               <div className="max-w-6xl mx-auto px-6 py-10 grid gap-8 md:grid-cols-2 text-sm">
                 <div>
                   <Image
