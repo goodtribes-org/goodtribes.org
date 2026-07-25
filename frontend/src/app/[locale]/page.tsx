@@ -11,6 +11,7 @@ import Pagination from "@/components/Pagination";
 import ActivityPulse from "@/components/ActivityPulse";
 import HeroPhotoStack from "@/components/HeroPhotoStack";
 import HomeStatsWidget from "@/components/HomeStatsWidget";
+import OnboardingStepsBar from "@/components/OnboardingStepsBar";
 import ImpactStatsWidget from "@/components/ImpactStatsWidget";
 import LeaderboardWidget from "@/components/LeaderboardWidget";
 import NewMembersWidget from "@/components/NewMembersWidget";
@@ -177,6 +178,8 @@ export default async function HomePage({
       <div className="relative -mt-8" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
         <HeroPhotoStack />
       </div>
+
+      <OnboardingStepsBar />
 
       <div className="space-y-16">
 

@@ -16,17 +16,6 @@ const PHOTO_TILT = [
   { rotate: 2, x: 8, y: 2 },
 ];
 
-type OnboardingStep = { n: string; text: string; href: string };
-
-const ONBOARDING_STEPS: OnboardingStep[] = [
-  { n: "1", text: "Skapa ett konto", href: "/login" },
-  { n: "2", text: "Hitta projekt som är rätt för dig", href: "/projects" },
-  { n: "3", text: "\"Joina\" din Tribe som brinner för samma saker som du", href: "/projects/new" },
-  { n: "4", text: "Vidareutveckla eller lägg upp en egen idé/projekt", href: "/ideas/new" },
-  { n: "5", text: "Förändra världen genom små och stora insatser", href: "/hall-of-impact" },
-  { n: "6", text: "Lev gott, Må gott, Gör gott och förverkliga idéer och drömmar", href: "/about" },
-];
-
 type Obstacle = { lead: string; text: string };
 type PercentPoint = { pct: string; text: string };
 
@@ -48,8 +37,9 @@ const PHOTOS: Photo[] = [
   {
     src: "/img/Slide1.jpg",
     alt: "GoodTribes — Crowdsourcing for Good",
-    heading: "GoodTribes",
-    body: "Crowdsourcing for good — gå med och gör skillnad!",
+    heading: "Varför finns vi...",
+    body: "GoodTribes.org är en drömfabrik där människor och organisationer samverkar för att förverkligar idéer och drömmar som medverkar till en långsiktigt hållbar miljö- och samhällsutveckling.",
+    body2: "GoodTribes är en ideell stiftelse som har som mål att hjälpa människor och organisationer att göra världen bättre. GoodTribes vision är en långsiktigt hållbar miljö- och samhällsutveckling, där alla människor ges möjlighet att förverkliga sina idéer/drömmar, sin fulla potential och samtidigt Leva Gott, Må Gott och Göra Gott för sig själv och andra.",
     menuLabel: "Kom igång",
     tint: "bg-coral/10",
   },
@@ -121,7 +111,6 @@ const PHOTOS: Photo[] = [
 export default function HeroPhotoStack() {
   const [active, setActive] = useState(0);
   const current = PHOTOS[active];
-  const isIntro = active === 0;
 
   return (
     <>
@@ -177,87 +166,54 @@ export default function HeroPhotoStack() {
               </svg>
             </button>
 
-            {/* Text — alltid synlig, till vänster, samma polaroid-form som bilden */}
+            {/* Text — alltid synlig, till vänster, samma storlek och polaroid-form som bilden */}
             <div
-              className="transition-transform duration-500 ease-out"
+              className="w-full md:max-w-[620px] md:aspect-[16/10] transition-transform duration-500 ease-out"
               style={{
                 transform: `rotate(${-PHOTO_TILT[active].rotate}deg) translate(${-PHOTO_TILT[active].x}px, ${-PHOTO_TILT[active].y}px)`,
               }}
             >
               <div className={`h-full bg-white p-3 ${CARD_SHADOW}`}>
-                <div className={`h-full border border-muted-teal/20 px-6 pt-3 pb-6 flex flex-col justify-start ${current.tint}`}>
+                <div className={`h-full md:overflow-y-auto border border-muted-teal/20 px-6 pt-3 pb-5 flex flex-col justify-start ${current.tint}`}>
                   <div key={`text-${current.src}`} className="hero-caption-in flex flex-col items-start text-left">
-                    {isIntro ? (
+                    <h1 className="font-bold text-dark-slate" style={{ textWrap: "balance", fontSize: 26 }}>
+                      {current.heading}
+                    </h1>
+                    <p className="mt-2 text-dark-slate/80" style={{ fontSize: 14, lineHeight: 1.45 }}>
+                      {current.body}
+                      {current.bodyLine2 && (
+                        <>
+                          <br />
+                          {current.bodyLine2}
+                        </>
+                      )}
+                    </p>
+                    {current.body2 && (
+                      <p className="mt-2 text-dark-slate/80" style={{ fontSize: 14, lineHeight: 1.45 }}>{current.body2}</p>
+                    )}
+                    {current.obstacles && (
                       <>
-                        <h1 className="text-3xl md:text-4xl font-bold text-dark-slate" style={{ textWrap: "balance", fontSize: 30 }}>
-                          Kom igång...
-                        </h1>
-                        <ol className="mt-4 flex flex-col gap-1.5">
-                          {ONBOARDING_STEPS.map((s) => (
-                            <li key={s.n} className="flex items-center gap-3">
-                              <span
-                                className="w-7 h-7 rounded-full bg-seagrass text-white text-sm font-bold flex items-center justify-center shrink-0"
-                                style={{ width: 35, height: 35, fontSize: 16 }}
-                              >
-                                {s.n}
-                              </span>
-                              <span
-                                className={`text-dark-slate/80 ${s.n === "6" ? "whitespace-nowrap" : ""}`}
-                                style={{ fontSize: 16 }}
-                              >
-                                {s.text}
-                              </span>
-                              {s.n === "1" && (
-                                <a href="/login" className="text-coral text-xs font-bold px-3 py-1 rounded-full border border-coral hover:bg-coral/5 transition-colors whitespace-nowrap">
-                                  Sign in
-                                </a>
-                              )}
+                        <ul className="mt-3 flex flex-col gap-2.5">
+                          {current.obstacles.map((o) => (
+                            <li key={o.lead} className="text-sm text-dark-slate/80">
+                              <span className="font-bold text-seagrass">{o.lead}</span> {o.text}
                             </li>
                           ))}
-                        </ol>
-                      </>
-                    ) : (
-                      <>
-                        <h1 className="text-3xl md:text-4xl font-bold text-dark-slate" style={{ textWrap: "balance", fontSize: 30 }}>
-                          {current.heading}
-                        </h1>
-                        <p className="mt-2 text-dark-slate/80" style={{ fontSize: 15 }}>
-                          {current.body}
-                          {current.bodyLine2 && (
-                            <>
-                              <br />
-                              {current.bodyLine2}
-                            </>
-                          )}
-                        </p>
-                        {current.body2 && (
-                          <p className="mt-3 text-dark-slate/80" style={{ fontSize: 15 }}>{current.body2}</p>
-                        )}
-                        {current.obstacles && (
-                          <>
-                            <ul className="mt-4 flex flex-col gap-3.5">
-                              {current.obstacles.map((o) => (
-                                <li key={o.lead} className="text-sm text-dark-slate/80">
-                                  <span className="font-bold text-seagrass">{o.lead}</span> {o.text}
-                                </li>
-                              ))}
-                            </ul>
-                            {current.outro && (
-                              <p className="mt-4 text-dark-slate/80" style={{ fontSize: 15 }}>{current.outro}</p>
-                            )}
-                          </>
-                        )}
-                        {current.points && (
-                          <ul className="mt-5 flex flex-col gap-2">
-                            {current.points.map((p) => (
-                              <li key={p.pct} className="flex items-center gap-3">
-                                <span className="w-14 shrink-0 text-right text-sm font-bold text-seagrass">{p.pct}</span>
-                                <span className="text-sm text-dark-slate/80">{p.text}</span>
-                              </li>
-                            ))}
-                          </ul>
+                        </ul>
+                        {current.outro && (
+                          <p className="mt-3 text-dark-slate/80" style={{ fontSize: 14, lineHeight: 1.45 }}>{current.outro}</p>
                         )}
                       </>
+                    )}
+                    {current.points && (
+                      <ul className="mt-3 flex flex-col gap-1.5">
+                        {current.points.map((p) => (
+                          <li key={p.pct} className="flex items-center gap-3">
+                            <span className="w-14 shrink-0 text-right text-sm font-bold text-seagrass">{p.pct}</span>
+                            <span className="text-sm text-dark-slate/80">{p.text}</span>
+                          </li>
+                        ))}
+                      </ul>
                     )}
                   </div>
                 </div>
