@@ -22,7 +22,7 @@ export default async function MessagesLayout({ children }: { children: React.Rea
     : [[], [], []];
 
   return (
-    <div className="flex gap-6 max-w-5xl mx-auto">
+    <div className="flex gap-6 w-full max-w-5xl mx-auto">
       <MessagesSidebar
         isLoggedIn={!!userId}
         dmGroupRooms={dmGroupRooms.map((r) => ({ ...r, lastMessageAt: r.lastMessageAt.toISOString() }))}
