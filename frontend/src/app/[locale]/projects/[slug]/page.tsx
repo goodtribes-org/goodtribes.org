@@ -451,6 +451,15 @@ export default async function ProjectDetailPage({
         </div>
       </div>
 
+      <div className="mb-6">
+        <PhaseJourneyWidget
+          slug={slug}
+          phase={project.phase}
+          completedKeys={checklistItems.map((c) => c.itemKey)}
+          canEdit={!!isOwnerOrAdmin}
+        />
+      </div>
+
       {/* Tab nav — below hero */}
       <div
         className="mb-6"
@@ -719,13 +728,6 @@ export default async function ProjectDetailPage({
               </section>
             );
           })()}
-
-          <PhaseJourneyWidget
-            slug={slug}
-            phase={project.phase}
-            completedKeys={checklistItems.map((c) => c.itemKey)}
-            canEdit={!!isOwnerOrAdmin}
-          />
 
           {/* Uppgifter widget */}
           {(() => {

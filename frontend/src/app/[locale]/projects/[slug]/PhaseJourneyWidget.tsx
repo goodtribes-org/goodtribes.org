@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
 import { PROJECT_PHASES, INITIATIVE_CHECKLIST_ITEMS, type ProjectPhaseValue } from "@/lib/projectPhase";
 
@@ -15,91 +15,106 @@ function getChecklistFor(p: ProjectPhaseValue) {
   return p === "IDEA" || p === "SPRINT" ? INITIATIVE_CHECKLIST_ITEMS[p] : null;
 }
 
-// Fas- och stegwidget (PRD 4d) — the full seven-phase journey, visible to
-// every visitor, each phase numbered 1-7. Only phases with a checklist
-// (currently idea/sprint) are clickable, expanding their delsteg directly
-// beneath that phase (between it and the next one). Only the project's
-// actual current phase's items can be toggled — the project lead (canEdit)
-// checks them off, everyone else sees read-only ticks so nothing looks
-// clickable-but-broken.
+// Fas- och stegmeny (PRD 4d) — en platt meny under hero, "1. Idé", "2. Sprint" osv.
+// Faser med checklista (idé/sprint) går att klicka på för att fälla ut en
+// undermeny med numrerade delsteg ("1.1 Beskriv idén", "1.2 ...").
 export default function PhaseJourneyWidget({ slug, phase, completedKeys, canEdit }: Props) {
   const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedKeys));
   const [isPending, startTransition] = useTransition();
-  const [expandedPhase, setExpandedPhase] = useState<ProjectPhaseValue | null>(phase);
+  const [openPhase, setOpenPhase] = useState<ProjectPhaseValue | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const currentIndex = PROJECT_PHASES.findIndex((p) => p.value === phase);
 
-  function handleToggle(itemKey: string, done: boolean) {
-    if (!canEdit || expandedPhase !== phase) return;
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpenPhase(null);
+    }
+    if (openPhase) document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [openPhase]);
+
+  function handleToggle(p: ProjectPhaseValue, itemKey: string, done: boolean) {
+    if (!canEdit || p !== phase) return;
     setDoneKeys((prev) => {
       const next = new Set(prev);
       if (done) next.add(itemKey); else next.delete(itemKey);
       return next;
     });
-    startTransition(() => toggleChecklistItem(slug, phase as "IDEA" | "SPRINT", itemKey, done));
-  }
-
-  function handlePhaseClick(p: ProjectPhaseValue) {
-    if (!getChecklistFor(p)) return;
-    setExpandedPhase((prev) => (prev === p ? null : p));
+    startTransition(() => toggleChecklistItem(slug, p as "IDEA" | "SPRINT", itemKey, done));
   }
 
   return (
-    <section className="border border-muted-teal/30 rounded-xl p-5">
-      <h2 className="text-sm font-semibold text-dark-slate mb-4">Projektfaser</h2>
-      <ol className="flex flex-col">
+    <div ref={menuRef}>
+      <nav className="relative flex flex-wrap items-center justify-center gap-5 text-sm w-fit mx-auto">
+        {/* Linje mellan faserna, samma mönster som stegen på startsidan — pillren (bg-white/bg-seagrass) döljer linjen där de sitter. Grön fram till uppnådd fas, grå därefter. */}
+        <div
+          className="hidden sm:flex absolute left-0 right-0"
+          style={{ top: "50%", transform: "translateY(-50%)" }}
+          aria-hidden="true"
+        >
+          {PROJECT_PHASES.slice(1).map((_, i) => (
+            <div
+              key={i}
+              className={`flex-1 border-t-2 border-dashed ${i < currentIndex ? "border-seagrass/60" : "border-dark-slate/20"}`}
+            />
+          ))}
+        </div>
         {PROJECT_PHASES.map((p, i) => {
           const isCurrent = i === currentIndex;
           const isPast = i < currentIndex;
-          const isLast = i === PROJECT_PHASES.length - 1;
-          const hasChecklist = !!getChecklistFor(p.value);
-          const isExpanded = expandedPhase === p.value;
           const checklist = getChecklistFor(p.value);
+          const isOpen = openPhase === p.value;
           const canEditThis = canEdit && p.value === phase;
 
-          const numberColor = isCurrent ? "text-seagrass" : isPast ? "text-dark-slate/50" : "text-dark-slate/30";
-          const labelColor = isCurrent ? "font-bold text-seagrass" : isPast ? "text-dark-slate/50" : "text-dark-slate/30";
+          const pillClass = isCurrent
+            ? "bg-seagrass text-white font-bold shadow-sm"
+            : isPast
+              ? "bg-white border border-seagrass/60 text-seagrass/80 hover:border-seagrass hover:text-seagrass"
+              : "bg-white border border-dark-slate/15 text-dark-slate/35 hover:border-dark-slate/30 hover:text-dark-slate/60";
 
           return (
-            <li key={p.value} className="flex gap-3">
-              <div className="flex flex-col items-center w-5 flex-shrink-0">
-                <span className={`text-sm font-bold tabular-nums leading-none pt-0.5 ${numberColor}`}>{i + 1}</span>
-                {!isLast && <div className="w-px flex-1 bg-muted-teal/25 mt-1.5" />}
-              </div>
-
-              <div className="flex-1 min-w-0 pb-2">
-                {hasChecklist ? (
-                  <button
-                    type="button"
-                    onClick={() => handlePhaseClick(p.value)}
-                    aria-expanded={isExpanded}
-                    className="flex items-center gap-1.5 group"
+            <div key={p.value} className="relative z-10 flex items-center">
+              {checklist ? (
+                <button
+                  type="button"
+                  onClick={() => setOpenPhase((prev) => (prev === p.value ? null : p.value))}
+                  aria-expanded={isOpen}
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded-full transition-colors ${pillClass} ${
+                    isOpen ? "ring-2 ring-seagrass/30" : ""
+                  }`}
+                >
+                  {i + 1}. {p.label}
+                  <svg
+                    className={`w-3 h-3 opacity-60 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
                   >
-                    <span className={`text-sm ${labelColor}`}>{p.label}</span>
-                    <svg
-                      className={`w-3 h-3 text-dark-slate/30 transition-transform group-hover:text-dark-slate/50 ${isExpanded ? "rotate-180" : ""}`}
-                      fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                ) : (
-                  <span className={`text-sm ${labelColor}`}>{p.label}</span>
-                )}
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              ) : (
+                <span className={`px-3 py-1.5 rounded-full inline-block transition-colors ${pillClass}`}>
+                  {i + 1}. {p.label}
+                </span>
+              )}
 
-                {isExpanded && checklist && (
-                  <ul className="flex flex-col gap-2 mt-3">
-                    {checklist.map((item) => {
+              {isOpen && checklist && (
+                <div className="absolute left-0 top-full mt-2 w-72 bg-white border border-muted-teal/20 rounded-xl shadow-lg z-20 overflow-hidden animate-[fadeIn_0.12s_ease-out]">
+                  <p className="px-3.5 pt-3 pb-2 text-xs font-semibold text-dark-slate/40 uppercase tracking-wide border-b border-muted-teal/10">
+                    {p.label}
+                  </p>
+                  <div className="py-1">
+                    {checklist.map((item, j) => {
                       const done = doneKeys.has(item.key);
                       return (
-                        <li key={item.key} className="flex items-center gap-2.5">
+                        <div key={item.key} className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-seagrass/5 transition-colors">
                           <button
                             type="button"
                             disabled={isPending || !canEditThis}
-                            onClick={() => handleToggle(item.key, !done)}
+                            onClick={() => handleToggle(p.value, item.key, !done)}
                             aria-checked={done}
                             role="checkbox"
-                            className={`w-[15px] h-[15px] rounded-[3px] flex items-center justify-center flex-shrink-0 transition-colors ${
+                            className={`w-4 h-4 rounded-[4px] flex items-center justify-center flex-shrink-0 transition-colors ${
                               done ? "bg-seagrass" : "border border-muted-teal/50 bg-white"
                             } ${canEditThis ? "" : "cursor-default"}`}
                           >
@@ -109,23 +124,24 @@ export default function PhaseJourneyWidget({ slug, phase, completedKeys, canEdit
                               </svg>
                             )}
                           </button>
-                          <span className={`text-[13px] ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/50"}`}>
+                          <span className={`text-sm ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/80"}`}>
+                            <span className="text-dark-slate/40 font-medium">{i + 1}.{j + 1}</span>{" "}
                             {item.href ? (
                               <a href={`/projects/${slug}/${item.href}`} className="hover:underline">{item.label}</a>
                             ) : (
                               item.label
                             )}
                           </span>
-                        </li>
+                        </div>
                       );
                     })}
-                  </ul>
-                )}
-              </div>
-            </li>
+                  </div>
+                </div>
+              )}
+            </div>
           );
         })}
-      </ol>
-    </section>
+      </nav>
+    </div>
   );
 }
