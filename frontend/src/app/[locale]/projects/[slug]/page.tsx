@@ -15,6 +15,7 @@ import Tooltip from "@/components/Tooltip";
 import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import ProjectTabNav from "./ProjectTabNav";
 import PhaseJourneyWidget from "./PhaseJourneyWidget";
+import PhaseMenuBar from "./PhaseMenuBar";
 import { isLeadRole, isSiteAdmin } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
@@ -452,7 +453,7 @@ export default async function ProjectDetailPage({
       </div>
 
       <div className="mb-6">
-        <PhaseJourneyWidget
+        <PhaseMenuBar
           slug={slug}
           phase={project.phase}
           completedKeys={checklistItems.map((c) => c.itemKey)}
@@ -728,6 +729,13 @@ export default async function ProjectDetailPage({
               </section>
             );
           })()}
+
+          <PhaseJourneyWidget
+            slug={slug}
+            phase={project.phase}
+            completedKeys={checklistItems.map((c) => c.itemKey)}
+            canEdit={!!isOwnerOrAdmin}
+          />
 
           {/* Uppgifter widget */}
           {(() => {
