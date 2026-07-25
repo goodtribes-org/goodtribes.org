@@ -127,7 +127,7 @@ export default async function LocaleLayout({
                   />
                   <p className="text-dark-slate/60 leading-relaxed text-xs">{t("foundationBlurb")}</p>
                 </div>
-                <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
+                <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60 justify-self-end">
                   <p className="font-semibold text-dark-slate mb-1 uppercase tracking-wider">{t("exploreTitle")}</p>
                   <Link href="/hall-of-impact" className="hover:text-dark-slate transition-colors">{t("hallOfImpact")}</Link>
                   <Link href="/academy" className="hover:text-dark-slate transition-colors">{t("academy")}</Link>
