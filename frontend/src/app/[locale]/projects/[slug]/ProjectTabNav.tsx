@@ -6,8 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 
 const MAIN_TABS = [
-  { label: "Flöde",         href: "/activity" },
-  { label: "Projektet",     href: "" },
+  { label: "Startsidan",    href: "" },
   { label: "Uppgifter",     href: "/tasks" },
   { label: "Kalender",      href: "/calendar" },
   { label: "Kommunikation", href: "/kanaler", absolute: true },
