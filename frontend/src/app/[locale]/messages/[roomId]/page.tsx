@@ -59,6 +59,8 @@ export default async function RoomPage({
         ...m,
         createdAt: m.createdAt.toISOString(),
         updatedAt: m.updatedAt.toISOString(),
+        editedAt: m.editedAt ? m.editedAt.toISOString() : null,
+        deletedAt: m.deletedAt ? m.deletedAt.toISOString() : null,
       }))}
       currentUserId={userId}
       canPost={!!userId && access.canPost}

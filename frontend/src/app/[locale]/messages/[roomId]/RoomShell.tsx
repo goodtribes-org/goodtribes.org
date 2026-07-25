@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { ReactionBar } from "@/components/ReactionBar";
 import { renderBody } from "@/lib/renderBody";
-import { toggleReaction, markRoomRead } from "../actions";
+import { toggleReaction, markRoomRead, editRoomMessage, deleteRoomMessage } from "../actions";
 import { FEED_LIKE_EMOJI } from "@/lib/feedLikeEmoji";
 import { MessageComposer } from "./MessageComposer";
 import { ThreadPanel } from "./ThreadPanel";
@@ -20,6 +20,8 @@ export type MessageRow = {
   body: string;
   createdAt: string;
   updatedAt: string;
+  editedAt: string | null;
+  deletedAt: string | null;
   threadParentId: string | null;
   authorId: string;
   author: { id: string; name: string | null; image: string | null };
@@ -75,8 +77,34 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
   const [, startTransition] = useTransition();
   const [activeThread, setActiveThread] = useState<MessageRow | null>(null);
   const [threadReplies, setThreadReplies] = useState<MessageRow[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingBody, setEditingBody] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const esRef = useRef<EventSource | null>(null);
+
+  function startEdit(m: MessageRow) {
+    setConfirmDeleteId(null);
+    setEditingId(m.id);
+    setEditingBody(m.body.replace(/<[^>]*>/g, ""));
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditingBody("");
+  }
+
+  function saveEdit(m: MessageRow) {
+    const trimmed = editingBody.trim();
+    if (!trimmed) return;
+    startTransition(() => editRoomMessage(room.id, m.id, trimmed));
+    cancelEdit();
+  }
+
+  function handleDelete(messageId: string) {
+    startTransition(() => deleteRoomMessage(room.id, messageId));
+    setConfirmDeleteId(null);
+  }
 
   useEffect(() => {
     if (currentUserId) markRoomRead(room.id).catch(() => {});
@@ -100,7 +128,15 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
     esRef.current = es;
 
     es.addEventListener("message", (e) => {
-      const msg: MessageRow = JSON.parse(e.data);
+      const { type, message: msg }: { type: "created" | "updated"; message: MessageRow } = JSON.parse(e.data);
+
+      if (type === "updated") {
+        setMessages((prev) => prev.map((m) => (m.id === msg.id ? msg : m)));
+        setThreadReplies((prev) => prev.map((r) => (r.id === msg.id ? msg : r)));
+        setActiveThread((current) => (current?.id === msg.id ? msg : current));
+        return;
+      }
+
       if (msg.threadParentId) {
         setMessages((prev) =>
           prev.map((m) =>
@@ -227,7 +263,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                       )}
 
                       <div className="relative inline-grid max-w-full group/bubble">
-                        {canPost && (
+                        {canPost && !m.deletedAt && editingId !== m.id && (
                           <div
                             className={`absolute -top-4 ${isOwn ? "right-0" : "left-0"} hidden group-hover/bubble:flex items-center bg-white border border-gray-200 rounded-lg shadow-md z-20 overflow-hidden`}
                           >
@@ -255,16 +291,81 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                                 </button>
                               </>
                             )}
+                            {isOwn && (
+                              <>
+                                <span className="w-px h-5 bg-gray-200 mx-0.5" />
+                                <button
+                                  type="button"
+                                  onClick={() => startEdit(m)}
+                                  className="px-2 py-1.5 hover:bg-gray-100 text-sm text-dark-slate/60 hover:text-seagrass transition-colors"
+                                  title="Redigera"
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setConfirmDeleteId(m.id)}
+                                  className="px-2 py-1.5 hover:bg-gray-100 text-sm text-dark-slate/60 hover:text-watermelon transition-colors"
+                                  title="Ta bort"
+                                >
+                                  🗑️
+                                </button>
+                              </>
+                            )}
                           </div>
                         )}
 
                         <div
                           className={`rounded-2xl px-3 py-2 text-dark-slate ${isOwn ? "bg-seagrass/10" : "bg-gray-50"}`}
                         >
-                          {renderBody(m.body)}
+                          {m.deletedAt ? (
+                            <p className="text-sm italic text-dark-slate/40">Meddelandet togs bort</p>
+                          ) : editingId === m.id ? (
+                            <div className="flex flex-col gap-1.5 min-w-[200px]">
+                              <textarea
+                                autoFocus
+                                value={editingBody}
+                                onChange={(e) => setEditingBody(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    saveEdit(m);
+                                  }
+                                  if (e.key === "Escape") cancelEdit();
+                                }}
+                                rows={2}
+                                className="w-full text-sm bg-white border border-muted-teal/30 rounded-lg px-2 py-1.5 resize-none text-dark-slate focus:outline-none focus:border-seagrass"
+                              />
+                              <div className="flex items-center gap-3 text-xs">
+                                <button type="button" onClick={() => saveEdit(m)} className="text-seagrass font-semibold hover:underline">
+                                  Spara
+                                </button>
+                                <button type="button" onClick={cancelEdit} className="text-dark-slate/50 hover:underline">
+                                  Avbryt
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              {renderBody(m.body)}
+                              {m.editedAt && <span className="text-[10px] text-dark-slate/30 ml-1">(redigerat)</span>}
+                            </>
+                          )}
                         </div>
 
-                        {(m.reactions.length > 0 || (canReply && m._count.threadReplies > 0)) && (
+                        {confirmDeleteId === m.id && (
+                          <div className="mt-1 flex items-center gap-2 text-xs bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 shadow-sm">
+                            <span className="text-dark-slate/60">Ta bort meddelandet?</span>
+                            <button type="button" onClick={() => handleDelete(m.id)} className="text-watermelon font-semibold hover:underline">
+                              Ja
+                            </button>
+                            <button type="button" onClick={() => setConfirmDeleteId(null)} className="text-dark-slate/50 hover:underline">
+                              Avbryt
+                            </button>
+                          </div>
+                        )}
+
+                        {!m.deletedAt && (m.reactions.length > 0 || (canReply && m._count.threadReplies > 0)) && (
                           <div
                             className={`-mt-[3px] ${
                               isOwn ? "justify-self-end" : "justify-self-start"
@@ -292,7 +393,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                           </div>
                         )}
                       </div>
-                      {currentUserId && (
+                      {currentUserId && !m.deletedAt && (
                         <div className={isOwn ? "self-end" : "self-start"}>
                           <FlagContentButton targetType="Message" targetId={m.id} />
                         </div>

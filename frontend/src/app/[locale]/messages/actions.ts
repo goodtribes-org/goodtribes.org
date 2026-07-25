@@ -101,7 +101,7 @@ export async function sendRoomMessage(roomId: string, body: string, threadParent
     await markRoomReadDb(roomId, userId);
   }
 
-  publishToRoom(roomId, message);
+  publishToRoom(roomId, { type: "created", message });
 
   const senderName = session.user.name ?? "Någon";
   const rawMentionIds = extractMentionedUserIds(body);
@@ -296,6 +296,56 @@ export async function toggleReaction(messageId: string, roomId: string, emoji: s
 
   revalidatePath(`/messages/${roomId}`);
   revalidatePath("/feed");
+}
+
+// Only the original author may edit their own message, and only while it
+// hasn't been soft-deleted. Deletion is modeled as an "update" too (deletedAt
+// set, body cleared) so the client can reuse the same SSE event type — see
+// publishToRoom below.
+export async function editRoomMessage(roomId: string, messageId: string, body: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+  assertValidBody(body);
+
+  const existing = await prisma.message.findUnique({ where: { id: messageId } });
+  if (!existing || existing.roomId !== roomId) throw new Error("Not found");
+  if (existing.authorId !== session.user.id) throw new Error("Forbidden");
+  if (existing.deletedAt) throw new Error("Message deleted");
+
+  const message = await prisma.message.update({
+    where: { id: messageId },
+    data: { body, editedAt: new Date() },
+    include: {
+      author: { select: { id: true, name: true, image: true } },
+      reactions: { select: { emoji: true, userId: true } },
+      _count: { select: { threadReplies: true } },
+    },
+  });
+
+  publishToRoom(roomId, { type: "updated", message });
+  revalidatePath(`/messages/${roomId}`);
+}
+
+export async function deleteRoomMessage(roomId: string, messageId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const existing = await prisma.message.findUnique({ where: { id: messageId } });
+  if (!existing || existing.roomId !== roomId) throw new Error("Not found");
+  if (existing.authorId !== session.user.id) throw new Error("Forbidden");
+
+  const message = await prisma.message.update({
+    where: { id: messageId },
+    data: { body: "", deletedAt: new Date() },
+    include: {
+      author: { select: { id: true, name: true, image: true } },
+      reactions: { select: { emoji: true, userId: true } },
+      _count: { select: { threadReplies: true } },
+    },
+  });
+
+  publishToRoom(roomId, { type: "updated", message });
+  revalidatePath(`/messages/${roomId}`);
 }
 
 // No auth required — used by the sidebar to let a logged-out (or

@@ -1877,6 +1877,8 @@ model Message {
   isAi           Boolean           @default(false)
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
+  editedAt       DateTime?
+  deletedAt      DateTime?
   hiddenAt       DateTime?
   hiddenById     String?
   hiddenReason   ContentHideReason?

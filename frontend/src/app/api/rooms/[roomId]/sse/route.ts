@@ -44,7 +44,7 @@ export async function GET(
         for (const msg of missed) {
           const eventId = msg.createdAt.toISOString();
           controller.enqueue(
-            encoder.encode(`id: ${eventId}\nevent: message\ndata: ${JSON.stringify(msg)}\n\n`)
+            encoder.encode(`id: ${eventId}\nevent: message\ndata: ${JSON.stringify({ type: "created", message: msg })}\n\n`)
           );
         }
       } catch {
@@ -53,7 +53,7 @@ export async function GET(
 
       unsubscribe = subscribeToRoom(roomId, (raw) => {
         const parsed = JSON.parse(raw);
-        const eventId = parsed.createdAt ?? new Date().toISOString();
+        const eventId = parsed.message?.createdAt ?? new Date().toISOString();
         controller.enqueue(encoder.encode(`id: ${eventId}\nevent: message\ndata: ${raw}\n\n`));
       });
 
