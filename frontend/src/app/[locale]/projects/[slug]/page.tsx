@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -23,6 +23,10 @@ import ShareButton from "@/components/ShareButton";
 import LikeCommentBlock from "@/components/LikeCommentBlock";
 import { getLikeCommentData } from "@/lib/socialInteractions";
 import { toProxyUrl } from "@/lib/storageUrl";
+import ActivityFeed from "@/components/ActivityFeed";
+import { fetchActivityItems, getFeedInteractionData } from "@/lib/activityFeed";
+
+const FEED_PAGE_SIZE = 20;
 
 function MemberAvatar({
   name,
@@ -156,10 +160,10 @@ export default async function ProjectDetailPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<{ page?: string }>;
 }) {
   const { locale, slug } = await params;
-  const { view } = await searchParams;
+  const { page: feedPageStr } = await searchParams;
   const session = await auth();
 
   const project = await prisma.project.findUnique({
@@ -195,15 +199,23 @@ export default async function ProjectDetailPage({
   const isMember = !!userMembership;
 
   // "Flöde i projekten" — real members (excludes the lightweight FOLLOWER
-  // relationship) land on the project's own feed by default; ?view=overview
-  // (used by the "Projektet" tab itself) opts back into this page so the
-  // tab never redirect-loops back to the feed.
+  // relationship) see the project's own feed above the project text;
+  // everyone else sees it below, after the description/update sections.
   const isRealMember = isMember && userMembership?.role !== "FOLLOWER";
-  if (isRealMember && view !== "overview") {
-    redirect(`/projects/${slug}/activity`);
-  }
 
   const { likeCount, liked, comments } = await getLikeCommentData("project", project.id, userId ?? null);
+
+  const feedPage = Math.max(1, parseInt(feedPageStr ?? "1") || 1);
+  const allFeedItems = await fetchActivityItems(feedPage * FEED_PAGE_SIZE, { projectId: project.id, projectSlug: slug });
+  const feedTotal = allFeedItems.length;
+  const feedPageItems = allFeedItems.slice((feedPage - 1) * FEED_PAGE_SIZE, feedPage * FEED_PAGE_SIZE);
+  const {
+    likeCountByTarget: feedLikeCountByTarget,
+    likedByMe: feedLikedByMe,
+    commentsByTarget: feedCommentsByTarget,
+    memberProjectIds: feedMemberProjectIds,
+    pendingJoinProjectIds: feedPendingJoinProjectIds,
+  } = await getFeedInteractionData(feedPageItems, userId ?? null);
 
   // Month bounds for calendar
   const now = new Date();
@@ -512,6 +524,33 @@ export default async function ProjectDetailPage({
       <div className="flex flex-col md:flex-row gap-5 items-start md:-mr-7">
         {/* Left: project story */}
         <div className="flex-1 min-w-0 space-y-8">
+          {isRealMember && (
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-semibold text-dark-slate">Flöde</h2>
+                <Link href={`/projects/${slug}/activity`} className="text-xs text-seagrass hover:underline">
+                  Se hela flödet →
+                </Link>
+              </div>
+              <ActivityFeed
+                pageItems={feedPageItems}
+                isLoggedIn={!!userId}
+                page={feedPage}
+                pageStr={feedPageStr}
+                total={feedTotal}
+                perPage={FEED_PAGE_SIZE}
+                basePath={`/projects/${slug}`}
+                likeCountByTarget={feedLikeCountByTarget}
+                likedByMe={feedLikedByMe}
+                commentsByTarget={feedCommentsByTarget}
+                memberProjectIds={feedMemberProjectIds}
+                pendingJoinProjectIds={feedPendingJoinProjectIds}
+                projectId={project.id}
+                emptyMessage="Ingen aktivitet i projektet ännu."
+              />
+            </section>
+          )}
+
           {(project as typeof project & { summary: string | null }).summary && (
             <section>
               <div className="relative pl-5">
@@ -565,6 +604,33 @@ export default async function ProjectDetailPage({
                   </Link>
                 </div>
               </div>
+            </section>
+          )}
+
+          {!isRealMember && (
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-semibold text-dark-slate">Flöde</h2>
+                <Link href={`/projects/${slug}/activity`} className="text-xs text-seagrass hover:underline">
+                  Se hela flödet →
+                </Link>
+              </div>
+              <ActivityFeed
+                pageItems={feedPageItems}
+                isLoggedIn={!!userId}
+                page={feedPage}
+                pageStr={feedPageStr}
+                total={feedTotal}
+                perPage={FEED_PAGE_SIZE}
+                basePath={`/projects/${slug}`}
+                likeCountByTarget={feedLikeCountByTarget}
+                likedByMe={feedLikedByMe}
+                commentsByTarget={feedCommentsByTarget}
+                memberProjectIds={feedMemberProjectIds}
+                pendingJoinProjectIds={feedPendingJoinProjectIds}
+                projectId={project.id}
+                emptyMessage="Ingen aktivitet i projektet ännu."
+              />
             </section>
           )}
         </div>
