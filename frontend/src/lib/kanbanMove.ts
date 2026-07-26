@@ -36,7 +36,17 @@ async function updateStreak(userId: string, projectSlug: string) {
   }
 }
 
-export async function moveKanbanCard(cardId: string, newColumn: string, userId: string) {
+export type MoveOverrides = {
+  // Reassigns which member gets credited for a subtask's completion — from
+  // the payout preview dialog, when the wrong person was recorded against
+  // it. Keyed by subtask id; null clears the credit for that subtask.
+  subtaskCompletedBy?: Record<string, string | null>;
+  // Only used as a payout override when the card has no subtasks (or none
+  // credited to anyone) — the assignee-fallback case in computeCardPayees.
+  assigneeId?: string | null;
+};
+
+export async function moveKanbanCard(cardId: string, newColumn: string, userId: string, overrides?: MoveOverrides) {
   const card = await prisma.kanbanCard.findUnique({ where: { id: cardId } });
   if (!card) return { error: "Card not found" };
 
@@ -48,7 +58,7 @@ export async function moveKanbanCard(cardId: string, newColumn: string, userId: 
   const subtasks = await prisma.kanbanCardSubtask.findMany({
     where: { cardId: card.id },
     orderBy: { order: "asc" },
-    select: { title: true, done: true, completedById: true },
+    select: { id: true, title: true, done: true, completedById: true },
   });
 
   // A card with subtasks can't reach Review or Done until every subtask is
@@ -92,11 +102,34 @@ export async function moveKanbanCard(cardId: string, newColumn: string, userId: 
     const payees = await prisma.$transaction(async (tx) => {
       const alreadyPaid = await tx.tokenLedger.count({ where: { kanbanCardId: card.id } });
       if (alreadyPaid > 0) return [];
+
+      // Apply any reassignments made in the payout preview dialog — persisted
+      // for real (not just this one payout) so the subtask/card keep showing
+      // the corrected credit afterwards.
+      let payoutSubtasks = subtasks;
+      let payoutAssigneeId = card.assigneeId;
+
+      if (overrides?.subtaskCompletedBy) {
+        const reassignments = Object.entries(overrides.subtaskCompletedBy);
+        for (const [subtaskId, completedById] of reassignments) {
+          await tx.kanbanCardSubtask.update({ where: { id: subtaskId }, data: { completedById } });
+        }
+        const bySubtaskId = new Map(reassignments);
+        payoutSubtasks = subtasks.map((s) => (bySubtaskId.has(s.id) ? { ...s, completedById: bySubtaskId.get(s.id)! } : s));
+      }
+
+      if (overrides?.assigneeId !== undefined && !payoutSubtasks.some((s) => s.completedById)) {
+        payoutAssigneeId = overrides.assigneeId;
+        if (overrides.assigneeId !== card.assigneeId) {
+          await tx.kanbanCard.update({ where: { id: card.id }, data: { assigneeId: overrides.assigneeId } });
+        }
+      }
+
       return mintCardCompletion(tx, {
         card: { id: card.id, projectSlug: card.projectSlug, title: card.title, priority: card.priority, createdById: card.createdById },
         tokenValue,
-        subtasks,
-        assigneeId: card.assigneeId,
+        subtasks: payoutSubtasks,
+        assigneeId: payoutAssigneeId,
         approverId: userId,
       });
     });

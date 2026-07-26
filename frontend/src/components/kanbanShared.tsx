@@ -14,7 +14,7 @@ export type TaskEstimate = {
   aiReasoning: string;
 } | null;
 
-export type Subtask = { id: string; title: string; done: boolean; order: number };
+export type Subtask = { id: string; title: string; done: boolean; order: number; completedById?: string | null };
 
 export type Comment = {
   id: string;

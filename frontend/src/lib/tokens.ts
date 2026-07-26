@@ -1,5 +1,8 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { computeCardPayees, CREATOR_BONUS_TOKENS, APPROVER_BONUS_TOKENS, type SubtaskForPayout } from "./payoutMath";
+
+export { computeCardPayees, CREATOR_BONUS_TOKENS, APPROVER_BONUS_TOKENS, type SubtaskForPayout };
 
 const GT_MIRROR_RATE = 0.1;
 
@@ -40,34 +43,6 @@ export async function awardTokens(
     },
   });
   return ledgerRow;
-}
-
-export const CREATOR_BONUS_TOKENS = 5;
-export const APPROVER_BONUS_TOKENS = 5;
-
-export type SubtaskForPayout = { completedById: string | null };
-
-// A card's fixed priority-value token pool is split between whoever completed
-// its subtasks, weighted by how many subtasks each person completed. Falls
-// back to the assignee when there's no subtask completer to attribute to —
-// either the card has no subtasks, or (for cards finished before this field
-// existed) the subtasks are done but nobody's recorded against them.
-export function computeCardPayees(params: {
-  tokenValue: number;
-  subtasks: SubtaskForPayout[];
-  assigneeId: string | null;
-}): Array<{ userId: string; tokens: number }> {
-  const attributed = params.subtasks.filter((s): s is { completedById: string } => !!s.completedById);
-  if (attributed.length > 0) {
-    const counts = new Map<string, number>();
-    for (const s of attributed) counts.set(s.completedById, (counts.get(s.completedById) ?? 0) + 1);
-    return Array.from(counts.entries()).map(([userId, count]) => ({
-      userId,
-      tokens: (params.tokenValue * count) / attributed.length,
-    }));
-  }
-  if (params.assigneeId) return [{ userId: params.assigneeId, tokens: params.tokenValue }];
-  return [];
 }
 
 // The full payout for a card reaching Done through the normal flow: subtask/

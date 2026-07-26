@@ -2,6 +2,8 @@
 
 import { useState, useTransition, useEffect, useRef } from "react";
 import type { Member } from "@/components/KanbanBoard";
+import { TokenPayoutDialog } from "./TokenPayoutDialog";
+import type { MoveOverrides } from "@/lib/kanbanMove";
 import {
   createCard,
   moveCard,
@@ -14,6 +16,7 @@ type Subtask = {
   title: string;
   done: boolean;
   order: number;
+  completedById?: string | null;
 };
 
 type Card = {
@@ -25,6 +28,8 @@ type Card = {
   column: string;
   order: number;
   priority: string;
+  priorityLockedAt?: Date | string | null;
+  lockedTokenValue?: number | null;
   assigneeId: string | null;
   assignee: Member | null;
   createdById: string;
@@ -82,6 +87,7 @@ export default function TaskListView({
   const [columns, setColumns] = useState<Columns>(initialColumns);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ DONE: true });
   const [addingInColumn, setAddingInColumn] = useState<string | null>(null);
+  const [pendingDonePayout, setPendingDonePayout] = useState<Card | null>(null);
 
   function handleCardMoved(cardId: string, toColumn: keyof Columns) {
     setColumns((prev) => {
@@ -114,6 +120,15 @@ export default function TaskListView({
     setAddingInColumn(null);
   }
 
+  function handleConfirmDonePayout(overrides: MoveOverrides) {
+    if (!pendingDonePayout) return;
+    const card = pendingDonePayout;
+    const previousColumn = card.column as keyof Columns;
+    setPendingDonePayout(null);
+    handleCardMoved(card.id, "DONE");
+    moveCard(card.id, "DONE", overrides).catch(() => handleCardMoved(card.id, previousColumn));
+  }
+
   return (
     <div className="max-w-2xl">
       {COLUMN_DEFS.map((col) => (
@@ -134,9 +149,19 @@ export default function TaskListView({
           onCardAdded={handleCardAdded}
           onCardMoved={handleCardMoved}
           onCardDeleted={handleCardDeleted}
+          onRequestDonePayout={setPendingDonePayout}
           projectSlug={projectSlug}
         />
       ))}
+
+      {pendingDonePayout && (
+        <TokenPayoutDialog
+          card={pendingDonePayout}
+          members={members}
+          onConfirm={handleConfirmDonePayout}
+          onCancel={() => setPendingDonePayout(null)}
+        />
+      )}
     </div>
   );
 }
@@ -155,6 +180,7 @@ function SectionGroup({
   onCardAdded,
   onCardMoved,
   onCardDeleted,
+  onRequestDonePayout,
   projectSlug,
 }: {
   col: { key: string; label: string; color: string };
@@ -170,6 +196,7 @@ function SectionGroup({
   onCardAdded: (card: Card) => void;
   onCardMoved: (id: string, toColumn: keyof Columns) => void;
   onCardDeleted: (id: string) => void;
+  onRequestDonePayout: (card: Card) => void;
   projectSlug: string;
 }) {
   const [, startTransition] = useTransition();
@@ -218,6 +245,10 @@ function SectionGroup({
                   const target: keyof Columns = isLead ? "DONE" : "REVIEW";
                   const previousColumn = card.column as keyof Columns;
                   if (target === previousColumn) return;
+                  if (target === "DONE") {
+                    onRequestDonePayout(card);
+                    return;
+                  }
                   onCardMoved(card.id, target);
                   startTransition(async () => {
                     try { await moveCard(card.id, target); }

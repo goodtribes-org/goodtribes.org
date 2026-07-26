@@ -8,7 +8,7 @@ import { logActivity } from "@/lib/activity";
 import { isRealMember, isCardClaimant, hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { createNotification } from "@/lib/notify";
 import { publishToKanban } from "@/lib/redis";
-import { moveKanbanCard } from "@/lib/kanbanMove";
+import { moveKanbanCard, type MoveOverrides } from "@/lib/kanbanMove";
 
 async function isProjectLead(projectSlug: string, userId: string): Promise<boolean> {
   const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
@@ -488,11 +488,11 @@ export async function setCardOpenToPublic(cardId: string, open: boolean) {
   return { ok: true, card: updated };
 }
 
-export async function moveCard(cardId: string, newColumn: string) {
+export async function moveCard(cardId: string, newColumn: string, overrides?: MoveOverrides) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
 
-  return moveKanbanCard(cardId, newColumn, session.user.id);
+  return moveKanbanCard(cardId, newColumn, session.user.id, overrides);
 }
 
 export async function deleteCard(cardId: string) {

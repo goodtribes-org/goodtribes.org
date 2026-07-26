@@ -28,6 +28,8 @@ import {
 } from "./kanbanShared";
 import { CardDetailModal } from "./KanbanCardModal";
 import { KanbanColumn } from "./KanbanColumn";
+import { TokenPayoutDialog } from "./TokenPayoutDialog";
+import type { MoveOverrides } from "@/lib/kanbanMove";
 
 export type { Member };
 
@@ -59,6 +61,7 @@ export default function KanbanBoard({
   const [columns, setColumns] = useState<Columns>(initialColumns);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
+  const [pendingDonePayout, setPendingDonePayout] = useState<{ cardId: string; sourceCol: string; card: Card } | null>(null);
   const [isNewCard, setIsNewCard] = useState(false);
   const [runningAI, setRunningAI] = useState<Set<string>>(new Set());
   const [filterQuery, setFilterQuery] = useState("");
@@ -256,19 +259,10 @@ export default function KanbanBoard({
     if (card) setActiveCard(card);
   }
 
-  function handleDragEnd(event: DragEndEvent) {
-    setActiveCard(null);
-    const { active, over } = event;
-    if (!over) return;
-    const cardId = active.id as string;
-    const overId = over.id as string;
-    const sourceCol = findCardColumn(cardId);
-    const rawTargetCol = COLUMN_ORDER.includes(overId) ? overId : findCardColumn(overId);
-    if (!sourceCol || !rawTargetCol || sourceCol === rawTargetCol) return;
-    // Regular members can't move cards straight to Done — they land in Review for a lead to approve.
-    const targetCol = (rawTargetCol === "DONE" && !isLead) ? "REVIEW" : rawTargetCol;
-    if (sourceCol === targetCol) return;
-
+  // Shared by the normal drag flow and the payout dialog's confirm button —
+  // optimistic column update + the actual /api/kanban/move call, with
+  // rollback on failure.
+  function performMove(cardId: string, sourceCol: string, targetCol: string, overrides?: MoveOverrides) {
     let previousColumns: Columns | undefined;
     setColumns((prev) => {
       previousColumns = prev;
@@ -285,7 +279,7 @@ export default function KanbanBoard({
         const res = await fetch("/api/kanban/move", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ cardId, newColumn: targetCol }),
+          body: JSON.stringify({ cardId, newColumn: targetCol, overrides }),
           keepalive: true,
         });
         if (!res.ok) throw new Error("move failed");
@@ -293,6 +287,31 @@ export default function KanbanBoard({
         if (previousColumns) setColumns(previousColumns);
       }
     })();
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    setActiveCard(null);
+    const { active, over } = event;
+    if (!over) return;
+    const cardId = active.id as string;
+    const overId = over.id as string;
+    const sourceCol = findCardColumn(cardId);
+    const rawTargetCol = COLUMN_ORDER.includes(overId) ? overId : findCardColumn(overId);
+    if (!sourceCol || !rawTargetCol || sourceCol === rawTargetCol) return;
+    // Regular members can't move cards straight to Done — they land in Review for a lead to approve.
+    const targetCol = (rawTargetCol === "DONE" && !isLead) ? "REVIEW" : rawTargetCol;
+    if (sourceCol === targetCol) return;
+
+    // Only a lead's move can actually reach Done (see redirect above) — that's
+    // the approval act that mints tokens, so preview/confirm who gets paid
+    // before the card actually moves, instead of moving it right away.
+    if (targetCol === "DONE") {
+      const card = (columns[sourceCol as keyof Columns] as Card[]).find((c) => c.id === cardId);
+      if (card) setPendingDonePayout({ cardId, sourceCol, card });
+      return;
+    }
+
+    performMove(cardId, sourceCol, targetCol);
   }
 
   const handleAdd = useCallback((card: Card) => {
@@ -551,6 +570,18 @@ export default function KanbanBoard({
           />
         )}
       </ChunkErrorBoundary>
+
+      {pendingDonePayout && (
+        <TokenPayoutDialog
+          card={pendingDonePayout.card}
+          members={members}
+          onConfirm={(overrides) => {
+            performMove(pendingDonePayout.cardId, pendingDonePayout.sourceCol, "DONE", overrides);
+            setPendingDonePayout(null);
+          }}
+          onCancel={() => setPendingDonePayout(null)}
+        />
+      )}
     </div>
   );
 }
