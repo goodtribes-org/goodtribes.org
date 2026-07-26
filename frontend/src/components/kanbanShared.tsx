@@ -91,6 +91,7 @@ export const PRIORITY_META: Record<string, { label: string; color: string; dot: 
   normal: { label: "Normal", color: "text-blue-500",   dot: "bg-blue-400",   bottomHex: "#60a5fa", tokenValue: PRIORITY_TOKEN_VALUES.normal },
   high:   { label: "High",   color: "text-orange-500", dot: "bg-orange-400", bottomHex: "#fb923c", tokenValue: PRIORITY_TOKEN_VALUES.high },
   urgent: { label: "Urgent", color: "text-red-500",    dot: "bg-red-500",    bottomHex: "#ef4444", tokenValue: PRIORITY_TOKEN_VALUES.urgent },
+  showstopper: { label: "Showstopper", color: "text-gray-900", dot: "bg-gray-900", bottomHex: "#111827", tokenValue: PRIORITY_TOKEN_VALUES.showstopper },
 };
 
 export const COLUMNS = [

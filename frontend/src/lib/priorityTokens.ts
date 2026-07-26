@@ -3,6 +3,7 @@ export const PRIORITY_TOKEN_VALUES: Record<string, number> = {
   normal: 20,
   high: 30,
   urgent: 40,
+  showstopper: 50,
 };
 
 export function getPriorityTokenValue(priority: string): number {

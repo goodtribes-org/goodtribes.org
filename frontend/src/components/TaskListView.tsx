@@ -55,6 +55,7 @@ const PRIORITY_DOT: Record<string, string> = {
   normal: "bg-blue-400",
   high:   "bg-orange-400",
   urgent: "bg-red-500",
+  showstopper: "bg-gray-900",
 };
 
 function formatDate(date: Date | string | null): string | null {
