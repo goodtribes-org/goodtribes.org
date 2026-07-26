@@ -55,7 +55,11 @@ export async function isRoomUnread(roomId: string, userId: string, lastReadAt: D
 
 const EPOCH = new Date(0);
 
-export async function getUnreadRoomCount(userId: string): Promise<number> {
+// Returns the ids of every room (DM/GROUP + project/org channels) that has a
+// message the user hasn't read yet. Shared by getUnreadRoomCount (bell/nav
+// badge) and the polling endpoint the messages sidebar uses to keep its
+// per-room unread dots live (see /api/rooms/unread).
+export async function getUnreadRoomIds(userId: string): Promise<string[]> {
   const [dmGroupParticipations, projectRooms, orgRooms] = await Promise.all([
     prisma.roomParticipant.findMany({
       where: { userId, room: { type: { in: ["DM", "GROUP"] } } },
@@ -81,11 +85,38 @@ export async function getUnreadRoomCount(userId: string): Promise<number> {
   const markerByRoom = new Map(readMarkers.map((m) => [m.roomId, m.lastReadAt]));
 
   const [dmGroupUnread, channelUnread] = await Promise.all([
-    Promise.all(dmGroupParticipations.map((p) => isRoomUnread(p.roomId, userId, p.lastReadAt))),
-    Promise.all(channelRoomIds.map((roomId) => isRoomUnread(roomId, userId, markerByRoom.get(roomId) ?? EPOCH))),
+    Promise.all(dmGroupParticipations.map(async (p) => (await isRoomUnread(p.roomId, userId, p.lastReadAt)) ? p.roomId : null)),
+    Promise.all(channelRoomIds.map(async (roomId) => (await isRoomUnread(roomId, userId, markerByRoom.get(roomId) ?? EPOCH)) ? roomId : null)),
   ]);
 
-  return [...dmGroupUnread, ...channelUnread].filter(Boolean).length;
+  return [...dmGroupUnread, ...channelUnread].filter((id): id is string => id !== null);
+}
+
+export async function getUnreadRoomCount(userId: string): Promise<number> {
+  return (await getUnreadRoomIds(userId)).length;
+}
+
+// Attaches a live `unread` flag to each room in a project/org channel group
+// listing, using the same RoomParticipant.lastReadAt + isRoomUnread pattern
+// as getUnreadRoomIds — channels have no default read marker until the user
+// visits one, hence the EPOCH fallback.
+async function attachChannelUnread<T extends { rooms: { id: string; name: string | null }[] }>(
+  groups: T[],
+  userId: string
+): Promise<(Omit<T, "rooms"> & { rooms: (T["rooms"][number] & { unread: boolean })[] })[]> {
+  const roomIds = groups.flatMap((g) => g.rooms.map((r) => r.id));
+  const markers = roomIds.length
+    ? await prisma.roomParticipant.findMany({
+        where: { userId, roomId: { in: roomIds } },
+        select: { roomId: true, lastReadAt: true },
+      })
+    : [];
+  const markerByRoom = new Map(markers.map((m) => [m.roomId, m.lastReadAt]));
+  const unreadEntries = await Promise.all(
+    roomIds.map(async (id) => [id, await isRoomUnread(id, userId, markerByRoom.get(id) ?? EPOCH)] as const)
+  );
+  const unreadByRoom = new Map(unreadEntries);
+  return groups.map((g) => ({ ...g, rooms: g.rooms.map((r) => ({ ...r, unread: unreadByRoom.get(r.id) ?? false })) }));
 }
 
 export async function getProjectChannelGroups(userId: string) {
@@ -102,7 +133,8 @@ export async function getProjectChannelGroups(userId: string) {
       },
     },
   });
-  return memberships.map((m) => m.project).filter((p) => p.rooms.length > 0);
+  const groups = memberships.map((m) => m.project).filter((p) => p.rooms.length > 0);
+  return attachChannelUnread(groups, userId);
 }
 
 export type PublicProjectChannelGroup = {
@@ -167,7 +199,8 @@ export async function getOrgChannelGroups(userId: string) {
   const byId = new Map<string, { id: string; slug: string; name: string; rooms: { id: string; name: string | null }[] }>();
   memberships.forEach((m) => byId.set(m.organisation.id, m.organisation));
   ownedOrgs.forEach((o) => byId.set(o.id, o));
-  return [...byId.values()].filter((o) => o.rooms.length > 0);
+  const groups = [...byId.values()].filter((o) => o.rooms.length > 0);
+  return attachChannelUnread(groups, userId);
 }
 
 // Users that can be @mentioned in a room, sourced from the same membership

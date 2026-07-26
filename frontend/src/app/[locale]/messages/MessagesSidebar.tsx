@@ -21,7 +21,7 @@ type DmGroupRoom = {
   unread: boolean;
 };
 
-type RoomRow = { id: string; name: string | null };
+type RoomRow = { id: string; name: string | null; unread: boolean };
 type ProjectGroup = { id: string; slug: string; title: string; rooms: RoomRow[] };
 type OrgGroup = { id: string; slug: string; name: string; rooms: RoomRow[] };
 
@@ -98,7 +98,36 @@ export function MessagesSidebar({ isLoggedIn, dmGroupRooms, projectGroups, orgGr
   const focusProjectSlug = searchParams.get("project");
   const focusOrgSlug = searchParams.get("org");
   const section = useMessagesSection();
-  const visibleDmGroupRooms = section === "unread" ? dmGroupRooms.filter((r) => r.unread) : dmGroupRooms;
+
+  // Server-rendered `unread` flags are a snapshot from when this layout last
+  // ran — polling keeps them live while the user stays within /messages, so
+  // a new message elsewhere (DM, group, or channel) shows up without a
+  // navigation/reload. `null` means "no poll result yet", so isUnread falls
+  // back to the snapshot instead of flashing everything as read.
+  const [liveUnread, setLiveUnread] = useState<Set<string> | null>(null);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    let cancelled = false;
+    function poll() {
+      fetch("/api/rooms/unread")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (cancelled || !data?.unreadRoomIds) return;
+          setLiveUnread(new Set<string>(data.unreadRoomIds));
+        })
+        .catch(() => {});
+    }
+    poll();
+    const id = setInterval(poll, 15_000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [isLoggedIn]);
+
+  function isUnread(roomId: string, snapshot: boolean) {
+    return liveUnread ? liveUnread.has(roomId) : snapshot;
+  }
+
+  const visibleDmGroupRooms = section === "unread" ? dmGroupRooms.filter((r) => isUnread(r.id, r.unread)) : dmGroupRooms;
 
   const isIndex = pathname === "/messages" || pathname.endsWith("/messages");
   const currentRoomId = pathname.match(/\/messages\/([^/?]+)/)?.[1] ?? null;
@@ -190,7 +219,7 @@ export function MessagesSidebar({ isLoggedIn, dmGroupRooms, projectGroups, orgGr
               </div>
               <span className="flex-1 truncate">{title}</span>
               {room.type === "DM" && other && <PresenceDot userId={other.id} />}
-              {room.unread && <span className="w-1.5 h-1.5 rounded-full bg-seagrass shrink-0" />}
+              {isUnread(room.id, room.unread) && <span className="w-1.5 h-1.5 rounded-full bg-seagrass shrink-0" />}
             </Link>
           );
         })}
@@ -211,6 +240,7 @@ export function MessagesSidebar({ isLoggedIn, dmGroupRooms, projectGroups, orgGr
             >
               <span className="text-dark-slate/30 text-xs">#</span>
               <span className="flex-1 truncate">{room.name}</span>
+              {isUnread(room.id, room.unread) && <span className="w-1.5 h-1.5 rounded-full bg-seagrass shrink-0" />}
             </Link>
           ))}
         </Section>
@@ -228,6 +258,7 @@ export function MessagesSidebar({ isLoggedIn, dmGroupRooms, projectGroups, orgGr
             >
               <span className="text-dark-slate/30 text-xs">#</span>
               <span className="flex-1 truncate">{room.name ?? "Arbetsrum"}</span>
+              {isUnread(room.id, room.unread) && <span className="w-1.5 h-1.5 rounded-full bg-seagrass shrink-0" />}
             </Link>
           ))}
         </Section>

@@ -123,6 +123,13 @@ export async function sendRoomMessage(roomId: string, body: string, threadParent
     }
   }
 
+  // Deep-links straight to the message that triggered the notification —
+  // ?m opens/scrolls to it, ?thread additionally opens the right thread
+  // panel first since replies aren't visible in the main list at all.
+  const messageUrl = threadParentId
+    ? `/messages/${roomId}?thread=${threadParentId}&m=${message.id}`
+    : `/messages/${roomId}?m=${message.id}`;
+
   const recipients = (await getNotificationRecipients(access.room, userId, threadParentId)).filter(
     (id) => !mentionedIds.includes(id)
   );
@@ -135,7 +142,7 @@ export async function sendRoomMessage(roomId: string, body: string, threadParent
           type: threadParentId ? "room_thread_reply" : "room_message",
           title,
           body: notifBody,
-          url: `/messages/${roomId}`,
+          url: messageUrl,
         })),
       })
       .catch(() => {});
@@ -151,7 +158,7 @@ export async function sendRoomMessage(roomId: string, body: string, threadParent
           type: "room_mention",
           title: `${senderName} nämnde dig`,
           body: trimmed,
-          url: `/messages/${roomId}`,
+          url: messageUrl,
         })),
       })
       .catch(() => {});

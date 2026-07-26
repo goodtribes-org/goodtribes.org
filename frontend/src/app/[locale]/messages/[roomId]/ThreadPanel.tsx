@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { renderBody } from "@/lib/renderBody";
@@ -22,14 +22,44 @@ type Props = {
   onClose: () => void;
   onReaction: (messageId: string, emoji: string) => void;
   onReplySent: () => void;
+  scrollToReplyId?: string | null;
+  onScrolledToReply?: () => void;
 };
 
-export function ThreadPanel({ roomId, parent, replies, currentUserId, canPost, mentionables, onClose, onReaction, onReplySent }: Props) {
+export function ThreadPanel({
+  roomId,
+  parent,
+  replies,
+  currentUserId,
+  canPost,
+  mentionables,
+  onClose,
+  onReaction,
+  onReplySent,
+  scrollToReplyId,
+  onScrolledToReply,
+}: Props) {
   const t = useTranslations("Messages");
   const [, startTransition] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingBody, setEditingBody] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [highlightReplyId, setHighlightReplyId] = useState<string | null>(null);
+
+  // Deep-link from a notification: wait until the reply we're looking for
+  // has actually loaded (loadThreadReplies is async in RoomShell) before
+  // scrolling/highlighting it.
+  useEffect(() => {
+    if (!scrollToReplyId) return;
+    if (!replies.some((r) => r.id === scrollToReplyId)) return;
+    requestAnimationFrame(() => {
+      document.getElementById(`reply-${scrollToReplyId}`)?.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
+    setHighlightReplyId(scrollToReplyId);
+    onScrolledToReply?.();
+    const timeout = setTimeout(() => setHighlightReplyId(null), 2500);
+    return () => clearTimeout(timeout);
+  }, [scrollToReplyId, replies, onScrolledToReply]);
 
   function startEdit(m: MessageRow) {
     setConfirmDeleteId(null);
@@ -168,7 +198,13 @@ export function ThreadPanel({ roomId, parent, replies, currentUserId, canPost, m
           </p>
           <div className="space-y-3">
             {replies.map((r) => (
-              <div key={r.id} className="flex items-start gap-2">
+              <div
+                key={r.id}
+                id={`reply-${r.id}`}
+                className={`flex items-start gap-2 rounded-lg transition-shadow ${
+                  highlightReplyId === r.id ? "ring-2 ring-seagrass -m-1.5 p-1.5" : ""
+                }`}
+              >
                 <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-semibold text-gray-600 shrink-0 overflow-hidden relative">
                   {r.author.image ? (
                     <Image src={r.author.image} fill className="object-cover" alt="" unoptimized />

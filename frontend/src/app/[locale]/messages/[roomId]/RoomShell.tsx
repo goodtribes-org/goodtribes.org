@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ReactionBar } from "@/components/ReactionBar";
 import { renderBody } from "@/lib/renderBody";
@@ -73,6 +74,7 @@ const QUICK_REACTIONS = [FEED_LIKE_EMOJI, "❤️", "😄", "🎉", "😮"];
 
 export function RoomShell({ room, initialMessages, currentUserId, canPost, mentionables }: Props) {
   const t = useTranslations("Messages");
+  const searchParams = useSearchParams();
   const [messages, setMessages] = useState<MessageRow[]>(initialMessages);
   const [, startTransition] = useTransition();
   const [activeThread, setActiveThread] = useState<MessageRow | null>(null);
@@ -80,6 +82,8 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingBody, setEditingBody] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [scrollToReplyId, setScrollToReplyId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const esRef = useRef<EventSource | null>(null);
 
@@ -121,6 +125,33 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
     setActiveThread(message);
     loadThreadReplies(message.id);
   }
+
+  // Deep-links from a notification (?m=<messageId>, plus ?thread=<parentId>
+  // for replies, which aren't visible until their thread is opened). Runs
+  // once against the initial SSR-loaded messages — [] on purpose, so it
+  // doesn't re-fire every time `messages` changes from live SSE updates.
+  useEffect(() => {
+    const targetMessageId = searchParams.get("m");
+    if (!targetMessageId) return;
+    const targetThreadId = searchParams.get("thread");
+
+    if (targetThreadId) {
+      const parent = messages.find((m) => m.id === targetThreadId);
+      if (parent) {
+        openThread(parent);
+        setScrollToReplyId(targetMessageId);
+      }
+      return;
+    }
+
+    setHighlightId(targetMessageId);
+    requestAnimationFrame(() => {
+      document.getElementById(`msg-${targetMessageId}`)?.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
+    const timeout = setTimeout(() => setHighlightId(null), 2500);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (esRef.current) esRef.current.close();
@@ -226,7 +257,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
             grouped.map((m) => {
               const isOwn = m.authorId === currentUserId;
               return (
-                <div key={m.id}>
+                <div key={m.id} id={`msg-${m.id}`}>
                   {m.isNewDay && (
                     <div className="flex justify-center my-3">
                       <span className="text-[11px] font-medium text-dark-slate/40 bg-gray-50 px-3 py-1 rounded-full">
@@ -316,7 +347,9 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                         )}
 
                         <div
-                          className={`rounded-2xl px-3 py-2 text-dark-slate ${isOwn ? "bg-seagrass/10" : "bg-gray-50"}`}
+                          className={`rounded-2xl px-3 py-2 text-dark-slate transition-shadow ${isOwn ? "bg-seagrass/10" : "bg-gray-50"} ${
+                            highlightId === m.id ? "ring-2 ring-seagrass" : ""
+                          }`}
                         >
                           {m.deletedAt ? (
                             <p className="text-sm italic text-dark-slate/40">Meddelandet togs bort</p>
@@ -425,6 +458,8 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
           onClose={() => setActiveThread(null)}
           onReaction={handleReaction}
           onReplySent={() => loadThreadReplies(activeThread.id)}
+          scrollToReplyId={scrollToReplyId}
+          onScrolledToReply={() => setScrollToReplyId(null)}
         />
       )}
     </div>
