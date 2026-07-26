@@ -4,7 +4,7 @@ import { logActivity } from "@/lib/activity";
 import { publishToKanban } from "@/lib/redis";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { getPriorityTokenValue } from "@/lib/priorityTokens";
-import { mintCardCompletion } from "@/lib/tokens";
+import { mintCardCompletion, reverseCardTokens } from "@/lib/tokens";
 import { createNotification } from "@/lib/notify";
 
 async function updateStreak(userId: string, projectSlug: string) {
@@ -105,6 +105,21 @@ export async function moveKanbanCard(cardId: string, newColumn: string, userId: 
         userId: payee.userId,
         type: "card_tokens_awarded",
         title: `You were awarded tokens for "${card.title}"`,
+        url: `/projects/${card.projectSlug}/tokens`,
+      });
+    }
+  }
+
+  // Moving a card back out of Done means its completion no longer stands —
+  // any tokens it paid out are reversed so re-completing it later mints a
+  // fresh payout instead of leaving the original one to stand unearned.
+  if (card.column === "DONE" && targetColumn !== "DONE") {
+    const revokedUserIds = await prisma.$transaction((tx) => reverseCardTokens(tx, card.id));
+    for (const revokedUserId of revokedUserIds) {
+      await createNotification({
+        userId: revokedUserId,
+        type: "card_tokens_revoked",
+        title: `Tokens for "${card.title}" were removed after the card left Done`,
         url: `/projects/${card.projectSlug}/tokens`,
       });
     }

@@ -110,3 +110,23 @@ export async function mintCardCompletion(
   });
   return payees;
 }
+
+// Undoes every token award tied to a card — used when a card is moved back
+// out of Done (see kanbanMove.ts), since the completion it was paid for no
+// longer stands. GtLedger mirrors use onDelete: SetNull, not Cascade, so they
+// must be deleted explicitly or they'd become orphaned rows that still count
+// toward a user's GT balance after the Tribe Token award is gone. Returns the
+// distinct user ids who had tokens removed, so the caller can notify them.
+export async function reverseCardTokens(tx: Prisma.TransactionClient, cardId: string): Promise<string[]> {
+  const ledgerRows = await tx.tokenLedger.findMany({
+    where: { kanbanCardId: cardId },
+    select: { id: true, userId: true },
+  });
+  if (ledgerRows.length === 0) return [];
+
+  const ledgerIds = ledgerRows.map((r) => r.id);
+  await tx.gtLedger.deleteMany({ where: { sourceTokenLedgerId: { in: ledgerIds } } });
+  await tx.tokenLedger.deleteMany({ where: { id: { in: ledgerIds } } });
+
+  return [...new Set(ledgerRows.map((r) => r.userId))];
+}
