@@ -13,9 +13,9 @@ export default function ProjectMiniHero({ title, imageUrl }: { title: string; im
           <div className="absolute inset-0 bg-gradient-to-br from-dark-slate to-dark-slate/70" />
         )}
       </div>
-      <div className="relative z-10 flex items-center justify-center sm:pl-16 lg:pl-56 px-6 py-8">
+      <div className="relative z-10 flex items-center justify-center sm:pl-16 lg:pl-56 px-6 py-5">
         <h1
-          className="text-2xl md:text-3xl font-bold text-center leading-tight"
+          className="text-3xl md:text-4xl font-bold text-center leading-tight"
           style={{ color: "white", textShadow: "0 2px 8px rgba(0,0,0,0.35)" }}
         >
           {title}
