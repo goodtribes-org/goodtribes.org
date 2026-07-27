@@ -37,9 +37,9 @@ const PHOTOS: Photo[] = [
   {
     src: "/img/Slide1.jpg",
     alt: "GoodTribes — Crowdsourcing for Good",
-    heading: "Varför finns vi...",
-    body: "GoodTribes.org är en drömfabrik där människor och organisationer samverkar för att förverkligar idéer och drömmar som medverkar till en långsiktigt hållbar miljö- och samhällsutveckling.",
-    body2: "GoodTribes är en ideell stiftelse som har som mål att hjälpa människor och organisationer att göra världen bättre. GoodTribes vision är en långsiktigt hållbar miljö- och samhällsutveckling, där alla människor ges möjlighet att förverkliga sina idéer/drömmar, sin fulla potential och samtidigt Leva Gott, Må Gott och Göra Gott för sig själv och andra.",
+    heading: "Här blir dina drömmar till verklighet – för en bättre värld",
+    body: "Har du en idé som kan förändra samhället eller rädda miljön? Hos GoodTribes.org stannar det inte vid en dröm. Vi är en ideell stiftelse och en levande drömfabrik där människor och organisationer möts för att göra skillnad på riktigt.",
+    body2: "Vår vision är enkel men kraftfull: en hållbar värld där varje människa har kraften att nå sin fulla potential. Tillsammans skapar vi en rörelse och värld där vi kan Leva Gott, Må Gott och Göra Gott – både för oss själva och för varandra. Gå med i GoodTribes och förverkliga din idé idag!",
     menuLabel: "Kom igång",
     tint: "bg-coral/10",
   },
