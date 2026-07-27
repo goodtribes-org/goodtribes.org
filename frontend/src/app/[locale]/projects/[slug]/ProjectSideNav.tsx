@@ -167,7 +167,7 @@ export default function ProjectSideNav({
     <>
       {/* Mobile / narrow: horizontal scrollable bar (the vertical rail has no room here) */}
       <div
-        className="flex sm:hidden w-full flex-nowrap items-center gap-1 overflow-x-auto px-2 py-2 border-b border-muted-teal/20 scrollbar-none"
+        className="flex sm:hidden w-full min-w-0 flex-nowrap items-center gap-1 overflow-x-auto px-2 py-2 border-b border-muted-teal/20 scrollbar-none"
         style={{ scrollbarWidth: "none" }}
       >
         {mobileItems.map((item) => {

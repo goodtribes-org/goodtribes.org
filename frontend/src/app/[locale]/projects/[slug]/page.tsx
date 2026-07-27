@@ -357,10 +357,10 @@ export default async function ProjectDetailPage({
             </h1>
           </div>
           <div className="flex justify-center px-4 pb-10">
-            <div className="flex flex-col md:flex-row gap-5 items-stretch">
+            <div className="flex flex-wrap justify-center gap-5 items-stretch">
               {/* Card 1: project image */}
               <div
-                className="shrink-0 bg-white overflow-hidden w-full h-64 sm:h-80 md:w-[820px] md:h-[460px]"
+                className="shrink-0 bg-white overflow-hidden w-full max-w-[820px] h-64 sm:h-80 md:h-[460px]"
                 style={{ border: "24px solid white", boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)", transform: "rotate(-3deg)", position: "relative", zIndex: 1 }}
               >
                 {project.imageUrl ? (
@@ -375,7 +375,7 @@ export default async function ProjectDetailPage({
               </div>
               {/* Card 2: team + SDG + join */}
               <div
-                className="shrink-0 bg-white rounded-2xl p-5 flex flex-col w-full min-h-0 md:w-[320px] md:min-h-[460px]"
+                className="shrink-0 bg-white rounded-2xl p-5 flex flex-col w-full max-w-[320px] min-h-0 md:min-h-[460px]"
                 style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)", marginLeft: "-10px", transform: "rotate(3deg)" }}
               >
                 {project.members.length > 0 && (
@@ -510,7 +510,7 @@ export default async function ProjectDetailPage({
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row gap-5 items-start md:-mr-7">
+      <div className="flex flex-col md:flex-row gap-5 items-stretch md:items-start md:-mr-7">
         {/* Left: project story */}
         <div className="flex-1 min-w-0 space-y-8">
           {isRealMember && (
