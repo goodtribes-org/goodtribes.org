@@ -343,6 +343,8 @@ export default async function ProjectDetailPage({
             <div className="absolute inset-0 bg-gradient-to-br from-dark-slate to-dark-slate/70" />
           )}
         </div>
+        {/* Fills the reserved sidenav gutter over the background image so the rail's bg reads as continuous */}
+        <div className="hidden sm:block absolute top-0 left-0 w-16 lg:w-56 bg-gray-50" style={{ height: "490px" }} />
         <div className="relative z-10 sm:pl-16 lg:pl-56">
           <div className="flex justify-center pt-5 pb-2 px-6">
             <h1
