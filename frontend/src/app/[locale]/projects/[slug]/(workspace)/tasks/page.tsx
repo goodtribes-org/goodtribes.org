@@ -129,21 +129,17 @@ export default async function TasksRoutePage({
   const helpHref = helpGuide ? `/academy/${helpGuide.id}` : "/academy?category=Projektledning";
 
   return (
-    <>
-      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
-        <TasksPage
-          projectSlug={slug}
-          initialColumns={columns}
-          isLoggedIn={!!session?.user?.id}
-          currentUserId={session?.user?.id ?? null}
-          isMember={isMember}
-          isLead={isLead}
-          members={members}
-          milestones={milestones}
-          openCardId={openCardId ?? null}
-          helpHref={helpHref}
-        />
-      </div>
-    </>
+    <TasksPage
+      projectSlug={slug}
+      initialColumns={columns}
+      isLoggedIn={!!session?.user?.id}
+      currentUserId={session?.user?.id ?? null}
+      isMember={isMember}
+      isLead={isLead}
+      members={members}
+      milestones={milestones}
+      openCardId={openCardId ?? null}
+      helpHref={helpHref}
+    />
   );
 }

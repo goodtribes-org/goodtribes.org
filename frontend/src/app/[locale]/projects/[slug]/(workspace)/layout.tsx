@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import ProjectTabNav from "../ProjectTabNav";
+import ProjectSideNav from "../ProjectSideNav";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 
@@ -24,16 +24,9 @@ export default async function WorkspaceLayout({
     : false;
 
   return (
-    <>
-      <div
-        className="mb-6"
-        style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
-      >
-        <div className="px-6">
-          <ProjectTabNav slug={slug} isOwner={isOwner} isCommercial={isCommercialLegalType(project.legalType)} />
-        </div>
-      </div>
-      {children}
-    </>
+    <div className="flex pt-8 pb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+      <ProjectSideNav slug={slug} isOwner={isOwner} isCommercial={isCommercialLegalType(project.legalType)} />
+      <div className="flex-1 min-w-0 px-6">{children}</div>
+    </div>
   );
 }

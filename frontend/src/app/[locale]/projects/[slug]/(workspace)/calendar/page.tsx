@@ -250,7 +250,7 @@ export default async function CalendarPage({
       {view === "calendar" && (
         <>
           {/* Toolbar + legend — full bleed */}
-          <div style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
+          <div>
           <div className="flex items-center gap-3 mb-2 flex-wrap relative">
             {session?.user?.id && (
               <Link
@@ -313,7 +313,7 @@ export default async function CalendarPage({
           </div>
 
           {/* Calendar grid — full bleed */}
-          <div style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
+          <div>
           <div className="overflow-x-auto">
             <div className="min-w-[320px]">
               <div className="grid grid-cols-7 mb-1">
@@ -505,7 +505,7 @@ export default async function CalendarPage({
       {view === "gantt" && (
         <>
           {/* Toolbar: Ny händelse | spacer | kalender/gantt toggle — full bleed */}
-          <div style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
+          <div>
             <div className="flex items-center mb-2">
               {session?.user?.id && (
                 <Link
@@ -537,7 +537,7 @@ export default async function CalendarPage({
           {allKanbanCards.length === 0 && allTodoItems.length === 0 ? (
             <p className="text-sm text-dark-slate/40 py-8 text-center">Inga uppgifter ännu.</p>
           ) : (
-            <div style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
+            <div>
               <GanttView
                 cards={allKanbanCards.map((c) => ({ ...c, dependsOnIds: c.dependencies.map((d) => d.dependsOnId) }))}
                 todos={allTodoItems}
