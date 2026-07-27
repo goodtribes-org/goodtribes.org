@@ -477,6 +477,7 @@ export default async function ProjectDetailPage({
       <div className="flex flex-col sm:flex-row" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
       <ProjectSideNav slug={slug} isOwner={!!isOwnerOrAdmin} isCommercial={isCommercialLegalType(project.legalType)} />
       <div className="flex-1 min-w-0 px-6">
+      <div className="max-w-6xl mx-auto">
 
       {project.forkedFromProject && (
         <div className="max-w-2xl mx-auto mb-4 px-4 text-sm text-dark-slate/60 text-center">
@@ -1015,6 +1016,7 @@ export default async function ProjectDetailPage({
         {userId && !isOwnerOrAdmin && <FlagContentButton targetType="Project" targetId={project.id} />}
       </div>
 
+      </div>
       </div>
       </div>
     </div>
