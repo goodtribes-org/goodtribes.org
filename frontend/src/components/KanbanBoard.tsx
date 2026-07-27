@@ -75,7 +75,7 @@ export default function KanbanBoard({
   // per-project map so a column is always in exactly one state, never both
   // "hidden" and "narrow" at once.
   type ColumnMode = "normal" | "narrow" | "hidden";
-  const [columnModes, setColumnModes] = useState<Record<string, ColumnMode>>({});
+  const [columnModes, setColumnModes] = useState<Record<string, ColumnMode>>({ DONE: "narrow" });
   const [hiddenColumnsMenuOpen, setHiddenColumnsMenuOpen] = useState(false);
 
   const columnModesStorageKey = `kanban-column-modes-${projectSlug}`;
