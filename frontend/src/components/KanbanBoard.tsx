@@ -564,6 +564,7 @@ export default function KanbanBoard({
             onSaved={handleCardSaved}
             onDelete={(cardId) => { handleDelete(cardId); setEditingCard(null); setIsNewCard(false); }}
             onSubtaskAdded={handleSubtaskAdded}
+            onSubtasksChanged={handleCardSubtasksSynced}
             isNew={isNewCard}
             onAdd={handleAdd}
             onCardCreated={handleTempCardResolved}

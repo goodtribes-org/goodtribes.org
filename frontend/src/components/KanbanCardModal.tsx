@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useEffect, useRef, useTransition } from "react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import {
@@ -46,6 +46,7 @@ function CardDetailModalImpl({
   onSaved,
   onDelete,
   onSubtaskAdded,
+  onSubtasksChanged,
   isNew,
   onAdd,
   onCardCreated,
@@ -60,6 +61,7 @@ function CardDetailModalImpl({
   onSaved: (cardId: string, patch: Partial<Card>) => void;
   onDelete: (cardId: string) => void;
   onSubtaskAdded?: (cardId: string, subtask: Subtask) => void;
+  onSubtasksChanged?: (cardId: string, subtasks: Subtask[]) => void;
   isNew?: boolean;
   onAdd?: (card: Card) => void;
   onCardCreated?: (tempId: string, cardId: string) => void;
@@ -73,6 +75,11 @@ function CardDetailModalImpl({
   const [startDate, setStartDate] = useState(toDateInput(card.startDate));
   const [dueDate, setDueDate] = useState(toDateInput(card.dueDate));
   const [localSubtasks, setLocalSubtasks] = useState<Subtask[]>(card.subtasks ?? []);
+  const subtasksMountedRef = useRef(false);
+  useEffect(() => {
+    if (!subtasksMountedRef.current) { subtasksMountedRef.current = true; return; }
+    onSubtasksChanged?.(card.id, localSubtasks);
+  }, [localSubtasks, card.id, onSubtasksChanged]);
   const [newSubtaskInput, setNewSubtaskInput] = useState("");
   const [subtaskMenuOpen, setSubtaskMenuOpen] = useState<string | null>(null);
   const [editingSubtaskId, setEditingSubtaskId] = useState<string | null>(null);
@@ -203,11 +210,12 @@ function CardDetailModalImpl({
   }
 
   function handleToggle(s: Subtask) {
-    setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: !t.done } : t));
+    const next = !s.done;
+    setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: next, completedById: next ? currentUserId : null } : t));
     if (!s.id.startsWith("temp-")) {
       startTransition(async () => {
-        try { await toggleSubtask(s.id, !s.done); }
-        catch { setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: s.done } : t)); }
+        try { await toggleSubtask(s.id, next); }
+        catch { setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: s.done, completedById: s.completedById } : t)); }
       });
     }
   }

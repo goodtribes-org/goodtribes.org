@@ -120,6 +120,20 @@ export default function TaskListView({
     setAddingInColumn(null);
   }
 
+  function handleSubtasksChanged(cardId: string, subtasks: Subtask[]) {
+    setColumns((prev) => {
+      const srcKey = (Object.keys(prev) as (keyof Columns)[]).find((k) =>
+        prev[k].some((c) => c.id === cardId)
+      );
+      if (!srcKey) return prev;
+      if (prev[srcKey].find((c) => c.id === cardId)?.subtasks === subtasks) return prev;
+      return {
+        ...prev,
+        [srcKey]: prev[srcKey].map((c) => c.id === cardId ? { ...c, subtasks } : c),
+      };
+    });
+  }
+
   function handleConfirmDonePayout(overrides: MoveOverrides) {
     if (!pendingDonePayout) return;
     const card = pendingDonePayout;
@@ -149,6 +163,7 @@ export default function TaskListView({
           onCardAdded={handleCardAdded}
           onCardMoved={handleCardMoved}
           onCardDeleted={handleCardDeleted}
+          onSubtasksChanged={handleSubtasksChanged}
           onRequestDonePayout={setPendingDonePayout}
           projectSlug={projectSlug}
         />
@@ -180,6 +195,7 @@ function SectionGroup({
   onCardAdded,
   onCardMoved,
   onCardDeleted,
+  onSubtasksChanged,
   onRequestDonePayout,
   projectSlug,
 }: {
@@ -196,6 +212,7 @@ function SectionGroup({
   onCardAdded: (card: Card) => void;
   onCardMoved: (id: string, toColumn: keyof Columns) => void;
   onCardDeleted: (id: string) => void;
+  onSubtasksChanged: (id: string, subtasks: Subtask[]) => void;
   onRequestDonePayout: (card: Card) => void;
   projectSlug: string;
 }) {
@@ -233,6 +250,7 @@ function SectionGroup({
               card={card}
               isLoggedIn={isLoggedIn}
               currentUserId={currentUserId}
+              onSubtasksChanged={(subtasks) => onSubtasksChanged(card.id, subtasks)}
               onCheck={() => {
                 if (card.column === "DONE") {
                   onCardMoved(card.id, "TODO");
@@ -291,12 +309,14 @@ function TaskRow({
   card,
   isLoggedIn,
   currentUserId,
+  onSubtasksChanged,
   onCheck,
   onDelete,
 }: {
   card: Card;
   isLoggedIn: boolean;
   currentUserId: string | null;
+  onSubtasksChanged: (subtasks: Subtask[]) => void;
   onCheck: () => void;
   onDelete: () => void;
 }) {
@@ -307,6 +327,11 @@ function TaskRow({
   const [expanded, setExpanded] = useState(false);
   const [localSubtasks, setLocalSubtasks] = useState<Subtask[]>(card.subtasks ?? []);
   const [, startSubTransition] = useTransition();
+  const subtasksMountedRef = useRef(false);
+  useEffect(() => {
+    if (!subtasksMountedRef.current) { subtasksMountedRef.current = true; return; }
+    onSubtasksChanged(localSubtasks);
+  }, [localSubtasks, onSubtasksChanged]);
 
   return (
     <div className="group">
@@ -390,11 +415,12 @@ function TaskRow({
               key={s.id}
               type="button"
               onClick={() => {
-                setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: !t.done } : t));
+                const next = !s.done;
+                setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: next, completedById: next ? currentUserId : null } : t));
                 if (!s.id.startsWith("temp-") && isLoggedIn) {
                   startSubTransition(async () => {
-                    try { await toggleSubtask(s.id, !s.done); }
-                    catch { setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: s.done } : t)); }
+                    try { await toggleSubtask(s.id, next); }
+                    catch { setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: s.done, completedById: s.completedById } : t)); }
                   });
                 }
               }}

@@ -272,10 +272,11 @@ function KanbanCardItemImpl({
                         disabled={!canInteract}
                         onClick={() => {
                           if (!canInteract) return;
-                          setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: !t.done } : t));
+                          const next = !s.done;
+                          setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: next, completedById: next ? currentUserId : null } : t));
                           if (!s.id.startsWith("temp-")) startTransition(async () => {
-                            try { await toggleSubtask(s.id, !s.done); }
-                            catch { setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: s.done } : t)); }
+                            try { await toggleSubtask(s.id, next); }
+                            catch { setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: s.done, completedById: s.completedById } : t)); }
                           });
                         }}
                         aria-label={s.done ? "Markera som inte klar" : "Markera som klar"}
