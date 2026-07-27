@@ -199,11 +199,16 @@ export default function ProjectSideNav({
       </div>
 
       {/* Tablet / desktop: persistent vertical rail */}
-      <nav className={`hidden sm:block shrink-0 w-16 ${iconOnly ? "" : "lg:w-56"} bg-gray-50 border-r border-muted-teal/20`}>
-        {/* On the Startsidan the rail spans the full hero height, but the actual nav items should still
-            line up with the phase-journey bar below the hero — so push them down by the hero's height. */}
+      <nav className={`hidden sm:block relative shrink-0 w-16 ${iconOnly ? "" : "lg:w-56"}`}>
+        {/* On the Startsidan the rail spans the full hero height (for sticky/stretch layout), but its
+            gray fill must start only where the hero's background image ends, not cover the image —
+            and the actual nav items should still line up with the phase-journey bar below the hero. */}
+        <div
+          className="absolute left-0 right-0 bottom-0 bg-gray-50 border-r border-muted-teal/20"
+          style={{ top: onHome ? "490px" : 0 }}
+        />
         {onHome && <div aria-hidden style={{ height: "490px" }} />}
-        <div className="sm:sticky sm:top-0 max-h-screen overflow-y-auto py-3 scrollbar-none" style={{ scrollbarWidth: "none" }}>
+        <div className="relative sm:sticky sm:top-0 max-h-screen overflow-y-auto py-3 scrollbar-none" style={{ scrollbarWidth: "none" }}>
         <div className="space-y-0.5">
           {MAIN_ITEMS.map((item) => (
             <Row
