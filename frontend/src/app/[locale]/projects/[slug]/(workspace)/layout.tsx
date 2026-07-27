@@ -27,9 +27,9 @@ export default async function WorkspaceLayout({
   return (
     <>
       <ProjectMiniHero title={project.title} imageUrl={project.imageUrl} />
-      <div className="flex flex-1 flex-col sm:flex-row pt-8 pb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+      <div className="flex flex-1 flex-col sm:flex-row -mb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
         <ProjectSideNav slug={slug} isOwner={isOwner} isCommercial={isCommercialLegalType(project.legalType)} />
-        <div className="flex-1 min-w-0 px-6">{children}</div>
+        <div className="flex-1 min-w-0 px-6 pt-8 pb-12">{children}</div>
       </div>
     </>
   );
