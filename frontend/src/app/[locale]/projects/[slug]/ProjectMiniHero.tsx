@@ -13,7 +13,7 @@ export default function ProjectMiniHero({ title, imageUrl }: { title: string; im
           <div className="absolute inset-0 bg-gradient-to-br from-dark-slate to-dark-slate/70" />
         )}
       </div>
-      <div className="relative z-10 flex items-center justify-center px-6 py-5">
+      <div className="relative z-10 flex items-center justify-center px-6 py-2">
         <h1
           className="text-4xl md:text-5xl font-bold text-center leading-tight"
           style={{ color: "white", textShadow: "0 2px 8px rgba(0,0,0,0.35)" }}
