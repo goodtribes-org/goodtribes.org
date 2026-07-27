@@ -343,7 +343,7 @@ export default async function ProjectDetailPage({
             <div className="absolute inset-0 bg-gradient-to-br from-dark-slate to-dark-slate/70" />
           )}
         </div>
-        <div className="relative z-10">
+        <div className="relative z-10 sm:pl-16 lg:pl-56">
           <div className="flex justify-center pt-5 pb-2 px-6">
             <h1
               className="text-5xl md:text-6xl font-bold text-center leading-tight md:mr-[330px]"
@@ -463,7 +463,7 @@ export default async function ProjectDetailPage({
         </div>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-6 sm:pl-16 lg:pl-56">
         <PhaseMenuBar
           slug={slug}
           phase={project.phase}
