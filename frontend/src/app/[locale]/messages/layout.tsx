@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { auth } from "@/auth";
 import { getDirectAndGroupRooms, getProjectChannelGroups, getOrgChannelGroups } from "@/lib/rooms";
 import { MessagesSidebar } from "./MessagesSidebar";
+import ProjectChrome from "./ProjectChrome";
 
 // No longer redirects logged-out visitors to /login: a shared link to a
 // public project's channel (e.g. from the activity feed) should be openable
@@ -22,14 +23,16 @@ export default async function MessagesLayout({ children }: { children: React.Rea
     : [[], [], []];
 
   return (
-    <div className="flex gap-6 w-full max-w-5xl mx-auto">
-      <MessagesSidebar
-        isLoggedIn={!!userId}
-        dmGroupRooms={dmGroupRooms.map((r) => ({ ...r, lastMessageAt: r.lastMessageAt.toISOString() }))}
-        projectGroups={projectGroups}
-        orgGroups={orgGroups}
-      />
-      <div className="flex-1 min-w-0">{children}</div>
-    </div>
+    <ProjectChrome>
+      <div className="flex gap-6 w-full max-w-5xl mx-auto">
+        <MessagesSidebar
+          isLoggedIn={!!userId}
+          dmGroupRooms={dmGroupRooms.map((r) => ({ ...r, lastMessageAt: r.lastMessageAt.toISOString() }))}
+          projectGroups={projectGroups}
+          orgGroups={orgGroups}
+        />
+        <div className="flex-1 min-w-0">{children}</div>
+      </div>
+    </ProjectChrome>
   );
 }
