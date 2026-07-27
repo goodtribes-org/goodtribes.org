@@ -356,8 +356,8 @@ export default async function ProjectDetailPage({
               {project.title}
             </h1>
           </div>
-          <div className="flex justify-center px-4 pb-10">
-            <div className="flex flex-wrap justify-center gap-5 items-stretch">
+          <div className="px-4 pb-10">
+            <div className="flex flex-wrap justify-center gap-5 items-stretch w-full max-w-[1160px] mx-auto">
               {/* Card 1: project image */}
               <div
                 className="shrink-0 bg-white overflow-hidden w-full max-w-[820px] h-64 sm:h-80 md:h-[460px]"
