@@ -48,7 +48,7 @@ type Columns = {
 };
 
 const COLUMN_DEFS = [
-  { key: "BACKLOG", label: "Backlog",     color: "#8b5cf6" },
+  { key: "BACKLOG", label: "Wishlist",    color: "#8b5cf6" },
   { key: "TODO",    label: "Att göra",    color: "#f59e0b" },
   { key: "DOING",   label: "Pågår",       color: "#3b82f6" },
   { key: "REVIEW",  label: "Granskning",  color: "#6b7280" },

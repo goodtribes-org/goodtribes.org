@@ -716,7 +716,7 @@ export default async function ProjectDetailPage({
           {/* Kanban summary — bar chart */}
           {kanbanCards.length > 0 && (() => {
             const cols = [
-              { key: "BACKLOG", label: "Backlog",  bg: "#b2b09b" },
+              { key: "BACKLOG", label: "Wishlist", bg: "#b2b09b" },
               { key: "TODO",    label: "Att göra", bg: "#7bad93" },
               { key: "DOING",   label: "Pågår",    bg: "#ff6f59" },
               { key: "REVIEW",  label: "Granskas", bg: "#f59e0b" },

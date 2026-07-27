@@ -34,7 +34,7 @@ const activityLabel: Record<string, string> = {
 };
 
 const columnLabel: Record<string, string> = {
-  BACKLOG: "Backlog",
+  BACKLOG: "Wishlist",
   TODO: "Att göra",
   DOING: "Pågår",
   REVIEW: "Granskning",

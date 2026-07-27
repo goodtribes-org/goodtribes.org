@@ -58,7 +58,7 @@ const ROW_H = 36;
 
 const COLUMN_ORDER = ["BACKLOG", "TODO", "DOING", "REVIEW", "DONE"];
 const COLUMN_LABELS: Record<string, string> = {
-  BACKLOG: "Backlog",
+  BACKLOG: "Wishlist",
   TODO: "Att göra",
   DOING: "Pågående",
   REVIEW: "Granskning",
