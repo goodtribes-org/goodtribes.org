@@ -15,6 +15,7 @@ import Tooltip from "@/components/Tooltip";
 import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import ProjectSideNav from "./ProjectSideNav";
 import PhaseMenuBar from "./PhaseMenuBar";
+import ProjectHeroSlides from "@/components/ProjectHeroSlides";
 import { isLeadRole, isSiteAdmin } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
@@ -186,6 +187,10 @@ export default async function ProjectDetailPage({
       },
       forkedFromProject: { select: { title: true, slug: true } },
       forks: { select: { title: true, slug: true } },
+      heroSlides: {
+        orderBy: { order: "asc" },
+        select: { id: true, heading: true, body: true, body2: true, order: true },
+      },
     },
   });
   if (!project) notFound();
@@ -474,6 +479,13 @@ export default async function ProjectDetailPage({
           canEdit={!!isOwnerOrAdmin}
         />
       </div>
+
+      <ProjectHeroSlides
+        projectId={project.id}
+        slug={slug}
+        initialSlides={project.heroSlides}
+        isLead={!!isOwnerOrAdmin}
+      />
 
       {project.forkedFromProject && (
         <div className="max-w-2xl mx-auto mb-4 px-4 text-sm text-dark-slate/60 text-center">

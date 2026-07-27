@@ -459,6 +459,23 @@ model KanbanCardSubtask {
   @@index([cardId])
 }
 
+// A project's own version of the homepage's hardcoded HeroPhotoStack text
+// cards — but lead-editable at runtime instead of baked into a component,
+// since each project's founders/admins own their own hero copy.
+model ProjectHeroSlide {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  heading   String
+  body      String
+  body2     String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+}
+
 model KanbanCardComment {
   id           String     @id @default(cuid())
   cardId       String
@@ -548,6 +565,7 @@ model Project {
   members            ProjectMember[]
   joinRequests       ProjectJoinRequest[]
   kanbanCards        KanbanCard[]
+  heroSlides         ProjectHeroSlide[]
   todoLists          TodoList[]
   todoItems          TodoItem[]
   blogPosts          BlogPost[]
