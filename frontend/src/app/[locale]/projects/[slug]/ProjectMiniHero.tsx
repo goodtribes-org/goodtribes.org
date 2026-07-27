@@ -5,7 +5,7 @@ import Image from "next/image";
 // title and no photo/team card row, since those only make sense as a landing intro.
 export default function ProjectMiniHero({ title, imageUrl }: { title: string; imageUrl: string | null }) {
   return (
-    <div className="relative -mt-8 mb-2" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+    <div className="relative -mt-8" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
       <div className="absolute inset-0 overflow-hidden">
         {imageUrl ? (
           <Image src={imageUrl} alt="" fill unoptimized className="object-cover blur-2xl scale-110" sizes="100vw" />

@@ -333,7 +333,7 @@ export default async function ProjectDetailPage({
     <div className="flex flex-1 flex-col">
       {/* Hero: full-bleed with blurred background + two photo cards */}
       <div
-        className="relative -mt-8 mb-2"
+        className="relative -mt-8"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
         <div className="absolute top-0 left-0 right-0 overflow-hidden" style={{ height: "490px" }}>
@@ -463,7 +463,13 @@ export default async function ProjectDetailPage({
         </div>
       </div>
 
-      <div className="mb-6 sm:pl-16 lg:pl-56">
+      {/* Side nav + page content — nav starts here, right after the hero */}
+      <div className="flex flex-1 flex-col sm:flex-row -mb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+      <ProjectSideNav slug={slug} isOwner={!!isOwnerOrAdmin} isCommercial={isCommercialLegalType(project.legalType)} />
+      <div className="flex-1 min-w-0 px-6 pb-12">
+      <div className="max-w-6xl mx-auto">
+
+      <div className="mb-6">
         <PhaseMenuBar
           slug={slug}
           phase={project.phase}
@@ -471,12 +477,6 @@ export default async function ProjectDetailPage({
           canEdit={!!isOwnerOrAdmin}
         />
       </div>
-
-      {/* Side nav + page content */}
-      <div className="flex flex-1 flex-col sm:flex-row -mb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-      <ProjectSideNav slug={slug} isOwner={!!isOwnerOrAdmin} isCommercial={isCommercialLegalType(project.legalType)} />
-      <div className="flex-1 min-w-0 px-6 pb-12">
-      <div className="max-w-6xl mx-auto">
 
       {project.forkedFromProject && (
         <div className="max-w-2xl mx-auto mb-4 px-4 text-sm text-dark-slate/60 text-center">
