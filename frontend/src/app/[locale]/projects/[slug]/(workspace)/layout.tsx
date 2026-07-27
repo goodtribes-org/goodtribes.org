@@ -16,7 +16,7 @@ export default async function WorkspaceLayout({
   const { slug } = await params;
   const [session, project] = await Promise.all([
     auth(),
-    prisma.project.findUnique({ where: { slug }, select: { id: true, title: true, legalType: true } }),
+    prisma.project.findUnique({ where: { slug }, select: { id: true, title: true, imageUrl: true, legalType: true } }),
   ]);
   if (!project) notFound();
 
@@ -26,7 +26,7 @@ export default async function WorkspaceLayout({
 
   return (
     <>
-      <ProjectMiniHero title={project.title} />
+      <ProjectMiniHero title={project.title} imageUrl={project.imageUrl} />
       <div className="flex flex-col sm:flex-row pt-8 pb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
         <ProjectSideNav slug={slug} isOwner={isOwner} isCommercial={isCommercialLegalType(project.legalType)} />
         <div className="flex-1 min-w-0 px-6">{children}</div>
