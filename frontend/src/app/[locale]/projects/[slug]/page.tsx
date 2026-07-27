@@ -331,7 +331,7 @@ export default async function ProjectDetailPage({
 
   return (
     <div className="flex flex-1 flex-col">
-      {/* Hero: full-bleed with blurred background + two photo cards */}
+      {/* Hero + side nav + page content: one continuous full-bleed row, so the rail runs from the hero down to the footer */}
       <div
         className="relative -mt-8"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
@@ -343,9 +343,10 @@ export default async function ProjectDetailPage({
             <div className="absolute inset-0 bg-gradient-to-br from-dark-slate to-dark-slate/70" />
           )}
         </div>
-        {/* Fills the reserved sidenav gutter below the background image, so the rail's bg reads as continuous */}
-        <div className="hidden sm:block absolute bottom-0 left-0 w-16 lg:w-56 bg-gray-50 border-r border-muted-teal/20" style={{ top: "490px" }} />
-        <div className="relative z-10 sm:pl-16 lg:pl-56">
+
+        <div className="relative z-10 flex flex-col sm:flex-row -mb-12">
+        <ProjectSideNav slug={slug} isOwner={!!isOwnerOrAdmin} isCommercial={isCommercialLegalType(project.legalType)} />
+        <div className="flex-1 min-w-0 pb-12">
           <div className="flex justify-center pt-5 pb-2 px-6">
             <h1
               className="text-5xl md:text-6xl font-bold text-center leading-tight md:mr-[330px]"
@@ -462,15 +463,9 @@ export default async function ProjectDetailPage({
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Side nav + page content — nav starts here, right after the hero */}
-      <div className="flex flex-1 flex-col sm:flex-row -mb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-      <ProjectSideNav slug={slug} isOwner={!!isOwnerOrAdmin} isCommercial={isCommercialLegalType(project.legalType)} />
-      <div className="flex-1 min-w-0 px-6 pb-12">
+      <div className="px-6">
       <div className="max-w-6xl mx-auto">
-
       <div className="mb-6">
         <PhaseMenuBar
           slug={slug}
@@ -993,6 +988,8 @@ export default async function ProjectDetailPage({
         {userId && !isOwnerOrAdmin && <FlagContentButton targetType="Project" targetId={project.id} />}
       </div>
 
+      </div>
+      </div>
       </div>
       </div>
       </div>

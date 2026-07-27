@@ -200,6 +200,9 @@ export default function ProjectSideNav({
 
       {/* Tablet / desktop: persistent vertical rail */}
       <nav className={`hidden sm:block shrink-0 w-16 ${iconOnly ? "" : "lg:w-56"} bg-gray-50 border-r border-muted-teal/20`}>
+        {/* On the Startsidan the rail spans the full hero height, but the actual nav items should still
+            line up with the phase-journey bar below the hero — so push them down by the hero's height. */}
+        {onHome && <div aria-hidden style={{ height: "490px" }} />}
         <div className="sm:sticky sm:top-0 max-h-screen overflow-y-auto py-3 scrollbar-none" style={{ scrollbarWidth: "none" }}>
         <div className="space-y-0.5">
           {MAIN_ITEMS.map((item) => (
