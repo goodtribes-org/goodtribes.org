@@ -540,17 +540,6 @@ export default async function ProjectDetailPage({
             </section>
           )}
 
-          {(project as typeof project & { summary: string | null }).summary && (
-            <section>
-              <div className="relative pl-5">
-                <div className="absolute left-0 top-0 bottom-0 w-1 rounded-full bg-gradient-to-b from-coral via-seagrass to-muted-teal" />
-                <p className="text-[22px] leading-snug font-semibold text-dark-slate tracking-tight">
-                  {(project as typeof project & { summary: string | null }).summary}
-                </p>
-              </div>
-            </section>
-          )}
-
           <section>
             <h2 className="text-base font-semibold text-dark-slate mb-4">Om projektet</h2>
             {project.description ? (
