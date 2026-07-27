@@ -488,14 +488,8 @@ export default async function ProjectDetailPage({
         </div>
       )}
 
-      <div className="max-w-2xl mx-auto mb-6 px-4 flex items-center justify-center gap-4 text-sm">
-        <Link
-          href={`/fork/new?sourceId=${slug}`}
-          className="text-dark-slate/50 hover:text-seagrass transition-colors"
-        >
-          Gaffla detta projekt →
-        </Link>
-        {project.forks.length > 0 && (
+      {project.forks.length > 0 && (
+        <div className="max-w-2xl mx-auto mb-6 px-4 flex items-center justify-center text-sm">
           <span className="text-dark-slate/40">
             {project.forks.length} {project.forks.length === 1 ? "fork" : "forkar"}:{" "}
             {project.forks.map((f, i) => (
@@ -507,8 +501,8 @@ export default async function ProjectDetailPage({
               </span>
             ))}
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       {isOwnerOrAdmin && project.joinRequests.length > 0 && (
         <div className="mb-8">

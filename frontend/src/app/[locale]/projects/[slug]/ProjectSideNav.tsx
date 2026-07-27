@@ -22,6 +22,7 @@ import {
   Handshake,
   Scale,
   PiggyBank,
+  GitFork,
   Settings,
   Pencil,
   Users,
@@ -29,13 +30,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-type NavItem = { label: string; href: string; icon: LucideIcon; absolute?: boolean; commercialOnly?: boolean };
+type NavItem = { label: string; href: string; icon: LucideIcon; getHref?: (slug: string) => string; commercialOnly?: boolean };
 
 const MAIN_ITEMS: NavItem[] = [
   { label: "Startsidan",    href: "",          icon: Home },
   { label: "Uppgifter",     href: "/tasks",     icon: ListChecks },
   { label: "Kalender",      href: "/calendar",  icon: Calendar },
-  { label: "Kommunikation", href: "/kanaler",   icon: MessageCircle, absolute: true },
+  { label: "Kommunikation", href: "/kanaler",   icon: MessageCircle, getHref: (slug) => `/messages?project=${slug}` },
 ];
 
 const TOOLS_ITEMS: NavItem[] = [
@@ -53,6 +54,7 @@ const TOOLS_ITEMS: NavItem[] = [
   { label: "Partnerskap",     href: "/partnerships",        icon: Handshake },
   { label: "Juridisk form",   href: "/legal-type",          icon: Scale },
   { label: "Vinstfördelning", href: "/profit-distribution", icon: PiggyBank, commercialOnly: true },
+  { label: "Fork",            href: "/fork/new",            icon: GitFork, getHref: (slug) => `/fork/new?sourceId=${slug}` },
 ];
 
 const ADMIN_ITEMS: NavItem[] = [
@@ -137,10 +139,15 @@ export default function ProjectSideNav({
 
   function isActive(href: string) {
     if (href === "/kanaler") return pathname.startsWith("/messages");
+    if (href === "/fork/new") return pathname.startsWith("/fork");
     const full = `${base}${href}`;
     return href === ""
       ? pathname === base
       : pathname === full || pathname.startsWith(`${full}/`);
+  }
+
+  function hrefFor(item: NavItem) {
+    return item.getHref ? item.getHref(slug) : `${base}${item.href}`;
   }
 
   const visibleToolsItems = TOOLS_ITEMS.filter((t) => !t.commercialOnly || isCommercial);
@@ -165,7 +172,7 @@ export default function ProjectSideNav({
       >
         {mobileItems.map((item) => {
           const Icon = item.icon;
-          const href = item.absolute ? `/messages?project=${slug}` : `${base}${item.href}`;
+          const href = hrefFor(item);
           const active = isActive(item.href);
           return (
             <Link
@@ -190,7 +197,7 @@ export default function ProjectSideNav({
               key={item.href}
               item={item}
               active={isActive(item.href)}
-              href={item.absolute ? `/messages?project=${slug}` : `${base}${item.href}`}
+              href={hrefFor(item)}
             />
           ))}
 
@@ -199,7 +206,7 @@ export default function ProjectSideNav({
             {toolsOpen && (
               <div className="space-y-0.5 mt-0.5">
                 {visibleToolsItems.map((item) => (
-                  <Row key={item.href} item={item} active={isActive(item.href)} href={`${base}${item.href}`} indent />
+                  <Row key={item.href} item={item} active={isActive(item.href)} href={hrefFor(item)} indent />
                 ))}
               </div>
             )}
@@ -211,7 +218,7 @@ export default function ProjectSideNav({
               {adminOpen && (
                 <div className="space-y-0.5 mt-0.5">
                   {ADMIN_ITEMS.map((item) => (
-                    <Row key={item.href} item={item} active={isActive(item.href)} href={`${base}${item.href}`} indent />
+                    <Row key={item.href} item={item} active={isActive(item.href)} href={hrefFor(item)} indent />
                   ))}
                 </div>
               )}
