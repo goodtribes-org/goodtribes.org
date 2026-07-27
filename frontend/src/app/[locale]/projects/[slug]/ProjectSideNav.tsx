@@ -150,42 +150,75 @@ export default function ProjectSideNav({
   const [toolsOpen, setToolsOpen] = useState(toolsActive);
   const [adminOpen, setAdminOpen] = useState(adminActive);
 
+  const mobileItems = [
+    ...MAIN_ITEMS,
+    ...visibleToolsItems,
+    ...(isOwner ? ADMIN_ITEMS : []),
+  ];
+
   return (
-    <nav className="sticky top-0 self-start max-h-screen overflow-y-auto shrink-0 w-16 lg:w-56 py-3 border-r border-muted-teal/20 scrollbar-none" style={{ scrollbarWidth: "none" }}>
-      <div className="space-y-0.5">
-        {MAIN_ITEMS.map((item) => (
-          <Row
-            key={item.href}
-            item={item}
-            active={isActive(item.href)}
-            href={item.absolute ? `/messages?project=${slug}` : `${base}${item.href}`}
-          />
-        ))}
+    <>
+      {/* Mobile / narrow: horizontal scrollable bar (the vertical rail has no room here) */}
+      <div
+        className="flex sm:hidden w-full flex-nowrap items-center gap-1 overflow-x-auto px-2 py-2 border-b border-muted-teal/20 scrollbar-none"
+        style={{ scrollbarWidth: "none" }}
+      >
+        {mobileItems.map((item) => {
+          const Icon = item.icon;
+          const href = item.absolute ? `/messages?project=${slug}` : `${base}${item.href}`;
+          const active = isActive(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={href}
+              className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                active ? "bg-coral/10 text-dark-slate font-bold" : "text-dark-slate/60 hover:bg-gray-50 hover:text-dark-slate"
+              }`}
+            >
+              <Icon className="w-4 h-4 shrink-0" strokeWidth={2} />
+              {item.label}
+            </Link>
+          );
+        })}
+      </div>
 
-        <div className="pt-1">
-          <GroupToggle label="Verktyg" icon={Wrench} open={toolsOpen} active={toolsActive} onClick={() => setToolsOpen((v) => !v)} />
-          {toolsOpen && (
-            <div className="space-y-0.5 mt-0.5">
-              {visibleToolsItems.map((item) => (
-                <Row key={item.href} item={item} active={isActive(item.href)} href={`${base}${item.href}`} indent />
-              ))}
-            </div>
-          )}
-        </div>
+      {/* Tablet / desktop: persistent vertical rail */}
+      <nav className="hidden sm:block sm:sticky sm:top-0 sm:self-start max-h-screen overflow-y-auto shrink-0 w-16 lg:w-56 py-3 border-r border-muted-teal/20 scrollbar-none" style={{ scrollbarWidth: "none" }}>
+        <div className="space-y-0.5">
+          {MAIN_ITEMS.map((item) => (
+            <Row
+              key={item.href}
+              item={item}
+              active={isActive(item.href)}
+              href={item.absolute ? `/messages?project=${slug}` : `${base}${item.href}`}
+            />
+          ))}
 
-        {isOwner && (
           <div className="pt-1">
-            <GroupToggle label="Admin" icon={Settings} open={adminOpen} active={adminActive} onClick={() => setAdminOpen((v) => !v)} />
-            {adminOpen && (
+            <GroupToggle label="Verktyg" icon={Wrench} open={toolsOpen} active={toolsActive} onClick={() => setToolsOpen((v) => !v)} />
+            {toolsOpen && (
               <div className="space-y-0.5 mt-0.5">
-                {ADMIN_ITEMS.map((item) => (
+                {visibleToolsItems.map((item) => (
                   <Row key={item.href} item={item} active={isActive(item.href)} href={`${base}${item.href}`} indent />
                 ))}
               </div>
             )}
           </div>
-        )}
-      </div>
-    </nav>
+
+          {isOwner && (
+            <div className="pt-1">
+              <GroupToggle label="Admin" icon={Settings} open={adminOpen} active={adminActive} onClick={() => setAdminOpen((v) => !v)} />
+              {adminOpen && (
+                <div className="space-y-0.5 mt-0.5">
+                  {ADMIN_ITEMS.map((item) => (
+                    <Row key={item.href} item={item} active={isActive(item.href)} href={`${base}${item.href}`} indent />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </nav>
+    </>
   );
 }
