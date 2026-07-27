@@ -67,11 +67,13 @@ function Row({
   active,
   href,
   indent,
+  iconOnly,
 }: {
   item: NavItem;
   active: boolean;
   href: string;
   indent?: boolean;
+  iconOnly?: boolean;
 }) {
   const Icon = item.icon;
   return (
@@ -79,15 +81,15 @@ function Row({
       href={href}
       title={item.label}
       className={`group flex items-center gap-3 rounded-lg py-2 mx-2 pl-2 pr-2 transition-colors border-l-4 ${
-        indent ? "lg:pl-6" : "lg:pl-3"
-      } justify-center lg:justify-start ${
+        indent && !iconOnly ? "lg:pl-6" : "lg:pl-3"
+      } justify-center ${iconOnly ? "" : "lg:justify-start"} ${
         active
           ? "border-coral bg-coral/10 text-dark-slate font-bold"
-          : "border-transparent text-dark-slate/60 hover:bg-gray-50 hover:text-dark-slate"
+          : "border-transparent text-dark-slate/60 hover:bg-white hover:text-dark-slate"
       }`}
     >
       <Icon className="w-5 h-5 shrink-0" strokeWidth={2} />
-      <span className="hidden lg:inline text-sm truncate">{item.label}</span>
+      <span className={`${iconOnly ? "hidden" : "hidden lg:inline"} text-sm truncate`}>{item.label}</span>
     </Link>
   );
 }
@@ -98,29 +100,33 @@ function GroupToggle({
   open,
   active,
   onClick,
+  iconOnly,
 }: {
   label: string;
   icon: LucideIcon;
   open: boolean;
   active: boolean;
   onClick: () => void;
+  iconOnly?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       title={label}
-      className={`flex items-center gap-3 rounded-lg py-2 mx-2 pl-2 lg:pl-3 pr-2 transition-colors border-l-4 justify-center lg:justify-between ${
+      className={`flex items-center gap-3 rounded-lg py-2 mx-2 pl-2 lg:pl-3 pr-2 transition-colors border-l-4 justify-center ${
+        iconOnly ? "" : "lg:justify-between"
+      } ${
         active
           ? "border-coral bg-coral/10 text-dark-slate font-bold"
-          : "border-transparent text-dark-slate/60 hover:bg-gray-50 hover:text-dark-slate"
+          : "border-transparent text-dark-slate/60 hover:bg-white hover:text-dark-slate"
       }`}
     >
       <span className="flex items-center gap-3">
         <Icon className="w-5 h-5 shrink-0" strokeWidth={2} />
-        <span className="hidden lg:inline text-sm truncate">{label}</span>
+        <span className={`${iconOnly ? "hidden" : "hidden lg:inline"} text-sm truncate`}>{label}</span>
       </span>
-      <ChevronDown className={`hidden lg:inline w-3.5 h-3.5 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      <ChevronDown className={`${iconOnly ? "hidden" : "hidden lg:inline"} w-3.5 h-3.5 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
     </button>
   );
 }
@@ -149,6 +155,9 @@ export default function ProjectSideNav({
   function hrefFor(item: NavItem) {
     return item.getHref ? item.getHref(slug) : `${base}${item.href}`;
   }
+
+  const onHome = pathname === base;
+  const iconOnly = !onHome;
 
   const visibleToolsItems = TOOLS_ITEMS.filter((t) => !t.commercialOnly || isCommercial);
   const toolsActive = visibleToolsItems.some((t) => isActive(t.href));
@@ -190,7 +199,8 @@ export default function ProjectSideNav({
       </div>
 
       {/* Tablet / desktop: persistent vertical rail */}
-      <nav className="hidden sm:block sm:sticky sm:top-0 sm:self-start max-h-screen overflow-y-auto shrink-0 w-16 lg:w-56 py-3 border-r border-muted-teal/20 scrollbar-none" style={{ scrollbarWidth: "none" }}>
+      <nav className={`hidden sm:block shrink-0 w-16 ${iconOnly ? "" : "lg:w-56"} bg-gray-50 border-r border-muted-teal/20`}>
+        <div className="sm:sticky sm:top-0 max-h-screen overflow-y-auto py-3 scrollbar-none" style={{ scrollbarWidth: "none" }}>
         <div className="space-y-0.5">
           {MAIN_ITEMS.map((item) => (
             <Row
@@ -198,15 +208,16 @@ export default function ProjectSideNav({
               item={item}
               active={isActive(item.href)}
               href={hrefFor(item)}
+              iconOnly={iconOnly}
             />
           ))}
 
           <div className="pt-1">
-            <GroupToggle label="Verktyg" icon={Wrench} open={toolsOpen} active={toolsActive} onClick={() => setToolsOpen((v) => !v)} />
+            <GroupToggle label="Verktyg" icon={Wrench} open={toolsOpen} active={toolsActive} onClick={() => setToolsOpen((v) => !v)} iconOnly={iconOnly} />
             {toolsOpen && (
               <div className="space-y-0.5 mt-0.5">
                 {visibleToolsItems.map((item) => (
-                  <Row key={item.href} item={item} active={isActive(item.href)} href={hrefFor(item)} indent />
+                  <Row key={item.href} item={item} active={isActive(item.href)} href={hrefFor(item)} indent iconOnly={iconOnly} />
                 ))}
               </div>
             )}
@@ -214,16 +225,17 @@ export default function ProjectSideNav({
 
           {isOwner && (
             <div className="pt-1">
-              <GroupToggle label="Admin" icon={Settings} open={adminOpen} active={adminActive} onClick={() => setAdminOpen((v) => !v)} />
+              <GroupToggle label="Admin" icon={Settings} open={adminOpen} active={adminActive} onClick={() => setAdminOpen((v) => !v)} iconOnly={iconOnly} />
               {adminOpen && (
                 <div className="space-y-0.5 mt-0.5">
                   {ADMIN_ITEMS.map((item) => (
-                    <Row key={item.href} item={item} active={isActive(item.href)} href={hrefFor(item)} indent />
+                    <Row key={item.href} item={item} active={isActive(item.href)} href={hrefFor(item)} indent iconOnly={iconOnly} />
                   ))}
                 </div>
               )}
             </div>
           )}
+        </div>
         </div>
       </nav>
     </>
