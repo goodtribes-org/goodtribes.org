@@ -113,7 +113,7 @@ export default async function HomePage({
     getLeaderboard(),
     prisma.user.findMany({
       where: { showProfile: true, name: { not: null as null } },
-      orderBy: { id: "desc" }, // User has no createdAt; cuid ids are chronologically sortable
+      orderBy: { createdAt: "desc" },
       take: 6,
       select: { id: true, name: true, image: true },
     }),

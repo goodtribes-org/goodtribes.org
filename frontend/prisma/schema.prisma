@@ -82,6 +82,10 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
+  // Prisma's cuid() is CUID2 (@paralleldrive/cuid2), which is deliberately
+  // non-sortable — unlike classic CUID1, it can't stand in for "when was
+  // this row created" (see the homepage's "Nya medlemmar" bug this fixed).
+  createdAt     DateTime  @default(now())
   country       String?
   bio           String?
   socialLinks   Json?     @default("{}")
