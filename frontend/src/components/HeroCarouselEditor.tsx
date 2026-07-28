@@ -21,7 +21,6 @@ const EMPTY_FORM = {
   heading: "",
   body: "",
   bodyLine2: "",
-  body2: "",
   obstacles: [] as ObstacleInput[],
   outro: "",
   points: [] as PointInput[],
@@ -45,7 +44,6 @@ export default function HeroCarouselEditor({ initialSlides }: { initialSlides: H
       heading: slide.heading,
       body: slide.body,
       bodyLine2: slide.bodyLine2,
-      body2: slide.body2,
       obstacles: slide.obstacles,
       outro: slide.outro,
       points: slide.points,
@@ -79,7 +77,6 @@ export default function HeroCarouselEditor({ initialSlides }: { initialSlides: H
         heading: result.slide.heading,
         body: result.slide.body,
         bodyLine2: result.slide.bodyLine2 ?? "",
-        body2: result.slide.body2 ?? "",
         obstacles: (result.slide.obstacles as unknown as ObstacleInput[] | null) ?? [],
         outro: result.slide.outro ?? "",
         points: (result.slide.points as unknown as PointInput[] | null) ?? [],
@@ -180,10 +177,6 @@ export default function HeroCarouselEditor({ initialSlides }: { initialSlides: H
             placeholder="Extra textrad efter texten (valfritt)"
             className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
           />
-          <div>
-            <span className="text-xs font-medium text-dark-slate/60 block mb-1">Andra stycket (valfritt)</span>
-            <RichTextEditor content={form.body2} onChange={(html) => setForm((f) => ({ ...f, body2: html }))} compact />
-          </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">

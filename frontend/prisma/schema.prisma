@@ -492,7 +492,6 @@ model HomeHeroSlide {
   heading     String
   body        String
   bodyLine2   String?
-  body2       String?
   obstacles   Json?
   outro       String?
   points      Json?

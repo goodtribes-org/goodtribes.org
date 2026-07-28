@@ -22,7 +22,6 @@ export type HeroSlideInput = {
   heading: string;
   body: string;
   bodyLine2: string;
-  body2: string;
   obstacles: ObstacleInput[];
   outro: string;
   points: PointInput[];
@@ -48,7 +47,6 @@ function toData(input: HeroSlideInput) {
     heading,
     body,
     bodyLine2: input.bodyLine2.trim() || null,
-    body2: input.body2.trim() || null,
     obstacles: obstacles.length ? (obstacles as unknown as Prisma.InputJsonValue) : Prisma.DbNull,
     outro: input.outro.trim() || null,
     points: points.length ? (points as unknown as Prisma.InputJsonValue) : Prisma.DbNull,

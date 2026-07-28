@@ -149,7 +149,6 @@ export default function HeroPhotoStack({
                         {current.bodyLine2}
                       </p>
                     )}
-                    {current.body2 && <RichText html={current.body2} className="mt-2 text-dark-slate/80" />}
                     {current.obstacles.length > 0 && (
                       <>
                         <ul className="mt-3 flex flex-col gap-2.5">

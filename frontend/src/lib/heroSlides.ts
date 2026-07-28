@@ -8,7 +8,6 @@ export type HeroSlideData = {
   heading: string;
   body: string;
   bodyLine2: string;
-  body2: string;
   obstacles: ObstacleInput[];
   outro: string;
   points: PointInput[];
@@ -25,7 +24,6 @@ export function toHeroSlideData(s: HomeHeroSlide): HeroSlideData {
     heading: s.heading,
     body: s.body,
     bodyLine2: s.bodyLine2 ?? "",
-    body2: s.body2 ?? "",
     obstacles: (s.obstacles as unknown as ObstacleInput[] | null) ?? [],
     outro: s.outro ?? "",
     points: (s.points as unknown as PointInput[] | null) ?? [],
