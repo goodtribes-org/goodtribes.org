@@ -370,7 +370,7 @@ export default async function ProjectDetailPage({
             <div className="flex flex-wrap justify-center gap-5 items-stretch w-full max-w-[1160px] mx-auto">
               {/* Card 1: project image */}
               <div
-                className="shrink-0 bg-white overflow-hidden w-full max-w-[820px] h-64 sm:h-80 md:h-[460px]"
+                className="shrink-0 bg-white overflow-hidden w-full max-w-[660px] 2xl:max-w-[820px] h-64 sm:h-80 md:h-[400px] 2xl:h-[460px]"
                 style={{ border: "24px solid white", boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)", transform: "rotate(-3deg)", position: "relative", zIndex: 1 }}
               >
                 {project.imageUrl ? (
@@ -385,7 +385,7 @@ export default async function ProjectDetailPage({
               </div>
               {/* Card 2: team + SDG + join */}
               <div
-                className="shrink-0 bg-white rounded-2xl p-5 flex flex-col w-full max-w-[320px] min-h-0 md:min-h-[460px]"
+                className="shrink-0 bg-white rounded-2xl p-5 flex flex-col w-full max-w-[320px] min-h-0 md:min-h-[400px] 2xl:min-h-[460px]"
                 style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)", marginLeft: "-10px", transform: "rotate(3deg)" }}
               >
                 {project.members.length > 0 && (
