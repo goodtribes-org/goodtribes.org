@@ -17,7 +17,11 @@ export default function ProjectMiniHero({ title, imageUrl }: { title: string; im
       <div className="relative z-10 flex items-center justify-center px-6 py-2">
         <h1
           className={`${handwritingFont.className} text-center leading-tight`}
-          style={{ color: "white", fontSize: 44, textShadow: "0 2px 8px rgba(0,0,0,0.35)" }}
+          style={{
+            color: "white",
+            fontSize: 44,
+            textShadow: "-1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999, 2px 4px 12px rgba(0,0,0,0.35)",
+          }}
         >
           {title}
         </h1>
