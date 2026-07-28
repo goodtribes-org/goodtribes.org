@@ -9,7 +9,7 @@ export default function ProjectMiniHero({ title, imageUrl }: { title: string; im
     <div className="relative -mt-8" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
       <div className="absolute inset-0 overflow-hidden">
         {imageUrl ? (
-          <Image src={imageUrl} alt="" fill unoptimized className="object-cover blur-[1.8px]" sizes="100vw" />
+          <Image src={imageUrl} alt="" fill unoptimized className="object-cover blur-[8px]" sizes="100vw" />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-dark-slate to-dark-slate/70" />
         )}
