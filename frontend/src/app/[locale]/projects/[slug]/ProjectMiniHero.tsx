@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { handwritingFont } from "@/lib/fonts";
 
 // Reduced hero shown on workspace subpages (Uppgifter, Kalender, Verktyg-sidorna, ...) —
 // same full-bleed banner as the Startsidan hero, just with a smaller, straight (unrotated)
@@ -15,8 +16,8 @@ export default function ProjectMiniHero({ title, imageUrl }: { title: string; im
       </div>
       <div className="relative z-10 flex items-center justify-center px-6 py-2">
         <h1
-          className="text-4xl md:text-5xl font-bold text-center leading-tight"
-          style={{ color: "white", textShadow: "0 2px 8px rgba(0,0,0,0.35)" }}
+          className={`${handwritingFont.className} text-center leading-tight`}
+          style={{ color: "white", fontSize: 44, textShadow: "0 2px 8px rgba(0,0,0,0.35)" }}
         >
           {title}
         </h1>

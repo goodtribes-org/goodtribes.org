@@ -16,6 +16,7 @@ import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import ProjectSideNav from "./ProjectSideNav";
 import PhaseMenuBar from "./PhaseMenuBar";
 import ProjectHeroSlides from "@/components/ProjectHeroSlides";
+import { handwritingFont } from "@/lib/fonts";
 import { isLeadRole, isSiteAdmin } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
@@ -354,9 +355,10 @@ export default async function ProjectDetailPage({
         <div className="flex-1 min-w-0 pb-12">
           <div className="flex justify-center pt-5 pb-2 px-6">
             <h1
-              className="text-5xl md:text-6xl font-bold text-center leading-tight md:mr-[330px]"
+              className={`${handwritingFont.className} text-center leading-tight md:mr-[330px]`}
               style={{
                 color: "white",
+                fontSize: 56,
                 textShadow: "-1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999, 2px 4px 12px rgba(0,0,0,0.35)",
                 transform: "rotate(-3deg)",
               }}
