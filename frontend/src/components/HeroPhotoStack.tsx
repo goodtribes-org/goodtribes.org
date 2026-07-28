@@ -98,7 +98,7 @@ export default function HeroPhotoStack({
 
           <h1
             className={`${handwriting.className} text-center leading-tight`}
-            style={{ color: "white", textShadow: "0 3px 8px rgba(0,0,0,0.25)", marginTop: 0 }}
+            style={{ color: "white", textShadow: "0 3px 8px rgba(0,0,0,0.25)", marginTop: 24 }}
           >
             <span style={{ fontSize: 56 }}>{heading}</span>
           </h1>
