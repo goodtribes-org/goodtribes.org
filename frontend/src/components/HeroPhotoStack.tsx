@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { toProxyUrl } from "@/lib/storageUrl";
 import { heroTintClass } from "@/lib/heroTint";
-import HeroCarouselDialog from "@/components/HeroCarouselDialog";
 import type { HeroSlideData } from "@/lib/heroSlides";
 
 const CARD_SHADOW =
@@ -20,32 +20,19 @@ const PHOTO_TILT = [
   { rotate: 2, x: 8, y: 2 },
 ];
 
-export default function HeroPhotoStack({ slides, canEdit }: { slides: HeroSlideData[]; canEdit: boolean }) {
-  const [PHOTOS, setPhotos] = useState(slides);
+export default function HeroPhotoStack({ slides: PHOTOS, canEdit }: { slides: HeroSlideData[]; canEdit: boolean }) {
   const [active, setActive] = useState(0);
-  const [managing, setManaging] = useState(false);
   const current = PHOTOS[active];
 
   if (!current) {
     return canEdit ? (
       <div className="relative z-10 flex justify-center px-4 py-12">
-        <button
-          type="button"
-          onClick={() => setManaging(true)}
+        <Link
+          href="/site-admin/hero-carousel"
           className="border-2 border-dashed border-dark-slate/15 rounded-2xl px-6 py-4 text-sm text-dark-slate/40 hover:text-dark-slate/60 hover:border-dark-slate/25 transition-colors"
         >
           + Lägg till hero-slide
-        </button>
-        {managing && (
-          <HeroCarouselDialog
-            slides={PHOTOS}
-            onSlidesChange={(next) => {
-              setPhotos(next);
-              setActive(0);
-            }}
-            onClose={() => setManaging(false)}
-          />
-        )}
+        </Link>
       </div>
     ) : null;
   }
@@ -115,13 +102,12 @@ export default function HeroPhotoStack({ slides, canEdit }: { slides: HeroSlideD
             >
               <div className={`relative h-full bg-white p-3 ${CARD_SHADOW}`}>
                 {canEdit && (
-                  <button
-                    type="button"
-                    onClick={() => setManaging(true)}
+                  <Link
+                    href="/site-admin/hero-carousel"
                     className="absolute top-3 right-3 z-10 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors bg-white/70 rounded-md px-2 py-1"
                   >
                     ✎ Redigera
-                  </button>
+                  </Link>
                 )}
                 <div className={`h-full md:overflow-y-auto border border-muted-teal/20 px-6 pt-3 pb-5 flex flex-col justify-start ${heroTintClass(current.tintColor, current.tintOpacity)}`}>
                   <div key={`text-${current.id}`} className="hero-caption-in flex flex-col items-start text-left">
@@ -191,17 +177,6 @@ export default function HeroPhotoStack({ slides, canEdit }: { slides: HeroSlideD
           </div>
         </div>
       </div>
-
-      {managing && (
-        <HeroCarouselDialog
-          slides={PHOTOS}
-          onSlidesChange={(next) => {
-            setPhotos(next);
-            setActive((i) => Math.min(i, Math.max(next.length - 1, 0)));
-          }}
-          onClose={() => setManaging(false)}
-        />
-      )}
     </>
   );
 }

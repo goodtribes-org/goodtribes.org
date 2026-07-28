@@ -15,6 +15,7 @@ const NAV = [
   { href: "/site-admin/legal-type", label: "Juridisk form" },
   { href: "/site-admin/profit-distribution", label: "Vinstfördelning" },
   { href: "/site-admin/impact-fund", label: "Impact-fond" },
+  { href: "/site-admin/hero-carousel", label: "Hero-karusell" },
 ];
 
 // Strapi owns editorial copy (About/Privacy/Terms, see CLAUDE.md) via its
