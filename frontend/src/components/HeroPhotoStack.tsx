@@ -32,13 +32,13 @@ function RichText({ html, className }: { html: string; className: string }) {
     return (
       <div
         className={`prose prose-sm max-w-none prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline prose-strong:text-coral ${className}`}
-        style={{ fontSize: 16, lineHeight: 1.6 }}
+        style={{ fontSize: 14, lineHeight: 1.5 }}
         dangerouslySetInnerHTML={{ __html: html }}
       />
     );
   }
   return (
-    <p className={className} style={{ fontSize: 16, lineHeight: 1.6 }}>
+    <p className={className} style={{ fontSize: 14, lineHeight: 1.5 }}>
       {html}
     </p>
   );
@@ -100,7 +100,7 @@ export default function HeroPhotoStack({
             className={`${handwriting.className} text-center leading-tight`}
             style={{ color: "white", textShadow: "0 3px 8px rgba(0,0,0,0.25)", marginTop: 0 }}
           >
-            <span style={{ fontSize: 88 }}>{heading}</span>
+            <span style={{ fontSize: 56 }}>{heading}</span>
           </h1>
 
           <div className="relative grid w-full gap-8 items-center md:grid-cols-2">
@@ -143,20 +143,20 @@ export default function HeroPhotoStack({
                 )}
                 <div className={`h-full md:overflow-y-auto border border-muted-teal/20 px-6 pt-3 pb-5 flex flex-col justify-start ${heroTintClass(current.tintColor, current.tintOpacity)}`}>
                   <div key={`text-${current.id}`} className="hero-caption-in flex flex-col items-start text-left">
-                    <h1 className={`${handwriting.className} text-dark-slate pr-16`} style={{ textWrap: "balance", fontSize: 38 }}>
+                    <h1 className={`${handwriting.className} text-dark-slate pr-16`} style={{ textWrap: "balance", fontSize: 26 }}>
                       {current.heading}
                     </h1>
                     <RichText html={current.body} className="mt-1 text-dark-slate" />
                     {current.bodyLine2 && (
-                      <p className="mt-1 font-semibold text-dark-slate" style={{ fontSize: 16, lineHeight: 1.6 }}>
+                      <p className="mt-1 font-semibold text-dark-slate" style={{ fontSize: 14, lineHeight: 1.5 }}>
                         {current.bodyLine2}
                       </p>
                     )}
                     {current.obstacles.length > 0 && (
                       <>
-                        <ul className="mt-3 flex flex-col gap-3">
+                        <ul className="mt-3 flex flex-col gap-2.5">
                           {current.obstacles.map((o) => (
-                            <li key={o.lead} className="text-base text-dark-slate">
+                            <li key={o.lead} className="text-sm text-dark-slate">
                               <span className="font-bold text-seagrass">{o.lead}</span> {o.text}
                             </li>
                           ))}
@@ -165,11 +165,11 @@ export default function HeroPhotoStack({
                       </>
                     )}
                     {current.points.length > 0 && (
-                      <ul className="mt-3 flex flex-col gap-2">
+                      <ul className="mt-3 flex flex-col gap-1.5">
                         {current.points.map((p) => (
                           <li key={p.pct} className="flex items-center gap-3">
-                            <span className="w-14 shrink-0 text-right text-base font-bold text-coral">{p.pct}</span>
-                            <span className="text-base text-dark-slate">{p.text}</span>
+                            <span className="w-14 shrink-0 text-right text-sm font-bold text-coral">{p.pct}</span>
+                            <span className="text-sm text-dark-slate">{p.text}</span>
                           </li>
                         ))}
                       </ul>
