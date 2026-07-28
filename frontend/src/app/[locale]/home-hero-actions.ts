@@ -104,3 +104,41 @@ export async function reorderHeroSlides(orderedIds: string[]) {
   revalidatePath("/");
   return { ok: true };
 }
+
+type OkOrError = { error: string } | { ok: true };
+
+export async function updateHeroHeading(heading: string): Promise<OkOrError> {
+  await requireAdmin();
+
+  const trimmed = heading.trim();
+  if (!trimmed) return { error: "Rubrik krävs." };
+
+  const existing = await prisma.homeHeroSettings.findFirst();
+  if (existing) {
+    await prisma.homeHeroSettings.update({ where: { id: existing.id }, data: { heading: trimmed } });
+  } else {
+    await prisma.homeHeroSettings.create({ data: { heading: trimmed } });
+  }
+
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export type OnboardingStepInput = { id: string; label: string; href: string };
+
+export async function updateOnboardingSteps(steps: OnboardingStepInput[]): Promise<OkOrError> {
+  await requireAdmin();
+
+  for (const s of steps) {
+    if (!s.label.trim() || !s.href.trim()) return { error: "Text och länk krävs för varje steg." };
+  }
+
+  await prisma.$transaction(
+    steps.map((s) =>
+      prisma.onboardingStep.update({ where: { id: s.id }, data: { label: s.label.trim(), href: s.href.trim() } })
+    )
+  );
+
+  revalidatePath("/");
+  return { ok: true };
+}

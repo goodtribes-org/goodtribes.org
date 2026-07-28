@@ -503,6 +503,23 @@ model HomeHeroSlide {
   updatedAt   DateTime      @updatedAt
 }
 
+// Singleton row (the app always reads/updates the first one) holding the
+// headline shown above the hero carousel on the homepage.
+model HomeHeroSettings {
+  id        String   @id @default(cuid())
+  heading   String
+  updatedAt DateTime @updatedAt
+}
+
+model OnboardingStep {
+  id        String   @id @default(cuid())
+  order     Int      @default(0)
+  label     String
+  href      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model KanbanCardComment {
   id           String     @id @default(cuid())
   cardId       String

@@ -20,7 +20,15 @@ const PHOTO_TILT = [
   { rotate: 2, x: 8, y: 2 },
 ];
 
-export default function HeroPhotoStack({ slides: PHOTOS, canEdit }: { slides: HeroSlideData[]; canEdit: boolean }) {
+export default function HeroPhotoStack({
+  slides: PHOTOS,
+  heading,
+  canEdit,
+}: {
+  slides: HeroSlideData[];
+  heading: string;
+  canEdit: boolean;
+}) {
   const [active, setActive] = useState(0);
   const current = PHOTOS[active];
 
@@ -68,7 +76,7 @@ export default function HeroPhotoStack({ slides: PHOTOS, canEdit }: { slides: He
             className="text-5xl md:text-6xl font-bold text-center leading-tight"
             style={{ color: "white", textShadow: "0 3px 8px rgba(0,0,0,0.25)", marginTop: 0 }}
           >
-            <span style={{ fontSize: 60 }}>Välkommen till GoodTribes</span>
+            <span style={{ fontSize: 60 }}>{heading}</span>
           </h1>
 
           <div className="relative grid w-full gap-8 items-center md:grid-cols-2">

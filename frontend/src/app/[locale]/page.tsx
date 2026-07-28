@@ -100,6 +100,8 @@ export default async function HomePage({
     ideaCount,
     ideas,
     heroSlides,
+    heroSettings,
+    onboardingSteps,
   ] = await Promise.all([
     prisma.project.count({ where: { visibility: "public" } }),
     prisma.organisation.count({ where: { isPublic: true } }),
@@ -140,10 +142,14 @@ export default async function HomePage({
       },
     }),
     prisma.homeHeroSlide.findMany({ orderBy: { order: "asc" } }),
+    prisma.homeHeroSettings.findFirst(),
+    prisma.onboardingStep.findMany({ orderBy: { order: "asc" } }),
   ]);
 
   const heroSlidesForStack = heroSlides.map(toHeroSlideData);
   const canEditHero = userId ? await isSiteAdmin(userId) : false;
+  const heroHeading = heroSettings?.heading ?? "Välkommen till GoodTribes";
+  const onboardingStepsForBar = onboardingSteps.map((s) => ({ id: s.id, label: s.label, href: s.href }));
 
   const totalRaised = pledgeSum._sum.amount ?? 0;
   const completedTasks = completedCards + completedSubtasks;
@@ -183,10 +189,10 @@ export default async function HomePage({
 
       {/* Del 1 — Hero: full-bleed blurred bakgrund (följer bilden som visas i högen) + bilder + textkort */}
       <div className="relative -mt-8" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-        <HeroPhotoStack slides={heroSlidesForStack} canEdit={canEditHero} />
+        <HeroPhotoStack slides={heroSlidesForStack} heading={heroHeading} canEdit={canEditHero} />
       </div>
 
-      <OnboardingStepsBar />
+      <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
 
       <div className="space-y-16">
 
