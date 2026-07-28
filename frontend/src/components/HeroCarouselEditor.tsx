@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import FileUpload from "@/components/FileUpload";
+import RichTextEditor from "@/components/RichTextEditor";
 import { toProxyUrl } from "@/lib/storageUrl";
 import { HERO_TINT_COLORS, HERO_TINT_OPACITIES, HERO_TINT_LABELS, heroTintClass, type HeroTintColorName, type HeroTintOpacity } from "@/lib/heroTint";
 import type { HeroSlideData } from "@/lib/heroSlides";
@@ -169,26 +170,20 @@ export default function HeroCarouselEditor({ initialSlides }: { initialSlides: H
             placeholder="Rubrik"
             className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
           />
-          <textarea
-            value={form.body}
-            onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
-            placeholder="Text"
-            rows={3}
-            className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
-          />
+          <div>
+            <span className="text-xs font-medium text-dark-slate/60 block mb-1">Text</span>
+            <RichTextEditor content={form.body} onChange={(html) => setForm((f) => ({ ...f, body: html }))} compact />
+          </div>
           <input
             value={form.bodyLine2}
             onChange={(e) => setForm((f) => ({ ...f, bodyLine2: e.target.value }))}
             placeholder="Extra textrad efter texten (valfritt)"
             className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
           />
-          <textarea
-            value={form.body2}
-            onChange={(e) => setForm((f) => ({ ...f, body2: e.target.value }))}
-            placeholder="Andra stycket (valfritt)"
-            rows={3}
-            className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
-          />
+          <div>
+            <span className="text-xs font-medium text-dark-slate/60 block mb-1">Andra stycket (valfritt)</span>
+            <RichTextEditor content={form.body2} onChange={(html) => setForm((f) => ({ ...f, body2: html }))} compact />
+          </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -226,12 +221,10 @@ export default function HeroCarouselEditor({ initialSlides }: { initialSlides: H
             ))}
           </div>
 
-          <input
-            value={form.outro}
-            onChange={(e) => setForm((f) => ({ ...f, outro: e.target.value }))}
-            placeholder="Text efter punktlistan (valfritt)"
-            className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
-          />
+          <div>
+            <span className="text-xs font-medium text-dark-slate/60 block mb-1">Text efter punktlistan (valfritt)</span>
+            <RichTextEditor content={form.outro} onChange={(html) => setForm((f) => ({ ...f, outro: html }))} compact />
+          </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">

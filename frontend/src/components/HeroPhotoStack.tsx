@@ -20,6 +20,27 @@ const PHOTO_TILT = [
   { rotate: 2, x: 8, y: 2 },
 ];
 
+// Content saved through the rich-text editor is HTML; content seeded before
+// it was added is plain text. Detect which one we've got rather than forcing
+// a data migration on old rows.
+function RichText({ html, className }: { html: string; className: string }) {
+  const trimmed = html.trim();
+  if (trimmed.startsWith("<")) {
+    return (
+      <div
+        className={`prose prose-sm max-w-none prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline prose-strong:text-dark-slate ${className}`}
+        style={{ fontSize: 14, lineHeight: 1.45 }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    );
+  }
+  return (
+    <p className={className} style={{ fontSize: 14, lineHeight: 1.45 }}>
+      {html}
+    </p>
+  );
+}
+
 export default function HeroPhotoStack({
   slides: PHOTOS,
   heading,
@@ -122,18 +143,13 @@ export default function HeroPhotoStack({
                     <h1 className="font-bold text-dark-slate pr-16" style={{ textWrap: "balance", fontSize: 26 }}>
                       {current.heading}
                     </h1>
-                    <p className="mt-2 text-dark-slate/80" style={{ fontSize: 14, lineHeight: 1.45 }}>
-                      {current.body}
-                      {current.bodyLine2 && (
-                        <>
-                          <br />
-                          {current.bodyLine2}
-                        </>
-                      )}
-                    </p>
-                    {current.body2 && (
-                      <p className="mt-2 text-dark-slate/80" style={{ fontSize: 14, lineHeight: 1.45 }}>{current.body2}</p>
+                    <RichText html={current.body} className="mt-2 text-dark-slate/80" />
+                    {current.bodyLine2 && (
+                      <p className="mt-1 text-dark-slate/80" style={{ fontSize: 14, lineHeight: 1.45 }}>
+                        {current.bodyLine2}
+                      </p>
                     )}
+                    {current.body2 && <RichText html={current.body2} className="mt-2 text-dark-slate/80" />}
                     {current.obstacles.length > 0 && (
                       <>
                         <ul className="mt-3 flex flex-col gap-2.5">
@@ -143,9 +159,7 @@ export default function HeroPhotoStack({
                             </li>
                           ))}
                         </ul>
-                        {current.outro && (
-                          <p className="mt-3 text-dark-slate/80" style={{ fontSize: 14, lineHeight: 1.45 }}>{current.outro}</p>
-                        )}
+                        {current.outro && <RichText html={current.outro} className="mt-3 text-dark-slate/80" />}
                       </>
                     )}
                     {current.points.length > 0 && (
