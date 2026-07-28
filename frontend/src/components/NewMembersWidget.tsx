@@ -5,6 +5,7 @@ type NewMember = {
   id: string;
   name: string;
   image: string | null;
+  showProfile: boolean;
 };
 
 export default function NewMembersWidget({ members }: { members: NewMember[] }) {
@@ -29,8 +30,8 @@ export default function NewMembersWidget({ members }: { members: NewMember[] }) 
               .slice(0, 2)
               .toUpperCase();
 
-            return (
-              <Link key={member.id} href={`/members/${member.id}`} className="flex flex-col items-center gap-1 w-14 group">
+            const content = (
+              <>
                 <div className="w-10 h-10 rounded-full bg-dry-sage flex items-center justify-center text-xs font-semibold text-dark-slate overflow-hidden group-hover:ring-2 group-hover:ring-seagrass transition-all">
                   {member.image ? (
                     <img src={toProxyUrl(member.image)} alt={member.name} className="w-10 h-10 rounded-full object-cover" />
@@ -41,7 +42,17 @@ export default function NewMembersWidget({ members }: { members: NewMember[] }) 
                 <span className="text-[10px] text-dark-slate/60 truncate w-full text-center">
                   {member.name.split(" ")[0]}
                 </span>
+              </>
+            );
+
+            return member.showProfile ? (
+              <Link key={member.id} href={`/members/${member.id}`} className="flex flex-col items-center gap-1 w-14 group">
+                {content}
               </Link>
+            ) : (
+              <div key={member.id} className="flex flex-col items-center gap-1 w-14">
+                {content}
+              </div>
             );
           })}
         </div>

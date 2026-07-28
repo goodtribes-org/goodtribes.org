@@ -24,19 +24,19 @@ const PAGE_SIZE = 12;
 const IDEA_PREVIEW_SIZE = 8;
 
 async function getLeaderboard() {
-  // Filter to public profiles *before* ranking — otherwise the global top-N by
-  // tokens can be entirely non-public users, hiding public users who do have
-  // tokens but not enough to make an unfiltered cutoff.
-  const eligibleUsers = await prisma.user.findMany({
-    where: { showProfile: true, name: { not: null as null } },
-    select: { id: true, name: true, image: true },
+  // Ranks everyone with a name, same as a project's "Mest aktiva medlemmar" —
+  // showProfile only gates whether a row links to a public profile page (see
+  // LeaderboardWidget), not whether the ranking itself includes you.
+  const users = await prisma.user.findMany({
+    where: { name: { not: null as null } },
+    select: { id: true, name: true, image: true, showProfile: true },
   });
-  if (eligibleUsers.length === 0) return [];
-  const userMap = new Map(eligibleUsers.map((u) => [u.id, u]));
+  if (users.length === 0) return [];
+  const userMap = new Map(users.map((u) => [u.id, u]));
 
   const tokenGroups = await prisma.tokenLedger.groupBy({
     by: ["userId"],
-    where: { userId: { in: eligibleUsers.map((u) => u.id) } },
+    where: { userId: { in: users.map((u) => u.id) } },
     _sum: { tokens: true },
     orderBy: { _sum: { tokens: "desc" } },
     take: 5,
@@ -44,7 +44,7 @@ async function getLeaderboard() {
 
   return tokenGroups.map((g) => {
     const user = userMap.get(g.userId)!;
-    return { id: user.id, name: user.name!, image: user.image, tokens: g._sum.tokens ?? 0 };
+    return { id: user.id, name: user.name!, image: user.image, showProfile: user.showProfile, tokens: g._sum.tokens ?? 0 };
   });
 }
 
@@ -112,10 +112,10 @@ export default async function HomePage({
     prisma.kanbanCardSubtask.count({ where: { done: true } }),
     getLeaderboard(),
     prisma.user.findMany({
-      where: { showProfile: true, name: { not: null as null } },
+      where: { name: { not: null as null } },
       orderBy: { createdAt: "desc" },
       take: 6,
-      select: { id: true, name: true, image: true },
+      select: { id: true, name: true, image: true, showProfile: true },
     }),
     prisma.project.findMany({ where: { visibility: "public" }, select: { sdgGoals: true } }),
     prisma.project.count({ where }),
@@ -276,7 +276,7 @@ export default async function HomePage({
           <div className="flex flex-col gap-6">
             <LeaderboardWidget entries={leaderboard} />
             <NewMembersWidget
-              members={newMembers.map((m) => ({ id: m.id, name: m.name!, image: m.image }))}
+              members={newMembers.map((m) => ({ id: m.id, name: m.name!, image: m.image, showProfile: m.showProfile }))}
             />
             <ImpactStatsWidget
               totalRaised={totalRaised}
