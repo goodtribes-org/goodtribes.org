@@ -7,13 +7,14 @@ type Props = {
   visibility: "public" | "private";
   accept?: string;
   currentImageUrl?: string;
+  previewClassName?: string;
 };
 
 const IMAGE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const IMAGE_SIZE_LIMIT = 5 * 1024 * 1024;
 const DOC_SIZE_LIMIT = 20 * 1024 * 1024;
 
-export default function FileUpload({ onUpload, visibility, accept = "image/*", currentImageUrl }: Props) {
+export default function FileUpload({ onUpload, visibility, accept = "image/*", currentImageUrl, previewClassName = "w-24 h-24 rounded-full" }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -67,11 +68,11 @@ export default function FileUpload({ onUpload, visibility, accept = "image/*", c
         <img
           src={displayImage}
           alt="Förhandsgranskning"
-          className="w-24 h-24 rounded-full object-cover border border-muted-teal"
+          className={`${previewClassName} object-cover border border-muted-teal`}
         />
       )}
       {!displayImage && accept?.startsWith("image") && (
-        <div className="w-24 h-24 rounded-full bg-dry-sage flex items-center justify-center text-4xl text-dark-slate/30">
+        <div className={`${previewClassName} bg-dry-sage flex items-center justify-center text-4xl text-dark-slate/30`}>
           👤
         </div>
       )}

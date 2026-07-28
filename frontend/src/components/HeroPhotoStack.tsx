@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { toProxyUrl } from "@/lib/storageUrl";
+import { heroTintClass } from "@/lib/heroTint";
+import HeroCarouselDialog from "@/components/HeroCarouselDialog";
+import type { HeroSlideData } from "@/lib/heroSlides";
 
 const CARD_SHADOW =
   "shadow-[0_15px_30px_-10px_rgba(0,0,0,0.4),0_2px_8px_rgba(0,0,0,0.15)] ring-1 ring-black/5";
@@ -16,101 +20,37 @@ const PHOTO_TILT = [
   { rotate: 2, x: 8, y: 2 },
 ];
 
-type Obstacle = { lead: string; text: string };
-type PercentPoint = { pct: string; text: string };
-
-type Photo = {
-  src: string;
-  alt: string;
-  heading: string;
-  body?: string;
-  bodyLine2?: string;
-  body2?: string;
-  obstacles?: Obstacle[];
-  outro?: string;
-  points?: PercentPoint[];
-  menuLabel: string;
-  tint: string;
-};
-
-const PHOTOS: Photo[] = [
-  {
-    src: "/img/Slide1.jpg",
-    alt: "GoodTribes — Crowdsourcing for Good",
-    heading: "Här blir dina drömmar till verklighet – för en bättre värld",
-    body: "Har du en idé som kan förändra samhället eller rädda miljön? Hos GoodTribes.org stannar det inte vid en dröm. Vi är en ideell stiftelse och en levande drömfabrik där människor och organisationer möts för att göra skillnad på riktigt.",
-    body2: "Vår vision är enkel men kraftfull: en hållbar värld där varje människa har kraften att nå sin fulla potential. Tillsammans skapar vi en rörelse och värld där vi kan Leva Gott, Må Gott och Göra Gott – både för oss själva och för varandra. Gå med i GoodTribes och förverkliga din idé idag!",
-    menuLabel: "Kom igång",
-    tint: "bg-coral/10",
-  },
-  {
-    src: "/img/Slide2.png",
-    alt: "Har du en dröm? — en man kedjad till sitt skrivbord drömmer om att förverkliga sin idé",
-    heading: "Följ din dröm...",
-    body: "Alla har idéer och drömmar som kan göra världen bättre – men forskning visar att över 92 % aldrig uppnår sina mål.",
-    bodyLine2: "Tre hinder stoppar oss:",
-    obstacles: [
-      { lead: "Rädsla för misslyckande", text: "– rädslan att förlora väger tyngre än viljan att vinna, så vi väljer trygghet framför förändring." },
-      { lead: "Mentala blockeringar", text: "– vi intalar oss att vi saknar rätt talang, vilket hindrar första steget." },
-      { lead: "Vaga målsättningar", text: "– utan konkreta, mätbara delmål blir drömmar bara abstrakta fantasier." },
-    ],
-    outro: "GoodTribes är utformad för att hjälpa dig förbi alla hinder…",
-    menuLabel: "Våga",
-    tint: "bg-seagrass/10",
-  },
-  {
-    src: "/img/do-you-have-a-dream.png",
-    alt: "En person lyfts av en ballong format som en glödlampa — en idé som lyfter",
-    heading: "Släpp inte taget...",
-    body: "En bättre värld kräver mer än goda avsikter – drömmar måste bli konkreta, mätbara mål och delmål som involverar andra. Vetenskapen visar att sannolikheten att du faktiskt förverkligar din livsdröm ökar för varje steg du tar:",
-    points: [
-      { pct: "10 %", text: "Du har bara en idé eller dröm i huvudet." },
-      { pct: "25 %", text: "Du bestämmer dig medvetet för att göra det." },
-      { pct: "50 %", text: "Du planerar hur du ska göra det." },
-      { pct: "65 %", text: "Du berättar för någon annan att du ska göra det." },
-      { pct: "95 %", text: "Om du samverkar med andra med liknande mål." },
-    ],
-    menuLabel: "Dröm",
-    tint: "bg-muted-teal/15",
-  },
-  {
-    src: "/img/want-a-change.png",
-    alt: "Vill du förändra?",
-    heading: "Testa din dröm...",
-    body: "Forskning inom socialt entreprenörskap och effektiv altruism visar att en vetenskaplig, småskalig ansats är avgörande för att lyckas göra världen bättre. Att börja med mikroprojekt i samverkan med andra skyddar mot altruistisk utbrändhet, eftersom gapet mellan insats och globalt problem annars blir för stort – småskalig testning säkrar din och andras långsiktiga framgång.",
-    body2: "Pilottester mäter projektets faktiska genomslagskraft innan stora resurser satsas, och tvingar fram direkt kontakt med användarna så att lösningen bygger på verkliga behov snarare än antaganden. De mest framgångsrika initiativen använder just denna datadrivna, flexibla metodik som ständigt anpassas efter resultat.",
-    menuLabel: "Testa",
-    tint: "bg-dry-sage/20",
-  },
-  {
-    src: "/img/what-is-goodtribes.png",
-    alt: "Vad är GoodTribes?",
-    heading: "Hitta din tribe...",
-    body: "Att förverkliga idéer och livsdrömmar tillsammans med andra ger stora fördelar enligt forskning inom socialpsykologi och organisationsteori:",
-    obstacles: [
-      { lead: "Ökar handlingskraften", text: "– samverkan höjer effektiviteten, motivationen och modet." },
-      { lead: "Breddar kompetensen", text: "– olika perspektiv behövs för att lösa komplexa problem." },
-      { lead: "Skapar sund press", text: "– vilket ger bättre resultat." },
-      { lead: "Ger direkt feedback", text: "– ger dig möjlighet att utvecklas och snabbare nå dina mål." },
-      { lead: "Motverkar utbrändhet", text: "– samverkan och delat ansvar minskar tyngden att bära" },
-    ],
-    menuLabel: "Utveckla",
-    tint: "bg-watermelon/10",
-  },
-  {
-    src: "/img/want-to-be-a-winner.png",
-    alt: "Vill du bidra?",
-    heading: "Alla vinner...",
-    body: "Forskningen visar att människan mår som bäst när hedonistisk lycka (att leva gott och må gott) balanseras med eudaimonisk lycka (att göra gott och följa sina drömmar). Enbart materiell njutning ger kortvarig lycka medan enbart uppoffringar utan återhämtning leder till utbrändhet – det är i symbiosen som långsiktigt välbefinnande skapas.",
-    body2: "Enligt självbestämmandeteorin drivs vi av autonomi, kompetens och samhörighet. Att följa sina livsdrömmar ger mening och skyddar mot psykisk ohälsa, medan att göra gott för andra utlöser ett \"helper's high\" (oxytocin och dopamin) som sänker stress och förlänger livet. Att väva samman personlig livskvalitet med att göra skillnad är därför receptet för ett hållbart, meningsfullt liv.",
-    menuLabel: "Alla vinner",
-    tint: "bg-coral/15",
-  },
-];
-
-export default function HeroPhotoStack() {
+export default function HeroPhotoStack({ slides, canEdit }: { slides: HeroSlideData[]; canEdit: boolean }) {
+  const [PHOTOS, setPhotos] = useState(slides);
   const [active, setActive] = useState(0);
+  const [managing, setManaging] = useState(false);
   const current = PHOTOS[active];
+
+  if (!current) {
+    return canEdit ? (
+      <div className="relative z-10 flex justify-center px-4 py-12">
+        <button
+          type="button"
+          onClick={() => setManaging(true)}
+          className="border-2 border-dashed border-dark-slate/15 rounded-2xl px-6 py-4 text-sm text-dark-slate/40 hover:text-dark-slate/60 hover:border-dark-slate/25 transition-colors"
+        >
+          + Lägg till hero-slide
+        </button>
+        {managing && (
+          <HeroCarouselDialog
+            slides={PHOTOS}
+            onSlidesChange={(next) => {
+              setPhotos(next);
+              setActive(0);
+            }}
+            onClose={() => setManaging(false)}
+          />
+        )}
+      </div>
+    ) : null;
+  }
+
+  const tilt = PHOTO_TILT[active % PHOTO_TILT.length];
 
   return (
     <>
@@ -118,11 +58,11 @@ export default function HeroPhotoStack() {
       <div className="absolute top-0 left-0 right-0 overflow-hidden" style={{ height: "400px" }}>
         {PHOTOS.map((photo, i) => (
           <div
-            key={photo.src}
+            key={photo.id}
             className="absolute inset-0 transition-opacity duration-700 ease-out"
             style={{ opacity: active === i ? 1 : 0 }}
           >
-            <img src={photo.src} alt="" className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110" />
+            <img src={toProxyUrl(photo.imageUrl)} alt="" className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110" />
           </div>
         ))}
       </div>
@@ -170,13 +110,22 @@ export default function HeroPhotoStack() {
             <div
               className="w-full md:max-w-[620px] md:aspect-[16/10] transition-transform duration-500 ease-out"
               style={{
-                transform: `rotate(${-PHOTO_TILT[active].rotate}deg) translate(${-PHOTO_TILT[active].x}px, ${-PHOTO_TILT[active].y}px)`,
+                transform: `rotate(${-tilt.rotate}deg) translate(${-tilt.x}px, ${-tilt.y}px)`,
               }}
             >
-              <div className={`h-full bg-white p-3 ${CARD_SHADOW}`}>
-                <div className={`h-full md:overflow-y-auto border border-muted-teal/20 px-6 pt-3 pb-5 flex flex-col justify-start ${current.tint}`}>
-                  <div key={`text-${current.src}`} className="hero-caption-in flex flex-col items-start text-left">
-                    <h1 className="font-bold text-dark-slate" style={{ textWrap: "balance", fontSize: 26 }}>
+              <div className={`relative h-full bg-white p-3 ${CARD_SHADOW}`}>
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={() => setManaging(true)}
+                    className="absolute top-3 right-3 z-10 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors bg-white/70 rounded-md px-2 py-1"
+                  >
+                    ✎ Redigera
+                  </button>
+                )}
+                <div className={`h-full md:overflow-y-auto border border-muted-teal/20 px-6 pt-3 pb-5 flex flex-col justify-start ${heroTintClass(current.tintColor, current.tintOpacity)}`}>
+                  <div key={`text-${current.id}`} className="hero-caption-in flex flex-col items-start text-left">
+                    <h1 className="font-bold text-dark-slate pr-16" style={{ textWrap: "balance", fontSize: 26 }}>
                       {current.heading}
                     </h1>
                     <p className="mt-2 text-dark-slate/80" style={{ fontSize: 14, lineHeight: 1.45 }}>
@@ -191,7 +140,7 @@ export default function HeroPhotoStack() {
                     {current.body2 && (
                       <p className="mt-2 text-dark-slate/80" style={{ fontSize: 14, lineHeight: 1.45 }}>{current.body2}</p>
                     )}
-                    {current.obstacles && (
+                    {current.obstacles.length > 0 && (
                       <>
                         <ul className="mt-3 flex flex-col gap-2.5">
                           {current.obstacles.map((o) => (
@@ -205,7 +154,7 @@ export default function HeroPhotoStack() {
                         )}
                       </>
                     )}
-                    {current.points && (
+                    {current.points.length > 0 && (
                       <ul className="mt-3 flex flex-col gap-1.5">
                         {current.points.map((p) => (
                           <li key={p.pct} className="flex items-center gap-3">
@@ -226,15 +175,15 @@ export default function HeroPhotoStack() {
                 className="relative w-full min-w-0 transition-transform duration-500 ease-out"
                 style={{
                   aspectRatio: "16 / 10",
-                  transform: `rotate(${PHOTO_TILT[active].rotate}deg) translate(${PHOTO_TILT[active].x}px, ${PHOTO_TILT[active].y}px)`,
+                  transform: `rotate(${tilt.rotate}deg) translate(${tilt.x}px, ${tilt.y}px)`,
                 }}
               >
                 <div
-                  key={current.src}
+                  key={current.id}
                   className={`hero-caption-in absolute inset-0 overflow-hidden bg-white p-3 ${CARD_SHADOW}`}
                 >
                   <div className="relative h-full w-full overflow-hidden">
-                    <img src={current.src} alt={current.alt} className="absolute inset-0 w-full h-full object-cover" />
+                    <img src={toProxyUrl(current.imageUrl)} alt={current.alt} className="absolute inset-0 w-full h-full object-cover" />
                   </div>
                 </div>
               </div>
@@ -242,6 +191,17 @@ export default function HeroPhotoStack() {
           </div>
         </div>
       </div>
+
+      {managing && (
+        <HeroCarouselDialog
+          slides={PHOTOS}
+          onSlidesChange={(next) => {
+            setPhotos(next);
+            setActive((i) => Math.min(i, Math.max(next.length - 1, 0)));
+          }}
+          onClose={() => setManaging(false)}
+        />
+      )}
     </>
   );
 }

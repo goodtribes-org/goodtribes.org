@@ -10,6 +10,8 @@ import SortToggle from "@/components/SortToggleContainer";
 import Pagination from "@/components/Pagination";
 import ActivityPulse from "@/components/ActivityPulse";
 import HeroPhotoStack from "@/components/HeroPhotoStack";
+import { toHeroSlideData } from "@/lib/heroSlides";
+import { isSiteAdmin } from "@/lib/authz";
 import HomeStatsWidget from "@/components/HomeStatsWidget";
 import OnboardingStepsBar from "@/components/OnboardingStepsBar";
 import ImpactStatsWidget from "@/components/ImpactStatsWidget";
@@ -97,6 +99,7 @@ export default async function HomePage({
     projects,
     ideaCount,
     ideas,
+    heroSlides,
   ] = await Promise.all([
     prisma.project.count({ where: { visibility: "public" } }),
     prisma.organisation.count({ where: { isPublic: true } }),
@@ -136,7 +139,11 @@ export default async function HomePage({
         votes: userId ? { where: { userId }, select: { id: true } } : false,
       },
     }),
+    prisma.homeHeroSlide.findMany({ orderBy: { order: "asc" } }),
   ]);
+
+  const heroSlidesForStack = heroSlides.map(toHeroSlideData);
+  const canEditHero = userId ? await isSiteAdmin(userId) : false;
 
   const totalRaised = pledgeSum._sum.amount ?? 0;
   const completedTasks = completedCards + completedSubtasks;
@@ -176,7 +183,7 @@ export default async function HomePage({
 
       {/* Del 1 — Hero: full-bleed blurred bakgrund (följer bilden som visas i högen) + bilder + textkort */}
       <div className="relative -mt-8" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-        <HeroPhotoStack />
+        <HeroPhotoStack slides={heroSlidesForStack} canEdit={canEditHero} />
       </div>
 
       <OnboardingStepsBar />

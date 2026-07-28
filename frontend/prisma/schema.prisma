@@ -40,6 +40,14 @@ enum LegalType {
   NONPROFIT_OWN_ASSOC
 }
 
+enum HeroTintColor {
+  CORAL
+  SEAGRASS
+  MUTED_TEAL
+  DRY_SAGE
+  WATERMELON
+}
+
 enum OrganisationRole {
   OWNER
   ADMIN
@@ -474,6 +482,25 @@ model ProjectHeroSlide {
   updatedAt DateTime @updatedAt
 
   @@index([projectId])
+}
+
+model HomeHeroSlide {
+  id          String        @id @default(cuid())
+  order       Int           @default(0)
+  imageUrl    String
+  alt         String
+  heading     String
+  body        String
+  bodyLine2   String?
+  body2       String?
+  obstacles   Json?
+  outro       String?
+  points      Json?
+  menuLabel   String
+  tintColor   HeroTintColor
+  tintOpacity Int           @default(10)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }
 
 model KanbanCardComment {
