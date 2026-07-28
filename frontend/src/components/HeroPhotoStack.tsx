@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Kalam } from "next/font/google";
 import { toProxyUrl } from "@/lib/storageUrl";
 import { heroTintClass } from "@/lib/heroTint";
+import { handwritingFont } from "@/lib/fonts";
 import type { HeroSlideData } from "@/lib/heroSlides";
-
-const handwriting = Kalam({ subsets: ["latin"], weight: ["700"] });
 
 const CARD_SHADOW =
   "shadow-[0_15px_30px_-10px_rgba(0,0,0,0.4),0_2px_8px_rgba(0,0,0,0.15)] ring-1 ring-black/5";
@@ -97,7 +95,7 @@ export default function HeroPhotoStack({
           `}</style>
 
           <h1
-            className={`${handwriting.className} text-center leading-tight`}
+            className={`${handwritingFont.className} text-center leading-tight`}
             style={{ color: "white", textShadow: "0 3px 8px rgba(0,0,0,0.25)", marginTop: 24 }}
           >
             <span style={{ fontSize: 56 }}>{heading}</span>
@@ -143,7 +141,7 @@ export default function HeroPhotoStack({
                 )}
                 <div className={`h-full md:overflow-y-auto border border-muted-teal/20 px-6 pt-3 pb-5 flex flex-col justify-start ${heroTintClass(current.tintColor, current.tintOpacity)}`}>
                   <div key={`text-${current.id}`} className="hero-caption-in flex flex-col items-start text-left">
-                    <h1 className={`${handwriting.className} text-dark-slate pr-16`} style={{ textWrap: "balance", fontSize: 26 }}>
+                    <h1 className={`${handwritingFont.className} text-dark-slate pr-16`} style={{ textWrap: "balance", fontSize: 26 }}>
                       {current.heading}
                     </h1>
                     <RichText html={current.body} className="mt-1 text-dark-slate" />

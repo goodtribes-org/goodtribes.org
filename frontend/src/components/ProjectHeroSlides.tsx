@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { addHeroSlide, updateHeroSlide, deleteHeroSlide } from "@/app/[locale]/projects/[slug]/hero-slide-actions";
+import { handwritingFont } from "@/lib/fonts";
 
 export type HeroSlide = {
   id: string;
@@ -43,9 +44,11 @@ export default function ProjectHeroSlides({
               ✎ Redigera
             </button>
           )}
-          <h2 className="text-xl font-bold text-dark-slate mb-2 pr-16">{current.heading}</h2>
-          <p className="text-sm text-dark-slate/80 whitespace-pre-line">{current.body}</p>
-          {current.body2 && <p className="text-sm text-dark-slate/80 whitespace-pre-line mt-2">{current.body2}</p>}
+          <h2 className={`${handwritingFont.className} text-dark-slate mb-1 pr-16`} style={{ fontSize: 26 }}>{current.heading}</h2>
+          <p className="text-dark-slate whitespace-pre-line" style={{ fontSize: 14, lineHeight: 1.5 }}>{current.body}</p>
+          {current.body2 && (
+            <p className="text-dark-slate whitespace-pre-line mt-2" style={{ fontSize: 14, lineHeight: 1.5 }}>{current.body2}</p>
+          )}
 
           {slides.length > 1 && (
             <div className="flex items-center justify-center gap-3 mt-4">
