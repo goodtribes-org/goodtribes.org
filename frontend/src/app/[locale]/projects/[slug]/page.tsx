@@ -445,11 +445,6 @@ export default async function ProjectDetailPage({
                     )}
                   </div>
                 )}
-                <div className="mb-4">
-                  <Link href={`/projects/${slug}`} className="flex justify-center w-full py-3 bg-seagrass text-white rounded-xl font-bold text-base hover:bg-seagrass/90 transition-colors shadow-md">
-                    Support GoodTribes
-                  </Link>
-                </div>
                 {(project as typeof project & { sdgGoals: number[] }).sdgGoals.length > 0 && (
                   <div className="mt-2">
                     <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">Agenda 2030:</p>
