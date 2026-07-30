@@ -12,11 +12,11 @@ interface Props {
 }
 
 function getChecklistFor(p: ProjectPhaseValue) {
-  return p === "IDEA" || p === "SPRINT" || p === "PILOT" ? INITIATIVE_CHECKLIST_ITEMS[p] : null;
+  return INITIATIVE_CHECKLIST_ITEMS[p] ?? null;
 }
 
 // Fas- och stegmeny (PRD 4d) — en platt meny under hero, "1. Idé", "2. Sprint" osv.
-// Faser med checklista (idé/sprint) går att klicka på för att fälla ut en
+// Varje fas har en checklista och går att klicka på för att fälla ut en
 // undermeny med numrerade delsteg ("1.1 Beskriv idén", "1.2 ...").
 export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit }: Props) {
   const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedKeys));
@@ -41,7 +41,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit }: Pr
       if (done) next.add(itemKey); else next.delete(itemKey);
       return next;
     });
-    startTransition(() => toggleChecklistItem(slug, p as "IDEA" | "SPRINT" | "PILOT", itemKey, done));
+    startTransition(() => toggleChecklistItem(slug, p, itemKey, done));
   }
 
   return (

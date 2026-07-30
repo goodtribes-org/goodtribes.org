@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { indexDocuments, deleteDocument } from "@/lib/meili";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
-import { getNextPhase } from "@/lib/projectPhase";
+import { getNextPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 
 
 export async function updateProject(slug: string, formData: FormData) {
@@ -144,10 +144,10 @@ export async function toggleSandbox(slug: string) {
   revalidatePath("/sandbox");
 }
 
-// Toggles a single IDEA/SPRINT/PILOT checklist item (PRD 4d). Rows are
+// Toggles a single checklist item within any phase (PRD 4d). Rows are
 // created on demand — there's no pre-seeded row per item, so toggling "on"
 // upserts and toggling "off" deletes.
-export async function toggleChecklistItem(slug: string, phase: "IDEA" | "SPRINT" | "PILOT", itemKey: string, done: boolean) {
+export async function toggleChecklistItem(slug: string, phase: ProjectPhaseValue, itemKey: string, done: boolean) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 

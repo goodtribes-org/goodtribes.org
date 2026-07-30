@@ -1,9 +1,14 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 4.18 (Draft)
+**Version:** 4.19 (Draft)
 **Datum:** 2026-07-30
 **Status:** Under utveckling
+
+**Ändringar i v4.19:**
+- **Byggt & Beslutat:** Samtliga sju faser i 4d har nu en egen checklista (tidigare bara `idea`/`sprint`/`pilot`). `sprint` och `pilot` bytte innehåll igen (ersätter v4.18:s innehåll helt): `sprint` = lean canvas/projektbeskrivning, kärnteam, Kanban-board, framgångskriterier, grov budget; `pilot` = avgränsa testet, genomföra & dokumentera, samla resultat, justera modellen, go/no-go-beslut. `production`, `establish`, `scale` och `impact` fick nya checklistor (se tabellen i 4d för fullständigt innehåll och `item_key`-namn). Uppdaterat i `frontend/src/lib/projectPhase.ts` (`INITIATIVE_CHECKLIST_ITEMS`, typen utökad till alla sju fasvärden), `PhaseMenuBar.tsx` (checklistan renderas nu generiskt för alla faser, ingen hårdkodad fas-uppräkning kvar), `edit/actions.ts` (`toggleChecklistItem` tar nu `ProjectPhaseValue` istället för en uppräkning) och `EditProjectForm.tsx`.
+- **Löst (öppen fråga från v4.18):** `sprint → pilot`-gatingens ordalydelse ("Team tilldelat + budget/resurser definierade") stämmer nu igen — `sprint`-checklistan fick tillbaka egna team-/budgetpunkter (`core_team_formed`, `rough_budget_estimated`).
+- **Beslutat:** `idea`-fasens checklista rörs medvetet inte i detta steg — den driver den skräddarsydda "Snabbstart"-guiden (`IdeaGuide.tsx`, egen UI per steg), och ett nytt innehållsförslag för `idea` hade krävt att guiden byggs om i grunden. Ny öppen fråga i punkt 10 om ifall/när den ombyggnaden ska göras.
 
 **Ändringar i v4.18:**
 - **Byggt & Beslutat:** `sprint`-fasens checklista (4d) bytt ut mot en femstegs designprocess: `map_understand` ("Kartlägga & förstå"), `sketch_solutions` ("Skissa lösningar"), `decide_plan` ("Beslut & planera"), `build_prototype` ("Bygga prototyp"), `test_with_users` ("Testa med användare"). Visas i fas- och stegmenyn (`PhaseMenuBar.tsx`) som 2.1–2.5, eftersom `sprint` är fas nr 2 i sekvensen.
@@ -551,10 +556,10 @@ Varje initiativ på GoodTribes — oavsett om det startar som en lös idé eller
 | Värde (enum) | Svensk etikett | Beskrivning |
 |---|---|---|
 | `idea` | Idé | AI-assisterad idéfas (se Utvecklingsfas 1.2/1.5), peer review, community-feedback |
-| `sprint` | Sprint | Designprocess i fem steg: kartlägga & förstå, skissa lösningar, besluta & planera, bygga prototyp, testa med användare |
-| `pilot` | Pilot | Utveckling och pilot i liten skala — uppgiftsnedbrytning (to-do), bjuda in medskapare, formera team, säkra resurser |
-| `production` | Produktion | Skarp drift |
-| `establish` | Etablera | Stabil lokal verksamhet |
+| `sprint` | Sprint | Lean canvas/projektbeskrivning, kärnteam, Kanban-board, framgångskriterier och grov budget inför piloten |
+| `pilot` | Pilot | Avgränsat, konkret test i liten skala — genomförs, dokumenteras, utvärderas mot framgångskriterierna (go/no-go) |
+| `production` | Produktion | Skarp drift — processen från piloten skalas upp, arbetsflöden formaliseras, finansiering och impact-mätning säkras |
+| `establish` | Etablera | Stabil lokal verksamhet — återkommande finansiering, formaliserade partnerskap, dokumenterad "playbook", Granskningsrådets fördjupade granskning inför skalning |
 | `scale` | Skala | Regional replikering / fork till nya instanser |
 | `impact` | Impact | Mätning och rapportering — kulmen av kontinuerlig mätning som pågår från `idea` |
 
@@ -574,26 +579,34 @@ phase_transitions
 Den fasmodell och de delsteg som beskrivs nedan (och den widget som visar dem, se produktimplikation nedan) är en **vägledning för användaren, inte en tvingande arbetsordning.** Detta gäller på två nivåer, med olika grad av flexibilitet:
 
 - **Fasövergångarna (`idea` → `sprint` → `pilot` → ...) är och förblir gated**, enligt gating-tabellen nedan — de styr vilka funktioner som låses upp och kan inte hoppas över.
-- **Delstegen inom en fas (checklistan, t.ex. `dream_defined`, `peer_feedback_requested`, `todo_created`) är däremot fria till ordning och valfria att bocka av.** Användaren kan göra dem i vilken ordning som helst, hoppa över dem, eller gå direkt till fasövergången utan att ha bockat av alla — checklistan är en hjälp att se vad som brukar behövas, inte en spärr. Widgeten visar väg och framsteg ("2 av 5 klara"), men låser aldrig ett steg bakom ett annat.
+- **Delstegen inom en fas (checklistan, t.ex. `dream_defined`, `peer_feedback_requested`, `core_team_formed`) är däremot fria till ordning och valfria att bocka av.** Användaren kan göra dem i vilken ordning som helst, hoppa över dem, eller gå direkt till fasövergången utan att ha bockat av alla — checklistan är en hjälp att se vad som brukar behövas, inte en spärr. Widgeten visar väg och framsteg ("2 av 5 klara"), men låser aldrig ett steg bakom ett annat.
 
 Detta skiljer sig medvetet från t.ex. gating-tabellen mellan faser, som fortsatt är strikt. Om detta blir förvirrande i praktiken (användare som inte förstår varför vissa steg är låsta och andra inte) är det en öppen fråga att följa upp efter lansering — se punkt 10.
 
 ---
 
-**Delsteg inom `idea`-, `sprint`- och `pilot`-faserna (UI-checklista, inte egna enum-värden)**
+**Delsteg inom varje fas (UI-checklista, inte egna enum-värden)**
 
-Dessa var ursprungligen skissade som egna toppnivåfaser (idea/dream, peer review, to-do, invite, team, resources) men fungerar bättre som en checklista/progress-bar inuti `idea`, `sprint` och `pilot` — annars får `phase`-fältet 11+ värden där flertalet bara betyder "fortfarande i sprintfasen, delsteg X", vilket gör frågor som "visa alla aktiva projekt" svåra att uttrycka.
+Dessa var ursprungligen skissade som egna toppnivåfaser (idea/dream, peer review, to-do, invite, team, resources) men fungerar bättre som en checklista/progress-bar inuti respektive fas — annars får `phase`-fältet 20+ värden där flertalet bara betyder "fortfarande i sprintfasen, delsteg X", vilket gör frågor som "visa alla aktiva projekt" svåra att uttrycka. Fram till v4.19 hade bara `idea`/`sprint`/`pilot` en checklista; nu har samtliga sju faser en.
 
 ```
 initiative_checklist_items
-  id, project_id, phase (idea | sprint | pilot), item_key, completed_at, completed_by
+  id, project_id, phase (idea | sprint | pilot | production | establish | scale | impact), item_key, completed_at, completed_by
 ```
+
+**(v4.19: alla sju faser har nu en checklista — tidigare fanns bara `idea`/`sprint`/`pilot`.)**
 
 | `phase` | `item_key`-värden |
 |---|---|
-| `idea` | `dream_defined` ("Beskriv idén"), `ai_reviewed` ("Be AI granska idén" *(ny, v4.7)* — återanvänder `@AI` från Idéverkstaden, se 5.10), `peer_feedback_requested` ("Bjud in vänner att ge feedback", valfritt, se nedan), `lean_canvas_created` ("Gör en Lean Canvas" *(ny, v4.7)* — länkar till planeringsverktyget i Sandbox, se 5.10) |
-| `sprint` | **(v4.18, ersätter tidigare innehåll — se nedan)** `map_understand` ("Kartlägga & förstå"), `sketch_solutions` ("Skissa lösningar"), `decide_plan` ("Beslut & planera"), `build_prototype` ("Bygga prototyp"), `test_with_users` ("Testa med användare") |
-| `pilot` | **(v4.18, flyttat hit från `sprint`)** `todo_created` ("Fyll på med arbetsuppgifter"), `collaborators_invited` ("Bjud in medskapare"), `team_formed` ("Formera team"), `resources_secured` ("Säkra resurser") |
+| `idea` | `dream_defined` ("Beskriv idén"), `ai_reviewed` ("Be AI granska idén" *(ny, v4.7)* — återanvänder `@AI` från Idéverkstaden, se 5.10), `peer_feedback_requested` ("Bjud in vänner att ge feedback", valfritt, se nedan), `lean_canvas_created` ("Gör en Lean Canvas" *(ny, v4.7)* — länkar till planeringsverktyget i Sandbox, se 5.10) — **medvetet oförändrad i v4.19** (se nedan) |
+| `sprint` | **(v4.19, ersätter v4.18:s innehåll)** `sprint_lean_canvas` ("Skriva ett enkelt lean canvas / projektbeskrivning", länkar till Lean Canvas), `core_team_formed` ("Definiera roller och bilda kärnteam"), `kanban_seeded` ("Sätta upp Kanban-board med första uppgifterna", länkar till Kanban), `pilot_success_criteria` ("Definiera framgångskriterier för pilotfasen"), `rough_budget_estimated` ("Ta fram grov budget/resursbehov") |
+| `pilot` | **(v4.19, ersätter v4.18:s innehåll — `todo_created`/`collaborators_invited`/`team_formed`/`resources_secured` tas bort helt, ingår inte längre någonstans)** `pilot_scope_defined` ("Avgränsa ett litet, konkret test (tid, plats, målgrupp)"), `pilot_executed_documented` ("Genomföra piloten och dokumentera lärdomar löpande"), `pilot_results_collected` ("Samla in kvantitativa/kvalitativa resultat"), `pilot_model_adjusted` ("Justera modellen baserat på feedback"), `pilot_go_no_go` ("Utvärdera mot framgångskriterierna → go/no-go beslut") |
+| `production` | **(ny, v4.19)** `process_scaled_up` ("Skala upp processen som fungerade i piloten"), `workflows_formalized` ("Formalisera arbetsflöden och ansvar"), `funding_secured` ("Säkra finansiering"), `impact_measurement_setup` ("Sätta upp mätning/rapportering av impact", länkar till Impact), `quality_assured` ("Kvalitetssäkring") |
+| `establish` | **(ny, v4.19)** `stable_operations_funding` ("Bygga stabil drift och återkommande finansiering"), `partnerships_formalized` ("Formalisera partnerskap och samarbeten", länkar till Partnerskap), `playbook_documented` ("Dokumentera \"playbook\" så andra kan replikera", länkar till Wiki), `supporter_base_built` ("Bygga upp en stabil community/supporterbas"), `review_council_deep_review` ("Granskningsråd gör en djupare granskning inför skalning", se 5.53) |
+| `scale` | **(ny, v4.19)** `scale_vs_fork_decided` ("Bestämma Skalning vs. Fork (samma projekt växer vs. nytt oberoende initiativ)", länkar till Skalning, se 5.65 och 4f för åtskillnaden), `new_geographies_identified` ("Identifiera nya geografier/målgrupper"), `local_teams_or_license` ("Bygga lokala team eller licensiera modellen"), `scaling_goals_set` ("Sätta upp mätbara skalningsmål"), `expansion_capital_secured` ("Säkra kapital för expansion") |
+| `impact` | **(ny, v4.19, bara fyra punkter)** `sdg_impact_measured` ("Mäta och rapportera faktisk SDG-påverkan", länkar till Impact), `impact_externally_verified` ("Extern verifiering/impact-rapport"), `results_celebrated` ("Fira och synliggöra resultat för community och finansiärer"), `next_step_decided` ("Besluta om nästa steg: fortsätta, replikera, eller avsluta ansvarsfullt") |
+
+**Varför `idea` inte fick nytt innehåll i v4.19:** `idea`-checklistan driver en skräddarsydd stegvis onboarding-guide ("Snabbstart", se produktimplikation nedan) med egen UI per steg (AI-driven SDG-förslag, ett bjud-in-vänner-formulär, en Lean Canvas-länk) — inte bara en generisk lista. Ett nytt förslag till `idea`-innehåll (kort pitch, SDG-koppling, målgrupp/behov, community-feedback, unikhetskoll mot befintliga initiativ) hade krävt att guiden byggdes om i grunden. Beslutat att avgränsa det arbetet till en separat, framtida ändring — `idea` lämnas orörd i detta steg.
 
 **Peer review är valfri feedback, inte ett godkännandekrav — beslutet om `idea → sprint` tas alltid av initiativtagaren själv.** Community-feedback (via idéflödet, se Utvecklingsfas 1.2/1.5) kan hjälpa initiativtagaren att förbättra idén, men ingen extern granskning eller antal granskare krävs för att gå vidare. `peer_feedback_requested` är därför bara en informativ markering — inte en spärr — och ersätter det tidigare `peer_review_approved`, som antydde ett godkännandekrav som inte längre gäller.
 
@@ -616,7 +629,7 @@ Detta är inte längre en öppen fråga — se punkt 10.
 | Övergång | Krav för att låsa upp | Status |
 |---|---|---|
 | `idea` → `sprint` | Initiativtagaren beslutar själv — inget krav på extern granskning eller antal granskare. Peer feedback (se ovan) är valfri och påverkar inte beslutet. | **Beslutat (v3.3)** |
-| `sprint` → `pilot` | Team tilldelat + budget/resurser definierade | **Ordalydelsen ej uppdaterad sedan v4.18 flyttade `team_formed`/`resources_secured` till `pilot`-checklistan — se öppen fråga i punkt 10** |
+| `sprint` → `pilot` | Team tilldelat + budget/resurser definierade | **Beslutat — v4.18:s ordalydelsemismatch löst i v4.19: `sprint`-checklistan fick tillbaka team/budget-punkter (`core_team_formed`, `rough_budget_estimated`), se nedan** |
 | `pilot` → `production` | Tribe Token-röstning bland projektmedlemmar godkänner pilotresultatet (se Utvecklingsfas 2.95) + minst en milstolpe markerad klar (se 5.74) + `resources_secured` uppfyllt för fortsatt drift | **Föreslaget — ej formellt beslutat, se punkt 10** |
 | `production` → `establish` | Projektpuls (se 5.74) stabil över ett tröskelvärde i N sammanhängande månader, utan öppet allvarligt ärende hos Granskningsrådet (se 5.55) | **Föreslaget — svagast underbyggt av de tre, tröskelvärde N och ev. variation per `legal_type` (se 4c) kräver styrelsediskussion, se punkt 10** |
 | `establish` → `scale` | Initiativtagare initierar regional replikering eller självvald uppdelning (se 5.65) | Beslutat |
@@ -2294,7 +2307,8 @@ För att komma till marknad snabbast möjligt begränsas MVP till:
 | Fullföljdskravet för allmännyttig stiftelse (se 4c) — stämmer den planerade utdelningstakten i `impact_fund_ledger`/4a faktiskt överens med Skatteverkets krav på ca 75–80% över en rullande 5-årsperiod? | Öppen — kräver avstämning med jurist/revisor, ingen siffra verifierad |
 | Fas- och stegwidgeten (se 4d) — riskerar den bli förvirrande i praktiken när fasövergångar är låsta men delsteg inom en fas är fritt valbara? Bör följas upp efter lansering med användartester. | Öppen — designbeslut fattat (guide, inte tvång), men UX-utfallet är overifierat |
 | Sandbox (se Utvecklingsfas 1.2) — gäller Granskningsrådets reaktiva princip (5.54) fullt ut, eller behövs en lättare/snabbare moderering givet högre volym och mer experimentellt innehåll? | Öppen |
-| `sprint` → `pilot`-gatingens ordalydelse (4d, "Team tilldelat + budget/resurser definierade") beskriver fortfarande de gamla `sprint`-checklistpunkterna (`team_formed`, `resources_secured`) som v4.18 flyttade till `pilot`-checklistan istället — ska gatingkravet skrivas om till att spegla de nya `sprint`-delstegen (designprocessen), eller ska det tolkas fristående från checklistan (checklistan är redan uttryckligen valfri/inte en spärr, se "UI-princip")? | Öppen — tillagd i v4.18, ingen funktionell konflikt idag eftersom checklistan aldrig blockerar en fasövergång, men ordalydelsen är missvisande |
+| `sprint` → `pilot`-gatingens ordalydelse (4d, "Team tilldelat + budget/resurser definierade") beskriver fortfarande de gamla `sprint`-checklistpunkterna (`team_formed`, `resources_secured`) som v4.18 flyttade till `pilot`-checklistan istället — ska gatingkravet skrivas om till att spegla de nya `sprint`-delstegen (designprocessen), eller ska det tolkas fristående från checklistan (checklistan är redan uttryckligen valfri/inte en spärr, se "UI-princip")? | **Löst (v4.19): `sprint`-checklistan bytte innehåll igen och fick tillbaka egna team-/budgetpunkter (`core_team_formed`, `rough_budget_estimated`) — gatingtextens ordalydelse stämmer nu överens med `sprint`-fasens checklista.** |
+| `idea`-checklistan (4d) fick medvetet inget nytt innehåll i v4.19 trots att övriga sex faser fick det, eftersom den driver den skräddarsydda "Snabbstart"-guiden (`IdeaGuide.tsx`). Ska guiden byggas om för att matcha ett nytt föreslaget `idea`-innehåll (kort pitch, SDG-koppling, målgrupp/behov, community-feedback, unikhetskoll — utan Lean Canvas-steget), och i så fall när? | Öppen — tillagd i v4.19, avsiktligt avgränsad till en separat framtida ändring |
 
 ---
 
