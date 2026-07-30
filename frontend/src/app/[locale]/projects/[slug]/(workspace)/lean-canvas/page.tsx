@@ -8,6 +8,7 @@ import { auth } from "@/auth";
 import { hasProjectRole, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import LeanCanvasBlock from "./LeanCanvasBlock";
 import LeanCanvasComments from "./LeanCanvasComments";
+import LeanCanvasHistory from "./LeanCanvasHistory";
 import type { LeanCanvasField } from "./fields";
 
 export async function generateMetadata({
@@ -77,13 +78,16 @@ export default async function LeanCanvasPage({
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-bold text-dark-slate">Lean Canvas</h1>
-        <Link
-          href={helpHref}
-          className="flex items-center gap-1 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors"
-        >
-          <span className="flex items-center justify-center w-4 h-4 rounded-full border border-current text-[10px]">?</span>
-          Hjälp
-        </Link>
+        <div className="flex items-center gap-4">
+          <LeanCanvasHistory projectSlug={slug} />
+          <Link
+            href={helpHref}
+            className="flex items-center gap-1 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors"
+          >
+            <span className="flex items-center justify-center w-4 h-4 rounded-full border border-current text-[10px]">?</span>
+            Hjälp
+          </Link>
+        </div>
       </div>
 
       <style>{`

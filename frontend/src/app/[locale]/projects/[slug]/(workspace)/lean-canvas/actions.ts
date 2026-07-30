@@ -22,13 +22,31 @@ export async function updateLeanCanvasBlock(
 
   const value = (formData.get("value") as string | null)?.trim() || null;
 
-  await prisma.leanCanvas.upsert({
+  const canvas = await prisma.leanCanvas.upsert({
     where: { projectSlug },
     create: { projectSlug, [field]: value, updatedById: session.user.id },
     update: { [field]: value, updatedById: session.user.id },
   });
 
+  // Full-canvas snapshot on every block save — linear history alongside the
+  // single mutable "current" row (see LeanCanvasVersion's schema comment).
+  await prisma.leanCanvasVersion.create({
+    data: {
+      projectSlug,
+      savedById: session.user.id,
+      ...Object.fromEntries(LEAN_CANVAS_FIELDS.map((f) => [f, canvas[f]])),
+    },
+  });
+
   revalidatePath(`/projects/${projectSlug}/lean-canvas`);
+}
+
+export async function getLeanCanvasHistory(projectSlug: string) {
+  return prisma.leanCanvasVersion.findMany({
+    where: { projectSlug },
+    orderBy: { createdAt: "desc" },
+    include: { savedBy: { select: { name: true } } },
+  });
 }
 
 export async function addLeanCanvasComment(projectSlug: string, body: string) {

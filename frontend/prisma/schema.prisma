@@ -167,6 +167,7 @@ model User {
   orgReviewsAuthored      OrganisationReview[]       @relation("OrgReviewAuthor")
   leanCanvasEdits         LeanCanvas[]               @relation("LeanCanvasUpdatedBy")
   leanCanvasComments      LeanCanvasComment[]        @relation("LeanCanvasCommentAuthor")
+  leanCanvasVersionsSaved LeanCanvasVersion[]        @relation("LeanCanvasVersionSavedBy")
   contentFlagsRaised     ContentFlag[]               @relation("ContentFlaggedBy")
   contentFlagReviews     ContentFlag[]               @relation("ContentFlagReviewer")
   priorityChanges        KanbanCardPriorityChange[]  @relation("PriorityChanges")
@@ -634,6 +635,7 @@ model Project {
   maturity           ProjectMaturity?     @relation("ProjectMaturity")
   leanCanvas         LeanCanvas?          @relation("ProjectLeanCanvas")
   leanCanvasComments LeanCanvasComment[]  @relation("ProjectLeanCanvasComments")
+  leanCanvasVersions LeanCanvasVersion[]  @relation("ProjectLeanCanvasVersions")
   parentInstances    ProjectInstance[]    @relation("ParentInstances")
   childInstance      ProjectInstance?     @relation("ChildInstance")
   alumni             ProjectAlumni[]      @relation("ProjectAlumni")
@@ -1558,6 +1560,33 @@ model LeanCanvas {
   updatedBy              User?     @relation("LeanCanvasUpdatedBy", fields: [updatedById], references: [id])
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
+}
+
+// A read-only snapshot of the full canvas, written every time any block is
+// saved — linear history alongside the single mutable "current" LeanCanvas
+// row, same shape as e.g. Google Docs version history.
+model LeanCanvasVersion {
+  id                     String    @id @default(cuid())
+  projectSlug            String
+  project                Project   @relation("ProjectLeanCanvasVersions", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  problem                String?   @db.Text
+  alternatives           String?   @db.Text
+  customerSegments       String?   @db.Text
+  earlyAdopters          String?   @db.Text
+  uniqueValueProposition String?   @db.Text
+  concept                String?   @db.Text
+  solution               String?   @db.Text
+  channels               String?   @db.Text
+  revenueStreams         String?   @db.Text
+  costStructure          String?   @db.Text
+  impact                 String?   @db.Text
+  keyMetrics             String?   @db.Text
+  unfairAdvantage        String?   @db.Text
+  savedById              String?
+  savedBy                User?     @relation("LeanCanvasVersionSavedBy", fields: [savedById], references: [id], onDelete: SetNull)
+  createdAt              DateTime  @default(now())
+
+  @@index([projectSlug, createdAt])
 }
 
 model LeanCanvasComment {
