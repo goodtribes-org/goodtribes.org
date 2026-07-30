@@ -13,10 +13,8 @@ import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_LABELS_EN } from "@/lib/sdg";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
 import ShareButton from "@/components/ShareButton";
-import IdeaMindMapSection from "./IdeaMindMapSection";
 import IdeaRevisions from "./IdeaRevisions";
 import IdeaPromoteButton from "./IdeaPromoteButton";
-import type { Node, Edge } from "@xyflow/react";
 
 const STATUS_STEPS = ["open", "review", "shortlisted", "approved", "converted"];
 
@@ -74,7 +72,6 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           orderBy: { createdAt: "asc" },
           include: { author: { select: { name: true, image: true } } },
         },
-        mindMap: true,
         contributors: {
           include: { user: { select: { id: true, name: true, image: true } } },
           orderBy: { addedAt: "asc" },
@@ -282,20 +279,6 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
             }))}
             isLoggedIn={!!userId}
             canDecide={isAuthor || isModerator}
-          />
-
-          <IdeaMindMapSection
-            ideaId={idea.id}
-            isAuthor={isAuthor}
-            initialMindMap={
-              idea.mindMap
-                ? {
-                    id: idea.mindMap.id,
-                    nodes: idea.mindMap.nodes as unknown as Node[],
-                    edges: idea.mindMap.edges as unknown as Edge[],
-                  }
-                : null
-            }
           />
 
           {/* Impact */}
