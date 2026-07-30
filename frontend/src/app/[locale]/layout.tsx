@@ -95,8 +95,8 @@ export default async function LocaleLayout({
                   <Image
                     src="/img/goodtribes-logo.svg"
                     alt="GoodTribes.org"
-                    height={44}
-                    width={72}
+                    height={60}
+                    width={98}
                     unoptimized
                     className="object-contain"
                   />
@@ -122,8 +122,8 @@ export default async function LocaleLayout({
                   <Image
                     src="/img/goodtribes-logo.svg"
                     alt="GoodTribes.org"
-                    height={36}
-                    width={58}
+                    height={50}
+                    width={81}
                     unoptimized
                     className="object-contain mb-3"
                   />
