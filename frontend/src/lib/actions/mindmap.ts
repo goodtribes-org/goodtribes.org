@@ -37,3 +37,29 @@ export async function saveMindMap(mindMapId: string, nodes: Node[], edges: Edge[
 
   return { ok: true };
 }
+
+export async function deleteMindMap(mindMapId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Ej inloggad" };
+
+  const mindMap = await prisma.mindMap.findUnique({
+    where: { id: mindMapId },
+    include: {
+      room: { include: { participants: { where: { userId: session.user.id } } } },
+      idea: { select: { authorId: true } },
+    },
+  });
+  if (!mindMap) return { error: "Hittades inte" };
+
+  const authorized = mindMap.roomId
+    ? (mindMap.room?.participants.length ?? 0) > 0
+    : mindMap.idea?.authorId === session.user.id;
+  if (!authorized) return { error: "Ej behörig" };
+
+  await prisma.mindMap.delete({ where: { id: mindMapId } });
+
+  if (mindMap.roomId) revalidatePath(`/ideaverkstad/${mindMap.roomId}`);
+  if (mindMap.ideaId) revalidatePath(`/ideas/${mindMap.ideaId}`);
+
+  return { ok: true };
+}

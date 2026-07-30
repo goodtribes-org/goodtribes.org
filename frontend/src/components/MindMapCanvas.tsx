@@ -14,7 +14,7 @@ import {
   type Connection,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { saveMindMap } from "@/lib/actions/mindmap";
+import { saveMindMap, deleteMindMap } from "@/lib/actions/mindmap";
 
 interface Props {
   mindMapId: string;
@@ -22,15 +22,17 @@ interface Props {
   initialEdges: Edge[];
   canEdit: boolean;
   regenerateSource: { source: "room" | "idea"; sourceId: string };
+  onDeleted?: () => void;
 }
 
 let nextNodeId = 1;
 
-function MindMapInner({ mindMapId, initialNodes, initialEdges, canEdit, regenerateSource }: Props) {
+function MindMapInner({ mindMapId, initialNodes, initialEdges, canEdit, regenerateSource, onDeleted }: Props) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [saving, setSaving] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
   const onConnect = useCallback(
@@ -83,6 +85,19 @@ function MindMapInner({ mindMapId, initialNodes, initialEdges, canEdit, regenera
     }
   }
 
+  async function handleDelete() {
+    if (!window.confirm("Ta bort mindmappen helt? Det går inte att ångra.")) return;
+    setDeleting(true);
+    setStatus(null);
+    const res = await deleteMindMap(mindMapId);
+    if (res?.error) {
+      setStatus(res.error);
+      setDeleting(false);
+      return;
+    }
+    onDeleted?.();
+  }
+
   return (
     <div className="space-y-3">
       {canEdit && (
@@ -109,6 +124,14 @@ function MindMapInner({ mindMapId, initialNodes, initialEdges, canEdit, regenera
             className="text-xs font-medium text-dark-slate/60 border border-muted-teal/40 hover:border-dark-slate/40 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
           >
             {regenerating ? "Genererar..." : "Generera om"}
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="text-xs font-medium text-coral border border-coral/40 hover:border-coral px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
+          >
+            {deleting ? "Tar bort..." : "Ta bort"}
           </button>
           <span className="text-xs text-dark-slate/40">Dubbelklicka en nod för att byta namn</span>
           {status && <span className="text-xs text-dark-slate/60">{status}</span>}
