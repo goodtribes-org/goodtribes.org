@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -67,6 +68,13 @@ export default async function HomePage({
 
   const session = await auth();
   const userId = session?.user?.id;
+
+  // "Flöde i projekten" — logged-in members land on their feed instead of
+  // the discovery homepage. Only on a bare "/" visit: an explicit filter/
+  // search/page param means they came here to browse projects on purpose
+  // (e.g. clicked "Utforska"), so don't yank them away from that.
+  const hasExploreParams = !!(sortParam || q || phase || category || sdg || pageStr);
+  if (userId && !hasExploreParams) redirect("/feed");
 
   const where: Prisma.ProjectWhereInput = {
     visibility: "public",
