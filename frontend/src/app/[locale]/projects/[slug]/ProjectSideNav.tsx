@@ -34,34 +34,34 @@ import {
 type NavItem = { label: string; href: string; icon: LucideIcon; getHref?: (slug: string) => string; commercialOnly?: boolean };
 
 const MAIN_ITEMS: NavItem[] = [
-  { label: "Startsidan",    href: "",          icon: Home },
-  { label: "Uppgifter",     href: "/tasks",     icon: ListChecks },
-  { label: "Kalender",      href: "/calendar",  icon: Calendar },
-  { label: "Kommunikation", href: "/kanaler",   icon: MessageCircle, getHref: (slug) => `/messages?project=${slug}` },
+  { label: "Startsidan", href: "",          icon: Home },
+  { label: "Att göra",   href: "/tasks",     icon: ListChecks },
+  { label: "Kalender",   href: "/calendar",  icon: Calendar },
+  { label: "Chat",       href: "/kanaler",   icon: MessageCircle, getHref: (slug) => `/messages?project=${slug}` },
+  { label: "Blogg",      href: "/updates",   icon: Megaphone },
+  { label: "Filer",      href: "/files",     icon: Folder },
+  { label: "Wiki",       href: "/wiki",      icon: BookOpen },
 ];
 
 const TOOLS_ITEMS: NavItem[] = [
   { label: "Omröstningar",    href: "/polls",              icon: Vote },
   { label: "Idéverkstad",     href: "/idea-sessions",       icon: Lightbulb },
-  { label: "Uppdateringar",   href: "/updates",             icon: Megaphone },
   { label: "Lean Canvas",     href: "/lean-canvas",         icon: LayoutGrid },
-  { label: "Resurser",        href: "/wiki",                icon: BookOpen },
-  { label: "Filer",           href: "/files",               icon: Folder },
   { label: "Bidrag",          href: "/funding",             icon: HandCoins },
   { label: "Tokens",          href: "/tokens",               icon: Coins },
-  { label: "Impact",          href: "/impact",              icon: Target },
-  { label: "AI Granskning",   href: "/ai-review",           icon: Bot },
-  { label: "Alumni",          href: "/alumni",              icon: GraduationCap },
-  { label: "Skalning",        href: "/scale",               icon: TrendingUp },
-  { label: "Partnerskap",     href: "/partnerships",        icon: Handshake },
-  { label: "Juridisk form",   href: "/legal-type",          icon: Scale },
   { label: "Vinstfördelning", href: "/profit-distribution", icon: PiggyBank, commercialOnly: true },
-  { label: "Fork",            href: "/fork/new",            icon: GitFork, getHref: (slug) => `/fork/new?sourceId=${slug}` },
 ];
 
 const ADMIN_ITEMS: NavItem[] = [
-  { label: "Redigera",  href: "/edit",    icon: Pencil },
-  { label: "Medlemmar", href: "/members", icon: Users },
+  { label: "Redigera",      href: "/edit",                icon: Pencil },
+  { label: "Medlemmar",     href: "/members",              icon: Users },
+  { label: "Alumni",        href: "/alumni",               icon: GraduationCap },
+  { label: "Impact",        href: "/impact",               icon: Target },
+  { label: "Skalning",      href: "/scale",                icon: TrendingUp },
+  { label: "Partnerskap",   href: "/partnerships",         icon: Handshake },
+  { label: "AI-granskning", href: "/ai-review",            icon: Bot },
+  { label: "Juridisk form", href: "/legal-type",           icon: Scale },
+  { label: "Fork",          href: "/fork/new",             icon: GitFork, getHref: (slug) => `/fork/new?sourceId=${slug}` },
 ];
 
 function Row({
