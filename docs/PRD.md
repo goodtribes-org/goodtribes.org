@@ -1,9 +1,12 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 4.15 (Draft)
+**Version:** 4.16 (Draft)
 **Datum:** 2026-07-30
 **Status:** Under utveckling
+
+**Ändringar i v4.16:**
+- Två poster i projektsidans vänstermeny (se "Projektsidans navigation" under 5.1) döpta om: **Uppgifter** → **Att göra**, **Kommunikation** → **Chat**. Ren namnändring i navigeringen — funktionerna (5.4 Uppgiftshantering, 5.24 Projektchatt) är oförändrade, liksom generell löptexts användning av ordet "uppgifter"/"kommunikation" i andra betydelser på andra ställen i dokumentet.
 
 **Ändringar i v4.15:**
 - **Beslutat:** Projektsidans navigering omstrukturerad till tre nivåer — se ny subsektion "Projektsidans navigation" under 5.1. **Blogg** (döpt om från "Uppdateringar" i navigeringen, funktionen är oförändrad — se 5.8) och **Wiki** (döpt om från "Resurser", se 5.9), samt **Filer**, flyttas ut ur Verktyg-menyn och in i vänstermenyn — de är sådant alla projektmedlemmar (och besökare på publika projekt) använder löpande, inte administrativa verktyg.
@@ -791,7 +794,7 @@ Målet är att ge initiativtagare ett kraftfullt men enkelt verktyg för att dri
 
 Tre nivåer, filtrerade efter roll (se 5.5 för rollhierarkin):
 
-- **Vänstermenyn** (synlig för alla, inkl. icke-medlemmar på publika projekt): Startsidan, Uppgifter, Kalender, Kommunikation, **Blogg** (se 5.8), **Filer**, **Wiki** (se 5.9)
+- **Vänstermenyn** (synlig för alla, inkl. icke-medlemmar på publika projekt): Startsidan, **Att göra** (döpt om från "Uppgifter", se 5.4), Kalender, **Chat** (döpt om från "Kommunikation", se 5.24), **Blogg** (se 5.8), **Filer**, **Wiki** (se 5.9)
 - **Verktyg-menyn** (synlig för alla projektmedlemmar): Omröstningar (5.45), Lean Canvas, Bidrag (5.56), Tokens och — bara för kommersiella projekt (`legal_type`, se 4c) — Vinstfördelning (5.36/4a)
 - **Adminmenyn** (synlig endast för Initiativtagare och Admin, se 5.5): Redigera, Medlemmar, samt — flyttade hit från Verktyg-menyn i v4.15 — Alumni (5.69), Impact (5.67), Skalning (5.63–5.66), Partnerskap (5.68), AI-granskning (5.40), Juridisk form (4c) och Fork (4f)
 
