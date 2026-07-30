@@ -17,6 +17,7 @@ const MODE_OPTIONS: { value: ColumnMode; label: string }[] = [
 
 function KanbanColumnImpl({
   col,
+  dropId,
   cards,
   isLoggedIn,
   isMember,
@@ -36,6 +37,9 @@ function KanbanColumnImpl({
   onSaved,
 }: {
   col: { key: string; label: string; color: string };
+  // Distinct droppable id when the same column key is rendered more than
+  // once (e.g. one row per swimlane) — defaults to col.key otherwise.
+  dropId?: string;
   cards: Card[];
   isLoggedIn: boolean;
   isMember: boolean;
@@ -55,7 +59,7 @@ function KanbanColumnImpl({
   onSaved: (cardId: string, patch: Partial<Card>) => void;
 })
  {
-  const { setNodeRef, isOver } = useDroppable({ id: col.key });
+  const { setNodeRef, isOver } = useDroppable({ id: dropId ?? col.key });
   const [menuOpen, setMenuOpen] = useState(false);
   const [modeMenuOpen, setModeMenuOpen] = useState(false);
   const openSubtaskCount = cards.reduce(
@@ -136,7 +140,7 @@ function KanbanColumnImpl({
         <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
           <div
             ref={setNodeRef}
-            data-testid={`kanban-drop-${col.key}`}
+            data-testid={`kanban-drop-${dropId ?? col.key}`}
             className="flex-1 min-h-32 border-x border-b border-gray-200 rounded-b-lg flex flex-col items-center pt-3 gap-2 transition-colors"
             style={{ backgroundColor: isOver ? `${col.color}30` : `${col.color}12` }}
           >
@@ -207,7 +211,7 @@ function KanbanColumnImpl({
       <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
         <div
           ref={setNodeRef}
-          data-testid={`kanban-drop-${col.key}`}
+          data-testid={`kanban-drop-${dropId ?? col.key}`}
           className="flex-1 min-h-32 p-2 border-x border-b border-gray-200 rounded-b-lg flex flex-col gap-2 transition-colors"
           style={{ backgroundColor: isOver ? `${col.color}30` : `${col.color}12` }}
         >

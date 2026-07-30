@@ -17,6 +17,7 @@ import { deleteCard } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/ac
 import {
   ChunkErrorBoundary,
   CATEGORY_META,
+  CATEGORY_ORDER,
   PRIORITY_META,
   COLUMNS,
   COLUMN_ORDER,
@@ -68,6 +69,7 @@ export default function KanbanBoard({
   const [filterCategory, setFilterCategory] = useState("");
   const [filterPriority, setFilterPriority] = useState("");
   const [filterAssignee, setFilterAssignee] = useState("");
+  const [swimlanesOn, setSwimlanesOn] = useState(false);
   const [, startTransition] = useTransition();
   // One tri-state choice per column — normal (full), narrow (still a real
   // drop target, card list just not shown, for columns like Done that
@@ -223,6 +225,30 @@ export default function KanbanBoard({
     : null;
   const totalCards = Object.values(columns).reduce((s, c) => s + c.length, 0);
 
+  // Swimlanes group the already-filtered columns by category into one row
+  // per category (plus "none" for uncategorized) — only categories that
+  // actually have a matching card get a row, same principle as columns
+  // never hiding themselves but empty ones just not adding clutter here.
+  const LANE_ORDER = [...CATEGORY_ORDER, "none"];
+  const swimlanes = useMemo(() => {
+    if (!swimlanesOn) return null;
+    const lanes: Record<string, Columns> = {};
+    for (const laneKey of LANE_ORDER) {
+      const laneCols = {} as Columns;
+      let hasAny = false;
+      for (const col of COLUMN_ORDER) {
+        const cardsInCol = (filteredColumns[col as keyof Columns] as Card[]).filter((c) =>
+          laneKey === "none" ? !c.category : c.category === laneKey
+        );
+        laneCols[col as keyof Columns] = cardsInCol;
+        if (cardsInCol.length > 0) hasAny = true;
+      }
+      if (hasAny) lanes[laneKey] = laneCols;
+    }
+    return lanes;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [swimlanesOn, filteredColumns]);
+
   async function handleRunAI(cardId: string, agentType: string, additionalContext: string) {
     setRunningAI((s) => new Set(s).add(cardId));
     try {
@@ -250,6 +276,14 @@ export default function KanbanBoard({
       if ((columns[col as keyof Columns] as Card[]).some((c) => c.id === cardId)) return col;
     }
     return null;
+  }
+
+  // Swimlane droppable ids are "laneKey:COLUMN" (see KanbanColumn's dropId
+  // prop) — resolves either shape back to the real column key.
+  function resolveColumnKey(id: string): string | null {
+    const idx = id.lastIndexOf(":");
+    const key = idx === -1 ? id : id.slice(idx + 1);
+    return COLUMN_ORDER.includes(key) ? key : null;
   }
 
   function handleDragStart(event: DragStartEvent) {
@@ -296,7 +330,7 @@ export default function KanbanBoard({
     const cardId = active.id as string;
     const overId = over.id as string;
     const sourceCol = findCardColumn(cardId);
-    const rawTargetCol = COLUMN_ORDER.includes(overId) ? overId : findCardColumn(overId);
+    const rawTargetCol = resolveColumnKey(overId) ?? findCardColumn(overId);
     if (!sourceCol || !rawTargetCol || sourceCol === rawTargetCol) return;
     // Regular members can't move cards straight to Done — they land in Review for a lead to approve.
     const targetCol = (rawTargetCol === "DONE" && !isLead) ? "REVIEW" : rawTargetCol;
@@ -480,6 +514,16 @@ export default function KanbanBoard({
           {totalVisible !== null && (
             <span className="text-xs text-gray-400">{totalVisible}/{totalCards}</span>
           )}
+
+          <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={swimlanesOn}
+              onChange={(e) => setSwimlanesOn(e.target.checked)}
+              className="accent-seagrass"
+            />
+            Swimlanes (område)
+          </label>
         </div>
 
         {hiddenColumnKeys.length > 0 && (
@@ -516,31 +560,77 @@ export default function KanbanBoard({
 
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="overflow-x-auto pb-4">
-          <div className="flex gap-3 w-full">
-            {COLUMNS.filter((col) => columnModes[col.key] !== "hidden").map((col) => (
-              <KanbanColumn
-                key={col.key}
-                col={col}
-                cards={filteredColumns[col.key as keyof Columns] as Card[]}
-                isLoggedIn={isLoggedIn}
-                isMember={isMember}
-                isLead={isLead}
-                projectSlug={projectSlug}
-                currentUserId={currentUserId}
-                onOpenModal={openNewCard}
-                onDelete={handleDelete}
-                onOpenCard={setEditingCard}
-                onAddCard={handleAdd}
-                onClearColumn={handleClearColumn}
-                mode={columnModes[col.key] ?? "normal"}
-                onSetMode={setColumnMode}
-                runningAI={runningAI}
-                onRunAI={handleRunAI}
-                onSubtasksChanged={handleCardSubtasksSynced}
-                onSaved={handleCardSaved}
-              />
-            ))}
-          </div>
+          {swimlanesOn && swimlanes ? (
+            Object.keys(swimlanes).length === 0 ? (
+              <p className="text-sm text-gray-400 italic py-6 text-center">Inga kort matchar filtren.</p>
+            ) : (
+              <div className="flex flex-col gap-6">
+                {Object.entries(swimlanes).map(([laneKey, laneCols]) => (
+                  <div key={laneKey}>
+                    <div
+                      className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full mb-2 ${
+                        laneKey === "none" ? "bg-gray-100 text-gray-500" : `${CATEGORY_META[laneKey].bg} ${CATEGORY_META[laneKey].text}`
+                      }`}
+                    >
+                      {laneKey === "none" ? "Okategoriserat" : CATEGORY_META[laneKey].label}
+                    </div>
+                    <div className="flex gap-3 w-full">
+                      {COLUMNS.filter((col) => columnModes[col.key] !== "hidden").map((col) => (
+                        <KanbanColumn
+                          key={`${laneKey}-${col.key}`}
+                          col={col}
+                          dropId={`${laneKey}:${col.key}`}
+                          cards={laneCols[col.key as keyof Columns] as Card[]}
+                          isLoggedIn={isLoggedIn}
+                          isMember={isMember}
+                          isLead={isLead}
+                          projectSlug={projectSlug}
+                          currentUserId={currentUserId}
+                          onOpenModal={openNewCard}
+                          onDelete={handleDelete}
+                          onOpenCard={setEditingCard}
+                          onAddCard={handleAdd}
+                          onClearColumn={handleClearColumn}
+                          mode={columnModes[col.key] ?? "normal"}
+                          onSetMode={setColumnMode}
+                          runningAI={runningAI}
+                          onRunAI={handleRunAI}
+                          onSubtasksChanged={handleCardSubtasksSynced}
+                          onSaved={handleCardSaved}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          ) : (
+            <div className="flex gap-3 w-full">
+              {COLUMNS.filter((col) => columnModes[col.key] !== "hidden").map((col) => (
+                <KanbanColumn
+                  key={col.key}
+                  col={col}
+                  cards={filteredColumns[col.key as keyof Columns] as Card[]}
+                  isLoggedIn={isLoggedIn}
+                  isMember={isMember}
+                  isLead={isLead}
+                  projectSlug={projectSlug}
+                  currentUserId={currentUserId}
+                  onOpenModal={openNewCard}
+                  onDelete={handleDelete}
+                  onOpenCard={setEditingCard}
+                  onAddCard={handleAdd}
+                  onClearColumn={handleClearColumn}
+                  mode={columnModes[col.key] ?? "normal"}
+                  onSetMode={setColumnMode}
+                  runningAI={runningAI}
+                  onRunAI={handleRunAI}
+                  onSubtasksChanged={handleCardSubtasksSynced}
+                  onSaved={handleCardSaved}
+                />
+              ))}
+            </div>
+          )}
         </div>
         <DragOverlay>
           {activeCard && (
