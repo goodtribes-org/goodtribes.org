@@ -47,6 +47,11 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<ProjectPhaseValue, { key: string
     { key: "lean_canvas_created", label: "Gör en Lean Canvas", href: "lean-canvas" },
   ],
   SPRINT: [
+    { key: "map_understand", label: "Kartlägga & förstå" },
+    { key: "sketch_solutions", label: "Skissa lösningar" },
+    { key: "decide_plan", label: "Beslut & planera" },
+    { key: "build_prototype", label: "Bygga prototyp" },
+    { key: "test_with_users", label: "Testa med användare" },
     { key: "sprint_lean_canvas", label: "Skriva ett enkelt lean canvas / projektbeskrivning", href: "lean-canvas" },
     { key: "core_team_formed", label: "Definiera roller och bilda kärnteam" },
     { key: "kanban_seeded", label: "Sätta upp Kanban-board med första uppgifterna", href: "kanban" },
@@ -54,6 +59,10 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<ProjectPhaseValue, { key: string
     { key: "rough_budget_estimated", label: "Ta fram grov budget/resursbehov" },
   ],
   PILOT: [
+    { key: "todo_created", label: "Fyll på med arbetsuppgifter" },
+    { key: "collaborators_invited", label: "Bjud in medskapare" },
+    { key: "team_formed", label: "Formera team" },
+    { key: "resources_secured", label: "Säkra resurser" },
     { key: "pilot_scope_defined", label: "Avgränsa ett litet, konkret test (tid, plats, målgrupp)" },
     { key: "pilot_executed_documented", label: "Genomföra piloten och dokumentera lärdomar löpande" },
     { key: "pilot_results_collected", label: "Samla in kvantitativa/kvalitativa resultat" },
