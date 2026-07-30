@@ -1,9 +1,14 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 4.14 (Draft)
-**Datum:** 2026-07-23
+**Version:** 4.15 (Draft)
+**Datum:** 2026-07-30
 **Status:** Under utveckling
+
+**Ändringar i v4.15:**
+- **Beslutat:** Projektsidans navigering omstrukturerad till tre nivåer — se ny subsektion "Projektsidans navigation" under 5.1. **Blogg** (döpt om från "Uppdateringar" i navigeringen, funktionen är oförändrad — se 5.8) och **Wiki** (döpt om från "Resurser", se 5.9), samt **Filer**, flyttas ut ur Verktyg-menyn och in i vänstermenyn — de är sådant alla projektmedlemmar (och besökare på publika projekt) använder löpande, inte administrativa verktyg.
+- **Beslutat:** ny Adminmeny, synlig endast för Initiativtagare och Admin (se 5.5), tar över sju poster som tidigare låg i Verktyg-menyn: Alumni (5.69), Impact (5.67), Skalning (5.63–5.66), Partnerskap (5.68), AI-granskning (5.40), Juridisk form (4c) och Fork (4f) — alla sju är administrativa beslut eller rapportering snarare än vardagsverktyg för medarbetare/följare. Adminmenyn fanns redan (Redigera, Medlemmar) — dessa sju poster läggs till den, ingen ny menynivå.
+- Verktyg-menyn blir **inte** tom och tas därför inte bort: Omröstningar (5.45), Lean Canvas, Bidrag (5.56) och Tokens/Vinstfördelning (5.34–5.36) kvarstår där, tillgängliga för alla projektmedlemmar.
 
 **Ändringar i v4.14:**
 - **Byggt:** Proaktiv innehållsmoderering. Två delar, båda återanvänder den befintliga reaktiva flaggnings-/gransknings-infrastrukturen istället för att bygga en ny: (1) ett heuristiskt spamfilter (`frontend/src/lib/spamDetection.ts` — länkflödning, spamfraser, upprepade tecken) som körs vid skapande av feed-inlägg, idékommentarer, idéer och chattmeddelanden; en träff skapar automatiskt en `ContentFlag` (ny `source: "USER"|"AUTO"`-kolumn, `flaggedById` nu nullbar för systemgenererade flaggor) och döljer innehållet direkt via samma `hideTarget()` som redan användes för admin-granskning och flaggningströskeln, med en ny `ContentHideReason.AUTO_SPAM_DETECTED`. Ingen ny admin-yta — auto-flaggor dyker upp i den befintliga `/site-admin/content-flags`-kön (samt council/organisations-motsvarigheterna), bara med ett null-guard-fix för att visa "Automatiskt (system)" istället för att krascha. (2) Fyra tidigare helt oskyddade skapande-actions (`createFeedPost`, idékommentarer, `createIdea`, `sendRoomMessage`) fick rate limiting via det redan existerande `guardSocialAction`. Migration `20260723110000_proactive_moderation`.
@@ -781,6 +786,14 @@ Målet är att ge initiativtagare ett kraftfullt men enkelt verktyg för att dri
 - **Fas** — se 4d för fullständig fasmodell (`idea` / `sprint` / `pilot` / `production` / `establish` / `scale` / `impact`)
 - Offentlig eller privat synlighet
 - **Agenda 2030-mål** — visuella symboler som visar vilka av FN:s 17 globala mål projektet kopplas mot
+
+**Projektsidans navigation** *(v4.15)*
+
+Tre nivåer, filtrerade efter roll (se 5.5 för rollhierarkin):
+
+- **Vänstermenyn** (synlig för alla, inkl. icke-medlemmar på publika projekt): Startsidan, Uppgifter, Kalender, Kommunikation, **Blogg** (se 5.8), **Filer**, **Wiki** (se 5.9)
+- **Verktyg-menyn** (synlig för alla projektmedlemmar): Omröstningar (5.45), Lean Canvas, Bidrag (5.56), Tokens och — bara för kommersiella projekt (`legal_type`, se 4c) — Vinstfördelning (5.36/4a)
+- **Adminmenyn** (synlig endast för Initiativtagare och Admin, se 5.5): Redigera, Medlemmar, samt — flyttade hit från Verktyg-menyn i v4.15 — Alumni (5.69), Impact (5.67), Skalning (5.63–5.66), Partnerskap (5.68), AI-granskning (5.40), Juridisk form (4c) och Fork (4f)
 
 **5.2 Agenda 2030-integration**
 
