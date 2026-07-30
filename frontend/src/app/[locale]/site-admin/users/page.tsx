@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { isSiteOwner } from "@/lib/authz";
 import { setSuspended } from "./actions";
 import SiteRoleSelect from "./SiteRoleSelect";
+import InviteUserForm from "./InviteUserForm";
 
 export default async function AdminUsersPage({
   searchParams,
@@ -35,6 +36,8 @@ export default async function AdminUsersPage({
           Hantera sajt-roller och avstängningar. {viewerIsOwner ? "" : "Endast ägare kan utse sajt-administratörer."}
         </p>
       </div>
+
+      <InviteUserForm />
 
       <form className="mb-6">
         <input
