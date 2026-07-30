@@ -47,13 +47,13 @@ export async function generateMetadata({
       title: t("title"),
       description: t("description"),
       url: APP_URL,
-      images: [{ url: "/img/GoodTribes1.png", width: 800, height: 200, alt: "GoodTribes.org" }],
+      images: [{ url: "/img/goodtribes-logo.svg", width: 2000, height: 1231, alt: "GoodTribes.org" }],
     },
     twitter: {
       card: "summary_large_image",
       title: t("title"),
       description: t("description"),
-      images: ["/img/GoodTribes1.png"],
+      images: ["/img/goodtribes-logo.svg"],
     },
     icons: {
       icon: [
@@ -93,10 +93,11 @@ export default async function LocaleLayout({
               <nav className="w-full pl-3 pr-6 py-3 flex items-center gap-6">
                 <Link href="/" className="shrink-0 flex items-center gap-2.5">
                   <Image
-                    src="/img/GoodTribes1.png"
+                    src="/img/goodtribes-logo.svg"
                     alt="GoodTribes.org"
                     height={44}
-                    width={176}
+                    width={72}
+                    unoptimized
                     className="object-contain"
                   />
                   <span className="hidden lg:inline text-[10px] font-bold uppercase tracking-wider text-seagrass border border-seagrass/40 rounded-full px-2 py-0.5">
@@ -119,10 +120,11 @@ export default async function LocaleLayout({
               <div className="max-w-6xl mx-auto px-6 py-10 grid gap-8 md:grid-cols-2 text-sm">
                 <div>
                   <Image
-                    src="/img/GoodTribes1.png"
+                    src="/img/goodtribes-logo.svg"
                     alt="GoodTribes.org"
                     height={36}
-                    width={144}
+                    width={58}
+                    unoptimized
                     className="object-contain mb-3"
                   />
                   <p className="text-dark-slate/60 leading-relaxed text-xs">{t("foundationBlurb")}</p>
