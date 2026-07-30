@@ -1,9 +1,12 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 4.16 (Draft)
+**Version:** 4.17 (Draft)
 **Datum:** 2026-07-30
 **Status:** Under utveckling
+
+**Ändringar i v4.17:**
+- **Byggt:** Idéverkstadens projektlokala idésession (5.10, "Inne i ett befintligt projekt") fick ett eget menyval — **Idéverkstad** — i projektsidans Verktyg-meny (se "Projektsidans navigation" under 5.1), istället för att bara vara en dold knapp på Blogg-sidan. Ny sida `frontend/src/app/[locale]/projects/[slug]/(workspace)/idea-sessions/page.tsx` listar projektets tidigare idésessioner och startar nya via den redan existerande `createProjectIdeaThread`. Knappen "Starta idésession" togs bort från Blogg-sidan (`updates/page.tsx`) eftersom den nu bara skulle vara en duplicerad genväg till samma sida.
 
 **Ändringar i v4.16:**
 - Två poster i projektsidans vänstermeny (se "Projektsidans navigation" under 5.1) döpta om: **Uppgifter** → **Att göra**, **Kommunikation** → **Chat**. Ren namnändring i navigeringen — funktionerna (5.4 Uppgiftshantering, 5.24 Projektchatt) är oförändrade, liksom generell löptexts användning av ordet "uppgifter"/"kommunikation" i andra betydelser på andra ställen i dokumentet.
@@ -795,7 +798,7 @@ Målet är att ge initiativtagare ett kraftfullt men enkelt verktyg för att dri
 Tre nivåer, filtrerade efter roll (se 5.5 för rollhierarkin):
 
 - **Vänstermenyn** (synlig för alla, inkl. icke-medlemmar på publika projekt): Startsidan, **Att göra** (döpt om från "Uppgifter", se 5.4), Kalender, **Chat** (döpt om från "Kommunikation", se 5.24), **Blogg** (se 5.8), **Filer**, **Wiki** (se 5.9)
-- **Verktyg-menyn** (synlig för alla projektmedlemmar): Omröstningar (5.45), Lean Canvas, Bidrag (5.56), Tokens och — bara för kommersiella projekt (`legal_type`, se 4c) — Vinstfördelning (5.36/4a)
+- **Verktyg-menyn** (synlig för alla projektmedlemmar): Omröstningar (5.45), **Idéverkstad** (projektlokal idésession, se 5.10, ny egen menypost i v4.17), Lean Canvas, Bidrag (5.56), Tokens och — bara för kommersiella projekt (`legal_type`, se 4c) — Vinstfördelning (5.36/4a)
 - **Adminmenyn** (synlig endast för Initiativtagare och Admin, se 5.5): Redigera, Medlemmar, samt — flyttade hit från Verktyg-menyn i v4.15 — Alumni (5.69), Impact (5.67), Skalning (5.63–5.66), Partnerskap (5.68), AI-granskning (5.40), Juridisk form (4c) och Fork (4f)
 
 **5.2 Agenda 2030-integration**
@@ -1085,8 +1088,8 @@ Målet är att hjälpa inloggade användare gå från ett vagt problem till en k
 Idéverkstaden är ett öppet rum där inloggade användare kan posta problem de vill lösa, få input från andra användare och tillsammans förfina idéer med AI som stöd.
 
 *Tillgängligt på två ställen:*
-- **Idéverkstaden** — en dedikerad sida i navigationen, öppen för alla inloggade
-- **Inne i ett projekt** — knappen "Starta idésession" för att generera nya angreppssätt med projektets medlemmar
+- **Idéverkstaden** — en dedikerad sida i huvudnavigationen, öppen för alla inloggade
+- **Inne i ett projekt** — en egen **Idéverkstad**-post i projektsidans Verktyg-meny (se 5.1, tillagd i v4.17 — låg tidigare som en knapp på Blogg-sidan), som listar projektets tidigare idésessioner och startar nya för att generera nya angreppssätt med projektets medlemmar
 
 ---
 

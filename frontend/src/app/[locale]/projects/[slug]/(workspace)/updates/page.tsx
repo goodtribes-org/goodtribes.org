@@ -2,11 +2,10 @@ export const dynamic = "force-dynamic";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import ScrollToHash from "@/components/ScrollToHash";
 import { isLeadRole } from "@/lib/authz";
-import { createProjectIdeaThread } from "@/app/[locale]/ideaverkstad/actions";
 
 
 function timeAgo(date: Date): string {
@@ -43,13 +42,6 @@ export default async function UpdatesPage({
 
   const userRole = project.members.find((m) => m.userId === session?.user?.id)?.role;
   const canPost = isLeadRole(userRole);
-  const isRealMember = !!userRole;
-
-  async function startIdeaSession() {
-    "use server";
-    const { roomId } = await createProjectIdeaThread(project!.id);
-    redirect(`/ideaverkstad/${roomId}`);
-  }
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -62,16 +54,6 @@ export default async function UpdatesPage({
           <h1 className="text-2xl font-bold mt-1">Updates</h1>
         </div>
         <div className="flex items-center gap-2">
-          {isRealMember && (
-            <form action={startIdeaSession}>
-              <button
-                type="submit"
-                className="text-sm font-medium px-4 py-2 rounded-md border border-muted-teal text-dark-slate/70 hover:border-seagrass hover:text-seagrass transition-colors"
-              >
-                Starta idésession
-              </button>
-            </form>
-          )}
           {canPost && (
             <Link
               href={`/projects/${slug}/updates/new`}

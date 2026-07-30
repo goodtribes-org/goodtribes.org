@@ -10,6 +10,7 @@ import {
   Wrench,
   Vote,
   Megaphone,
+  Lightbulb,
   LayoutGrid,
   BookOpen,
   Folder,
@@ -41,6 +42,7 @@ const MAIN_ITEMS: NavItem[] = [
 
 const TOOLS_ITEMS: NavItem[] = [
   { label: "Omröstningar",    href: "/polls",              icon: Vote },
+  { label: "Idéverkstad",     href: "/idea-sessions",       icon: Lightbulb },
   { label: "Uppdateringar",   href: "/updates",             icon: Megaphone },
   { label: "Lean Canvas",     href: "/lean-canvas",         icon: LayoutGrid },
   { label: "Resurser",        href: "/wiki",                icon: BookOpen },
