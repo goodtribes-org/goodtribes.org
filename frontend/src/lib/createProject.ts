@@ -29,7 +29,10 @@ export async function createProjectRecord(params: CreateProjectParams) {
     title, ownerId,
     summary = null, description = null, imageUrl = null, category = null,
     tags = [], sdgGoals = [], visibility = "public", orgId = null,
-    isSandbox = false, skillIds = [],
+    // Every new project — whether from the full creation form or idea
+    // promotion — starts in the sandbox by default. Founders explicitly
+    // graduate out via toggleSandbox once it's ready for the real list.
+    isSandbox = true, skillIds = [],
   } = params;
   const legalType = params.legalType && isValidLegalType(params.legalType) ? params.legalType : "NONPROFIT_UMBRELLA";
 
