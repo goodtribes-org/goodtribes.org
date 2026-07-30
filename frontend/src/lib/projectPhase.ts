@@ -36,11 +36,11 @@ export function getNextPhase(current: ProjectPhaseValue): ProjectPhaseValue | nu
   return next ? next.value : null;
 }
 
-// Checklist sub-steps within the IDEA and SPRINT phases (PRD 4d) — a UI
-// progress checklist, not separate phase values. peer_feedback_requested is
-// informative only, never a gate (idea -> sprint is always the
+// Checklist sub-steps within the IDEA, SPRINT and PILOT phases (PRD 4d) — a
+// UI progress checklist, not separate phase values. peer_feedback_requested
+// is informative only, never a gate (idea -> sprint is always the
 // initiator's own call).
-export const INITIATIVE_CHECKLIST_ITEMS: Record<"IDEA" | "SPRINT", { key: string; label: string; href?: string }[]> = {
+export const INITIATIVE_CHECKLIST_ITEMS: Record<"IDEA" | "SPRINT" | "PILOT", { key: string; label: string; href?: string }[]> = {
   IDEA: [
     { key: "dream_defined", label: "Beskriv idén" },
     { key: "ai_reviewed", label: "Be AI granska idén" },
@@ -48,6 +48,13 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<"IDEA" | "SPRINT", { key: string
     { key: "lean_canvas_created", label: "Gör en Lean Canvas", href: "lean-canvas" },
   ],
   SPRINT: [
+    { key: "map_understand", label: "Kartlägga & förstå" },
+    { key: "sketch_solutions", label: "Skissa lösningar" },
+    { key: "decide_plan", label: "Beslut & planera" },
+    { key: "build_prototype", label: "Bygga prototyp" },
+    { key: "test_with_users", label: "Testa med användare" },
+  ],
+  PILOT: [
     { key: "todo_created", label: "Fyll på med arbetsuppgifter" },
     { key: "collaborators_invited", label: "Bjud in medskapare" },
     { key: "team_formed", label: "Formera team" },

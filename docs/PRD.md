@@ -1,9 +1,14 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 4.17 (Draft)
+**Version:** 4.18 (Draft)
 **Datum:** 2026-07-30
 **Status:** Under utveckling
+
+**Ändringar i v4.18:**
+- **Byggt & Beslutat:** `sprint`-fasens checklista (4d) bytt ut mot en femstegs designprocess: `map_understand` ("Kartlägga & förstå"), `sketch_solutions` ("Skissa lösningar"), `decide_plan` ("Beslut & planera"), `build_prototype` ("Bygga prototyp"), `test_with_users` ("Testa med användare"). Visas i fas- och stegmenyn (`PhaseMenuBar.tsx`) som 2.1–2.5, eftersom `sprint` är fas nr 2 i sekvensen.
+- De fyra checklistpunkter som tidigare låg under `sprint` (`todo_created`, `collaborators_invited`, `team_formed`, `resources_secured`) flyttas till en ny checklista under **`pilot`**-fasen istället — `initiative_checklist_items.phase` utökas från `idea | sprint` till `idea | sprint | pilot` (redan giltiga enum-värden i `ProjectPhase`, ingen migrering krävs). Uppdaterat i `frontend/src/lib/projectPhase.ts` (`INITIATIVE_CHECKLIST_ITEMS`), `PhaseMenuBar.tsx`, `edit/actions.ts` (`toggleChecklistItem`) och `EditProjectForm.tsx`.
+- **Sidoupptäckt, öppen fråga tillagd (punkt 10):** `sprint → pilot`-gatingens ordalydelse ("Team tilldelat + budget/resurser definierade") beskriver nu de checklistpunkter som just flyttades till `pilot` — en textmässig inkonsekvens, men ingen funktionell konflikt eftersom checklistan redan är uttryckligen valfri och aldrig blockerar en fasövergång (se "UI-princip — guide, inte tvång"). Flaggat för beslut, inte löst i detta steg.
 
 **Ändringar i v4.17:**
 - **Byggt:** Idéverkstadens projektlokala idésession (5.10, "Inne i ett befintligt projekt") fick ett eget menyval — **Idéverkstad** — i projektsidans Verktyg-meny (se "Projektsidans navigation" under 5.1), istället för att bara vara en dold knapp på Blogg-sidan. Ny sida `frontend/src/app/[locale]/projects/[slug]/(workspace)/idea-sessions/page.tsx` listar projektets tidigare idésessioner och startar nya via den redan existerande `createProjectIdeaThread`. Knappen "Starta idésession" togs bort från Blogg-sidan (`updates/page.tsx`) eftersom den nu bara skulle vara en duplicerad genväg till samma sida.
@@ -546,8 +551,8 @@ Varje initiativ på GoodTribes — oavsett om det startar som en lös idé eller
 | Värde (enum) | Svensk etikett | Beskrivning |
 |---|---|---|
 | `idea` | Idé | AI-assisterad idéfas (se Utvecklingsfas 1.2/1.5), peer review, community-feedback |
-| `sprint` | Sprint | Uppgiftsnedbrytning (to-do), bjuda in medskapare, formera team, säkra resurser |
-| `pilot` | Pilot | Utveckling och pilot i liten skala (prototyp) |
+| `sprint` | Sprint | Designprocess i fem steg: kartlägga & förstå, skissa lösningar, besluta & planera, bygga prototyp, testa med användare |
+| `pilot` | Pilot | Utveckling och pilot i liten skala — uppgiftsnedbrytning (to-do), bjuda in medskapare, formera team, säkra resurser |
 | `production` | Produktion | Skarp drift |
 | `establish` | Etablera | Stabil lokal verksamhet |
 | `scale` | Skala | Regional replikering / fork till nya instanser |
@@ -575,19 +580,20 @@ Detta skiljer sig medvetet från t.ex. gating-tabellen mellan faser, som fortsat
 
 ---
 
-**Delsteg inom `idea`- och `sprint`-faserna (UI-checklista, inte egna enum-värden)**
+**Delsteg inom `idea`-, `sprint`- och `pilot`-faserna (UI-checklista, inte egna enum-värden)**
 
-Dessa var ursprungligen skissade som egna toppnivåfaser (idea/dream, peer review, to-do, invite, team, resources) men fungerar bättre som en checklista/progress-bar inuti `idea` och `sprint` — annars får `phase`-fältet 11+ värden där flertalet bara betyder "fortfarande i sprintfasen, delsteg X", vilket gör frågor som "visa alla aktiva projekt" svåra att uttrycka.
+Dessa var ursprungligen skissade som egna toppnivåfaser (idea/dream, peer review, to-do, invite, team, resources) men fungerar bättre som en checklista/progress-bar inuti `idea`, `sprint` och `pilot` — annars får `phase`-fältet 11+ värden där flertalet bara betyder "fortfarande i sprintfasen, delsteg X", vilket gör frågor som "visa alla aktiva projekt" svåra att uttrycka.
 
 ```
 initiative_checklist_items
-  id, project_id, phase (idea | sprint), item_key, completed_at, completed_by
+  id, project_id, phase (idea | sprint | pilot), item_key, completed_at, completed_by
 ```
 
 | `phase` | `item_key`-värden |
 |---|---|
 | `idea` | `dream_defined` ("Beskriv idén"), `ai_reviewed` ("Be AI granska idén" *(ny, v4.7)* — återanvänder `@AI` från Idéverkstaden, se 5.10), `peer_feedback_requested` ("Bjud in vänner att ge feedback", valfritt, se nedan), `lean_canvas_created` ("Gör en Lean Canvas" *(ny, v4.7)* — länkar till planeringsverktyget i Sandbox, se 5.10) |
-| `sprint` | `todo_created` ("Fyll på med arbetsuppgifter"), `collaborators_invited` ("Bjud in medskapare"), `team_formed` ("Formera team"), `resources_secured` ("Säkra resurser") |
+| `sprint` | **(v4.18, ersätter tidigare innehåll — se nedan)** `map_understand` ("Kartlägga & förstå"), `sketch_solutions` ("Skissa lösningar"), `decide_plan` ("Beslut & planera"), `build_prototype` ("Bygga prototyp"), `test_with_users` ("Testa med användare") |
+| `pilot` | **(v4.18, flyttat hit från `sprint`)** `todo_created` ("Fyll på med arbetsuppgifter"), `collaborators_invited` ("Bjud in medskapare"), `team_formed` ("Formera team"), `resources_secured` ("Säkra resurser") |
 
 **Peer review är valfri feedback, inte ett godkännandekrav — beslutet om `idea → sprint` tas alltid av initiativtagaren själv.** Community-feedback (via idéflödet, se Utvecklingsfas 1.2/1.5) kan hjälpa initiativtagaren att förbättra idén, men ingen extern granskning eller antal granskare krävs för att gå vidare. `peer_feedback_requested` är därför bara en informativ markering — inte en spärr — och ersätter det tidigare `peer_review_approved`, som antydde ett godkännandekrav som inte längre gäller.
 
@@ -610,7 +616,7 @@ Detta är inte längre en öppen fråga — se punkt 10.
 | Övergång | Krav för att låsa upp | Status |
 |---|---|---|
 | `idea` → `sprint` | Initiativtagaren beslutar själv — inget krav på extern granskning eller antal granskare. Peer feedback (se ovan) är valfri och påverkar inte beslutet. | **Beslutat (v3.3)** |
-| `sprint` → `pilot` | Team tilldelat + budget/resurser definierade | Beslutat |
+| `sprint` → `pilot` | Team tilldelat + budget/resurser definierade | **Ordalydelsen ej uppdaterad sedan v4.18 flyttade `team_formed`/`resources_secured` till `pilot`-checklistan — se öppen fråga i punkt 10** |
 | `pilot` → `production` | Tribe Token-röstning bland projektmedlemmar godkänner pilotresultatet (se Utvecklingsfas 2.95) + minst en milstolpe markerad klar (se 5.74) + `resources_secured` uppfyllt för fortsatt drift | **Föreslaget — ej formellt beslutat, se punkt 10** |
 | `production` → `establish` | Projektpuls (se 5.74) stabil över ett tröskelvärde i N sammanhängande månader, utan öppet allvarligt ärende hos Granskningsrådet (se 5.55) | **Föreslaget — svagast underbyggt av de tre, tröskelvärde N och ev. variation per `legal_type` (se 4c) kräver styrelsediskussion, se punkt 10** |
 | `establish` → `scale` | Initiativtagare initierar regional replikering eller självvald uppdelning (se 5.65) | Beslutat |
@@ -2288,6 +2294,7 @@ För att komma till marknad snabbast möjligt begränsas MVP till:
 | Fullföljdskravet för allmännyttig stiftelse (se 4c) — stämmer den planerade utdelningstakten i `impact_fund_ledger`/4a faktiskt överens med Skatteverkets krav på ca 75–80% över en rullande 5-årsperiod? | Öppen — kräver avstämning med jurist/revisor, ingen siffra verifierad |
 | Fas- och stegwidgeten (se 4d) — riskerar den bli förvirrande i praktiken när fasövergångar är låsta men delsteg inom en fas är fritt valbara? Bör följas upp efter lansering med användartester. | Öppen — designbeslut fattat (guide, inte tvång), men UX-utfallet är overifierat |
 | Sandbox (se Utvecklingsfas 1.2) — gäller Granskningsrådets reaktiva princip (5.54) fullt ut, eller behövs en lättare/snabbare moderering givet högre volym och mer experimentellt innehåll? | Öppen |
+| `sprint` → `pilot`-gatingens ordalydelse (4d, "Team tilldelat + budget/resurser definierade") beskriver fortfarande de gamla `sprint`-checklistpunkterna (`team_formed`, `resources_secured`) som v4.18 flyttade till `pilot`-checklistan istället — ska gatingkravet skrivas om till att spegla de nya `sprint`-delstegen (designprocessen), eller ska det tolkas fristående från checklistan (checklistan är redan uttryckligen valfri/inte en spärr, se "UI-princip")? | Öppen — tillagd i v4.18, ingen funktionell konflikt idag eftersom checklistan aldrig blockerar en fasövergång, men ordalydelsen är missvisande |
 
 ---
 

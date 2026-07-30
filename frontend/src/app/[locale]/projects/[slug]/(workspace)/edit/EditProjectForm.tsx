@@ -44,7 +44,10 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
   const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedChecklistKeys));
   const imageInputRef = useRef<HTMLInputElement>(null);
   const nextPhase = isValidProjectPhase(initial.phase) ? getNextPhase(initial.phase) : null;
-  const checklist = initial.phase === "IDEA" || initial.phase === "SPRINT" ? INITIATIVE_CHECKLIST_ITEMS[initial.phase] : null;
+  const checklist =
+    initial.phase === "IDEA" || initial.phase === "SPRINT" || initial.phase === "PILOT"
+      ? INITIATIVE_CHECKLIST_ITEMS[initial.phase]
+      : null;
 
   function handleToggleChecklistItem(itemKey: string, done: boolean) {
     setDoneKeys((prev) => {
@@ -52,7 +55,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
       if (done) next.add(itemKey); else next.delete(itemKey);
       return next;
     });
-    startTogglingChecklist(() => toggleChecklistItem(slug, initial.phase as "IDEA" | "SPRINT", itemKey, done));
+    startTogglingChecklist(() => toggleChecklistItem(slug, initial.phase as "IDEA" | "SPRINT" | "PILOT", itemKey, done));
   }
 
   function handleImageUpload(url: string) {
