@@ -21,6 +21,10 @@ export default async function EditProjectPage({
       include: {
         members: { where: { userId: session.user.id } },
         neededSkills: { select: { skillId: true } },
+        ownershipInterests: {
+          orderBy: { createdAt: "asc" },
+          include: { user: { select: { id: true, name: true, image: true } } },
+        },
       },
     }),
     prisma.skill.findMany({ select: { id: true, name: true, slug: true }, orderBy: { name: "asc" } }),
@@ -65,6 +69,7 @@ export default async function EditProjectPage({
           description: project.description,
           phase: project.phase,
           isSandbox: project.isSandbox,
+          abandonedAt: project.abandonedAt?.toISOString() ?? null,
           visibility: project.visibility,
           category: project.category,
           tags: project.tags,
@@ -72,6 +77,12 @@ export default async function EditProjectPage({
           imageUrl: project.imageUrl,
         }}
         completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
+        ownershipInterests={project.ownershipInterests.map((i) => ({
+          id: i.id,
+          user: i.user,
+          message: i.message,
+          createdAt: i.createdAt.toISOString(),
+        }))}
       />
       {isOwner && (
         <div className="mt-12 pt-8 border-t border-red-200">

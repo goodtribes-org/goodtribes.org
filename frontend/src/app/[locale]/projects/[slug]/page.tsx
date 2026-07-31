@@ -16,6 +16,7 @@ import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import ProjectSideNav from "./ProjectSideNav";
 import PhaseMenuBar from "./PhaseMenuBar";
 import ProjectHeroSlides from "@/components/ProjectHeroSlides";
+import OwnershipBanner from "@/components/OwnershipBanner";
 import { handwritingFont } from "@/lib/fonts";
 import { isLeadRole, isSiteAdmin } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
@@ -227,7 +228,7 @@ export default async function ProjectDetailPage({
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-  const [latestUpdate, fundingCampaign, monthEvents, userJoinRequest, kanbanCards, recentChannelMessages, tokenTotals, checklistItems] =
+  const [latestUpdate, fundingCampaign, monthEvents, userJoinRequest, myOwnershipInterest, kanbanCards, recentChannelMessages, tokenTotals, checklistItems] =
     await Promise.all([
       prisma.blogPost.findFirst({
         where: { projectSlug: slug },
@@ -257,6 +258,12 @@ export default async function ProjectDetailPage({
         ? prisma.projectJoinRequest.findFirst({
             where: { project: { slug }, userId },
             select: { status: true },
+          })
+        : Promise.resolve(null),
+      userId && project.abandonedAt
+        ? prisma.projectOwnershipInterest.findUnique({
+            where: { projectId_userId: { projectId: project.id, userId } },
+            select: { id: true },
           })
         : Promise.resolve(null),
       prisma.kanbanCard.findMany({
@@ -476,6 +483,15 @@ export default async function ProjectDetailPage({
           canEdit={!!isOwnerOrAdmin}
         />
       </div>
+
+      {project.abandonedAt && (
+        <OwnershipBanner
+          slug={slug}
+          isFounder={!!isOwnerOrAdmin}
+          userId={userId ?? null}
+          alreadyExpressedInterest={!!myOwnershipInterest}
+        />
+      )}
 
       <ProjectHeroSlides
         projectId={project.id}

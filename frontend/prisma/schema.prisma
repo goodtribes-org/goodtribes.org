@@ -191,6 +191,7 @@ model User {
   initiatedPartnerships        Partnership[]               @relation("PartnershipInitiatedBy")
   respondedPartnerships        Partnership[]               @relation("PartnershipRespondedBy")
   createdMindMaps              MindMap[]                   @relation("CreatedMindMaps")
+  projectOwnershipInterests    ProjectOwnershipInterest[]  @relation("ProjectOwnershipInterestUser")
   forkContributorCredits        ForkContributorCredit[]    @relation("ForkContributorCredits")
   forkProfitSharesAsContributor ForkProfitShare[]          @relation("ForkProfitShareContributor")
   forkTokenGrantsAsContributor  ForkTokenGrant[]           @relation("ForkTokenGrantContributor")
@@ -589,6 +590,11 @@ model Project {
   // experimental/playground one (see /sandbox). No separate "lift" step:
   // graduating out of sandbox is just flipping this back to false.
   isSandbox   Boolean  @default(false)
+  // A founder-declared "looking for a new owner" flag — set explicitly by a
+  // founder, never inferred from inactivity. While set, anyone logged in can
+  // express interest in taking over; a founder/site-admin then picks one to
+  // transfer ownership to via transferOwnership (see ownership-actions.ts).
+  abandonedAt DateTime?
   visibility  String   @default("public")
   category    String?
   tags        String[]
@@ -659,6 +665,23 @@ model Project {
   forkContributorCredits      ForkContributorCredit[]     @relation("ForkContributorCreditForkedProject")
   forkProfitSharesGiven       ForkProfitShare[]           @relation("ForkProfitShareForkedProject")
   forkTokenGrantsGiven        ForkTokenGrant[]            @relation("ForkTokenGrantForkedProject")
+  ownershipInterests          ProjectOwnershipInterest[]
+}
+
+// Expressions of interest in taking over a project a founder has marked
+// abandonedAt on (see Project.abandonedAt) — resolved by transferOwnership
+// picking one, which deletes all rows for the project.
+model ProjectOwnershipInterest {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation("ProjectOwnershipInterestUser", fields: [userId], references: [id], onDelete: Cascade)
+  message   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, userId])
+  @@index([projectId])
 }
 
 model ProjectSkill {

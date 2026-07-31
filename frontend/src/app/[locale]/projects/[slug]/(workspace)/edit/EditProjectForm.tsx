@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useRef } from "react";
 import { updateProject, deleteProject, advanceProjectPhase, toggleSandbox, toggleChecklistItem } from "./actions";
+import { markProjectAbandoned, unmarkProjectAbandoned, transferOwnership } from "@/app/[locale]/projects/[slug]/ownership-actions";
 import { getSdgSuggestions } from "@/app/[locale]/projects/new/actions";
 import FileUpload from "@/components/FileUpload";
 import RichTextEditor from "@/components/RichTextEditor";
@@ -22,6 +23,7 @@ interface Props {
     description: string | null;
     phase: string;
     isSandbox: boolean;
+    abandonedAt: string | null;
     visibility: string;
     category: string | null;
     tags: string[];
@@ -29,9 +31,10 @@ interface Props {
     imageUrl: string | null;
   };
   completedChecklistKeys: string[];
+  ownershipInterests: { id: string; user: { id: string; name: string | null; image: string | null }; message: string | null; createdAt: string }[];
 }
 
-export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, currentOrgId, initial, completedChecklistKeys }: Props) {
+export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, currentOrgId, initial, completedChecklistKeys, ownershipInterests }: Props) {
   const [description, setDescription] = useState(initial.description ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set(initial.sdgGoals));
   const [aiSuggested, setAiSuggested] = useState<number[]>([]);
@@ -40,6 +43,9 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
   const [isSuggesting, startSuggesting] = useTransition();
   const [isAdvancing, startAdvancing] = useTransition();
   const [isGraduating, startGraduating] = useTransition();
+  const [isAbandoning, startAbandoning] = useTransition();
+  const [isTransferring, startTransferring] = useTransition();
+  const [abandonedAt, setAbandonedAt] = useState(initial.abandonedAt);
   const [isTogglingChecklist, startTogglingChecklist] = useTransition();
   const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedChecklistKeys));
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -199,6 +205,83 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
           </button>
         </div>
       )}
+
+      <div className="border-2 border-amber-300 bg-amber-50/40 rounded-md p-4">
+        {!abandonedAt ? (
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-dark-slate">🏳️ Herrelöst projekt</p>
+              <p className="text-xs text-dark-slate/60 mt-0.5">
+                Står projektet still? Markera det som herrelöst så kan andra medlemmar anmäla intresse för att ta över.
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={isAbandoning}
+              onClick={() => {
+                if (!confirm("Markera projektet som herrelöst? Alla inloggade kan då anmäla intresse för att ta över det.")) return;
+                startAbandoning(async () => {
+                  const res = await markProjectAbandoned(slug);
+                  if (!("error" in res)) setAbandonedAt(new Date().toISOString());
+                });
+              }}
+              className="text-sm font-medium text-amber-700 border border-amber-400 rounded-md px-4 py-2 hover:bg-amber-100 transition-colors disabled:opacity-60 flex-shrink-0"
+            >
+              {isAbandoning ? "Sparar…" : "Markera som herrelöst"}
+            </button>
+          </div>
+        ) : (
+          <div>
+            <div className="flex items-center justify-between gap-4 mb-3">
+              <div>
+                <p className="text-sm font-medium text-dark-slate">🏳️ Söker ny ägare</p>
+                <p className="text-xs text-dark-slate/60 mt-0.5">
+                  Projektet visas som herrelöst för alla besökare. Välj en intresserad person nedan, eller avbryt.
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={isAbandoning}
+                onClick={() => {
+                  startAbandoning(async () => {
+                    const res = await unmarkProjectAbandoned(slug);
+                    if (!("error" in res)) setAbandonedAt(null);
+                  });
+                }}
+                className="text-sm font-medium text-dark-slate/60 border border-dark-slate/20 rounded-md px-4 py-2 hover:bg-white transition-colors disabled:opacity-60 flex-shrink-0"
+              >
+                {isAbandoning ? "Sparar…" : "Avbryt"}
+              </button>
+            </div>
+
+            {ownershipInterests.length === 0 ? (
+              <p className="text-xs text-dark-slate/40 italic">Ingen har anmält intresse än.</p>
+            ) : (
+              <ul className="space-y-2">
+                {ownershipInterests.map((interest) => (
+                  <li key={interest.id} className="flex items-center justify-between gap-3 bg-white rounded-md px-3 py-2 border border-amber-200">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-dark-slate truncate">{interest.user.name ?? "Okänd"}</p>
+                      {interest.message && <p className="text-xs text-dark-slate/60 truncate">{interest.message}</p>}
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isTransferring}
+                      onClick={() => {
+                        if (!confirm(`Gör ${interest.user.name ?? "denna person"} till ny ägare av projektet?`)) return;
+                        startTransferring(async () => { await transferOwnership(slug, interest.user.id); });
+                      }}
+                      className="text-xs font-medium text-white bg-seagrass hover:bg-seagrass/90 rounded-md px-3 py-1.5 transition-colors disabled:opacity-60 flex-shrink-0"
+                    >
+                      Gör till ägare
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
 
       {checklist && (
         <div className="border border-muted-teal rounded-md p-4">
