@@ -192,6 +192,8 @@ model User {
   respondedPartnerships        Partnership[]               @relation("PartnershipRespondedBy")
   createdMindMaps              MindMap[]                   @relation("CreatedMindMaps")
   projectOwnershipInterests    ProjectOwnershipInterest[]  @relation("ProjectOwnershipInterestUser")
+  createdShopItems             ShopItem[]                  @relation("ShopItemCreatedBy")
+  shopRedemptions               ShopRedemption[]           @relation("ShopRedemptions")
   forkContributorCredits        ForkContributorCredit[]    @relation("ForkContributorCredits")
   forkProfitSharesAsContributor ForkProfitShare[]          @relation("ForkProfitShareContributor")
   forkTokenGrantsAsContributor  ForkTokenGrant[]           @relation("ForkTokenGrantContributor")
@@ -1119,6 +1121,37 @@ model GtLedger {
   createdAt           DateTime     @default(now())
 
   @@index([userId])
+}
+
+// Platform-wide shop, spends GT (not project-scoped Tribe Tokens) — a
+// symbolic redemption: costGt is deducted via a negative GtLedger entry and
+// a ShopRedemption row is logged. No fulfillment workflow (shipping, admin
+// approval) — that's a deliberate scope decision, not a gap.
+model ShopItem {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  imageUrl    String?
+  costGt      Float
+  active      Boolean  @default(true)
+  createdById String
+  createdBy   User     @relation("ShopItemCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  redemptions ShopRedemption[]
+}
+
+model ShopRedemption {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      ShopItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation("ShopRedemptions", fields: [userId], references: [id], onDelete: Cascade)
+  gtSpent   Float
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([itemId])
 }
 
 model AiTaskRun {
