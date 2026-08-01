@@ -9,6 +9,11 @@ import { isRealMember, isCardClaimant, hasProjectRole, PROJECT_LEAD_ROLES } from
 import { createNotification } from "@/lib/notify";
 import { publishToKanban } from "@/lib/redis";
 import { moveKanbanCard, type MoveOverrides } from "@/lib/kanbanMove";
+import {
+  assertNotGithubCard,
+  assertNotGithubSubtask,
+  GITHUB_CARD_LOCKED_MESSAGE,
+} from "@/lib/githubSync";
 
 async function isProjectLead(projectSlug: string, userId: string): Promise<boolean> {
   const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
@@ -104,6 +109,9 @@ export async function promoteSubtaskToCard(subtaskId: string) {
     include: { card: true },
   });
   if (!subtask) return { error: "Subtask not found" };
+  const locked = await assertNotGithubSubtask(subtaskId);
+  if (locked) return { error: locked };
+
 
   const maxOrder = await prisma.kanbanCard.aggregate({
     where: { projectSlug: subtask.card.projectSlug, column: subtask.card.column },
@@ -138,6 +146,9 @@ export async function deleteSubtask(subtaskId: string) {
     include: { card: { select: { projectSlug: true, createdById: true } } },
   });
   if (!subtask) return { error: "Subtask not found" };
+  const locked = await assertNotGithubSubtask(subtaskId);
+  if (locked) return { error: locked };
+
   if (subtask.card.createdById !== session.user.id && !(await isProjectLead(subtask.card.projectSlug, session.user.id))) {
     return { error: "Not authorized" };
   }
@@ -156,6 +167,9 @@ export async function updateSubtaskTitle(subtaskId: string, title: string) {
     include: { card: { select: { projectSlug: true } } },
   });
   if (!subtask) return { error: "Subtask not found" };
+  const locked = await assertNotGithubSubtask(subtaskId);
+  if (locked) return { error: locked };
+
 
   await prisma.kanbanCardSubtask.update({
     where: { id: subtaskId },
@@ -174,6 +188,9 @@ export async function addSubtask(cardId: string, title: string) {
     select: { projectSlug: true },
   });
   if (!card) return { error: "Card not found" };
+  const locked = await assertNotGithubCard(cardId);
+  if (locked) return { error: locked };
+
 
   const maxOrder = await prisma.kanbanCardSubtask.aggregate({
     where: { cardId },
@@ -320,6 +337,9 @@ export async function toggleSubtask(subtaskId: string, done: boolean) {
     },
   });
   if (!subtask) return { error: "Subtask not found" };
+  const locked = await assertNotGithubSubtask(subtaskId);
+  if (locked) return { error: locked };
+
 
   const allowed = (await isRealMember(subtask.card.project.id, userId)) || isCardClaimant(subtask.card, userId);
   if (!allowed) return { error: "Not authorized to update this card" };
@@ -352,6 +372,7 @@ export async function updateCard(
 
   const card = await prisma.kanbanCard.findUnique({ where: { id: cardId } });
   if (!card) return { error: "Card not found" };
+  if (card.source === "github") return { error: GITHUB_CARD_LOCKED_MESSAGE };
 
   const priorityChanging = data.priority !== undefined && data.priority !== card.priority;
   if (priorityChanging) {
@@ -415,6 +436,8 @@ export async function claimCard(cardId: string) {
     },
   });
   if (!card) return { error: "Card not found" };
+  const locked = await assertNotGithubCard(cardId);
+  if (locked) return { error: locked };
   if (!card.openToPublic) return { error: "This task is not open for public claiming" };
   if (card.column === "DONE") return { error: "This task is already done" };
   if (await isRealMember(card.project.id, userId)) return { error: "Members should assign themselves via the card editor" };
@@ -455,6 +478,8 @@ export async function abandonCard(cardId: string) {
     select: { id: true, projectSlug: true },
   });
   if (!card) return { error: "Card not found" };
+  const locked = await assertNotGithubCard(cardId);
+  if (locked) return { error: locked };
 
   const result = await prisma.kanbanCard.updateMany({
     where: { id: cardId, assigneeId: userId, openToPublic: true },
@@ -475,6 +500,8 @@ export async function setCardOpenToPublic(cardId: string, open: boolean) {
 
   const card = await prisma.kanbanCard.findUnique({ where: { id: cardId }, select: { projectSlug: true } });
   if (!card) return { error: "Card not found" };
+  const locked = await assertNotGithubCard(cardId);
+  if (locked) return { error: locked };
   if (!(await isProjectLead(card.projectSlug, session.user.id))) return { error: "Not authorized" };
 
   const updated = await prisma.kanbanCard.update({
@@ -501,6 +528,7 @@ export async function deleteCard(cardId: string) {
 
   const card = await prisma.kanbanCard.findUnique({ where: { id: cardId } });
   if (!card) return { error: "Card not found" };
+  if (card.source === "github") return { error: GITHUB_CARD_LOCKED_MESSAGE };
   if (card.createdById !== session.user.id && !(await isProjectLead(card.projectSlug, session.user.id))) {
     return { error: "Not authorized" };
   }
@@ -521,7 +549,9 @@ export async function clearColumnCards(projectSlug: string, column: string) {
   const isLead = await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES);
   if (!isLead) return { error: "Must be a project admin or founder" };
 
-  await prisma.kanbanCard.deleteMany({ where: { projectSlug, column } });
+  // Never delete the GitHub mirror: those cards are re-created on the next
+  // sync anyway, and clearing a column is about the team's own cards.
+  await prisma.kanbanCard.deleteMany({ where: { projectSlug, column, source: { not: "github" } } });
 
   publishToKanban(projectSlug, { action: "column-cleared", column });
   revalidatePath(`/projects/${projectSlug}/kanban`);
@@ -561,6 +591,8 @@ export async function addCardDependency(cardId: string, dependsOnId: string) {
   ]);
   if (!card || !dependsOn) return { error: "Card not found" };
   if (card.projectSlug !== dependsOn.projectSlug) return { error: "Cards must be in the same project" };
+  const locked = await assertNotGithubCard(cardId);
+  if (locked) return { error: locked };
 
   if (await wouldCreateCycle(cardId, dependsOnId)) {
     return { error: "That would create a circular dependency" };
@@ -584,6 +616,8 @@ export async function removeCardDependency(cardId: string, dependsOnId: string) 
 
   const card = await prisma.kanbanCard.findUnique({ where: { id: cardId }, select: { projectSlug: true } });
   if (!card) return { error: "Card not found" };
+  const locked = await assertNotGithubCard(cardId);
+  if (locked) return { error: locked };
 
   await prisma.kanbanCardDependency
     .delete({ where: { cardId_dependsOnId: { cardId, dependsOnId } } })

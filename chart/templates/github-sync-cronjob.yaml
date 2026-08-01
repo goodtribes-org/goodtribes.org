@@ -1,0 +1,38 @@
+{{- if .Values.githubSync.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: goodtribes-github-sync
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "goodtribes.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.githubSync.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 120
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            {{- include "goodtribes.labels" . | nindent 12 }}
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: github-sync
+              image: "{{ .Values.githubSync.image.repository }}:{{ .Values.githubSync.image.tag }}"
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  curl -sfS -X POST \
+                    -H "Authorization: Bearer $CRON_SECRET" \
+                    -H "Content-Type: application/json" \
+                    http://goodtribes-frontend:{{ .Values.frontend.service.port }}/api/cron/github-sync
+              envFrom:
+                - secretRef:
+                    name: goodtribes-secret
+{{- end }}

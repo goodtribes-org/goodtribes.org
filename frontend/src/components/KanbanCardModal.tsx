@@ -21,6 +21,7 @@ import {
 import { htmlToPreviewText } from "@/lib/renderBody";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import FlagContentButton from "@/components/FlagContentButton";
+import GithubCardMeta, { isGithubCard } from "@/components/GithubCardMeta";
 import {
   CATEGORY_META,
   PRIORITY_META,
@@ -97,8 +98,13 @@ function CardDetailModalImpl({
   const [claimPending, setClaimPending] = useState(false);
   const [, startTransition] = useTransition();
 
-  const canDelete = currentUserId === card.createdById || isLead;
-  const canDeleteSubtask = (s: Subtask) => currentUserId === card.createdById || isLead || s.id.startsWith("temp-");
+  // Cards mirrored from GitHub are read-only: GitHub owns the title, state and
+  // column, so any edit here would be reverted by the next sync. Comments and
+  // likes stay available — they are local and never leave the app.
+  const isGithub = isGithubCard(card);
+  const canEdit = isLoggedIn && !isGithub;
+  const canDelete = (currentUserId === card.createdById || isLead) && !isGithub;
+  const canDeleteSubtask = (s: Subtask) => !isGithub && (currentUserId === card.createdById || isLead || s.id.startsWith("temp-"));
   const isClaimant = openToPublic && !!currentUserId && cardAssigneeId === currentUserId;
   const canInteractWithCard = isMember || isClaimant;
 
@@ -338,11 +344,18 @@ function CardDetailModalImpl({
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto px-6 pt-3 pb-5 space-y-1">
+          {isGithub && (
+            <div className="rounded-lg bg-dark-slate/5 px-3 py-2 mb-2 text-xs text-dark-slate/70">
+              Speglas från GitHub och uppdateras automatiskt — ändringar görs i repot.
+              <GithubCardMeta card={card} />
+            </div>
+          )}
+
           {/* Title */}
           <textarea
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            disabled={!isLoggedIn}
+            disabled={!canEdit}
             rows={1}
             className="w-full text-lg font-semibold text-gray-900 resize-none border-0 outline-none bg-transparent placeholder-gray-300 focus:ring-0 leading-tight"
             placeholder="Kortets titel"
@@ -362,7 +375,7 @@ function CardDetailModalImpl({
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                disabled={!isLoggedIn}
+                disabled={!canEdit}
                 className="border border-gray-200 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:border-blue-400 bg-white disabled:opacity-60"
               >
                 {Object.entries(PRIORITY_META).map(([k, v]) => (
@@ -379,7 +392,7 @@ function CardDetailModalImpl({
             <div className="flex flex-wrap gap-1.5">
               <button
                 type="button"
-                onClick={() => isLoggedIn && setCategory("")}
+                onClick={() => canEdit && setCategory("")}
                 className={`text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
                   !category ? "border-gray-400 bg-gray-100 text-gray-600" : "border-gray-200 text-gray-400 hover:border-gray-300"
                 }`}
@@ -390,7 +403,7 @@ function CardDetailModalImpl({
                 <button
                   key={key}
                   type="button"
-                  onClick={() => isLoggedIn && setCategory(category === key ? "" : key)}
+                  onClick={() => canEdit && setCategory(category === key ? "" : key)}
                   style={category === key ? { backgroundColor: meta.hex + "22", borderColor: meta.hex, color: meta.hex } : {}}
                   className={`text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
                     category === key ? "" : "border-gray-200 text-gray-400 hover:border-gray-300"
@@ -406,7 +419,7 @@ function CardDetailModalImpl({
               <select
                 value={assigneeId}
                 onChange={(e) => setAssigneeId(e.target.value)}
-                disabled={!isLoggedIn}
+                disabled={!canEdit}
                 className="border border-gray-200 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:border-blue-400 bg-white disabled:opacity-60"
               >
                 <option value="">— ingen —</option>
@@ -414,7 +427,7 @@ function CardDetailModalImpl({
                   <option key={m.id} value={m.id}>{m.name ?? m.id}</option>
                 ))}
               </select>
-            ) : openToPublic && !cardAssigneeId && isLoggedIn ? (
+            ) : openToPublic && !cardAssigneeId && canEdit ? (
               <div>
                 <button
                   type="button"
@@ -471,7 +484,7 @@ function CardDetailModalImpl({
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              disabled={!isLoggedIn}
+              disabled={!canEdit}
               className="border border-gray-200 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:border-blue-400 disabled:opacity-60"
             />
 
@@ -480,7 +493,7 @@ function CardDetailModalImpl({
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              disabled={!isLoggedIn}
+              disabled={!canEdit}
               className="border border-gray-200 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:border-blue-400 disabled:opacity-60"
             />
           </div>
@@ -488,7 +501,7 @@ function CardDetailModalImpl({
           {/* Description */}
           <div>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Beskrivning</p>
-            {isLoggedIn ? (
+            {canEdit ? (
               <RichTextEditor content={description} onChange={setDescription} />
             ) : description ? (
               <div
@@ -505,7 +518,7 @@ function CardDetailModalImpl({
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Deluppgifter</p>
               <div className="flex items-center gap-3">
-                {localSubtasks.length > 0 && isLoggedIn && !isNew && (
+                {localSubtasks.length > 0 && canEdit && !isNew && (
                   <button
                     type="button"
                     onClick={() => {
@@ -539,9 +552,9 @@ function CardDetailModalImpl({
                     <div key={s.id} className="relative flex items-center gap-2 group/sub py-1">
                       <button
                         type="button"
-                        onClick={() => isLoggedIn && handleToggle(s)}
+                        onClick={() => canEdit && handleToggle(s)}
                         aria-label={s.done ? "Markera som inte klar" : "Markera som klar"}
-                        className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"} ${isLoggedIn ? "cursor-pointer" : "cursor-default"}`}
+                        className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"} ${canEdit ? "cursor-pointer" : "cursor-default"}`}
                       >
                         {s.done && (
                           <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -566,7 +579,7 @@ function CardDetailModalImpl({
                         <span className={`flex-1 text-sm ${s.done ? "line-through text-gray-400" : "text-gray-700"}`}>{s.title}</span>
                       )}
 
-                      {isLoggedIn && (
+                      {canEdit && (
                         <button
                           type="button"
                           onClick={() => setSubtaskMenuOpen(subtaskMenuOpen === s.id ? null : s.id)}
@@ -615,7 +628,7 @@ function CardDetailModalImpl({
               </>
             )}
 
-            {isLoggedIn && (
+            {canEdit && (
               <div className="flex gap-2 items-center">
                 <input
                   type="text"

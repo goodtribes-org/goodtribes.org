@@ -17,6 +17,11 @@ interface Props {
   orgs: { id: string; name: string }[];
   currentSkillIds: string[];
   currentOrgId: string | null;
+  github: {
+    repo: string;
+    lastSyncedAt: string | null;
+    lastSyncError: string | null;
+  } | null;
   initial: {
     title: string;
     summary: string | null;
@@ -34,7 +39,7 @@ interface Props {
   ownershipInterests: { id: string; user: { id: string; name: string | null; image: string | null }; message: string | null; createdAt: string }[];
 }
 
-export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, currentOrgId, initial, completedChecklistKeys, ownershipInterests }: Props) {
+export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, currentOrgId, github, initial, completedChecklistKeys, ownershipInterests }: Props) {
   const [description, setDescription] = useState(initial.description ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set(initial.sdgGoals));
   const [aiSuggested, setAiSuggested] = useState<number[]>([]);
@@ -133,6 +138,32 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
           defaultValue={initial.title}
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
         />
+      </div>
+
+      <div>
+        <label htmlFor="githubRepo" className="block text-sm font-medium text-dark-slate mb-1">
+          GitHub-repo <span className="text-dark-slate/50 font-normal">(valfritt)</span>
+        </label>
+        <input
+          id="githubRepo"
+          name="githubRepo"
+          type="text"
+          placeholder="goodtribes-org/mitt-repo"
+          defaultValue={github?.repo ?? ""}
+          className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
+        />
+        {github?.lastSyncError ? (
+          <p className="text-xs text-watermelon mt-1">Senaste synk misslyckades: {github.lastSyncError}</p>
+        ) : github?.lastSyncedAt ? (
+          <p className="text-xs text-dark-slate/50 mt-1">
+            Senast synkad {new Date(github.lastSyncedAt).toLocaleString("sv-SE")}
+          </p>
+        ) : (
+          <p className="text-xs text-dark-slate/50 mt-1">
+            Issues och pull requests hämtas in som uppgifter var femte minut. Töm fältet
+            för att koppla bort repot och ta bort de hämtade uppgifterna.
+          </p>
+        )}
       </div>
 
       <div>

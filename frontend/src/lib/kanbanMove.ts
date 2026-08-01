@@ -6,6 +6,7 @@ import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { getPriorityTokenValue } from "@/lib/priorityTokens";
 import { mintCardCompletion, reverseCardTokens } from "@/lib/tokens";
 import { createNotification } from "@/lib/notify";
+import { GITHUB_CARD_LOCKED_MESSAGE } from "@/lib/githubSync";
 
 async function updateStreak(userId: string, projectSlug: string) {
   const project = await prisma.project.findUnique({
@@ -49,6 +50,10 @@ export type MoveOverrides = {
 export async function moveKanbanCard(cardId: string, newColumn: string, userId: string, overrides?: MoveOverrides) {
   const card = await prisma.kanbanCard.findUnique({ where: { id: cardId } });
   if (!card) return { error: "Card not found" };
+  // A GitHub-mirrored card's column is derived from the issue's state, and this
+  // path mints tokens on completion — moving one would pay out for work the app
+  // does not own, and the next sync would undo the move anyway.
+  if (card.source === "github") return { error: GITHUB_CARD_LOCKED_MESSAGE };
 
   const project = await prisma.project.findUnique({
     where: { slug: card.projectSlug },

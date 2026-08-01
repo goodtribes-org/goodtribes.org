@@ -21,6 +21,7 @@ export default async function EditProjectPage({
       include: {
         members: { where: { userId: session.user.id } },
         neededSkills: { select: { skillId: true } },
+        githubRepo: true,
         ownershipInterests: {
           orderBy: { createdAt: "asc" },
           include: { user: { select: { id: true, name: true, image: true } } },
@@ -63,6 +64,15 @@ export default async function EditProjectPage({
         orgs={userOrgs}
         currentSkillIds={project.neededSkills.map((s) => s.skillId)}
         currentOrgId={project.orgId}
+        github={
+          project.githubRepo
+            ? {
+                repo: `${project.githubRepo.owner}/${project.githubRepo.repo}`,
+                lastSyncedAt: project.githubRepo.lastSyncedAt?.toISOString() ?? null,
+                lastSyncError: project.githubRepo.lastSyncError,
+              }
+            : null
+        }
         initial={{
           title: project.title,
           summary: (project as typeof project & { summary: string | null }).summary,

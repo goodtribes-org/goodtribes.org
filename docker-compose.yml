@@ -130,6 +130,8 @@ services:
       NEXT_PUBLIC_MEILI_SEARCH_KEY: ${NEXT_PUBLIC_MEILI_SEARCH_KEY:-}
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-changeme-local-dev-key-32chars}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GITHUB_PAT: ${GITHUB_PAT:-}
+      CRON_SECRET: ${CRON_SECRET:-}
       DATABASE_URL: postgresql://${POSTGRES_USER:-goodtribes}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-goodtribes}
       REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379
       AUTH_SECRET: ${AUTH_SECRET}

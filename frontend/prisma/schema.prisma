@@ -428,6 +428,20 @@ model KanbanCard {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  // GitHub mirror. source="github" cards are owned by the sync job and are
+  // immutable in the app — see assertNotGithubCard() in src/lib/githubSync.ts.
+  source          String    @default("manual")
+  githubNumber    Int?
+  githubType      String?
+  githubUrl       String?
+  githubState     String?
+  githubMerged    Boolean   @default(false)
+  githubDraft     Boolean   @default(false)
+  githubLabels    String[]  @default([])
+  githubAuthor    String?
+  githubAssignees String[]  @default([])
+  githubUpdatedAt DateTime?
+
   createdBy       User                       @relation("CreatedKanbanCards", fields: [createdById], references: [id], onDelete: Cascade)
   assignee        User?                      @relation("AssignedKanbanCards", fields: [assigneeId], references: [id], onDelete: SetNull)
   project         Project                    @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
@@ -440,8 +454,10 @@ model KanbanCard {
   dependencies    KanbanCardDependency[]     @relation("CardDependsOn")
   dependents      KanbanCardDependency[]     @relation("CardDependencyOf")
 
+  @@unique([projectSlug, githubNumber])
   @@index([projectSlug, column])
   @@index([openToPublic, assigneeId])
+  @@index([projectSlug, source])
 }
 
 // PRD Gantt "koppla arbetsuppgifter till varandra" — a card can depend on
@@ -641,6 +657,7 @@ model Project {
   impactReports      ImpactReport[]       @relation("ProjectImpactReports")
   promotedFromIdea   Idea?                @relation("IdeaPromotedToProject")
   maturity           ProjectMaturity?     @relation("ProjectMaturity")
+  githubRepo         ProjectGithubRepo?   @relation("ProjectGithubRepo")
   leanCanvas         LeanCanvas?          @relation("ProjectLeanCanvas")
   leanCanvasComments LeanCanvasComment[]  @relation("ProjectLeanCanvasComments")
   leanCanvasVersions LeanCanvasVersion[]  @relation("ProjectLeanCanvasVersions")
@@ -1593,6 +1610,20 @@ model ProjectMaturity {
   scalingPlan      String?   @db.Text
   finalReport      String?   @db.Text
   calculatedAt     DateTime  @default(now())
+}
+
+model ProjectGithubRepo {
+  id             String    @id @default(cuid())
+  projectSlug    String    @unique
+  project        Project   @relation("ProjectGithubRepo", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  owner          String
+  repo           String
+  enabled        Boolean   @default(true)
+  lastSyncedAt   DateTime?
+  lastFullSyncAt DateTime?
+  lastSyncError  String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 model LeanCanvas {

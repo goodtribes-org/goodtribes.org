@@ -173,6 +173,7 @@ export default async function ProjectDetailPage({
     include: {
       owner: { select: { name: true } },
       org: { select: { name: true, slug: true } },
+      githubRepo: true,
       members: {
         include: {
           user: { select: { name: true, id: true, image: true, showProfile: true } },
@@ -273,6 +274,10 @@ export default async function ProjectDetailPage({
           column: true,
           title: true,
           priority: true,
+          source: true,
+          githubType: true,
+          githubState: true,
+          githubMerged: true,
           subtasks: {
             select: { id: true, title: true, done: true },
             orderBy: { order: "asc" },
@@ -324,6 +329,12 @@ export default async function ProjectDetailPage({
   const totalTasks = kanbanCards.length;
   const doneTasks = kanbanCards.filter((c) => c.column === "DONE").length;
   const taskPct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+
+  const openGithub = kanbanCards.filter(
+    (c) => c.source === "github" && c.githubState === "open" && !c.githubMerged
+  );
+  const openGithubIssues = openGithub.filter((c) => c.githubType === "issue").length;
+  const openGithubPrs = openGithub.filter((c) => c.githubType === "pull_request").length;
 
   const upcomingEvents = monthEvents.filter((e) => e.startsAt >= now);
   const projectLinks: string[] = (project as typeof project & { links: string[] }).links ?? [];
@@ -882,6 +893,48 @@ export default async function ProjectDetailPage({
                 className="mt-3 block text-center text-xs text-white bg-seagrass hover:bg-seagrass/90 rounded-lg py-1.5 transition-colors"
               >
                 Öppna kanaler
+              </Link>
+            </section>
+          )}
+
+          {/* GitHub — read-only mirror of the mapped repo */}
+          {project.githubRepo && (
+            <section className="border border-muted-teal/30 rounded-xl p-4">
+              <h2 className="text-sm font-semibold text-dark-slate mb-3">GitHub</h2>
+              <a
+                href={`https://github.com/${project.githubRepo.owner}/${project.githubRepo.repo}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-mono text-seagrass hover:underline break-all"
+              >
+                {project.githubRepo.owner}/{project.githubRepo.repo}
+              </a>
+              <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <dt className="text-dark-slate/50">Öppna issues</dt>
+                  <dd className="text-base font-semibold text-dark-slate">{openGithubIssues}</dd>
+                </div>
+                <div>
+                  <dt className="text-dark-slate/50">Öppna PR:er</dt>
+                  <dd className="text-base font-semibold text-dark-slate">{openGithubPrs}</dd>
+                </div>
+              </dl>
+              {project.githubRepo.lastSyncError ? (
+                <p className="mt-3 text-xs text-watermelon">
+                  Synk misslyckades: {project.githubRepo.lastSyncError}
+                </p>
+              ) : project.githubRepo.lastSyncedAt ? (
+                <p className="mt-3 text-xs text-dark-slate/50">
+                  Synkad {relativeTime(project.githubRepo.lastSyncedAt)} · skrivskyddad spegling
+                </p>
+              ) : (
+                <p className="mt-3 text-xs text-dark-slate/50">Väntar på första synk…</p>
+              )}
+              <Link
+                href={`/projects/${slug}/tasks`}
+                className="mt-2 block text-xs text-seagrass hover:underline"
+              >
+                Visa som uppgifter →
               </Link>
             </section>
           )}

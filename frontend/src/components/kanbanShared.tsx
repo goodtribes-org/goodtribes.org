@@ -47,6 +47,18 @@ export type Card = {
   createdAt: Date | string;
   updatedAt: Date | string;
   createdBy: CardCreator | null;
+  // Present only on cards mirrored from GitHub (source === "github"). Those are
+  // read-only in the app — GitHub owns their title, state and column.
+  source?: string;
+  githubNumber?: number | null;
+  githubType?: string | null;
+  githubUrl?: string | null;
+  githubState?: string | null;
+  githubMerged?: boolean;
+  githubDraft?: boolean;
+  githubLabels?: string[];
+  githubAuthor?: string | null;
+  githubAssignees?: string[];
   estimate?: TaskEstimate;
   subtasks?: Subtask[];
   comments?: Comment[];

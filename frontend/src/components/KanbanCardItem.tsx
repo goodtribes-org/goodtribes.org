@@ -23,6 +23,7 @@ import {
   type Subtask,
 } from "./kanbanShared";
 import { KanbanCardComments } from "./KanbanCardComments";
+import GithubCardMeta, { isGithubCard } from "@/components/GithubCardMeta";
 
 const AGENT_OPTIONS = [
   { value: "writer",     label: "✍️  Skribent — skriver utkast, texter, rapporter" },
@@ -61,8 +62,10 @@ function KanbanCardItemImpl({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: card.id });
   const isClaimant = !!card.openToPublic && !!currentUserId && card.assigneeId === currentUserId;
-  const canInteract = isLoggedIn && (isMember || isClaimant);
-  const canDeleteSubtask = (s: Subtask) => currentUserId === card.createdById || isLead || s.id.startsWith("temp-");
+  // GitHub owns a mirrored card's column and subtasks — no drag, no toggling.
+  const isGithub = isGithubCard(card);
+  const canInteract = isLoggedIn && (isMember || isClaimant) && !isGithub;
+  const canDeleteSubtask = (s: Subtask) => !isGithub && (currentUserId === card.createdById || isLead || s.id.startsWith("temp-"));
 
   const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState("writer");
@@ -179,6 +182,7 @@ function KanbanCardItemImpl({
           {/* Vänster: titel + metadata */}
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-gray-800 leading-snug truncate">{card.title}</p>
+            <GithubCardMeta card={card} compact />
             <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
               <Tooltip lines={[`${priorityMeta.label} (${card.lockedTokenValue ?? priorityMeta.tokenValue} tokens)${card.priorityLockedAt ? " — låst" : ""}`]}>
                 <span className="inline-flex items-center gap-0.5 shrink-0">
@@ -399,7 +403,7 @@ function KanbanCardItemImpl({
                         </button>
                       </div>
                     </div>
-                  ) : (
+                  ) : isGithub ? null : (
                     <button
                       type="button"
                       onClick={() => setAiPanelOpen(true)}

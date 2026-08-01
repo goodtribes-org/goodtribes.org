@@ -7,7 +7,49 @@ import { redirect } from "next/navigation";
 import { indexDocuments, deleteDocument } from "@/lib/meili";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { getNextPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { parseRepoInput } from "@/lib/github";
+import { syncProjectRepoInBackground } from "@/lib/githubSync";
 
+
+/**
+ * Apply the GitHub repo field. Callers must already have verified project lead.
+ *
+ * Clearing the field, or pointing at a different repo, drops the cards that were
+ * mirrored from the old repo. Only source="github" rows are ever deleted —
+ * manually created cards are never touched.
+ */
+async function updateGithubMapping(slug: string, raw: string | null) {
+  const ref = parseRepoInput(raw);
+  const current = await prisma.projectGithubRepo.findUnique({ where: { projectSlug: slug } });
+
+  if (!ref) {
+    if (current) {
+      await prisma.projectGithubRepo.delete({ where: { projectSlug: slug } });
+      await prisma.kanbanCard.deleteMany({ where: { projectSlug: slug, source: "github" } });
+    }
+    return;
+  }
+
+  if (current && current.owner === ref.owner && current.repo === ref.repo) return;
+
+  if (current) {
+    await prisma.kanbanCard.deleteMany({ where: { projectSlug: slug, source: "github" } });
+  }
+
+  const repoRow = await prisma.projectGithubRepo.upsert({
+    where: { projectSlug: slug },
+    create: { projectSlug: slug, owner: ref.owner, repo: ref.repo },
+    update: {
+      owner: ref.owner,
+      repo: ref.repo,
+      lastSyncedAt: null,
+      lastFullSyncAt: null,
+      lastSyncError: null,
+    },
+  });
+
+  syncProjectRepoInBackground(repoRow);
+}
 
 export async function updateProject(slug: string, formData: FormData) {
   const session = await auth();
@@ -45,6 +87,8 @@ export async function updateProject(slug: string, formData: FormData) {
         })]
       : []),
   ]);
+
+  await updateGithubMapping(slug, formData.get("githubRepo") as string | null);
 
   // Sync Meilisearch — remove old slug entry if slug changed (slug doesn't change here, but keep in sync)
   if (visibility === "public") {

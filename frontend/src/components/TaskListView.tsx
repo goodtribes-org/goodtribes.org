@@ -10,6 +10,7 @@ import {
   deleteCard,
   toggleSubtask,
 } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
+import GithubCardMeta from "@/components/GithubCardMeta";
 
 type Subtask = {
   id: string;
@@ -36,6 +37,15 @@ type Card = {
   createdAt: Date | string;
   updatedAt: Date | string;
   createdBy: { name: string | null } | null;
+  source?: string;
+  githubNumber?: number | null;
+  githubType?: string | null;
+  githubUrl?: string | null;
+  githubState?: string | null;
+  githubMerged?: boolean;
+  githubDraft?: boolean;
+  githubLabels?: string[];
+  githubAssignees?: string[];
   subtasks?: Subtask[];
 };
 
@@ -324,6 +334,8 @@ function TaskRow({
   const due = formatDate(card.dueDate);
   const priorityDot = PRIORITY_DOT[card.priority] ?? "bg-gray-300";
   const hasSubtasks = (card.subtasks?.length ?? 0) > 0;
+  // Mirrored from GitHub: state comes from the issue, so no local edits.
+  const canEdit = isLoggedIn && card.source !== "github";
   const [expanded, setExpanded] = useState(false);
   const [localSubtasks, setLocalSubtasks] = useState<Subtask[]>(card.subtasks ?? []);
   const [, startSubTransition] = useTransition();
@@ -337,11 +349,11 @@ function TaskRow({
     <div className="group">
       <div className="flex items-center gap-3 py-2 hover:bg-gray-50 -mx-2 px-2 rounded-md transition-colors">
         <button
-          onClick={isLoggedIn ? onCheck : undefined}
+          onClick={canEdit ? onCheck : undefined}
           className={`w-5 h-5 shrink-0 rounded border-2 flex items-center justify-center transition-colors ${
             isDone
               ? "bg-seagrass border-seagrass"
-              : isLoggedIn
+              : canEdit
                 ? "border-gray-300 hover:border-seagrass"
                 : "border-gray-200 cursor-default"
           }`}
@@ -362,6 +374,8 @@ function TaskRow({
         >
           {card.title}
         </button>
+
+        <GithubCardMeta card={card} compact />
 
         {hasSubtasks && (
           <span className={`text-xs font-medium shrink-0 ${localSubtasks.every((s) => s.done) ? "text-green-600" : "text-gray-400"}`}>
@@ -397,7 +411,7 @@ function TaskRow({
           </button>
         )}
 
-        {isLoggedIn && currentUserId === card.createdById && (
+        {canEdit && currentUserId === card.createdById && (
           <button
             onClick={onDelete}
             className="text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-lg leading-none"
@@ -417,7 +431,7 @@ function TaskRow({
               onClick={() => {
                 const next = !s.done;
                 setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: next, completedById: next ? currentUserId : null } : t));
-                if (!s.id.startsWith("temp-") && isLoggedIn) {
+                if (!s.id.startsWith("temp-") && canEdit) {
                   startSubTransition(async () => {
                     try { await toggleSubtask(s.id, next); }
                     catch { setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: s.done, completedById: s.completedById } : t)); }

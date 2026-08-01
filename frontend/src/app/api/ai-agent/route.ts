@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import Anthropic from "@anthropic-ai/sdk";
+import { GITHUB_CARD_LOCKED_MESSAGE } from "@/lib/githubSync";
 
 
 type AgentType = "writer" | "analyst" | "researcher";
@@ -47,6 +48,11 @@ export async function POST(req: NextRequest) {
 
   if (!card) {
     return NextResponse.json({ error: "Card not found" }, { status: 404 });
+  }
+  // The run ends by forcing the card into REVIEW, which the GitHub sync would
+  // just undo — reject before spending a model call.
+  if (card.source === "github") {
+    return NextResponse.json({ error: GITHUB_CARD_LOCKED_MESSAGE }, { status: 403 });
   }
 
   const aiTaskRun = await prisma.aiTaskRun.create({

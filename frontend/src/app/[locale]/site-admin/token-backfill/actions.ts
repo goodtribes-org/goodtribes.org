@@ -15,6 +15,9 @@ async function findCandidates() {
     where: {
       column: "DONE",
       tokenLedger: { none: {} },
+      // GitHub-mirrored cards land in DONE whenever an issue is closed upstream.
+      // That is not goodtribes work and must never mint tokens.
+      source: { not: "github" },
     },
     select: {
       id: true,

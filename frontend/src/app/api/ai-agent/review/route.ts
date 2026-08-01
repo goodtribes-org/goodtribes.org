@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import Anthropic from "@anthropic-ai/sdk";
+import { GITHUB_CARD_LOCKED_MESSAGE } from "@/lib/githubSync";
 
 
 function buildSystemPrompt(projectTitle: string, projectDescription: string | null, agentType: string): string {
@@ -51,6 +52,10 @@ export async function POST(req: NextRequest) {
 
   if (!aiTaskRun) {
     return NextResponse.json({ error: "AI task run not found" }, { status: 404 });
+  }
+  // Both branches below force the card into DONE/REVIEW; GitHub owns that column.
+  if (aiTaskRun.kanbanCard.source === "github") {
+    return NextResponse.json({ error: GITHUB_CARD_LOCKED_MESSAGE }, { status: 403 });
   }
 
   const revisionCount = aiTaskRun.reviews.filter((r) => r.decision === "revision").length;

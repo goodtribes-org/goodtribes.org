@@ -142,6 +142,23 @@ export default function NewProjectForm({ initial = {}, ideaId, fromThread, skill
       </div>
 
       <div>
+        <label htmlFor="githubRepo" className="block text-sm font-medium text-dark-slate mb-1">
+          GitHub-repo <span className="text-dark-slate/50 font-normal">(valfritt)</span>
+        </label>
+        <input
+          id="githubRepo"
+          name="githubRepo"
+          type="text"
+          placeholder="goodtribes-org/mitt-repo"
+          className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
+        />
+        <p className="text-xs text-dark-slate/50 mt-1">
+          Issues och pull requests hämtas automatiskt in som uppgifter var femte minut.
+          Kan läggas till senare.
+        </p>
+      </div>
+
+      <div>
         <label htmlFor="summary" className="block text-sm font-medium text-dark-slate mb-1">
           Summary <span className="text-dark-slate/50 font-normal">(visas på projektkortet)</span>
         </label>
