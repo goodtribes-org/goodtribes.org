@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { suggestSdgGoals } from "@/lib/claude";
-import { isValidLegalType } from "@/lib/legalType";
+import { isCreatableLegalType } from "@/lib/legalType";
 
 // Idea-guide (PRD 4d/1.2): a skippable, step-by-step walkthrough of the
 // `idea` phase's checklist, shown right after project creation. Each step
@@ -51,7 +51,7 @@ export async function saveIdeaDescription(slug: string, formData: FormData) {
     data: {
       summary,
       description,
-      ...(isValidLegalType(legalTypeRaw) ? { legalType: legalTypeRaw } : {}),
+      ...(isCreatableLegalType(legalTypeRaw) ? { legalType: legalTypeRaw } : {}),
     },
   });
   await markChecklistDone(project.id, "dream_defined", session.user.id);

@@ -183,6 +183,8 @@ model User {
   exclusionCaseVotes      ExclusionCaseVote[]         @relation("ExclusionCaseVotes")
   requestedLegalTypeChanges LegalTypeChangeRequest[]  @relation("RequestedLegalTypeChanges")
   executedLegalTypeChanges  LegalTypeChangeRequest[]  @relation("ExecutedLegalTypeChanges")
+  requestedSandboxGraduations SandboxGraduationRequest[] @relation("RequestedSandboxGraduations")
+  executedSandboxGraduations SandboxGraduationRequest[] @relation("ExecutedSandboxGraduations")
   proposedProfitDistributions ProfitDistributionProposal[] @relation("ProposedProfitDistributions")
   executedProfitDistributions ProfitDistributionProposal[] @relation("ExecutedProfitDistributions")
   personalProfitAllocations    PersonalProfitAllocation[]
@@ -671,6 +673,7 @@ model Project {
   flags              ProjectFlag[]        @relation("ProjectFlags")
   exclusionCases     ExclusionCase[]
   legalTypeChangeRequests LegalTypeChangeRequest[]
+  sandboxGraduationRequests SandboxGraduationRequest[]
   ethicsReviews      EthicsReview[]       @relation("EthicsReviews")
   phaseTransitions   PhaseTransition[]
   checklistItems     InitiativeChecklistItem[]
@@ -1274,6 +1277,30 @@ model LegalTypeChangeRequest {
   decisionNote  String?   @db.Text
   executedById  String?
   executedBy    User?     @relation("ExecutedLegalTypeChanges", fields: [executedById], references: [id], onDelete: SetNull)
+  executedAt    DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([projectId])
+}
+
+// A founder-initiated application to graduate a project out of Sandbox into
+// a "GoodTribes-godkänt projekt" — decided by the Foundation (site-admin)
+// directly, no member poll (this is the Foundation's judgment call, not a
+// project's own token holders' decision). For commercial projects, approval
+// also assigns commercialUmbrellaEntityId in the same action (see
+// approveSandboxGraduation) — landing under the paraply-AB and becoming
+// GoodTribes-approved happen together, not as separate steps.
+// Replaces the old one-click toggleSandbox self-serve flip.
+model SandboxGraduationRequest {
+  id            String    @id @default(cuid())
+  projectId     String
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status        String    @default("pending") // pending | approved | rejected
+  requestedById String
+  requestedBy   User      @relation("RequestedSandboxGraduations", fields: [requestedById], references: [id])
+  decisionNote  String?   @db.Text
+  executedById  String?
+  executedBy    User?     @relation("ExecutedSandboxGraduations", fields: [executedById], references: [id], onDelete: SetNull)
   executedAt    DateTime?
   createdAt     DateTime  @default(now())
 

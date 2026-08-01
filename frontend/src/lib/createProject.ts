@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
 import { indexDocuments } from "@/lib/meili";
-import { isValidLegalType } from "@/lib/legalType";
+import { isCreatableLegalType } from "@/lib/legalType";
 
 export type CreateProjectParams = {
   title: string;
@@ -30,11 +30,11 @@ export async function createProjectRecord(params: CreateProjectParams) {
     summary = null, description = null, imageUrl = null, category = null,
     tags = [], sdgGoals = [], visibility = "public", orgId = null,
     // Every new project — whether from the full creation form or idea
-    // promotion — starts in the sandbox by default. Founders explicitly
-    // graduate out via toggleSandbox once it's ready for the real list.
+    // promotion — starts in the sandbox by default. Founders apply to
+    // graduate out (see requestSandboxGraduation) once it's ready.
     isSandbox = true, skillIds = [],
   } = params;
-  const legalType = params.legalType && isValidLegalType(params.legalType) ? params.legalType : "NONPROFIT_UMBRELLA";
+  const legalType = params.legalType && isCreatableLegalType(params.legalType) ? params.legalType : "NONPROFIT_UMBRELLA";
 
   const baseSlug = slugify(title) || "project";
 

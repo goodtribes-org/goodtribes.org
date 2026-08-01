@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { isRealMember } from "@/lib/authz";
 import { isValidLegalType, LEGAL_TYPE_LABEL } from "@/lib/legalType";
+import { canInvoice } from "@/lib/projectApproval";
 
 // Any real (non-FOLLOWER) member can propose a legal_type change — mirrors
 // createPoll's existing permissiveness (PRD 4c: "Projektets medlemmar kan
@@ -21,6 +22,14 @@ export async function proposeLegalTypeChange(projectId: string, projectSlug: str
 
   const requestedType = (formData.get("requestedType") as string | null)?.trim() ?? "";
   if (!isValidLegalType(requestedType)) return;
+
+  if (requestedType === "COMMERCIAL_AB") {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { isSandbox: true, legalType: true, commercialUmbrellaEntityId: true },
+    });
+    if (!project || !canInvoice(project)) return;
+  }
 
   const poll = await prisma.poll.create({
     data: {

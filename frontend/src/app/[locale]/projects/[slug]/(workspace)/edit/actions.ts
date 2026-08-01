@@ -156,11 +156,12 @@ export async function advanceProjectPhase(slug: string) {
   revalidatePath(`/projects/${slug}/edit`);
 }
 
-// Graduates a project out of Sandbox — no separate "lift" step exists
-// (a sandbox project is already a real project), this just flips the flag
-// so it appears in normal discovery instead of /sandbox. Lead-only,
-// one-directional (no "un-graduate" — same trust level as advanceProjectPhase).
-export async function toggleSandbox(slug: string) {
+// Applies to graduate a project out of Sandbox into a "GoodTribes-godkänt
+// projekt" — no separate "lift" step exists (a sandbox project is already a
+// real project), this just requests the flag flip. Lead-only. Decided by the
+// Foundation (site-admin), see site-admin/sandbox-graduation/actions.ts —
+// replaces the old one-click self-serve toggleSandbox.
+export async function requestSandboxGraduation(slug: string) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -169,23 +170,16 @@ export async function toggleSandbox(slug: string) {
   if (!(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) redirect(`/projects/${slug}`);
   if (!project.isSandbox) return;
 
-  await prisma.project.update({ where: { slug }, data: { isSandbox: false } });
+  const existingPending = await prisma.sandboxGraduationRequest.findFirst({
+    where: { projectId: project.id, status: "pending" },
+  });
+  if (existingPending) return;
 
-  if (project.visibility === "public") {
-    await indexDocuments("projects", [{
-      id: `project-${slug}`,
-      type: "project",
-      title: project.title,
-      description: project.description ?? "",
-      url: `/projects/${slug}`,
-      phase: project.phase,
-      sdgGoals: project.sdgGoals,
-    }]);
-  }
+  await prisma.sandboxGraduationRequest.create({
+    data: { projectId: project.id, requestedById: session.user.id },
+  });
 
-  revalidatePath(`/projects/${slug}`);
   revalidatePath(`/projects/${slug}/edit`);
-  revalidatePath("/sandbox");
 }
 
 // Toggles a single checklist item within any phase (PRD 4d). Rows are

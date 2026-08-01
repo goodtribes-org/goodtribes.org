@@ -5,7 +5,7 @@ import { createProject, getSdgSuggestions } from "./actions";
 import FileUpload from "@/components/FileUpload";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_NUMBERS, SDG_LABELS_EN } from "@/lib/sdg";
-import { LEGAL_TYPES } from "@/lib/legalType";
+import { CREATABLE_LEGAL_TYPES } from "@/lib/legalType";
 
 const CATEGORIES = ["Technology", "Environment", "Education", "Arts", "Community", "Health", "Other"];
 
@@ -123,7 +123,7 @@ export default function NewProjectForm({ initial = {}, ideaId, fromThread, skill
           Juridisk form <span className="text-dark-slate/50 font-normal">(se 4c — avgör vilket avtal som gäller)</span>
         </label>
         <div className="grid grid-cols-2 gap-2">
-          {LEGAL_TYPES.map((t) => (
+          {CREATABLE_LEGAL_TYPES.map((t) => (
             <label
               key={t.value}
               className="flex items-start gap-2 border border-muted-teal rounded-md px-3 py-2 cursor-pointer hover:border-seagrass/60 transition-colors"

@@ -6,7 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { isRealMember } from "@/lib/authz";
-import { LEGAL_TYPES, LEGAL_TYPE_LABEL } from "@/lib/legalType";
+import { LEGAL_TYPES, LEGAL_TYPE_LABEL, isCommercialLegalType } from "@/lib/legalType";
+import { canInvoice } from "@/lib/projectApproval";
 import { proposeLegalTypeChange } from "./actions";
 
 export const metadata: Metadata = {
@@ -28,7 +29,14 @@ export default async function LegalTypePage({ params }: { params: Promise<{ slug
 
   const project = await prisma.project.findUnique({
     where: { slug },
-    select: { id: true, title: true, legalType: true, commercialUmbrellaEntity: { select: { name: true } } },
+    select: {
+      id: true,
+      title: true,
+      legalType: true,
+      isSandbox: true,
+      commercialUmbrellaEntityId: true,
+      commercialUmbrellaEntity: { select: { name: true } },
+    },
   });
   if (!project) notFound();
 
@@ -40,7 +48,10 @@ export default async function LegalTypePage({ params }: { params: Promise<{ slug
     userId ? isRealMember(project.id, userId) : Promise.resolve(false),
   ]);
 
-  const otherTypes = LEGAL_TYPES.filter((t) => t.value !== project.legalType);
+  const eligibleForOwnAb = canInvoice(project);
+  const otherTypes = LEGAL_TYPES.filter(
+    (t) => t.value !== project.legalType && (t.value !== "COMMERCIAL_AB" || eligibleForOwnAb)
+  );
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -82,6 +93,11 @@ export default async function LegalTypePage({ params }: { params: Promise<{ slug
             Skapar en Tribe Token-viktad omröstning bland projektets medlemmar. Ett godkänt röstresultat är en
             begäran — Stiftelsen genomför den faktiska övergången (PRD 4c).
           </p>
+          {isCommercialLegalType(project.legalType) && !eligibleForOwnAb && (
+            <p className="text-xs text-dark-slate/50 mb-3">
+              Du kan föreslå eget helägt AB när projektet fakturerar under paraply-AB:et.
+            </p>
+          )}
           <form action={proposeLegalTypeChange.bind(null, project.id, slug)} className="flex flex-col gap-3">
             <select
               name="requestedType"

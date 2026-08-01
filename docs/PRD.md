@@ -1,9 +1,14 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 4.20 (Draft)
-**Datum:** 2026-07-30
+**Version:** 4.21 (Draft)
+**Datum:** 2026-08-01
 **Status:** Under utveckling
+
+**Ändringar i v4.21:**
+- **Beslutat:** Skapandeflödets `legal_type`-val (se 4c, Steg 1 nedan) begränsas till två alternativ — Ideellt (`nonprofit_umbrella`) eller Kommersiellt (`commercial_umbrella`) — istället för samtliga fyra värden. `nonprofit_own_assoc` och `commercial_ab` kvarstår oförändrade som fullt giltiga, senare uppnåeliga former via den befintliga `legal_type_change_requests`-mekanismen (medlemsomröstning + Stiftelsens genomförande) — ingen enum-ändring, bara en begränsning av vad som kan väljas vid skapande.
+- **Byggt & Beslutat:** Ny subsektion i 4c, "Sandbox-graduering och faktureringsaktivering" — ett projekt startar alltid i Sandbox (redan gällande praxis) och lämnar den genom en ansökan (`sandbox_graduation_requests`) som Stiftelsen (site-admin) avgör direkt, utan medlemsomröstning — det är Stiftelsens bedömning av projektet, inte projektets egna tokeninnehavares beslut. För kommersiella projekt sker tilldelning till ett paraply-AB (`commercial_umbrella_entity_id`) och upplåsning av fakturering i **samma** beslut som graduering — inte som ett separat, senare steg. Ersätter den tidigare enstegs-knappen för att lämna Sandbox.
+- **Beslutat:** Övergång till eget helägt AB (`commercial_ab`, se befintlig "Övergång mellan juridisk form" ovan) kräver nu att projektet redan fakturerar under paraply-AB:et (dvs. har graduerat Sandbox och tilldelats en `commercial_umbrella_entity_id`) — kan inte längre föreslås av ett projekt som ännu är i Sandbox eller inte fakturerar.
 
 **Ändringar i v4.20:**
 - **Rättelse av v4.19:** `sprint` och `pilot`-checklistorna skulle behålla sitt befintliga innehåll (v4.18:s) och lägga till det nya innehållet — inte ersätta det, som v4.19 av misstag gjorde. `sprint` har nu både designprocessen (`map_understand`…`test_with_users`) och de nya punkterna (`sprint_lean_canvas`…`rough_budget_estimated`), tio punkter totalt. `pilot` har nu både de ursprungliga fyra (`todo_created`, `collaborators_invited`, `team_formed`, `resources_secured`) och de nya fem (`pilot_scope_defined`…`pilot_go_no_go`), nio punkter totalt. `production`/`establish`/`scale`/`impact` påverkas inte — de fick inget innehåll före v4.19 så det finns inget att behålla.
@@ -464,6 +469,18 @@ Varje projekt på GoodTribes är operativt självständigt — styrt av sin init
 
 ---
 
+**Sandbox-graduering och faktureringsaktivering**
+
+Vid skapande väljer initiativtagaren bara mellan **Ideellt** (`nonprofit_umbrella`) eller **Kommersiellt** (`commercial_umbrella`) — paraplynivån för respektive form (se tabellerna nedan). Alla nya projekt startar i Sandbox (se Utvecklingsfas 1.2), oavsett `legal_type`.
+
+- **Ansökan om att lämna Sandbox** — när projektet börjar få dragkraft kan initiativtagaren ansöka om att bli ett **GoodTribes-godkänt projekt**. Detta avgörs direkt av Stiftelsen (site-admin) — ingen medlemsomröstning, eftersom det är Stiftelsens bedömning av projektet som helhet, inte en fråga för projektets egna tokeninnehavare.
+- **Ideella projekt:** godkännande flyttar projektet ut ur Sandbox. Klart.
+- **Kommersiella projekt:** samma godkännande flyttar projektet ut ur Sandbox **och** placerar det samtidigt under ett paraply-AB (t.ex. "GoodTribes Ventures AB", se `commercial_umbrella_entities` nedan) — fakturering låses upp i samma beslut, inte som ett separat senare steg.
+- **Senare, om det går bra:** Stiftelsen kan (via den vanliga övergångsprocessen nedan, "Övergång mellan juridisk form") besluta att ett kommersiellt projekt som redan fakturerar under paraply-AB:et ska bli ett **eget helägt aktiebolag** (`commercial_ab`) — detta kräver att projektet redan har graduerat Sandbox och tilldelats ett paraply-AB; kan inte föreslås tidigare.
+- Detta är en ansökan/godkännande-mekanism, skild från `legal_type_change_requests` nedan (ingen `Poll`, inget `legal_type`-byte sker vid graduering — ett kommersiellt projekt skapas redan som `commercial_umbrella`).
+
+---
+
 **Kommersiella projekt — två nivåer**
 
 | Nivå | Beskrivning | Passar för |
@@ -505,13 +522,21 @@ legal_type_change_requests
   id, project_id, requested_type (commercial_umbrella | commercial_ab | nonprofit_umbrella | nonprofit_own_assoc)
   poll_id, status (pending | approved_by_members | executed | rejected_by_foundation)
   decided_at, executed_at, created_at
+  -- commercial_ab kan bara begäras om projektet redan fakturerar (graduerat + tilldelat paraply-AB, se ovan)
 
 commercial_umbrella_entities
   id, name, foundation_ab_org_number, created_at
   -- exempelrad: name = "GoodTribes Ventures AB"
 
+sandbox_graduation_requests
+  id, project_id, status (pending | approved | rejected)
+  requested_by_id, decision_note, executed_by_id, executed_at, created_at
+  -- ingen poll_id — Stiftelsens direkta bedömning, ingen medlemsomröstning
+
 projects
   commercial_umbrella_entity_id (nullable) — sätts om legal_type = commercial_umbrella, se 7
+  -- för nya kommersiella projekt sätts detta samtidigt som is_sandbox går till false
+  -- (se "Sandbox-graduering och faktureringsaktivering" ovan), inte som ett separat steg
 ```
 
 **Juridiska principer som gäller oavsett projektform**
@@ -893,7 +918,7 @@ Alla inloggade användare kan skapa ett nytt projekt när som helst via en tydli
 - Kategori (välj från lista: Teknik / Miljö / Utbildning / Konst / Samhälle / Övrigt)
 - Taggar (fritext, max 5)
 - **Agenda 2030-mål** — AI föreslår baserat på beskrivningen, initiativtagaren bekräftar eller justerar
-- **Juridisk form** (`legal_type`, se 4c): Kommersiellt (paraply-AB eller eget helägt AB) / Ideellt (under Stiftelsens paraply eller egen förening). Avgör vilket avtal som gäller för projektet (delegations-/anslutningsavtal, internt produktlinjeavtal, eller verksamhetsavtal, se 4c).
+- **Juridisk form** (`legal_type`, se 4c): endast Kommersiellt (`commercial_umbrella`, paraply-AB) eller Ideellt (`nonprofit_umbrella`, under Stiftelsens paraply) väljbart vid skapande — avgör vilket avtal som gäller för projektet (delegations-/anslutningsavtal eller verksamhetsavtal, se 4c). Eget helägt AB eller egen förening nås först senare, via Sandbox-graduering och den vanliga övergångsprocessen (se 4c).
 
 **Steg 2 — Inställningar**
 - Synlighet: Öppet (vem som helst kan gå med) eller Slutet (kräver godkännande)

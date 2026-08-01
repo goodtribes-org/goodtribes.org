@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef } from "react";
-import { updateProject, deleteProject, advanceProjectPhase, toggleSandbox, toggleChecklistItem } from "./actions";
+import { updateProject, deleteProject, advanceProjectPhase, requestSandboxGraduation, toggleChecklistItem } from "./actions";
 import { markProjectAbandoned, unmarkProjectAbandoned, transferOwnership } from "@/app/[locale]/projects/[slug]/ownership-actions";
 import { getSdgSuggestions } from "@/app/[locale]/projects/new/actions";
 import FileUpload from "@/components/FileUpload";
@@ -37,9 +37,10 @@ interface Props {
   };
   completedChecklistKeys: string[];
   ownershipInterests: { id: string; user: { id: string; name: string | null; image: string | null }; message: string | null; createdAt: string }[];
+  graduationRequest: { status: string; decisionNote: string | null } | null;
 }
 
-export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, currentOrgId, github, initial, completedChecklistKeys, ownershipInterests }: Props) {
+export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, currentOrgId, github, initial, completedChecklistKeys, ownershipInterests, graduationRequest }: Props) {
   const [description, setDescription] = useState(initial.description ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set(initial.sdgGoals));
   const [aiSuggested, setAiSuggested] = useState<number[]>([]);
@@ -224,16 +225,24 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
         <div className="border-2 border-amber-300 bg-amber-50/40 rounded-md p-4 flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-dark-slate">🧪 Sandbox-projekt</p>
-            <p className="text-xs text-dark-slate/60 mt-0.5">Redo att lämna Sandbox? Det finns inget separat "lyft"-steg — det här är redan ett riktigt projekt.</p>
+            {graduationRequest?.status === "pending" ? (
+              <p className="text-xs text-dark-slate/60 mt-0.5">Din ansökan granskas av Stiftelsen.</p>
+            ) : graduationRequest?.status === "rejected" ? (
+              <p className="text-xs text-dark-slate/60 mt-0.5">Ansökan avslogs{graduationRequest.decisionNote ? `: ${graduationRequest.decisionNote}` : "."}</p>
+            ) : (
+              <p className="text-xs text-dark-slate/60 mt-0.5">Redo att lämna Sandbox? Ansök om att bli ett GoodTribes-godkänt projekt.</p>
+            )}
           </div>
-          <button
-            type="button"
-            disabled={isGraduating}
-            onClick={() => startGraduating(() => toggleSandbox(slug))}
-            className="text-sm font-medium text-amber-700 border border-amber-400 rounded-md px-4 py-2 hover:bg-amber-100 transition-colors disabled:opacity-60 flex-shrink-0"
-          >
-            {isGraduating ? "Sparar…" : "Gör till ett riktigt projekt"}
-          </button>
+          {graduationRequest?.status !== "pending" && (
+            <button
+              type="button"
+              disabled={isGraduating}
+              onClick={() => startGraduating(() => requestSandboxGraduation(slug))}
+              className="text-sm font-medium text-amber-700 border border-amber-400 rounded-md px-4 py-2 hover:bg-amber-100 transition-colors disabled:opacity-60 flex-shrink-0"
+            >
+              {isGraduating ? "Skickar…" : "Ansök om att bli ett GoodTribes-godkänt projekt"}
+            </button>
+          )}
         </div>
       )}
 

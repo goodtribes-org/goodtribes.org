@@ -37,6 +37,14 @@ export default async function EditProjectPage({
   ]);
   if (!project) redirect("/projects");
 
+  const graduationRequest = project.isSandbox
+    ? await prisma.sandboxGraduationRequest.findFirst({
+        where: { projectId: project.id },
+        orderBy: { createdAt: "desc" },
+        select: { status: true, decisionNote: true },
+      })
+    : null;
+
   const checklistItems =
     project.phase === "IDEA" || project.phase === "SPRINT"
       ? await prisma.initiativeChecklistItem.findMany({
@@ -87,6 +95,7 @@ export default async function EditProjectPage({
           imageUrl: project.imageUrl,
         }}
         completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
+        graduationRequest={graduationRequest}
         ownershipInterests={project.ownershipInterests.map((i) => ({
           id: i.id,
           user: i.user,
