@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
-import { PROJECT_PHASES, INITIATIVE_CHECKLIST_ITEMS, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 
 interface Props {
   slug: string;
@@ -11,20 +11,19 @@ interface Props {
   canEdit: boolean;
 }
 
-function getChecklistFor(p: ProjectPhaseValue) {
-  return INITIATIVE_CHECKLIST_ITEMS[p] ?? null;
-}
-
-// Fas- och stegmeny (PRD 4d) — en platt meny under hero, "1. Idé", "2. Sprint" osv.
-// Varje fas har en checklista och går att klicka på för att fälla ut en
-// undermeny med numrerade delsteg ("1.1 Beskriv idén", "1.2 ...").
+// Fas- och stegmeny (PRD 4d) — en platt meny under hero, "1. Idé", "2. Pilot"
+// osv. Idé täcker både IDEA och SPRINT (se lib/projectPhase.ts — sammanslaget
+// på UI-nivå, inget separat "Sprint"-steg längre). Varje fas har en
+// checklista och går att klicka på för att fälla ut en undermeny med
+// numrerade delsteg ("1.1 Beskriv idén", "1.2 ...").
 export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit }: Props) {
   const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedKeys));
   const [isPending, startTransition] = useTransition();
   const [openPhase, setOpenPhase] = useState<ProjectPhaseValue | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const currentIndex = PROJECT_PHASES.findIndex((p) => p.value === phase);
+  const displayPhase = toDisplayPhase(phase);
+  const currentIndex = DISPLAY_PHASES.findIndex((p) => p.value === displayPhase);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -35,7 +34,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit }: Pr
   }, [openPhase]);
 
   function handleToggle(p: ProjectPhaseValue, itemKey: string, done: boolean) {
-    if (!canEdit || p !== phase) return;
+    if (!canEdit || p !== displayPhase) return;
     setDoneKeys((prev) => {
       const next = new Set(prev);
       if (done) next.add(itemKey); else next.delete(itemKey);
@@ -53,19 +52,19 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit }: Pr
           style={{ top: "50%", transform: "translateY(-50%)" }}
           aria-hidden="true"
         >
-          {PROJECT_PHASES.slice(1).map((_, i) => (
+          {DISPLAY_PHASES.slice(1).map((_, i) => (
             <div
               key={i}
               className={`flex-1 border-t-2 border-dashed ${i < currentIndex ? "border-seagrass/60" : "border-dark-slate/20"}`}
             />
           ))}
         </div>
-        {PROJECT_PHASES.map((p, i) => {
+        {DISPLAY_PHASES.map((p, i) => {
           const isCurrent = i === currentIndex;
           const isPast = i < currentIndex;
-          const checklist = getChecklistFor(p.value);
+          const checklist = getChecklistForPhase(p.value);
           const isOpen = openPhase === p.value;
-          const canEditThis = canEdit && p.value === phase;
+          const canEditThis = canEdit && p.value === displayPhase;
 
           const pillClass = isCurrent
             ? "bg-seagrass text-white font-bold shadow-sm"

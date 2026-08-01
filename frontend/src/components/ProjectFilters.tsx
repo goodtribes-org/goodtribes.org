@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import SortToggle from "./SortToggle";
-import { PROJECT_PHASES as STAGES } from "@/lib/projectPhase";
+import { DISPLAY_PHASES as STAGES } from "@/lib/projectPhase";
 import { CATEGORIES } from "@/lib/categories";
 
 const SDG_LABELS: Record<number, string> = {

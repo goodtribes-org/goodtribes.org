@@ -1,9 +1,12 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 4.21 (Draft)
-**Datum:** 2026-08-01
+**Version:** 4.22 (Draft)
+**Datum:** 2026-08-02
 **Status:** Under utveckling
+
+**Ändringar i v4.22:**
+- **Byggt & Beslutat:** `idea` och `sprint` (se 4d) slås ihop till ett enda synligt steg, **"Idé"**, i fasresan och på projektsidan. Till skillnad från v4.7:s försök (som rullades tillbaka, se nedan) görs detta helt på UI-nivå — `projects.phase`-enumen behåller båda värdena orört, ingen migrering. `sprint` blir bara aldrig längre ett nytt projekts mål-fas: `getNextPhase` hoppar direkt från `idea` till `pilot`, checklistorna för `idea` och `sprint` visas sammanslagna under samma "Idé"-steg, och `sprint`s etikett blir också "Idé" överallt den läses upp (fasresans meny, projektkort, filter). Ett gammalt projekt som redan står i `sprint` visas och beter sig identiskt med ett i `idea` — inget särfall, inget databehov att städa upp.
 
 **Ändringar i v4.21:**
 - **Beslutat:** Skapandeflödets `legal_type`-val (se 4c, Steg 1 nedan) begränsas till två alternativ — Ideellt (`nonprofit_umbrella`) eller Kommersiellt (`commercial_umbrella`) — istället för samtliga fyra värden. `nonprofit_own_assoc` och `commercial_ab` kvarstår oförändrade som fullt giltiga, senare uppnåeliga former via den befintliga `legal_type_change_requests`-mekanismen (medlemsomröstning + Stiftelsens genomförande) — ingen enum-ändring, bara en begränsning av vad som kan väljas vid skapande.
@@ -574,6 +577,8 @@ En svensk stiftelse får driva näringsverksamhet, men hur det görs avgör skat
 ## 4d. Initiativets livscykel (fasmodell)
 
 Varje initiativ på GoodTribes — oavsett om det startar som en lös idé eller som ett färdigt koncept som är redo att köra — rör sig genom samma sju faser. Faserna representerar mognadsgrad, inte separata verktyg: ett initiativ är alltid samma underliggande objekt i databasen, bara med olika `phase`-värde.
+
+**Sex synliga steg, sju lagrade fasvärden (v4.22):** `idea` och `sprint` visas som ett enda steg, **"Idé"**, i alla användargränssnitt (fasresans meny, projektkort, filter) — enumen behåller båda värdena i databasen (ingen migrering, samma princip som v4.7:s rollback nedan byggde på), men ett nytt projekt går aldrig längre synligt via `sprint`: att avancera från "Idé" går i ett klick direkt till `pilot`. Checklistorna för `idea` och `sprint` (se tabellen nedan) visas sammanslagna under det gemensamma steget.
 
 **Designprincip:** användaren ska kunna starta där den befinner sig. Ny idé → börja i `idea`. Redan validerad lösning i drift → skapa initiativet direkt i `production`. Alla faser är alltid tillgängliga som startpunkt; inget tvingar en användare att passera faser den redan klarat av utanför plattformen.
 

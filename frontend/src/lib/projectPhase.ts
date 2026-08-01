@@ -1,9 +1,19 @@
 // Initiative lifecycle phases, per PRD.md 4d. Ordered idea -> impact;
 // transitions only ever move forward one step at a time (see
 // ProjectPhaseAdvance and PhaseTransition).
+//
+// IDEA and SPRINT are merged into a single "Idé" step in the UI (PRD 4d,
+// vX.X) — both enum values are kept in the database (no migration, same
+// approach as the v4.7 rollback: build on the existing data model rather
+// than a risky schema change), but SPRINT is never a new project's target
+// phase anymore (see getNextPhase) and its label/checklist are folded into
+// IDEA's everywhere. Use DISPLAY_PHASES for anything that renders the
+// visible journey (steppers, filters) so SPRINT doesn't show as a
+// duplicate step; PROJECT_PHASES stays the full 7-value source of truth
+// for label/color lookups of a project's actual stored phase.
 export const PROJECT_PHASES = [
   { value: "IDEA", label: "Idé", color: "bg-dry-sage/40 text-dark-slate/70" },
-  { value: "SPRINT", label: "Sprint", color: "bg-yellow-100 text-yellow-800" },
+  { value: "SPRINT", label: "Idé", color: "bg-dry-sage/40 text-dark-slate/70" },
   { value: "PILOT", label: "Pilot", color: "bg-orange-100 text-orange-800" },
   { value: "PRODUCTION", label: "Produktion", color: "bg-blue-100 text-blue-800" },
   { value: "ESTABLISH", label: "Etablera", color: "bg-teal-100 text-teal-800" },
@@ -21,6 +31,17 @@ export const PROJECT_PHASE_COLOR: Record<string, string> = Object.fromEntries(
   PROJECT_PHASES.map((p) => [p.value, p.color])
 );
 
+// The visible journey — 6 steps, SPRINT folded into IDEA. Use for any
+// stepper/filter UI; use PROJECT_PHASES for raw per-value label/color
+// lookups instead.
+export const DISPLAY_PHASES = PROJECT_PHASES.filter((p) => p.value !== "SPRINT");
+
+// A project's stored phase, mapped onto its visible DISPLAY_PHASES entry
+// (SPRINT displays as IDEA's step).
+export function toDisplayPhase(phase: ProjectPhaseValue): Exclude<ProjectPhaseValue, "SPRINT"> {
+  return phase === "SPRINT" ? "IDEA" : phase;
+}
+
 const VALID_PROJECT_PHASE_VALUES: readonly string[] = PROJECT_PHASES.map((p) => p.value);
 
 export function isValidProjectPhase(value: string): value is ProjectPhaseValue {
@@ -29,8 +50,11 @@ export function isValidProjectPhase(value: string): value is ProjectPhaseValue {
 
 // Returns the immediately-next phase in the sequence, or null if already at
 // the terminal phase (IMPACT). Transitions never skip steps or go backwards
-// (PRD 4d: "Övergångar sker endast framåt").
+// (PRD 4d: "Övergångar sker endast framåt"). IDEA and SPRINT both advance
+// straight to PILOT — one click out of the merged "Idé" step, regardless of
+// which of the two underlying values a project happens to be stored at.
 export function getNextPhase(current: ProjectPhaseValue): ProjectPhaseValue | null {
+  if (current === "IDEA" || current === "SPRINT") return "PILOT";
   const index = PROJECT_PHASES.findIndex((p) => p.value === current);
   const next = PROJECT_PHASES[index + 1];
   return next ? next.value : null;
@@ -97,3 +121,13 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<ProjectPhaseValue, { key: string
     { key: "next_step_decided", label: "Besluta om nästa steg: fortsätta, replikera, eller avsluta ansvarsfullt" },
   ],
 };
+
+// The checklist for a project's stored phase — IDEA and SPRINT return the
+// combined list (both are the same visible "Idé" step), any other phase
+// returns its own list unchanged. Item keys never collide across phases.
+export function getChecklistForPhase(phase: ProjectPhaseValue) {
+  if (phase === "IDEA" || phase === "SPRINT") {
+    return [...INITIATIVE_CHECKLIST_ITEMS.IDEA, ...INITIATIVE_CHECKLIST_ITEMS.SPRINT];
+  }
+  return INITIATIVE_CHECKLIST_ITEMS[phase];
+}

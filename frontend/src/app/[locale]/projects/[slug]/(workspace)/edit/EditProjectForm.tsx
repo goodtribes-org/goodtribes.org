@@ -8,7 +8,7 @@ import FileUpload from "@/components/FileUpload";
 import RichTextEditor from "@/components/RichTextEditor";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_NUMBERS, SDG_LABELS_EN } from "@/lib/sdg";
-import { PROJECT_PHASE_LABEL, getNextPhase, isValidProjectPhase, INITIATIVE_CHECKLIST_ITEMS, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { PROJECT_PHASE_LABEL, getNextPhase, isValidProjectPhase, getChecklistForPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 import { CATEGORIES } from "@/lib/categories";
 
 interface Props {
@@ -56,7 +56,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
   const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedChecklistKeys));
   const imageInputRef = useRef<HTMLInputElement>(null);
   const nextPhase = isValidProjectPhase(initial.phase) ? getNextPhase(initial.phase) : null;
-  const checklist = isValidProjectPhase(initial.phase) ? INITIATIVE_CHECKLIST_ITEMS[initial.phase] : null;
+  const checklist = isValidProjectPhase(initial.phase) ? getChecklistForPhase(initial.phase) : null;
 
   function handleToggleChecklistItem(itemKey: string, done: boolean) {
     setDoneKeys((prev) => {

@@ -25,7 +25,7 @@ export type ProjectCardData = {
 // calls for. Archival is decoupled from phase, so it's checked separately.
 const PHASE_LABEL_SV: Record<string, string> = {
   IDEA: "Idéfas",
-  SPRINT: "Sprint",
+  SPRINT: "Idéfas",
   PILOT: "Aktivt",
   PRODUCTION: "Aktivt",
   ESTABLISH: "Aktivt",
