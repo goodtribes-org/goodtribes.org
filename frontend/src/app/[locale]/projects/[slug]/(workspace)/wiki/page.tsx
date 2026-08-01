@@ -53,6 +53,7 @@ export default async function WikiIndexPage({ params }: { params: Promise<{ slug
               name="title"
               type="text"
               required
+              maxLength={200}
               defaultValue="Home"
               placeholder="Page title"
               className="w-full border border-muted-teal rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"

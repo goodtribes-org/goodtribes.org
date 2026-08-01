@@ -99,7 +99,7 @@ export default async function WikiPageView({ params }: { params: Promise<{ local
         </ul>
         {isOwnerOrAdmin && (
           <form action={createWikiPage.bind(null, slug)} className="mt-4">
-            <input name="title" type="text" required placeholder="New page…"
+            <input name="title" type="text" required maxLength={200} placeholder="New page…"
               className="w-full text-xs border border-muted-teal/40 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-coral placeholder-dark-slate/30"
             />
             <input type="hidden" name="content" value="" />

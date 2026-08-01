@@ -38,6 +38,7 @@ export default function WikiEditor({ page, projectSlug, canEdit, canDelete, rend
           name="title"
           type="text"
           required
+          maxLength={200}
           defaultValue={page.title}
           className="w-full text-xl font-bold border-b border-muted-teal focus:outline-none focus:border-coral pb-1 bg-transparent"
         />
@@ -71,7 +72,7 @@ export default function WikiEditor({ page, projectSlug, canEdit, canDelete, rend
   return (
     <div>
       <div className="flex items-start justify-between gap-4 mb-4">
-        <h1 className="text-xl font-bold text-dark-slate">{page.title}</h1>
+        <h1 className="text-xl font-bold text-dark-slate min-w-0 break-words">{page.title}</h1>
         {canEdit && (
           <div className="flex items-center gap-2 shrink-0">
             <button
