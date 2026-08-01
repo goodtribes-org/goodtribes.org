@@ -38,7 +38,7 @@ export default function ActivityFeed({
   emptyMessage?: string;
 }) {
   return (
-    <>
+    <div className="flex flex-col gap-3">
       {page === 1 && <PostComposer isLoggedIn={isLoggedIn} projectId={projectId} />}
 
       {pageItems.length === 0 ? (
@@ -79,6 +79,6 @@ export default function ActivityFeed({
       )}
 
       <Pagination page={page} total={total} perPage={perPage} searchParams={{ page: pageStr }} basePath={basePath} />
-    </>
+    </div>
   );
 }

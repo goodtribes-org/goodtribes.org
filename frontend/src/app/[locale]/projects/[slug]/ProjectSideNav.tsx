@@ -7,7 +7,7 @@ import {
   ListChecks,
   Calendar,
   MessageCircle,
-  Wrench,
+  Users2,
   Vote,
   Megaphone,
   Lightbulb,
@@ -41,12 +41,12 @@ const MAIN_ITEMS: NavItem[] = [
   { label: "Blogg",      href: "/updates",   icon: Megaphone },
   { label: "Filer",      href: "/files",     icon: Folder },
   { label: "Wiki",       href: "/wiki",      icon: BookOpen },
+  { label: "Idéverkstad", href: "/idea-sessions", icon: Lightbulb },
+  { label: "Lean Canvas", href: "/lean-canvas",   icon: LayoutGrid },
 ];
 
 const TOOLS_ITEMS: NavItem[] = [
   { label: "Omröstningar",    href: "/polls",              icon: Vote },
-  { label: "Idéverkstad",     href: "/idea-sessions",       icon: Lightbulb },
-  { label: "Lean Canvas",     href: "/lean-canvas",         icon: LayoutGrid },
   { label: "Bidrag",          href: "/funding",             icon: HandCoins },
   { label: "Tokens",          href: "/tokens",               icon: Coins },
   { label: "Vinstfördelning", href: "/profit-distribution", icon: PiggyBank, commercialOnly: true },
@@ -223,7 +223,7 @@ export default function ProjectSideNav({
           ))}
 
           <div className="pt-1">
-            <GroupToggle label="Verktyg" icon={Wrench} open={toolsOpen} active={toolsActive} onClick={() => setToolsOpen((v) => !v)} iconOnly={iconOnly} />
+            <GroupToggle label="Community" icon={Users2} open={toolsOpen} active={toolsActive} onClick={() => setToolsOpen((v) => !v)} iconOnly={iconOnly} />
             {toolsOpen && (
               <div className="space-y-0.5 mt-0.5">
                 {visibleToolsItems.map((item) => (
