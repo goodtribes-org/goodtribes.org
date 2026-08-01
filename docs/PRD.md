@@ -1,9 +1,12 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 4.22 (Draft)
+**Version:** 4.23 (Draft)
 **Datum:** 2026-08-02
 **Status:** Under utveckling
+
+**Ändringar i v4.23:**
+- **Byggt & Beslutat:** Fasen `production` (se 4d) döps om till **"Lansering"** i alla användargränssnitt (fasresans meny, projektsidan). Enum-värdet `production` är oförändrat, bara den svenska etiketten ändras (`PROJECT_PHASE_LABEL` i `frontend/src/lib/projectPhase.ts`).
 
 **Ändringar i v4.22:**
 - **Byggt & Beslutat:** `idea` och `sprint` (se 4d) slås ihop till ett enda synligt steg, **"Idé"**, i fasresan och på projektsidan. Till skillnad från v4.7:s försök (som rullades tillbaka, se nedan) görs detta helt på UI-nivå — `projects.phase`-enumen behåller båda värdena orört, ingen migrering. `sprint` blir bara aldrig längre ett nytt projekts mål-fas: `getNextPhase` hoppar direkt från `idea` till `pilot`, checklistorna för `idea` och `sprint` visas sammanslagna under samma "Idé"-steg, och `sprint`s etikett blir också "Idé" överallt den läses upp (fasresans meny, projektkort, filter). Ett gammalt projekt som redan står i `sprint` visas och beter sig identiskt med ett i `idea` — inget särfall, inget databehov att städa upp.
@@ -591,7 +594,7 @@ Varje initiativ på GoodTribes — oavsett om det startar som en lös idé eller
 | `idea` | Idé | AI-assisterad idéfas (se Utvecklingsfas 1.2/1.5), peer review, community-feedback |
 | `sprint` | Sprint | Designprocess (kartlägga & förstå, skissa lösningar, besluta & planera, bygga prototyp, testa med användare) plus lean canvas/projektbeskrivning, kärnteam, Kanban-board, framgångskriterier och grov budget inför piloten |
 | `pilot` | Pilot | Uppgiftsnedbrytning, medskapare, team och resurser på plats, plus avgränsat konkret test i liten skala — genomförs, dokumenteras, utvärderas mot framgångskriterierna (go/no-go) |
-| `production` | Produktion | Skarp drift — processen från piloten skalas upp, arbetsflöden formaliseras, finansiering och impact-mätning säkras |
+| `production` | Lansering | Skarp drift — processen från piloten skalas upp, arbetsflöden formaliseras, finansiering och impact-mätning säkras |
 | `establish` | Etablera | Stabil lokal verksamhet — återkommande finansiering, formaliserade partnerskap, dokumenterad "playbook", Granskningsrådets fördjupade granskning inför skalning |
 | `scale` | Skala | Regional replikering / fork till nya instanser |
 | `impact` | Impact | Mätning och rapportering — kulmen av kontinuerlig mätning som pågår från `idea` |
@@ -686,7 +689,7 @@ Detta är inte längre en öppen fråga — se punkt 10.
 
 **Produktimplikation — fas- och stegwidget**
 
-Projektsidan visar en widget med hela vägen (Idé → Sprint → Pilot → Produktion → Etablera → Skala → Impact), där varje fas kan expanderas för att se sina delsteg. Widgeten är en visuell guide och framstegsindikator — se "UI-princip" ovan för vad som är låst (fasövergångar) och vad som är fritt (delsteg inom en fas).
+Projektsidan visar en widget med hela vägen (Idé → Pilot → Lansering → Etablera → Skala → Impact), där varje fas kan expanderas för att se sina delsteg. Widgeten är en visuell guide och framstegsindikator — se "UI-princip" ovan för vad som är låst (fasövergångar) och vad som är fritt (delsteg inom en fas).
 
 **Beslutat (v4.9):** widgeten är inte längre gömd bakom en "kom igång"-ruta synlig bara för ägare/admin — den visas för alla besökare, direkt i projektsidans sidopanel under "Arbete" (Kanban-sammanfattningen) och ovanför "Uppgifter". Vem som helst kan se var i resan projektet befinner sig; bara initiativtagaren/leads kan bocka av delsteg (samma rollkontroll som redan gäller för avbockning av checklistan).
 
