@@ -69,7 +69,7 @@ export default function KanbanBoard({
   const [filterCategory, setFilterCategory] = useState("");
   const [filterPriority, setFilterPriority] = useState("");
   const [filterAssignee, setFilterAssignee] = useState("");
-  const [swimlanesOn, setSwimlanesOn] = useState(false);
+  const [swimlanesOn, setSwimlanesOn] = useState(true);
   const [, startTransition] = useTransition();
   // One tri-state choice per column — normal (full), narrow (still a real
   // drop target, card list just not shown, for columns like Done that
