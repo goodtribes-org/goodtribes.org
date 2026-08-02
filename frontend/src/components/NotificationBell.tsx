@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { useUserEvents } from "@/components/UserEventsProvider";
 
 interface Notification {
   id: string;
@@ -20,6 +21,7 @@ export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [, startTransition] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
+  const eventSource = useUserEvents();
 
   const fetchNotifications = () => {
     fetch("/api/notifications")
@@ -30,9 +32,17 @@ export default function NotificationBell() {
 
   useEffect(() => {
     fetchNotifications();
-    const id = setInterval(fetchNotifications, 30_000);
-    return () => clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    if (!eventSource) return;
+    function onNotification(e: MessageEvent) {
+      const { notification } = JSON.parse(e.data) as { notification: Notification };
+      setNotifications((prev) => [notification, ...prev]);
+    }
+    eventSource.addEventListener("notification", onNotification);
+    return () => eventSource.removeEventListener("notification", onNotification);
+  }, [eventSource]);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {

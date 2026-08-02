@@ -14,6 +14,7 @@ import SearchButton from "@/components/SearchButton";
 import NotificationBell from "@/components/NotificationBell";
 import MessagesLink from "@/components/MessagesLink";
 import PresenceHeartbeat from "@/components/PresenceHeartbeat";
+import UserEventsProvider from "@/components/UserEventsProvider";
 import NavMenuContainer from "@/components/NavMenuContainer";
 import { auth } from "@/auth";
 
@@ -89,6 +90,7 @@ export default async function LocaleLayout({
       <body className="min-h-screen bg-white text-dark-slate flex flex-col">
         <NextIntlClientProvider>
           <SessionProvider session={session}>
+          <UserEventsProvider enabled={!!session?.user}>
             <header className="border-b border-muted-teal shrink-0">
               <nav className="w-full pl-3 pr-6 py-3 flex items-center gap-6">
                 <Link href="/" className="shrink-0 flex items-center gap-2.5">
@@ -147,6 +149,7 @@ export default async function LocaleLayout({
                 </p>
               </div>
             </footer>
+          </UserEventsProvider>
           </SessionProvider>
         </NextIntlClientProvider>
       </body>

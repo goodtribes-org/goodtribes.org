@@ -60,3 +60,25 @@ export function subscribeToKanban(projectSlug: string, listener: (data: string) 
 export function publishToKanban(projectSlug: string, payload: unknown) {
   publishToChannel(`kanban:${projectSlug}`, payload);
 }
+
+// Per-user channel — notifications and "you have unread messages" signals,
+// consumed by the single shared /api/user/sse connection (see
+// UserEventsProvider) rather than one channel per feature.
+export function subscribeToUser(userId: string, listener: (data: string) => void): () => void {
+  return subscribeToChannel(`user:${userId}`, listener);
+}
+
+export function publishToUser(userId: string, payload: unknown) {
+  publishToChannel(`user:${userId}`, payload);
+}
+
+// Presence is keyed by the OBSERVED user, not the observer — anyone viewing
+// that user's dot subscribes to this channel (see /api/presence/sse, which
+// can subscribe to many of these at once for one page's worth of dots).
+export function subscribeToPresence(userId: string, listener: (data: string) => void): () => void {
+  return subscribeToChannel(`presence:${userId}`, listener);
+}
+
+export function publishToPresence(userId: string, payload: unknown) {
+  publishToChannel(`presence:${userId}`, payload);
+}

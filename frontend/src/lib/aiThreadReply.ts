@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
-import { publishToRoom } from "@/lib/redis";
+import { publishToRoom, publishToUser } from "@/lib/redis";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { getNotificationRecipients } from "@/lib/rooms";
 import { escapeHtml } from "@/lib/renderBody";
@@ -42,17 +42,28 @@ async function persistAiMessage(roomId: string, body: string, aiUserId: string) 
   if (room) {
     const recipients = await getNotificationRecipients(room, aiUserId);
     if (recipients.length > 0) {
+      const title = "AI svarade i Idéverkstaden";
+      const notifBody = stripHtml(body).slice(0, 120);
+      const url = `/ideaverkstad/${roomId}`;
       await prisma.notification
         .createMany({
           data: recipients.map((recipientId) => ({
             userId: recipientId,
             type: "room_message",
-            title: "AI svarade i Idéverkstaden",
-            body: stripHtml(body).slice(0, 120),
-            url: `/ideaverkstad/${roomId}`,
+            title,
+            body: notifBody,
+            url,
           })),
         })
         .catch(() => {});
+      const createdAt = new Date().toISOString();
+      for (const recipientId of recipients) {
+        publishToUser(recipientId, {
+          type: "notification",
+          notification: { id: crypto.randomUUID(), type: "room_message", title, body: notifBody, url, read: false, createdAt },
+        });
+        publishToUser(recipientId, { type: "room-message", roomId });
+      }
     }
   }
 

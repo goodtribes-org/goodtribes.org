@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getProjectRole, isLeadRole } from "@/lib/authz";
 import { getRoomAccess } from "@/lib/roomAuth";
-import { publishToRoom } from "@/lib/redis";
+import { publishToRoom, publishToUser } from "@/lib/redis";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { triggerAiThreadReply } from "@/lib/aiThreadReply";
 import { guardSocialAction } from "@/lib/socialActionGuard";
@@ -135,33 +135,53 @@ export async function sendRoomMessage(roomId: string, body: string, threadParent
   );
   if (recipients.length > 0) {
     const { title, body: notifBody } = buildNotificationCopy(access.room, senderName, body, !!threadParentId);
+    const type = threadParentId ? "room_thread_reply" : "room_message";
     await prisma.notification
       .createMany({
         data: recipients.map((recipientId) => ({
           userId: recipientId,
-          type: threadParentId ? "room_thread_reply" : "room_message",
+          type,
           title,
           body: notifBody,
           url: messageUrl,
         })),
       })
       .catch(() => {});
+    const createdAt = new Date().toISOString();
+    for (const recipientId of recipients) {
+      publishToUser(recipientId, {
+        type: "notification",
+        notification: { id: crypto.randomUUID(), type, title, body: notifBody, url: messageUrl, read: false, createdAt },
+      });
+    }
   }
 
   if (mentionedIds.length > 0) {
     const preview = body.replace(/<[^>]*>/g, "").trim();
     const trimmed = preview.length > 120 ? `${preview.slice(0, 120)}…` : preview;
+    const title = `${senderName} nämnde dig`;
     await prisma.notification
       .createMany({
         data: mentionedIds.map((recipientId) => ({
           userId: recipientId,
           type: "room_mention",
-          title: `${senderName} nämnde dig`,
+          title,
           body: trimmed,
           url: messageUrl,
         })),
       })
       .catch(() => {});
+    const createdAt = new Date().toISOString();
+    for (const recipientId of mentionedIds) {
+      publishToUser(recipientId, {
+        type: "notification",
+        notification: { id: crypto.randomUUID(), type: "room_mention", title, body: trimmed, url: messageUrl, read: false, createdAt },
+      });
+    }
+  }
+
+  for (const id of new Set([...recipients, ...mentionedIds])) {
+    publishToUser(id, { type: "room-message", roomId });
   }
 
   revalidatePath("/messages");

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { publishToUser } from "@/lib/redis";
 
 
 export async function createNotification(params: {
@@ -9,7 +10,8 @@ export async function createNotification(params: {
   url?: string;
 }) {
   try {
-    await prisma.notification.create({ data: params });
+    const notification = await prisma.notification.create({ data: params });
+    publishToUser(params.userId, { type: "notification", notification });
   } catch {
     // best-effort — never block the main flow
   }

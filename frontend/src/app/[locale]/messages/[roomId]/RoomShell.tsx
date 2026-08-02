@@ -13,6 +13,7 @@ import { MessageComposer } from "./MessageComposer";
 import { ThreadPanel } from "./ThreadPanel";
 import { timeLabel, initialsOf } from "./format";
 import PresenceDot from "@/components/PresenceDot";
+import { usePresence } from "@/components/usePresence";
 import type { MentionItem } from "@/components/mentionSuggestion";
 import FlagContentButton from "@/components/FlagContentButton";
 
@@ -86,6 +87,8 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
   const [scrollToReplyId, setScrollToReplyId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const esRef = useRef<EventSource | null>(null);
+  const dmOtherUserId = room.type === "DM" ? room.otherUsers[0]?.id : undefined;
+  const presence = usePresence(dmOtherUserId ? [dmOtherUserId] : []);
 
   function startEdit(m: MessageRow) {
     setConfirmDeleteId(null);
@@ -237,7 +240,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                   {initialsOf(room.otherUsers[0].name)}
                 </div>
               )}
-              <PresenceDot userId={room.otherUsers[0].id} />
+              <PresenceDot online={!!presence[room.otherUsers[0].id]} />
             </>
           )}
           <span className="font-bold text-base text-gray-900">{title}</span>

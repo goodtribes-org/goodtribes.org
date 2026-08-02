@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { isCouncilMember } from "@/lib/authz";
 import { getGtBalance } from "@/lib/tokens";
+import { publishToUser } from "@/lib/redis";
 
 const RESPONSE_WINDOW_HOURS = 72;
 
@@ -139,7 +140,7 @@ async function executeDecision(exclusionCase: { id: string; reportedUserId: stri
       where: { projectId: exclusionCase.projectId, userId: exclusionCase.reportedUserId },
     });
   } else if (exclusionCase.decision === "warning") {
-    await prisma.notification.create({
+    const notification = await prisma.notification.create({
       data: {
         userId: exclusionCase.reportedUserId,
         type: "exclusion_case_warning",
@@ -147,7 +148,8 @@ async function executeDecision(exclusionCase: { id: string; reportedUserId: stri
         body: "Se ärendet för mer information.",
         url: `/granskningsradet/arenden/${exclusionCase.id}`,
       },
-    }).catch(() => {});
+    }).catch(() => null);
+    if (notification) publishToUser(exclusionCase.reportedUserId, { type: "notification", notification });
   }
 }
 

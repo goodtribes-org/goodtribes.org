@@ -7,9 +7,16 @@ export default function PresenceHeartbeat() {
     function beat() {
       fetch("/api/presence/heartbeat", { method: "POST" }).catch(() => {});
     }
+    function goOffline() {
+      navigator.sendBeacon("/api/presence/offline");
+    }
     beat();
     const id = setInterval(beat, 20_000);
-    return () => clearInterval(id);
+    document.addEventListener("pagehide", goOffline);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("pagehide", goOffline);
+    };
   }, []);
 
   return null;

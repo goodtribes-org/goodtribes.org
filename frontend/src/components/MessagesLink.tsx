@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { useUserEvents } from "@/components/UserEventsProvider";
 
 export default function MessagesLink() {
   const t = useTranslations("Messages");
   const [unread, setUnread] = useState(0);
+  const eventSource = useUserEvents();
 
   useEffect(() => {
     function fetchUnread() {
@@ -16,9 +18,10 @@ export default function MessagesLink() {
         .catch(() => {});
     }
     fetchUnread();
-    const id = setInterval(fetchUnread, 30_000);
-    return () => clearInterval(id);
-  }, []);
+    if (!eventSource) return;
+    eventSource.addEventListener("room-message", fetchUnread);
+    return () => eventSource.removeEventListener("room-message", fetchUnread);
+  }, [eventSource]);
 
   return (
     <Link

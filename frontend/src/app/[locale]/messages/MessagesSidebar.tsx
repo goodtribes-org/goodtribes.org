@@ -6,6 +6,8 @@ import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import PresenceDot from "@/components/PresenceDot";
+import { useUserEvents } from "@/components/UserEventsProvider";
+import { usePresence } from "@/components/usePresence";
 import { useMessagesSection, type MessagesSection } from "./useMessagesSection";
 import { NewMessageButton } from "./NewMessageButton";
 import { getPublicProjectChannels } from "./actions";
@@ -100,34 +102,42 @@ export function MessagesSidebar({ isLoggedIn, dmGroupRooms, projectGroups, orgGr
   const section = useMessagesSection();
 
   // Server-rendered `unread` flags are a snapshot from when this layout last
-  // ran — polling keeps them live while the user stays within /messages, so
-  // a new message elsewhere (DM, group, or channel) shows up without a
-  // navigation/reload. `null` means "no poll result yet", so isUnread falls
-  // back to the snapshot instead of flashing everything as read.
+  // ran — a push event from any room the user participates in re-fetches
+  // this so a new message elsewhere (DM, group, or channel) shows up without
+  // a navigation/reload. `null` means "no fetch yet", so isUnread falls back
+  // to the snapshot instead of flashing everything as read.
   const [liveUnread, setLiveUnread] = useState<Set<string> | null>(null);
+  const eventSource = useUserEvents();
 
   useEffect(() => {
     if (!isLoggedIn) return;
-    let cancelled = false;
-    function poll() {
+    function refetch() {
       fetch("/api/rooms/unread")
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
-          if (cancelled || !data?.unreadRoomIds) return;
+          if (!data?.unreadRoomIds) return;
           setLiveUnread(new Set<string>(data.unreadRoomIds));
         })
         .catch(() => {});
     }
-    poll();
-    const id = setInterval(poll, 15_000);
-    return () => { cancelled = true; clearInterval(id); };
-  }, [isLoggedIn]);
+    refetch();
+    if (!eventSource) return;
+    eventSource.addEventListener("room-message", refetch);
+    return () => eventSource.removeEventListener("room-message", refetch);
+  }, [isLoggedIn, eventSource]);
 
   function isUnread(roomId: string, snapshot: boolean) {
     return liveUnread ? liveUnread.has(roomId) : snapshot;
   }
 
   const visibleDmGroupRooms = section === "unread" ? dmGroupRooms.filter((r) => isUnread(r.id, r.unread)) : dmGroupRooms;
+
+  // Computed from the full (unfiltered) list so switching the "unread" tab
+  // doesn't change the id set and needlessly reopen the shared SSE connection.
+  const dmOtherUserIds = dmGroupRooms
+    .filter((r) => r.type === "DM" && r.otherUsers[0])
+    .map((r) => r.otherUsers[0].id);
+  const presence = usePresence(dmOtherUserIds);
 
   const isIndex = pathname === "/messages" || pathname.endsWith("/messages");
   const currentRoomId = pathname.match(/\/messages\/([^/?]+)/)?.[1] ?? null;
@@ -218,7 +228,7 @@ export function MessagesSidebar({ isLoggedIn, dmGroupRooms, projectGroups, orgGr
                 {other?.image ? <Image src={other.image} fill className="object-cover" alt="" unoptimized /> : initialsOf(title)}
               </div>
               <span className="flex-1 truncate">{title}</span>
-              {room.type === "DM" && other && <PresenceDot userId={other.id} />}
+              {room.type === "DM" && other && <PresenceDot online={!!presence[other.id]} />}
               {isUnread(room.id, room.unread) && <span className="w-1.5 h-1.5 rounded-full bg-seagrass shrink-0" />}
             </Link>
           );
