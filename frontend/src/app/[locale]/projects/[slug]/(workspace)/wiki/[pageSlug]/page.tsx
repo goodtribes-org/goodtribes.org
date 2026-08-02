@@ -34,7 +34,7 @@ function renderMarkdown(content: string): string {
       if (line.startsWith("## ")) return `<h2 class="text-lg font-bold mt-5 mb-2">${line.slice(3)}</h2>`;
       if (line.startsWith("# ")) return `<h1 class="text-xl font-bold mt-6 mb-2">${line.slice(2)}</h1>`;
       if (line.startsWith("- ") || line.startsWith("* ")) return `<li class="ml-4 list-disc text-sm">${line.slice(2)}</li>`;
-      if (line.trim() === "") return `<div class="h-3" />`;
+      if (line.trim() === "") return `<div class="h-3"></div>`;
       return `<p class="text-sm leading-relaxed text-dark-slate/80">${line}</p>`;
     })
     .join("");
