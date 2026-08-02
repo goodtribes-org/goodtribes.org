@@ -1,9 +1,12 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 4.23 (Draft)
+**Version:** 4.24 (Draft)
 **Datum:** 2026-08-02
 **Status:** Under utveckling
+
+**Ändringar i v4.24:**
+- **Byggt & Beslutat:** Fasen `pilot` (se 4d) döps om till **"Uppstart"** i alla användargränssnitt (fasresans meny, projektsidan). Enum-värdet `pilot` är oförändrat, bara den svenska etiketten ändras (`PROJECT_PHASE_LABEL` i `frontend/src/lib/projectPhase.ts`).
 
 **Ändringar i v4.23:**
 - **Byggt & Beslutat:** Fasen `production` (se 4d) döps om till **"Lansering"** i alla användargränssnitt (fasresans meny, projektsidan). Enum-värdet `production` är oförändrat, bara den svenska etiketten ändras (`PROJECT_PHASE_LABEL` i `frontend/src/lib/projectPhase.ts`).
@@ -593,7 +596,7 @@ Varje initiativ på GoodTribes — oavsett om det startar som en lös idé eller
 |---|---|---|
 | `idea` | Idé | AI-assisterad idéfas (se Utvecklingsfas 1.2/1.5), peer review, community-feedback |
 | `sprint` | Sprint | Designprocess (kartlägga & förstå, skissa lösningar, besluta & planera, bygga prototyp, testa med användare) plus lean canvas/projektbeskrivning, kärnteam, Kanban-board, framgångskriterier och grov budget inför piloten |
-| `pilot` | Pilot | Uppgiftsnedbrytning, medskapare, team och resurser på plats, plus avgränsat konkret test i liten skala — genomförs, dokumenteras, utvärderas mot framgångskriterierna (go/no-go) |
+| `pilot` | Uppstart | Uppgiftsnedbrytning, medskapare, team och resurser på plats, plus avgränsat konkret test i liten skala — genomförs, dokumenteras, utvärderas mot framgångskriterierna (go/no-go) |
 | `production` | Lansering | Skarp drift — processen från piloten skalas upp, arbetsflöden formaliseras, finansiering och impact-mätning säkras |
 | `establish` | Etablera | Stabil lokal verksamhet — återkommande finansiering, formaliserade partnerskap, dokumenterad "playbook", Granskningsrådets fördjupade granskning inför skalning |
 | `scale` | Skala | Regional replikering / fork till nya instanser |
@@ -689,7 +692,7 @@ Detta är inte längre en öppen fråga — se punkt 10.
 
 **Produktimplikation — fas- och stegwidget**
 
-Projektsidan visar en widget med hela vägen (Idé → Pilot → Lansering → Etablera → Skala → Impact), där varje fas kan expanderas för att se sina delsteg. Widgeten är en visuell guide och framstegsindikator — se "UI-princip" ovan för vad som är låst (fasövergångar) och vad som är fritt (delsteg inom en fas).
+Projektsidan visar en widget med hela vägen (Idé → Uppstart → Lansering → Etablera → Skala → Impact), där varje fas kan expanderas för att se sina delsteg. Widgeten är en visuell guide och framstegsindikator — se "UI-princip" ovan för vad som är låst (fasövergångar) och vad som är fritt (delsteg inom en fas).
 
 **Beslutat (v4.9):** widgeten är inte längre gömd bakom en "kom igång"-ruta synlig bara för ägare/admin — den visas för alla besökare, direkt i projektsidans sidopanel under "Arbete" (Kanban-sammanfattningen) och ovanför "Uppgifter". Vem som helst kan se var i resan projektet befinner sig; bara initiativtagaren/leads kan bocka av delsteg (samma rollkontroll som redan gäller för avbockning av checklistan).
 

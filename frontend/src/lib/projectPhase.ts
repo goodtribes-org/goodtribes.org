@@ -14,7 +14,7 @@
 export const PROJECT_PHASES = [
   { value: "IDEA", label: "Idé", color: "bg-dry-sage/40 text-dark-slate/70" },
   { value: "SPRINT", label: "Idé", color: "bg-dry-sage/40 text-dark-slate/70" },
-  { value: "PILOT", label: "Pilot", color: "bg-orange-100 text-orange-800" },
+  { value: "PILOT", label: "Uppstart", color: "bg-orange-100 text-orange-800" },
   { value: "PRODUCTION", label: "Lansering", color: "bg-blue-100 text-blue-800" },
   { value: "ESTABLISH", label: "Etablera", color: "bg-teal-100 text-teal-800" },
   { value: "SCALE", label: "Skala", color: "bg-purple-100 text-purple-800" },
