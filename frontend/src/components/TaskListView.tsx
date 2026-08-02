@@ -11,6 +11,7 @@ import {
   toggleSubtask,
 } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
 import GithubCardMeta from "@/components/GithubCardMeta";
+import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/kanbanCategories";
 
 type Subtask = {
   id: string;
@@ -31,6 +32,7 @@ type Card = {
   priority: string;
   priorityLockedAt?: Date | string | null;
   lockedTokenValue?: number | null;
+  category?: string | null;
   assigneeId: string | null;
   assignee: Member | null;
   createdById: string;
@@ -468,6 +470,7 @@ function InlineAddRow({
   onClose: () => void;
 }) {
   const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("");
   const [subtasks, setSubtasks] = useState<string[]>([]);
   const [subtaskInput, setSubtaskInput] = useState("");
   const [, startTransition] = useTransition();
@@ -491,7 +494,7 @@ function InlineAddRow({
   }
 
   function submit() {
-    if (!title.trim()) return;
+    if (!title.trim() || !category) return;
     const allSubs = subtaskInput.trim() ? [...subtasks, subtaskInput.trim()] : subtasks;
     const optimistic: Card = {
       id: `temp-${Date.now()}`,
@@ -502,6 +505,7 @@ function InlineAddRow({
       column,
       order: 9999,
       priority: "normal",
+      category,
       assigneeId: null,
       assignee: null,
       createdById: "",
@@ -512,8 +516,9 @@ function InlineAddRow({
     };
     const t = title.trim();
     onAdd(optimistic);
-    startTransition(async () => { await createCard(projectSlug, t, column, undefined, undefined, undefined, undefined, undefined, allSubs.length ? allSubs : undefined); });
+    startTransition(async () => { await createCard(projectSlug, t, column, undefined, undefined, undefined, undefined, undefined, allSubs.length ? allSubs : undefined, category); });
     setTitle("");
+    setCategory("");
     setSubtasks([]);
     setSubtaskInput("");
     inputRef.current?.focus();
@@ -535,6 +540,16 @@ function InlineAddRow({
           placeholder="Uppgiftsnamn..."
           className="flex-1 text-sm bg-transparent border-0 outline-none placeholder-gray-400 text-gray-800"
         />
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="text-xs border border-gray-200 rounded-md px-1.5 py-1 text-gray-600 bg-white focus:outline-none focus:border-blue-400"
+        >
+          <option value="" disabled>Kategori *</option>
+          {CATEGORY_ORDER.map((key) => (
+            <option key={key} value={key}>{CATEGORY_META[key].label}</option>
+          ))}
+        </select>
       </div>
 
       {subtasks.length > 0 && (
@@ -568,7 +583,7 @@ function InlineAddRow({
       <div className="flex items-center gap-2 justify-end">
         <button
           onClick={submit}
-          disabled={!title.trim()}
+          disabled={!title.trim() || !category}
           className="text-xs font-medium bg-seagrass text-white px-3 py-1 rounded-md hover:bg-seagrass/80 disabled:opacity-40 transition-colors"
         >
           Lägg till

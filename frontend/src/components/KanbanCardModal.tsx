@@ -166,6 +166,7 @@ function CardDetailModalImpl({
 
   function save() {
     if (!title.trim()) return;
+    if (isNew && !category) return;
     if (isNew) {
       const pendingSubtask = newSubtaskInput.trim();
       const allSubtasks = pendingSubtask
@@ -388,22 +389,24 @@ function CardDetailModalImpl({
               </p>
             )}
 
-            <span className="text-gray-400 pt-2">Kategori</span>
+            <span className="text-gray-400 pt-2">Kategori{isNew && <span className="text-red-400"> *</span>}</span>
             <div className="flex flex-wrap gap-1.5">
-              <button
-                type="button"
-                onClick={() => canEdit && setCategory("")}
-                className={`text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
-                  !category ? "border-gray-400 bg-gray-100 text-gray-600" : "border-gray-200 text-gray-400 hover:border-gray-300"
-                }`}
-              >
-                Ingen
-              </button>
+              {!isNew && (
+                <button
+                  type="button"
+                  onClick={() => canEdit && setCategory("")}
+                  className={`text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
+                    !category ? "border-gray-400 bg-gray-100 text-gray-600" : "border-gray-200 text-gray-400 hover:border-gray-300"
+                  }`}
+                >
+                  Ingen
+                </button>
+              )}
               {Object.entries(CATEGORY_META).map(([key, meta]) => (
                 <button
                   key={key}
                   type="button"
-                  onClick={() => canEdit && setCategory(category === key ? "" : key)}
+                  onClick={() => canEdit && setCategory(category === key && !isNew ? "" : key)}
                   style={category === key ? { backgroundColor: meta.hex + "22", borderColor: meta.hex, color: meta.hex } : {}}
                   className={`text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
                     category === key ? "" : "border-gray-200 text-gray-400 hover:border-gray-300"
@@ -732,7 +735,7 @@ function CardDetailModalImpl({
           <div className="flex items-center gap-3 px-6 py-4 border-t border-gray-100 shrink-0">
             <button
               onClick={save}
-              disabled={!title.trim()}
+              disabled={!title.trim() || (isNew && !category)}
               className="bg-seagrass text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-seagrass/80 disabled:opacity-40 transition-colors"
             >
               {isNew ? "Skapa kort" : "Spara"}

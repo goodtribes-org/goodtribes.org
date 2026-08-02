@@ -7,6 +7,7 @@ import { estimateTask } from "@/lib/taskEstimate";
 import { logActivity } from "@/lib/activity";
 import { isRealMember, isCardClaimant, hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { createNotification } from "@/lib/notify";
+import { isValidCategory } from "@/lib/kanbanCategories";
 import { publishToKanban } from "@/lib/redis";
 import { moveKanbanCard, type MoveOverrides } from "@/lib/kanbanMove";
 import {
@@ -35,6 +36,7 @@ export async function createCard(
 ) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
+  if (!category || !isValidCategory(category)) return { error: "Kategori krävs" };
 
   const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
   const canSetPriority = project ? await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES) : false;
