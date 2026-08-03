@@ -450,7 +450,7 @@ export default async function ProjectDetailPage({
                         projectId={project.id}
                         slug={slug}
                         existingStatus={userJoinRequest?.status ?? null}
-                        label="Join GoodTribes"
+                        label="Join"
                         className="flex justify-center w-full py-2.5 bg-coral text-white rounded-xl font-bold text-base hover:bg-coral/90 transition-colors shadow-md"
                       />
                     ) : (
@@ -458,7 +458,7 @@ export default async function ProjectDetailPage({
                         href={`/login?callbackUrl=${encodeURIComponent(`/projects/${slug}`)}`}
                         className="flex justify-center w-full py-2.5 bg-coral text-white rounded-xl font-bold text-base hover:bg-coral/90 transition-colors shadow-md"
                       >
-                        Join GoodTribes
+                        Join
                       </Link>
                     )}
                   </div>
