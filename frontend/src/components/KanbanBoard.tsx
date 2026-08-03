@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect, useMemo, useCallback, type ReactNode } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import {
   DndContext,
   DragEndEvent,
@@ -59,6 +60,8 @@ export default function KanbanBoard({
   requestOpenCardId?: string | null;
   viewToggle?: ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [columns, setColumns] = useState<Columns>(initialColumns);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
@@ -144,6 +147,9 @@ export default function KanbanBoard({
     if (!requestOpenCardId) return;
     const found = Object.values(columns).flat().find((c) => c.id === requestOpenCardId);
     if (found) setEditingCard(found);
+    // Strip the ?card= param once handled — otherwise a reload (or reopening
+    // a bookmarked/notification link) re-triggers this effect forever.
+    router.replace(pathname, { scroll: false });
   }, [requestOpenCardId]);
 
   // Live sync: other users' card create/update/move/delete/clear-column

@@ -433,9 +433,15 @@ function KanbanCardItemImpl({
             {canDeleteSubtask(s) && (
               <button type="button" onClick={() => { handleCardDeleteSubtask(s); setSubtaskMenuPos(null); }} className="w-full text-left text-xs px-3 py-1.5 text-red-500 hover:bg-red-50">Ta bort</button>
             )}
-            {!s.id.startsWith("temp-") && (
-              <button type="button" onClick={() => { handleCardPromoteSubtask(s); setSubtaskMenuPos(null); }} className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50">Eget kort</button>
-            )}
+            <button
+              type="button"
+              disabled={s.id.startsWith("temp-")}
+              title={s.id.startsWith("temp-") ? "Sparar…" : undefined}
+              onClick={() => { handleCardPromoteSubtask(s); setSubtaskMenuPos(null); }}
+              className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+            >
+              Eget kort
+            </button>
           </div>
         </>,
         document.body
