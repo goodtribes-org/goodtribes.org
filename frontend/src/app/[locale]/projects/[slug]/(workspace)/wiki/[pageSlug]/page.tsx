@@ -11,6 +11,7 @@ import ShareButton from "@/components/ShareButton";
 import FlagContentButton from "@/components/FlagContentButton";
 import LikeCommentBlock from "@/components/LikeCommentBlock";
 import { getLikeCommentData } from "@/lib/socialInteractions";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string; pageSlug: string }> }): Promise<Metadata> {
@@ -24,6 +25,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     title: `${page.title} — ${project.title} Wiki`,
     description: page.content.slice(0, 160),
   });
+}
+
+// Pages written with the WYSIWYG editor store real HTML; older pages were
+// written in a plain-text/markdown-lite format and still need the line-based
+// renderer below.
+function renderWikiContent(content: string): string {
+  if (content.trimStart().startsWith("<")) return sanitizeHtml(content);
+  return renderMarkdown(content);
 }
 
 function renderMarkdown(content: string): string {
@@ -124,7 +133,7 @@ export default async function WikiPageView({ params }: { params: Promise<{ local
           projectSlug={slug}
           canEdit={isMember}
           canDelete={!!isOwnerOrAdmin}
-          renderedHtml={renderMarkdown(page.content)}
+          renderedHtml={renderWikiContent(page.content)}
           updateAction={updateWikiPage}
           deleteAction={deleteWikiPage}
         />

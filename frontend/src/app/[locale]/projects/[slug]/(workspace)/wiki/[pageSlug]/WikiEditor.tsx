@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import RichTextEditor from "@/components/RichTextEditor";
 
 interface Props {
   page: { id: string; title: string; content: string };
@@ -12,8 +13,22 @@ interface Props {
   deleteAction: (id: string, projectSlug: string) => Promise<void>;
 }
 
+// Older pages were written in a plain-text/markdown-lite format (# Heading,
+// - list item) instead of real HTML. Wrap each non-blank line in a <p> so
+// line breaks survive the first time such a page is opened in the rich text
+// editor — once saved it becomes real HTML like any other page.
+function toEditableHtml(raw: string): string {
+  if (raw.trimStart().startsWith("<")) return raw;
+  return raw
+    .split("\n")
+    .filter((line) => line.trim() !== "")
+    .map((line) => `<p>${line}</p>`)
+    .join("");
+}
+
 export default function WikiEditor({ page, projectSlug, canEdit, canDelete, renderedHtml, updateAction, deleteAction }: Props) {
   const [editing, setEditing] = useState(false);
+  const [content, setContent] = useState(() => toEditableHtml(page.content));
   const [isPending, startTransition] = useTransition();
   const [isDeleting, startDeleting] = useTransition();
 
@@ -42,13 +57,8 @@ export default function WikiEditor({ page, projectSlug, canEdit, canDelete, rend
           defaultValue={page.title}
           className="w-full text-xl font-bold border-b border-muted-teal focus:outline-none focus:border-coral pb-1 bg-transparent"
         />
-        <textarea
-          name="content"
-          rows={20}
-          defaultValue={page.content}
-          placeholder="Write in plain text. # Heading  ## Subheading  - list item"
-          className="w-full border border-muted-teal rounded px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-coral resize-y"
-        />
+        <input type="hidden" name="content" value={content} />
+        <RichTextEditor content={content} onChange={setContent} />
         <div className="flex gap-2">
           <button
             type="submit"
@@ -59,7 +69,7 @@ export default function WikiEditor({ page, projectSlug, canEdit, canDelete, rend
           </button>
           <button
             type="button"
-            onClick={() => setEditing(false)}
+            onClick={() => { setContent(toEditableHtml(page.content)); setEditing(false); }}
             className="text-sm text-dark-slate/50 px-3 py-1.5 rounded hover:text-dark-slate transition-colors"
           >
             Cancel

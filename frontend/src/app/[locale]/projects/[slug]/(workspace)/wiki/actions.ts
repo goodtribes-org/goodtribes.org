@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { slugify } from "@/lib/slugify";
 import { getProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 
 
 async function requireMember(projectSlug: string, userId: string) {
@@ -23,7 +24,7 @@ export async function createWikiPage(projectSlug: string, formData: FormData): P
 
   const title = (formData.get("title") as string).trim();
   if (!title) return;
-  const content = (formData.get("content") as string | null)?.trim() ?? "";
+  const content = sanitizeHtml((formData.get("content") as string | null)?.trim() ?? "");
 
   const baseSlug = slugify(title) || "page";
   let pageSlug = baseSlug;
@@ -49,7 +50,7 @@ export async function updateWikiPage(id: string, projectSlug: string, formData: 
   if (!member) return;
 
   const title = (formData.get("title") as string).trim();
-  const content = (formData.get("content") as string | null)?.trim() ?? "";
+  const content = sanitizeHtml((formData.get("content") as string | null)?.trim() ?? "");
   if (!title) return;
 
   await prisma.wikiPage.update({
