@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ReactMarkdown from "react-markdown";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { JoinButton, JoinRequestsPanel } from "./JoinSection";
@@ -572,30 +571,6 @@ export default async function ProjectDetailPage({
               />
             </section>
           )}
-
-          <section>
-            <h2 className="text-base font-semibold text-dark-slate mb-4">Om projektet</h2>
-            {project.description ? (
-              project.description.trimStart().startsWith("<") ? (
-                <article
-                  className="prose max-w-[760px] mx-auto text-dark-slate leading-relaxed
-                    prose-headings:text-dark-slate
-                    prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
-                    prose-strong:text-dark-slate prose-img:rounded-xl prose-img:max-w-full"
-                  dangerouslySetInnerHTML={{ __html: project.description }}
-                />
-              ) : (
-                <article className="prose max-w-[760px] mx-auto text-dark-slate leading-relaxed
-                  prose-headings:text-dark-slate
-                  prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
-                  prose-strong:text-dark-slate prose-img:rounded-xl">
-                  <ReactMarkdown>{project.description}</ReactMarkdown>
-                </article>
-              )
-            ) : (
-              <p className="text-dark-slate/40 italic text-sm">Ingen beskrivning ännu.</p>
-            )}
-          </section>
 
           {latestUpdate && (
             <section>
