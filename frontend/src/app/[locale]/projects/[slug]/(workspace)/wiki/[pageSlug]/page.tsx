@@ -2,8 +2,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
-import { updateWikiPage, deleteWikiPage, createWikiPage } from "../actions";
+import { updateWikiPage, deleteWikiPage, getDescendantIds } from "../actions";
 import WikiEditor from "./WikiEditor";
+import WikiSidebar from "../WikiSidebar";
 import type { Metadata } from "next";
 import { isLeadRole } from "@/lib/authz";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
@@ -55,7 +56,7 @@ export default async function WikiPageView({ params }: { params: Promise<{ local
   const [project, page, session] = await Promise.all([
     prisma.project.findUnique({
       where: { slug },
-      include: { wikiPages: { where: { hiddenAt: null }, orderBy: { order: "asc" }, select: { slug: true, title: true } } },
+      include: { wikiPages: { where: { hiddenAt: null }, orderBy: { order: "asc" }, select: { id: true, slug: true, title: true, parentId: true } } },
     }),
     prisma.wikiPage.findUnique({
       where: { projectSlug_slug: { projectSlug: slug, slug: pageSlug } },
@@ -80,6 +81,12 @@ export default async function WikiPageView({ params }: { params: Promise<{ local
 
   const { comments } = await getLikeCommentData("wikiPage", page.id, session?.user?.id ?? null);
 
+  // A page can't be re-parented under itself or one of its own descendants.
+  const excludedIds = new Set([page.id, ...(await getDescendantIds(page.id, slug))]);
+  const parentOptions = project.wikiPages
+    .filter((p) => !excludedIds.has(p.id))
+    .map((p) => ({ id: p.id, title: p.title }));
+
   return (
     <div className="flex gap-8">
       {/* Sidebar */}
@@ -90,30 +97,12 @@ export default async function WikiPageView({ params }: { params: Promise<{ local
           </Link>
           <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-wider mt-3 mb-2">Wiki</p>
         </div>
-        <ul className="space-y-0.5">
-          {project.wikiPages.map((p) => (
-            <li key={p.slug}>
-              <Link
-                href={`/projects/${slug}/wiki/${p.slug}`}
-                className={`block text-sm px-2 py-1 rounded transition-colors truncate ${
-                  p.slug === pageSlug
-                    ? "bg-coral/10 text-coral font-medium"
-                    : "text-dark-slate/70 hover:text-dark-slate hover:bg-gray-50"
-                }`}
-              >
-                {p.title}
-              </Link>
-            </li>
-          ))}
-        </ul>
-        {isOwnerOrAdmin && (
-          <form action={createWikiPage.bind(null, slug)} className="mt-4">
-            <input name="title" type="text" required maxLength={200} placeholder="New page…"
-              className="w-full text-xs border border-muted-teal/40 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-coral placeholder-dark-slate/30"
-            />
-            <input type="hidden" name="content" value="" />
-          </form>
-        )}
+        <WikiSidebar
+          projectSlug={slug}
+          pages={project.wikiPages}
+          currentSlug={pageSlug}
+          canCreate={isOwnerOrAdmin}
+        />
       </aside>
 
       {/* Content */}
@@ -129,13 +118,14 @@ export default async function WikiPageView({ params }: { params: Promise<{ local
           )}
         </div>
         <WikiEditor
-          page={{ id: page.id, title: page.title, content: page.content }}
+          page={{ id: page.id, title: page.title, content: page.content, parentId: page.parentId }}
           projectSlug={slug}
           canEdit={isMember}
           canDelete={!!isOwnerOrAdmin}
           renderedHtml={renderWikiContent(page.content)}
           updateAction={updateWikiPage}
           deleteAction={deleteWikiPage}
+          parentOptions={parentOptions}
         />
         {page.updatedBy && (
           <p className="text-xs text-dark-slate/30 mt-6">

@@ -4,13 +4,14 @@ import { useState, useTransition } from "react";
 import RichTextEditor from "@/components/RichTextEditor";
 
 interface Props {
-  page: { id: string; title: string; content: string };
+  page: { id: string; title: string; content: string; parentId: string | null };
   projectSlug: string;
   canEdit: boolean;
   canDelete: boolean;
   renderedHtml: string;
   updateAction: (id: string, projectSlug: string, formData: FormData) => Promise<void>;
   deleteAction: (id: string, projectSlug: string) => Promise<void>;
+  parentOptions: { id: string; title: string }[];
 }
 
 // Older pages were written in a plain-text/markdown-lite format (# Heading,
@@ -26,7 +27,7 @@ function toEditableHtml(raw: string): string {
     .join("");
 }
 
-export default function WikiEditor({ page, projectSlug, canEdit, canDelete, renderedHtml, updateAction, deleteAction }: Props) {
+export default function WikiEditor({ page, projectSlug, canEdit, canDelete, renderedHtml, updateAction, deleteAction, parentOptions }: Props) {
   const [editing, setEditing] = useState(false);
   const [content, setContent] = useState(() => toEditableHtml(page.content));
   const [isPending, startTransition] = useTransition();
@@ -59,6 +60,19 @@ export default function WikiEditor({ page, projectSlug, canEdit, canDelete, rend
         />
         <input type="hidden" name="content" value={content} />
         <RichTextEditor content={content} onChange={setContent} />
+        <div>
+          <label className="block text-xs text-dark-slate/50 mb-1">Överordnad sida</label>
+          <select
+            name="parentId"
+            defaultValue={page.parentId ?? ""}
+            className="w-full sm:w-64 text-sm border border-muted-teal rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-coral bg-white"
+          >
+            <option value="">Ingen (toppnivå)</option>
+            {parentOptions.map((p) => (
+              <option key={p.id} value={p.id}>{p.title}</option>
+            ))}
+          </select>
+        </div>
         <div className="flex gap-2">
           <button
             type="submit"

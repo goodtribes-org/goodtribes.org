@@ -998,6 +998,7 @@ model WikiPage {
   title        String
   content      String   @default("")
   order        Int      @default(0)
+  parentId     String?
   createdById  String
   updatedById  String?
   createdAt    DateTime @default(now())
@@ -1006,9 +1007,13 @@ model WikiPage {
   hiddenById   String?
   hiddenReason ContentHideReason?
 
-  project   Project @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
-  createdBy User    @relation("WikiPageCreatedBy", fields: [createdById], references: [id])
-  updatedBy User?   @relation("WikiPageUpdatedBy", fields: [updatedById], references: [id])
+  project   Project    @relation(fields: [projectSlug], references: [slug], onDelete: Cascade)
+  createdBy User       @relation("WikiPageCreatedBy", fields: [createdById], references: [id])
+  updatedBy User?      @relation("WikiPageUpdatedBy", fields: [updatedById], references: [id])
+  // A deleted parent page just orphans its children back to the top level
+  // rather than cascade-deleting a whole subtree by accident.
+  parent    WikiPage?  @relation("WikiPageHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children  WikiPage[] @relation("WikiPageHierarchy")
 
   @@unique([projectSlug, slug])
 }
