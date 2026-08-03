@@ -16,7 +16,10 @@ import MessagesLink from "@/components/MessagesLink";
 import PresenceHeartbeat from "@/components/PresenceHeartbeat";
 import UserEventsProvider from "@/components/UserEventsProvider";
 import NavMenuContainer from "@/components/NavMenuContainer";
+import FooterPageManager from "@/components/FooterPageManager";
 import { auth } from "@/auth";
+import { isSiteAdmin } from "@/lib/authz";
+import { getFooterPages } from "@/lib/sitePages";
 
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 
@@ -83,7 +86,15 @@ export default async function LocaleLayout({
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale as Locale);
 
-  const [session, t] = await Promise.all([auth(), getTranslations("Footer")]);
+  const [session, t, rawFooterPages] = await Promise.all([auth(), getTranslations("Footer"), getFooterPages()]);
+  const canEditFooter = session?.user?.id ? await isSiteAdmin(session.user.id) : false;
+  // Fixed pages (about/privacy/terms) keep their translated nav label
+  // regardless of whatever H1 title is set on the page itself; only
+  // footer-created custom pages use their own title as the link text.
+  const footerPages = rawFooterPages.map((p) => ({
+    ...p,
+    title: p.locked ? t(p.slug as "about" | "privacy" | "terms") : p.title,
+  }));
 
   return (
     <html lang={locale} className={`bg-white ${inter.className}`}>
@@ -132,13 +143,22 @@ export default async function LocaleLayout({
                   <p className="text-dark-slate/60 leading-relaxed text-xs">{t("foundationBlurb")}</p>
                 </div>
                 <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60 justify-self-end">
-                  <p className="font-semibold text-dark-slate mb-1 uppercase tracking-wider">{t("exploreTitle")}</p>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <p className="font-semibold text-dark-slate uppercase tracking-wider">{t("exploreTitle")}</p>
+                    {canEditFooter && (
+                      <FooterPageManager
+                        pages={footerPages}
+                        lockedLabels={[t("hallOfImpact"), t("shop"), t("academy"), t("dreamWall"), t("contact"), t("suggestions")]}
+                      />
+                    )}
+                  </div>
                   <Link href="/hall-of-impact" className="hover:text-dark-slate transition-colors">{t("hallOfImpact")}</Link>
                   <Link href="/shop" className="hover:text-dark-slate transition-colors">{t("shop")}</Link>
                   <Link href="/academy" className="hover:text-dark-slate transition-colors">{t("academy")}</Link>
                   <Link href="/dream-wall" className="hover:text-dark-slate transition-colors">{t("dreamWall")}</Link>
-                  <Link href="/about" className="hover:text-dark-slate transition-colors">{t("about")}</Link>
-                  <Link href="/privacy" className="hover:text-dark-slate transition-colors">{t("privacy")}</Link>
+                  {footerPages.map((p) => (
+                    <Link key={p.slug} href={p.href} className="hover:text-dark-slate transition-colors">{p.title}</Link>
+                  ))}
                   <a href="mailto:hej@goodtribes.org" className="hover:text-dark-slate transition-colors">{t("contact")}</a>
                   <Link href="/suggestions" className="hover:text-dark-slate transition-colors">{t("suggestions")}</Link>
                 </nav>

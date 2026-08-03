@@ -1,9 +1,13 @@
 # Product Requirements Document
 ## GoodTribes — Collaborative Impact Platform
 
-**Version:** 4.24 (Draft)
-**Datum:** 2026-08-02
+**Version:** 4.25 (Draft)
+**Datum:** 2026-08-03
 **Status:** Under utveckling
+
+**Ändringar i v4.25:**
+- **Byggt & Beslutat:** Strapi (den separata CMS-backend som ägde About/Privacy/Terms) är helt borttagen — `backend/`-katalogen, dess Helm-mallar (`backend-deployment.yaml`/`backend-service.yaml`), `/admin`-ingress-vägen, `build-backend`-CI-jobbet och alla `STRAPI_*`-miljövariabler. Innehållet flyttas till en ny `SitePage`-modell (Prisma, `slug`/`title`/`body`/`order`/`updatedById`, migrationer `20260803170000_add_site_page` + `20260803180000_add_site_page_order`) och redigeras numera inline direkt på sidan via en pennikon för site-admins (`EditableSitePage.tsx`, samma `isSiteAdmin()`-mönster och TipTap-editor som redan används för hero-sektionen/wikin), istället för ett separat CMS-adminUI. Fram tills en site-admin sparar en första ändring visas hårdkodad startcopy (`frontend/src/lib/defaultSitePages.ts`) — sidorna kan alltså aldrig stå tomma. Detta stänger permanent risken i "Never run `prisma migrate dev`"-varningen (Strapis tabeller i `public`-schemat var grundorsaken till incidenten 2026-07-15). Kvarstående städning: produktionens gamla Strapi-tabeller (`up_*`/`strapi_*`/`admin_*` m.fl.) är fortfarande fysiskt kvar i `public`-schemat och bör `DROP`:as efter att eventuellt redigerat produktionsinnehåll först är återskapat via den nya pennan (se "Known Issues" i CLAUDE.md).
+- **Byggt & Beslutat:** Footern har fått en pennikon (`FooterPageManager.tsx`, endast synlig för site-admins) som låter en lägga till, ta bort och ordna om `SitePage`-länkade sidor — mönstret från hero-carousel-editorns ↑/↓-omordning återanvänt rakt av (`reorderHeroSlides` → `reorderFooterPages`). De fasta sidorna (Om GoodTribes/Integritet/Villkor, den sistnämnda saknade tidigare en footer-länk alls — ett förbiseende som rättades till samtidigt) kan ordnas om men inte tas bort; nya sidor skapas med en genererad slug (`createFooterPage`, samma mönster som `createWikiPage`) och renderas på en ny generisk route `app/[locale]/pages/[slug]/page.tsx`, redigerbara med samma `EditableSitePage`-penna som de fasta sidorna.
 
 **Ändringar i v4.24:**
 - **Byggt & Beslutat:** Fasen `pilot` (se 4d) döps om till **"Uppstart"** i alla användargränssnitt (fasresans meny, projektsidan). Enum-värdet `pilot` är oförändrat, bara den svenska etiketten ändras (`PROJECT_PHASE_LABEL` i `frontend/src/lib/projectPhase.ts`).
@@ -2379,7 +2383,7 @@ Genomgående i alla faser:
 5. ~~Idéflödets co-creation & idé→projekt-pipeline~~ **Klart (v4.13)** — förslag/versionshistorik (`IdeaRevision`), bidragsgivarlista (`IdeaContributor`) och en-klicks-befordran till projekt (`promoteIdeaToProject`) är byggda och verifierade end-to-end. Kvarstår som medvetet avgränsat: ingen trådning av kommentarer, ingen "konstruktivt förslag"-flagga (5.14), inget diff-format (fulla textsnapshots istället).
 6. **SSO/SAML-inloggning och upphandlingsvänliga funktioner** (fakturering, DPA, SLA) för offentlig sektor/akademia/företagskunder — obyggt, se §10.
 7. **Följ upp fas- och stegwidgeten efter lansering** — designbeslutet (guide, inte tvång, se 4d) är fattat men UX-utfallet är overifierat med riktiga användare.
-8. **Åtgärda de tre driftsgapen i produktion** (se "Known Issues" i CLAUDE.md): `REDIS_URL` saknas i `goodtribes-secret` (livechatt uppdateras inte live utan omladdning), Strapi delar fortfarande `public`-schemat med Prisma i produktion (måste separeras innan `chart/values.yaml` uppdateras, annars raderas produktionens Strapi-innehåll), och Stripe-nycklar saknas i produktion (crowdfunding kör bara manuellt pledge-läge, inga riktiga betalningar).
+8. ~~Åtgärda de tre driftsgapen i produktion~~ **`REDIS_URL` klart (2026-08-01), Strapi-schemaseparationen inaktuell (v4.25)** — Strapi är helt borttaget (se nedan); dess `public`-schema-krock med Prisma kan aldrig längre inträffa. Kvarstår: Stripe-nycklar saknas i produktion (crowdfunding kör bara manuellt pledge-läge, inga riktiga betalningar) — se "Known Issues" i CLAUDE.md.
 
 ---
 

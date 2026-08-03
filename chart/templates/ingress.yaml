@@ -22,13 +22,6 @@ spec:
                 name: goodtribes-frontend
                 port:
                   number: {{ $.Values.frontend.service.port }}
-          - path: /admin
-            pathType: Prefix
-            backend:
-              service:
-                name: goodtribes-backend
-                port:
-                  number: {{ $.Values.backend.service.port }}
     {{- end }}
   tls:
     {{- toYaml .Values.ingress.tls | nindent 4 }}

@@ -123,6 +123,7 @@ model User {
   createdProjectInvites   ProjectInvite[]           @relation("CreatedProjectInvites")
   createdWikiPages        WikiPage[]                @relation("WikiPageCreatedBy")
   updatedWikiPages        WikiPage[]                @relation("WikiPageUpdatedBy")
+  updatedSitePages        SitePage[]                @relation("SitePageUpdatedBy")
   createdOrgInvites       OrgInvite[]               @relation("CreatedOrgInvites")
   fundingPledges          FundingPledge[]           @relation("FundingPledges")
   calendarEvents          CalendarEvent[]           @relation("CreatedCalendarEvents")
@@ -534,6 +535,22 @@ model HomeHeroSettings {
   id        String   @id @default(cuid())
   heading   String
   updatedAt DateTime @updatedAt
+}
+
+// Editorial content for the About/Privacy/Terms pages (replaces Strapi,
+// which only ever owned this same static copy). One row per slug
+// ("about" | "privacy" | "terms"); the page falls back to hardcoded copy
+// in the page component until a site admin saves an edit for that slug
+// via EditableSitePage.tsx.
+model SitePage {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  body        String
+  order       Int      @default(0)
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+  updatedBy   User?    @relation("SitePageUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model OnboardingStep {
