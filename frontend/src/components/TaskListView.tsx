@@ -543,7 +543,10 @@ function InlineAddRow({
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="text-xs border border-gray-200 rounded-md px-1.5 py-1 text-gray-600 bg-white focus:outline-none focus:border-blue-400"
+          title={!category ? "Kategori krävs för att kunna lägga till uppgiften" : undefined}
+          className={`text-xs border rounded-md px-1.5 py-1 bg-white focus:outline-none focus:border-blue-400 ${
+            category ? "border-gray-200 text-gray-600" : "border-red-300 text-red-500"
+          }`}
         >
           <option value="" disabled>Kategori *</option>
           {CATEGORY_ORDER.map((key) => (
@@ -584,6 +587,7 @@ function InlineAddRow({
         <button
           onClick={submit}
           disabled={!title.trim() || !category}
+          title={!category ? "Välj en kategori för att kunna lägga till uppgiften" : undefined}
           className="text-xs font-medium bg-seagrass text-white px-3 py-1 rounded-md hover:bg-seagrass/80 disabled:opacity-40 transition-colors"
         >
           Lägg till

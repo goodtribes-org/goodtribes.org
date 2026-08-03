@@ -390,6 +390,7 @@ function CardDetailModalImpl({
             )}
 
             <span className="text-gray-400 pt-2">Kategori{isNew && <span className="text-red-400"> *</span>}</span>
+            <div>
             <div className="flex flex-wrap gap-1.5">
               {!isNew && (
                 <button
@@ -415,6 +416,10 @@ function CardDetailModalImpl({
                   {meta.label}
                 </button>
               ))}
+            </div>
+            {isNew && !category && (
+              <p className="text-xs text-red-400 mt-1">Välj en kategori för att kunna skapa kortet.</p>
+            )}
             </div>
 
             <span className="text-gray-400 pt-1">Ansvarig</span>
@@ -736,6 +741,7 @@ function CardDetailModalImpl({
             <button
               onClick={save}
               disabled={!title.trim() || (isNew && !category)}
+              title={isNew && !category ? "Välj en kategori för att kunna skapa kortet" : undefined}
               className="bg-seagrass text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-seagrass/80 disabled:opacity-40 transition-colors"
             >
               {isNew ? "Skapa kort" : "Spara"}
