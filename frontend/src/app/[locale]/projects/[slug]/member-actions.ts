@@ -8,15 +8,21 @@ import { logActivity } from "@/lib/activity";
 import { sendEmail } from "@/lib/email";
 import { hasProjectRole, isLastFounder, isSiteAdmin, isExcludedFromProject, PROJECT_LEAD_ROLES, type ProjectRole } from "@/lib/authz";
 
-// Site admins can search any user not already on the project — used to add
-// members directly, bypassing the invite/join-request flow (founder
-// capability: pull in people without waiting on them to accept/apply).
+// Project leads (founder/admin) and site admins can search any user not
+// already on the project and add them directly, bypassing the
+// invite/join-request flow — pull in people without waiting on them to
+// accept/apply.
+async function canAddMembersDirectly(projectId: string, userId: string): Promise<boolean> {
+  if (await isSiteAdmin(userId)) return true;
+  return hasProjectRole(projectId, userId, PROJECT_LEAD_ROLES);
+}
+
 export async function searchUsersToAdd(
   query: string,
   projectId: string
 ): Promise<{ id: string; name: string | null; image: string | null; email: string }[]> {
   const session = await auth();
-  if (!session?.user?.id || !(await isSiteAdmin(session.user.id))) return [];
+  if (!session?.user?.id || !(await canAddMembersDirectly(projectId, session.user.id))) return [];
 
   const trimmed = query.trim();
   if (!trimmed) return [];
@@ -35,9 +41,9 @@ export async function searchUsersToAdd(
   });
 }
 
-export async function addMemberAsSiteAdmin(projectId: string, targetUserId: string, slug: string) {
+export async function addMemberDirectly(projectId: string, targetUserId: string, slug: string) {
   const session = await auth();
-  if (!session?.user?.id || !(await isSiteAdmin(session.user.id))) return;
+  if (!session?.user?.id || !(await canAddMembersDirectly(projectId, session.user.id))) return;
 
   const existing = await prisma.projectMember.findUnique({
     where: { projectId_userId: { projectId, userId: targetUserId } },
@@ -77,6 +83,50 @@ export async function addMemberAsSiteAdmin(projectId: string, targetUserId: stri
   revalidatePath(`/projects/${slug}`);
 }
 
+// For an email that doesn't match any existing account — same direct-add
+// UI, but falls back to the invite-link flow since there's no user to
+// attach a ProjectMember row to yet.
+export async function inviteMemberByEmail(
+  projectId: string,
+  slug: string,
+  emailInput: string
+): Promise<{ error: string } | { ok: true }> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+  if (!(await canAddMembersDirectly(projectId, session.user.id))) return { error: "Forbidden" };
+
+  const email = emailInput.trim().toLowerCase();
+  if (!email || !email.includes("@")) return { error: "Ogiltig e-postadress." };
+
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) return { error: "Den e-postadressen har redan ett konto — sök på namn eller e-post ovan istället." };
+
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { title: true } });
+  if (!project) return { error: "Projektet hittades inte." };
+
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const invite = await prisma.projectInvite.create({
+    data: { projectId, email, createdById: session.user.id, expiresAt },
+  });
+
+  const base = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
+  const url = `${base}/invite/${invite.token}`;
+
+  await sendEmail({
+    to: email,
+    subject: `You're invited to join ${project.title} on GoodTribes`,
+    html: `
+      <p>Hi,</p>
+      <p><strong>${session.user.name ?? "Someone"}</strong> has invited you to join <strong>${project.title}</strong> on GoodTribes.org.</p>
+      <p><a href="${url}" style="background:#E85D4A;color:white;padding:10px 20px;border-radius:4px;text-decoration:none;display:inline-block;margin:16px 0;">Accept invitation</a></p>
+      <p>This link expires in 7 days.</p>
+      <p style="color:#888;font-size:12px;">If you didn't expect this email, you can safely ignore it.</p>
+    `,
+  });
+
+  revalidatePath(`/projects/${slug}`);
+  return { ok: true };
+}
 
 export async function removeMember(projectId: string, targetUserId: string, slug: string) {
   const session = await auth();

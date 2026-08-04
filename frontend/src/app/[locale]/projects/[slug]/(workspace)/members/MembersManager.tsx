@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import Image from "next/image";
 import { respondToJoinRequest } from "../../join-actions";
-import { removeMember, changeMemberRole, searchUsersToAdd, addMemberAsSiteAdmin } from "../../member-actions";
+import { removeMember, changeMemberRole, searchUsersToAdd, addMemberDirectly, inviteMemberByEmail } from "../../member-actions";
 import type { ProjectRole } from "@/lib/authz";
 import MessageButton from "@/components/MessageButton";
 
@@ -22,6 +22,10 @@ type JoinRequest = {
   user: { id: string; name: string | null; image: string | null };
   createdAt: string;
 };
+
+function looksLikeEmail(value: string): boolean {
+  return /^\S+@\S+\.\S+$/.test(value.trim());
+}
 
 const ROLE_LABELS: Record<string, string> = {
   FOUNDER: "Grundare",
@@ -61,33 +65,52 @@ export default function MembersManager({
   viewerIsSiteAdmin: boolean;
 }) {
   const viewerIsFounder = viewerRole === "FOUNDER";
+  const canAddDirectly = viewerIsSiteAdmin || viewerIsFounder || viewerRole === "ADMIN";
   const [members, setMembers] = useState(initialMembers);
   const [requests, setRequests] = useState(initialRequests);
   const [isPending, startTransition] = useTransition();
   const [addQuery, setAddQuery] = useState("");
   const [addResults, setAddResults] = useState<UserResult[]>([]);
+  const [searched, setSearched] = useState(false);
+  const [inviteState, setInviteState] = useState<{ status: "idle" | "sent"; error?: string }>({ status: "idle" });
 
   useEffect(() => {
     const q = addQuery.trim();
     if (!q) {
       setAddResults([]);
+      setSearched(false);
       return;
     }
     const id = setTimeout(() => {
-      searchUsersToAdd(q, project.id).then(setAddResults).catch(() => setAddResults([]));
+      searchUsersToAdd(q, project.id)
+        .then((r) => { setAddResults(r); setSearched(true); })
+        .catch(() => { setAddResults([]); setSearched(true); });
     }, 200);
     return () => clearTimeout(id);
   }, [addQuery, project.id]);
 
   function handleAddMember(userId: string) {
     startTransition(async () => {
-      await addMemberAsSiteAdmin(project.id, userId, project.slug);
+      await addMemberDirectly(project.id, userId, project.slug);
       const added = addResults.find((u) => u.id === userId);
       if (added) {
         setMembers((prev) => [...prev, { userId: added.id, name: added.name, image: added.image, email: added.email, role: "MEMBER", joinedAt: new Date().toISOString() }]);
       }
       setAddQuery("");
       setAddResults([]);
+      setSearched(false);
+    });
+  }
+
+  function handleInviteByEmail() {
+    setInviteState({ status: "idle" });
+    startTransition(async () => {
+      const result = await inviteMemberByEmail(project.id, project.slug, addQuery.trim());
+      if ("error" in result) { setInviteState({ status: "idle", error: result.error }); return; }
+      setInviteState({ status: "sent" });
+      setAddQuery("");
+      setAddResults([]);
+      setSearched(false);
     });
   }
 
@@ -124,21 +147,23 @@ export default function MembersManager({
     <div className="max-w-3xl space-y-8">
       <h1 className="text-2xl font-bold text-dark-slate">Projektmedlemmar</h1>
 
-      {/* Site-admin only: add an existing user directly, no invite/approval needed */}
-      {viewerIsSiteAdmin && (
+      {/* Add an existing user directly, no invite/approval needed — or,
+          for an email with no matching account, send an invite link
+          instead so external (not-yet-registered) people can join too. */}
+      {canAddDirectly && (
         <section>
-          <h2 className="text-sm font-semibold text-dark-slate mb-3">Lägg till medlem direkt (admin)</h2>
+          <h2 className="text-sm font-semibold text-dark-slate mb-3">Lägg till medlem direkt</h2>
           <div className="relative">
             <input
               type="text"
               value={addQuery}
-              onChange={(e) => setAddQuery(e.target.value)}
+              onChange={(e) => { setAddQuery(e.target.value); setInviteState({ status: "idle" }); }}
               placeholder="Sök på namn eller e-post…"
               className="w-full text-sm border border-muted-teal/30 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-seagrass/40 placeholder:text-dark-slate/30"
             />
             {addQuery.trim() && (
               <div className="mt-1 border border-muted-teal/30 rounded-xl bg-white shadow-sm divide-y divide-muted-teal/10 max-h-64 overflow-y-auto">
-                {addResults.length === 0 && (
+                {addResults.length === 0 && searched && !looksLikeEmail(addQuery) && (
                   <p className="px-3 py-2 text-xs text-dark-slate/40 italic">Inga träffar.</p>
                 )}
                 {addResults.map((u) => (
@@ -157,9 +182,24 @@ export default function MembersManager({
                     <span className="text-xs font-semibold text-seagrass shrink-0">+ Lägg till</span>
                   </button>
                 ))}
+                {searched && addResults.length === 0 && looksLikeEmail(addQuery) && (
+                  <button
+                    type="button"
+                    disabled={isPending}
+                    onClick={handleInviteByEmail}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-dry-sage/20 transition-colors disabled:opacity-50"
+                  >
+                    <span className="min-w-0 flex-1 text-sm text-dark-slate">
+                      Ingen användare med den e-posten ännu — bjud in <span className="font-medium">{addQuery.trim()}</span> via länk
+                    </span>
+                    <span className="text-xs font-semibold text-seagrass shrink-0">Bjud in →</span>
+                  </button>
+                )}
               </div>
             )}
           </div>
+          {inviteState.error && <p className="text-xs text-coral mt-1.5">{inviteState.error}</p>}
+          {inviteState.status === "sent" && <p className="text-xs text-seagrass mt-1.5">Inbjudan skickad — de blir medlem när de klickar på länken i mejlet.</p>}
         </section>
       )}
 

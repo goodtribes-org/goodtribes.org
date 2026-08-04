@@ -20,6 +20,15 @@ export async function acceptInvite(token: string): Promise<void> {
     redirect("/projects");
   }
 
+  // The invite is only valid for the address it was sent to — otherwise
+  // anyone who gets hold of the link (forwarded, leaked, guessed) could
+  // join regardless of who it was actually meant for. The page itself
+  // shows this same check up front so this is a defense-in-depth guard,
+  // not the primary UX.
+  if (invite.email && session.user.email?.toLowerCase() !== invite.email.toLowerCase()) {
+    redirect(`/invite/${token}`);
+  }
+
   // A Granskningsrådet project_ban blocks rejoining via invite too.
   if (await isExcludedFromProject(session.user.id, invite.projectId)) {
     redirect("/projects");

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import Link from "next/link";
 import { acceptInvite } from "./actions";
+import SignOutButton from "./SignOutButton";
 
 
 export default async function AcceptInvitePage({ params }: { params: Promise<{ token: string }> }) {
@@ -33,6 +34,12 @@ export default async function AcceptInvitePage({ params }: { params: Promise<{ t
     );
   }
 
+  const emailMismatch = !!(
+    session?.user?.email &&
+    invite.email &&
+    session.user.email.toLowerCase() !== invite.email.toLowerCase()
+  );
+
   return (
     <div className="max-w-md mx-auto mt-24">
       <div className="border border-muted-teal/40 rounded-xl p-8 text-center">
@@ -40,7 +47,15 @@ export default async function AcceptInvitePage({ params }: { params: Promise<{ t
         <h1 className="text-2xl font-bold text-dark-slate mb-2">{invite.project.title}</h1>
         <p className="text-sm text-dark-slate/60 mb-8">Join as a collaborator and start contributing.</p>
 
-        {session?.user?.id ? (
+        {emailMismatch ? (
+          <div>
+            <p className="text-sm text-coral mb-4">
+              This invite was sent to <strong>{invite.email}</strong>, but you're signed in as{" "}
+              <strong>{session!.user!.email}</strong>.
+            </p>
+            <SignOutButton callbackUrl={`/invite/${token}`} />
+          </div>
+        ) : session?.user?.id ? (
           <form action={acceptInvite.bind(null, token)}>
             <button
               type="submit"
