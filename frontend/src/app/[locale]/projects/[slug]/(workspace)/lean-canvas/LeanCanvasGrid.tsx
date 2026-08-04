@@ -1,0 +1,57 @@
+import LeanCanvasBlock from "./LeanCanvasBlock";
+import { LEAN_CANVAS_BLOCKS } from "./fields";
+import type { LeanCanvasField } from "./fields";
+
+interface Props {
+  projectSlug: string;
+  canvas: Partial<Record<LeanCanvasField, string | null>> | null;
+  canEdit: boolean;
+}
+
+export default function LeanCanvasGrid({ projectSlug, canvas, canEdit }: Props) {
+  return (
+    <>
+      <style>{`
+        .leancanvas-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+        @media (min-width: 900px) {
+          .leancanvas-grid {
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: auto auto auto;
+            grid-template-areas:
+              "problem problem solution solution uvp uvp unfair unfair segments segments"
+              "alt alt metrics metrics concept concept channels channels early early"
+              "cost cost cost impact impact impact impact revenue revenue revenue";
+          }
+          .leancanvas-grid > [data-area="problem"] { grid-area: problem; }
+          .leancanvas-grid > [data-area="alt"] { grid-area: alt; }
+          .leancanvas-grid > [data-area="solution"] { grid-area: solution; }
+          .leancanvas-grid > [data-area="metrics"] { grid-area: metrics; }
+          .leancanvas-grid > [data-area="uvp"] { grid-area: uvp; }
+          .leancanvas-grid > [data-area="concept"] { grid-area: concept; }
+          .leancanvas-grid > [data-area="unfair"] { grid-area: unfair; }
+          .leancanvas-grid > [data-area="channels"] { grid-area: channels; }
+          .leancanvas-grid > [data-area="segments"] { grid-area: segments; }
+          .leancanvas-grid > [data-area="early"] { grid-area: early; }
+          .leancanvas-grid > [data-area="cost"] { grid-area: cost; }
+          .leancanvas-grid > [data-area="impact"] { grid-area: impact; }
+          .leancanvas-grid > [data-area="revenue"] { grid-area: revenue; }
+        }
+      `}</style>
+
+      <div className="leancanvas-grid">
+        {LEAN_CANVAS_BLOCKS.map((b) => (
+          <LeanCanvasBlock
+            key={b.field}
+            projectSlug={projectSlug}
+            field={b.field}
+            area={b.area}
+            label={b.label}
+            hint={b.hint}
+            value={canvas ? (canvas[b.field] ?? null) : null}
+            canEdit={canEdit}
+          />
+        ))}
+      </div>
+    </>
+  );
+}

@@ -65,10 +65,11 @@ export function getNextPhase(current: ProjectPhaseValue): ProjectPhaseValue | nu
 // never a gate (idea -> sprint is always the initiator's own call).
 export const INITIATIVE_CHECKLIST_ITEMS: Record<ProjectPhaseValue, { key: string; label: string; href?: string }[]> = {
   IDEA: [
-    { key: "dream_defined", label: "Beskriv idén" },
-    { key: "ai_reviewed", label: "Be AI granska idén" },
-    { key: "peer_feedback_requested", label: "Bjud in vänner att ge feedback" },
-    { key: "lean_canvas_created", label: "Gör en Lean Canvas", href: "lean-canvas" },
+    { key: "dream_defined", label: "Beskriv projektet" },
+    { key: "ai_reviewed", label: "Välj SDG" },
+    { key: "lean_canvas_created", label: "Lean Canvas", href: "lean-canvas" },
+    { key: "peer_feedback_requested", label: "Bjud in vänner" },
+    { key: "sprint_prepped", label: "Sprint" },
   ],
   SPRINT: [
     { key: "map_understand", label: "Kartlägga & förstå" },

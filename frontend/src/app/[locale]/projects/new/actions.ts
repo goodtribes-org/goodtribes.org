@@ -9,6 +9,7 @@ import { createProjectRecord } from "@/lib/createProject";
 import { linkPromotedProject } from "@/lib/promoteIdea";
 import { parseRepoInput } from "@/lib/github";
 import { syncProjectRepoInBackground } from "@/lib/githubSync";
+import { markChecklistDone } from "../[slug]/guide/actions";
 
 export async function getSdgSuggestions(
   description: string
@@ -45,6 +46,11 @@ export async function createProject(formData: FormData) {
     title, summary, description, visibility, category, tags, sdgGoals, imageUrl, orgId,
     legalType: legalTypeRaw, ownerId: userId, skillIds,
   });
+
+  // This form already covers everything the guide's "Beskriv projektet"
+  // step (dream_defined) asks for, so mark it done immediately — the guide
+  // that follows starts one step further in (AI review).
+  await markChecklistDone(project.id, "dream_defined", userId);
 
   // Map the GitHub repo, if one was given. An unparseable value is ignored
   // rather than blocking project creation — it can be fixed under /edit.

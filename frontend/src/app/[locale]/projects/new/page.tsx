@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { htmlToPreviewText } from "@/lib/renderBody";
-import NewProjectForm from "./NewProjectForm";
+import NewProjectGuide from "./NewProjectGuide";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -58,34 +58,19 @@ export default async function NewProjectPage({
   const fromIdea = !!ideaId;
   const fromThreadValid = !ideaId && !!fromThread;
 
-  const [skills, userOrgs] = await Promise.all([
-    prisma.skill.findMany({
-      select: { id: true, name: true, slug: true },
-      orderBy: { name: "asc" },
-    }),
-    prisma.organisation.findMany({
-      where: { OR: [{ ownerId: session.user.id }, { members: { some: { userId: session.user.id } } }] },
-      select: { id: true, name: true },
-      orderBy: { name: "asc" },
-    }),
-  ]);
-
   return (
-    <div className="max-w-lg mx-auto mt-12">
-      <h1 className="text-2xl font-bold mb-1">New project</h1>
-      <p className="text-dark-slate/70 mb-8">
-        {fromIdea
-          ? "Starting from an idea — edit the details below."
-          : fromThreadValid
-            ? "Startar från en idésession i Idéverkstaden — redigera detaljerna nedan."
-            : "Fill in the details for your project."}
-      </p>
-      <NewProjectForm
+    <div className="max-w-3xl mx-auto">
+      <NewProjectGuide
         initial={initial}
         ideaId={ideaId}
         fromThread={fromThreadValid ? fromThread : undefined}
-        skills={skills}
-        orgs={userOrgs}
+        contextNote={
+          fromIdea
+            ? "Starting from an idea — give the project a name, then fill in the rest right after."
+            : fromThreadValid
+              ? "Startar från en idésession i Idéverkstaden — ge projektet ett namn, fyll i resten direkt efter."
+              : undefined
+        }
       />
     </div>
   );

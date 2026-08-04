@@ -29,6 +29,10 @@ import { fetchActivityItems, getFeedInteractionData } from "@/lib/activityFeed";
 
 const FEED_PAGE_SIZE = 20;
 
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, "").trim();
+}
+
 function MemberAvatar({
   name,
   image,
@@ -151,7 +155,7 @@ export async function generateMetadata({
     locale,
     path: `/projects/${slug}`,
     title: project.title,
-    description: project.description ?? "A project on GoodTribes.org",
+    description: project.description ? stripHtml(project.description) : "A project on GoodTribes.org",
     imageUrl: project.imageUrl,
   });
 }
@@ -1036,7 +1040,7 @@ export default async function ProjectDetailPage({
         <ShareButton
           url={`${APP_URL}/${locale}/projects/${slug}`}
           title={project.title}
-          text={project.description ?? undefined}
+          text={project.description ? stripHtml(project.description) : undefined}
         />
         {userId && !isOwnerOrAdmin && <FlagContentButton targetType="Project" targetId={project.id} />}
       </div>

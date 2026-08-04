@@ -18,8 +18,10 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // Delete stale dev sessions to keep the table clean
-  await prisma.session.deleteMany({ where: { userId: user.id } });
+  // Only clean up truly expired sessions — never touch still-valid ones,
+  // since dev-login may be called from another browser tab/agent sharing
+  // the same dev user while a valid session is mid-use elsewhere.
+  await prisma.session.deleteMany({ where: { userId: user.id, expires: { lt: new Date() } } });
 
   const sessionToken = randomUUID();
   const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
