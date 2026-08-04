@@ -44,7 +44,7 @@ export default async function SandboxPage({
   const where = { isSandbox: true };
   const aiUser = await getAiParticipantUser();
 
-  const [total, projects, recentMessages, projectCount, aiSeedCount, tasksDone] = await Promise.all([
+  const [total, projects, recentIdeas, recentMessages, projectCount, aiSeedCount, tasksDone] = await Promise.all([
     prisma.project.count({ where }),
     prisma.project.findMany({
       where,
@@ -55,6 +55,18 @@ export default async function SandboxPage({
         owner: { select: { name: true } },
         members: { select: { id: true } },
         _count: { select: { kanbanCards: true, todoItems: true } },
+      },
+    }),
+    prisma.idea.findMany({
+      where: { hiddenAt: null, status: { not: "draft" } },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+      select: {
+        id: true,
+        title: true,
+        category: true,
+        createdAt: true,
+        author: { select: { name: true } },
       },
     }),
     prisma.message.findMany({
@@ -112,7 +124,7 @@ export default async function SandboxPage({
           </p>
         </div>
         <Link
-          href="/sandbox/new"
+          href="/projects/new"
           className="px-4 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors flex-shrink-0"
         >
           + Nytt sandbox-projekt
@@ -148,7 +160,7 @@ export default async function SandboxPage({
         {projectsWithLikes.length === 0 ? (
           <div className="border border-dashed border-amber-300 rounded-lg p-16 text-center">
             <p className="text-dark-slate/40 text-sm mb-3">Inga sandbox-projekt ännu.</p>
-            <Link href="/sandbox/new" className="text-coral hover:underline text-sm">
+            <Link href="/projects/new" className="text-coral hover:underline text-sm">
               Starta det första →
             </Link>
           </div>
@@ -159,6 +171,39 @@ export default async function SandboxPage({
             </div>
             <Pagination page={page} total={total} perPage={PAGE_SIZE} searchParams={rawParams} basePath="/sandbox" />
           </>
+        )}
+      </section>
+
+      <section className="mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-dark-slate">Idéer</h2>
+          <Link href="/ideas" className="text-xs text-coral hover:underline">Alla idéer →</Link>
+        </div>
+        {recentIdeas.length === 0 ? (
+          <div className="border border-dashed border-amber-300 rounded-lg p-16 text-center">
+            <p className="text-dark-slate/40 text-sm mb-3">Inga idéer ännu.</p>
+            <Link href="/ideas/new" className="text-coral hover:underline text-sm">
+              Dela den första →
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {recentIdeas.map((idea) => (
+              <Link
+                key={idea.id}
+                href={`/ideas/${idea.id}`}
+                className="border border-amber-200 bg-amber-50/30 rounded-lg p-3 hover:border-amber-400 transition-colors"
+              >
+                {idea.category && (
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-700">{idea.category}</span>
+                )}
+                <p className="text-sm font-medium text-dark-slate line-clamp-2 mt-0.5">{idea.title}</p>
+                <p className="text-[11px] text-dark-slate/40 mt-1.5">
+                  {idea.author.name ?? "Okänd"} · {timeAgo(idea.createdAt)}
+                </p>
+              </Link>
+            ))}
+          </div>
         )}
       </section>
 

@@ -6,11 +6,10 @@
   "Nav": {
     "create": "Skapa",
     "createNewProject": "Nytt projekt",
+    "createNewIdea": "Ny idé",
     "createNewOrg": "Ny organisation",
     "sandbox": "Sandbox",
     "sandboxHome": "Utforska sandbox",
-    "sandboxNewProject": "Nytt projekt",
-    "sandboxNewIdea": "Ny idé",
     "discover": "Utforska",
     "discoverProjects": "Projekt",
     "discoverIdeaverkstad": "Idéverkstaden",

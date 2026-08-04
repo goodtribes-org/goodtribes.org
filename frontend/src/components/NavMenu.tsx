@@ -66,6 +66,7 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
           {create && (
             <div className="absolute top-full left-0 mt-1 bg-white border border-muted-teal rounded-xl shadow-lg py-1.5 min-w-48 z-50">
               <a href="/projects/new" onClick={navLink("/projects/new", () => setCreate(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createNewProject")}</a>
+              <a href="/ideas/new" onClick={navLink("/ideas/new", () => setCreate(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createNewIdea")}</a>
               <a href="/org/new" onClick={navLink("/org/new", () => setCreate(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createNewOrg")}</a>
             </div>
           )}
@@ -112,8 +113,6 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
           {sandbox && (
             <div className="absolute top-full right-0 mt-1 bg-white border border-muted-teal rounded-xl shadow-lg py-1.5 min-w-48 z-50">
               <a href="/sandbox" onClick={navLink("/sandbox", () => setSandbox(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-watermelon hover:bg-watermelon/10">{t("sandboxHome")}</a>
-              <a href="/sandbox/new" onClick={navLink("/sandbox/new", () => setSandbox(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-watermelon hover:bg-watermelon/10">{t("sandboxNewProject")}</a>
-              <a href="/ideaverkstad/new" onClick={navLink("/ideaverkstad/new", () => setSandbox(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-watermelon hover:bg-watermelon/10">{t("sandboxNewIdea")}</a>
             </div>
           )}
         </div>
@@ -142,6 +141,7 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
           <nav className="max-w-6xl mx-auto px-6 py-3 flex flex-col">
             <p className="pt-1 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">{t("create")}</p>
             <a href="/projects/new" onClick={navLink("/projects/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewProject")}</a>
+            <a href="/ideas/new" onClick={navLink("/ideas/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewIdea")}</a>
             <a href="/org/new" onClick={navLink("/org/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewOrg")}</a>
 
             <p className="pt-3 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">{t("discover")}</p>
@@ -159,8 +159,6 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
             >
               {t("sandbox")}
             </a>
-            <a href="/sandbox/new" onClick={navLink("/sandbox/new", () => setOpen(false))} className="py-2.5 pl-3 mt-1 text-dark-slate/70 hover:text-watermelon border-b border-muted-teal/20">{t("sandboxNewProject")}</a>
-            <a href="/ideaverkstad/new" onClick={navLink("/ideaverkstad/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-watermelon border-b border-muted-teal/20 mb-3">{t("sandboxNewIdea")}</a>
 
             {session?.user ? (
               <>
