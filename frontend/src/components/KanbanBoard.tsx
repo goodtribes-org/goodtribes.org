@@ -549,50 +549,48 @@ export default function KanbanBoard({
 
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="overflow-x-auto pb-4">
-          {swimlanesOn && swimlanes ? (
-            Object.keys(swimlanes).length === 0 ? (
-              <p className="text-sm text-gray-400 italic py-6 text-center">Inga kort matchar filtren.</p>
-            ) : (
-              <div className="flex flex-col gap-6">
-                {Object.entries(swimlanes).map(([laneKey, laneCols]) => (
-                  <div key={laneKey}>
-                    <div
-                      className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full mb-2 ${
-                        laneKey === "none" ? "bg-gray-100 text-gray-500" : `${CATEGORY_META[laneKey].bg} ${CATEGORY_META[laneKey].text}`
-                      }`}
-                    >
-                      {laneKey === "none" ? "Okategoriserat" : CATEGORY_META[laneKey].label}
-                    </div>
-                    <div className="flex gap-3 w-full">
-                      {COLUMNS.filter((col) => columnModes[col.key] !== "hidden").map((col) => (
-                        <KanbanColumn
-                          key={`${laneKey}-${col.key}`}
-                          col={col}
-                          dropId={`${laneKey}:${col.key}`}
-                          cards={laneCols[col.key as keyof Columns] as Card[]}
-                          isLoggedIn={isLoggedIn}
-                          isMember={isMember}
-                          isLead={isLead}
-                          projectSlug={projectSlug}
-                          currentUserId={currentUserId}
-                          onOpenModal={openNewCard}
-                          onDelete={handleDelete}
-                          onOpenCard={setEditingCard}
-                          onAddCard={handleAdd}
-                          onClearColumn={handleClearColumn}
-                          mode={columnModes[col.key] ?? "normal"}
-                          onSetMode={setColumnMode}
-                          runningAI={runningAI}
-                          onRunAI={handleRunAI}
-                          onSubtasksChanged={handleCardSubtasksSynced}
-                          onSaved={handleCardSaved}
-                        />
-                      ))}
-                    </div>
+          {swimlanesOn && swimlanes && Object.keys(swimlanes).length > 0 ? (
+            <div className="flex flex-col gap-6">
+              {Object.entries(swimlanes).map(([laneKey, laneCols]) => (
+                <div key={laneKey}>
+                  <div
+                    className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full mb-2 ${
+                      laneKey === "none" ? "bg-gray-100 text-gray-500" : `${CATEGORY_META[laneKey].bg} ${CATEGORY_META[laneKey].text}`
+                    }`}
+                  >
+                    {laneKey === "none" ? "Okategoriserat" : CATEGORY_META[laneKey].label}
                   </div>
-                ))}
-              </div>
-            )
+                  <div className="flex gap-3 w-full">
+                    {COLUMNS.filter((col) => columnModes[col.key] !== "hidden").map((col) => (
+                      <KanbanColumn
+                        key={`${laneKey}-${col.key}`}
+                        col={col}
+                        dropId={`${laneKey}:${col.key}`}
+                        cards={laneCols[col.key as keyof Columns] as Card[]}
+                        isLoggedIn={isLoggedIn}
+                        isMember={isMember}
+                        isLead={isLead}
+                        projectSlug={projectSlug}
+                        currentUserId={currentUserId}
+                        onOpenModal={openNewCard}
+                        onDelete={handleDelete}
+                        onOpenCard={setEditingCard}
+                        onAddCard={handleAdd}
+                        onClearColumn={handleClearColumn}
+                        mode={columnModes[col.key] ?? "normal"}
+                        onSetMode={setColumnMode}
+                        runningAI={runningAI}
+                        onRunAI={handleRunAI}
+                        onSubtasksChanged={handleCardSubtasksSynced}
+                        onSaved={handleCardSaved}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : totalCards > 0 ? (
+            <p className="text-sm text-gray-400 italic py-6 text-center">Inga kort matchar filtren.</p>
           ) : (
             <div className="flex gap-3 w-full">
               {COLUMNS.filter((col) => columnModes[col.key] !== "hidden").map((col) => (
