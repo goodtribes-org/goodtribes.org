@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { LeanCanvas } from "@prisma/client";
 import { completeIdeaGuideStep, updateIdeaDetails } from "./actions";
 import { toggleChecklistItem } from "../(workspace)/edit/actions";
-import InviteForm from "../(workspace)/invite/InviteForm";
+import AddOrInviteMember from "../AddOrInviteMember";
 import LeanCanvasGrid from "../(workspace)/lean-canvas/LeanCanvasGrid";
 import FileUpload from "@/components/FileUpload";
 import RichTextEditor from "@/components/RichTextEditor";
@@ -335,12 +335,14 @@ export default function IdeaGuide({
 
       {/* Step 4 — Bjud in vänner */}
       <div className={step === 3 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
-        <div>
-          <label className="block text-sm font-medium text-dark-slate mb-1">Bjud in vänner</label>
-          <p className="text-xs text-dark-slate/50 mb-3">
-            Valfritt — community-feedback kan hjälpa dig förbättra idén, men ingen extern granskning krävs för att gå vidare.
+        <div className="rounded-xl border border-seagrass/20 bg-seagrass/5 p-5">
+          <label className="block text-base font-semibold text-dark-slate mb-1">
+            🎉 Dela idén med vänner
+          </label>
+          <p className="text-sm text-dark-slate/60 mb-4">
+            Bra idéer blir ännu bättre med fler perspektiv. Bjud in vänner och kollegor att kika på din idé och tycka till — både de som redan är med på GoodTribes och de som inte är det än. Helt valfritt, men det tar bara en minut.
           </p>
-          <InviteForm projectId={projectId} slug={slug} />
+          <AddOrInviteMember projectId={projectId} slug={slug} />
         </div>
         <div className="flex justify-between pt-2">
           <button type="button" onClick={() => setStep(2)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">← Tillbaka</button>

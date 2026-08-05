@@ -41,6 +41,24 @@ export async function searchUsersToAdd(
   });
 }
 
+// Pending (not-yet-accepted) email invites — founder/admin/site-admin only,
+// same gate as sending them in the first place. Emails are semi-private, so
+// this is checked here rather than just relying on the caller only ever
+// rendering the list for a lead.
+export async function getPendingInvites(
+  projectId: string
+): Promise<{ id: string; email: string | null; createdAt: string; expiresAt: string }[]> {
+  const session = await auth();
+  if (!session?.user?.id || !(await canAddMembersDirectly(projectId, session.user.id))) return [];
+
+  const invites = await prisma.projectInvite.findMany({
+    where: { projectId, usedAt: null },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, email: true, createdAt: true, expiresAt: true },
+  });
+  return invites.map((i) => ({ ...i, createdAt: i.createdAt.toISOString(), expiresAt: i.expiresAt.toISOString() }));
+}
+
 export async function addMemberDirectly(projectId: string, targetUserId: string, slug: string) {
   const session = await auth();
   if (!session?.user?.id || !(await canAddMembersDirectly(projectId, session.user.id))) return;
