@@ -77,13 +77,13 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<ProjectPhaseValue, { key: string
     { key: "decide_plan", label: "Beslut & planera" },
     { key: "build_prototype", label: "Bygga prototyp" },
     { key: "test_with_users", label: "Testa med användare" },
+  ],
+  PILOT: [
     { key: "sprint_lean_canvas", label: "Skriva ett enkelt lean canvas / projektbeskrivning", href: "lean-canvas" },
     { key: "core_team_formed", label: "Definiera roller och bilda kärnteam" },
     { key: "kanban_seeded", label: "Sätta upp Kanban-board med första uppgifterna", href: "kanban" },
     { key: "pilot_success_criteria", label: "Definiera framgångskriterier för pilotfasen" },
     { key: "rough_budget_estimated", label: "Ta fram grov budget/resursbehov" },
-  ],
-  PILOT: [
     { key: "todo_created", label: "Fyll på med arbetsuppgifter" },
     { key: "collaborators_invited", label: "Bjud in medskapare" },
     { key: "team_formed", label: "Formera team" },
