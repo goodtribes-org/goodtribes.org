@@ -83,10 +83,10 @@ export async function moveKanbanCard(cardId: string, newColumn: string, userId: 
     _max: { order: true },
   });
 
-  // Priority locks the first time a card enters "Doing" — from then on its token
-  // value is frozen, so later priority edits can't retroactively change payout.
-  // Locks the first time a card reaches "Doing" — or "Done" directly, for
-  // cards whose subtasks were all finished before ever passing through Doing.
+  // Token value snapshots the first time a card enters "Doing" — or "Done"
+  // directly, for cards whose subtasks were all finished before ever passing
+  // through Doing. A lead can still edit priority afterwards (updateCard),
+  // which re-snapshots this value; already-minted ledger rows never change.
   const shouldLockPriority = (targetColumn === "DOING" || targetColumn === "DONE") && !card.priorityLockedAt;
   const tokenValue = card.lockedTokenValue ?? getPriorityTokenValue(card.priority);
 

@@ -15,6 +15,7 @@ import {
   assertNotGithubSubtask,
   GITHUB_CARD_LOCKED_MESSAGE,
 } from "@/lib/githubSync";
+import { getPriorityTokenValue } from "@/lib/priorityTokens";
 
 async function isProjectLead(projectSlug: string, userId: string): Promise<boolean> {
   const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
@@ -390,7 +391,6 @@ export async function updateCard(
 
   const priorityChanging = data.priority !== undefined && data.priority !== card.priority;
   if (priorityChanging) {
-    if (card.priorityLockedAt) return { error: "Priority is locked once work has started on this card" };
     if (!(await isProjectLead(card.projectSlug, userId))) {
       return { error: "Only project founders/admins can set priority" };
     }
@@ -415,6 +415,9 @@ export async function updateCard(
       ...(data.dueDate !== undefined ? { dueDate: data.dueDate ? new Date(data.dueDate) : null } : {}),
       ...(data.startDate !== undefined ? { startDate: data.startDate ? new Date(data.startDate) : null } : {}),
       ...(data.priority !== undefined ? { priority: data.priority } : {}),
+      ...(priorityChanging && card.priorityLockedAt
+        ? { lockedTokenValue: getPriorityTokenValue(data.priority!) }
+        : {}),
       ...(data.category !== undefined ? { category: data.category || null } : {}),
       ...(data.assigneeId !== undefined
         ? {
