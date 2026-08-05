@@ -50,6 +50,9 @@ export type Card = {
   // Present only on cards mirrored from GitHub (source === "github"). Those are
   // read-only in the app — GitHub owns their title, state and column.
   source?: string;
+  githubItemId?: string | null;
+  githubRepoName?: string | null;
+  githubStatus?: string | null;
   githubNumber?: number | null;
   githubType?: string | null;
   githubUrl?: string | null;
@@ -98,15 +101,9 @@ export const PRIORITY_META: Record<string, { label: string; color: string; dot: 
   showstopper: { label: "Showstopper", color: "text-gray-900", dot: "bg-gray-900", bottomHex: "#111827", tokenValue: PRIORITY_TOKEN_VALUES.showstopper },
 };
 
-export const COLUMNS = [
-  { key: "BACKLOG", label: "Wishlist", color: "#ef4444" },
-  { key: "TODO",    label: "ToDo",    color: "#f97316" },
-  { key: "DOING",   label: "Doing",   color: "#facc15" },
-  { key: "REVIEW",  label: "Review",  color: "#3b82f6" },
-  { key: "DONE",    label: "Done",    color: "#16a34a" },
-];
-
-export const COLUMN_ORDER = COLUMNS.map((c) => c.key);
+// Defined in @/lib/kanbanColumns so server code can share them; re-exported here
+// because every board component imports them from this module.
+export { COLUMNS, COLUMN_ORDER } from "@/lib/kanbanColumns";
 
 export function timeAgo(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;

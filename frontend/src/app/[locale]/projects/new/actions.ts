@@ -7,8 +7,8 @@ import { suggestSdgGoals } from "@/lib/claude";
 import { logOrgActivity } from "@/lib/activity";
 import { createProjectRecord } from "@/lib/createProject";
 import { linkPromotedProject } from "@/lib/promoteIdea";
-import { parseRepoInput } from "@/lib/github";
-import { syncProjectRepoInBackground } from "@/lib/githubSync";
+import { parseProjectInput } from "@/lib/github";
+import { syncProjectBoardInBackground } from "@/lib/githubSync";
 import { markChecklistDone } from "../[slug]/guide/actions";
 
 export async function getSdgSuggestions(
@@ -52,15 +52,22 @@ export async function createProject(formData: FormData) {
   // that follows starts one step further in (AI review).
   await markChecklistDone(project.id, "dream_defined", userId);
 
-  // Map the GitHub repo, if one was given. An unparseable value is ignored
-  // rather than blocking project creation — it can be fixed under /edit.
-  const githubRef = parseRepoInput(formData.get("githubRepo") as string | null);
+  // Map the GitHub project board, if one was given. An unparseable value is
+  // ignored rather than blocking project creation — it can be fixed under /edit.
+  const githubRef = parseProjectInput(formData.get("githubProject") as string | null);
   if (githubRef) {
-    const repoRow = await prisma.projectGithubRepo
-      .create({ data: { projectSlug: project.slug, owner: githubRef.owner, repo: githubRef.repo } })
+    const boardRow = await prisma.projectGithubBoard
+      .create({
+        data: {
+          projectSlug: project.slug,
+          ownerLogin: githubRef.ownerLogin,
+          ownerType: githubRef.ownerType,
+          projectNumber: githubRef.projectNumber,
+        },
+      })
       .catch(() => null);
     // Populate the board now instead of waiting for the next cron tick.
-    if (repoRow) syncProjectRepoInBackground(repoRow);
+    if (boardRow) syncProjectBoardInBackground(boardRow);
   }
 
   if (orgId) {

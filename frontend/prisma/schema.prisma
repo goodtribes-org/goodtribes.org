@@ -434,6 +434,11 @@ model KanbanCard {
   // GitHub mirror. source="github" cards are owned by the sync job and are
   // immutable in the app — see assertNotGithubCard() in src/lib/githubSync.ts.
   source          String    @default("manual")
+  // ProjectV2 item node id — the identity key. A board spans repositories, so
+  // githubNumber alone collides (deploy#5 vs goodtribes.org#5).
+  githubItemId    String?
+  githubRepoName  String?   // "owner/repo", null for draft issues
+  githubStatus    String?   // raw board Status name, e.g. "apply"
   githubNumber    Int?
   githubType      String?
   githubUrl       String?
@@ -457,7 +462,7 @@ model KanbanCard {
   dependencies    KanbanCardDependency[]     @relation("CardDependsOn")
   dependents      KanbanCardDependency[]     @relation("CardDependencyOf")
 
-  @@unique([projectSlug, githubNumber])
+  @@unique([projectSlug, githubItemId])
   @@index([projectSlug, column])
   @@index([openToPublic, assigneeId])
   @@index([projectSlug, source])
@@ -676,7 +681,7 @@ model Project {
   impactReports      ImpactReport[]       @relation("ProjectImpactReports")
   promotedFromIdea   Idea?                @relation("IdeaPromotedToProject")
   maturity           ProjectMaturity?     @relation("ProjectMaturity")
-  githubRepo         ProjectGithubRepo?   @relation("ProjectGithubRepo")
+  githubBoard        ProjectGithubBoard?  @relation("ProjectGithubBoard")
   leanCanvas         LeanCanvas?          @relation("ProjectLeanCanvas")
   leanCanvasComments LeanCanvasComment[]  @relation("ProjectLeanCanvasComments")
   leanCanvasVersions LeanCanvasVersion[]  @relation("ProjectLeanCanvasVersions")
@@ -1661,15 +1666,25 @@ model ProjectMaturity {
   calculatedAt     DateTime  @default(now())
 }
 
-model ProjectGithubRepo {
+// A GitHub Projects V2 board mirrored into this project's kanban. The board's
+// "Status" field is the source of truth for which column an item lands in — see
+// columnForStatus() in src/lib/githubColumnMap.ts.
+model ProjectGithubBoard {
   id             String    @id @default(cuid())
   projectSlug    String    @unique
-  project        Project   @relation("ProjectGithubRepo", fields: [projectSlug], references: [slug], onDelete: Cascade)
-  owner          String
-  repo           String
+  project        Project   @relation("ProjectGithubBoard", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  ownerLogin     String
+  ownerType      String    @default("organization") // "organization" | "user"
+  projectNumber  Int
+  // Resolved on the first successful sync, so the UI can link out and offer the
+  // board's real status list before anyone opens GitHub.
+  projectNodeId  String?
+  projectTitle   String?
+  projectUrl     String?
+  statusOptions  Json      @default("[]") // [{id,name}] in board order
+  columnMap      Json      @default("{}") // { "<status name>": "<COLUMN>" } — overrides only
   enabled        Boolean   @default(true)
   lastSyncedAt   DateTime?
-  lastFullSyncAt DateTime?
   lastSyncError  String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt

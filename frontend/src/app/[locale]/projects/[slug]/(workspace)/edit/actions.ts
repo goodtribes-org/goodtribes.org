@@ -7,48 +7,105 @@ import { redirect } from "next/navigation";
 import { indexDocuments, deleteDocument } from "@/lib/meili";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { getNextPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
-import { parseRepoInput } from "@/lib/github";
-import { syncProjectRepoInBackground } from "@/lib/githubSync";
+import { parseProjectInput } from "@/lib/github";
+import { syncProjectBoardInBackground } from "@/lib/githubSync";
+import { isColumnKey } from "@/lib/kanbanColumns";
 
 
 /**
- * Apply the GitHub repo field. Callers must already have verified project lead.
+ * Apply the GitHub project-board field. Callers must already have verified
+ * project lead.
  *
- * Clearing the field, or pointing at a different repo, drops the cards that were
- * mirrored from the old repo. Only source="github" rows are ever deleted —
+ * Clearing the field, or pointing at a different board, drops the cards that
+ * were mirrored from the old one. Only source="github" rows are ever deleted —
  * manually created cards are never touched.
  */
 async function updateGithubMapping(slug: string, raw: string | null) {
-  const ref = parseRepoInput(raw);
-  const current = await prisma.projectGithubRepo.findUnique({ where: { projectSlug: slug } });
+  const ref = parseProjectInput(raw);
+  const current = await prisma.projectGithubBoard.findUnique({ where: { projectSlug: slug } });
 
   if (!ref) {
     if (current) {
-      await prisma.projectGithubRepo.delete({ where: { projectSlug: slug } });
+      await prisma.projectGithubBoard.delete({ where: { projectSlug: slug } });
       await prisma.kanbanCard.deleteMany({ where: { projectSlug: slug, source: "github" } });
     }
     return;
   }
 
-  if (current && current.owner === ref.owner && current.repo === ref.repo) return;
+  if (
+    current &&
+    current.ownerLogin === ref.ownerLogin &&
+    current.projectNumber === ref.projectNumber
+  ) {
+    return;
+  }
 
   if (current) {
     await prisma.kanbanCard.deleteMany({ where: { projectSlug: slug, source: "github" } });
   }
 
-  const repoRow = await prisma.projectGithubRepo.upsert({
+  const boardRow = await prisma.projectGithubBoard.upsert({
     where: { projectSlug: slug },
-    create: { projectSlug: slug, owner: ref.owner, repo: ref.repo },
+    create: {
+      projectSlug: slug,
+      ownerLogin: ref.ownerLogin,
+      ownerType: ref.ownerType,
+      projectNumber: ref.projectNumber,
+    },
     update: {
-      owner: ref.owner,
-      repo: ref.repo,
+      ownerLogin: ref.ownerLogin,
+      ownerType: ref.ownerType,
+      projectNumber: ref.projectNumber,
+      // A different board means a different status vocabulary, so the old
+      // per-status overrides no longer apply.
+      columnMap: {},
+      statusOptions: [],
+      projectNodeId: null,
+      projectTitle: null,
+      projectUrl: null,
       lastSyncedAt: null,
-      lastFullSyncAt: null,
       lastSyncError: null,
     },
   });
 
-  syncProjectRepoInBackground(repoRow);
+  syncProjectBoardInBackground(boardRow);
+}
+
+/**
+ * Save the per-status → column overrides for a project's mirrored board.
+ *
+ * Form fields are named `columnMap:<status name>`; a pick equal to the built-in
+ * default is stored anyway, so the mapping stays stable if the defaults ever
+ * change under a project that had already chosen.
+ */
+export async function updateGithubColumnMap(slug: string, formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const project = await prisma.project.findUnique({ where: { slug } });
+  if (!project) redirect("/projects");
+  if (!(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) {
+    redirect(`/projects/${slug}`);
+  }
+
+  const board = await prisma.projectGithubBoard.findUnique({ where: { projectSlug: slug } });
+  if (!board) return;
+
+  const columnMap: Record<string, string> = {};
+  for (const [field, value] of formData.entries()) {
+    if (!field.startsWith("columnMap:")) continue;
+    const status = field.slice("columnMap:".length).trim();
+    if (status && isColumnKey(value)) columnMap[status] = value;
+  }
+
+  const updated = await prisma.projectGithubBoard.update({
+    where: { projectSlug: slug },
+    data: { columnMap },
+  });
+
+  syncProjectBoardInBackground(updated);
+  revalidatePath(`/projects/${slug}/edit`);
+  revalidatePath(`/projects/${slug}/tasks`);
 }
 
 export async function updateProject(slug: string, formData: FormData) {
@@ -88,7 +145,7 @@ export async function updateProject(slug: string, formData: FormData) {
       : []),
   ]);
 
-  await updateGithubMapping(slug, formData.get("githubRepo") as string | null);
+  await updateGithubMapping(slug, formData.get("githubProject") as string | null);
 
   // Sync Meilisearch — remove old slug entry if slug changed (slug doesn't change here, but keep in sync)
   if (visibility === "public") {

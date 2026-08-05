@@ -22,11 +22,13 @@ frontend:
   #   NEXT_PUBLIC_MEILI_SEARCH_KEY
   #   S3_ACCESS_KEY         (MinIO root user / S3 access key)
   #   S3_SECRET_KEY         (MinIO root password / S3 secret key)
-  #   GITHUB_PAT            (org-wide read-only PAT: Metadata, Issues, Pull requests)
+  #   GITHUB_PAT            (org-wide read-only PAT: Metadata, Issues, Pull requests,
+  #                          plus organisation "Projects: read" — needed for the
+  #                          Projects V2 board sync. Classic: repo + read:project.)
   #   CRON_SECRET           (bearer token the CronJobs authenticate with)
 
-# Pulls issues and pull requests from each project's mapped GitHub repo into its
-# task board. Calls the in-cluster frontend Service — no ingress involved.
+# Pulls the items of each project's mapped GitHub Projects V2 board into its task
+# board. Calls the in-cluster frontend Service — no ingress involved.
 githubSync:
   enabled: true
   schedule: "*/5 * * * *"

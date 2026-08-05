@@ -176,7 +176,7 @@ export default async function ProjectDetailPage({
     include: {
       owner: { select: { name: true } },
       org: { select: { name: true, slug: true } },
-      githubRepo: true,
+      githubBoard: true,
       members: {
         include: {
           user: { select: { name: true, id: true, image: true, showProfile: true } },
@@ -876,17 +876,21 @@ export default async function ProjectDetailPage({
             </section>
           )}
 
-          {/* GitHub — read-only mirror of the mapped repo */}
-          {project.githubRepo && (
+          {/* GitHub — read-only mirror of the mapped project board */}
+          {project.githubBoard && (
             <section className="border border-muted-teal/30 rounded-xl p-4">
               <h2 className="text-sm font-semibold text-dark-slate mb-3">GitHub</h2>
               <a
-                href={`https://github.com/${project.githubRepo.owner}/${project.githubRepo.repo}`}
+                href={
+                  project.githubBoard.projectUrl ??
+                  `https://github.com/orgs/${project.githubBoard.ownerLogin}/projects/${project.githubBoard.projectNumber}`
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs font-mono text-seagrass hover:underline break-all"
               >
-                {project.githubRepo.owner}/{project.githubRepo.repo}
+                {project.githubBoard.projectTitle ??
+                  `${project.githubBoard.ownerLogin}/${project.githubBoard.projectNumber}`}
               </a>
               <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
                 <div>
@@ -898,13 +902,13 @@ export default async function ProjectDetailPage({
                   <dd className="text-base font-semibold text-dark-slate">{openGithubPrs}</dd>
                 </div>
               </dl>
-              {project.githubRepo.lastSyncError ? (
+              {project.githubBoard.lastSyncError ? (
                 <p className="mt-3 text-xs text-watermelon">
-                  Synk misslyckades: {project.githubRepo.lastSyncError}
+                  Synk misslyckades: {project.githubBoard.lastSyncError}
                 </p>
-              ) : project.githubRepo.lastSyncedAt ? (
+              ) : project.githubBoard.lastSyncedAt ? (
                 <p className="mt-3 text-xs text-dark-slate/50">
-                  Synkad {relativeTime(project.githubRepo.lastSyncedAt)} · skrivskyddad spegling
+                  Synkad {relativeTime(project.githubBoard.lastSyncedAt)} · skrivskyddad spegling
                 </p>
               ) : (
                 <p className="mt-3 text-xs text-dark-slate/50">Väntar på första synk…</p>

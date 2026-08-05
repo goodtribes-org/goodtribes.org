@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import EditProjectForm from "./EditProjectForm";
 import DeleteProjectButton from "@/components/DeleteProjectButton";
 import { isLeadRole } from "@/lib/authz";
+import { parseColumnMap, parseStatusOptions } from "@/lib/githubColumnMap";
 
 
 export default async function EditProjectPage({
@@ -21,7 +22,7 @@ export default async function EditProjectPage({
       include: {
         members: { where: { userId: session.user.id } },
         neededSkills: { select: { skillId: true } },
-        githubRepo: true,
+        githubBoard: true,
         ownershipInterests: {
           orderBy: { createdAt: "asc" },
           include: { user: { select: { id: true, name: true, image: true } } },
@@ -73,11 +74,16 @@ export default async function EditProjectPage({
         currentSkillIds={project.neededSkills.map((s) => s.skillId)}
         currentOrgId={project.orgId}
         github={
-          project.githubRepo
+          project.githubBoard
             ? {
-                repo: `${project.githubRepo.owner}/${project.githubRepo.repo}`,
-                lastSyncedAt: project.githubRepo.lastSyncedAt?.toISOString() ?? null,
-                lastSyncError: project.githubRepo.lastSyncError,
+                projectInput:
+                  project.githubBoard.projectUrl ??
+                  `${project.githubBoard.ownerLogin}/${project.githubBoard.projectNumber}`,
+                projectTitle: project.githubBoard.projectTitle,
+                statusOptions: parseStatusOptions(project.githubBoard.statusOptions),
+                columnMap: parseColumnMap(project.githubBoard.columnMap),
+                lastSyncedAt: project.githubBoard.lastSyncedAt?.toISOString() ?? null,
+                lastSyncError: project.githubBoard.lastSyncError,
               }
             : null
         }

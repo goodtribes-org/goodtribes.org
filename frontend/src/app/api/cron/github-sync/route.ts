@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { syncAllProjectRepos } from "@/lib/githubSync";
+import { syncAllProjectBoards } from "@/lib/githubSync";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { repos, results } = await syncAllProjectRepos();
+  const { boards, results } = await syncAllProjectBoards();
 
   for (const result of results) {
     if (result.synced > 0 || result.removed > 0) {
@@ -29,5 +29,5 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({ ok: true, repos, results });
+  return NextResponse.json({ ok: true, boards, results });
 }

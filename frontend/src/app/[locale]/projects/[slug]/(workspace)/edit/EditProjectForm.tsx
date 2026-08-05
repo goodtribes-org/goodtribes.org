@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useTransition, useRef } from "react";
-import { updateProject, deleteProject, advanceProjectPhase, requestSandboxGraduation, toggleChecklistItem } from "./actions";
+import { updateProject, deleteProject, advanceProjectPhase, requestSandboxGraduation, toggleChecklistItem, updateGithubColumnMap } from "./actions";
+import { COLUMNS } from "@/lib/kanbanColumns";
+import { columnForStatus } from "@/lib/githubColumnMap";
 import { markProjectAbandoned, unmarkProjectAbandoned, transferOwnership } from "@/app/[locale]/projects/[slug]/ownership-actions";
 import { getSdgSuggestions } from "@/app/[locale]/projects/new/actions";
 import FileUpload from "@/components/FileUpload";
@@ -18,7 +20,10 @@ interface Props {
   currentSkillIds: string[];
   currentOrgId: string | null;
   github: {
-    repo: string;
+    projectInput: string;
+    projectTitle: string | null;
+    statusOptions: { id: string; name: string }[];
+    columnMap: Record<string, string>;
     lastSyncedAt: string | null;
     lastSyncError: string | null;
   } | null;
@@ -53,6 +58,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
   const [isTransferring, startTransferring] = useTransition();
   const [abandonedAt, setAbandonedAt] = useState(initial.abandonedAt);
   const [isTogglingChecklist, startTogglingChecklist] = useTransition();
+  const [isMappingPending, startMappingTransition] = useTransition();
   const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedChecklistKeys));
   const imageInputRef = useRef<HTMLInputElement>(null);
   const nextPhase = isValidProjectPhase(initial.phase) ? getNextPhase(initial.phase) : null;
@@ -97,6 +103,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
   }
 
   return (
+    <>
     <form action={handleSubmit} className="flex flex-col gap-6">
       {/* Organisation */}
       {orgs.length > 0 && (
@@ -142,27 +149,29 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
       </div>
 
       <div>
-        <label htmlFor="githubRepo" className="block text-sm font-medium text-dark-slate mb-1">
-          GitHub-repo <span className="text-dark-slate/50 font-normal">(valfritt)</span>
+        <label htmlFor="githubProject" className="block text-sm font-medium text-dark-slate mb-1">
+          GitHub-projekt <span className="text-dark-slate/50 font-normal">(kanban-tavla, valfritt)</span>
         </label>
         <input
-          id="githubRepo"
-          name="githubRepo"
+          id="githubProject"
+          name="githubProject"
           type="text"
-          placeholder="goodtribes-org/mitt-repo"
-          defaultValue={github?.repo ?? ""}
+          placeholder="https://github.com/orgs/goodtribes-org/projects/2"
+          defaultValue={github?.projectInput ?? ""}
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
         />
         {github?.lastSyncError ? (
           <p className="text-xs text-watermelon mt-1">Senaste synk misslyckades: {github.lastSyncError}</p>
         ) : github?.lastSyncedAt ? (
           <p className="text-xs text-dark-slate/50 mt-1">
-            Senast synkad {new Date(github.lastSyncedAt).toLocaleString("sv-SE")}
+            {github.projectTitle ? `${github.projectTitle} · ` : ""}
+            senast synkad {new Date(github.lastSyncedAt).toLocaleString("sv-SE")}
           </p>
         ) : (
           <p className="text-xs text-dark-slate/50 mt-1">
-            Issues och pull requests hämtas in som uppgifter var femte minut. Töm fältet
-            för att koppla bort repot och ta bort de hämtade uppgifterna.
+            Tavlans issues och pull requests hämtas in som uppgifter var femte minut, och
+            hamnar i kolumnen som deras Status pekar på. Töm fältet för att koppla bort
+            tavlan och ta bort de hämtade uppgifterna.
           </p>
         )}
       </div>
@@ -457,5 +466,51 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
         </button>
       </div>
     </form>
+
+    {/* Status → kolumn. Its own form: it saves independently of the project
+        fields above, and a nested <form> is invalid HTML. Only appears once the
+        board has synced at least once, since that is what fills statusOptions. */}
+    {github && github.statusOptions.length > 0 && (
+      <form
+        action={(formData) => startMappingTransition(() => updateGithubColumnMap(slug, formData))}
+        className="mt-8 border border-muted-teal/40 rounded-xl p-4 flex flex-col gap-3"
+      >
+        <div>
+          <h2 className="text-sm font-medium text-dark-slate">GitHub-status → kolumn</h2>
+          <p className="text-xs text-dark-slate/50 mt-1">
+            Varje Status på tavlan hamnar i den kolumn du väljer här. Stängda issues och
+            mergade pull requests hamnar alltid i Done.
+          </p>
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-2">
+          {github.statusOptions.map((option) => (
+            <label key={option.id} className="flex items-center gap-2 text-sm">
+              <span className="flex-1 truncate text-dark-slate/70">{option.name}</span>
+              <select
+                name={`columnMap:${option.name}`}
+                defaultValue={columnForStatus(option.name, github.columnMap)}
+                className="border border-muted-teal rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
+              >
+                {COLUMNS.map((col) => (
+                  <option key={col.key} value={col.key}>
+                    {col.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
+        </div>
+
+        <button
+          type="submit"
+          disabled={isMappingPending}
+          className="self-start px-4 py-2 bg-seagrass text-white text-sm font-medium rounded hover:bg-seagrass/90 transition-colors disabled:opacity-60"
+        >
+          {isMappingPending ? "Sparar…" : "Spara kolumnmappning"}
+        </button>
+      </form>
+    )}
+    </>
   );
 }

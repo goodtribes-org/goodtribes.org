@@ -1,16 +1,15 @@
 import { after } from "next/server";
-import type { ProjectGithubRepo } from "@prisma/client";
+import type { ProjectGithubBoard } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
-  fetchRepoItems,
+  fetchProjectBoard,
   isGithubConfigured,
-  labelNames,
-  type GithubIssue,
+  type GithubBoardItem,
+  type GithubOwnerType,
 } from "@/lib/github";
+import { columnForStatus, parseColumnMap } from "@/lib/githubColumnMap";
 
-const FULL_SYNC_INTERVAL_MS = 60 * 60 * 1000; // full pass once an hour
-const MIN_SYNC_INTERVAL_MS = 4 * 60 * 1000; // skip repos synced very recently
-const SINCE_OVERLAP_MS = 60 * 1000; // re-fetch a minute of overlap for clock skew
+const MIN_SYNC_INTERVAL_MS = 4 * 60 * 1000; // skip boards synced very recently
 const MAX_DESCRIPTION = 4000;
 
 export const GITHUB_CARD_LOCKED_MESSAGE =
@@ -41,94 +40,88 @@ export async function assertNotGithubSubtask(subtaskId: string): Promise<string 
 }
 
 /**
- * Where a GitHub item lands on the board:
- *   closed or merged          -> DONE
- *   open pull request         -> REVIEW
- *   open issue, assigned      -> DOING
- *   open issue, unassigned    -> BACKLOG
+ * Where a board item lands:
+ *   closed issue or merged PR -> DONE
+ *   anything else             -> whatever its board Status maps to
+ *
+ * The closed/merged override exists because a finished item usually keeps
+ * whatever Status it had when it was closed (this org's boards end at "test",
+ * not at a "done" column), and leaving it there would park completed work in
+ * Review forever.
  */
-export function columnForItem(item: GithubIssue): string {
-  const isPr = !!item.pull_request;
-  if (item.state === "closed" || item.pull_request?.merged_at) return "DONE";
-  if (isPr) return "REVIEW";
-  return (item.assignees?.length ?? 0) > 0 ? "DOING" : "BACKLOG";
+export function columnForItem(
+  item: GithubBoardItem,
+  overrides: Record<string, string> = {}
+): string {
+  if (item.state === "closed" || item.state === "merged" || item.merged) return "DONE";
+  return columnForStatus(item.status, overrides);
 }
 
-export interface RepoSyncResult {
+export interface BoardSyncResult {
   projectSlug: string;
   synced: number;
   removed: number;
-  full: boolean;
   error?: string;
 }
 
 /**
- * Pull a repo's issues and pull requests into that project's KanbanCard rows.
+ * Pull a GitHub Projects V2 board's items into that project's KanbanCard rows.
  *
- * Never throws — one broken repo must not abort a whole cron run. Failures are
- * recorded on the repo row and `lastSyncedAt` is deliberately left untouched so
+ * Always a full pass: ProjectV2 items carry no `since` filter, and a board is
+ * small compared to a repo's issue history.
+ *
+ * Never throws — one broken board must not abort a whole cron run. Failures are
+ * recorded on the board row and `lastSyncedAt` is deliberately left untouched so
  * the same window is retried next time.
  */
-export async function syncProjectRepo(repo: ProjectGithubRepo): Promise<RepoSyncResult> {
-  const base: RepoSyncResult = {
-    projectSlug: repo.projectSlug,
-    synced: 0,
-    removed: 0,
-    full: false,
-  };
+export async function syncProjectBoard(board: ProjectGithubBoard): Promise<BoardSyncResult> {
+  const base: BoardSyncResult = { projectSlug: board.projectSlug, synced: 0, removed: 0 };
 
-  if (!repo.enabled) return base;
+  if (!board.enabled) return base;
   if (!isGithubConfigured()) {
     return { ...base, error: "GITHUB_PAT is not configured" };
   }
 
   const project = await prisma.project.findUnique({
-    where: { slug: repo.projectSlug },
+    where: { slug: board.projectSlug },
     select: { ownerId: true },
   });
   if (!project) return { ...base, error: "Project not found" };
 
-  const now = new Date();
-  const isFull =
-    !repo.lastSyncedAt ||
-    !repo.lastFullSyncAt ||
-    now.getTime() - repo.lastFullSyncAt.getTime() > FULL_SYNC_INTERVAL_MS;
-
-  const since =
-    isFull || !repo.lastSyncedAt
-      ? null
-      : new Date(repo.lastSyncedAt.getTime() - SINCE_OVERLAP_MS);
-
-  let items: GithubIssue[];
-  let truncated: boolean;
+  let fetched;
   try {
-    ({ items, truncated } = await fetchRepoItems(
-      { owner: repo.owner, repo: repo.repo },
-      since
-    ));
+    fetched = await fetchProjectBoard({
+      ownerLogin: board.ownerLogin,
+      ownerType: board.ownerType as GithubOwnerType,
+      projectNumber: board.projectNumber,
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Okänt fel mot GitHub";
-    await prisma.projectGithubRepo
-      .update({ where: { id: repo.id }, data: { lastSyncError: message } })
+    await prisma.projectGithubBoard
+      .update({ where: { id: board.id }, data: { lastSyncError: message } })
       .catch(() => {});
-    return { ...base, full: isFull, error: message };
+    return { ...base, error: message };
   }
 
-  // Existing synced cards, so we can tell create from update and only shuffle
-  // `order` when an item actually changes column.
+  const overrides = parseColumnMap(board.columnMap);
+
+  // Existing mirrored cards, keyed by ProjectV2 item id so we can tell create
+  // from update. The issue number is not usable as a key: a board spans repos.
   const existing = await prisma.kanbanCard.findMany({
-    where: { projectSlug: repo.projectSlug, source: "github" },
-    select: { id: true, githubNumber: true, column: true },
+    where: { projectSlug: board.projectSlug, source: "github" },
+    select: { id: true, githubItemId: true },
   });
-  const byNumber = new Map(
-    existing.flatMap((c) => (c.githubNumber === null ? [] : [[c.githubNumber, c] as const]))
+  const byItemId = new Map(
+    existing.flatMap((c) => (c.githubItemId === null ? [] : [[c.githubItemId, c] as const]))
   );
 
-  // Highest order per column across ALL cards, so synced items append below
-  // whatever the team has arranged manually.
+  // Highest order per column across ALL cards, so mirrored items append below
+  // whatever the team has arranged manually. Items arrive in board order and
+  // keep it: mirrored cards can't be dragged, so there is no manual order to
+  // preserve and reassigning every pass keeps the two boards reading alike.
   const maxOrders = await prisma.kanbanCard.groupBy({
     by: ["column"],
-    where: { projectSlug: repo.projectSlug },
+    where: { projectSlug: board.projectSlug, source: { not: "github" } },
     _max: { order: true },
   });
   const nextOrder = new Map(maxOrders.map((m) => [m.column, (m._max.order ?? -1) + 1]));
@@ -139,58 +132,58 @@ export async function syncProjectRepo(repo: ProjectGithubRepo): Promise<RepoSync
   };
 
   let synced = 0;
-  const seen = new Set<number>();
+  const seen = new Set<string>();
 
-  for (const item of items) {
-    seen.add(item.number);
-    const column = columnForItem(item);
-    const prior = byNumber.get(item.number);
+  for (const item of fetched.items) {
+    seen.add(item.itemId);
+    const column = columnForItem(item, overrides);
+    const prior = byItemId.get(item.itemId);
 
+    // Written straight through with update/create rather than moveKanbanCard(),
+    // so a card landing in DONE from GitHub mints no tokens and fires no
+    // completion notification. That is deliberate: the work was not tracked here.
     const data = {
       title: item.title.slice(0, 500),
       description: item.body ? item.body.slice(0, MAX_DESCRIPTION) : null,
       column,
-      dueDate: item.milestone?.due_on ? new Date(item.milestone.due_on) : null,
+      order: takeOrder(column),
+      dueDate: item.dueOn ? new Date(item.dueOn) : null,
       source: "github",
+      githubItemId: item.itemId,
+      githubRepoName: item.repoName,
+      githubStatus: item.status,
       githubNumber: item.number,
-      githubType: item.pull_request ? "pull_request" : "issue",
-      githubUrl: item.html_url,
+      githubType: item.type,
+      githubUrl: item.url,
       githubState: item.state,
-      githubMerged: !!item.pull_request?.merged_at,
-      githubDraft: !!item.draft,
-      githubLabels: labelNames(item.labels),
-      githubAuthor: item.user?.login ?? null,
-      githubAssignees: (item.assignees ?? []).map((a) => a.login),
-      githubUpdatedAt: new Date(item.updated_at),
+      githubMerged: item.merged,
+      githubDraft: item.draft,
+      githubLabels: item.labels,
+      githubAuthor: item.author,
+      githubAssignees: item.assignees,
+      githubUpdatedAt: new Date(item.updatedAt),
     };
 
     try {
       if (prior) {
-        await prisma.kanbanCard.update({
-          where: { id: prior.id },
-          data: prior.column === column ? data : { ...data, order: takeOrder(column) },
-        });
+        await prisma.kanbanCard.update({ where: { id: prior.id }, data });
       } else {
         await prisma.kanbanCard.create({
-          data: {
-            ...data,
-            projectSlug: repo.projectSlug,
-            createdById: project.ownerId,
-            order: takeOrder(column),
-          },
+          data: { ...data, projectSlug: board.projectSlug, createdById: project.ownerId },
         });
       }
       synced++;
     } catch {
-      // Skip the individual item; the rest of the repo still syncs.
+      // Skip the individual item; the rest of the board still syncs.
     }
   }
 
-  // A full pass sees every open and closed item, so anything missing was deleted
-  // or transferred on GitHub. Only ever touches source="github" rows.
+  // Every pass sees the whole board, so anything missing was removed from it,
+  // deleted, or archived. Skipped when the item list was truncated, and only
+  // ever touches source="github" rows.
   let removed = 0;
-  if (isFull && !truncated) {
-    const stale = existing.filter((c) => c.githubNumber !== null && !seen.has(c.githubNumber));
+  if (!fetched.truncated) {
+    const stale = existing.filter((c) => c.githubItemId !== null && !seen.has(c.githubItemId));
     if (stale.length > 0) {
       const res = await prisma.kanbanCard.deleteMany({
         where: { id: { in: stale.map((c) => c.id) }, source: "github" },
@@ -199,48 +192,56 @@ export async function syncProjectRepo(repo: ProjectGithubRepo): Promise<RepoSync
     }
   }
 
-  await prisma.projectGithubRepo.update({
-    where: { id: repo.id },
+  await prisma.projectGithubBoard.update({
+    where: { id: board.id },
     data: {
-      lastSyncedAt: now,
+      lastSyncedAt: new Date(),
       lastSyncError: null,
-      ...(isFull && !truncated ? { lastFullSyncAt: now } : {}),
+      // Refreshed every pass so the column-mapping UI always offers the board's
+      // live status list, and so a board renamed on GitHub relinks correctly.
+      ownerType: fetched.ownerType,
+      projectNodeId: fetched.nodeId,
+      projectTitle: fetched.title,
+      projectUrl: fetched.url,
+      // Mapped to plain literals: Prisma's InputJsonValue needs an index
+      // signature, which the StatusOption interface doesn't carry.
+      statusOptions: fetched.statusOptions.map((o) => ({ id: o.id, name: o.name })),
     },
   });
 
-  return { projectSlug: repo.projectSlug, synced, removed, full: isFull };
+  return { projectSlug: board.projectSlug, synced, removed };
 }
 
-/** Sync every enabled repo mapping. Used by the cron endpoint. */
-export async function syncAllProjectRepos(): Promise<{
-  repos: number;
-  results: RepoSyncResult[];
+/** Sync every enabled board mapping. Used by the cron endpoint. */
+export async function syncAllProjectBoards(): Promise<{
+  boards: number;
+  results: BoardSyncResult[];
 }> {
   const cutoff = new Date(Date.now() - MIN_SYNC_INTERVAL_MS);
-  const repos = await prisma.projectGithubRepo.findMany({
+  const boards = await prisma.projectGithubBoard.findMany({
     where: {
       enabled: true,
       OR: [{ lastSyncedAt: null }, { lastSyncedAt: { lt: cutoff } }],
     },
   });
 
-  const results: RepoSyncResult[] = [];
-  for (const repo of repos) {
-    results.push(await syncProjectRepo(repo));
+  const results: BoardSyncResult[] = [];
+  for (const board of boards) {
+    results.push(await syncProjectBoard(board));
   }
-  return { repos: repos.length, results };
+  return { boards: boards.length, results };
 }
 
 /**
- * Sync right after a repo is mapped, so the board is populated immediately
- * instead of after the next cron tick.
+ * Sync right after a board is mapped or its column mapping changes, so the board
+ * is populated immediately instead of after the next cron tick.
  *
  * Scheduled with after() rather than left as a floating promise: work started in
  * a server action is not guaranteed to survive the response, and this call takes
- * seconds against a large repo.
+ * seconds against a large board.
  */
-export function syncProjectRepoInBackground(repo: ProjectGithubRepo): void {
+export function syncProjectBoardInBackground(board: ProjectGithubBoard): void {
   after(async () => {
-    await syncProjectRepo(repo).catch(() => {});
+    await syncProjectBoard(board).catch(() => {});
   });
 }

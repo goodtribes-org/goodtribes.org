@@ -2,6 +2,8 @@
 
 interface GithubCard {
   source?: string;
+  githubRepoName?: string | null;
+  githubStatus?: string | null;
   githubNumber?: number | null;
   githubType?: string | null;
   githubUrl?: string | null;
@@ -24,8 +26,12 @@ function stateLabel(card: GithubCard): { text: string; className: string } {
 }
 
 /**
- * Provenance strip for a card mirrored from GitHub: issue/PR number linking out,
- * state pill, labels and GitHub assignee logins.
+ * Provenance strip for a card mirrored from GitHub: the board Status it holds
+ * there, issue/PR number linking out, state pill, labels and assignee logins.
+ *
+ * The Status pill is what makes the two boards legible side by side: the card
+ * sits in whichever column that status is mapped to, and this says which status
+ * put it there. A board spans repositories, so the repo name is shown too.
  *
  * Everything here is read-only — GitHub is the source of truth for these cards.
  */
@@ -65,6 +71,19 @@ export default function GithubCardMeta({
       <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${state.className}`}>
         {state.text}
       </span>
+
+      {card.githubStatus && (
+        <span
+          title="Status på GitHub-tavlan"
+          className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-coral/15 text-dark-slate/80"
+        >
+          {card.githubStatus}
+        </span>
+      )}
+
+      {!compact && card.githubRepoName && (
+        <span className="font-mono text-[10px] text-dark-slate/40">{card.githubRepoName}</span>
+      )}
 
       {!compact &&
         labels.slice(0, 3).map((label) => (
