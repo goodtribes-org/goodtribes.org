@@ -556,26 +556,6 @@ export async function deleteCard(cardId: string) {
   revalidatePath(`/projects/${card.projectSlug}/tasks`);
 }
 
-export async function clearColumnCards(projectSlug: string, column: string) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Not logged in" };
-
-  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
-  if (!project) return { error: "Project not found" };
-
-  const isLead = await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES);
-  if (!isLead) return { error: "Must be a project admin or founder" };
-
-  // Never delete the GitHub mirror: those cards are re-created on the next
-  // sync anyway, and clearing a column is about the team's own cards.
-  await prisma.kanbanCard.deleteMany({ where: { projectSlug, column, source: { not: "github" } } });
-
-  publishToKanban(projectSlug, { action: "column-cleared", column });
-  revalidatePath(`/projects/${projectSlug}/kanban`);
-  revalidatePath(`/projects/${projectSlug}/tasks`);
-  return { ok: true };
-}
-
 // Gantt "koppla arbetsuppgifter till varandra" — cardId depends on (is
 // blocked by) dependsOnId. Visual/manual only: adding an edge never touches
 // dates, see GanttView. Auth mirrors updateCard's existing looseness for

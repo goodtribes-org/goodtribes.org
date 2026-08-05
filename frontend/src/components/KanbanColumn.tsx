@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { clearColumnCards } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
 import { type Card, type Subtask } from "./kanbanShared";
 import { KanbanCardItem } from "./KanbanCardItem";
 
@@ -22,13 +21,11 @@ function KanbanColumnImpl({
   isLoggedIn,
   isMember,
   isLead,
-  projectSlug,
   currentUserId,
   onOpenModal,
   onDelete,
   onOpenCard,
   onAddCard,
-  onClearColumn,
   mode = "normal",
   onSetMode,
   runningAI,
@@ -44,13 +41,11 @@ function KanbanColumnImpl({
   isLoggedIn: boolean;
   isMember: boolean;
   isLead: boolean;
-  projectSlug: string;
   currentUserId: string | null;
   onOpenModal: (colKey: string) => void;
   onDelete: (id: string) => void;
   onOpenCard: (card: Card) => void;
   onAddCard: (card: Card) => void;
-  onClearColumn: (colKey: string) => void;
   mode?: ColumnMode;
   onSetMode?: (colKey: string, mode: ColumnMode) => void;
   runningAI: Set<string>;
@@ -60,22 +55,11 @@ function KanbanColumnImpl({
 })
  {
   const { setNodeRef, isOver } = useDroppable({ id: dropId ?? col.key });
-  const [menuOpen, setMenuOpen] = useState(false);
   const [modeMenuOpen, setModeMenuOpen] = useState(false);
   const openSubtaskCount = cards.reduce(
     (sum, c) => sum + (c.subtasks?.filter((s) => !s.done).length ?? 0),
     0
   );
-
-  function handleClearColumn() {
-    setMenuOpen(false);
-    if (cards.length === 0) return;
-    if (!window.confirm(`Ta bort alla ${cards.length} kort i "${col.label}"? Detta går inte att ångra.`)) return;
-    onClearColumn(col.key);
-    clearColumnCards(projectSlug, col.key).then((result) => {
-      if (result && "error" in result) alert("Kunde inte rensa kolumnen. Du måste vara admin eller founder i projektet.");
-    });
-  }
 
   const modeMenu = onSetMode && (
     <div className="relative">
@@ -182,30 +166,6 @@ function KanbanColumnImpl({
             </button>
           )}
           {modeMenu}
-          {isLoggedIn && isLead && (
-            <button
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-label="Kolumnalternativ"
-              title="Kolumnalternativ"
-              className="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors tracking-widest text-xs pb-1"
-            >
-              ···
-            </button>
-          )}
-          {menuOpen && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-              <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[160px]">
-                <button
-                  type="button"
-                  onClick={handleClearColumn}
-                  className="w-full text-left text-sm px-3 py-1.5 text-red-500 hover:bg-red-50 transition-colors"
-                >
-                  Rensa kolumn
-                </button>
-              </div>
-            </>
-          )}
         </div>
       </div>
       <SortableContext items={cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>

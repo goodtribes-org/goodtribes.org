@@ -152,14 +152,14 @@ export default function KanbanBoard({
     router.replace(pathname, { scroll: false });
   }, [requestOpenCardId]);
 
-  // Live sync: other users' card create/update/move/delete/clear-column
-  // actions get pushed here over SSE so the board updates without a reload.
+  // Live sync: other users' card create/update/move/delete actions get
+  // pushed here over SSE so the board updates without a reload.
   useEffect(() => {
     const es = new EventSource(`/api/projects/${projectSlug}/kanban/sse`);
 
     es.addEventListener("kanban-change", (e) => {
       const payload = JSON.parse((e as MessageEvent).data) as {
-        action: "created" | "updated" | "moved" | "deleted" | "column-cleared";
+        action: "created" | "updated" | "moved" | "deleted";
         card?: Card;
         cardId?: string;
         column?: string;
@@ -173,11 +173,6 @@ export default function KanbanBoard({
             updated[col] = (updated[col] as Card[]).filter((c) => c.id !== payload.cardId) as typeof updated[typeof col];
           }
           return updated;
-        }
-
-        if (payload.action === "column-cleared" && payload.column) {
-          const col = payload.column as keyof Columns;
-          return { ...prev, [col]: [] };
         }
 
         if (!payload.card) return prev;
@@ -374,10 +369,6 @@ export default function KanbanBoard({
     startTransition(async () => { try { await deleteCard(cardId); } catch { /* ignore */ } });
   }, [startTransition]);
 
-  const handleClearColumn = useCallback((colKey: string) => {
-    setColumns((prev) => ({ ...prev, [colKey]: [] }));
-  }, []);
-
   const handleCardSaved = useCallback((cardId: string, patch: Partial<Card>) => {
     setColumns((prev) => {
       const updated = { ...prev };
@@ -570,13 +561,11 @@ export default function KanbanBoard({
                         isLoggedIn={isLoggedIn}
                         isMember={isMember}
                         isLead={isLead}
-                        projectSlug={projectSlug}
                         currentUserId={currentUserId}
                         onOpenModal={openNewCard}
                         onDelete={handleDelete}
                         onOpenCard={setEditingCard}
                         onAddCard={handleAdd}
-                        onClearColumn={handleClearColumn}
                         mode={columnModes[col.key] ?? "normal"}
                         onSetMode={setColumnMode}
                         runningAI={runningAI}
@@ -601,13 +590,11 @@ export default function KanbanBoard({
                   isLoggedIn={isLoggedIn}
                   isMember={isMember}
                   isLead={isLead}
-                  projectSlug={projectSlug}
                   currentUserId={currentUserId}
                   onOpenModal={openNewCard}
                   onDelete={handleDelete}
                   onOpenCard={setEditingCard}
                   onAddCard={handleAdd}
-                  onClearColumn={handleClearColumn}
                   mode={columnModes[col.key] ?? "normal"}
                   onSetMode={setColumnMode}
                   runningAI={runningAI}
