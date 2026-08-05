@@ -28,6 +28,44 @@ export async function markChecklistDone(projectId: string, itemKey: string, user
   });
 }
 
+// Step 1 ("Beskriv projektet") re-visited from later in the guide — a
+// narrow, safe partial update covering only the fields that step shows.
+// Deliberately does NOT reuse (workspace)/edit's updateProject: that action
+// defaults visibility to "public" and wipes projectSkills/orgId when those
+// fields are absent from the FormData, which would silently destroy data
+// for a form that only ever collects title/summary/description/category/
+// tags/imageUrl. legalType isn't editable here either — once a project
+// exists, changing it is a member-voted LegalTypeChangeRequest (PRD 4c),
+// not a casual guide edit.
+export async function updateIdeaDetails(
+  slug: string,
+  data: { title: string; summary: string; description: string; category: string; tags: string[]; imageUrl: string }
+) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+  const project = await requireLead(slug, session.user.id);
+
+  const title = data.title.trim();
+  if (!title) return;
+
+  await prisma.project.update({
+    where: { slug },
+    data: {
+      title,
+      summary: data.summary.trim() || null,
+      description: data.description.trim() || null,
+      category: data.category.trim() || null,
+      tags: data.tags,
+      ...(data.imageUrl.trim() ? { imageUrl: data.imageUrl.trim() } : {}),
+    },
+  });
+  // Defensive re-mark — already set when the project was first created via
+  // /projects/new, but this keeps it true even for a project that reached
+  // this guide some other way.
+  await markChecklistDone(project.id, "dream_defined", session.user.id);
+  revalidatePath(`/projects/${slug}`);
+}
+
 // Marks a single idea-phase checklist item done, optionally saving the
 // selected SDG goals (step 2). Steps 3 (peer feedback) and 4 (Lean Canvas)
 // call this with no sdgGoals — their real work (sending an invite, creating

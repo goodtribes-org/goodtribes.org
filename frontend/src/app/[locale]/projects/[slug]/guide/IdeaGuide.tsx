@@ -3,14 +3,17 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { LeanCanvas } from "@prisma/client";
-import { completeIdeaGuideStep } from "./actions";
+import { completeIdeaGuideStep, updateIdeaDetails } from "./actions";
 import { toggleChecklistItem } from "../(workspace)/edit/actions";
 import InviteForm from "../(workspace)/invite/InviteForm";
 import LeanCanvasGrid from "../(workspace)/lean-canvas/LeanCanvasGrid";
+import FileUpload from "@/components/FileUpload";
+import RichTextEditor from "@/components/RichTextEditor";
 import GuideStepIndicator from "@/components/GuideStepIndicator";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_NUMBERS, SDG_LABELS_SV } from "@/lib/sdg";
 import { IDEA_GUIDE_STEPS } from "@/lib/ideaGuideSteps";
+import { CATEGORIES } from "@/lib/categories";
 import { INITIATIVE_CHECKLIST_ITEMS } from "@/lib/projectPhase";
 
 // The sprint step doesn't move the project's actual phase forward (IDEA and
@@ -25,19 +28,28 @@ interface Props {
   projectId: string;
   slug: string;
   title: string;
+  initialSummary: string;
+  initialDescription: string;
+  initialCategory: string;
+  initialTags: string[];
+  initialImageUrl: string;
   initialSdgGoals: number[];
   completedKeys: string[];
   leanCanvas: LeanCanvas | null;
 }
 
-// Steps 2-4 of the idea-phase guide — step 1 ("Beskriv projektet") both
-// creates the Project and saves its description in one go on
-// /projects/new (see NewProjectGuide.tsx), so this page starts one step
-// further in.
+// The full idea-phase guide, all 5 steps navigable in either direction —
+// step 1 ("Beskriv projektet") both creates the Project on /projects/new
+// and can be revisited/edited here afterward via updateIdeaDetails.
 export default function IdeaGuide({
   projectId,
   slug,
-  title,
+  title: initialTitle,
+  initialSummary,
+  initialDescription,
+  initialCategory,
+  initialTags,
+  initialImageUrl,
   initialSdgGoals,
   completedKeys,
   leanCanvas,
@@ -45,6 +57,13 @@ export default function IdeaGuide({
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [done, setDone] = useState<Set<string>>(new Set(completedKeys));
+  const [title, setTitle] = useState(initialTitle);
+  const [summary, setSummary] = useState(initialSummary);
+  const [description, setDescription] = useState(initialDescription);
+  const [descriptionError, setDescriptionError] = useState(false);
+  const [category, setCategory] = useState(initialCategory);
+  const [tagsInput, setTagsInput] = useState(initialTags.join(", "));
+  const [imageUrl, setImageUrl] = useState(initialImageUrl);
   const [selected, setSelected] = useState<Set<number>>(new Set(initialSdgGoals));
   const [isPending, startTransition] = useTransition();
 
@@ -60,11 +79,31 @@ export default function IdeaGuide({
     router.push(`/projects/${slug}`);
   }
 
+  function handleDetailsNext() {
+    const plainDescription = description.replace(/<[^>]*>/g, "").trim();
+    if (!title.trim() || !summary.trim() || !plainDescription) {
+      setDescriptionError(true);
+      return;
+    }
+    startTransition(async () => {
+      await updateIdeaDetails(slug, {
+        title,
+        summary,
+        description,
+        category,
+        tags: tagsInput.split(",").map((t) => t.trim()).filter(Boolean),
+        imageUrl,
+      });
+      setDone((prev) => new Set(prev).add("dream_defined"));
+      setStep(1);
+    });
+  }
+
   function handleSdgNext() {
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "ai_reviewed", Array.from(selected));
       setDone((prev) => new Set(prev).add("ai_reviewed"));
-      setStep(1);
+      setStep(2);
     });
   }
 
@@ -72,7 +111,7 @@ export default function IdeaGuide({
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "lean_canvas_created");
       setDone((prev) => new Set(prev).add("lean_canvas_created"));
-      setStep(2);
+      setStep(3);
     });
   }
 
@@ -80,7 +119,7 @@ export default function IdeaGuide({
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "peer_feedback_requested");
       setDone((prev) => new Set(prev).add("peer_feedback_requested"));
-      setStep(3);
+      setStep(4);
     });
   }
 
@@ -105,31 +144,129 @@ export default function IdeaGuide({
 
   return (
     <div className="py-10">
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-xl font-bold text-dark-slate">Snabbstart — {title}</h1>
-        <button
-          type="button"
-          onClick={goToProject}
-          className="text-sm text-dark-slate/50 hover:text-dark-slate"
-        >
-          Hoppa över guiden →
-        </button>
-      </div>
-      <p className="text-sm text-dark-slate/60 mb-8">
-        En valfri genomgång av idé-fasens delsteg. Hoppa över när som helst — inget här krävs.
-      </p>
+      <div className="max-w-3xl mx-auto">
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-xl font-bold text-dark-slate">Snabbstart — {title}</h1>
+          <button
+            type="button"
+            onClick={goToProject}
+            className="text-sm text-dark-slate/50 hover:text-dark-slate"
+          >
+            Hoppa över guiden →
+          </button>
+        </div>
+        <p className="text-sm text-dark-slate/60 mb-8">
+          En valfri genomgång av idé-fasens delsteg. Hoppa över när som helst — inget här krävs.
+        </p>
 
-      {/* Step indicator — index 0 ("Beskriv projektet") is always done by
-          the time this page renders, since it's what created the project. */}
-      <GuideStepIndicator
-        steps={IDEA_GUIDE_STEPS}
-        currentIndex={step + 1}
-        doneKeys={new Set(["dream_defined", ...done])}
-        onStepClick={(i) => i > 0 && setStep(i - 1)}
-      />
+        {/* Step indicator — every step is freely clickable once done, including
+            back to step 1, since it's just as much a local step here as any
+            other (its save goes through updateIdeaDetails). */}
+        <GuideStepIndicator
+          steps={IDEA_GUIDE_STEPS}
+          currentIndex={step}
+          doneKeys={done}
+          onStepClick={(i) => setStep(i)}
+        />
+      </div>
+
+      {/* Step 1 — Beskriv projektet */}
+      <div className={step === 0 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
+        <div>
+          <label className="block text-sm font-medium text-dark-slate mb-2">
+            Omslagsbild <span className="text-dark-slate/50 font-normal">(valfritt)</span>
+          </label>
+          <FileUpload visibility="public" accept="image/*" onUpload={setImageUrl} />
+        </div>
+
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-dark-slate mb-1">
+            Projektnamn <span className="text-watermelon">*</span>
+          </label>
+          <input
+            id="title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Projektnamn"
+            className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="summary" className="block text-sm font-medium text-dark-slate mb-1">
+            Kort sammanfattning <span className="text-watermelon">*</span> <span className="text-dark-slate/50 font-normal">(visas på projektkortet)</span>
+          </label>
+          <textarea
+            id="summary"
+            rows={2}
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+            placeholder="1–2 meningar"
+            className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral resize-none"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-dark-slate mb-1">
+            Beskrivning <span className="text-watermelon">*</span>
+          </label>
+          <RichTextEditor
+            content={description}
+            onChange={(html) => {
+              setDescription(html);
+              if (descriptionError) setDescriptionError(false);
+            }}
+          />
+          {descriptionError && (
+            <p className="text-xs text-watermelon mt-1">Projektnamn, sammanfattning och beskrivning krävs.</p>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="category" className="block text-sm font-medium text-dark-slate mb-1">
+              Kategori
+            </label>
+            <select
+              id="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral bg-white"
+            >
+              <option value="">— none —</option>
+              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="tags" className="block text-sm font-medium text-dark-slate mb-1">
+              Taggar <span className="text-dark-slate/50 font-normal">(kommaseparerat)</span>
+            </label>
+            <input
+              id="tags"
+              type="text"
+              value={tagsInput}
+              onChange={(e) => setTagsInput(e.target.value)}
+              placeholder="climate, youth"
+              className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end pt-2">
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={handleDetailsNext}
+            className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            {isPending ? "Sparar…" : "Nästa →"}
+          </button>
+        </div>
+      </div>
 
       {/* Step 2 — Välj SDG */}
-      <div className={step === 0 ? "flex flex-col gap-5" : "hidden"}>
+      <div className={step === 1 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div>
           <label className="block text-sm font-medium text-dark-slate mb-1">Välj SDG</label>
           <p className="text-xs text-dark-slate/50 mb-4">
@@ -160,7 +297,8 @@ export default function IdeaGuide({
             })}
           </div>
         </div>
-        <div className="flex justify-end pt-2">
+        <div className="flex justify-between pt-2">
+          <button type="button" onClick={() => setStep(0)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">← Tillbaka</button>
           <button
             type="button"
             disabled={isPending}
@@ -172,17 +310,18 @@ export default function IdeaGuide({
         </div>
       </div>
 
-      {/* Step 3 — Lean Canvas */}
-      <div className={step === 1 ? "flex flex-col gap-5" : "hidden"}>
-        <div>
+      {/* Step 3 — Lean Canvas (kept full-width, unlike the other steps, so
+          its 10-column grid has room at the 900px+ breakpoint) */}
+      <div className={step === 2 ? "flex flex-col gap-5" : "hidden"}>
+        <div className="max-w-3xl">
           <label className="block text-sm font-medium text-dark-slate mb-1">Lean Canvas</label>
           <p className="text-xs text-dark-slate/50 mb-3">
             Ett enkelsidigt planeringsverktyg — problem, lösning, målgrupp, kanaler, intäkter.
           </p>
-          <LeanCanvasGrid projectSlug={slug} canvas={leanCanvas} canEdit />
         </div>
+        <LeanCanvasGrid projectSlug={slug} canvas={leanCanvas} canEdit />
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(0)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">← Tillbaka</button>
+          <button type="button" onClick={() => setStep(1)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">← Tillbaka</button>
           <button
             type="button"
             disabled={isPending}
@@ -195,7 +334,7 @@ export default function IdeaGuide({
       </div>
 
       {/* Step 4 — Bjud in vänner */}
-      <div className={step === 2 ? "flex flex-col gap-5" : "hidden"}>
+      <div className={step === 3 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div>
           <label className="block text-sm font-medium text-dark-slate mb-1">Bjud in vänner</label>
           <p className="text-xs text-dark-slate/50 mb-3">
@@ -204,7 +343,7 @@ export default function IdeaGuide({
           <InviteForm projectId={projectId} slug={slug} />
         </div>
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(1)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">← Tillbaka</button>
+          <button type="button" onClick={() => setStep(2)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">← Tillbaka</button>
           <button
             type="button"
             disabled={isPending}
@@ -217,7 +356,7 @@ export default function IdeaGuide({
       </div>
 
       {/* Step 5 — Sprint */}
-      <div className={step === 3 ? "flex flex-col gap-5" : "hidden"}>
+      <div className={step === 4 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div>
           <label className="block text-sm font-medium text-dark-slate mb-1">Sprint</label>
           <p className="text-xs text-dark-slate/50 mb-4">
@@ -247,7 +386,7 @@ export default function IdeaGuide({
           </div>
         </div>
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(2)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">← Tillbaka</button>
+          <button type="button" onClick={() => setStep(3)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">← Tillbaka</button>
           <button
             type="button"
             disabled={isPending}

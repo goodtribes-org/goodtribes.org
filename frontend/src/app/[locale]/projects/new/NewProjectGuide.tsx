@@ -28,7 +28,7 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
   const descriptionEmpty = description.replace(/<[^>]*>/g, "").trim().length === 0;
 
   return (
-    <div className="py-10">
+    <div className="py-10 max-w-3xl mx-auto">
       <h1 className="text-xl font-bold text-dark-slate mb-2">Snabbstart — Nytt projekt</h1>
       <p className="text-sm text-dark-slate/60 mb-8">
         {contextNote ?? "En valfri genomgång av idé-fasens delsteg. Hoppa över när som helst — inget här krävs."}

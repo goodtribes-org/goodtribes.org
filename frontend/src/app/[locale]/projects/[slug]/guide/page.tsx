@@ -30,6 +30,11 @@ export default async function IdeaGuidePage({
         projectId={project.id}
         slug={slug}
         title={project.title}
+        initialSummary={project.summary ?? ""}
+        initialDescription={project.description ?? ""}
+        initialCategory={project.category ?? ""}
+        initialTags={project.tags}
+        initialImageUrl={project.imageUrl ?? ""}
         initialSdgGoals={project.sdgGoals}
         completedKeys={project.checklistItems.map((c) => c.itemKey)}
         leanCanvas={project.leanCanvas}

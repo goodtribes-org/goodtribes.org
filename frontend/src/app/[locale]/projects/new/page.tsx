@@ -59,7 +59,7 @@ export default async function NewProjectPage({
   const fromThreadValid = !ideaId && !!fromThread;
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div>
       <NewProjectGuide
         initial={initial}
         ideaId={ideaId}
