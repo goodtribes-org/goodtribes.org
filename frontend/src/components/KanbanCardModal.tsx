@@ -50,7 +50,6 @@ function CardDetailModalImpl({
   onSubtasksChanged,
   isNew,
   onAdd,
-  onCardCreated,
 }: {
   card: Card;
   members: Member[];
@@ -65,7 +64,6 @@ function CardDetailModalImpl({
   onSubtasksChanged?: (cardId: string, subtasks: Subtask[]) => void;
   isNew?: boolean;
   onAdd?: (card: Card) => void;
-  onCardCreated?: (tempId: string, cardId: string) => void;
 }) {
   const t = useTranslations("Kanban");
   const [title, setTitle] = useState(card.title);
@@ -173,8 +171,10 @@ function CardDetailModalImpl({
         ? [...localSubtasks, { id: `temp-${Date.now()}`, title: pendingSubtask, done: false, order: localSubtasks.length }]
         : localSubtasks;
       const subtaskTitles = allSubtasks.map((s) => s.title).filter(Boolean);
-      const assignee = members.find((m) => m.id === assigneeId) ?? null;
-      onAdd?.({ ...card, title: title.trim(), description: description.trim() || null, priority, category: category || null, assigneeId: assigneeId || null, assignee, subtasks: allSubtasks });
+      // No optimistic append here — the board's SSE subscription (see
+      // KanbanBoard.tsx) adds the real, fully-joined card as soon as the
+      // server broadcasts it. An optimistic copy under a temp id used to
+      // race that broadcast and show up as a second, avatar-less card.
       createCard(
         card.projectSlug,
         title.trim(),
@@ -186,11 +186,7 @@ function CardDetailModalImpl({
         startDate || undefined,
         subtaskTitles.length ? subtaskTitles : undefined,
         category || undefined,
-      )
-        .then((result) => {
-          if (result && "cardId" in result) onCardCreated?.(card.id, result.cardId as string);
-        })
-        .catch(() => {});
+      ).catch(() => alert("Kunde inte skapa kortet. Försök igen."));
     } else {
       startTransition(async () => {
         try {

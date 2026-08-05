@@ -428,23 +428,6 @@ export default function KanbanBoard({
     });
   }, []);
 
-  function handleTempCardResolved(tempId: string, cardId: string) {
-    setColumns((prev) => {
-      const updated = { ...prev };
-      for (const key of COLUMN_ORDER) {
-        const col = key as keyof Columns;
-        const idx = (updated[col] as Card[]).findIndex((c) => c.id === tempId);
-        if (idx !== -1) {
-          const cards = [...(updated[col] as Card[])];
-          cards[idx] = { ...cards[idx], id: cardId };
-          updated[col] = cards as typeof updated[typeof col];
-          break;
-        }
-      }
-      return updated;
-    });
-  }
-
   return (
     <div>
       {/* Toolbar: add button left, filters centered */}
@@ -663,7 +646,6 @@ export default function KanbanBoard({
             onSubtasksChanged={handleCardSubtasksSynced}
             isNew={isNewCard}
             onAdd={handleAdd}
-            onCardCreated={handleTempCardResolved}
           />
         )}
       </ChunkErrorBoundary>

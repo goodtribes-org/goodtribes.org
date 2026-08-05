@@ -95,7 +95,19 @@ export async function createCard(
     });
   }
 
-  publishToKanban(projectSlug, { action: "created", card });
+  // Broadcast a fully-joined card — the bare `card` from create() above has
+  // no assignee/createdBy/subtasks, which is what left the SSE-delivered
+  // copy without an avatar (and without subtasks) until the next reload
+  // picked up the properly-joined version.
+  const broadcastCard = await prisma.kanbanCard.findUnique({
+    where: { id: card.id },
+    include: {
+      assignee: { select: { id: true, name: true, image: true } },
+      createdBy: { select: { name: true, image: true } },
+      subtasks: { orderBy: { order: "asc" } },
+    },
+  });
+  publishToKanban(projectSlug, { action: "created", card: broadcastCard });
 
   revalidatePath(`/projects/${projectSlug}/kanban`);
   revalidatePath(`/projects/${projectSlug}/tasks`);
