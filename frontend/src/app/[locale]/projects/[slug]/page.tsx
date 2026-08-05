@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { JoinButton, JoinRequestsPanel } from "./JoinSection";
@@ -14,7 +16,6 @@ import Tooltip from "@/components/Tooltip";
 import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import ProjectSideNav from "./ProjectSideNav";
 import PhaseMenuBar from "./PhaseMenuBar";
-import ProjectHeroSlides from "@/components/ProjectHeroSlides";
 import OwnershipBanner from "@/components/OwnershipBanner";
 import { handwritingFont } from "@/lib/fonts";
 import { isLeadRole, isSiteAdmin } from "@/lib/authz";
@@ -193,10 +194,6 @@ export default async function ProjectDetailPage({
       },
       forkedFromProject: { select: { title: true, slug: true } },
       forks: { select: { title: true, slug: true } },
-      heroSlides: {
-        orderBy: { order: "asc" },
-        select: { id: true, heading: true, body: true, body2: true, order: true },
-      },
     },
   });
   if (!project) notFound();
@@ -507,13 +504,6 @@ export default async function ProjectDetailPage({
         />
       )}
 
-      <ProjectHeroSlides
-        projectId={project.id}
-        slug={slug}
-        initialSlides={project.heroSlides}
-        isLead={!!isOwnerOrAdmin}
-      />
-
       {project.forkedFromProject && (
         <div className="max-w-2xl mx-auto mb-4 px-4 text-sm text-dark-slate/60 text-center">
           Gaffling
@@ -575,6 +565,30 @@ export default async function ProjectDetailPage({
               />
             </section>
           )}
+
+          <section>
+            <h2 className="text-base font-semibold text-dark-slate mb-4">Om projektet</h2>
+            {project.description ? (
+              project.description.trimStart().startsWith("<") ? (
+                <article
+                  className="prose max-w-[760px] mx-auto text-dark-slate leading-relaxed
+                    prose-headings:text-dark-slate
+                    prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
+                    prose-strong:text-dark-slate prose-img:rounded-xl prose-img:max-w-full"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.description) }}
+                />
+              ) : (
+                <article className="prose max-w-[760px] mx-auto text-dark-slate leading-relaxed
+                  prose-headings:text-dark-slate
+                  prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
+                  prose-strong:text-dark-slate prose-img:rounded-xl">
+                  <ReactMarkdown>{project.description}</ReactMarkdown>
+                </article>
+              )
+            ) : (
+              <p className="text-dark-slate/40 italic text-sm">Ingen beskrivning ännu.</p>
+            )}
+          </section>
 
           {latestUpdate && (
             <section>
