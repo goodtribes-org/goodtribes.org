@@ -111,7 +111,7 @@ export default function KanbanBoard({
 
   const hiddenColumnKeys = COLUMNS.filter((c) => columnModes[c.key] === "hidden").map((c) => c.key);
 
-  function openNewCard(colKey: string) {
+  function openNewCard(colKey: string, category: string | null = null) {
     setEditingCard({
       id: `new-${Date.now()}`,
       projectSlug,
@@ -122,6 +122,7 @@ export default function KanbanBoard({
       column: colKey,
       order: 9999,
       priority: "normal",
+      category,
       assigneeId: null,
       assignee: null,
       createdById: "",
@@ -562,7 +563,7 @@ export default function KanbanBoard({
                         isMember={isMember}
                         isLead={isLead}
                         currentUserId={currentUserId}
-                        onOpenModal={openNewCard}
+                        onOpenModal={(colKey) => openNewCard(colKey, laneKey === "none" ? null : laneKey)}
                         onDelete={handleDelete}
                         onOpenCard={setEditingCard}
                         onAddCard={handleAdd}
