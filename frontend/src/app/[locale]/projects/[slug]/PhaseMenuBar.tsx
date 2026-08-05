@@ -2,7 +2,13 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
-import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, INITIATIVE_CHECKLIST_ITEMS, type ProjectPhaseValue } from "@/lib/projectPhase";
+
+// getChecklistForPhase("IDEA") appends SPRINT's items after IDEA's own —
+// those SPRINT items are the same 5 sub-tasks shown inside item 1.5
+// ("Sprint") in the guide, so they're numbered as its sub-steps (1.5.1…)
+// instead of continuing the flat 1.6, 1.7… sequence.
+const IDEA_TOP_LEVEL_COUNT = INITIATIVE_CHECKLIST_ITEMS.IDEA.length;
 
 interface Props {
   slug: string;
@@ -99,9 +105,18 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit }: Pr
 
               {isOpen && checklist && (
                 <div className="absolute left-0 top-full mt-2 w-72 bg-white border border-muted-teal/20 rounded-xl shadow-lg z-20 overflow-hidden animate-[fadeIn_0.12s_ease-out]">
-                  <p className="px-3.5 pt-3 pb-2 text-xs font-semibold text-dark-slate/40 uppercase tracking-wide border-b border-muted-teal/10">
-                    {p.label}
-                  </p>
+                  {p.value === "IDEA" ? (
+                    <a
+                      href={`/projects/${slug}/guide`}
+                      className="block px-3.5 pt-3 pb-2 text-xs font-semibold text-dark-slate/40 uppercase tracking-wide border-b border-muted-teal/10 hover:text-seagrass transition-colors"
+                    >
+                      {p.label} guiden
+                    </a>
+                  ) : (
+                    <p className="px-3.5 pt-3 pb-2 text-xs font-semibold text-dark-slate/40 uppercase tracking-wide border-b border-muted-teal/10">
+                      {p.label}
+                    </p>
+                  )}
                   <div className="py-1">
                     {checklist.map((item, j) => {
                       const done = doneKeys.has(item.key);
@@ -124,7 +139,11 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit }: Pr
                             )}
                           </button>
                           <span className={`text-sm ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/80"}`}>
-                            <span className="text-dark-slate/40 font-medium">{i + 1}.{j + 1}</span>{" "}
+                            <span className="text-dark-slate/40 font-medium">
+                              {p.value === "IDEA" && j >= IDEA_TOP_LEVEL_COUNT
+                                ? `${i + 1}.${IDEA_TOP_LEVEL_COUNT}.${j - IDEA_TOP_LEVEL_COUNT + 1}`
+                                : `${i + 1}.${j + 1}`}
+                            </span>{" "}
                             {item.href ? (
                               <a href={`/projects/${slug}/${item.href}`} className="hover:underline">{item.label}</a>
                             ) : (
