@@ -66,12 +66,13 @@ export async function updateIdeaDetails(
   revalidatePath(`/projects/${slug}`);
 }
 
-// Marks a single idea-phase checklist item done, optionally saving the
-// selected SDG goals (step 2). Steps 3 (peer feedback) and 4 (Lean Canvas)
-// call this with no sdgGoals — their real work (sending an invite, creating
-// a canvas) happens elsewhere, this just records that the step was visited,
-// same self-declared trust level as every other item in the checklist.
-export async function completeIdeaGuideStep(slug: string, itemKey: string, sdgGoals?: number[]) {
+// Marks (or un-marks) a single idea-phase checklist item when a guide step's
+// "Nästa" is clicked, optionally saving the selected SDG goals (step 2) at
+// the same time regardless of `done` — advancing never blocks on this, only
+// the checkmark does. `done` reflects whether the caller actually did
+// something on that step (e.g. picked ≥1 SDG, invited someone) rather than
+// unconditionally marking every visited step complete.
+export async function completeIdeaGuideStep(slug: string, itemKey: string, done: boolean, sdgGoals?: number[]) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const project = await requireLead(slug, session.user.id);
@@ -79,6 +80,10 @@ export async function completeIdeaGuideStep(slug: string, itemKey: string, sdgGo
   if (sdgGoals) {
     await prisma.project.update({ where: { slug }, data: { sdgGoals } });
   }
-  await markChecklistDone(project.id, itemKey, session.user.id);
+  if (done) {
+    await markChecklistDone(project.id, itemKey, session.user.id);
+  } else {
+    await prisma.initiativeChecklistItem.deleteMany({ where: { projectId: project.id, itemKey } });
+  }
   revalidatePath(`/projects/${slug}`);
 }

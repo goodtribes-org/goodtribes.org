@@ -21,7 +21,9 @@ export default function GuideStepIndicator({
       {steps.map((s, i) => {
         const isDone = doneKeys.has(s.key);
         const isCurrent = i === currentIndex;
-        const clickable = !!onStepClick && (isDone || isCurrent);
+        // Every step is freely navigable, done or not — the guide doesn't
+        // have to be followed in order.
+        const clickable = !!onStepClick;
         return (
           <div key={s.key} className="flex items-center min-w-0">
             <button

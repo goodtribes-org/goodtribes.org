@@ -24,6 +24,16 @@ export default async function IdeaGuidePage({
   if (!project) redirect("/projects");
   if (!isLeadRole(project.members[0]?.role)) redirect(`/projects/${slug}`);
 
+  // Ground truth for whether the "Bjud in vänner" step has real work behind
+  // it — unlike SDG selection or the Lean Canvas, there's no other field to
+  // check this against, so it's computed here rather than trusted from
+  // completedKeys (which older guide versions marked unconditionally).
+  const [memberCount, pendingInviteCount] = await Promise.all([
+    prisma.projectMember.count({ where: { projectId: project.id } }),
+    prisma.projectInvite.count({ where: { projectId: project.id, usedAt: null } }),
+  ]);
+  const hasInvitedSomeone = memberCount > 1 || pendingInviteCount > 0;
+
   return (
     <div className="max-w-5xl mx-auto">
       <IdeaGuide
@@ -38,6 +48,7 @@ export default async function IdeaGuidePage({
         initialSdgGoals={project.sdgGoals}
         completedKeys={project.checklistItems.map((c) => c.itemKey)}
         leanCanvas={project.leanCanvas}
+        hasInvitedSomeone={hasInvitedSomeone}
       />
     </div>
   );

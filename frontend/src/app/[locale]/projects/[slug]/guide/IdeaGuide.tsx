@@ -7,6 +7,7 @@ import { completeIdeaGuideStep, updateIdeaDetails } from "./actions";
 import { toggleChecklistItem } from "../(workspace)/edit/actions";
 import AddOrInviteMember from "../AddOrInviteMember";
 import LeanCanvasGrid from "../(workspace)/lean-canvas/LeanCanvasGrid";
+import { LEAN_CANVAS_FIELDS } from "../(workspace)/lean-canvas/fields";
 import FileUpload from "@/components/FileUpload";
 import RichTextEditor from "@/components/RichTextEditor";
 import GuideStepIndicator from "@/components/GuideStepIndicator";
@@ -36,6 +37,7 @@ interface Props {
   initialSdgGoals: number[];
   completedKeys: string[];
   leanCanvas: LeanCanvas | null;
+  hasInvitedSomeone: boolean;
 }
 
 // The full idea-phase guide, all 5 steps navigable in either direction —
@@ -53,10 +55,12 @@ export default function IdeaGuide({
   initialSdgGoals,
   completedKeys,
   leanCanvas,
+  hasInvitedSomeone,
 }: Props) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [done, setDone] = useState<Set<string>>(new Set(completedKeys));
+  const [invitedSomeone, setInvitedSomeone] = useState(hasInvitedSomeone);
   const [title, setTitle] = useState(initialTitle);
   const [summary, setSummary] = useState(initialSummary);
   const [description, setDescription] = useState(initialDescription);
@@ -99,26 +103,38 @@ export default function IdeaGuide({
     });
   }
 
+  // Advancing never blocks on these — only the checkmark reflects whether
+  // the step actually has something behind it.
+  function markDone(itemKey: string, isDone: boolean) {
+    setDone((prev) => {
+      const next = new Set(prev);
+      if (isDone) next.add(itemKey); else next.delete(itemKey);
+      return next;
+    });
+  }
+
   function handleSdgNext() {
+    const hasSelection = selected.size > 0;
     startTransition(async () => {
-      await completeIdeaGuideStep(slug, "ai_reviewed", Array.from(selected));
-      setDone((prev) => new Set(prev).add("ai_reviewed"));
+      await completeIdeaGuideStep(slug, "ai_reviewed", hasSelection, Array.from(selected));
+      markDone("ai_reviewed", hasSelection);
       setStep(2);
     });
   }
 
   function handleLeanCanvasNext() {
+    const hasContent = LEAN_CANVAS_FIELDS.some((f) => leanCanvas?.[f]?.trim());
     startTransition(async () => {
-      await completeIdeaGuideStep(slug, "lean_canvas_created");
-      setDone((prev) => new Set(prev).add("lean_canvas_created"));
+      await completeIdeaGuideStep(slug, "lean_canvas_created", hasContent);
+      markDone("lean_canvas_created", hasContent);
       setStep(3);
     });
   }
 
   function handleFeedbackNext() {
     startTransition(async () => {
-      await completeIdeaGuideStep(slug, "peer_feedback_requested");
-      setDone((prev) => new Set(prev).add("peer_feedback_requested"));
+      await completeIdeaGuideStep(slug, "peer_feedback_requested", invitedSomeone);
+      markDone("peer_feedback_requested", invitedSomeone);
       setStep(4);
     });
   }
@@ -136,8 +152,9 @@ export default function IdeaGuide({
   }
 
   function handleSprintFinish() {
+    const hasProgress = SPRINT_PREP_ITEMS.some((item) => done.has(item.key));
     startTransition(async () => {
-      await completeIdeaGuideStep(slug, "sprint_prepped");
+      await completeIdeaGuideStep(slug, "sprint_prepped", hasProgress);
       router.push(`/projects/${slug}`);
     });
   }
@@ -342,7 +359,12 @@ export default function IdeaGuide({
           <p className="text-sm text-dark-slate/60 mb-4">
             Bra idéer blir ännu bättre med fler perspektiv. Bjud in vänner och kollegor att kika på din idé och tycka till — både de som redan är med på GoodTribes och de som inte är det än. Helt valfritt, men det tar bara en minut.
           </p>
-          <AddOrInviteMember projectId={projectId} slug={slug} />
+          <AddOrInviteMember
+            projectId={projectId}
+            slug={slug}
+            onAdded={() => setInvitedSomeone(true)}
+            onInviteSent={() => setInvitedSomeone(true)}
+          />
         </div>
         <div className="flex justify-between pt-2">
           <button type="button" onClick={() => setStep(2)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">← Tillbaka</button>

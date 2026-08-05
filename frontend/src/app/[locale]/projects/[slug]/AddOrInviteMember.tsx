@@ -33,10 +33,12 @@ export default function AddOrInviteMember({
   projectId,
   slug,
   onAdded,
+  onInviteSent,
 }: {
   projectId: string;
   slug: string;
   onAdded?: (user: UserResult) => void;
+  onInviteSent?: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
   const [addQuery, setAddQuery] = useState("");
@@ -89,6 +91,7 @@ export default function AddOrInviteMember({
       setAddResults([]);
       setSearched(false);
       refreshPendingInvites();
+      onInviteSent?.();
     });
   }
 
