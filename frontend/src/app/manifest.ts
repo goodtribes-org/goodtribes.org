@@ -13,9 +13,9 @@ export default function manifest(): MetadataRoute.Manifest {
     // production (see next's router-server.js) — bump the number on any
     // future icon content update, even though the filename stays the same.
     icons: [
-      { src: "/icons/icon-192.png?v=3", sizes: "192x192", type: "image/png" },
-      { src: "/icons/icon-512.png?v=3", sizes: "512x512", type: "image/png" },
-      { src: "/icons/icon-maskable-512.png?v=3", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/icons/icon-192.png?v=4", sizes: "192x192", type: "image/png" },
+      { src: "/icons/icon-512.png?v=4", sizes: "512x512", type: "image/png" },
+      { src: "/icons/icon-maskable-512.png?v=4", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }
