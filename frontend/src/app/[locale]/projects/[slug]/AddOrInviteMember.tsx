@@ -45,6 +45,7 @@ export default function AddOrInviteMember({
   const [addResults, setAddResults] = useState<UserResult[]>([]);
   const [searched, setSearched] = useState(false);
   const [inviteState, setInviteState] = useState<{ status: "idle" | "sent"; error?: string }>({ status: "idle" });
+  const [inviteMessage, setInviteMessage] = useState("");
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
 
   function refreshPendingInvites() {
@@ -84,12 +85,14 @@ export default function AddOrInviteMember({
   function handleInviteByEmail() {
     setInviteState({ status: "idle" });
     startTransition(async () => {
-      const result = await inviteMemberByEmail(projectId, slug, addQuery.trim());
+      const result = await inviteMemberByEmail(projectId, slug, addQuery.trim(), inviteMessage);
       if ("error" in result) { setInviteState({ status: "idle", error: result.error }); return; }
       setInviteState({ status: "sent" });
       setAddQuery("");
       setAddResults([]);
       setSearched(false);
+      // Message is left as-is (not cleared) — sending several invites in a
+      // row shouldn't mean retyping the same note every time.
       refreshPendingInvites();
       onInviteSent?.();
     });
@@ -127,17 +130,26 @@ export default function AddOrInviteMember({
               </button>
             ))}
             {searched && addResults.length === 0 && looksLikeEmail(addQuery) && (
-              <button
-                type="button"
-                disabled={isPending}
-                onClick={handleInviteByEmail}
-                className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-dry-sage/20 transition-colors disabled:opacity-50"
-              >
-                <span className="min-w-0 flex-1 text-sm text-dark-slate">
+              <div className="p-3">
+                <p className="text-sm text-dark-slate mb-2">
                   Ingen användare med den e-posten ännu — bjud in <span className="font-medium">{addQuery.trim()}</span> via länk
-                </span>
-                <span className="text-xs font-semibold text-seagrass shrink-0">Bjud in →</span>
-              </button>
+                </p>
+                <textarea
+                  value={inviteMessage}
+                  onChange={(e) => setInviteMessage(e.target.value)}
+                  placeholder="Skriv ett personligt hälsningsord (valfritt)…"
+                  rows={2}
+                  className="w-full text-xs border border-muted-teal/30 rounded-md px-2 py-1.5 mb-2 focus:outline-none focus:ring-1 focus:ring-seagrass/40 resize-none placeholder:text-dark-slate/30"
+                />
+                <button
+                  type="button"
+                  disabled={isPending}
+                  onClick={handleInviteByEmail}
+                  className="text-xs font-semibold bg-seagrass text-white px-3 py-1.5 rounded-lg hover:bg-seagrass/90 disabled:opacity-50 transition-colors"
+                >
+                  Bjud in →
+                </button>
+              </div>
             )}
           </div>
         )}

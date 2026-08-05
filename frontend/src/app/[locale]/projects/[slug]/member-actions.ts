@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notify";
 import { logActivity } from "@/lib/activity";
 import { sendEmail } from "@/lib/email";
+import { escapeHtml } from "@/lib/renderBody";
 import { hasProjectRole, isLastFounder, isSiteAdmin, isExcludedFromProject, PROJECT_LEAD_ROLES, type ProjectRole } from "@/lib/authz";
 
 // Project leads (founder/admin) and site admins can search any user not
@@ -107,7 +108,8 @@ export async function addMemberDirectly(projectId: string, targetUserId: string,
 export async function inviteMemberByEmail(
   projectId: string,
   slug: string,
-  emailInput: string
+  emailInput: string,
+  personalMessage?: string
 ): Promise<{ error: string } | { ok: true }> {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
@@ -130,12 +132,21 @@ export async function inviteMemberByEmail(
   const base = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
   const url = `${base}/invite/${invite.token}`;
 
+  const trimmedMessage = personalMessage?.trim();
+  // Free text from the inviter — escape before it ever reaches the HTML
+  // email template, same rule as any other user-authored text rendered as
+  // HTML (see escapeHtml's own doc comment).
+  const messageHtml = trimmedMessage
+    ? `<blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid #E85D4A;background:#f9f9f9;color:#333;font-style:italic;">${escapeHtml(trimmedMessage).replace(/\n/g, "<br>")}</blockquote>`
+    : "";
+
   await sendEmail({
     to: email,
     subject: `You're invited to join ${project.title} on GoodTribes`,
     html: `
       <p>Hi,</p>
       <p><strong>${session.user.name ?? "Someone"}</strong> has invited you to join <strong>${project.title}</strong> on GoodTribes.org.</p>
+      ${messageHtml}
       <p><a href="${url}" style="background:#E85D4A;color:white;padding:10px 20px;border-radius:4px;text-decoration:none;display:inline-block;margin:16px 0;">Accept invitation</a></p>
       <p>This link expires in 7 days.</p>
       <p style="color:#888;font-size:12px;">If you didn't expect this email, you can safely ignore it.</p>
