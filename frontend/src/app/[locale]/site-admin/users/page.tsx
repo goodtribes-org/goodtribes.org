@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { isSiteOwner } from "@/lib/authz";
 import { setSuspended } from "./actions";
 import SiteRoleSelect from "./SiteRoleSelect";
 import InviteUserForm from "./InviteUserForm";
+import CreateUserForm from "./CreateUserForm";
 
 export default async function AdminUsersPage({
   searchParams,
@@ -14,19 +16,22 @@ export default async function AdminUsersPage({
   const session = await auth();
   const viewerIsOwner = !!session?.user?.id && (await isSiteOwner(session.user.id));
 
-  const users = await prisma.user.findMany({
-    where: q
-      ? {
-          OR: [
-            { name: { contains: q, mode: "insensitive" } },
-            { email: { contains: q, mode: "insensitive" } },
-          ],
-        }
-      : undefined,
-    select: { id: true, name: true, email: true, siteRole: true, suspendedAt: true },
-    orderBy: { name: "asc" },
-    take: 50,
-  });
+  const [users, allSkills] = await Promise.all([
+    prisma.user.findMany({
+      where: q
+        ? {
+            OR: [
+              { name: { contains: q, mode: "insensitive" } },
+              { email: { contains: q, mode: "insensitive" } },
+            ],
+          }
+        : undefined,
+      select: { id: true, name: true, email: true, siteRole: true, suspendedAt: true, showProfile: true },
+      orderBy: { name: "asc" },
+      take: 50,
+    }),
+    prisma.skill.findMany({ orderBy: [{ tag: "asc" }, { name: "asc" }] }),
+  ]);
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
@@ -38,6 +43,7 @@ export default async function AdminUsersPage({
       </div>
 
       <InviteUserForm />
+      <CreateUserForm allSkills={allSkills} />
 
       <form className="mb-6">
         <input
@@ -53,7 +59,13 @@ export default async function AdminUsersPage({
         {users.map((u) => (
           <div key={u.id} className="flex items-center gap-3 px-4 py-3">
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-dark-slate truncate">{u.name ?? "—"}</p>
+              {u.name && u.showProfile ? (
+                <Link href={`/members/${u.id}`} className="text-sm font-medium text-dark-slate hover:text-seagrass hover:underline truncate block">
+                  {u.name}
+                </Link>
+              ) : (
+                <p className="text-sm font-medium text-dark-slate truncate">{u.name ?? "—"}</p>
+              )}
               <p className="text-xs text-dark-slate/40 truncate">{u.email}</p>
             </div>
             {u.suspendedAt && (
