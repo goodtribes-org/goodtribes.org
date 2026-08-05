@@ -354,7 +354,7 @@ function CardDetailModalImpl({
             onChange={(e) => setTitle(e.target.value)}
             disabled={!canEdit}
             rows={1}
-            className="w-full text-lg font-semibold text-gray-900 resize-none border-0 outline-none bg-transparent placeholder-gray-300 focus:ring-0 leading-tight"
+            className="w-full text-lg font-semibold text-gray-900 resize-none border-0 border-b border-transparent hover:border-gray-200 focus:border-blue-400 outline-none bg-transparent placeholder-gray-300 focus:ring-0 leading-tight transition-colors"
             placeholder="Kortets titel"
           />
 

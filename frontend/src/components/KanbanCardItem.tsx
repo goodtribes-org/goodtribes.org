@@ -348,6 +348,16 @@ function KanbanCardItemImpl({
                     placeholder="Ny uppgift..."
                     className="flex-1 text-xs border-b border-blue-400 outline-none py-0.5 placeholder-gray-300 bg-transparent text-gray-700"
                   />
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={handleQuickAddSubtask}
+                    disabled={!newSubtaskInput.trim()}
+                    aria-label="Lägg till deluppgift"
+                    className="shrink-0 flex items-center justify-center w-4 h-4 rounded bg-blue-500 hover:bg-blue-600 disabled:bg-gray-200 text-white text-xs leading-none font-bold transition-colors"
+                  >
+                    ✓
+                  </button>
                 </div>
               )}
 
