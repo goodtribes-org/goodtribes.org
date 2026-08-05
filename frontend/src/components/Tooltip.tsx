@@ -22,7 +22,6 @@ export default function Tooltip({ lines, children, className, style }: Props) {
         className={className}
         style={style}
         onMouseEnter={(e) => { setVisible(true); setPos({ x: e.clientX, y: e.clientY }); }}
-        onMouseMove={(e) => setPos({ x: e.clientX, y: e.clientY })}
         onMouseLeave={() => setVisible(false)}
       >
         {children}
