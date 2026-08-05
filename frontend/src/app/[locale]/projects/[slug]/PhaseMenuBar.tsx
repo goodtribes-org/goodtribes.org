@@ -15,6 +15,10 @@ interface Props {
   phase: ProjectPhaseValue;
   completedKeys: string[];
   canEdit: boolean;
+  // Set on guide pages so the pill for the guide being read gets a ring —
+  // independent of `phase` (the project's actual current phase, still shown
+  // via the solid fill), since a guide can be opened for any phase.
+  viewingPhase?: ProjectPhaseValue;
 }
 
 // Fas- och stegmeny (PRD 4d) — en platt meny under hero, "1. Idé", "2. Pilot"
@@ -22,14 +26,23 @@ interface Props {
 // på UI-nivå, inget separat "Sprint"-steg längre). Varje fas har en
 // checklista och går att klicka på för att fälla ut en undermeny med
 // numrerade delsteg ("1.1 Beskriv idén", "1.2 ...").
-export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit }: Props) {
+export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, viewingPhase }: Props) {
   const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedKeys));
   const [isPending, startTransition] = useTransition();
   const [openPhase, setOpenPhase] = useState<ProjectPhaseValue | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Guide pages render their own step UI alongside this menu — when a step
+  // gets marked done there, the server action revalidates this route too,
+  // so pick up the fresh completedKeys instead of staying stuck on the set
+  // this component first mounted with.
+  useEffect(() => {
+    setDoneKeys(new Set(completedKeys));
+  }, [completedKeys]);
+
   const displayPhase = toDisplayPhase(phase);
   const currentIndex = DISPLAY_PHASES.findIndex((p) => p.value === displayPhase);
+  const viewingDisplayPhase = viewingPhase ? toDisplayPhase(viewingPhase) : null;
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -68,6 +81,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit }: Pr
         {DISPLAY_PHASES.map((p, i) => {
           const isCurrent = i === currentIndex;
           const isPast = i < currentIndex;
+          const isViewing = p.value === viewingDisplayPhase;
           const checklist = getChecklistForPhase(p.value);
           const isOpen = openPhase === p.value;
           const canEditThis = canEdit && p.value === displayPhase;
@@ -76,7 +90,9 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit }: Pr
             ? "bg-seagrass text-white font-bold shadow-sm"
             : isPast
               ? "bg-white border border-seagrass/60 text-seagrass/80 hover:border-seagrass hover:text-seagrass"
-              : "bg-white border border-dark-slate/15 text-dark-slate/35 hover:border-dark-slate/30 hover:text-dark-slate/60";
+              : isViewing
+                ? "bg-white border-2 border-seagrass/40 text-dark-slate/35 hover:border-seagrass/60 hover:text-dark-slate/60"
+                : "bg-white border border-dark-slate/15 text-dark-slate/35 hover:border-dark-slate/30 hover:text-dark-slate/60";
 
           return (
             <div key={p.value} className="relative z-10 flex items-center">
@@ -85,6 +101,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit }: Pr
                   type="button"
                   onClick={() => setOpenPhase((prev) => (prev === p.value ? null : p.value))}
                   aria-expanded={isOpen}
+                  aria-current={isViewing ? "step" : undefined}
                   className={`flex items-center gap-1 px-3 py-1.5 rounded-full transition-colors ${pillClass} ${
                     isOpen ? "ring-2 ring-seagrass/30" : ""
                   }`}
@@ -98,25 +115,19 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit }: Pr
                   </svg>
                 </button>
               ) : (
-                <span className={`px-3 py-1.5 rounded-full inline-block transition-colors ${pillClass}`}>
+                <span aria-current={isViewing ? "step" : undefined} className={`px-3 py-1.5 rounded-full inline-block transition-colors ${pillClass}`}>
                   {i + 1}. {p.label}
                 </span>
               )}
 
               {isOpen && checklist && (
                 <div className="absolute left-0 top-full mt-2 w-72 bg-white border border-muted-teal/20 rounded-xl shadow-lg z-20 overflow-hidden animate-[fadeIn_0.12s_ease-out]">
-                  {p.value === "IDEA" ? (
-                    <a
-                      href={`/projects/${slug}/guide`}
-                      className="block px-3.5 pt-3 pb-2 text-xs font-semibold text-dark-slate/40 uppercase tracking-wide border-b border-muted-teal/10 hover:text-seagrass transition-colors"
-                    >
-                      {p.label} guiden
-                    </a>
-                  ) : (
-                    <p className="px-3.5 pt-3 pb-2 text-xs font-semibold text-dark-slate/40 uppercase tracking-wide border-b border-muted-teal/10">
-                      {p.label}
-                    </p>
-                  )}
+                  <a
+                    href={p.value === "IDEA" ? `/projects/${slug}/guide` : `/projects/${slug}/guide/${p.value.toLowerCase()}`}
+                    className="block px-3.5 pt-3 pb-2 text-xs font-semibold text-dark-slate/40 uppercase tracking-wide border-b border-muted-teal/10 hover:text-seagrass transition-colors"
+                  >
+                    {p.label} guiden
+                  </a>
                   <div className="py-1">
                     {checklist.map((item, j) => {
                       const done = doneKeys.has(item.key);

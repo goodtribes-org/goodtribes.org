@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { isLeadRole } from "@/lib/authz";
 import IdeaGuide from "./IdeaGuide";
+import PhaseMenuBar from "../PhaseMenuBar";
 
 export default async function IdeaGuidePage({
   params,
@@ -36,6 +37,15 @@ export default async function IdeaGuidePage({
 
   return (
     <div className="max-w-5xl mx-auto">
+      <div className="mb-8">
+        <PhaseMenuBar
+          slug={slug}
+          phase={project.phase}
+          completedKeys={project.checklistItems.map((c) => c.itemKey)}
+          canEdit={true}
+          viewingPhase="IDEA"
+        />
+      </div>
       <IdeaGuide
         projectId={project.id}
         slug={slug}
