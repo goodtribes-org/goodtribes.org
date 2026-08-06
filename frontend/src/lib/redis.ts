@@ -61,6 +61,19 @@ export function publishToKanban(projectSlug: string, payload: unknown) {
   publishToChannel(`kanban:${projectSlug}`, payload);
 }
 
+// Live whiteboard sync for the Design Sprint canvas (Understand/Diverge
+// phases) — deliberately DB-free, unlike Kanban's publish-after-write:
+// onChange fires many times/sec while drawing, so this is a pure
+// broadcast relay, never touching Postgres. Persistence stays on the
+// existing 15s optimistic-locked autosave (see sprints/[sprintId]/actions.ts).
+export function subscribeToSprintCanvas(sprintPhaseId: string, listener: (data: string) => void): () => void {
+  return subscribeToChannel(`sprint-canvas:${sprintPhaseId}`, listener);
+}
+
+export function publishToSprintCanvas(sprintPhaseId: string, payload: unknown) {
+  publishToChannel(`sprint-canvas:${sprintPhaseId}`, payload);
+}
+
 // Per-user channel — notifications and "you have unread messages" signals,
 // consumed by the single shared /api/user/sse connection (see
 // UserEventsProvider) rather than one channel per feature.

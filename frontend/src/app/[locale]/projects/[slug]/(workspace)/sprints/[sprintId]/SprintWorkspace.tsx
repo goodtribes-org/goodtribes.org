@@ -42,6 +42,7 @@ export default function SprintWorkspace({
   remainingVotes,
   isLead,
   isMember,
+  userName,
 }: {
   projectSlug: string;
   sprint: { id: string; name: string; status: SprintStatus; pace: SprintPace; currentPhase: SprintPhaseName };
@@ -51,6 +52,7 @@ export default function SprintWorkspace({
   remainingVotes: number;
   isLead: boolean;
   isMember: boolean;
+  userName: string;
 }) {
   const [activeTab, setActiveTab] = useState<SprintPhaseName>(sprint.currentPhase);
   const [isAdvancing, setIsAdvancing] = useState(false);
@@ -114,6 +116,7 @@ export default function SprintWorkspace({
                   initialDocumentState={activeData.documentState}
                   initialVersion={activeData.version}
                   canEdit={isMember && activeData.status === "OPEN"}
+                  userName={userName}
                 />
               )}
               <ContributionBoard

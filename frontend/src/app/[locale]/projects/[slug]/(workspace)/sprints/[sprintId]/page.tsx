@@ -61,6 +61,7 @@ export default async function SprintPage({
       remainingVotes={remainingVotes}
       isLead={isLead}
       isMember={isMember}
+      userName={session?.user?.name ?? "Anonym"}
     />
   );
 }

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { isRealMember } from "@/lib/authz";
 import { canWriteToPhase, isAnonymousPhase } from "@/lib/sprints";
+import { publishToSprintCanvas } from "@/lib/redis";
 import type { Prisma, SprintContributionType } from "@prisma/client";
 
 type CanvasSaveResult =
@@ -44,6 +45,20 @@ export async function autosaveCanvas(
 
   revalidatePath(`/projects/${projectSlug}/sprints`);
   return { ok: true, version: expectedVersion + 1 };
+}
+
+// Live whiteboard sync — deliberately never touches Postgres (onChange
+// fires many times/sec while drawing; the 15s autosaveCanvas above stays
+// the actual persistence path). Payload shape (elements/appState diff or a
+// pointer position for cursors, tagged with a per-mount clientId so
+// senders can ignore their own echo) is opaque here — this is just an
+// authorized relay onto the sprint-canvas:<phaseId> Redis channel.
+export async function broadcastCanvasChange(sprintPhaseId: string, payload: unknown) {
+  const session = await auth();
+  if (!session?.user?.id) return;
+  if (!(await canWriteToPhase(sprintPhaseId, session.user.id))) return;
+
+  publishToSprintCanvas(sprintPhaseId, payload);
 }
 
 export async function submitContribution(
