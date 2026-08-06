@@ -1,0 +1,18 @@
+name: Sprint Phase Advance
+
+on:
+  schedule:
+    # Every 15 minutes — deadlines need finer granularity than the
+    # daily/weekly cadence of the other cron jobs.
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  advance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger sprint-phase-advance endpoint
+        run: |
+          curl -sf -X POST "${{ vars.APP_URL }}/api/cron/sprint-phase-advance" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"

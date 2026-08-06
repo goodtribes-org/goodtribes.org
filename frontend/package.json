@@ -19,6 +19,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
+    "@excalidraw/excalidraw": "^0.18.1",
     "@prisma/client": "^6",
     "@serwist/next": "^9.5.11",
     "@serwist/turbopack": "^9.5.11",
