@@ -12,7 +12,7 @@ import type {
 } from "@excalidraw/excalidraw/types";
 import type { Prisma } from "@prisma/client";
 
-const Excalidraw = dynamic(async () => (await import("@excalidraw/excalidraw")).Excalidraw, { ssr: false });
+const Excalidraw = dynamic(() => import("./ExcalidrawCanvas"), { ssr: false });
 
 const AUTOSAVE_INTERVAL_MS = 15000;
 const BROADCAST_THROTTLE_MS = 100;
@@ -234,7 +234,10 @@ export default function SprintCanvas({
           Synkroniserat med en annan deltagares ändringar.
         </div>
       )}
-      <div style={{ height: "480px" }} className="border border-muted-teal/30 rounded-xl overflow-hidden">
+      <div
+        style={{ height: "calc(100vh - 200px)" }}
+        className="sprint-canvas-embed border border-seagrass rounded-xl min-h-[420px]"
+      >
         <Excalidraw
           excalidrawAPI={(api) => { apiRef.current = api; }}
           initialData={{ elements: initial?.elements ?? [] }}

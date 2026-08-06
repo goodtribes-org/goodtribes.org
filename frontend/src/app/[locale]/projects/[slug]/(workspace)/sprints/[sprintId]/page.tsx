@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { hasProjectRole, PROJECT_LEAD_ROLES, isRealMember } from "@/lib/authz";
+import { hasProjectRole, PROJECT_LEAD_ROLES, isRealMember, isSiteAdmin } from "@/lib/authz";
 import { getSprintForProject, getPhaseData, getVotingBoard, getVoterRemainingVotes, PHASE_ORDER } from "@/lib/sprints";
 import SprintWorkspace from "./SprintWorkspace";
 
@@ -21,9 +21,10 @@ export default async function SprintPage({
   if (!sprint) notFound();
 
   const userId = session?.user?.id ?? null;
-  const [isLead, isMember] = await Promise.all([
+  const [isLead, isMember, isAdmin] = await Promise.all([
     userId ? hasProjectRole(project.id, userId, PROJECT_LEAD_ROLES) : Promise.resolve(false),
     userId ? isRealMember(project.id, userId) : Promise.resolve(false),
+    userId ? isSiteAdmin(userId) : Promise.resolve(false),
   ]);
 
   const byName = new Map(sprint.phases.map((p) => [p.phase, p]));
@@ -61,6 +62,7 @@ export default async function SprintPage({
       remainingVotes={remainingVotes}
       isLead={isLead}
       isMember={isMember}
+      canDelete={isLead || isAdmin}
       userName={session?.user?.name ?? "Anonym"}
     />
   );

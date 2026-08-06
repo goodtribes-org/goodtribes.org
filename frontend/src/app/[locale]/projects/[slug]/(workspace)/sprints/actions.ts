@@ -3,8 +3,9 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { getLocale } from "next-intl/server";
+import { redirect } from "@/i18n/navigation";
+import { hasProjectRole, PROJECT_LEAD_ROLES, isSiteAdmin } from "@/lib/authz";
 import { closeAndAdvancePhase, DEFAULT_PHASE_DAYS } from "@/lib/sprints";
 import type { SprintPace } from "@prisma/client";
 
@@ -14,13 +15,15 @@ export async function createSprint(
   pace: SprintPace,
   phaseDurationDays?: number
 ) {
+  const locale = await getLocale();
   const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  if (!session?.user?.id) { redirect({ href: "/login", locale }); return; }
 
   const project = await prisma.project.findUnique({ where: { slug: projectSlug } });
-  if (!project) redirect("/projects");
+  if (!project) { redirect({ href: "/projects", locale }); return; }
   if (!(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) {
-    redirect(`/projects/${projectSlug}/sprints`);
+    redirect({ href: `/projects/${projectSlug}/sprints`, locale });
+    return;
   }
 
   const trimmedName = name.trim();
@@ -45,7 +48,7 @@ export async function createSprint(
   });
 
   revalidatePath(`/projects/${projectSlug}/sprints`);
-  redirect(`/projects/${projectSlug}/sprints/${sprint.id}`);
+  redirect({ href: `/projects/${projectSlug}/sprints/${sprint.id}`, locale });
 }
 
 export async function pauseSprint(projectSlug: string, sprintId: string) {
@@ -97,5 +100,25 @@ export async function advancePhase(projectSlug: string, sprintId: string) {
 
   await closeAndAdvancePhase(openPhase.id);
   revalidatePath(`/projects/${projectSlug}/sprints/${sprintId}`);
+  return { success: true };
+}
+
+// Hard delete — cascades to every phase, contribution, vote and comment on
+// this sprint (see onDelete: Cascade on those relations). Lead or
+// site-admin only; no soft-delete flag, this is permanent.
+export async function deleteSprint(projectSlug: string, sprintId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+
+  const project = await prisma.project.findUnique({ where: { slug: projectSlug } });
+  if (!project) return { error: "Project not found" };
+
+  const allowed =
+    (await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES)) ||
+    (await isSiteAdmin(session.user.id));
+  if (!allowed) return { error: "Not authorized" };
+
+  await prisma.sprint.delete({ where: { id: sprintId } });
+  revalidatePath(`/projects/${projectSlug}/sprints`);
   return { success: true };
 }

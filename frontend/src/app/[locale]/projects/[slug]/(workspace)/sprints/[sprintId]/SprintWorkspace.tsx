@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { advancePhase } from "../actions";
+import { deletePhaseContent } from "./actions";
 import SprintPhaseTabs, { type PhaseRow } from "./SprintPhaseTabs";
 import SprintCanvas from "./SprintCanvas";
 import ContributionBoard, { type Contribution } from "./ContributionBoard";
@@ -42,6 +43,7 @@ export default function SprintWorkspace({
   remainingVotes,
   isLead,
   isMember,
+  canDelete,
   userName,
 }: {
   projectSlug: string;
@@ -52,10 +54,13 @@ export default function SprintWorkspace({
   remainingVotes: number;
   isLead: boolean;
   isMember: boolean;
+  canDelete: boolean;
   userName: string;
 }) {
   const [activeTab, setActiveTab] = useState<SprintPhaseName>(sprint.currentPhase);
   const [isAdvancing, setIsAdvancing] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [isDeletingContent, setIsDeletingContent] = useState(false);
 
   const activePhaseRow = phases.find((p) => p.phase === activeTab);
   const activeData = phaseData[activeTab] ?? null;
@@ -70,55 +75,92 @@ export default function SprintWorkspace({
     window.location.reload();
   }
 
-  return (
-    <div className="max-w-5xl mx-auto">
-      <a href={`/projects/${projectSlug}/sprints`} className="text-xs text-dark-slate/50 hover:text-seagrass">
-        ← Alla sprintar
-      </a>
-      <h1 className="text-xl font-bold text-dark-slate mt-1 mb-4">{sprint.name}</h1>
+  async function handleDeleteContent() {
+    if (!activePhaseRow?.id) return;
+    if (
+      !window.confirm(
+        `Radera allt innehåll i "${PHASE_LABEL[activeTab]}" permanent — ritytan, bidrag och röster? Det går inte att ångra.`
+      )
+    ) {
+      return;
+    }
+    setIsDeletingContent(true);
+    await deletePhaseContent(projectSlug, activePhaseRow.id);
+    window.location.reload();
+  }
 
-      <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
-        <SprintPhaseTabs phases={phases} activeTab={activeTab} onSelect={setActiveTab} pace={sprint.pace} />
-        {isLead && hasOpenPhase && sprint.pace === "TOGETHER" && (
-          <button
-            type="button"
-            disabled={isAdvancing}
-            onClick={handleAdvance}
-            className="text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors disabled:opacity-60 flex-shrink-0"
-          >
-            {isAdvancing ? "Avancerar…" : "Avancera till nästa fas →"}
-          </button>
-        )}
+  return (
+    <div className={`-mt-[21px] ${isCanvasPhase ? "" : "max-w-5xl mx-auto"}`}>
+      <div className="relative flex items-center justify-center gap-4 flex-wrap mb-[12px]">
+        <div className="flex items-center justify-center gap-3 flex-wrap">
+          <h1 className="text-xl font-bold text-dark-slate">{sprint.name}</h1>
+          <SprintPhaseTabs phases={phases} activeTab={activeTab} onSelect={setActiveTab} pace={sprint.pace} />
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0 sm:absolute sm:right-0">
+          {isLead && hasOpenPhase && sprint.pace === "TOGETHER" && (
+            <button
+              type="button"
+              disabled={isAdvancing}
+              onClick={handleAdvance}
+              className="text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors disabled:opacity-60"
+            >
+              {isAdvancing ? "Avancerar…" : "Avancera till nästa fas →"}
+            </button>
+          )}
+          {canDelete && activePhaseRow?.id && (
+            <button
+              type="button"
+              disabled={isDeletingContent}
+              onClick={handleDeleteContent}
+              title="Radera fasens innehåll"
+              className="text-sm font-medium text-watermelon border border-watermelon/40 rounded-md px-3 py-2 hover:bg-watermelon/10 transition-colors disabled:opacity-60"
+            >
+              {isDeletingContent ? "Raderar…" : "Radera innehåll"}
+            </button>
+          )}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowHelp((v) => !v)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition-colors ${
+                showHelp
+                  ? "bg-coral text-white shadow-sm"
+                  : "bg-coral/10 border border-coral text-coral hover:bg-coral/20"
+              }`}
+            >
+              <span
+                className={`flex items-center justify-center w-4 h-4 rounded-full text-[11px] leading-none flex-shrink-0 ${
+                  showHelp ? "bg-white text-coral" : "bg-coral text-white"
+                }`}
+              >
+                ?
+              </span>
+              Hjälp
+            </button>
+            {showHelp && (
+              <div className="absolute top-full right-0 mt-2 w-72 bg-white border border-coral/30 rounded-xl shadow-lg p-4 text-sm text-dark-slate/70 z-10">
+                <p className="font-medium text-dark-slate mb-1">{PHASE_LABEL[activeTab]}</p>
+                <p>{GUIDANCE[activeTab]}</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-[220px_1fr] gap-6">
-        <aside className="border border-muted-teal/30 rounded-xl p-4 text-sm text-dark-slate/70 h-fit">
-          <p className="font-medium text-dark-slate mb-2">{PHASE_LABEL[activeTab]}</p>
-          <p>{GUIDANCE[activeTab]}</p>
-        </aside>
-
-        <div className="min-w-0">
+      {isCanvasPhase ? (
+        <div className="flex flex-col gap-6">
           {!activePhaseRow?.id ? (
             <p className="text-sm text-dark-slate/40 italic">Den här fasen har inte öppnats än.</p>
-          ) : isDecidePhase ? (
-            <DotVoting
-              projectSlug={projectSlug}
-              votingBoard={votingBoard}
-              remainingVotes={remainingVotes}
-              canVote={isMember && votingBoard?.decidePhaseStatus === "OPEN"}
-            />
           ) : activeData ? (
-            <div className="flex flex-col gap-6">
-              {isCanvasPhase && (
-                <SprintCanvas
-                  projectSlug={projectSlug}
-                  sprintPhaseId={activeData.id}
-                  initialDocumentState={activeData.documentState}
-                  initialVersion={activeData.version}
-                  canEdit={isMember && activeData.status === "OPEN"}
-                  userName={userName}
-                />
-              )}
+            <>
+              <SprintCanvas
+                projectSlug={projectSlug}
+                sprintPhaseId={activeData.id}
+                initialDocumentState={activeData.documentState}
+                initialVersion={activeData.version}
+                canEdit={isMember && activeData.status === "OPEN"}
+                userName={userName}
+              />
               <ContributionBoard
                 projectSlug={projectSlug}
                 sprintPhaseId={activeData.id}
@@ -126,10 +168,38 @@ export default function SprintWorkspace({
                 contributions={activeData.contributions}
                 canWrite={isMember && activeData.status === "OPEN"}
               />
-            </div>
+            </>
           ) : null}
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-[220px_1fr] gap-6">
+          <aside className="border border-muted-teal/30 rounded-xl p-4 text-sm text-dark-slate/70 h-fit">
+            <p className="font-medium text-dark-slate mb-2">{PHASE_LABEL[activeTab]}</p>
+            <p>{GUIDANCE[activeTab]}</p>
+          </aside>
+
+          <div className="min-w-0">
+            {!activePhaseRow?.id ? (
+              <p className="text-sm text-dark-slate/40 italic">Den här fasen har inte öppnats än.</p>
+            ) : isDecidePhase ? (
+              <DotVoting
+                projectSlug={projectSlug}
+                votingBoard={votingBoard}
+                remainingVotes={remainingVotes}
+                canVote={isMember && votingBoard?.decidePhaseStatus === "OPEN"}
+              />
+            ) : activeData ? (
+              <ContributionBoard
+                projectSlug={projectSlug}
+                sprintPhaseId={activeData.id}
+                phaseName={activeTab}
+                contributions={activeData.contributions}
+                canWrite={isMember && activeData.status === "OPEN"}
+              />
+            ) : null}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

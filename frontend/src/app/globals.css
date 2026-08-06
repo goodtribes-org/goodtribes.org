@@ -24,6 +24,25 @@ body {
   background-color: white;
 }
 
+/* Excalidraw assumes full-viewport embedding: its own root and any anchored
+   menu/dropdown expect unlimited space below them. Embedded here in a fixed
+   480px card, that space doesn't exist — without this override, both our own
+   wrapper and Excalidraw's own overflow:hidden root clip those menus out of
+   view instead of just letting them render past the rounded corners. */
+.sprint-canvas-embed {
+  overflow: visible !important;
+}
+.sprint-canvas-embed .excalidraw {
+  overflow: visible;
+}
+/* The drawing surface itself is a plain rectangular <canvas> — with the
+   container's own overflow:hidden gone (above), it now paints square
+   corners over the wrapper's rounded border. Round the canvas layers
+   directly instead, so the corners still read as rounded. */
+.sprint-canvas-embed .excalidraw__canvas {
+  border-radius: 0.75rem;
+}
+
 /* Prose styles — replaces @tailwindcss/typography which Tailwind v4 can't resolve locally */
 .prose {
   color: inherit;

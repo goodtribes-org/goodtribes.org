@@ -3,10 +3,11 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { isRealMember } from "@/lib/authz";
+import { isRealMember, hasProjectRole, PROJECT_LEAD_ROLES, isSiteAdmin } from "@/lib/authz";
 import { canWriteToPhase, isAnonymousPhase } from "@/lib/sprints";
 import { publishToSprintCanvas } from "@/lib/redis";
-import type { Prisma, SprintContributionType } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import type { SprintContributionType } from "@prisma/client";
 
 type CanvasSaveResult =
   | { ok: true; version: number }
@@ -146,5 +147,36 @@ export async function addComment(projectSlug: string, contributionId: string, bo
   });
 
   revalidatePath(`/projects/${projectSlug}/sprints`);
+  return { success: true };
+}
+
+// Hard-deletes a single phase's content — the drawing (documentState) and
+// every contribution/vote on it (cascades via SprintContribution's FK) —
+// but keeps the SprintPhase row itself (status/dates untouched), since the
+// five phases are structural slots in the sprint, not deletable on their
+// own. Lead or site-admin only; unlike autosave/broadcast this isn't
+// gated by phase status, so content can be cleared even after a phase closes.
+export async function deletePhaseContent(projectSlug: string, sprintPhaseId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+
+  const phase = await prisma.sprintPhase.findUnique({
+    where: { id: sprintPhaseId },
+    include: { sprint: { include: { project: { select: { id: true } } } } },
+  });
+  if (!phase) return { error: "Phase not found" };
+
+  const allowed =
+    (await hasProjectRole(phase.sprint.project.id, session.user.id, PROJECT_LEAD_ROLES)) ||
+    (await isSiteAdmin(session.user.id));
+  if (!allowed) return { error: "Not authorized" };
+
+  await prisma.sprintContribution.deleteMany({ where: { sprintPhaseId } });
+  await prisma.sprintPhase.update({
+    where: { id: sprintPhaseId },
+    data: { documentState: Prisma.JsonNull, version: 1, aiSummary: null },
+  });
+
+  revalidatePath(`/projects/${projectSlug}/sprints/${phase.sprintId}`);
   return { success: true };
 }
