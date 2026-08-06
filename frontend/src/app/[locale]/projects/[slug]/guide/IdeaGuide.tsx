@@ -384,8 +384,14 @@ export default function IdeaGuide({
         <div>
           <label className="block text-sm font-medium text-dark-slate mb-1">Sprint</label>
           <p className="text-xs text-dark-slate/50 mb-4">
-            Valfritt — förbered sprint-arbetet redan nu genom att bocka av det som redan är klart.
+            Valfritt — förbered sprint-arbetet redan nu genom att bocka av det som redan är klart, eller starta en riktig, asynkron Design Sprint direkt.
           </p>
+          <a
+            href={`/projects/${slug}/sprints`}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors mb-4"
+          >
+            Öppna Design Sprints →
+          </a>
           <div className="flex flex-col gap-2">
             {SPRINT_PREP_ITEMS.map((item) => {
               const isChecked = done.has(item.key);

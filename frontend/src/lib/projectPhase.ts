@@ -69,7 +69,7 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<ProjectPhaseValue, { key: string
     { key: "ai_reviewed", label: "Välj SDG" },
     { key: "lean_canvas_created", label: "Lean Canvas", href: "lean-canvas" },
     { key: "peer_feedback_requested", label: "Bjud in vänner" },
-    { key: "sprint_prepped", label: "Sprint" },
+    { key: "sprint_prepped", label: "Sprint", href: "sprints" },
   ],
   SPRINT: [
     { key: "map_understand", label: "Kartlägga & förstå" },

@@ -28,6 +28,7 @@ import {
   Pencil,
   Users,
   ChevronDown,
+  Rocket,
   type LucideIcon,
 } from "lucide-react";
 
@@ -43,6 +44,7 @@ const MAIN_ITEMS: NavItem[] = [
   { label: "Wiki",       href: "/wiki",      icon: BookOpen },
   { label: "Idéverkstad", href: "/idea-sessions", icon: Lightbulb },
   { label: "Lean Canvas", href: "/lean-canvas",   icon: LayoutGrid },
+  { label: "Design Sprints", href: "/sprints",    icon: Rocket },
 ];
 
 const TOOLS_ITEMS: NavItem[] = [
