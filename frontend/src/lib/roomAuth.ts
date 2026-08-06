@@ -35,12 +35,12 @@ export async function getRoomAccess(roomId: string, userId: string | null): Prom
     if (!room.projectId) return { room, canRead: false, canPost: false };
     const [role, project] = await Promise.all([
       userId ? getProjectRole(room.projectId, userId) : Promise.resolve(null),
-      prisma.project.findUnique({ where: { id: room.projectId }, select: { visibility: true } }),
+      prisma.project.findUnique({ where: { id: room.projectId }, select: { hiddenAt: true } }),
     ]);
     if (!role) {
-      // Not a member (or not logged in at all) — still readable if the
-      // project itself is public, but never postable.
-      return { room, canRead: project?.visibility === "public", canPost: false };
+      // Not a member (or not logged in at all) — still readable unless the
+      // project itself is site-admin-hidden, but never postable.
+      return { room, canRead: !project?.hiddenAt, canPost: false };
     }
     const isLead = isLeadRole(role);
     const canPost = room.postingPolicy === "LEADS_ONLY" ? isLead : role !== "FOLLOWER";
@@ -56,9 +56,9 @@ export async function getRoomAccess(roomId: string, userId: string | null): Prom
     if (room.projectId) {
       const [role, project] = await Promise.all([
         userId ? getProjectRole(room.projectId, userId) : Promise.resolve(null),
-        prisma.project.findUnique({ where: { id: room.projectId }, select: { visibility: true } }),
+        prisma.project.findUnique({ where: { id: room.projectId }, select: { hiddenAt: true } }),
       ]);
-      if (!role) return { room, canRead: project?.visibility === "public", canPost: false };
+      if (!role) return { room, canRead: !project?.hiddenAt, canPost: false };
       return { room, canRead: true, canPost: role !== "FOLLOWER" };
     }
     return { room, canRead: !!userId, canPost: !!userId };

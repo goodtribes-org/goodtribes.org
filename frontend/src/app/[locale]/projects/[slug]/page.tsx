@@ -205,6 +205,11 @@ export default async function ProjectDetailPage({
   const isOwnerOrAdmin = isLeadRole(userMembership?.role) || (!!userId && (await isSiteAdmin(userId)));
   const isMember = !!userMembership;
 
+  // A site-admin-hidden project (suspected criminal activity, see
+  // contentModeration.ts) stays visible to its own members and site-admins,
+  // 404s for everyone else — same pattern as idea/[id]'s hiddenAt gate.
+  if (project.hiddenAt && !isMember && !isOwnerOrAdmin) notFound();
+
   // "Flöde i projekten" — real members (excludes the lightweight FOLLOWER
   // relationship) see the project's own feed above the project text;
   // everyone else sees it below, after the description/update sections.

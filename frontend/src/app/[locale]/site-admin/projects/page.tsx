@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { setProjectVisibility, deleteProjectAsAdmin } from "./actions";
+import { setProjectHidden, deleteProjectAsAdmin } from "./actions";
 
 export default async function AdminProjectsPage({
   searchParams,
@@ -14,7 +14,7 @@ export default async function AdminProjectsPage({
     select: {
       slug: true,
       title: true,
-      visibility: true,
+      hiddenAt: true,
       _count: { select: { flags: true, members: true } },
     },
     orderBy: { title: "asc" },
@@ -26,7 +26,7 @@ export default async function AdminProjectsPage({
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-dark-slate">Projekt</h1>
         <p className="text-sm text-dark-slate/60 mt-1">
-          Dölj eller ta bort projekt som bryter mot GoodTribes regler.
+          Dölj projekt vid misstanke om brottslig verksamhet, eller ta bort projekt som bryter mot GoodTribes regler.
         </p>
       </div>
 
@@ -54,18 +54,18 @@ export default async function AdminProjectsPage({
                 )}
               </p>
             </div>
-            <span className="text-xs text-dark-slate/50">{p.visibility}</span>
+            <span className="text-xs text-dark-slate/50">{p.hiddenAt ? "Dold" : "Publikt"}</span>
             <form
               action={async () => {
                 "use server";
-                await setProjectVisibility(p.slug, p.visibility === "public" ? "private" : "public");
+                await setProjectHidden(p.slug, !p.hiddenAt);
               }}
             >
               <button
                 type="submit"
                 className="text-xs font-medium px-2 py-1 rounded-md border border-gray-200 text-dark-slate/70 hover:border-amber-400 hover:text-amber-700 transition-colors"
               >
-                {p.visibility === "public" ? "Dölj" : "Gör publik"}
+                {p.hiddenAt ? "Gör synligt" : "Dölj"}
               </button>
             </form>
             <form

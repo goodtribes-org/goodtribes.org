@@ -68,14 +68,10 @@ export async function hideTarget(
   targetId: string,
   opts: { hiddenById: string | null; hiddenReason: ContentHideReason }
 ): Promise<void> {
-  // Project/Organisation reuse their existing visibility toggles (already
-  // flipped by site-admin/projects and site-admin/organisations) instead of
-  // the hiddenAt triad — whole-entity moderation should look and behave the
-  // same whether it came from a flag or a manual admin action.
-  if (targetType === "Project") {
-    await prisma.project.update({ where: { id: targetId }, data: { visibility: "private" } });
-    return;
-  }
+  // Organisation reuses its existing isPublic toggle (already flipped by
+  // site-admin/organisations) instead of the hiddenAt triad — whole-entity
+  // moderation should look and behave the same whether it came from a flag
+  // or a manual admin action.
   if (targetType === "Organisation") {
     await prisma.organisation.update({ where: { id: targetId }, data: { isPublic: false } });
     return;
@@ -83,9 +79,9 @@ export async function hideTarget(
   if (targetType === "User") {
     // Deliberate no-op: reusing showProfile would let a suspended-for-cause
     // user just flip their own visibility back on from settings, unlike
-    // Project.visibility/Organisation.isPublic which are owned by an admin
-    // toggle, not the flagged party themselves. The real remedy for a
-    // flagged profile is suspending the account via site-admin/users.
+    // Organisation.isPublic which is owned by an admin toggle, not the
+    // flagged party themselves. The real remedy for a flagged profile is
+    // suspending the account via site-admin/users.
     return;
   }
 
@@ -116,6 +112,9 @@ export async function hideTarget(
     case "LeanCanvasComment":
       await prisma.leanCanvasComment.update({ where: { id: targetId }, data });
       return;
+    case "Project":
+      await prisma.project.update({ where: { id: targetId }, data });
+      return;
     case "WikiPage":
       await prisma.wikiPage.update({ where: { id: targetId }, data });
       return;
@@ -129,10 +128,6 @@ export async function hideTarget(
 }
 
 export async function unhideTarget(targetType: ContentTargetType, targetId: string): Promise<void> {
-  if (targetType === "Project") {
-    await prisma.project.update({ where: { id: targetId }, data: { visibility: "public" } });
-    return;
-  }
   if (targetType === "Organisation") {
     await prisma.organisation.update({ where: { id: targetId }, data: { isPublic: true } });
     return;
@@ -161,6 +156,9 @@ export async function unhideTarget(targetType: ContentTargetType, targetId: stri
       return;
     case "LeanCanvasComment":
       await prisma.leanCanvasComment.update({ where: { id: targetId }, data });
+      return;
+    case "Project":
+      await prisma.project.update({ where: { id: targetId }, data });
       return;
     case "WikiPage":
       await prisma.wikiPage.update({ where: { id: targetId }, data });
@@ -233,10 +231,6 @@ export async function getTargetPreview(targetType: ContentTargetType, targetId: 
 }
 
 export async function isTargetHidden(targetType: ContentTargetType, targetId: string): Promise<boolean> {
-  if (targetType === "Project") {
-    const row = await prisma.project.findUnique({ where: { id: targetId }, select: { visibility: true } });
-    return row?.visibility !== "public";
-  }
   if (targetType === "Organisation") {
     return (await prisma.organisation.findUnique({ where: { id: targetId }, select: { isPublic: true } }))?.isPublic === false;
   }
@@ -256,6 +250,8 @@ export async function isTargetHidden(targetType: ContentTargetType, targetId: st
       return (await prisma.kanbanCardComment.findUnique({ where: { id: targetId }, select: { hiddenAt: true } }))?.hiddenAt != null;
     case "LeanCanvasComment":
       return (await prisma.leanCanvasComment.findUnique({ where: { id: targetId }, select: { hiddenAt: true } }))?.hiddenAt != null;
+    case "Project":
+      return (await prisma.project.findUnique({ where: { id: targetId }, select: { hiddenAt: true } }))?.hiddenAt != null;
     case "WikiPage":
       return (await prisma.wikiPage.findUnique({ where: { id: targetId }, select: { hiddenAt: true } }))?.hiddenAt != null;
     case "AcademyGuide":

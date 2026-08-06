@@ -31,7 +31,7 @@ export default async function ProjectsPage({
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
 
   const where: Prisma.ProjectWhereInput = {
-    visibility: "public",
+    hiddenAt: null,
     ...(q ? { OR: [
       { title: { contains: q, mode: "insensitive" } },
       { description: { contains: q, mode: "insensitive" } },

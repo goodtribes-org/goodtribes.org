@@ -57,7 +57,6 @@ export async function POST(req: NextRequest) {
       title: projectTitle,
       description: parent.description,
       phase: "IDEA",
-      visibility: parent.visibility,
       category: parent.category,
       tags: parent.tags,
       imageUrl: parent.imageUrl,

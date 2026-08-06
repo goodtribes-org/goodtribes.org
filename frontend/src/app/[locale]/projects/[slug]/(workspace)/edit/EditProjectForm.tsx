@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef } from "react";
-import { updateProject, deleteProject, advanceProjectPhase, requestSandboxGraduation, toggleChecklistItem, updateGithubColumnMap } from "./actions";
+import { updateProject, advanceProjectPhase, requestSandboxGraduation, toggleChecklistItem, updateGithubColumnMap } from "./actions";
 import { COLUMNS } from "@/lib/kanbanColumns";
 import { columnForStatus } from "@/lib/githubColumnMap";
 import { markProjectAbandoned, unmarkProjectAbandoned, transferOwnership } from "@/app/[locale]/projects/[slug]/ownership-actions";
@@ -34,7 +34,6 @@ interface Props {
     phase: string;
     isSandbox: boolean;
     abandonedAt: string | null;
-    visibility: string;
     category: string | null;
     tags: string[];
     sdgGoals: number[];
@@ -364,18 +363,6 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-dark-slate mb-2">Visibility</label>
-        <div className="flex gap-4">
-          {["public", "private"].map((v) => (
-            <label key={v} className="flex items-center gap-2 cursor-pointer">
-              <input type="radio" name="visibility" value={v}
-                defaultChecked={initial.visibility === v} className="accent-seagrass" />
-              <span className="text-sm capitalize">{v}</span>
-            </label>
-          ))}
-        </div>
-      </div>
 
       <div>
         <div className="flex items-center justify-between mb-2">
@@ -445,25 +432,6 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
           className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">
           Cancel
         </a>
-      </div>
-
-      {/* Danger zone */}
-      <div className="border border-red-200 rounded-lg p-5 mt-6">
-        <p className="text-sm font-medium text-dark-slate mb-1">Delete project</p>
-        <p className="text-xs text-dark-slate/50 mb-4">
-          Permanently removes the project, all tasks, milestones, and chat history. This cannot be undone.
-        </p>
-        <button
-          type="button"
-          disabled={isPending}
-          onClick={() => {
-            if (!confirm("Are you sure? This will permanently delete the project and all its data.")) return;
-            startTransition(() => deleteProject(slug));
-          }}
-          className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700 transition-colors disabled:opacity-60"
-        >
-          Delete project
-        </button>
       </div>
     </form>
 

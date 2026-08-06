@@ -13,7 +13,6 @@ export type CreateProjectParams = {
   tags?: string[];
   sdgGoals?: number[];
   legalType?: string;
-  visibility?: string;
   orgId?: string | null;
   isSandbox?: boolean;
   skillIds?: string[];
@@ -28,7 +27,7 @@ export async function createProjectRecord(params: CreateProjectParams) {
   const {
     title, ownerId,
     summary = null, description = null, imageUrl = null, category = null,
-    tags = [], sdgGoals = [], visibility = "public", orgId = null,
+    tags = [], sdgGoals = [], orgId = null,
     // Every new project — whether from the full creation form or idea
     // promotion — starts in the sandbox by default. Founders apply to
     // graduate out (see requestSandboxGraduation) once it's ready.
@@ -43,7 +42,7 @@ export async function createProjectRecord(params: CreateProjectParams) {
     try {
       const project = await prisma.project.create({
         data: {
-          slug: candidate, title, summary, description, visibility, category, tags, sdgGoals, legalType,
+          slug: candidate, title, summary, description, category, tags, sdgGoals, legalType,
           ownerId, isSandbox,
           ...(imageUrl ? { imageUrl } : {}),
           ...(orgId ? { orgId } : {}),

@@ -60,7 +60,6 @@ export async function forkProject(sourceSlug: string, formData: FormData) {
             tags: source.tags,
             sdgGoals: source.sdgGoals,
             phase: source.phase,
-            visibility: "public",
             legalType: "NONPROFIT_UMBRELLA",
             ownerId: userId,
             forkedFromProjectId: source.id,

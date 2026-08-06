@@ -148,17 +148,18 @@ export type PublicProjectChannelGroup = {
 // single public project's channels so the messages sidebar can surface them
 // to a logged-out (or logged-in-but-not-a-member) visitor who lands on that
 // project's channel via a direct link (e.g. from the activity feed) or the
-// project page's "Kommunikation" tab. Private projects return null: their
-// channels stay discoverable only to members, same as getRoomAccess.
+// project page's "Kommunikation" tab. Site-admin-hidden projects return
+// null: their channels stay discoverable only to members, same as
+// getRoomAccess.
 export async function getPublicProjectChannelsBySlug(slug: string): Promise<PublicProjectChannelGroup | null> {
   const project = await prisma.project.findUnique({
     where: { slug },
     select: {
-      id: true, slug: true, title: true, visibility: true,
+      id: true, slug: true, title: true, hiddenAt: true,
       rooms: { where: { type: "PROJECT_CHANNEL" }, orderBy: { order: "asc" }, select: { id: true, name: true } },
     },
   });
-  if (!project || project.visibility !== "public" || project.rooms.length === 0) return null;
+  if (!project || project.hiddenAt || project.rooms.length === 0) return null;
   return { id: project.id, slug: project.slug, title: project.title, rooms: project.rooms };
 }
 

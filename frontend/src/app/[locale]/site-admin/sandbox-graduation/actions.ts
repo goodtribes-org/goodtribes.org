@@ -45,7 +45,7 @@ export async function approveSandboxGraduation(requestId: string, umbrellaEntity
     }),
   ]);
 
-  if (request.project.visibility === "public") {
+  if (!request.project.hiddenAt) {
     await indexDocuments("projects", [{
       id: `project-${request.project.slug}`,
       type: "project",

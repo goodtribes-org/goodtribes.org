@@ -27,7 +27,7 @@ export default async function MicroTasksPage({
     openToPublic: true,
     assigneeId: null,
     column: { not: "DONE" },
-    project: { visibility: "public" },
+    project: { hiddenAt: null },
     ...(category ? { category } : {}),
   };
 

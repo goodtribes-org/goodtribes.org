@@ -121,7 +121,6 @@ export async function updateProject(slug: string, formData: FormData) {
 
   const summary = (formData.get("summary") as string | null)?.trim() || null;
   const description = (formData.get("description") as string | null)?.trim() || null;
-  const visibility = (formData.get("visibility") as string) || "public";
   const category = (formData.get("category") as string | null)?.trim() || null;
   const tagsRaw = (formData.get("tags") as string | null)?.trim() || "";
   const tags = tagsRaw.split(",").map((t) => t.trim()).filter(Boolean);
@@ -132,7 +131,7 @@ export async function updateProject(slug: string, formData: FormData) {
 
   await prisma.project.update({
     where: { slug },
-    data: { title, summary, description, visibility, category, tags, sdgGoals, ...(imageUrl ? { imageUrl } : {}), orgId },
+    data: { title, summary, description, category, tags, sdgGoals, ...(imageUrl ? { imageUrl } : {}), orgId },
   });
 
   await prisma.$transaction([
@@ -148,7 +147,7 @@ export async function updateProject(slug: string, formData: FormData) {
   await updateGithubMapping(slug, formData.get("githubProject") as string | null);
 
   // Sync Meilisearch — remove old slug entry if slug changed (slug doesn't change here, but keep in sync)
-  if (visibility === "public") {
+  if (!project.hiddenAt) {
     await indexDocuments("projects", [{
       id: `project-${slug}`,
       type: "project",
@@ -197,7 +196,7 @@ export async function advanceProjectPhase(slug: string) {
     }),
   ]);
 
-  if (project.visibility === "public") {
+  if (!project.hiddenAt) {
     await indexDocuments("projects", [{
       id: `project-${slug}`,
       type: "project",
@@ -262,18 +261,4 @@ export async function toggleChecklistItem(slug: string, phase: ProjectPhaseValue
 
   revalidatePath(`/projects/${slug}`);
   revalidatePath(`/projects/${slug}/edit`);
-}
-
-export async function deleteProject(slug: string) {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-
-  const project = await prisma.project.findUnique({ where: { slug } });
-  if (!project) redirect("/projects");
-  if (!(await hasProjectRole(project.id, session.user.id, ["FOUNDER"]))) redirect(`/projects/${slug}`);
-
-  await prisma.project.delete({ where: { slug } });
-  await deleteDocument("projects", `project-${slug}`);
-
-  redirect("/projects");
 }

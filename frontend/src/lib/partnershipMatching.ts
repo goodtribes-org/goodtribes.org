@@ -39,7 +39,7 @@ export async function findMatchingProjectsForOrg(organisationId: string): Promis
 
   return prisma.project.findMany({
     where: {
-      visibility: "public",
+      hiddenAt: null,
       id: { notIn: existingPartnerProjectIds },
       OR: [
         org.category ? { category: org.category } : undefined,

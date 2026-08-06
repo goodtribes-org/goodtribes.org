@@ -27,7 +27,6 @@ export async function createProject(formData: FormData) {
 
   const summary = (formData.get("summary") as string | null)?.trim() || null;
   const description = (formData.get("description") as string | null)?.trim() || null;
-  const visibility = (formData.get("visibility") as string) || "public";
   const category = (formData.get("category") as string | null)?.trim() || null;
   const tagsRaw = (formData.get("tags") as string | null)?.trim() || "";
   const tags = tagsRaw.split(",").map((t) => t.trim()).filter(Boolean);
@@ -43,7 +42,7 @@ export async function createProject(formData: FormData) {
   const skillIds = formData.getAll("skillIds") as string[];
 
   const project = await createProjectRecord({
-    title, summary, description, visibility, category, tags, sdgGoals, imageUrl, orgId,
+    title, summary, description, category, tags, sdgGoals, imageUrl, orgId,
     legalType: legalTypeRaw, ownerId: userId, skillIds,
   });
 

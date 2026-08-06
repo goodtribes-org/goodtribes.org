@@ -41,7 +41,7 @@ export default async function SkillDetailPage({
         orderBy: { addedAt: "asc" },
       },
       projects: {
-        where: { project: { visibility: "public" } },
+        where: { project: { hiddenAt: null } },
         include: {
           project: {
             select: {

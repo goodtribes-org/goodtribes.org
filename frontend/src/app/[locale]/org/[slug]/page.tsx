@@ -123,7 +123,7 @@ export default async function OrgDetailPage({
       : Promise.resolve([]),
     activeTab === "projects"
       ? prisma.project.findMany({
-          where: { orgId: org.id, visibility: "public" },
+          where: { orgId: org.id, hiddenAt: null },
           select: { slug: true, title: true, phase: true, description: true, _count: { select: { members: true } } },
           orderBy: { createdAt: "desc" },
         })

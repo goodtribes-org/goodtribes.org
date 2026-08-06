@@ -31,8 +31,8 @@ export async function markChecklistDone(projectId: string, itemKey: string, user
 // Step 1 ("Beskriv projektet") re-visited from later in the guide — a
 // narrow, safe partial update covering only the fields that step shows.
 // Deliberately does NOT reuse (workspace)/edit's updateProject: that action
-// defaults visibility to "public" and wipes projectSkills/orgId when those
-// fields are absent from the FormData, which would silently destroy data
+// wipes projectSkills/orgId when those fields are absent from the FormData,
+// which would silently destroy data
 // for a form that only ever collects title/summary/description/category/
 // tags/imageUrl. legalType isn't editable here either — once a project
 // exists, changing it is a member-voted LegalTypeChangeRequest (PRD 4c),

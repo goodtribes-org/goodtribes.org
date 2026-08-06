@@ -11,7 +11,7 @@ export async function POST() {
 
   const [projects, ideas, users] = await Promise.all([
     prisma.project.findMany({
-      where: { visibility: "public" },
+      where: { hiddenAt: null },
       include: { owner: { select: { name: true } } },
     }),
     prisma.idea.findMany({

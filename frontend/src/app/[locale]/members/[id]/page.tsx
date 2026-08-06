@@ -60,7 +60,7 @@ export default async function MemberProfilePage({
         select: { skill: { select: { id: true, name: true, tag: true, slug: true } } },
       },
       projectMemberships: {
-        where: { project: { visibility: "public" } },
+        where: { project: { hiddenAt: null } },
         select: {
           role: true,
           project: {

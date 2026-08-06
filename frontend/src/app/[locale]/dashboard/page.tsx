@@ -171,7 +171,7 @@ export default async function DashboardPage({
         select: { interests: true, skills: { select: { skillId: true } } },
       }),
       prisma.skill.findMany({
-        where: { projects: { some: { project: { visibility: "public", archivedAt: null } } } },
+        where: { projects: { some: { project: { hiddenAt: null, archivedAt: null } } } },
         select: { id: true, name: true, slug: true },
         orderBy: { name: "asc" },
       }),
@@ -204,7 +204,7 @@ export default async function DashboardPage({
       ? prisma.project.findMany({
           where: {
             archivedAt: null,
-            visibility: "public",
+            hiddenAt: null,
             neededSkills: { some: { skillId: { in: userSkillIds } } },
             members: { none: { userId } },
           },
@@ -239,7 +239,7 @@ export default async function DashboardPage({
       ? prisma.project.findMany({
           where: {
             archivedAt: null,
-            visibility: "public",
+            hiddenAt: null,
             sdgGoals: { hasSome: userInterests },
             members: { none: { userId } },
           },
@@ -252,7 +252,7 @@ export default async function DashboardPage({
     prisma.project.findMany({
       where: {
         archivedAt: null,
-        visibility: "public",
+        hiddenAt: null,
         ...(skillSlug ? { neededSkills: { some: { skill: { slug: skillSlug } } } } : {}),
       },
       select: matchProjectSelect,

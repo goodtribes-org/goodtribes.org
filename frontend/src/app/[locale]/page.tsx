@@ -69,7 +69,7 @@ export default async function HomePage({
   const userId = session?.user?.id;
 
   const where: Prisma.ProjectWhereInput = {
-    visibility: "public",
+    hiddenAt: null,
     ...(q ? { OR: [
       { title: { contains: q, mode: "insensitive" } },
       { description: { contains: q, mode: "insensitive" } },
@@ -103,7 +103,7 @@ export default async function HomePage({
     heroSettings,
     onboardingSteps,
   ] = await Promise.all([
-    prisma.project.count({ where: { visibility: "public" } }),
+    prisma.project.count({ where: { hiddenAt: null } }),
     prisma.organisation.count({ where: { isPublic: true } }),
     prisma.user.count({ where: { showProfile: true } }),
     prisma.fundingPledge.aggregate({ where: { pledgeStatus: "confirmed" }, _sum: { amount: true } }),
@@ -117,7 +117,7 @@ export default async function HomePage({
       take: 6,
       select: { id: true, name: true, image: true, showProfile: true },
     }),
-    prisma.project.findMany({ where: { visibility: "public" }, select: { sdgGoals: true } }),
+    prisma.project.findMany({ where: { hiddenAt: null }, select: { sdgGoals: true } }),
     prisma.project.count({ where }),
     prisma.project.findMany({
       where,

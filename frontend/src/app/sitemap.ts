@@ -28,7 +28,7 @@ function localizedEntries(
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [projects, ideas, orgs, members] = await Promise.all([
     prisma.project.findMany({
-      where: { visibility: "public" },
+      where: { hiddenAt: null },
       select: { slug: true, updatedAt: true },
     }),
     prisma.idea.findMany({

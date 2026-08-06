@@ -620,7 +620,9 @@ model Project {
   // express interest in taking over; a founder/site-admin then picks one to
   // transfer ownership to via transferOwnership (see ownership-actions.ts).
   abandonedAt DateTime?
-  visibility  String   @default("public")
+  hiddenAt    DateTime?
+  hiddenById  String?
+  hiddenReason ContentHideReason?
   category    String?
   tags        String[]
   imageUrl    String?

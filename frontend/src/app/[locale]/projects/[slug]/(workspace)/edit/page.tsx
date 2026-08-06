@@ -94,7 +94,6 @@ export default async function EditProjectPage({
           phase: project.phase,
           isSandbox: project.isSandbox,
           abandonedAt: project.abandonedAt?.toISOString() ?? null,
-          visibility: project.visibility,
           category: project.category,
           tags: project.tags,
           sdgGoals: project.sdgGoals,

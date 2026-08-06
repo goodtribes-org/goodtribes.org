@@ -66,7 +66,7 @@ export async function fetchActivityItems(
         },
       }),
       prisma.blogPost.findMany({
-        where: opts ? { projectSlug: opts.projectSlug } : { project: { visibility: "public" } },
+        where: opts ? { projectSlug: opts.projectSlug } : { project: { hiddenAt: null } },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
@@ -78,7 +78,7 @@ export async function fetchActivityItems(
       prisma.milestone.findMany({
         where: opts
           ? { status: "done", projectId: opts.projectId }
-          : { status: "done", project: { visibility: "public" } },
+          : { status: "done", project: { hiddenAt: null } },
         orderBy: { updatedAt: "desc" },
         take: LIMIT,
         select: {
@@ -90,7 +90,7 @@ export async function fetchActivityItems(
       opts
         ? Promise.resolve([])
         : prisma.project.findMany({
-            where: { visibility: "public" },
+            where: { hiddenAt: null },
             orderBy: { createdAt: "desc" },
             take: LIMIT,
             select: {
@@ -112,7 +112,7 @@ export async function fetchActivityItems(
       prisma.activityEvent.findMany({
         where: {
           type: { in: ["task_completed", "task_created", "task_moved", "todo_completed", "member_joined"] },
-          ...(opts ? { projectId: opts.projectId } : { project: { visibility: "public" } }),
+          ...(opts ? { projectId: opts.projectId } : { project: { hiddenAt: null } }),
         },
         orderBy: { createdAt: "desc" },
         take: LIMIT * 2,
@@ -128,7 +128,7 @@ export async function fetchActivityItems(
           hiddenAt: null,
           room: opts
             ? { type: "PROJECT_CHANNEL", projectId: opts.projectId }
-            : { type: "PROJECT_CHANNEL", project: { visibility: "public" } },
+            : { type: "PROJECT_CHANNEL", project: { hiddenAt: null } },
         },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
@@ -141,7 +141,7 @@ export async function fetchActivityItems(
       prisma.kanbanCardComment.findMany({
         where: {
           hiddenAt: null,
-          card: opts ? { projectSlug: opts.projectSlug } : { project: { visibility: "public" } },
+          card: opts ? { projectSlug: opts.projectSlug } : { project: { hiddenAt: null } },
         },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
