@@ -64,6 +64,10 @@ export async function generateMetadata({
       // production (see next's router-server.js) — bump the number on any
       // future icon content update, even though the filename stays the same.
       icon: [
+        // SVG first: browsers that support it (Chrome, Firefox, Edge) use this
+        // crisp vector at any zoom/DPI instead of the PNGs below, which stay
+        // as the fallback for Safari and older browsers with no SVG support.
+        { url: "/img/goodtribes-mark.svg", type: "image/svg+xml" },
         { url: "/icons/favicon-32.png?v=4", sizes: "32x32", type: "image/png" },
         { url: "/icons/favicon-16.png?v=4", sizes: "16x16", type: "image/png" },
       ],
