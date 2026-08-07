@@ -27,7 +27,7 @@ export default async function IdeaThreadPage({
   if (!access || access.room.type !== "IDEA_THREAD") notFound();
   if (!access.canRead) notFound();
 
-  const [room, messages, mentionables] = await Promise.all([
+  const [room, messages, participants, mentionables] = await Promise.all([
     prisma.room.findUnique({
       where: { id: roomId },
       select: { convertedToIdeaId: true, convertedToProjectId: true },
@@ -41,6 +41,10 @@ export default async function IdeaThreadPage({
       },
       orderBy: { createdAt: "asc" },
       take: 200,
+    }),
+    prisma.roomParticipant.findMany({
+      where: { roomId },
+      select: { userId: true, lastReadAt: true },
     }),
     getRoomMentionables(access.room, userId),
   ]);
@@ -80,6 +84,7 @@ export default async function IdeaThreadPage({
           name: access.room.name,
           postingPolicy: access.room.postingPolicy,
           otherUsers: [],
+          participants: participants.map((p) => ({ userId: p.userId, lastReadAt: p.lastReadAt.toISOString() })),
         }}
         initialMessages={messages.map((m) => ({
           ...m,

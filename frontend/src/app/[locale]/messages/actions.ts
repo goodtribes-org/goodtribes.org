@@ -404,6 +404,7 @@ export async function markRoomRead(roomId: string) {
   const session = await auth();
   if (!session?.user?.id) return;
 
-  await markRoomReadDb(roomId, session.user.id);
+  const lastReadAt = await markRoomReadDb(roomId, session.user.id);
+  publishToRoom(roomId, { type: "read", userId: session.user.id, lastReadAt: lastReadAt.toISOString() });
   revalidatePath("/messages");
 }

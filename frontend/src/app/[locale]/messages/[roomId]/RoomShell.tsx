@@ -38,6 +38,7 @@ type RoomInfo = {
   name: string | null;
   postingPolicy: "ALL_MEMBERS" | "LEADS_ONLY";
   otherUsers: { id: string; name: string | null; image: string | null }[];
+  participants: { userId: string; lastReadAt: string }[];
 };
 
 type Props = {
@@ -96,6 +97,9 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
   const esRef = useRef<EventSource | null>(null);
   const [typingUsers, setTypingUsers] = useState<Map<string, string>>(new Map());
   const typingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const [readMarkers, setReadMarkers] = useState<Map<string, string>>(
+    () => new Map(room.participants.map((p) => [p.userId, p.lastReadAt]))
+  );
   const dmOtherUserId = room.type === "DM" ? room.otherUsers[0]?.id : undefined;
   const presence = usePresence(dmOtherUserId ? [dmOtherUserId] : []);
 
@@ -175,6 +179,11 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
 
     es.addEventListener("message", (e) => {
       const data = JSON.parse(e.data);
+
+      if (data.type === "read") {
+        setReadMarkers((prev) => new Map(prev).set(data.userId, data.lastReadAt));
+        return;
+      }
 
       if (data.type === "typing") {
         if (data.userId === currentUserId) return;
@@ -262,9 +271,23 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
     };
   }
 
+  // "Seen" ticks reuse RoomParticipant.lastReadAt (already updated whenever
+  // a room is opened) rather than a dedicated per-message receipts table —
+  // only computed for the sender's own latest message to avoid a tick on
+  // every bubble.
+  function seenCountFor(message: MessageRow): number {
+    let count = 0;
+    readMarkers.forEach((lastReadAt, userId) => {
+      if (userId === message.authorId) return;
+      if (new Date(lastReadAt) >= new Date(message.createdAt)) count++;
+    });
+    return count;
+  }
+
   const grouped = buildGrouped(messages);
   const title = roomTitle(room);
   const canReply = room.type === "PROJECT_CHANNEL" || room.type === "ORG_CHANNEL";
+  const lastOwnMessageId = [...messages].reverse().find((m) => m.authorId === currentUserId)?.id;
 
   return (
     <div className="flex">
@@ -471,6 +494,11 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                           </div>
                         )}
                       </div>
+                      {isOwn && m.id === lastOwnMessageId && !m.deletedAt && seenCountFor(m) > 0 && (
+                        <span className="self-end text-[10px] text-dark-slate/30 mt-0.5">
+                          {room.type === "DM" ? "Sett" : `Sett av ${seenCountFor(m)}`}
+                        </span>
+                      )}
                       {currentUserId && !m.deletedAt && (
                         <div className={isOwn ? "self-end" : "self-start"}>
                           <FlagContentButton targetType="Message" targetId={m.id} />

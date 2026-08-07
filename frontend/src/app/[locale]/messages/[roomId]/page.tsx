@@ -26,7 +26,7 @@ export default async function RoomPage({
     notFound();
   }
 
-  const [messages, otherUsers, mentionables] = await Promise.all([
+  const [messages, otherUsers, participants, mentionables] = await Promise.all([
     prisma.message.findMany({
       where: { roomId, threadParentId: null, hiddenAt: null },
       include: {
@@ -43,6 +43,14 @@ export default async function RoomPage({
           select: { user: { select: { id: true, name: true, image: true } } },
         })
       : Promise.resolve([]),
+    // Read-receipt source for every room type — see RoomShell's "seen"
+    // computation. Channel rows only exist for members who've actually
+    // opened the room at least once (see markRoomRead's lazy-create), which
+    // is the correct semantics for "seen": only confirmed openers count.
+    prisma.roomParticipant.findMany({
+      where: { roomId },
+      select: { userId: true, lastReadAt: true },
+    }),
     userId ? getRoomMentionables(access.room, userId) : Promise.resolve([]),
   ]);
 
@@ -54,6 +62,7 @@ export default async function RoomPage({
         name: access.room.name,
         postingPolicy: access.room.postingPolicy,
         otherUsers: otherUsers.map((p) => p.user),
+        participants: participants.map((p) => ({ userId: p.userId, lastReadAt: p.lastReadAt.toISOString() })),
       }}
       initialMessages={messages.map((m) => ({
         ...m,

@@ -37,12 +37,14 @@ export async function createGroupRoom(creatorId: string, memberIds: string[], na
 // Marks a room read for a user, creating the RoomParticipant roster row if it
 // doesn't exist yet (project/org channel rows are lazily created on first
 // read, mirroring the old ChannelReadMarker's create-on-first-mark behavior).
-export async function markRoomRead(roomId: string, userId: string) {
+export async function markRoomRead(roomId: string, userId: string): Promise<Date> {
+  const lastReadAt = new Date();
   await prisma.roomParticipant.upsert({
     where: { roomId_userId: { roomId, userId } },
-    create: { roomId, userId, lastReadAt: new Date() },
-    update: { lastReadAt: new Date() },
+    create: { roomId, userId, lastReadAt },
+    update: { lastReadAt },
   });
+  return lastReadAt;
 }
 
 export async function isRoomUnread(roomId: string, userId: string, lastReadAt: Date): Promise<boolean> {
