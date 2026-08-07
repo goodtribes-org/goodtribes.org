@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface Props {
   projectId: string;
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function ReplicationToggle({ projectId, openForReplication }: Props) {
+  const t = useTranslations("ReplicationToggle");
   const [enabled, setEnabled] = useState(openForReplication);
   const [saving, setSaving] = useState(false);
 
@@ -35,7 +37,7 @@ export default function ReplicationToggle({ projectId, openForReplication }: Pro
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
           enabled ? "bg-seagrass" : "bg-gray-300"
         } disabled:opacity-50`}
-        aria-label="Öppen för replikering"
+        aria-label={t("toggleAriaLabel")}
       >
         <span
           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -44,7 +46,7 @@ export default function ReplicationToggle({ projectId, openForReplication }: Pro
         />
       </button>
       <span className="text-sm text-dark-slate/70">
-        {enabled ? "Öppen för replikering" : "Stängd för replikering"}
+        {enabled ? t("statusOpen") : t("statusClosed")}
       </span>
     </div>
   );

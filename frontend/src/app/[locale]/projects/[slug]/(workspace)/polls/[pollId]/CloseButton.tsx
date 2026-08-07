@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { closePoll } from "../actions";
 
 interface Props {
@@ -9,10 +10,11 @@ interface Props {
 }
 
 export default function CloseButton({ pollId, projectSlug }: Props) {
+  const t = useTranslations("CloseButton");
   const [isPending, startTransition] = useTransition();
 
   function handleClose() {
-    if (!confirm("Är du säker på att du vill stänga omröstningen?")) return;
+    if (!confirm(t("confirmClose"))) return;
     startTransition(async () => {
       await closePoll(pollId, projectSlug);
     });
@@ -25,7 +27,7 @@ export default function CloseButton({ pollId, projectSlug }: Props) {
       disabled={isPending}
       className="text-xs text-dark-slate/50 hover:text-watermelon transition-colors disabled:opacity-60"
     >
-      {isPending ? "Stänger…" : "Stäng omröstning"}
+      {isPending ? t("closing") : t("closePoll")}
     </button>
   );
 }

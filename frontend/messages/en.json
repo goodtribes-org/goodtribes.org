@@ -2033,5 +2033,60 @@
     "descriptionLabel": "Description (optional)",
     "submitting": "Sending...",
     "submitButton": "Propose partnership"
+  },
+  "NewPollForm": {
+    "titleLabel": "Title",
+    "titlePlaceholder": "What should the vote be about?",
+    "descriptionLabel": "Description",
+    "optional": "(optional)",
+    "descriptionPlaceholder": "Give more background on the vote…",
+    "typeLabel": "Type",
+    "typeYesNo": "Yes / No",
+    "typeMultiple": "Multiple choice",
+    "optionsLabel": "Options",
+    "optionLabelPlaceholder": "Option name",
+    "removeOptionAriaLabel": "Remove option",
+    "optionDescriptionPlaceholder": "Short description (optional)",
+    "addOption": "+ Add option",
+    "visibilityLabel": "Visibility",
+    "visibilityLive": "Open — results show immediately",
+    "visibilityHidden": "Hidden — results shown after closing",
+    "isBindingLabel": "Binding decision",
+    "deadlineLabel": "Last day to vote",
+    "quorumLabel": "Minimum turnout %",
+    "quorumOptionalHint": "(optional, 0–100)",
+    "quorumPlaceholder": "e.g. 50",
+    "submitPending": "Creating…",
+    "submitLabel": "Create poll",
+    "cancel": "Cancel"
+  },
+  "CloseButton": {
+    "confirmClose": "Are you sure you want to close the poll?",
+    "closing": "Closing…",
+    "closePoll": "Close poll"
+  },
+  "ReplicationToggle": {
+    "toggleAriaLabel": "Open for replication",
+    "statusOpen": "Open for replication",
+    "statusClosed": "Closed for replication"
+  },
+  "StartInstanceForm": {
+    "projectNameLabel": "Project name for your instance",
+    "projectNamePlaceholder": "e.g. GreenKids Stockholm",
+    "regionLabel": "Region / city",
+    "regionPlaceholder": "e.g. Stockholm",
+    "countryLabel": "Country",
+    "countryPlaceholder": "e.g. Sweden",
+    "submitButton": "Apply for instance",
+    "submittingButton": "Sending...",
+    "successMessage": "Your application has been sent! The project's owner will review it soon.",
+    "genericError": "Something went wrong.",
+    "genericErrorRetry": "Something went wrong. Please try again."
+  },
+  "SuggestionForm": {
+    "placeholder": "What would you like to see improved on GoodTribes?",
+    "successMessage": "Thanks for your suggestion!",
+    "submitting": "Sending...",
+    "submitButton": "Send suggestion"
   }
 }

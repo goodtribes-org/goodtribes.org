@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface Props {
   parentSlug: string;
 }
 
 export default function StartInstanceForm({ parentSlug }: Props) {
+  const t = useTranslations("StartInstanceForm");
   const router = useRouter();
   const [region, setRegion] = useState("");
   const [country, setCountry] = useState("");
@@ -37,10 +39,10 @@ export default function StartInstanceForm({ parentSlug }: Props) {
         router.refresh();
       } else {
         const data = await res.json() as { error?: string };
-        setError(data.error ?? "Något gick fel.");
+        setError(data.error ?? t("genericError"));
       }
     } catch {
-      setError("Något gick fel. Försök igen.");
+      setError(t("genericErrorRetry"));
     } finally {
       setSubmitting(false);
     }
@@ -49,7 +51,7 @@ export default function StartInstanceForm({ parentSlug }: Props) {
   if (success) {
     return (
       <p className="text-sm text-seagrass font-medium">
-        Din ansökan har skickats! Projektets ägare granskar den snart.
+        {t("successMessage")}
       </p>
     );
   }
@@ -58,39 +60,39 @@ export default function StartInstanceForm({ parentSlug }: Props) {
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
         <label className="block text-xs font-medium text-dark-slate/70 mb-1">
-          Projektnamn för din instans
+          {t("projectNameLabel")}
         </label>
         <input
           type="text"
           value={projectTitle}
           onChange={(e) => setProjectTitle(e.target.value)}
-          placeholder="t.ex. GreenKids Stockholm"
+          placeholder={t("projectNamePlaceholder")}
           required
           className="w-full px-3 py-2 text-sm border border-muted-teal/40 rounded bg-white text-dark-slate placeholder-dark-slate/30 focus:outline-none focus:border-seagrass"
         />
       </div>
       <div>
         <label className="block text-xs font-medium text-dark-slate/70 mb-1">
-          Region / stad
+          {t("regionLabel")}
         </label>
         <input
           type="text"
           value={region}
           onChange={(e) => setRegion(e.target.value)}
-          placeholder="t.ex. Stockholm"
+          placeholder={t("regionPlaceholder")}
           required
           className="w-full px-3 py-2 text-sm border border-muted-teal/40 rounded bg-white text-dark-slate placeholder-dark-slate/30 focus:outline-none focus:border-seagrass"
         />
       </div>
       <div>
         <label className="block text-xs font-medium text-dark-slate/70 mb-1">
-          Land
+          {t("countryLabel")}
         </label>
         <input
           type="text"
           value={country}
           onChange={(e) => setCountry(e.target.value)}
-          placeholder="t.ex. Sverige"
+          placeholder={t("countryPlaceholder")}
           required
           className="w-full px-3 py-2 text-sm border border-muted-teal/40 rounded bg-white text-dark-slate placeholder-dark-slate/30 focus:outline-none focus:border-seagrass"
         />
@@ -101,7 +103,7 @@ export default function StartInstanceForm({ parentSlug }: Props) {
         disabled={submitting || !region.trim() || !country.trim() || !projectTitle.trim()}
         className="px-4 py-2 rounded bg-coral text-white text-sm font-bold hover:bg-watermelon disabled:opacity-50 transition-colors"
       >
-        {submitting ? "Skickar..." : "Ansök om instans"}
+        {submitting ? t("submittingButton") : t("submitButton")}
       </button>
     </form>
   );

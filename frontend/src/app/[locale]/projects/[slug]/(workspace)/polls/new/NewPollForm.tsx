@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { createPoll } from "../actions";
 
 interface OptionField {
@@ -12,6 +13,7 @@ interface OptionField {
 const MAX_OPTIONS = 8;
 
 export default function NewPollForm({ slug }: { slug: string }) {
+  const t = useTranslations("NewPollForm");
   const [isPending, startTransition] = useTransition();
   const [pollType, setPollType] = useState<"yes_no" | "multiple">("yes_no");
   const [options, setOptions] = useState<OptionField[]>([
@@ -45,7 +47,7 @@ export default function NewPollForm({ slug }: { slug: string }) {
       {/* Title */}
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-dark-slate mb-1">
-          Rubrik <span className="text-watermelon">*</span>
+          {t("titleLabel")} <span className="text-watermelon">*</span>
         </label>
         <input
           id="title"
@@ -53,7 +55,7 @@ export default function NewPollForm({ slug }: { slug: string }) {
           type="text"
           required
           maxLength={200}
-          placeholder="Vad ska ni rösta om?"
+          placeholder={t("titlePlaceholder")}
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
         />
       </div>
@@ -61,13 +63,13 @@ export default function NewPollForm({ slug }: { slug: string }) {
       {/* Description */}
       <div>
         <label htmlFor="description" className="block text-sm font-medium text-dark-slate mb-1">
-          Beskrivning <span className="text-dark-slate/40 font-normal">(valfritt)</span>
+          {t("descriptionLabel")} <span className="text-dark-slate/40 font-normal">{t("optional")}</span>
         </label>
         <textarea
           id="description"
           name="description"
           rows={3}
-          placeholder="Ge mer bakgrund om omröstningen…"
+          placeholder={t("descriptionPlaceholder")}
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent resize-none"
         />
       </div>
@@ -75,7 +77,7 @@ export default function NewPollForm({ slug }: { slug: string }) {
       {/* Type */}
       <div>
         <label htmlFor="type" className="block text-sm font-medium text-dark-slate mb-1">
-          Typ
+          {t("typeLabel")}
         </label>
         <select
           id="type"
@@ -84,8 +86,8 @@ export default function NewPollForm({ slug }: { slug: string }) {
           onChange={(e) => setPollType(e.target.value as "yes_no" | "multiple")}
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent bg-white"
         >
-          <option value="yes_no">Ja / Nej</option>
-          <option value="multiple">Flerval</option>
+          <option value="yes_no">{t("typeYesNo")}</option>
+          <option value="multiple">{t("typeMultiple")}</option>
         </select>
       </div>
 
@@ -93,7 +95,7 @@ export default function NewPollForm({ slug }: { slug: string }) {
       {pollType === "multiple" && (
         <div>
           <p className="block text-sm font-medium text-dark-slate mb-2">
-            Alternativ <span className="text-watermelon">*</span>
+            {t("optionsLabel")} <span className="text-watermelon">*</span>
           </p>
           <div className="flex flex-col gap-3">
             {options.map((opt, i) => (
@@ -108,7 +110,7 @@ export default function NewPollForm({ slug }: { slug: string }) {
                     required
                     value={opt.label}
                     onChange={(e) => updateOption(i, "label", e.target.value)}
-                    placeholder="Alternativets namn"
+                    placeholder={t("optionLabelPlaceholder")}
                     className="flex-1 border border-muted-teal rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
                   />
                   {options.length > 2 && (
@@ -116,7 +118,7 @@ export default function NewPollForm({ slug }: { slug: string }) {
                       type="button"
                       onClick={() => removeOption(i)}
                       className="text-dark-slate/30 hover:text-watermelon text-sm px-1"
-                      aria-label="Ta bort alternativ"
+                      aria-label={t("removeOptionAriaLabel")}
                     >
                       ✕
                     </button>
@@ -128,7 +130,7 @@ export default function NewPollForm({ slug }: { slug: string }) {
                     type="text"
                     value={opt.description}
                     onChange={(e) => updateOption(i, "description", e.target.value)}
-                    placeholder="Kort beskrivning (valfritt)"
+                    placeholder={t("optionDescriptionPlaceholder")}
                     className="w-full border border-muted-teal rounded-md px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent text-dark-slate/70"
                   />
                 </div>
@@ -141,7 +143,7 @@ export default function NewPollForm({ slug }: { slug: string }) {
               onClick={addOption}
               className="mt-2 text-sm text-seagrass hover:text-coral transition-colors"
             >
-              + Lägg till alternativ
+              {t("addOption")}
             </button>
           )}
         </div>
@@ -150,7 +152,7 @@ export default function NewPollForm({ slug }: { slug: string }) {
       {/* Visibility */}
       <div>
         <label htmlFor="visibility" className="block text-sm font-medium text-dark-slate mb-1">
-          Synlighet
+          {t("visibilityLabel")}
         </label>
         <select
           id="visibility"
@@ -158,8 +160,8 @@ export default function NewPollForm({ slug }: { slug: string }) {
           defaultValue="live"
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent bg-white"
         >
-          <option value="live">Öppen — resultatet syns direkt</option>
-          <option value="hidden">Dold — resultatet visas efter stängning</option>
+          <option value="live">{t("visibilityLive")}</option>
+          <option value="hidden">{t("visibilityHidden")}</option>
         </select>
       </div>
 
@@ -172,14 +174,14 @@ export default function NewPollForm({ slug }: { slug: string }) {
           className="w-4 h-4 border-muted-teal rounded accent-coral"
         />
         <label htmlFor="isBinding" className="text-sm font-medium text-dark-slate">
-          Bindande beslut
+          {t("isBindingLabel")}
         </label>
       </div>
 
       {/* Deadline */}
       <div>
         <label htmlFor="deadline" className="block text-sm font-medium text-dark-slate mb-1">
-          Sista röstningsdag <span className="text-dark-slate/40 font-normal">(valfritt)</span>
+          {t("deadlineLabel")} <span className="text-dark-slate/40 font-normal">{t("optional")}</span>
         </label>
         <input
           id="deadline"
@@ -192,8 +194,8 @@ export default function NewPollForm({ slug }: { slug: string }) {
       {/* Quorum */}
       <div>
         <label htmlFor="quorumPercent" className="block text-sm font-medium text-dark-slate mb-1">
-          Minsta deltagande %{" "}
-          <span className="text-dark-slate/40 font-normal">(valfritt, 0–100)</span>
+          {t("quorumLabel")}{" "}
+          <span className="text-dark-slate/40 font-normal">{t("quorumOptionalHint")}</span>
         </label>
         <input
           id="quorumPercent"
@@ -202,7 +204,7 @@ export default function NewPollForm({ slug }: { slug: string }) {
           min={0}
           max={100}
           step={1}
-          placeholder="t.ex. 50"
+          placeholder={t("quorumPlaceholder")}
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
         />
       </div>
@@ -214,13 +216,13 @@ export default function NewPollForm({ slug }: { slug: string }) {
           disabled={isPending}
           className="bg-coral text-white rounded-md px-5 py-2 text-sm font-medium hover:bg-watermelon transition-colors disabled:opacity-60"
         >
-          {isPending ? "Skapar…" : "Skapa omröstning"}
+          {isPending ? t("submitPending") : t("submitLabel")}
         </button>
         <Link
           href={`/projects/${slug}/polls`}
           className="text-sm text-dark-slate/50 hover:text-dark-slate transition-colors"
         >
-          Avbryt
+          {t("cancel")}
         </Link>
       </div>
     </form>

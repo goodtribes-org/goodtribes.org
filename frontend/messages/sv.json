@@ -2033,5 +2033,60 @@
     "descriptionLabel": "Beskrivning (valfritt)",
     "submitting": "Skickar...",
     "submitButton": "Föreslå partnerskap"
+  },
+  "NewPollForm": {
+    "titleLabel": "Rubrik",
+    "titlePlaceholder": "Vad ska ni rösta om?",
+    "descriptionLabel": "Beskrivning",
+    "optional": "(valfritt)",
+    "descriptionPlaceholder": "Ge mer bakgrund om omröstningen…",
+    "typeLabel": "Typ",
+    "typeYesNo": "Ja / Nej",
+    "typeMultiple": "Flerval",
+    "optionsLabel": "Alternativ",
+    "optionLabelPlaceholder": "Alternativets namn",
+    "removeOptionAriaLabel": "Ta bort alternativ",
+    "optionDescriptionPlaceholder": "Kort beskrivning (valfritt)",
+    "addOption": "+ Lägg till alternativ",
+    "visibilityLabel": "Synlighet",
+    "visibilityLive": "Öppen — resultatet syns direkt",
+    "visibilityHidden": "Dold — resultatet visas efter stängning",
+    "isBindingLabel": "Bindande beslut",
+    "deadlineLabel": "Sista röstningsdag",
+    "quorumLabel": "Minsta deltagande %",
+    "quorumOptionalHint": "(valfritt, 0–100)",
+    "quorumPlaceholder": "t.ex. 50",
+    "submitPending": "Skapar…",
+    "submitLabel": "Skapa omröstning",
+    "cancel": "Avbryt"
+  },
+  "CloseButton": {
+    "confirmClose": "Är du säker på att du vill stänga omröstningen?",
+    "closing": "Stänger…",
+    "closePoll": "Stäng omröstning"
+  },
+  "ReplicationToggle": {
+    "toggleAriaLabel": "Öppen för replikering",
+    "statusOpen": "Öppen för replikering",
+    "statusClosed": "Stängd för replikering"
+  },
+  "StartInstanceForm": {
+    "projectNameLabel": "Projektnamn för din instans",
+    "projectNamePlaceholder": "t.ex. GreenKids Stockholm",
+    "regionLabel": "Region / stad",
+    "regionPlaceholder": "t.ex. Stockholm",
+    "countryLabel": "Land",
+    "countryPlaceholder": "t.ex. Sverige",
+    "submitButton": "Ansök om instans",
+    "submittingButton": "Skickar...",
+    "successMessage": "Din ansökan har skickats! Projektets ägare granskar den snart.",
+    "genericError": "Något gick fel.",
+    "genericErrorRetry": "Något gick fel. Försök igen."
+  },
+  "SuggestionForm": {
+    "placeholder": "Vad skulle du vilja se förbättras på GoodTribes?",
+    "successMessage": "Tack för ditt förslag!",
+    "submitting": "Skickar...",
+    "submitButton": "Skicka förslag"
   }
 }

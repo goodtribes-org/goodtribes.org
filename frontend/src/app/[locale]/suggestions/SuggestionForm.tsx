@@ -1,9 +1,11 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { createSuggestion } from "./actions";
 
 export default function SuggestionForm() {
+  const t = useTranslations("SuggestionForm");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
@@ -31,18 +33,18 @@ export default function SuggestionForm() {
       <textarea
         ref={textRef}
         rows={4}
-        placeholder="Vad skulle du vilja se förbättras på GoodTribes?"
+        placeholder={t("placeholder")}
         className="w-full border border-muted-teal/40 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral resize-none"
       />
       {error && <p className="text-xs text-watermelon">{error}</p>}
-      {sent && <p className="text-xs text-seagrass">Tack för ditt förslag!</p>}
+      {sent && <p className="text-xs text-seagrass">{t("successMessage")}</p>}
       <div className="flex justify-end">
         <button
           type="submit"
           disabled={pending}
           className="px-4 py-2 bg-coral text-white text-sm font-medium rounded-lg hover:bg-watermelon transition-colors disabled:opacity-50"
         >
-          {pending ? "Skickar..." : "Skicka förslag"}
+          {pending ? t("submitting") : t("submitButton")}
         </button>
       </div>
     </form>
