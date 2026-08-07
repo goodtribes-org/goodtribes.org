@@ -1552,5 +1552,77 @@
   },
   "SprintDetailPage": {
     "anonymousUser": "Anonymous"
+  },
+  "ShareButton": {
+    "shareTitle": "Share",
+    "closeAria": "Close",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "moreOptions": "More options…"
+  },
+  "LikeCommentBlock": {
+    "likeTooltipLoginRequired": "Log in to like",
+    "likeTooltipRemove": "Remove like",
+    "likeTooltipAdd": "Like",
+    "likeButton": "Like",
+    "likeButtonWithCount": "Like ({count})",
+    "commentButton": "Comment",
+    "commentButtonWithCount": "Comment ({count})",
+    "commentPlaceholder": "Write a comment...",
+    "sendButton": "Send",
+    "loginToCommentPrompt": "Log in to comment.",
+    "timeJustNow": "just now",
+    "youAuthorLabel": "You"
+  },
+  "ReactionBar": {
+    "addReaction": "Add reaction"
+  },
+  "KudosButton": {
+    "giveKudos": "Give kudos",
+    "giveKudosTo": "Give kudos to",
+    "kudosSent": "Kudos sent!",
+    "messagePlaceholder": "Write a short message...",
+    "cancel": "Cancel",
+    "sending": "Sending...",
+    "send": "Send",
+    "genericError": "Something went wrong.",
+    "sendError": "Couldn't send kudos. Please try again."
+  },
+  "FileUpload": {
+    "errorImageTooLarge": "The image can be at most 5 MB.",
+    "errorFileTooLarge": "The file can be at most 20 MB.",
+    "errorUploadFailed": "Upload failed.",
+    "previewAlt": "Preview",
+    "uploadingButton": "Uploading…",
+    "chooseFileButton": "Choose file"
+  },
+  "IdeaVoteButton": {
+    "voteTitle": "Vote for the idea",
+    "removeVoteTitle": "Remove your vote",
+    "loginToVoteTitle": "Log in to vote"
+  },
+  "OwnershipBanner": {
+    "seekingOwnerTitle": "🏳️ This project is looking for a new owner",
+    "seekingOwnerDescription": "The founder has marked the project as ownerless — it's stalled and open for someone else to take over.",
+    "manageInterestLink": "Manage expressions of interest",
+    "loginToExpressInterest": "Log in to express interest",
+    "savingLabel": "Saving…",
+    "withdrawLabel": "✓ Interest expressed — withdraw",
+    "takeOverButton": "I want to take over",
+    "messagePlaceholder": "Briefly explain why you want to take over (optional)",
+    "cancelButton": "Cancel",
+    "sendingLabel": "Sending…",
+    "submitButton": "Submit expression of interest"
+  },
+  "PostComposer": {
+    "loginLink": "Log in",
+    "loginToPost": "to write a post.",
+    "imageTooLarge": "The image can be at most 5 MB.",
+    "uploadFailed": "Upload failed.",
+    "textPlaceholder": "What would you like to share with the platform?",
+    "uploading": "Uploading…",
+    "addImage": "Add image",
+    "posting": "Posting...",
+    "publish": "Publish"
   }
 }

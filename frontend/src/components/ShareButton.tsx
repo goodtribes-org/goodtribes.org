@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 export default function ShareButton({
   url,
@@ -13,6 +14,7 @@ export default function ShareButton({
   text?: string;
   variant?: "icon" | "button";
 }) {
+  const t = useTranslations("ShareButton");
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [canNativeShare, setCanNativeShare] = useState(false);
@@ -48,8 +50,8 @@ export default function ShareButton({
         <button
           onClick={() => setOpen((o) => !o)}
           className="text-xs text-dark-slate/40 hover:text-coral transition-colors flex items-center gap-1"
-          title="Dela"
-          aria-label="Dela"
+          title={t("shareTitle")}
+          aria-label={t("shareTitle")}
         >
           <span aria-hidden>⤴</span>
         </button>
@@ -58,18 +60,18 @@ export default function ShareButton({
           onClick={() => setOpen((o) => !o)}
           className="px-4 py-2 rounded border border-muted-teal/50 text-xs font-semibold text-dark-slate/70 hover:text-coral hover:border-coral transition-colors flex items-center gap-1.5"
         >
-          <span aria-hidden>⤴</span> Dela
+          <span aria-hidden>⤴</span> {t("shareTitle")}
         </button>
       )}
 
       {open && (
         <div className="absolute right-0 z-20 mt-2 w-72 border border-muted-teal/40 rounded-lg p-4 bg-white shadow-lg">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-dark-slate">Dela</h3>
+            <h3 className="text-sm font-semibold text-dark-slate">{t("shareTitle")}</h3>
             <button
               onClick={() => setOpen(false)}
               className="text-dark-slate/40 hover:text-dark-slate text-lg leading-none"
-              aria-label="Stäng"
+              aria-label={t("closeAria")}
             >
               ×
             </button>
@@ -87,7 +89,7 @@ export default function ShareButton({
                 onClick={handleCopy}
                 className="px-3 py-1.5 rounded bg-coral text-white text-xs font-semibold hover:bg-watermelon transition-colors whitespace-nowrap"
               >
-                {copied ? "Kopierad!" : "Kopiera"}
+                {copied ? t("copied") : t("copy")}
               </button>
             </div>
 
@@ -115,7 +117,7 @@ export default function ShareButton({
                 onClick={handleNativeShare}
                 className="px-3 py-1.5 rounded border border-muted-teal/50 text-xs text-dark-slate/70 hover:text-coral hover:border-coral transition-colors"
               >
-                Fler alternativ…
+                {t("moreOptions")}
               </button>
             )}
           </div>

@@ -1552,5 +1552,77 @@
   },
   "SprintDetailPage": {
     "anonymousUser": "Anonym"
+  },
+  "ShareButton": {
+    "shareTitle": "Dela",
+    "closeAria": "Stäng",
+    "copy": "Kopiera",
+    "copied": "Kopierad!",
+    "moreOptions": "Fler alternativ…"
+  },
+  "LikeCommentBlock": {
+    "likeTooltipLoginRequired": "Logga in för att gilla",
+    "likeTooltipRemove": "Ta bort gillning",
+    "likeTooltipAdd": "Gilla",
+    "likeButton": "Gilla",
+    "likeButtonWithCount": "Gilla ({count})",
+    "commentButton": "Kommentera",
+    "commentButtonWithCount": "Kommentera ({count})",
+    "commentPlaceholder": "Skriv en kommentar...",
+    "sendButton": "Skicka",
+    "loginToCommentPrompt": "Logga in för att kommentera.",
+    "timeJustNow": "just nu",
+    "youAuthorLabel": "Du"
+  },
+  "ReactionBar": {
+    "addReaction": "Lägg till reaktion"
+  },
+  "KudosButton": {
+    "giveKudos": "Ge kudos",
+    "giveKudosTo": "Ge kudos till",
+    "kudosSent": "Kudos skickat!",
+    "messagePlaceholder": "Skriv ett kort meddelande...",
+    "cancel": "Avbryt",
+    "sending": "Skickar...",
+    "send": "Skicka",
+    "genericError": "Något gick fel.",
+    "sendError": "Kunde inte skicka kudos. Försök igen."
+  },
+  "FileUpload": {
+    "errorImageTooLarge": "Bilden får max vara 5 MB.",
+    "errorFileTooLarge": "Filen får max vara 20 MB.",
+    "errorUploadFailed": "Uppladdning misslyckades.",
+    "previewAlt": "Förhandsgranskning",
+    "uploadingButton": "Laddar upp…",
+    "chooseFileButton": "Välj fil"
+  },
+  "IdeaVoteButton": {
+    "voteTitle": "Rösta på idén",
+    "removeVoteTitle": "Ta bort din röst",
+    "loginToVoteTitle": "Logga in för att rösta"
+  },
+  "OwnershipBanner": {
+    "seekingOwnerTitle": "🏳️ Det här projektet söker en ny ägare",
+    "seekingOwnerDescription": "Grundaren har markerat projektet som herrelöst — det står still och är öppet för att någon annan tar över.",
+    "manageInterestLink": "Hantera intresseanmälningar",
+    "loginToExpressInterest": "Logga in för att anmäla intresse",
+    "savingLabel": "Sparar…",
+    "withdrawLabel": "✓ Intresse anmält — dra tillbaka",
+    "takeOverButton": "Jag vill ta över",
+    "messagePlaceholder": "Berätta kort varför du vill ta över (valfritt)",
+    "cancelButton": "Avbryt",
+    "sendingLabel": "Skickar…",
+    "submitButton": "Skicka intresseanmälan"
+  },
+  "PostComposer": {
+    "loginLink": "Logga in",
+    "loginToPost": "för att skriva ett inlägg.",
+    "imageTooLarge": "Bilden får max vara 5 MB.",
+    "uploadFailed": "Uppladdning misslyckades.",
+    "textPlaceholder": "Vad vill du dela med plattformen?",
+    "uploading": "Laddar upp…",
+    "addImage": "Lägg till bild",
+    "posting": "Postar...",
+    "publish": "Publicera"
   }
 }

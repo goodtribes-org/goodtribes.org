@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { toggleFeedLike, addFeedComment } from "@/app/actions";
 import FlagContentButton, { type FlagContentTargetType } from "@/components/FlagContentButton";
 
@@ -39,6 +40,7 @@ export default function LikeCommentBlock({
   initialLiked: boolean;
   initialComments: LikeCommentEntry[];
 }) {
+  const t = useTranslations("LikeCommentBlock");
   const [, startTransition] = useTransition();
   const [pendingComment, setPendingComment] = useState(false);
   const [likeCount, setLikeCount] = useState(initialLikeCount);
@@ -69,7 +71,10 @@ export default function LikeCommentBlock({
     e.preventDefault();
     const body = ref.current?.value ?? "";
     if (!body.trim() || !canInteract) return;
-    setComments((c) => [...c, { id: `tmp-${c.length}`, author: "Du", body, timeAgo: "just nu" }]);
+    setComments((c) => [
+      ...c,
+      { id: `tmp-${c.length}`, author: t("youAuthorLabel"), body, timeAgo: t("timeJustNow") },
+    ]);
     if (ref.current) ref.current.value = "";
     setPendingComment(true);
     startTransition(async () => {
@@ -89,7 +94,13 @@ export default function LikeCommentBlock({
           <button
             onClick={handleLike}
             disabled={!canInteract}
-            title={!isLoggedIn ? "Logga in för att gilla" : liked ? "Ta bort gillning" : "Gilla"}
+            title={
+              !isLoggedIn
+                ? t("likeTooltipLoginRequired")
+                : liked
+                  ? t("likeTooltipRemove")
+                  : t("likeTooltipAdd")
+            }
             className={`flex items-center gap-1 text-xs font-medium transition-colors ${
               liked ? "text-coral" : "text-dark-slate/50 hover:text-coral"
             } ${!canInteract ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
@@ -97,14 +108,17 @@ export default function LikeCommentBlock({
             <svg className="w-4 h-4" fill={liked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
-            Gilla{likeCount > 0 ? ` (${likeCount})` : ""}
+            {likeCount > 0 ? t("likeButtonWithCount", { count: likeCount }) : t("likeButton")}
           </button>
         )}
         <button
           onClick={() => setShowComments((v) => !v)}
           className="flex items-center gap-1 text-xs font-medium text-dark-slate/50 hover:text-seagrass transition-colors cursor-pointer"
         >
-          💬 Kommentera{comments.length > 0 ? ` (${comments.length})` : ""}
+          💬{" "}
+          {comments.length > 0
+            ? t("commentButtonWithCount", { count: comments.length })
+            : t("commentButton")}
         </button>
         {isLoggedIn && flagTargetType && (
           <FlagContentButton targetType={flagTargetType} targetId={targetId} />
@@ -132,7 +146,7 @@ export default function LikeCommentBlock({
               <textarea
                 ref={ref}
                 rows={1}
-                placeholder="Skriv en kommentar..."
+                placeholder={t("commentPlaceholder")}
                 className="flex-1 border border-muted-teal rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-coral resize-none"
               />
               <button
@@ -140,12 +154,12 @@ export default function LikeCommentBlock({
                 disabled={pendingComment}
                 className="px-3 py-1.5 bg-coral text-white text-xs font-medium rounded-lg hover:bg-watermelon transition-colors disabled:opacity-50"
               >
-                Skicka
+                {t("sendButton")}
               </button>
             </form>
           ) : (
             disabledHint ?? (
-              <p className="text-[11px] text-dark-slate/40">Logga in för att kommentera.</p>
+              <p className="text-[11px] text-dark-slate/40">{t("loginToCommentPrompt")}</p>
             )
           )}
         </div>

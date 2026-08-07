@@ -3,6 +3,7 @@
 import { useTransition, useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
+import { useLocale, useTranslations } from "next-intl";
 
 type EmojiPickerProps = {
   data: unknown;
@@ -46,6 +47,8 @@ export function ReactionBar({
   // with a sibling "N replies" button). Default renders self-contained.
   bare?: boolean;
 }) {
+  const t = useTranslations("ReactionBar");
+  const locale = useLocale();
   const [isPending, startTransition] = useTransition();
   const [showPicker, setShowPicker] = useState(false);
   const [pickerStyle, setPickerStyle] = useState<React.CSSProperties>({});
@@ -121,7 +124,7 @@ export function ReactionBar({
             type="button"
             onClick={openPicker}
             className="inline-flex items-center -translate-y-0.5 px-2.5 py-1 rounded-full text-xs border border-dashed bg-white border-muted-teal/40 text-dark-slate/40 hover:text-dark-slate/70 hover:border-muted-teal transition-colors"
-            title="Lägg till reaktion"
+            title={t("addReaction")}
           >
             +
           </button>
@@ -136,7 +139,7 @@ export function ReactionBar({
                   handleToggle(e.native);
                   setShowPicker(false);
                 }}
-                locale="sv"
+                locale={locale}
                 theme="light"
                 previewPosition="none"
                 skinTonePosition="none"

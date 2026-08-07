@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 type Props = {
   onUpload: (url: string) => void;
@@ -15,6 +16,7 @@ const IMAGE_SIZE_LIMIT = 5 * 1024 * 1024;
 const DOC_SIZE_LIMIT = 20 * 1024 * 1024;
 
 export default function FileUpload({ onUpload, visibility, accept = "image/*", currentImageUrl, previewClassName = "w-24 h-24 rounded-full" }: Props) {
+  const t = useTranslations("FileUpload");
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -29,7 +31,7 @@ export default function FileUpload({ onUpload, visibility, accept = "image/*", c
     const isImage = IMAGE_MIME_TYPES.has(file.type);
     const sizeLimit = isImage ? IMAGE_SIZE_LIMIT : DOC_SIZE_LIMIT;
     if (file.size > sizeLimit) {
-      setError(isImage ? "Bilden får max vara 5 MB." : "Filen får max vara 20 MB.");
+      setError(isImage ? t("errorImageTooLarge") : t("errorFileTooLarge"));
       return;
     }
 
@@ -46,14 +48,14 @@ export default function FileUpload({ onUpload, visibility, accept = "image/*", c
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error((data as { error?: string }).error ?? "Uppladdning misslyckades.");
+        throw new Error((data as { error?: string }).error ?? t("errorUploadFailed"));
       }
 
       const data = await res.json() as { url?: string; key?: string };
       const resultUrl = data.url ?? (data.key ? `/api/files/${data.key}` : "");
       onUpload(resultUrl);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Uppladdning misslyckades.");
+      setError(err instanceof Error ? err.message : t("errorUploadFailed"));
       setPreview(null);
     } finally {
       setUploading(false);
@@ -67,7 +69,7 @@ export default function FileUpload({ onUpload, visibility, accept = "image/*", c
       {displayImage && accept?.startsWith("image") && (
         <img
           src={displayImage}
-          alt="Förhandsgranskning"
+          alt={t("previewAlt")}
           className={`${previewClassName} object-cover border border-muted-teal`}
         />
       )}
@@ -91,7 +93,7 @@ export default function FileUpload({ onUpload, visibility, accept = "image/*", c
         onClick={() => inputRef.current?.click()}
         className="bg-coral text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-watermelon transition-colors disabled:opacity-50"
       >
-        {uploading ? "Laddar upp…" : "Välj fil"}
+        {uploading ? t("uploadingButton") : t("chooseFileButton")}
       </button>
 
       {error && <p className="text-xs text-watermelon">{error}</p>}

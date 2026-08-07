@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { expressOwnershipInterest, withdrawOwnershipInterest } from "@/app/[locale]/projects/[slug]/ownership-actions";
 
 export default function OwnershipBanner({
@@ -15,6 +16,7 @@ export default function OwnershipBanner({
   userId: string | null;
   alreadyExpressedInterest: boolean;
 }) {
+  const t = useTranslations("OwnershipBanner");
   const [expressed, setExpressed] = useState(alreadyExpressedInterest);
   const [showForm, setShowForm] = useState(false);
   const [message, setMessage] = useState("");
@@ -42,9 +44,9 @@ export default function OwnershipBanner({
     <div className="mb-6 border-2 border-amber-300 bg-amber-50/60 rounded-xl p-4">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-sm font-medium text-dark-slate">🏳️ Det här projektet söker en ny ägare</p>
+          <p className="text-sm font-medium text-dark-slate">{t("seekingOwnerTitle")}</p>
           <p className="text-xs text-dark-slate/60 mt-0.5">
-            Grundaren har markerat projektet som herrelöst — det står still och är öppet för att någon annan tar över.
+            {t("seekingOwnerDescription")}
           </p>
         </div>
 
@@ -53,14 +55,14 @@ export default function OwnershipBanner({
             href={`/projects/${slug}/edit`}
             className="text-sm font-medium text-amber-700 border border-amber-400 rounded-md px-4 py-2 hover:bg-amber-100 transition-colors flex-shrink-0"
           >
-            Hantera intresseanmälningar
+            {t("manageInterestLink")}
           </Link>
         ) : !userId ? (
           <Link
             href={`/login?callbackUrl=${encodeURIComponent(`/projects/${slug}`)}`}
             className="text-sm font-medium text-amber-700 border border-amber-400 rounded-md px-4 py-2 hover:bg-amber-100 transition-colors flex-shrink-0"
           >
-            Logga in för att anmäla intresse
+            {t("loginToExpressInterest")}
           </Link>
         ) : expressed ? (
           <button
@@ -69,7 +71,7 @@ export default function OwnershipBanner({
             onClick={handleWithdraw}
             className="text-sm font-medium text-dark-slate/60 border border-dark-slate/20 rounded-md px-4 py-2 hover:bg-white transition-colors disabled:opacity-60 flex-shrink-0"
           >
-            {isPending ? "Sparar…" : "✓ Intresse anmält — dra tillbaka"}
+            {isPending ? t("savingLabel") : t("withdrawLabel")}
           </button>
         ) : (
           <button
@@ -77,7 +79,7 @@ export default function OwnershipBanner({
             onClick={() => setShowForm((v) => !v)}
             className="text-sm font-medium text-white bg-coral hover:bg-watermelon rounded-md px-4 py-2 transition-colors flex-shrink-0"
           >
-            Jag vill ta över
+            {t("takeOverButton")}
           </button>
         )}
       </div>
@@ -87,20 +89,20 @@ export default function OwnershipBanner({
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Berätta kort varför du vill ta över (valfritt)"
+            placeholder={t("messagePlaceholder")}
             rows={2}
             className="w-full border border-amber-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:border-amber-500"
           />
           <div className="flex justify-end gap-2">
             <button type="button" onClick={() => setShowForm(false)} className="text-sm text-dark-slate/50 hover:text-dark-slate transition-colors">
-              Avbryt
+              {t("cancelButton")}
             </button>
             <button
               type="submit"
               disabled={isPending}
               className="text-sm font-medium text-white bg-coral hover:bg-watermelon rounded-md px-4 py-2 transition-colors disabled:opacity-60"
             >
-              {isPending ? "Skickar…" : "Skicka intresseanmälan"}
+              {isPending ? t("sendingLabel") : t("submitButton")}
             </button>
           </div>
         </form>

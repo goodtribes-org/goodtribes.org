@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface KudosButtonProps {
   toUserId: string;
@@ -9,6 +10,7 @@ interface KudosButtonProps {
 }
 
 export default function KudosButton({ toUserId, toUserName, projectId }: KudosButtonProps) {
+  const t = useTranslations("KudosButton");
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,7 +45,7 @@ export default function KudosButton({ toUserId, toUserName, projectId }: KudosBu
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError((data as { error?: string }).error ?? "Något gick fel.");
+        setError((data as { error?: string }).error ?? t("genericError"));
         setLoading(false);
         return;
       }
@@ -55,7 +57,7 @@ export default function KudosButton({ toUserId, toUserName, projectId }: KudosBu
         setSent(false);
       }, 2000);
     } catch {
-      setError("Kunde inte skicka kudos. Försök igen.");
+      setError(t("sendError"));
       setLoading(false);
     }
   }
@@ -68,7 +70,7 @@ export default function KudosButton({ toUserId, toUserName, projectId }: KudosBu
         className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-md border border-muted-teal text-dark-slate hover:bg-dry-sage/40 transition-colors"
       >
         <span aria-hidden="true">&#128079;</span>
-        Ge kudos
+        {t("giveKudos")}
       </button>
 
       {open && (
@@ -85,12 +87,12 @@ export default function KudosButton({ toUserId, toUserName, projectId }: KudosBu
             {sent ? (
               <div className="flex flex-col items-center gap-2 py-4">
                 <span className="text-2xl" aria-hidden="true">&#127881;</span>
-                <p className="text-sm font-semibold text-seagrass">Kudos skickat!</p>
+                <p className="text-sm font-semibold text-seagrass">{t("kudosSent")}</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-3">
                 <p className="text-sm font-medium text-dark-slate">
-                  Ge kudos till <span className="font-semibold">{toUserName}</span>
+                  {t("giveKudosTo")} <span className="font-semibold">{toUserName}</span>
                 </p>
                 <div>
                   <textarea
@@ -99,7 +101,7 @@ export default function KudosButton({ toUserId, toUserName, projectId }: KudosBu
                     onChange={(e) => setMessage(e.target.value)}
                     maxLength={160}
                     rows={3}
-                    placeholder="Skriv ett kort meddelande..."
+                    placeholder={t("messagePlaceholder")}
                     className="w-full text-sm border border-muted-teal rounded-md px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-seagrass/40 placeholder:text-dark-slate/30"
                     disabled={loading}
                   />
@@ -117,14 +119,14 @@ export default function KudosButton({ toUserId, toUserName, projectId }: KudosBu
                     className="text-sm text-dark-slate/50 hover:text-dark-slate transition-colors"
                     disabled={loading}
                   >
-                    Avbryt
+                    {t("cancel")}
                   </button>
                   <button
                     type="submit"
                     disabled={loading || message.trim().length === 0}
                     className="text-sm font-medium bg-seagrass text-white px-3 py-1.5 rounded-md hover:bg-seagrass/80 transition-colors disabled:opacity-50"
                   >
-                    {loading ? "Skickar..." : "Skicka"}
+                    {loading ? t("sending") : t("send")}
                   </button>
                 </div>
               </form>
