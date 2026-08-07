@@ -1745,5 +1745,47 @@
     "previousAria": "Previous",
     "nextAria": "Next",
     "editLink": "Edit"
+  },
+  "HomeStatsWidget": {
+    "heading": "Statistics",
+    "exploreProjectsLink": "Explore projects →",
+    "activeProjects": "Active projects",
+    "organisations": "Organisations",
+    "volunteers": "Volunteers"
+  },
+  "ImpactStatsWidget": {
+    "heading": "Our impact",
+    "totalRaised": "Total raised",
+    "tokensAwarded": "Tokens awarded",
+    "tasksCompleted": "Tasks completed"
+  },
+  "LeaderboardWidget": {
+    "heading": "Leaderboard",
+    "allMembersLink": "All members →",
+    "emptyState": "No activity yet.",
+    "pointsSuffix": "{tokens} pts"
+  },
+  "NewMembersWidget": {
+    "heading": "New members",
+    "allMembersLink": "All members →",
+    "emptyState": "No members yet."
+  },
+  "SdgCoverageWidget": {
+    "heading": "2030 Agenda",
+    "goalsCovered": "{count} of 17 goals",
+    "noProjectYetTitle": "No project yet"
+  },
+  "HomePage": {
+    "exploreProjectsHeading": "Explore projects",
+    "seeAllProjectsLink": "See all projects →",
+    "noProjectsMatchFilters": "No projects match your filters.",
+    "clearFiltersLink": "Clear filters",
+    "exploreIdeasHeading": "Explore ideas",
+    "seeAllIdeasLink": "See all ideas →",
+    "noIdeasYet": "No ideas yet.",
+    "shareFirstIdeaLink": "Share the first idea",
+    "activityHeading": "Happening now",
+    "activitySubheading": "Latest activity on the platform",
+    "seeAllActivityLink": "See all activity →"
   }
 }

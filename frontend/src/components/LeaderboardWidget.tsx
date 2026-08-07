@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { toProxyUrl } from "@/lib/storageUrl";
 
 type LeaderboardEntry = {
@@ -9,18 +10,19 @@ type LeaderboardEntry = {
   tokens: number;
 };
 
-export default function LeaderboardWidget({ entries }: { entries: LeaderboardEntry[] }) {
+export default async function LeaderboardWidget({ entries }: { entries: LeaderboardEntry[] }) {
+  const t = await getTranslations("LeaderboardWidget");
   return (
     <section className="border border-muted-teal/30 rounded-xl p-4">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-dark-slate">Topplista</h2>
+        <h2 className="text-sm font-semibold text-dark-slate">{t("heading")}</h2>
         <Link href="/members" className="text-xs text-seagrass hover:underline">
-          Alla medlemmar →
+          {t("allMembersLink")}
         </Link>
       </div>
 
       {entries.length === 0 ? (
-        <p className="text-dark-slate/40 text-xs text-center py-4">Ingen aktivitet ännu.</p>
+        <p className="text-dark-slate/40 text-xs text-center py-4">{t("emptyState")}</p>
       ) : (
         <ol className="space-y-2">
           {entries.map((entry, i) => {
@@ -42,7 +44,7 @@ export default function LeaderboardWidget({ entries }: { entries: LeaderboardEnt
                   )}
                 </div>
                 <span className="flex-1 min-w-0 text-sm text-dark-slate truncate">{entry.name}</span>
-                <span className="text-xs font-semibold text-coral">{Math.round(entry.tokens)} p</span>
+                <span className="text-xs font-semibold text-coral">{t("pointsSuffix", { tokens: Math.round(entry.tokens) })}</span>
               </div>
             );
 

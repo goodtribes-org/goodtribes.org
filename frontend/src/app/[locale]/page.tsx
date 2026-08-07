@@ -21,6 +21,7 @@ import SdgCoverageWidget from "@/components/SdgCoverageWidget";
 import { isValidProjectPhase } from "@/lib/projectPhase";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "next-intl";
+import { getTranslations } from "next-intl/server";
 
 const PAGE_SIZE = 12;
 const IDEA_PREVIEW_SIZE = 8;
@@ -65,6 +66,7 @@ export default async function HomePage({
   }>;
 }) {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "HomePage" });
   const { sort: sortParam, q, phase, category, sdg, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const sdgNum = sdg ? parseInt(sdg) : undefined;
@@ -220,20 +222,20 @@ export default async function HomePage({
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-bold text-dark-slate">
-              Utforska projekt{" "}
+              {t("exploreProjectsHeading")}{" "}
               <span className="text-dark-slate/40 font-normal">({totalFiltered})</span>
             </h2>
             <SortToggle sort={sort} q={q} phase={phase} category={category} sdg={sdg} basePath="/" />
           </div>
           <Link href="/projects" className="text-xs text-coral hover:underline">
-            Se alla projekt →
+            {t("seeAllProjectsLink")}
           </Link>
         </div>
         {projects.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p className="text-dark-slate/50 mb-4">Inga projekt matchar dina filter.</p>
+            <p className="text-dark-slate/50 mb-4">{t("noProjectsMatchFilters")}</p>
             <Link href="/" className="text-coral hover:underline text-sm">
-              Rensa filter
+              {t("clearFiltersLink")}
             </Link>
           </div>
         ) : (
@@ -256,18 +258,18 @@ export default async function HomePage({
       <section id="ideas">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-dark-slate">
-            Utforska idéer{" "}
+            {t("exploreIdeasHeading")}{" "}
             <span className="text-dark-slate/40 font-normal">({ideaCount})</span>
           </h2>
           <Link href="/ideas" className="text-xs text-coral hover:underline">
-            Se alla idéer →
+            {t("seeAllIdeasLink")}
           </Link>
         </div>
         {ideas.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p className="text-dark-slate/50 mb-4">Inga idéer ännu.</p>
+            <p className="text-dark-slate/50 mb-4">{t("noIdeasYet")}</p>
             <Link href="/ideas/new" className="text-coral hover:underline text-sm">
-              Dela den första idén
+              {t("shareFirstIdeaLink")}
             </Link>
           </div>
         ) : (
@@ -283,11 +285,11 @@ export default async function HomePage({
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-lg font-bold text-dark-slate">Händer just nu</h2>
-                <p className="text-xs text-dark-slate/50 mt-0.5">Senaste aktivitet på plattformen</p>
+                <h2 className="text-lg font-bold text-dark-slate">{t("activityHeading")}</h2>
+                <p className="text-xs text-dark-slate/50 mt-0.5">{t("activitySubheading")}</p>
               </div>
               <Link href="/feed" className="text-xs text-coral hover:underline">
-                Se all aktivitet →
+                {t("seeAllActivityLink")}
               </Link>
             </div>
             <ActivityPulse />

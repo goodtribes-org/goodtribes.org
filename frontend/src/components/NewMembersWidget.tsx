@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { toProxyUrl } from "@/lib/storageUrl";
 
 type NewMember = {
@@ -8,18 +9,19 @@ type NewMember = {
   showProfile: boolean;
 };
 
-export default function NewMembersWidget({ members }: { members: NewMember[] }) {
+export default async function NewMembersWidget({ members }: { members: NewMember[] }) {
+  const t = await getTranslations("NewMembersWidget");
   return (
     <section className="border border-muted-teal/30 rounded-xl p-4">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-dark-slate">Nya medlemmar</h2>
+        <h2 className="text-sm font-semibold text-dark-slate">{t("heading")}</h2>
         <Link href="/members" className="text-xs text-seagrass hover:underline">
-          Alla medlemmar →
+          {t("allMembersLink")}
         </Link>
       </div>
 
       {members.length === 0 ? (
-        <p className="text-dark-slate/40 text-xs text-center py-4">Inga medlemmar ännu.</p>
+        <p className="text-dark-slate/40 text-xs text-center py-4">{t("emptyState")}</p>
       ) : (
         <div className="flex flex-wrap gap-3">
           {members.map((member) => {
