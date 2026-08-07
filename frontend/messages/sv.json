@@ -1093,5 +1093,111 @@
     "contentPlaceholder": "Skriv din uppdatering här…",
     "publishing": "Publicerar…",
     "publishButton": "Publicera uppdatering"
+  },
+  "RoomShell": {
+    "roomTitleIdeaSession": "Idésession",
+    "roomTitleWorkspace": "Arbetsrum",
+    "roomTitleChannel": "Kanal",
+    "announcementsBadge": "Tillkännagivanden",
+    "searchInChannelPlaceholder": "Sök i den här kanalen…",
+    "noMessagesYet": "Inga meddelanden ännu.",
+    "startTheDiscussion": "Starta diskussionen!",
+    "unknownAuthor": "Okänd",
+    "reactWithLike": "Gilla",
+    "reactGeneric": "Reagera",
+    "editAction": "Redigera",
+    "deleteAction": "Ta bort",
+    "messageDeletedText": "Meddelandet togs bort",
+    "saveButton": "Spara",
+    "cancelButton": "Avbryt",
+    "editedIndicator": "(redigerat)",
+    "deleteConfirmText": "Ta bort meddelandet?",
+    "confirmYes": "Ja",
+    "seenLabel": "Sett",
+    "seenByCountLabel": "Sett av {count}",
+    "typingOneLabel": "{name} skriver…",
+    "typingTwoLabel": "{name1} och {name2} skriver…",
+    "typingSeveralLabel": "Flera skriver…",
+    "someoneFallback": "Någon",
+    "timeJustNow": "just nu"
+  },
+  "ThreadPanel": {
+    "messageDeletedText": "Meddelandet togs bort",
+    "saveButton": "Spara",
+    "cancelButton": "Avbryt",
+    "editedIndicator": "(redigerat)",
+    "unknownAuthor": "Okänd",
+    "editAction": "Redigera",
+    "deleteConfirmQuestion": "Ta bort?",
+    "confirmYes": "Ja",
+    "deleteAction": "Ta bort",
+    "timeJustNow": "just nu"
+  },
+  "MessageComposer": {
+    "removeAttachmentAriaLabel": "Ta bort {name}",
+    "sendLabel": "Skicka"
+  },
+  "AttachmentPicker": {
+    "attachImageLabel": "Lägg till bild",
+    "attachFileLabel": "Bifoga fil",
+    "imageTooLargeError": "{name}: bilden får max vara 5 MB.",
+    "fileTooLargeError": "{name}: filen får max vara 20 MB.",
+    "uploadFailedGeneric": "Uppladdning misslyckades.",
+    "uploadFailedNamed": "{name}: uppladdning misslyckades."
+  },
+  "MessageSearchBox": {
+    "searchPlaceholderDefault": "Sök i meddelanden…",
+    "searchAriaLabel": "Sök i meddelanden",
+    "searching": "Söker…",
+    "noResults": "Inga träffar."
+  },
+  "MessagesSidebar": {
+    "loginPrompt": "Logga in",
+    "loginToViewMessagesSuffix": "för att se dina egna meddelanden och kanaler.",
+    "openChannelDirectory": "Öppna kanalkatalogen →",
+    "workspaceFallback": "Arbetsrum"
+  },
+  "KanalerPage": {
+    "heading": "Kanaler",
+    "subtitle": "Alla dina projekt- och organisationskanaler, samlade på ett ställe.",
+    "loginPrompt": "Logga in",
+    "loginToViewChannelsSuffix": "för att se dina kanaler."
+  },
+  "KanalerDirectory": {
+    "pinnedTooltip": "Pinnad",
+    "workspaceFallback": "Arbetsrum",
+    "searchPlaceholder": "Sök kanal eller projekt…",
+    "noChannelsAtAll": "Du är inte med i några kanaler ännu. Kanaler skapas av projekt- och organisationsadmins.",
+    "noMatches": "Inga kanaler matchar \"{query}\"."
+  },
+  "IdeaverkstadPage": {
+    "heading": "Idéverkstaden",
+    "subtitle": "Posta ett problem, bolla idéer med andra — och skriv @AI för att bjuda in AI i tråden.",
+    "newSessionCta": "+ Ny idésession",
+    "sandboxPromo": "🧪 Prova Sandbox — vårt experimentella idéområde med AI-genererade problemställningar →",
+    "emptyState": "Inga idésessioner ännu.",
+    "startFirstSession": "Starta den första →",
+    "unnamedSession": "Namnlös idésession",
+    "statsLine": "{participants} deltagare · {messages} inlägg · senast aktiv {time}",
+    "timeJustNow": "just nu",
+    "timeMinutesAgo": "{minutes} min sedan",
+    "timeHoursAgo": "{hours} tim sedan",
+    "timeDaysAgo": "{days} dagar sedan"
+  },
+  "NewIdeaThreadForm": {
+    "problemPlaceholder": "T.ex. Många äldre i mitt område är socialt isolerade och saknar digitala kunskaper för att hålla kontakt med anhöriga…",
+    "imageLabel": "Bild",
+    "imageOptionalHint": "(valfritt — en bild som passar ämnet, inte ett porträtt)",
+    "startButton": "Starta idésession",
+    "cancelButton": "Avbryt"
+  },
+  "NewIdeaThreadPage": {
+    "heading": "Vilket problem vill du lösa?",
+    "subtitle": "Beskriv problemet i fritext. Andra kan sedan kommentera och bidra — och du kan när som helst skriva @AI för att bjuda in AI som deltagare i tråden."
+  },
+  "IdeaThreadPage": {
+    "backToIdeaverkstad": "← Idéverkstaden",
+    "saveToIdeaFeed": "Spara till Idéflödet",
+    "convertToProject": "Konvertera till projekt"
   }
 }

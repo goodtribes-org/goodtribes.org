@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { renderBody } from "@/lib/renderBody";
 import { ReactionBar } from "@/components/ReactionBar";
 import { MessageComposer } from "./MessageComposer";
@@ -40,6 +40,8 @@ export function ThreadPanel({
   onScrolledToReply,
 }: Props) {
   const t = useTranslations("Messages");
+  const tThread = useTranslations("ThreadPanel");
+  const locale = useLocale();
   const [, startTransition] = useTransition();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingBody, setEditingBody] = useState("");
@@ -85,7 +87,7 @@ export function ThreadPanel({
   }
 
   function renderMessageBody(m: MessageRow) {
-    if (m.deletedAt) return <p className="text-sm italic text-dark-slate/40">Meddelandet togs bort</p>;
+    if (m.deletedAt) return <p className="text-sm italic text-dark-slate/40">{tThread("messageDeletedText")}</p>;
     if (editingId === m.id) {
       return (
         <div className="flex flex-col gap-1.5">
@@ -105,10 +107,10 @@ export function ThreadPanel({
           />
           <div className="flex items-center gap-3 text-xs">
             <button type="button" onClick={() => saveEdit(m)} className="text-seagrass font-semibold hover:underline">
-              Spara
+              {tThread("saveButton")}
             </button>
             <button type="button" onClick={cancelEdit} className="text-dark-slate/50 hover:underline">
-              Avbryt
+              {tThread("cancelButton")}
             </button>
           </div>
         </div>
@@ -117,7 +119,7 @@ export function ThreadPanel({
     return (
       <>
         {renderBody(m.body)}
-        {m.editedAt && <span className="text-[10px] text-dark-slate/30 ml-1">(redigerat)</span>}
+        {m.editedAt && <span className="text-[10px] text-dark-slate/30 ml-1">{tThread("editedIndicator")}</span>}
       </>
     );
   }
@@ -127,21 +129,21 @@ export function ThreadPanel({
     return (
       <div className="flex items-center gap-2 text-[11px]">
         <button type="button" onClick={() => startEdit(m)} className="text-dark-slate/40 hover:text-seagrass transition-colors">
-          Redigera
+          {tThread("editAction")}
         </button>
         {confirmDeleteId === m.id ? (
           <span className="flex items-center gap-1.5">
-            <span className="text-dark-slate/40">Ta bort?</span>
+            <span className="text-dark-slate/40">{tThread("deleteConfirmQuestion")}</span>
             <button type="button" onClick={() => handleDelete(m.id)} className="text-watermelon font-semibold hover:underline">
-              Ja
+              {tThread("confirmYes")}
             </button>
             <button type="button" onClick={() => setConfirmDeleteId(null)} className="text-dark-slate/40 hover:underline">
-              Avbryt
+              {tThread("cancelButton")}
             </button>
           </span>
         ) : (
           <button type="button" onClick={() => setConfirmDeleteId(m.id)} className="text-dark-slate/40 hover:text-watermelon transition-colors">
-            Ta bort
+            {tThread("deleteAction")}
           </button>
         )}
       </div>
@@ -173,8 +175,8 @@ export function ThreadPanel({
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 mb-0.5">
-              <span className="text-sm font-bold text-gray-900">{parent.author.name ?? "Okänd"}</span>
-              <span className="text-xs text-gray-400">{timeLabel(parent.createdAt)}</span>
+              <span className="text-sm font-bold text-gray-900">{parent.author.name ?? tThread("unknownAuthor")}</span>
+              <span className="text-xs text-gray-400">{timeLabel(parent.createdAt, tThread("timeJustNow"), locale)}</span>
             </div>
             {renderMessageBody(parent)}
             {!parent.deletedAt && (
@@ -214,8 +216,8 @@ export function ThreadPanel({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-xs font-semibold text-gray-900">{r.author.name ?? "Okänd"}</span>
-                    <span className="text-[10px] text-gray-400">{timeLabel(r.createdAt)}</span>
+                    <span className="text-xs font-semibold text-gray-900">{r.author.name ?? tThread("unknownAuthor")}</span>
+                    <span className="text-[10px] text-gray-400">{timeLabel(r.createdAt, tThread("timeJustNow"), locale)}</span>
                   </div>
                   <div className="text-sm">{renderMessageBody(r)}</div>
                   <div className="flex items-center gap-3 mt-0.5">

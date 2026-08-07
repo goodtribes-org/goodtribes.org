@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 type ChannelRow = { id: string; name: string | null; pinned: boolean; unread: boolean };
 type ProjectGroup = { id: string; slug: string; title: string; rooms: ChannelRow[] };
@@ -16,10 +17,12 @@ function ChannelGroupSection({
   title,
   rooms,
   hrefFor,
+  t,
 }: {
   title: string;
   rooms: ChannelRow[];
   hrefFor: (roomId: string) => string;
+  t: ReturnType<typeof useTranslations>;
 }) {
   return (
     <div>
@@ -32,12 +35,12 @@ function ChannelGroupSection({
             className="flex items-center gap-2 px-4 py-3 hover:bg-dry-sage/10 transition-colors"
           >
             {room.pinned && (
-              <span title="Pinnad" className="text-xs">
+              <span title={t("pinnedTooltip")} className="text-xs">
                 📌
               </span>
             )}
             <span className="text-dark-slate/30">#</span>
-            <span className="flex-1 text-sm font-medium text-dark-slate truncate">{room.name ?? "Arbetsrum"}</span>
+            <span className="flex-1 text-sm font-medium text-dark-slate truncate">{room.name ?? t("workspaceFallback")}</span>
             {room.unread && <span className="w-2 h-2 rounded-full bg-seagrass shrink-0" />}
           </Link>
         ))}
@@ -47,6 +50,7 @@ function ChannelGroupSection({
 }
 
 export function KanalerDirectory({ projectGroups, orgGroups }: Props) {
+  const t = useTranslations("KanalerDirectory");
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
 
@@ -71,16 +75,16 @@ export function KanalerDirectory({ projectGroups, orgGroups }: Props) {
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Sök kanal eller projekt…"
+        placeholder={t("searchPlaceholder")}
         className="w-full mb-6 px-4 py-2.5 border border-muted-teal rounded-lg text-sm focus:outline-none focus:border-seagrass"
       />
 
       {noChannelsAtAll ? (
         <p className="text-dark-slate/50 text-center py-12">
-          Du är inte med i några kanaler ännu. Kanaler skapas av projekt- och organisationsadmins.
+          {t("noChannelsAtAll")}
         </p>
       ) : noMatches ? (
-        <p className="text-dark-slate/50 text-center py-12">Inga kanaler matchar &quot;{query}&quot;.</p>
+        <p className="text-dark-slate/50 text-center py-12">{t("noMatches", { query })}</p>
       ) : (
         <div className="space-y-6">
           {filteredProjects.map((group) => (
@@ -89,6 +93,7 @@ export function KanalerDirectory({ projectGroups, orgGroups }: Props) {
               title={group.title}
               rooms={group.rooms}
               hrefFor={(roomId) => `/messages/${roomId}?section=channels&project=${group.slug}`}
+              t={t}
             />
           ))}
           {filteredOrgs.map((group) => (
@@ -97,6 +102,7 @@ export function KanalerDirectory({ projectGroups, orgGroups }: Props) {
               title={group.name}
               rooms={group.rooms}
               hrefFor={(roomId) => `/messages/${roomId}?section=channels&org=${group.slug}`}
+              t={t}
             />
           ))}
         </div>

@@ -32,6 +32,7 @@ type Props = {
 
 export function MessageComposer({ roomId, threadParentId, onSent, mentionables, projectId, organisationId }: Props) {
   const t = useTranslations("Messages");
+  const tComposer = useTranslations("MessageComposer");
   const [body, setBody] = useState("");
   const [editorKey, setEditorKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -90,7 +91,7 @@ export function MessageComposer({ roomId, threadParentId, onSent, mentionables, 
               <button
                 type="button"
                 onClick={() => removeAttachment(a.id)}
-                aria-label={`Ta bort ${a.name}`}
+                aria-label={tComposer("removeAttachmentAriaLabel", { name: a.name })}
                 className="text-dark-slate/40 hover:text-watermelon"
               >
                 ×
@@ -127,8 +128,8 @@ export function MessageComposer({ roomId, threadParentId, onSent, mentionables, 
             <button
               type="submit"
               disabled={isPending || (isEmpty(body) && attachments.length === 0)}
-              aria-label="Skicka"
-              title="Skicka"
+              aria-label={tComposer("sendLabel")}
+              title={tComposer("sendLabel")}
               className="w-8 h-8 shrink-0 rounded-full bg-coral text-white flex items-center justify-center hover:bg-watermelon transition-colors disabled:opacity-40"
             >
               {isPending ? (

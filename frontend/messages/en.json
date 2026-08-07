@@ -1093,5 +1093,111 @@
     "contentPlaceholder": "Write your update here…",
     "publishing": "Publishing…",
     "publishButton": "Publish update"
+  },
+  "RoomShell": {
+    "roomTitleIdeaSession": "Idea session",
+    "roomTitleWorkspace": "Workspace",
+    "roomTitleChannel": "Channel",
+    "announcementsBadge": "Announcements",
+    "searchInChannelPlaceholder": "Search this channel…",
+    "noMessagesYet": "No messages yet.",
+    "startTheDiscussion": "Start the discussion!",
+    "unknownAuthor": "Unknown",
+    "reactWithLike": "Like",
+    "reactGeneric": "React",
+    "editAction": "Edit",
+    "deleteAction": "Delete",
+    "messageDeletedText": "This message was deleted",
+    "saveButton": "Save",
+    "cancelButton": "Cancel",
+    "editedIndicator": "(edited)",
+    "deleteConfirmText": "Delete this message?",
+    "confirmYes": "Yes",
+    "seenLabel": "Seen",
+    "seenByCountLabel": "Seen by {count}",
+    "typingOneLabel": "{name} is typing…",
+    "typingTwoLabel": "{name1} and {name2} are typing…",
+    "typingSeveralLabel": "Several people are typing…",
+    "someoneFallback": "Someone",
+    "timeJustNow": "just now"
+  },
+  "ThreadPanel": {
+    "messageDeletedText": "This message was deleted",
+    "saveButton": "Save",
+    "cancelButton": "Cancel",
+    "editedIndicator": "(edited)",
+    "unknownAuthor": "Unknown",
+    "editAction": "Edit",
+    "deleteConfirmQuestion": "Delete?",
+    "confirmYes": "Yes",
+    "deleteAction": "Delete",
+    "timeJustNow": "just now"
+  },
+  "MessageComposer": {
+    "removeAttachmentAriaLabel": "Remove {name}",
+    "sendLabel": "Send"
+  },
+  "AttachmentPicker": {
+    "attachImageLabel": "Add image",
+    "attachFileLabel": "Attach file",
+    "imageTooLargeError": "{name}: the image can be at most 5 MB.",
+    "fileTooLargeError": "{name}: the file can be at most 20 MB.",
+    "uploadFailedGeneric": "Upload failed.",
+    "uploadFailedNamed": "{name}: upload failed."
+  },
+  "MessageSearchBox": {
+    "searchPlaceholderDefault": "Search messages…",
+    "searchAriaLabel": "Search messages",
+    "searching": "Searching…",
+    "noResults": "No matches."
+  },
+  "MessagesSidebar": {
+    "loginPrompt": "Log in",
+    "loginToViewMessagesSuffix": "to see your own messages and channels.",
+    "openChannelDirectory": "Open the channel directory →",
+    "workspaceFallback": "Workspace"
+  },
+  "KanalerPage": {
+    "heading": "Channels",
+    "subtitle": "All your project and organisation channels, gathered in one place.",
+    "loginPrompt": "Log in",
+    "loginToViewChannelsSuffix": "to see your channels."
+  },
+  "KanalerDirectory": {
+    "pinnedTooltip": "Pinned",
+    "workspaceFallback": "Workspace",
+    "searchPlaceholder": "Search channel or project…",
+    "noChannelsAtAll": "You're not part of any channels yet. Channels are created by project and organisation admins.",
+    "noMatches": "No channels match \"{query}\"."
+  },
+  "IdeaverkstadPage": {
+    "heading": "Idea Workshop",
+    "subtitle": "Bounce ideas off others and AI — from problem to project.",
+    "newSessionCta": "+ New idea session",
+    "sandboxPromo": "🧪 Try Sandbox — our experimental idea area with AI-generated problem statements →",
+    "emptyState": "No idea sessions yet.",
+    "startFirstSession": "Start the first one →",
+    "unnamedSession": "Unnamed idea session",
+    "statsLine": "{participants} participants · {messages} posts · last active {time}",
+    "timeJustNow": "just now",
+    "timeMinutesAgo": "{minutes}m ago",
+    "timeHoursAgo": "{hours}h ago",
+    "timeDaysAgo": "{days}d ago"
+  },
+  "NewIdeaThreadForm": {
+    "problemPlaceholder": "E.g. Many elderly people in my area are socially isolated and lack the digital skills to stay in touch with relatives…",
+    "imageLabel": "Image",
+    "imageOptionalHint": "(optional — an image that fits the topic, not a portrait)",
+    "startButton": "Start idea session",
+    "cancelButton": "Cancel"
+  },
+  "NewIdeaThreadPage": {
+    "heading": "What problem do you want to solve?",
+    "subtitle": "Describe the problem in free text. Others can then comment and contribute — and you can write @AI at any time to invite AI as a participant in the thread."
+  },
+  "IdeaThreadPage": {
+    "backToIdeaverkstad": "← Idea Workshop",
+    "saveToIdeaFeed": "Save to the idea feed",
+    "convertToProject": "Convert to project"
   }
 }

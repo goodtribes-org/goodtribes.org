@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { ReactionBar } from "@/components/ReactionBar";
 import { renderBody } from "@/lib/renderBody";
 import { toggleReaction, markRoomRead, editRoomMessage, deleteRoomMessage } from "../actions";
@@ -53,25 +53,25 @@ type Props = {
   mentionables?: MentionItem[];
 };
 
-function roomTitle(room: RoomInfo) {
+function roomTitle(room: RoomInfo, t: ReturnType<typeof useTranslations>) {
   if (room.type === "DM") return room.otherUsers[0]?.name ?? "?";
   if (room.type === "GROUP") return room.name ?? room.otherUsers.map((u) => u.name).join(", ");
-  if (room.type === "IDEA_THREAD") return room.name ?? "Idésession";
-  return room.name ? `#${room.name}` : room.type === "ORG_CHANNEL" ? "Arbetsrum" : "Kanal";
+  if (room.type === "IDEA_THREAD") return room.name ?? t("roomTitleIdeaSession");
+  return room.name ? `#${room.name}` : room.type === "ORG_CHANNEL" ? t("roomTitleWorkspace") : t("roomTitleChannel");
 }
 
-function dateLabel(iso: string) {
-  return new Date(iso).toLocaleDateString("sv-SE", { day: "numeric", month: "long" });
+function dateLabel(iso: string, locale: string) {
+  return new Date(iso).toLocaleDateString(locale === "en" ? "en-GB" : "sv-SE", { day: "numeric", month: "long" });
 }
 
-function buildGrouped(messages: MessageRow[]) {
+function buildGrouped(messages: MessageRow[], locale: string) {
   return messages.map((m, i) => {
     const prev = messages[i - 1];
     const isGrouped =
       !!prev &&
       prev.authorId === m.authorId &&
       new Date(m.createdAt).getTime() - new Date(prev.createdAt).getTime() < 5 * 60 * 1000;
-    const isNewDay = !prev || dateLabel(prev.createdAt) !== dateLabel(m.createdAt);
+    const isNewDay = !prev || dateLabel(prev.createdAt, locale) !== dateLabel(m.createdAt, locale);
     return { ...m, isGrouped: isGrouped && !isNewDay, isNewDay };
   });
 }
@@ -85,14 +85,16 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function typingLabel(names: string[]): string {
-  if (names.length === 1) return `${names[0]} skriver…`;
-  if (names.length === 2) return `${names[0]} och ${names[1]} skriver…`;
-  return "Flera skriver…";
+function typingLabel(names: string[], t: ReturnType<typeof useTranslations>): string {
+  if (names.length === 1) return t("typingOneLabel", { name: names[0] });
+  if (names.length === 2) return t("typingTwoLabel", { name1: names[0], name2: names[1] });
+  return t("typingSeveralLabel");
 }
 
 export function RoomShell({ room, initialMessages, currentUserId, canPost, mentionables }: Props) {
   const t = useTranslations("Messages");
+  const tRoom = useTranslations("RoomShell");
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const [messages, setMessages] = useState<MessageRow[]>(initialMessages);
   const [, startTransition] = useTransition();
@@ -197,7 +199,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
 
       if (data.type === "typing") {
         if (data.userId === currentUserId) return;
-        setTypingUsers((prev) => new Map(prev).set(data.userId, data.name ?? "Någon"));
+        setTypingUsers((prev) => new Map(prev).set(data.userId, data.name ?? tRoom("someoneFallback")));
         clearTimeout(typingTimeoutsRef.current.get(data.userId));
         typingTimeoutsRef.current.set(
           data.userId,
@@ -294,8 +296,8 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
     return count;
   }
 
-  const grouped = buildGrouped(messages);
-  const title = roomTitle(room);
+  const grouped = buildGrouped(messages, locale);
+  const title = roomTitle(room, tRoom);
   const canReply = room.type === "PROJECT_CHANNEL" || room.type === "ORG_CHANNEL";
   const lastOwnMessageId = [...messages].reverse().find((m) => m.authorId === currentUserId)?.id;
 
@@ -321,18 +323,18 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
           <span className="font-bold text-base text-gray-900">{title}</span>
           {room.postingPolicy === "LEADS_ONLY" && (
             <span className="text-xs bg-coral/10 text-coral px-2 py-0.5 rounded-full ml-1">
-              Tillkännagivanden
+              {tRoom("announcementsBadge")}
             </span>
           )}
           <div className="ml-auto">
-            <MessageSearchBox roomId={room.id} placeholder="Sök i den här kanalen…" />
+            <MessageSearchBox roomId={room.id} placeholder={tRoom("searchInChannelPlaceholder")} />
           </div>
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto py-2 flex flex-col">
           {messages.length === 0 ? (
             <p className="text-sm text-gray-400 italic text-center py-8">
-              Inga meddelanden ännu. {canPost ? "Starta diskussionen!" : ""}
+              {tRoom("noMessagesYet")} {canPost ? tRoom("startTheDiscussion") : ""}
             </p>
           ) : (
             grouped.map((m) => {
@@ -342,7 +344,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                   {m.isNewDay && (
                     <div className="flex justify-center my-3">
                       <span className="text-[11px] font-medium text-dark-slate/40 bg-gray-50 px-3 py-1 rounded-full">
-                        {dateLabel(m.createdAt)}
+                        {dateLabel(m.createdAt, locale)}
                       </span>
                     </div>
                   )}
@@ -364,13 +366,13 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                     <div className={`flex flex-col max-w-[70%] ${isOwn ? "items-end" : "items-start"}`}>
                       {!m.isGrouped && (
                         <div className="flex items-baseline gap-2 mb-0.5 px-1">
-                          {!isOwn && <span className="text-sm font-bold text-gray-900">{m.author.name ?? "Okänd"}</span>}
+                          {!isOwn && <span className="text-sm font-bold text-gray-900">{m.author.name ?? tRoom("unknownAuthor")}</span>}
                           {m.isAi && (
                             <span className="text-[10px] font-semibold uppercase tracking-wider text-seagrass bg-seagrass/10 rounded px-1.5 py-0.5">
                               AI
                             </span>
                           )}
-                          <span className="text-xs text-gray-400">{timeLabel(m.createdAt)}</span>
+                          <span className="text-xs text-gray-400">{timeLabel(m.createdAt, tRoom("timeJustNow"), locale)}</span>
                         </div>
                       )}
 
@@ -385,7 +387,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                                 type="button"
                                 onClick={() => handleReaction(m.id, e)}
                                 className="px-2 py-1.5 hover:bg-gray-100 text-base transition-colors"
-                                title={e === FEED_LIKE_EMOJI ? "Gilla" : "Reagera"}
+                                title={e === FEED_LIKE_EMOJI ? tRoom("reactWithLike") : tRoom("reactGeneric")}
                               >
                                 {e}
                               </button>
@@ -410,7 +412,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                                   type="button"
                                   onClick={() => startEdit(m)}
                                   className="px-2 py-1.5 hover:bg-gray-100 text-sm text-dark-slate/60 hover:text-seagrass transition-colors"
-                                  title="Redigera"
+                                  title={tRoom("editAction")}
                                 >
                                   ✏️
                                 </button>
@@ -418,7 +420,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                                   type="button"
                                   onClick={() => setConfirmDeleteId(m.id)}
                                   className="px-2 py-1.5 hover:bg-gray-100 text-sm text-dark-slate/60 hover:text-watermelon transition-colors"
-                                  title="Ta bort"
+                                  title={tRoom("deleteAction")}
                                 >
                                   🗑️
                                 </button>
@@ -433,7 +435,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                           }`}
                         >
                           {m.deletedAt ? (
-                            <p className="text-sm italic text-dark-slate/40">Meddelandet togs bort</p>
+                            <p className="text-sm italic text-dark-slate/40">{tRoom("messageDeletedText")}</p>
                           ) : editingId === m.id ? (
                             <div className="flex flex-col gap-1.5 min-w-[200px]">
                               <textarea
@@ -452,17 +454,17 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                               />
                               <div className="flex items-center gap-3 text-xs">
                                 <button type="button" onClick={() => saveEdit(m)} className="text-seagrass font-semibold hover:underline">
-                                  Spara
+                                  {tRoom("saveButton")}
                                 </button>
                                 <button type="button" onClick={cancelEdit} className="text-dark-slate/50 hover:underline">
-                                  Avbryt
+                                  {tRoom("cancelButton")}
                                 </button>
                               </div>
                             </div>
                           ) : (
                             <>
                               {renderBody(m.body)}
-                              {m.editedAt && <span className="text-[10px] text-dark-slate/30 ml-1">(redigerat)</span>}
+                              {m.editedAt && <span className="text-[10px] text-dark-slate/30 ml-1">{tRoom("editedIndicator")}</span>}
                               {m.attachments && m.attachments.length > 0 && (
                                 <div className={`flex flex-col gap-1.5 ${m.body ? "mt-1.5" : ""}`}>
                                   {m.attachments.map((a) =>
@@ -497,12 +499,12 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
 
                         {confirmDeleteId === m.id && (
                           <div className="mt-1 flex items-center gap-2 text-xs bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 shadow-sm">
-                            <span className="text-dark-slate/60">Ta bort meddelandet?</span>
+                            <span className="text-dark-slate/60">{tRoom("deleteConfirmText")}</span>
                             <button type="button" onClick={() => handleDelete(m.id)} className="text-watermelon font-semibold hover:underline">
-                              Ja
+                              {tRoom("confirmYes")}
                             </button>
                             <button type="button" onClick={() => setConfirmDeleteId(null)} className="text-dark-slate/50 hover:underline">
-                              Avbryt
+                              {tRoom("cancelButton")}
                             </button>
                           </div>
                         )}
@@ -537,7 +539,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                       </div>
                       {isOwn && m.id === lastOwnMessageId && !m.deletedAt && seenCountFor(m) > 0 && (
                         <span className="self-end text-[10px] text-dark-slate/30 mt-0.5">
-                          {room.type === "DM" ? "Sett" : `Sett av ${seenCountFor(m)}`}
+                          {room.type === "DM" ? tRoom("seenLabel") : tRoom("seenByCountLabel", { count: seenCountFor(m) })}
                         </span>
                       )}
                       {currentUserId && !m.deletedAt && (
@@ -556,7 +558,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
 
         {typingUsers.size > 0 && (
           <div className="px-4 pt-1 text-xs text-dark-slate/40 italic shrink-0">
-            {typingLabel([...typingUsers.values()])}
+            {typingLabel([...typingUsers.values()], tRoom)}
           </div>
         )}
 

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { searchRoomMessages } from "./actions";
 
 type Hit = { id: string; roomId: string; body: string; authorName: string; createdAt: number };
@@ -19,7 +20,9 @@ function snippet(body: string) {
   return plain.length > 140 ? `${plain.slice(0, 140)}…` : plain;
 }
 
-export function MessageSearchBox({ roomId, placeholder = "Sök i meddelanden…" }: Props) {
+export function MessageSearchBox({ roomId, placeholder }: Props) {
+  const t = useTranslations("MessageSearchBox");
+  const effectivePlaceholder = placeholder ?? t("searchPlaceholderDefault");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Hit[]>([]);
@@ -63,8 +66,8 @@ export function MessageSearchBox({ roomId, placeholder = "Sök i meddelanden…"
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        aria-label="Sök i meddelanden"
-        title="Sök i meddelanden"
+        aria-label={t("searchAriaLabel")}
+        title={t("searchAriaLabel")}
         className="p-1.5 text-dark-slate/50 hover:text-seagrass transition-colors"
       >
         🔍
@@ -76,13 +79,13 @@ export function MessageSearchBox({ roomId, placeholder = "Sök i meddelanden…"
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={placeholder}
+            placeholder={effectivePlaceholder}
             className="w-full px-2.5 py-1.5 border border-muted-teal/30 rounded-md text-sm focus:outline-none focus:border-seagrass"
           />
           <div className="mt-2 max-h-72 overflow-y-auto">
-            {loading && <p className="text-xs text-dark-slate/40 px-1 py-2">Söker…</p>}
+            {loading && <p className="text-xs text-dark-slate/40 px-1 py-2">{t("searching")}</p>}
             {!loading && query.trim().length >= 2 && results.length === 0 && (
-              <p className="text-xs text-dark-slate/40 px-1 py-2">Inga träffar.</p>
+              <p className="text-xs text-dark-slate/40 px-1 py-2">{t("noResults")}</p>
             )}
             {results.map((hit) => (
               <Link

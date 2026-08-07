@@ -110,6 +110,7 @@ export function MessagesSidebar({ isLoggedIn, dmGroupRooms, projectGroups, orgGr
   // to the snapshot instead of flashing everything as read.
   const [liveUnread, setLiveUnread] = useState<Set<string> | null>(null);
   const eventSource = useUserEvents();
+  const tSidebar = useTranslations("MessagesSidebar");
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -202,9 +203,9 @@ export function MessagesSidebar({ isLoggedIn, dmGroupRooms, projectGroups, orgGr
       {!isLoggedIn ? (
         <p className="text-sm text-dark-slate/50 p-4">
           <Link href="/login" className="text-coral hover:underline font-medium">
-            Logga in
+            {tSidebar("loginPrompt")}
           </Link>{" "}
-          för att se dina egna meddelanden och kanaler.
+          {tSidebar("loginToViewMessagesSuffix")}
         </p>
       ) : (
         <>
@@ -241,7 +242,7 @@ export function MessagesSidebar({ isLoggedIn, dmGroupRooms, projectGroups, orgGr
       {section === "channels" && (
       <>
       <Link href="/kanaler" className="block px-3 py-1.5 mx-1 mt-1 mb-2 text-xs font-medium text-seagrass hover:underline">
-        Öppna kanalkatalogen →
+        {tSidebar("openChannelDirectory")}
       </Link>
       {projectGroups.map((project) => (
         <Section key={project.id} title={project.title} defaultOpen={!focusProjectSlug || focusProjectSlug === project.slug}>
@@ -272,7 +273,7 @@ export function MessagesSidebar({ isLoggedIn, dmGroupRooms, projectGroups, orgGr
               }`}
             >
               <span className="text-dark-slate/30 text-xs">#</span>
-              <span className="flex-1 truncate">{room.name ?? "Arbetsrum"}</span>
+              <span className="flex-1 truncate">{room.name ?? tSidebar("workspaceFallback")}</span>
               {isUnread(room.id, room.unread) && <span className="w-1.5 h-1.5 rounded-full bg-seagrass shrink-0" />}
             </Link>
           ))}

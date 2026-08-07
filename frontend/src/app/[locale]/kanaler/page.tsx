@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import { getProjectChannelGroups, getOrgChannelGroups } from "@/lib/rooms";
 import { KanalerDirectory } from "./KanalerDirectory";
 
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function KanalerPage() {
-  const session = await auth();
+  const [session, t] = await Promise.all([auth(), getTranslations("KanalerPage")]);
   const userId = session?.user?.id;
 
   const [projectGroups, orgGroups] = userId
@@ -22,16 +23,16 @@ export default async function KanalerPage() {
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Kanaler</h1>
-        <p className="text-lg text-dark-slate/70">Alla dina projekt- och organisationskanaler, samlade på ett ställe.</p>
+        <h1 className="text-4xl font-bold mb-2">{t("heading")}</h1>
+        <p className="text-lg text-dark-slate/70">{t("subtitle")}</p>
       </div>
 
       {!userId ? (
         <p className="text-dark-slate/50 text-center py-12">
           <Link href="/login" className="text-coral hover:underline font-medium">
-            Logga in
+            {t("loginPrompt")}
           </Link>{" "}
-          för att se dina kanaler.
+          {t("loginToViewChannelsSuffix")}
         </p>
       ) : (
         <KanalerDirectory projectGroups={projectGroups} orgGroups={orgGroups} />

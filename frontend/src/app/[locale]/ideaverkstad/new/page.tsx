@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import NewIdeaThreadForm from "./NewIdeaThreadForm";
 
 export const metadata: Metadata = {
@@ -10,13 +11,13 @@ export const metadata: Metadata = {
 export default async function NewIdeaThreadPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
+  const t = await getTranslations("NewIdeaThreadPage");
 
   return (
     <div className="max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold text-dark-slate mb-1">Vilket problem vill du lösa?</h1>
+      <h1 className="text-2xl font-bold text-dark-slate mb-1">{t("heading")}</h1>
       <p className="text-sm text-dark-slate/50 mb-6">
-        Beskriv problemet i fritext. Andra kan sedan kommentera och bidra — och du kan när som helst skriva
-        @AI för att bjuda in AI som deltagare i tråden.
+        {t("subtitle")}
       </p>
       <NewIdeaThreadForm />
     </div>

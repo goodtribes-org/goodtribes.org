@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 // Duplicated from FileUpload.tsx rather than shared — that component's
 // single-file prop contract (onUpload(url): void) doesn't fit a multi-file
@@ -40,10 +41,11 @@ type Props = {
 };
 
 export function AttachmentPicker({ projectId, organisationId, disabled, onUploaded, onError, variant = "attach" }: Props) {
+  const t = useTranslations("AttachmentPicker");
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const isImageVariant = variant === "image";
-  const label = isImageVariant ? "Lägg till bild" : "Bifoga fil";
+  const label = isImageVariant ? t("attachImageLabel") : t("attachFileLabel");
 
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -55,7 +57,7 @@ export function AttachmentPicker({ projectId, organisationId, disabled, onUpload
       const isImage = IMAGE_MIME_TYPES.has(file.type);
       const sizeLimit = isImage ? IMAGE_SIZE_LIMIT : DOC_SIZE_LIMIT;
       if (file.size > sizeLimit) {
-        onError(isImage ? `${file.name}: bilden får max vara 5 MB.` : `${file.name}: filen får max vara 20 MB.`);
+        onError(isImage ? t("imageTooLargeError", { name: file.name }) : t("fileTooLargeError", { name: file.name }));
         continue;
       }
 
@@ -69,12 +71,12 @@ export function AttachmentPicker({ projectId, organisationId, disabled, onUpload
         const res = await fetch("/api/upload", { method: "POST", body: formData });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          throw new Error((data as { error?: string }).error ?? "Uppladdning misslyckades.");
+          throw new Error((data as { error?: string }).error ?? t("uploadFailedGeneric"));
         }
         const data = (await res.json()) as { key: string; fileId: string };
         onUploaded({ id: data.fileId, key: data.key, name: file.name, mimeType: file.type, size: file.size });
       } catch (err) {
-        onError(err instanceof Error ? err.message : `${file.name}: uppladdning misslyckades.`);
+        onError(err instanceof Error ? err.message : t("uploadFailedNamed", { name: file.name }));
       }
     }
     setUploading(false);

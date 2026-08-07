@@ -5,6 +5,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getRoomAccess } from "@/lib/roomAuth";
 import { getRoomMentionables } from "@/lib/rooms";
 import { RoomShell } from "@/app/[locale]/messages/[roomId]/RoomShell";
@@ -16,12 +17,13 @@ export const metadata: Metadata = {
 export default async function IdeaThreadPage({
   params,
 }: {
-  params: Promise<{ roomId: string }>;
+  params: Promise<{ roomId: string; locale: string }>;
 }) {
-  const { roomId } = await params;
+  const { roomId, locale } = await params;
   const session = await auth();
   const userId = session?.user?.id ?? null;
   if (!userId) redirect("/login");
+  const t = await getTranslations({ locale, namespace: "IdeaThreadPage" });
 
   const access = await getRoomAccess(roomId, userId);
   if (!access || access.room.type !== "IDEA_THREAD") notFound();
@@ -56,7 +58,7 @@ export default async function IdeaThreadPage({
     <div className="max-w-3xl mx-auto">
       <div className="flex items-center justify-between gap-3 mb-4">
         <Link href="/ideaverkstad" className="text-sm text-dark-slate/50 hover:text-dark-slate">
-          ← Idéverkstaden
+          {t("backToIdeaverkstad")}
         </Link>
         <div className="flex gap-2">
           {!alreadyConverted && (
@@ -65,13 +67,13 @@ export default async function IdeaThreadPage({
                 href={`/ideas/new?fromThread=${roomId}`}
                 className="px-3 py-1.5 text-xs font-medium rounded border border-muted-teal text-dark-slate/70 hover:border-seagrass hover:text-seagrass transition-colors"
               >
-                Spara till Idéflödet
+                {t("saveToIdeaFeed")}
               </Link>
               <Link
                 href={`/projects/new?fromThread=${roomId}`}
                 className="px-3 py-1.5 text-xs font-medium rounded bg-coral text-white hover:bg-watermelon transition-colors"
               >
-                Konvertera till projekt
+                {t("convertToProject")}
               </Link>
             </>
           )}
