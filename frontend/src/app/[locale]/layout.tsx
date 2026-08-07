@@ -17,6 +17,7 @@ import PresenceHeartbeat from "@/components/PresenceHeartbeat";
 import UserEventsProvider from "@/components/UserEventsProvider";
 import NavMenuContainer from "@/components/NavMenuContainer";
 import FooterPageManager from "@/components/FooterPageManager";
+import LocaleSwitcher from "@/components/LocaleSwitcher";
 import { auth } from "@/auth";
 import { isSiteAdmin } from "@/lib/authz";
 import { getFooterPages } from "@/lib/sitePages";
@@ -135,6 +136,7 @@ export default async function LocaleLayout({
                   <NavMenuContainer />
                 </div>
                 <div className="flex-1" />
+                <LocaleSwitcher />
                 <SearchButton />
                 {session?.user && <MessagesLink />}
                 {session?.user && <NotificationBell />}
