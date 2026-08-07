@@ -10,6 +10,7 @@ import { useUserEvents } from "@/components/UserEventsProvider";
 import { usePresence } from "@/components/usePresence";
 import { useMessagesSection, type MessagesSection } from "./useMessagesSection";
 import { NewMessageButton } from "./NewMessageButton";
+import { MessageSearchBox } from "./MessageSearchBox";
 import { getPublicProjectChannels } from "./actions";
 import type { PublicProjectChannelGroup } from "@/lib/rooms";
 
@@ -73,7 +74,8 @@ function TabRow({ active }: { active: MessagesSection }) {
 
   return (
     <div className="border-b border-muted-teal/20">
-      <div className="flex items-center justify-end px-2 pt-2">
+      <div className="flex items-center justify-end gap-1 px-2 pt-2">
+        <MessageSearchBox />
         <NewMessageButton />
       </div>
       <div className="flex items-center gap-1.5 px-2 pb-2 overflow-x-auto">

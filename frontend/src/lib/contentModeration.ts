@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { deleteDocument, indexMessage } from "@/lib/meili";
 import type { ContentHideReason } from "@prisma/client";
 
 export const TARGET_TYPES = [
@@ -102,6 +103,10 @@ export async function hideTarget(
       return;
     case "Message":
       await prisma.message.update({ where: { id: targetId }, data });
+      // Moderator-hidden messages must not remain searchable — see
+      // indexMessage/deleteDocument("messages", ...) in messages/actions.ts
+      // for the send/edit/delete-side of this same index.
+      void deleteDocument("messages", targetId);
       return;
     case "DreamWallPost":
       await prisma.dreamWallPost.update({ where: { id: targetId }, data });
@@ -145,9 +150,21 @@ export async function unhideTarget(targetType: ContentTargetType, targetId: stri
     case "IdeaComment":
       await prisma.ideaComment.update({ where: { id: targetId }, data });
       return;
-    case "Message":
-      await prisma.message.update({ where: { id: targetId }, data });
+    case "Message": {
+      const message = await prisma.message.update({
+        where: { id: targetId },
+        data,
+        include: { author: { select: { name: true } } },
+      });
+      void indexMessage({
+        id: message.id,
+        roomId: message.roomId,
+        body: message.body.replace(/<[^>]*>/g, "").trim(),
+        authorName: message.author.name ?? "Någon",
+        createdAt: Math.floor(message.createdAt.getTime() / 1000),
+      });
       return;
+    }
     case "DreamWallPost":
       await prisma.dreamWallPost.update({ where: { id: targetId }, data });
       return;

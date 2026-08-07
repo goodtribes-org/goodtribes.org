@@ -94,6 +94,36 @@ export async function getUnreadRoomIds(userId: string): Promise<string[]> {
   return [...dmGroupUnread, ...channelUnread].filter((id): id is string => id !== null);
 }
 
+// Live membership snapshot for chat search's access filter — DM/GROUP/
+// IDEA_THREAD via RoomParticipant (the only roster those types have), plus
+// PROJECT_CHANNEL/ORG_CHANNEL via the same live membership check
+// getUnreadRoomIds uses, so a channel is searchable even before its lazy
+// RoomParticipant row exists. Computed fresh on every search request
+// (see searchMessages in meili.ts) rather than cached, so losing access
+// to a room immediately stops surfacing its messages.
+export async function getSearchableRoomIds(userId: string): Promise<string[]> {
+  const [participantRooms, projectRooms, orgRooms] = await Promise.all([
+    prisma.roomParticipant.findMany({
+      where: { userId, room: { type: { in: ["DM", "GROUP", "IDEA_THREAD"] } } },
+      select: { roomId: true },
+    }),
+    prisma.room.findMany({
+      where: { type: "PROJECT_CHANNEL", project: { members: { some: { userId, role: { not: "FOLLOWER" } } } } },
+      select: { id: true },
+    }),
+    prisma.room.findMany({
+      where: { type: "ORG_CHANNEL", organisation: { OR: [{ members: { some: { userId } } }, { ownerId: userId }] } },
+      select: { id: true },
+    }),
+  ]);
+
+  return [...new Set([
+    ...participantRooms.map((p) => p.roomId),
+    ...projectRooms.map((r) => r.id),
+    ...orgRooms.map((r) => r.id),
+  ])];
+}
+
 // Attaches a live `unread` flag to each room in a project/org channel group
 // listing, using the same RoomParticipant.lastReadAt + isRoomUnread pattern
 // as getUnreadRoomIds — channels have no default read marker until the user

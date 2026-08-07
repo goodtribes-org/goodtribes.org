@@ -16,6 +16,7 @@ import PresenceDot from "@/components/PresenceDot";
 import { usePresence } from "@/components/usePresence";
 import type { MentionItem } from "@/components/mentionSuggestion";
 import FlagContentButton from "@/components/FlagContentButton";
+import { MessageSearchBox } from "../MessageSearchBox";
 
 export type MessageRow = {
   id: string;
@@ -323,6 +324,9 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
               Tillkännagivanden
             </span>
           )}
+          <div className="ml-auto">
+            <MessageSearchBox roomId={room.id} placeholder="Sök i den här kanalen…" />
+          </div>
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto py-2 flex flex-col">

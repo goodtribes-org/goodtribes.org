@@ -10,6 +10,7 @@ import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { triggerAiThreadReply } from "@/lib/aiThreadReply";
 import { guardSocialAction } from "@/lib/socialActionGuard";
 import { runProactiveModeration } from "@/lib/proactiveModeration";
+import { indexMessage, deleteDocument, searchMessages } from "@/lib/meili";
 import {
   findOrCreateDmRoom,
   createGroupRoom,
@@ -18,6 +19,7 @@ import {
   getNotificationRecipients,
   getPublicProjectChannelsBySlug,
   getPublicProjectChannelsForRoom,
+  getSearchableRoomIds,
   type PublicProjectChannelGroup,
 } from "@/lib/rooms";
 import type { Room, RoomPostingPolicy } from "@prisma/client";
@@ -100,6 +102,14 @@ export async function sendRoomMessage(
     });
   }
   const messageWithAttachments = { ...message, attachments };
+
+  void indexMessage({
+    id: message.id,
+    roomId,
+    body: body.replace(/<[^>]*>/g, "").trim(),
+    authorName: session.user.name ?? "Någon",
+    createdAt: Math.floor(message.createdAt.getTime() / 1000),
+  });
 
   await runProactiveModeration({
     targetType: "Message",
@@ -385,6 +395,14 @@ export async function editRoomMessage(roomId: string, messageId: string, body: s
     },
   });
 
+  void indexMessage({
+    id: message.id,
+    roomId,
+    body: body.replace(/<[^>]*>/g, "").trim(),
+    authorName: message.author.name ?? "Någon",
+    createdAt: Math.floor(message.createdAt.getTime() / 1000),
+  });
+
   publishToRoom(roomId, { type: "updated", message });
   revalidatePath(`/messages/${roomId}`);
 }
@@ -408,6 +426,8 @@ export async function deleteRoomMessage(roomId: string, messageId: string) {
     },
   });
 
+  void deleteDocument("messages", messageId);
+
   publishToRoom(roomId, { type: "updated", message });
   revalidatePath(`/messages/${roomId}`);
 }
@@ -429,4 +449,28 @@ export async function markRoomRead(roomId: string) {
   const lastReadAt = await markRoomReadDb(roomId, session.user.id);
   publishToRoom(roomId, { type: "read", userId: session.user.id, lastReadAt: lastReadAt.toISOString() });
   revalidatePath("/messages");
+}
+
+// roomId scopes to "search within this room" (access re-checked live, same
+// as opening the room itself); omitted, it searches every room the caller
+// currently belongs to (see getSearchableRoomIds — computed fresh per call,
+// never cached, so losing access to a room stops surfacing it immediately).
+export async function searchRoomMessages(
+  query: string,
+  roomId?: string
+): Promise<{ id: string; roomId: string; body: string; authorName: string; createdAt: number }[]> {
+  const session = await auth();
+  if (!session?.user?.id || query.trim().length < 2) return [];
+
+  let roomIds: string[];
+  if (roomId) {
+    const access = await getRoomAccess(roomId, session.user.id);
+    if (!access?.canRead) return [];
+    roomIds = [roomId];
+  } else {
+    roomIds = await getSearchableRoomIds(session.user.id);
+    if (roomIds.length === 0) return [];
+  }
+
+  return searchMessages(query, roomIds);
 }
