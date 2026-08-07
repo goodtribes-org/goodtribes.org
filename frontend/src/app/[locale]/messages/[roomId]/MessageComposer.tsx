@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { sendRoomMessage, sendTypingSignal } from "../actions";
 import type { MentionItem } from "@/components/mentionSuggestion";
+import { AttachmentPicker, type UploadedAttachment } from "./AttachmentPicker";
 
 const TYPING_SIGNAL_THROTTLE_MS = 2000;
 
@@ -25,15 +26,22 @@ type Props = {
   threadParentId?: string;
   onSent?: () => void;
   mentionables?: MentionItem[];
+  projectId?: string | null;
+  organisationId?: string | null;
 };
 
-export function MessageComposer({ roomId, threadParentId, onSent, mentionables }: Props) {
+export function MessageComposer({ roomId, threadParentId, onSent, mentionables, projectId, organisationId }: Props) {
   const t = useTranslations("Messages");
   const [body, setBody] = useState("");
   const [editorKey, setEditorKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<UploadedAttachment[]>([]);
   const [isPending, startTransition] = useTransition();
   const lastTypingSentAt = useRef(0);
+
+  function removeAttachment(id: string) {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
+  }
 
   function handleChange(html: string) {
     setBody(html);
@@ -45,12 +53,14 @@ export function MessageComposer({ roomId, threadParentId, onSent, mentionables }
   }
 
   function submit() {
-    if (isEmpty(body) || isPending) return;
+    const canSubmit = !isEmpty(body) || attachments.length > 0;
+    if (!canSubmit || isPending) return;
     startTransition(async () => {
       try {
-        await sendRoomMessage(roomId, body, threadParentId);
+        await sendRoomMessage(roomId, body, threadParentId, attachments.map((a) => a.id));
         setBody("");
         setEditorKey((k) => k + 1);
+        setAttachments([]);
         setError(null);
         onSent?.();
       } catch (e) {
@@ -69,6 +79,26 @@ export function MessageComposer({ roomId, threadParentId, onSent, mentionables }
       className="flex flex-col gap-1.5"
     >
       {error && <p className="text-xs text-watermelon">{error}</p>}
+      {attachments.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {attachments.map((a) => (
+            <span
+              key={a.id}
+              className="flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full bg-dry-sage/30 text-xs text-dark-slate/70"
+            >
+              <span className="truncate max-w-[140px]">{a.name}</span>
+              <button
+                type="button"
+                onClick={() => removeAttachment(a.id)}
+                aria-label={`Ta bort ${a.name}`}
+                className="text-dark-slate/40 hover:text-watermelon"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
       <div className="flex items-end gap-2">
         <div className="flex-1 min-w-0">
           <RichTextEditor
@@ -81,9 +111,16 @@ export function MessageComposer({ roomId, threadParentId, onSent, mentionables }
             onSubmit={submit}
           />
         </div>
+        <AttachmentPicker
+          projectId={projectId}
+          organisationId={organisationId}
+          disabled={isPending}
+          onUploaded={(a) => setAttachments((prev) => [...prev, a])}
+          onError={(message) => setError(message)}
+        />
         <button
           type="submit"
-          disabled={isPending || isEmpty(body)}
+          disabled={isPending || (isEmpty(body) && attachments.length === 0)}
           aria-label="Skicka"
           title="Skicka"
           className="shrink-0 w-9 h-9 rounded-full bg-coral text-white flex items-center justify-center hover:bg-watermelon transition-colors disabled:opacity-40 mb-1"

@@ -32,6 +32,7 @@ export default async function RoomPage({
       include: {
         author: { select: { id: true, name: true, image: true } },
         reactions: { select: { emoji: true, userId: true } },
+        attachments: { select: { id: true, key: true, name: true, mimeType: true, size: true } },
         _count: { select: { threadReplies: true } },
       },
       orderBy: { createdAt: "asc" },
@@ -63,6 +64,8 @@ export default async function RoomPage({
         postingPolicy: access.room.postingPolicy,
         otherUsers: otherUsers.map((p) => p.user),
         participants: participants.map((p) => ({ userId: p.userId, lastReadAt: p.lastReadAt.toISOString() })),
+        projectId: access.room.projectId,
+        organisationId: access.room.organisationId,
       }}
       initialMessages={messages.map((m) => ({
         ...m,

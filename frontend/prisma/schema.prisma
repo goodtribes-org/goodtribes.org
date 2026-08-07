@@ -409,10 +409,13 @@ model File {
   project        Project?      @relation("ProjectFiles", fields: [projectId], references: [id], onDelete: Cascade)
   organisationId String?
   organisation   Organisation? @relation("OrganisationFiles", fields: [organisationId], references: [id], onDelete: Cascade)
+  messageId      String?
+  message        Message?      @relation(fields: [messageId], references: [id], onDelete: Cascade)
   createdAt      DateTime      @default(now())
 
   @@index([projectId])
   @@index([organisationId])
+  @@index([messageId])
 }
 
 model KanbanCard {
@@ -2252,6 +2255,7 @@ model Message {
   threadParent   Message?          @relation("MessageThread", fields: [threadParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   threadReplies  Message[]         @relation("MessageThread")
   reactions      MessageReaction[]
+  attachments    File[]
   isAi           Boolean           @default(false)
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt

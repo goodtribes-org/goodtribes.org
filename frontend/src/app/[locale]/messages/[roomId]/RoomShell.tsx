@@ -30,6 +30,7 @@ export type MessageRow = {
   reactions: { emoji: string; userId: string }[];
   _count: { threadReplies: number };
   isAi?: boolean;
+  attachments?: { id: string; key: string; name: string; mimeType: string; size: number }[];
 };
 
 type RoomInfo = {
@@ -39,6 +40,8 @@ type RoomInfo = {
   postingPolicy: "ALL_MEMBERS" | "LEADS_ONLY";
   otherUsers: { id: string; name: string | null; image: string | null }[];
   participants: { userId: string; lastReadAt: string }[];
+  projectId?: string | null;
+  organisationId?: string | null;
 };
 
 type Props = {
@@ -74,6 +77,12 @@ function buildGrouped(messages: MessageRow[]) {
 
 const QUICK_REACTIONS = [FEED_LIKE_EMOJI, "❤️", "😄", "🎉", "😮"];
 const TYPING_EXPIRY_MS = 4000;
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 function typingLabel(names: string[]): string {
   if (names.length === 1) return `${names[0]} skriver…`;
@@ -450,6 +459,34 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                             <>
                               {renderBody(m.body)}
                               {m.editedAt && <span className="text-[10px] text-dark-slate/30 ml-1">(redigerat)</span>}
+                              {m.attachments && m.attachments.length > 0 && (
+                                <div className={`flex flex-col gap-1.5 ${m.body ? "mt-1.5" : ""}`}>
+                                  {m.attachments.map((a) =>
+                                    a.mimeType.startsWith("image/") ? (
+                                      <a key={a.id} href={`/api/files/${a.key}`} target="_blank" rel="noopener noreferrer">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                          src={`/api/files/${a.key}`}
+                                          alt={a.name}
+                                          className="max-w-[240px] max-h-[240px] rounded-lg object-cover border border-gray-200"
+                                        />
+                                      </a>
+                                    ) : (
+                                      <a
+                                        key={a.id}
+                                        href={`/api/files/${a.key}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white border border-gray-200 text-xs text-dark-slate/70 hover:border-seagrass transition-colors"
+                                      >
+                                        <span>📎</span>
+                                        <span className="truncate max-w-[160px]">{a.name}</span>
+                                        <span className="text-dark-slate/30 shrink-0">{formatFileSize(a.size)}</span>
+                                      </a>
+                                    )
+                                  )}
+                                </div>
+                              )}
                             </>
                           )}
                         </div>
@@ -521,7 +558,12 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
 
         {canPost && (
           <div className="px-4 py-3 bg-white shrink-0">
-            <MessageComposer roomId={room.id} mentionables={mentionables} />
+            <MessageComposer
+              roomId={room.id}
+              mentionables={mentionables}
+              projectId={room.type === "PROJECT_CHANNEL" ? room.projectId : undefined}
+              organisationId={room.type === "ORG_CHANNEL" ? room.organisationId : undefined}
+            />
           </div>
         )}
       </div>

@@ -22,9 +22,9 @@ import {
 } from "@/lib/rooms";
 import type { Room, RoomPostingPolicy } from "@prisma/client";
 
-function assertValidBody(body: string) {
+function assertValidBody(body: string, hasAttachments = false) {
   const stripped = body.replace(/<[^>]*>/g, "").trim();
-  if (!stripped || body.length > 10_000) throw new Error("Invalid message");
+  if ((!stripped && !hasAttachments) || body.length > 10_000) throw new Error("Invalid message");
 }
 
 // Mention nodes are serialized by RichTextEditor's Mention extension as
@@ -60,14 +60,19 @@ function buildNotificationCopy(room: Room, senderName: string, body: string, isT
   };
 }
 
-export async function sendRoomMessage(roomId: string, body: string, threadParentId?: string) {
+export async function sendRoomMessage(
+  roomId: string,
+  body: string,
+  threadParentId?: string,
+  attachmentFileIds?: string[]
+) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
   const userId = session.user.id;
 
   const access = await getRoomAccess(roomId, userId);
   if (!access?.canPost) throw new Error("Forbidden");
-  assertValidBody(body);
+  assertValidBody(body, (attachmentFileIds?.length ?? 0) > 0);
 
   const guard = await guardSocialAction(userId, "message");
   if (!guard.ok) throw new Error(guard.error);
@@ -80,6 +85,21 @@ export async function sendRoomMessage(roomId: string, body: string, threadParent
       _count: { select: { threadReplies: true } },
     },
   });
+
+  let attachments: { id: string; key: string; name: string; mimeType: string; size: number }[] = [];
+  if (attachmentFileIds?.length) {
+    // ownerId + messageId:null guards against attaching someone else's file,
+    // or re-attaching a file that's already linked to a different message.
+    await prisma.file.updateMany({
+      where: { id: { in: attachmentFileIds }, ownerId: userId, messageId: null },
+      data: { messageId: message.id },
+    });
+    attachments = await prisma.file.findMany({
+      where: { messageId: message.id },
+      select: { id: true, key: true, name: true, mimeType: true, size: true },
+    });
+  }
+  const messageWithAttachments = { ...message, attachments };
 
   await runProactiveModeration({
     targetType: "Message",
@@ -101,7 +121,7 @@ export async function sendRoomMessage(roomId: string, body: string, threadParent
     await markRoomReadDb(roomId, userId);
   }
 
-  publishToRoom(roomId, { type: "created", message });
+  publishToRoom(roomId, { type: "created", message: messageWithAttachments });
 
   const senderName = session.user.name ?? "Någon";
   const rawMentionIds = extractMentionedUserIds(body);
@@ -188,7 +208,7 @@ export async function sendRoomMessage(roomId: string, body: string, threadParent
   revalidatePath(`/messages/${roomId}`);
   revalidatePath("/feed");
 
-  return message;
+  return messageWithAttachments;
 }
 
 // Ephemeral, DB-free signal — mirrors the sprint canvas broadcast pattern in
@@ -360,6 +380,7 @@ export async function editRoomMessage(roomId: string, messageId: string, body: s
     include: {
       author: { select: { id: true, name: true, image: true } },
       reactions: { select: { emoji: true, userId: true } },
+      attachments: { select: { id: true, key: true, name: true, mimeType: true, size: true } },
       _count: { select: { threadReplies: true } },
     },
   });
@@ -382,6 +403,7 @@ export async function deleteRoomMessage(roomId: string, messageId: string) {
     include: {
       author: { select: { id: true, name: true, image: true } },
       reactions: { select: { emoji: true, userId: true } },
+      attachments: { select: { id: true, key: true, name: true, mimeType: true, size: true } },
       _count: { select: { threadReplies: true } },
     },
   });

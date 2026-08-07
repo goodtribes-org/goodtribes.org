@@ -37,6 +37,7 @@ export async function GET(
           include: {
             author: { select: { id: true, name: true, image: true } },
             reactions: { select: { emoji: true, userId: true } },
+            attachments: { select: { id: true, key: true, name: true, mimeType: true, size: true } },
             _count: { select: { threadReplies: true } },
           },
           orderBy: { createdAt: "asc" },
