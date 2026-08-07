@@ -1856,5 +1856,68 @@
     "reactivate": "Reactivate",
     "suspend": "Suspend",
     "noUsersFound": "No users found."
+  },
+  "DeleteSprintButton": {
+    "confirmDelete": "Permanently delete the sprint \"{name}\"? All contributions, votes, and drawing surfaces in it will disappear. This cannot be undone.",
+    "deleteSprintTitle": "Delete sprint",
+    "deleting": "Deleting…",
+    "delete": "Delete"
+  },
+  "NewSprintForm": {
+    "title": "Start new sprint",
+    "nameLabel": "Name",
+    "namePlaceholder": "E.g. Onboarding flow",
+    "paceLabel": "Pace",
+    "paceTogetherLabel": "Together",
+    "paceTogetherDescription": "no deadlines, a leader manually advances the phases when the group is ready.",
+    "paceSpreadOutLabel": "Spread out over time",
+    "paceSpreadOutDescription": "automatic deadlines, the phase closes and the next one opens on its own.",
+    "phaseDaysLabel": "Days per phase",
+    "submittingButton": "Creating…",
+    "submitButton": "Start sprint"
+  },
+  "CommentThread": {
+    "unknownAuthor": "Unknown",
+    "reply": "Reply",
+    "replyPlaceholder": "Write a reply…",
+    "send": "Send",
+    "hideComments": "Hide comments",
+    "commentsCount": "{count, plural, one {Comments (#)} other {Comments (#)}}",
+    "commentPlaceholder": "Write a comment…"
+  },
+  "ContributionBoard": {
+    "typeHmw": "How Might We",
+    "typeSketch": "Sketch",
+    "typePrototypeLink": "Prototype link",
+    "typeFeedback": "Feedback",
+    "placeholderHmw": "How might we…?",
+    "placeholderSketch": "Describe your sketch…",
+    "placeholderPrototypeLink": "Link to the prototype…",
+    "placeholderFeedback": "Your feedback…",
+    "sending": "Sending…",
+    "submitButton": "Submit contribution",
+    "unknownAuthor": "Unknown",
+    "anonymousContribution": "Anonymous contribution",
+    "noContributionsYet": "No contributions yet."
+  },
+  "SprintWorkspace": {
+    "phaseLabelUnderstand": "Understand",
+    "phaseLabelDiverge": "Sketch",
+    "phaseLabelDecide": "Decide",
+    "phaseLabelPrototype": "Prototype",
+    "phaseLabelValidate": "Test",
+    "guidanceUnderstand": "Collect \"How Might We\" questions about the problem on the canvas and in the list below. Contributions are anonymous here — focus on the idea, not who wrote it.",
+    "guidanceDiverge": "Sketch as many solutions as possible on the canvas. Still anonymous — breadth over perfection.",
+    "guidanceDecide": "Distribute your 3 dots among the sketches from the Sketch phase you believe in most. Only the combined votes are shown, never who voted for what.",
+    "guidancePrototype": "Build a simple prototype of the winning idea and share a link to it.",
+    "guidanceValidate": "Test the prototype with real users and gather feedback.",
+    "advancing": "Advancing…",
+    "advanceToNextPhase": "Advance to next phase →",
+    "deletePhaseContentTitle": "Delete this phase's content",
+    "deleting": "Deleting…",
+    "deleteContent": "Delete content",
+    "help": "Help",
+    "phaseNotOpenedYet": "This phase hasn't been opened yet.",
+    "confirmDeleteContent": "Permanently delete all content in \"{phaseLabel}\" — the canvas, contributions, and votes? This cannot be undone."
   }
 }

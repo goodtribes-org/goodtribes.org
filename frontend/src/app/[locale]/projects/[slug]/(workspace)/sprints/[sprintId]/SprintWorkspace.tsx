@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { advancePhase } from "../actions";
 import { deletePhaseContent } from "./actions";
 import SprintPhaseTabs, { type PhaseRow } from "./SprintPhaseTabs";
@@ -9,21 +10,20 @@ import ContributionBoard, { type Contribution } from "./ContributionBoard";
 import DotVoting, { type VotingBoard } from "./DotVoting";
 import type { Prisma, SprintPace, SprintPhaseName, SprintPhaseStatus, SprintStatus } from "@prisma/client";
 
-const PHASE_LABEL: Record<SprintPhaseName, string> = {
-  UNDERSTAND: "Förstå",
-  DIVERGE: "Skissa",
-  DECIDE: "Besluta",
-  PROTOTYPE: "Prototypa",
-  VALIDATE: "Testa",
+const PHASE_LABEL_KEY: Record<SprintPhaseName, string> = {
+  UNDERSTAND: "phaseLabelUnderstand",
+  DIVERGE: "phaseLabelDiverge",
+  DECIDE: "phaseLabelDecide",
+  PROTOTYPE: "phaseLabelPrototype",
+  VALIDATE: "phaseLabelValidate",
 };
 
-const GUIDANCE: Record<SprintPhaseName, string> = {
-  UNDERSTAND:
-    "Samla in \"How Might We\"-frågor om problemet på ritytan och i listan nedan. Bidrag är anonyma här — fokusera på idén, inte på vem som skrev den.",
-  DIVERGE: "Skissa så många lösningar som möjligt på ritytan. Fortfarande anonymt — bredd före perfektion.",
-  DECIDE: "Fördela dina 3 prickar på de skisser från Skissa-fasen som du tror mest på. Bara sammanlagda röster visas, aldrig vem som röstat på vad.",
-  PROTOTYPE: "Bygg en enkel prototyp av den vinnande idén och dela en länk till den.",
-  VALIDATE: "Testa prototypen med riktiga användare och samla feedback.",
+const GUIDANCE_KEY: Record<SprintPhaseName, string> = {
+  UNDERSTAND: "guidanceUnderstand",
+  DIVERGE: "guidanceDiverge",
+  DECIDE: "guidanceDecide",
+  PROTOTYPE: "guidancePrototype",
+  VALIDATE: "guidanceValidate",
 };
 
 type PhaseData = {
@@ -57,6 +57,7 @@ export default function SprintWorkspace({
   canDelete: boolean;
   userName: string;
 }) {
+  const t = useTranslations("SprintWorkspace");
   const [activeTab, setActiveTab] = useState<SprintPhaseName>(sprint.currentPhase);
   const [isAdvancing, setIsAdvancing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -79,7 +80,7 @@ export default function SprintWorkspace({
     if (!activePhaseRow?.id) return;
     if (
       !window.confirm(
-        `Radera allt innehåll i "${PHASE_LABEL[activeTab]}" permanent — ritytan, bidrag och röster? Det går inte att ångra.`
+        t("confirmDeleteContent", { phaseLabel: t(PHASE_LABEL_KEY[activeTab]) })
       )
     ) {
       return;
@@ -105,7 +106,7 @@ export default function SprintWorkspace({
               onClick={handleAdvance}
               className="text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors disabled:opacity-60"
             >
-              {isAdvancing ? "Avancerar…" : "Avancera till nästa fas →"}
+              {isAdvancing ? t("advancing") : t("advanceToNextPhase")}
             </button>
           )}
           {canDelete && activePhaseRow?.id && (
@@ -113,10 +114,10 @@ export default function SprintWorkspace({
               type="button"
               disabled={isDeletingContent}
               onClick={handleDeleteContent}
-              title="Radera fasens innehåll"
+              title={t("deletePhaseContentTitle")}
               className="text-sm font-medium text-watermelon border border-watermelon/40 rounded-md px-3 py-2 hover:bg-watermelon/10 transition-colors disabled:opacity-60"
             >
-              {isDeletingContent ? "Raderar…" : "Radera innehåll"}
+              {isDeletingContent ? t("deleting") : t("deleteContent")}
             </button>
           )}
           <div className="relative">
@@ -136,12 +137,12 @@ export default function SprintWorkspace({
               >
                 ?
               </span>
-              Hjälp
+              {t("help")}
             </button>
             {showHelp && (
               <div className="absolute top-full right-0 mt-2 w-72 bg-white border border-coral/30 rounded-xl shadow-lg p-4 text-sm text-dark-slate/70 z-10">
-                <p className="font-medium text-dark-slate mb-1">{PHASE_LABEL[activeTab]}</p>
-                <p>{GUIDANCE[activeTab]}</p>
+                <p className="font-medium text-dark-slate mb-1">{t(PHASE_LABEL_KEY[activeTab])}</p>
+                <p>{t(GUIDANCE_KEY[activeTab])}</p>
               </div>
             )}
           </div>
@@ -151,7 +152,7 @@ export default function SprintWorkspace({
       {isCanvasPhase ? (
         <div className="flex flex-col gap-6">
           {!activePhaseRow?.id ? (
-            <p className="text-sm text-dark-slate/40 italic">Den här fasen har inte öppnats än.</p>
+            <p className="text-sm text-dark-slate/40 italic">{t("phaseNotOpenedYet")}</p>
           ) : activeData ? (
             <>
               <SprintCanvas
@@ -175,13 +176,13 @@ export default function SprintWorkspace({
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-[220px_1fr] gap-6">
           <aside className="border border-muted-teal/30 rounded-xl p-4 text-sm text-dark-slate/70 h-fit">
-            <p className="font-medium text-dark-slate mb-2">{PHASE_LABEL[activeTab]}</p>
-            <p>{GUIDANCE[activeTab]}</p>
+            <p className="font-medium text-dark-slate mb-2">{t(PHASE_LABEL_KEY[activeTab])}</p>
+            <p>{t(GUIDANCE_KEY[activeTab])}</p>
           </aside>
 
           <div className="min-w-0">
             {!activePhaseRow?.id ? (
-              <p className="text-sm text-dark-slate/40 italic">Den här fasen har inte öppnats än.</p>
+              <p className="text-sm text-dark-slate/40 italic">{t("phaseNotOpenedYet")}</p>
             ) : isDecidePhase ? (
               <DotVoting
                 projectSlug={projectSlug}

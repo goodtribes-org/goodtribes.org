@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { createSprint } from "./actions";
 import type { SprintPace } from "@prisma/client";
 
 export default function NewSprintForm({ projectSlug }: { projectSlug: string }) {
+  const t = useTranslations("NewSprintForm");
   const [name, setName] = useState("");
   const [pace, setPace] = useState<SprintPace>("SPREAD_OUT");
   const [phaseDurationDays, setPhaseDurationDays] = useState(3);
@@ -18,24 +20,24 @@ export default function NewSprintForm({ projectSlug }: { projectSlug: string }) 
 
   return (
     <form onSubmit={handleSubmit} className="border border-muted-teal/30 rounded-xl p-4 flex flex-col gap-4">
-      <p className="text-sm font-medium text-dark-slate">Starta ny sprint</p>
+      <p className="text-sm font-medium text-dark-slate">{t("title")}</p>
 
       <div>
         <label htmlFor="sprintName" className="block text-xs font-medium text-dark-slate/70 mb-1">
-          Namn
+          {t("nameLabel")}
         </label>
         <input
           id="sprintName"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="T.ex. Onboarding-flödet"
+          placeholder={t("namePlaceholder")}
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
         />
       </div>
 
       <div>
-        <p className="text-xs font-medium text-dark-slate/70 mb-2">Tempo</p>
+        <p className="text-xs font-medium text-dark-slate/70 mb-2">{t("paceLabel")}</p>
         <div className="flex flex-col gap-2">
           <label className="flex items-start gap-2 cursor-pointer">
             <input
@@ -46,7 +48,7 @@ export default function NewSprintForm({ projectSlug }: { projectSlug: string }) 
               className="accent-seagrass mt-0.5"
             />
             <span className="text-sm text-dark-slate/80">
-              Gemensamt <span className="text-dark-slate/50">— inga deadlines, en ledare avancerar faserna manuellt när gruppen är redo.</span>
+              {t("paceTogetherLabel")} <span className="text-dark-slate/50">— {t("paceTogetherDescription")}</span>
             </span>
           </label>
           <label className="flex items-start gap-2 cursor-pointer">
@@ -58,7 +60,7 @@ export default function NewSprintForm({ projectSlug }: { projectSlug: string }) 
               className="accent-seagrass mt-0.5"
             />
             <span className="text-sm text-dark-slate/80">
-              Utspritt över tid <span className="text-dark-slate/50">— automatiska deadlines, fasen stängs och nästa öppnas av sig själv.</span>
+              {t("paceSpreadOutLabel")} <span className="text-dark-slate/50">— {t("paceSpreadOutDescription")}</span>
             </span>
           </label>
         </div>
@@ -67,7 +69,7 @@ export default function NewSprintForm({ projectSlug }: { projectSlug: string }) 
       {pace === "SPREAD_OUT" && (
         <div>
           <label htmlFor="phaseDays" className="block text-xs font-medium text-dark-slate/70 mb-1">
-            Dagar per fas
+            {t("phaseDaysLabel")}
           </label>
           <input
             id="phaseDays"
@@ -86,7 +88,7 @@ export default function NewSprintForm({ projectSlug }: { projectSlug: string }) 
         disabled={isPending || !name.trim()}
         className="self-start bg-coral text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-watermelon transition-colors disabled:opacity-60"
       >
-        {isPending ? "Skapar…" : "Starta sprint"}
+        {isPending ? t("submittingButton") : t("submitButton")}
       </button>
     </form>
   );

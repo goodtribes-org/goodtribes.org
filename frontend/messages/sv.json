@@ -1856,5 +1856,68 @@
     "reactivate": "Återaktivera",
     "suspend": "Stäng av",
     "noUsersFound": "Inga användare hittades."
+  },
+  "DeleteSprintButton": {
+    "confirmDelete": "Radera sprinten \"{name}\" permanent? Alla bidrag, röster och ritytor i den försvinner. Det går inte att ångra.",
+    "deleteSprintTitle": "Radera sprint",
+    "deleting": "Raderar…",
+    "delete": "Radera"
+  },
+  "NewSprintForm": {
+    "title": "Starta ny sprint",
+    "nameLabel": "Namn",
+    "namePlaceholder": "T.ex. Onboarding-flödet",
+    "paceLabel": "Tempo",
+    "paceTogetherLabel": "Gemensamt",
+    "paceTogetherDescription": "inga deadlines, en ledare avancerar faserna manuellt när gruppen är redo.",
+    "paceSpreadOutLabel": "Utspritt över tid",
+    "paceSpreadOutDescription": "automatiska deadlines, fasen stängs och nästa öppnas av sig själv.",
+    "phaseDaysLabel": "Dagar per fas",
+    "submittingButton": "Skapar…",
+    "submitButton": "Starta sprint"
+  },
+  "CommentThread": {
+    "unknownAuthor": "Okänd",
+    "reply": "Svara",
+    "replyPlaceholder": "Skriv ett svar…",
+    "send": "Skicka",
+    "hideComments": "Dölj kommentarer",
+    "commentsCount": "{count, plural, one {Kommentarer (#)} other {Kommentarer (#)}}",
+    "commentPlaceholder": "Skriv en kommentar…"
+  },
+  "ContributionBoard": {
+    "typeHmw": "How Might We",
+    "typeSketch": "Skiss",
+    "typePrototypeLink": "Prototyplänk",
+    "typeFeedback": "Feedback",
+    "placeholderHmw": "How might we…?",
+    "placeholderSketch": "Beskriv din skiss…",
+    "placeholderPrototypeLink": "Länk till prototypen…",
+    "placeholderFeedback": "Din feedback…",
+    "sending": "Skickar…",
+    "submitButton": "Skicka bidrag",
+    "unknownAuthor": "Okänd",
+    "anonymousContribution": "Anonymt bidrag",
+    "noContributionsYet": "Inga bidrag ännu."
+  },
+  "SprintWorkspace": {
+    "phaseLabelUnderstand": "Förstå",
+    "phaseLabelDiverge": "Skissa",
+    "phaseLabelDecide": "Besluta",
+    "phaseLabelPrototype": "Prototypa",
+    "phaseLabelValidate": "Testa",
+    "guidanceUnderstand": "Samla in \"How Might We\"-frågor om problemet på ritytan och i listan nedan. Bidrag är anonyma här — fokusera på idén, inte på vem som skrev den.",
+    "guidanceDiverge": "Skissa så många lösningar som möjligt på ritytan. Fortfarande anonymt — bredd före perfektion.",
+    "guidanceDecide": "Fördela dina 3 prickar på de skisser från Skissa-fasen som du tror mest på. Bara sammanlagda röster visas, aldrig vem som röstat på vad.",
+    "guidancePrototype": "Bygg en enkel prototyp av den vinnande idén och dela en länk till den.",
+    "guidanceValidate": "Testa prototypen med riktiga användare och samla feedback.",
+    "advancing": "Avancerar…",
+    "advanceToNextPhase": "Avancera till nästa fas →",
+    "deletePhaseContentTitle": "Radera fasens innehåll",
+    "deleting": "Raderar…",
+    "deleteContent": "Radera innehåll",
+    "help": "Hjälp",
+    "phaseNotOpenedYet": "Den här fasen har inte öppnats än.",
+    "confirmDeleteContent": "Radera allt innehåll i \"{phaseLabel}\" permanent — ritytan, bidrag och röster? Det går inte att ångra."
   }
 }
