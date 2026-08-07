@@ -110,6 +110,14 @@ export function MessageComposer({ roomId, threadParentId, onSent, mentionables, 
         trailingControls={
           <>
             <AttachmentPicker
+              variant="image"
+              projectId={projectId}
+              organisationId={organisationId}
+              disabled={isPending}
+              onUploaded={(a) => setAttachments((prev) => [...prev, a])}
+              onError={(message) => setError(message)}
+            />
+            <AttachmentPicker
               projectId={projectId}
               organisationId={organisationId}
               disabled={isPending}
@@ -126,8 +134,8 @@ export function MessageComposer({ roomId, threadParentId, onSent, mentionables, 
               {isPending ? (
                 <span className="w-3.5 h-3.5 border-2 border-white/60 border-t-white rounded-full animate-spin" />
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-[18px] h-[18px] translate-x-[1px]">
-                  <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px] translate-x-[1px]">
+                  <path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z" />
                 </svg>
               )}
             </button>

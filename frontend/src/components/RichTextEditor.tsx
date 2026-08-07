@@ -135,7 +135,7 @@ export default function RichTextEditor({
       attributes: {
         class:
           `prose max-w-none focus:outline-none ${
-            isPillMode ? "min-h-[24px] py-1.5 px-0" : compact ? "min-h-[44px] p-2" : "min-h-[240px] p-4"
+            isPillMode ? "min-h-[20px] py-0.5 px-0" : compact ? "min-h-[44px] p-2" : "min-h-[240px] p-4"
           } ` +
           "prose-headings:text-dark-slate prose-headings:font-semibold " +
           "prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline " +
@@ -236,8 +236,8 @@ export default function RichTextEditor({
 
   if (isPillMode) {
     return (
-      <div className="flex items-end gap-0.5 rounded-2xl border border-gray-300 bg-white pl-3 pr-1 py-1 focus-within:border-seagrass focus-within:ring-1 focus-within:ring-seagrass/30 transition-all">
-        <div className="flex-1 min-w-0 py-0.5">
+      <div className="flex items-center gap-0.5 rounded-full border border-gray-300 bg-white pl-3 pr-1 py-1 focus-within:border-seagrass focus-within:ring-1 focus-within:ring-seagrass/30 transition-all">
+        <div className="flex-1 min-w-0">
           <EditorContent editor={editor} />
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
