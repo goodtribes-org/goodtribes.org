@@ -1,10 +1,12 @@
 "use client";
 
-import { useTransition, useState } from "react";
+import { useTransition, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
-import { sendRoomMessage } from "../actions";
+import { sendRoomMessage, sendTypingSignal } from "../actions";
 import type { MentionItem } from "@/components/mentionSuggestion";
+
+const TYPING_SIGNAL_THROTTLE_MS = 2000;
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
@@ -31,6 +33,16 @@ export function MessageComposer({ roomId, threadParentId, onSent, mentionables }
   const [editorKey, setEditorKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const lastTypingSentAt = useRef(0);
+
+  function handleChange(html: string) {
+    setBody(html);
+    const now = Date.now();
+    if (now - lastTypingSentAt.current > TYPING_SIGNAL_THROTTLE_MS) {
+      lastTypingSentAt.current = now;
+      sendTypingSignal(roomId).catch(() => {});
+    }
+  }
 
   function submit() {
     if (isEmpty(body) || isPending) return;
@@ -62,7 +74,7 @@ export function MessageComposer({ roomId, threadParentId, onSent, mentionables }
           <RichTextEditor
             key={editorKey}
             content={body}
-            onChange={setBody}
+            onChange={handleChange}
             compact
             mentionables={mentionables}
             collapsibleToolbar

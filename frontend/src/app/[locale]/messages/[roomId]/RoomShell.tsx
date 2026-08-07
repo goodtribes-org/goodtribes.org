@@ -72,6 +72,13 @@ function buildGrouped(messages: MessageRow[]) {
 }
 
 const QUICK_REACTIONS = [FEED_LIKE_EMOJI, "❤️", "😄", "🎉", "😮"];
+const TYPING_EXPIRY_MS = 4000;
+
+function typingLabel(names: string[]): string {
+  if (names.length === 1) return `${names[0]} skriver…`;
+  if (names.length === 2) return `${names[0]} och ${names[1]} skriver…`;
+  return "Flera skriver…";
+}
 
 export function RoomShell({ room, initialMessages, currentUserId, canPost, mentionables }: Props) {
   const t = useTranslations("Messages");
@@ -87,6 +94,8 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
   const [scrollToReplyId, setScrollToReplyId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const esRef = useRef<EventSource | null>(null);
+  const [typingUsers, setTypingUsers] = useState<Map<string, string>>(new Map());
+  const typingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const dmOtherUserId = room.type === "DM" ? room.otherUsers[0]?.id : undefined;
   const presence = usePresence(dmOtherUserId ? [dmOtherUserId] : []);
 
@@ -158,11 +167,33 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
 
   useEffect(() => {
     if (esRef.current) esRef.current.close();
+    typingTimeoutsRef.current.forEach(clearTimeout);
+    typingTimeoutsRef.current.clear();
+    setTypingUsers(new Map());
     const es = new EventSource(`/api/rooms/${room.id}/sse`);
     esRef.current = es;
 
     es.addEventListener("message", (e) => {
-      const { type, message: msg }: { type: "created" | "updated"; message: MessageRow } = JSON.parse(e.data);
+      const data = JSON.parse(e.data);
+
+      if (data.type === "typing") {
+        if (data.userId === currentUserId) return;
+        setTypingUsers((prev) => new Map(prev).set(data.userId, data.name ?? "Någon"));
+        clearTimeout(typingTimeoutsRef.current.get(data.userId));
+        typingTimeoutsRef.current.set(
+          data.userId,
+          setTimeout(() => {
+            setTypingUsers((prev) => {
+              const next = new Map(prev);
+              next.delete(data.userId);
+              return next;
+            });
+          }, TYPING_EXPIRY_MS)
+        );
+        return;
+      }
+
+      const { type, message: msg }: { type: "created" | "updated"; message: MessageRow } = data;
 
       if (type === "updated") {
         setMessages((prev) => prev.map((m) => (m.id === msg.id ? msg : m)));
@@ -170,6 +201,15 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
         setActiveThread((current) => (current?.id === msg.id ? msg : current));
         return;
       }
+
+      clearTimeout(typingTimeoutsRef.current.get(msg.authorId));
+      typingTimeoutsRef.current.delete(msg.authorId);
+      setTypingUsers((prev) => {
+        if (!prev.has(msg.authorId)) return prev;
+        const next = new Map(prev);
+        next.delete(msg.authorId);
+        return next;
+      });
 
       if (msg.threadParentId) {
         setMessages((prev) =>
@@ -193,8 +233,10 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
     return () => {
       es.close();
       esRef.current = null;
+      typingTimeoutsRef.current.forEach(clearTimeout);
+      typingTimeoutsRef.current.clear();
     };
-  }, [room.id]);
+  }, [room.id, currentUserId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "end" });
@@ -442,6 +484,12 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
           )}
           <div ref={bottomRef} />
         </div>
+
+        {typingUsers.size > 0 && (
+          <div className="px-4 pt-1 text-xs text-dark-slate/40 italic shrink-0">
+            {typingLabel([...typingUsers.values()])}
+          </div>
+        )}
 
         {canPost && (
           <div className="px-4 py-3 bg-white shrink-0">

@@ -191,6 +191,21 @@ export async function sendRoomMessage(roomId: string, body: string, threadParent
   return message;
 }
 
+// Ephemeral, DB-free signal — mirrors the sprint canvas broadcast pattern in
+// redis.ts. A throttled call from the composer on every keystroke would be
+// wasteful, so the client only calls this at most once every couple of
+// seconds; expiry (and thus "stopped typing") is handled client-side via a
+// timeout on the receiving end, not by a second signal from here.
+export async function sendTypingSignal(roomId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return;
+
+  const access = await getRoomAccess(roomId, session.user.id);
+  if (!access?.canPost) return;
+
+  publishToRoom(roomId, { type: "typing", userId: session.user.id, name: session.user.name ?? "Någon" });
+}
+
 export async function startDirectMessage(recipientUserId: string, firstMessage: string): Promise<{ roomId: string }> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
