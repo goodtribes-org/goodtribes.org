@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "next-intl";
 import { reviewFlag, reviewProjectContentFlag } from "./actions";
 
 type PendingFlagRow = {
@@ -12,7 +14,14 @@ type PendingFlagRow = {
   createdAt: Date;
 };
 
-export default async function EthicsAdminPage() {
+export default async function EthicsAdminPage({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "SiteAdminEthicsPage" });
+
   const [legacyFlags, contentFlags] = await Promise.all([
     // Legacy ProjectFlag rows — kept as a frozen audit trail; new flags no
     // longer get created here (see FlagContentButton), so this queue drains
@@ -58,7 +67,7 @@ export default async function EthicsAdminPage() {
           title: project.title,
           slug: project.slug,
           reason: f.reason,
-          flaggedByLabel: f.flaggedBy ? f.flaggedBy.name ?? f.flaggedBy.email : "Automatiskt (system)",
+          flaggedByLabel: f.flaggedBy ? f.flaggedBy.name ?? f.flaggedBy.email : t("automaticSystemFlagger"),
           createdAt: f.createdAt,
         };
       }),
@@ -67,15 +76,15 @@ export default async function EthicsAdminPage() {
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-dark-slate">Etikgranskning</h1>
+        <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
         <p className="text-sm text-dark-slate/60 mt-1">
-          Hantera flaggade projekt. {flags.length} avvaktar granskning.
+          {t("description", { count: flags.length })}
         </p>
       </div>
 
       {flags.length === 0 ? (
         <div className="border border-muted-teal/30 rounded-lg p-8 text-center text-dark-slate/50">
-          Inga flaggade projekt att granska.
+          {t("empty")}
         </div>
       ) : (
         <div className="flex flex-col gap-4">
@@ -97,16 +106,16 @@ export default async function EthicsAdminPage() {
                   </p>
                 </div>
                 <span className="shrink-0 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-medium">
-                  Avvaktar
+                  {t("statusPending")}
                 </span>
               </div>
 
               <div className="text-xs text-dark-slate/50 mb-4">
-                Flaggad av{" "}
+                {t("flaggedByPrefix")}{" "}
                 <span className="font-medium text-dark-slate/70">
                   {flag.flaggedByLabel}
                 </span>{" "}
-                · {flag.createdAt.toLocaleDateString("sv-SE")}
+                · {flag.createdAt.toLocaleDateString(locale)}
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -121,37 +130,37 @@ export default async function EthicsAdminPage() {
                     type="submit"
                     className="px-3 py-1.5 rounded border border-muted-teal/50 text-xs font-medium text-dark-slate/70 hover:border-dark-slate/40 hover:text-dark-slate transition-colors"
                   >
-                    Avfärda
+                    {t("dismiss")}
                   </button>
                 </form>
 
                 <form
                   action={async () => {
                     "use server";
-                    if (flag.source === "legacy") await reviewFlag(flag.id, "warned", "Projektet har fått en varning från administratören.");
-                    else await reviewProjectContentFlag(flag.id, "warned", "Projektet har fått en varning från administratören.");
+                    if (flag.source === "legacy") await reviewFlag(flag.id, "warned", t("warningReasonNote"));
+                    else await reviewProjectContentFlag(flag.id, "warned", t("warningReasonNote"));
                   }}
                 >
                   <button
                     type="submit"
                     className="px-3 py-1.5 rounded border border-amber-300 text-xs font-medium text-amber-700 hover:bg-amber-50 transition-colors"
                   >
-                    Varna projekt
+                    {t("warnProject")}
                   </button>
                 </form>
 
                 <form
                   action={async () => {
                     "use server";
-                    if (flag.source === "legacy") await reviewFlag(flag.id, "removed", "Projektet har tagits bort av administratören.");
-                    else await reviewProjectContentFlag(flag.id, "removed", "Projektet har tagits bort av administratören.");
+                    if (flag.source === "legacy") await reviewFlag(flag.id, "removed", t("removalReasonNote"));
+                    else await reviewProjectContentFlag(flag.id, "removed", t("removalReasonNote"));
                   }}
                 >
                   <button
                     type="submit"
                     className="px-3 py-1.5 rounded border border-red-300 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
                   >
-                    Ta bort projekt
+                    {t("removeProject")}
                   </button>
                 </form>
               </div>

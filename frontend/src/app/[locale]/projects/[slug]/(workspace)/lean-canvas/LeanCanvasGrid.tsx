@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import LeanCanvasBlock from "./LeanCanvasBlock";
 import { LEAN_CANVAS_BLOCKS } from "./fields";
 import type { LeanCanvasField } from "./fields";
@@ -9,6 +12,8 @@ interface Props {
 }
 
 export default function LeanCanvasGrid({ projectSlug, canvas, canEdit }: Props) {
+  const tField = useTranslations("LeanCanvasHistory");
+  const tHint = useTranslations("LeanCanvasFields");
   return (
     <>
       <style>{`
@@ -45,8 +50,8 @@ export default function LeanCanvasGrid({ projectSlug, canvas, canEdit }: Props) 
             projectSlug={projectSlug}
             field={b.field}
             area={b.area}
-            label={b.label}
-            hint={b.hint}
+            label={tField(`field${b.translationKey}` as Parameters<typeof tField>[0])}
+            hint={tHint(`hint${b.translationKey}` as Parameters<typeof tHint>[0])}
             value={canvas ? (canvas[b.field] ?? null) : null}
             canEdit={canEdit}
           />

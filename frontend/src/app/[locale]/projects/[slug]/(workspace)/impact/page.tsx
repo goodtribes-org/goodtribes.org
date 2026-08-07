@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import type { useTranslations } from "next-intl";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { AddMetricForm, UpdateMetricForm } from "./ImpactForms";
@@ -12,26 +14,27 @@ import { isLeadRole } from "@/lib/authz";
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const project = await prisma.project.findUnique({
     where: { slug },
     select: { title: true },
   });
   if (!project) return {};
-  return { title: `${project.title} — Impact — GoodTribes.org` };
+  const t = await getTranslations({ locale, namespace: "ImpactPage" });
+  return { title: t("pageTitle", { title: project.title }) };
 }
 
-function formatRelative(date: Date) {
+function formatRelative(date: Date, t: ReturnType<typeof useTranslations>) {
   const diff = Date.now() - date.getTime();
   const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return "just nu";
-  if (mins < 60) return `${mins} min sedan`;
+  if (mins < 1) return t("justNow");
+  if (mins < 60) return t("minutesAgo", { minutes: mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} tim sedan`;
+  if (hours < 24) return t("hoursAgo", { hours });
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days} dagar sedan`;
+  if (days < 30) return t("daysAgo", { days });
   return date.toLocaleDateString("sv-SE", { day: "numeric", month: "short", year: "numeric" });
 }
 
@@ -89,9 +92,10 @@ function ProgressBar({ current, target }: { current: number; target: number }) {
 export default async function ImpactPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
+  const t = await getTranslations({ locale, namespace: "ImpactPage" });
   const session = await auth();
 
   const project = await prisma.project.findUnique({
@@ -145,12 +149,12 @@ export default async function ImpactPage({
       {/* Header */}
       <div className="flex items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-xl font-bold text-dark-slate">Impact</h1>
+          <h1 className="text-xl font-bold text-dark-slate">{t("heading")}</h1>
           {totalMetrics > 0 && (
             <p className="text-xs text-dark-slate/50 mt-0.5">
-              {totalMetrics} mätvärde{totalMetrics !== 1 ? "n" : ""}
+              {t("metricsCount", { count: totalMetrics })}
               {lastUpdated && (
-                <> &middot; Senast uppdaterat {formatRelative(lastUpdated)}</>
+                <> &middot; {t("lastUpdatedAt", { time: formatRelative(lastUpdated, t) })}</>
               )}
             </p>
           )}
@@ -165,17 +169,17 @@ export default async function ImpactPage({
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
           <div className="border border-muted-teal/30 rounded-lg p-3 bg-white text-center">
             <p className="text-2xl font-bold text-dark-slate">{totalMetrics}</p>
-            <p className="text-xs text-dark-slate/50 mt-0.5">Mätvärden</p>
+            <p className="text-xs text-dark-slate/50 mt-0.5">{t("metricsLabel")}</p>
           </div>
           <div className="border border-muted-teal/30 rounded-lg p-3 bg-white text-center">
             <p className="text-2xl font-bold text-dark-slate">{allUpdates.length}</p>
-            <p className="text-xs text-dark-slate/50 mt-0.5">Uppdateringar totalt</p>
+            <p className="text-xs text-dark-slate/50 mt-0.5">{t("updatesTotalLabel")}</p>
           </div>
           <div className="border border-muted-teal/30 rounded-lg p-3 bg-white text-center col-span-2 sm:col-span-1">
             <p className="text-2xl font-bold text-dark-slate">
-              {lastUpdated ? formatRelative(lastUpdated) : "—"}
+              {lastUpdated ? formatRelative(lastUpdated, t) : "—"}
             </p>
-            <p className="text-xs text-dark-slate/50 mt-0.5">Senast uppdaterat</p>
+            <p className="text-xs text-dark-slate/50 mt-0.5">{t("lastUpdatedLabel")}</p>
           </div>
         </div>
       )}
@@ -184,10 +188,9 @@ export default async function ImpactPage({
       {metrics.length === 0 && (
         <div className="text-center py-16 border border-dashed border-muted-teal/40 rounded-xl">
           <p className="text-4xl mb-3">📊</p>
-          <p className="text-sm font-semibold text-dark-slate mb-1">Inga impact-mätvärden ännu</p>
+          <p className="text-sm font-semibold text-dark-slate mb-1">{t("emptyStateTitle")}</p>
           <p className="text-xs text-dark-slate/50 max-w-sm mx-auto leading-relaxed">
-            Lägg till mätvärden för att visa projektets verkliga effekt och följa era framsteg mot
-            konkreta mål.
+            {t("emptyStateDescription")}
           </p>
           {isOwnerOrAdmin && (
             <div className="mt-4 flex justify-center">
@@ -247,7 +250,7 @@ export default async function ImpactPage({
               {metric.updates.length > 0 && (
                 <div className="border-t border-muted-teal/20 pt-3 space-y-1.5">
                   <p className="text-xs font-medium text-dark-slate/50 uppercase tracking-wide mb-2">
-                    Senaste uppdateringar
+                    {t("recentUpdatesLabel")}
                   </p>
                   {metric.updates.map((upd) => (
                     <div key={upd.id} className="flex items-baseline gap-2 text-xs">
@@ -258,7 +261,7 @@ export default async function ImpactPage({
                         <span className="text-dark-slate/60 truncate">{upd.note}</span>
                       )}
                       <span className="text-dark-slate/30 shrink-0 ml-auto">
-                        {upd.updatedBy.name ?? "—"} &middot; {formatRelative(upd.createdAt)}
+                        {upd.updatedBy.name ?? "—"} &middot; {formatRelative(upd.createdAt, t)}
                       </span>
                     </div>
                   ))}

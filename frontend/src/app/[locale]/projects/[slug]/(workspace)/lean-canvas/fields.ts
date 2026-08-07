@@ -16,18 +16,20 @@ export const LEAN_CANVAS_FIELDS = [
 
 export type LeanCanvasField = (typeof LEAN_CANVAS_FIELDS)[number];
 
-export const LEAN_CANVAS_BLOCKS: { field: LeanCanvasField; area: string; label: string; hint: string }[] = [
-  { field: "problem", area: "problem", label: "Problem", hint: "Topp 3 problem värda att lösa" },
-  { field: "alternatives", area: "alt", label: "Alternativ", hint: "Hur löser man problemet idag" },
-  { field: "solution", area: "solution", label: "Lösning", hint: "Möjliga lösningar på problemen ovan" },
-  { field: "keyMetrics", area: "metrics", label: "Nyckeltal", hint: "Hur ni mäter att det fungerar" },
-  { field: "uniqueValueProposition", area: "uvp", label: "Unikt värdeerbjudande", hint: "Ett tydligt budskap som gör er annorlunda" },
-  { field: "concept", area: "concept", label: "Koncept", hint: "Vad är pitchen" },
-  { field: "unfairAdvantage", area: "unfair", label: "Orättvis fördel", hint: "Något som inte lätt kan kopieras eller köpas" },
-  { field: "channels", area: "channels", label: "Kanaler", hint: "Vägar till era kunder" },
-  { field: "customerSegments", area: "segments", label: "Kundsegment", hint: "Målgrupper och early adopters" },
-  { field: "earlyAdopters", area: "early", label: "Tidiga användare", hint: "Vem kommer först att börja använda lösningen" },
-  { field: "costStructure", area: "cost", label: "Kostnadsstruktur", hint: "De viktigaste kostnaderna" },
-  { field: "impact", area: "impact", label: "Impact", hint: "Varför, Hur och Vad" },
-  { field: "revenueStreams", area: "revenue", label: "Intäktsströmmar", hint: "Hur ni tjänar pengar" },
+// Translation key suffix per field — labels reuse the "LeanCanvasHistory" namespace's
+// fieldX keys, hints live under "LeanCanvasFields" hintX. See LeanCanvasGrid.tsx.
+export const LEAN_CANVAS_BLOCKS: { field: LeanCanvasField; area: string; translationKey: string }[] = [
+  { field: "problem", area: "problem", translationKey: "Problem" },
+  { field: "alternatives", area: "alt", translationKey: "Alternatives" },
+  { field: "solution", area: "solution", translationKey: "Solution" },
+  { field: "keyMetrics", area: "metrics", translationKey: "KeyMetrics" },
+  { field: "uniqueValueProposition", area: "uvp", translationKey: "UniqueValueProposition" },
+  { field: "concept", area: "concept", translationKey: "Concept" },
+  { field: "unfairAdvantage", area: "unfair", translationKey: "UnfairAdvantage" },
+  { field: "channels", area: "channels", translationKey: "Channels" },
+  { field: "customerSegments", area: "segments", translationKey: "CustomerSegments" },
+  { field: "earlyAdopters", area: "early", translationKey: "EarlyAdopters" },
+  { field: "costStructure", area: "cost", translationKey: "CostStructure" },
+  { field: "impact", area: "impact", translationKey: "Impact" },
+  { field: "revenueStreams", area: "revenue", translationKey: "RevenueStreams" },
 ];

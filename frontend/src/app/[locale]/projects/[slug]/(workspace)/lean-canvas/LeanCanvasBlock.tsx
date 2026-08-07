@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { updateLeanCanvasBlock } from "./actions";
 import type { LeanCanvasField } from "./fields";
 
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function LeanCanvasBlock({ projectSlug, field, area, label, hint, value, canEdit }: Props) {
+  const t = useTranslations("LeanCanvasBlock");
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -40,7 +42,7 @@ export default function LeanCanvasBlock({ projectSlug, field, area, label, hint,
             onClick={() => setEditing(true)}
             className="text-[10px] font-medium text-dark-slate/40 hover:text-coral shrink-0 transition-colors"
           >
-            Redigera
+            {t("edit")}
           </button>
         )}
       </div>
@@ -61,14 +63,14 @@ export default function LeanCanvasBlock({ projectSlug, field, area, label, hint,
               disabled={pending}
               className="bg-coral text-white text-xs font-medium px-3 py-1 rounded hover:bg-watermelon disabled:opacity-50 transition-colors"
             >
-              {pending ? "Sparar…" : "Spara"}
+              {pending ? t("saving") : t("save")}
             </button>
             <button
               type="button"
               onClick={() => setEditing(false)}
               className="text-xs text-dark-slate/50 hover:text-dark-slate transition-colors"
             >
-              Avbryt
+              {t("cancel")}
             </button>
           </div>
         </form>
@@ -76,7 +78,7 @@ export default function LeanCanvasBlock({ projectSlug, field, area, label, hint,
         <p className="text-xs text-dark-slate/80 whitespace-pre-wrap leading-relaxed mt-1 flex-1">{value}</p>
       ) : (
         <p className="text-xs text-dark-slate/30 italic mt-1 flex-1">
-          {canEdit ? "Tomt — klicka Redigera för att fylla i." : "Inte ifyllt än."}
+          {canEdit ? t("emptyEditable") : t("emptyReadOnly")}
         </p>
       )}
     </div>

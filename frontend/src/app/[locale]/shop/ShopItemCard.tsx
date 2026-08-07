@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { redeemShopItem } from "./actions";
 
 export default function ShopItemCard({
@@ -20,18 +21,19 @@ export default function ShopItemCard({
   balance: number;
   isLoggedIn: boolean;
 }) {
+  const t = useTranslations("ShopItemCard");
   const [redeemed, setRedeemed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const canAfford = balance >= costGt;
 
   function handleRedeem() {
-    if (!confirm(`Lös in "${name}" för ${costGt} GT?`)) return;
+    if (!confirm(t("confirmRedeem", { name, costGt }))) return;
     setError(null);
     startTransition(async () => {
       const res = await redeemShopItem(id);
       if (!res.ok) {
-        setError(res.error === "Insufficient GT balance" ? "Du har inte nog med GT." : "Något gick fel.");
+        setError(res.error === "Insufficient GT balance" ? t("insufficientBalanceError") : t("genericError"));
         return;
       }
       setRedeemed(true);
@@ -50,10 +52,10 @@ export default function ShopItemCard({
       <div className="flex items-center justify-between mt-3">
         <span className="text-sm font-bold text-seagrass">{costGt} GT</span>
         {redeemed ? (
-          <span className="text-xs font-medium text-seagrass">✓ Inlöst</span>
+          <span className="text-xs font-medium text-seagrass">✓ {t("redeemedLabel")}</span>
         ) : !isLoggedIn ? (
           <a href="/login" className="text-xs font-medium text-dark-slate/50 hover:text-dark-slate">
-            Logga in
+            {t("loginLink")}
           </a>
         ) : (
           <button
@@ -61,9 +63,9 @@ export default function ShopItemCard({
             disabled={!canAfford || isPending}
             onClick={handleRedeem}
             className="text-xs font-medium text-white bg-coral hover:bg-watermelon rounded-md px-3 py-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            title={!canAfford ? "Inte nog med GT" : undefined}
+            title={!canAfford ? t("notEnoughGtTitle") : undefined}
           >
-            {isPending ? "Löser in…" : "Lös in"}
+            {isPending ? t("redeeming") : t("redeemButton")}
           </button>
         )}
       </div>

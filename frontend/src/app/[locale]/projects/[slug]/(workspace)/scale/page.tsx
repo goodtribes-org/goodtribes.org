@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import ReplicationToggle from "./ReplicationToggle";
 import StartInstanceForm from "./StartInstanceForm";
 import InstanceReviewPanel from "./InstanceReviewPanel";
@@ -12,6 +13,7 @@ import { getNetworkStats } from "@/lib/networkStats";
 
 export default async function ScalePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const t = await getTranslations("ScalePage");
   const session = await auth();
 
   const project = await prisma.project.findUnique({
@@ -79,17 +81,17 @@ export default async function ScalePage({ params }: { params: Promise<{ slug: st
   return (
     <div className="max-w-3xl">
       <nav className="mb-6 text-sm text-dark-slate/50">
-        <Link href="/projects" className="hover:text-dark-slate transition-colors">Projects</Link>
+        <Link href="/projects" className="hover:text-dark-slate transition-colors">{t("breadcrumbProjects")}</Link>
         <span className="mx-2">/</span>
         <Link href={`/projects/${slug}`} className="hover:text-dark-slate transition-colors">{project.title}</Link>
         <span className="mx-2">/</span>
-        <span className="text-dark-slate">Skalning</span>
+        <span className="text-dark-slate">{t("breadcrumbScaling")}</span>
       </nav>
 
       <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-2xl font-bold text-dark-slate">Skalningsplan</h1>
+        <h1 className="text-2xl font-bold text-dark-slate">{t("scalingPlanHeading")}</h1>
         <span className="text-xs font-semibold text-white bg-green-500 px-2 py-0.5 rounded-full">
-          Mognad {maturity.score}/100
+          {t("maturityBadge", { score: maturity.score })}
         </span>
       </div>
 
@@ -99,13 +101,13 @@ export default async function ScalePage({ params }: { params: Promise<{ slug: st
         </div>
       ) : (
         <div className="border border-muted-teal/30 rounded p-6 mb-8 text-sm text-dark-slate/50 italic">
-          Ingen skalningsplan genererad. Gå tillbaka till projektsidan och klicka "Beräkna" for att generera en.
+          {t("noScalingPlan")}
         </div>
       )}
 
       {isOwnerOrAdmin && (
         <div className="border border-muted-teal/30 rounded p-4 mb-8">
-          <h2 className="text-sm font-semibold text-dark-slate mb-3">Replikeringsinställningar</h2>
+          <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("replicationSettingsHeading")}</h2>
           <ReplicationToggle projectId={project.id} openForReplication={project.openForReplication} />
         </div>
       )}
@@ -120,7 +122,7 @@ export default async function ScalePage({ params }: { params: Promise<{ slug: st
 
       {project.parentInstances.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-sm font-semibold text-dark-slate mb-3">Aktiva instanser ({project.parentInstances.length})</h2>
+          <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("activeInstancesHeading", { count: project.parentInstances.length })}</h2>
           <div className="space-y-2">
             {project.parentInstances.map((inst) => (
               <div key={inst.id} className="flex items-center justify-between p-3 border border-muted-teal/30 rounded">
@@ -137,8 +139,8 @@ export default async function ScalePage({ params }: { params: Promise<{ slug: st
                   inst.status === "rejected" ? "bg-red-100 text-red-700" :
                   "bg-yellow-100 text-yellow-700"
                 }`}>
-                  {inst.status === "approved" ? "Godkänd" :
-                   inst.status === "rejected" ? "Avvisad" : "Väntar"}
+                  {inst.status === "approved" ? t("statusApproved") :
+                   inst.status === "rejected" ? t("statusRejected") : t("statusPending")}
                 </span>
               </div>
             ))}
@@ -148,9 +150,9 @@ export default async function ScalePage({ params }: { params: Promise<{ slug: st
 
       {userId && project.openForReplication && !existingInstance && !isOwnerOrAdmin && (
         <div className="border border-muted-teal/30 rounded p-4">
-          <h2 className="text-sm font-semibold text-dark-slate mb-3">Starta lokal instans</h2>
+          <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("startLocalInstanceHeading")}</h2>
           <p className="text-xs text-dark-slate/60 mb-4">
-            Du kan starta en lokal version av det här projektet i din region. Din ansökan granskas av projektets ägare.
+            {t("startLocalInstanceDescription")}
           </p>
           <StartInstanceForm parentSlug={slug} />
         </div>
@@ -159,7 +161,7 @@ export default async function ScalePage({ params }: { params: Promise<{ slug: st
       {userId && existingInstance && (
         <div className="border border-muted-teal/30 rounded p-4">
           <p className="text-sm text-dark-slate/60">
-            Du har redan en instans med status:{" "}
+            {t("existingInstanceStatusLabel")}{" "}
             <span className="font-medium text-dark-slate">{existingInstance.status}</span>
           </p>
         </div>
@@ -168,7 +170,7 @@ export default async function ScalePage({ params }: { params: Promise<{ slug: st
       {!userId && project.openForReplication && (
         <div className="border border-muted-teal/30 rounded p-4">
           <p className="text-sm text-dark-slate/60">
-            <Link href="/login" className="text-coral hover:underline">Logga in</Link> for att ansöka om att starta en lokal instans av det här projektet.
+            <Link href="/login" className="text-coral hover:underline">{t("loginLinkText")}</Link> {t("applyToStartInstanceText")}
           </p>
         </div>
       )}
