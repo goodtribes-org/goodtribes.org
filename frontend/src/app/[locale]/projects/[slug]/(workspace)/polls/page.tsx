@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 
 function timeAgo(date: Date): string {
@@ -18,12 +19,6 @@ function timeAgo(date: Date): string {
   return date.toLocaleDateString("sv-SE", { day: "numeric", month: "short", year: "numeric" });
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  yes_no: "Ja/Nej",
-  multiple: "Flerval",
-  ranked: "Rangordning",
-};
-
 export default async function PollsPage({
   params,
 }: {
@@ -31,6 +26,13 @@ export default async function PollsPage({
 }) {
   const { slug } = await params;
   const session = await auth();
+  const t = await getTranslations("PollsPage");
+
+  const TYPE_LABELS: Record<string, string> = {
+    yes_no: t("typeYesNo"),
+    multiple: t("typeMultiple"),
+    ranked: t("typeRanked"),
+  };
 
   const project = await prisma.project.findUnique({ where: { slug } });
   if (!project) notFound();
@@ -58,14 +60,14 @@ export default async function PollsPage({
           >
             ← {project.title}
           </Link>
-          <h1 className="text-2xl font-bold mt-1">Omröstningar</h1>
+          <h1 className="text-2xl font-bold mt-1">{t("heading")}</h1>
         </div>
         {session && (
           <Link
             href={`/projects/${slug}/polls/new`}
             className="bg-coral text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-watermelon transition-colors"
           >
-            + Ny omröstning
+            {t("newPoll")}
           </Link>
         )}
       </div>
@@ -73,13 +75,13 @@ export default async function PollsPage({
       {/* Poll list */}
       {polls.length === 0 ? (
         <div className="border border-dashed border-muted-teal rounded-lg p-10 text-center">
-          <p className="text-dark-slate/50">Inga omröstningar ännu.</p>
+          <p className="text-dark-slate/50">{t("emptyState")}</p>
           {session && (
             <Link
               href={`/projects/${slug}/polls/new`}
               className="text-seagrass hover:underline text-sm mt-2 inline-block"
             >
-              Skapa den första! →
+              {t("createFirst")}
             </Link>
           )}
         </div>
@@ -98,17 +100,17 @@ export default async function PollsPage({
                     {/* Status badge */}
                     {poll.status === "open" ? (
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
-                        Öppen
+                        {t("statusOpen")}
                       </span>
                     ) : (
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
-                        Avslutad
+                        {t("statusClosed")}
                       </span>
                     )}
                     {/* Binding badge */}
                     {poll.isBinding && (
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-                        Bindande
+                        {t("binding")}
                       </span>
                     )}
                     {/* Type label */}
@@ -124,18 +126,19 @@ export default async function PollsPage({
 
                   {/* Meta row */}
                   <div className="flex items-center gap-2 mt-1 text-xs text-dark-slate/50 flex-wrap">
-                    <span>{poll.createdBy.name ?? "Okänd"}</span>
+                    <span>{poll.createdBy.name ?? t("unknownUser")}</span>
                     <span>·</span>
                     <span>{timeAgo(poll.createdAt)}</span>
                     {poll.deadline && poll.status === "open" && (
                       <>
                         <span>·</span>
                         <span>
-                          Stänger{" "}
-                          {poll.deadline.toLocaleDateString("sv-SE", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
+                          {t("closesOn", {
+                            date: poll.deadline.toLocaleDateString("sv-SE", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            }),
                           })}
                         </span>
                       </>
@@ -146,7 +149,7 @@ export default async function PollsPage({
                 {/* Right: vote count */}
                 <div className="shrink-0 mt-1">
                   <span className="text-xs text-dark-slate/50 bg-dark-slate/5 px-2 py-0.5 rounded-full">
-                    {poll._count.votes} röst{poll._count.votes !== 1 ? "er" : ""}
+                    {t("voteCount", { count: poll._count.votes })}
                   </span>
                 </div>
               </div>

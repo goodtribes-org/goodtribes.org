@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { sendInvite } from "./actions";
 
 export default function InviteForm({ projectId, slug }: { projectId: string; slug: string }) {
+  const t = useTranslations("InviteForm");
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -22,7 +24,7 @@ export default function InviteForm({ projectId, slug }: { projectId: string; slu
         onClick={() => setOpen(true)}
         className="text-xs text-seagrass hover:underline"
       >
-        + Invite by email
+        {t("inviteByEmailButton")}
       </button>
     );
   }
@@ -34,7 +36,7 @@ export default function InviteForm({ projectId, slug }: { projectId: string; slu
         type="email"
         required
         autoFocus
-        placeholder="colleague@example.com"
+        placeholder={t("emailPlaceholder")}
         className="flex-1 border border-muted-teal rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-coral"
       />
       <button
@@ -42,14 +44,14 @@ export default function InviteForm({ projectId, slug }: { projectId: string; slu
         disabled={isPending}
         className="text-xs bg-coral text-white px-3 py-1 rounded hover:bg-watermelon disabled:opacity-50 transition-colors"
       >
-        {sent ? "Sent!" : isPending ? "Sending…" : "Send"}
+        {sent ? t("sentButton") : isPending ? t("sendingButton") : t("sendButton")}
       </button>
       <button
         type="button"
         onClick={() => setOpen(false)}
         className="text-xs text-dark-slate/40 hover:text-dark-slate"
       >
-        Cancel
+        {t("cancelButton")}
       </button>
     </form>
   );

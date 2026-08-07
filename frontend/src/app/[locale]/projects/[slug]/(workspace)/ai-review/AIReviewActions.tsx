@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 type Decision = "approved" | "revision" | "rejected";
 
@@ -11,6 +12,7 @@ interface AIReviewActionsProps {
 
 export default function AIReviewActions({ aiTaskRunId }: AIReviewActionsProps) {
   const router = useRouter();
+  const t = useTranslations("AIReviewActions");
   const [pending, setPending] = useState<Decision | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -27,12 +29,12 @@ export default function AIReviewActions({ aiTaskRunId }: AIReviewActionsProps) {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError((data as { error?: string }).error ?? "Något gick fel.");
+        setError((data as { error?: string }).error ?? t("genericError"));
       } else {
         router.refresh();
       }
     } catch {
-      setError("Nätverksfel. Försök igen.");
+      setError(t("networkError"));
     } finally {
       setPending(null);
     }
@@ -56,7 +58,7 @@ export default function AIReviewActions({ aiTaskRunId }: AIReviewActionsProps) {
           <textarea
             className="w-full border border-muted-teal/50 rounded p-2 text-sm text-dark-slate placeholder-dark-slate/40 focus:outline-none focus:border-muted-teal resize-none"
             rows={3}
-            placeholder="Beskriv vad som behöver revideras..."
+            placeholder={t("revisionPlaceholder")}
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
             autoFocus
@@ -67,13 +69,13 @@ export default function AIReviewActions({ aiTaskRunId }: AIReviewActionsProps) {
               disabled={!feedback.trim() || pending === "revision"}
               className="px-4 py-1.5 rounded bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 disabled:opacity-50 transition-colors"
             >
-              {pending === "revision" ? "Skickar..." : "Skicka revidering"}
+              {pending === "revision" ? t("sendingRevision") : t("sendRevision")}
             </button>
             <button
               onClick={() => { setShowFeedback(false); setFeedback(""); }}
               className="px-4 py-1.5 rounded border border-muted-teal/40 text-dark-slate/60 text-sm hover:text-dark-slate transition-colors"
             >
-              Avbryt
+              {t("cancel")}
             </button>
           </div>
         </div>
@@ -84,21 +86,21 @@ export default function AIReviewActions({ aiTaskRunId }: AIReviewActionsProps) {
             disabled={pending !== null}
             className="px-4 py-1.5 rounded bg-seagrass text-white text-sm font-medium hover:bg-seagrass/80 disabled:opacity-50 transition-colors"
           >
-            {pending === "approved" ? "Godkänner..." : "Godkänn"}
+            {pending === "approved" ? t("approving") : t("approve")}
           </button>
           <button
             onClick={() => setShowFeedback(true)}
             disabled={pending !== null}
             className="px-4 py-1.5 rounded bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 disabled:opacity-50 transition-colors"
           >
-            Begär revidering
+            {t("requestRevision")}
           </button>
           <button
             onClick={() => submit("rejected")}
             disabled={pending !== null}
             className="px-4 py-1.5 rounded bg-coral text-white text-sm font-medium hover:bg-watermelon disabled:opacity-50 transition-colors"
           >
-            {pending === "rejected" ? "Avvisar..." : "Avvisa"}
+            {pending === "rejected" ? t("rejecting") : t("reject")}
           </button>
         </div>
       )}

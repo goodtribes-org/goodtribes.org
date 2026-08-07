@@ -6,18 +6,21 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import { PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { archiveProject } from "./actions";
 
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
+  const { locale, slug } = await params;
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
-  return { title: `Alumni — ${project?.title ?? slug}` };
+  const t = await getTranslations({ locale, namespace: "AlumniPage" });
+  return { title: t("pageTitle", { title: project?.title ?? slug }) };
 }
 
 export default async function AlumniPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const t = await getTranslations("AlumniPage");
   const session = await auth();
 
   const [project, alumni, maturity] = await Promise.all([
@@ -50,20 +53,20 @@ export default async function AlumniPage({ params }: { params: Promise<{ slug: s
       <div className="flex items-center justify-between">
         <div>
           <nav className="text-sm text-dark-slate/50 mb-2">
-            <Link href="/projects" className="hover:text-dark-slate">Projects</Link>
+            <Link href="/projects" className="hover:text-dark-slate">{t("breadcrumbProjects")}</Link>
             <span className="mx-2">/</span>
             <Link href={`/projects/${slug}`} className="hover:text-dark-slate">{project.title}</Link>
             <span className="mx-2">/</span>
-            <span className="text-dark-slate">Alumni</span>
+            <span className="text-dark-slate">{t("breadcrumbAlumni")}</span>
           </nav>
-          <h1 className="text-2xl font-bold text-dark-slate">Alumni</h1>
+          <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
           <p className="text-sm text-dark-slate/50 mt-1">
-            Bidragsgivare som formade detta projekt
+            {t("subtitle")}
           </p>
         </div>
 
         {isOwnerOrAdmin && !project.archivedAt && (
-          <ArchiveButton projectSlug={slug} />
+          <ArchiveButton projectSlug={slug} t={t} />
         )}
       </div>
 
@@ -71,7 +74,7 @@ export default async function AlumniPage({ params }: { params: Promise<{ slug: s
       {maturity?.finalReport && (
         <section className="border border-seagrass/30 rounded-xl p-6 bg-seagrass/5">
           <h2 className="text-sm font-semibold text-dark-slate mb-3 flex items-center gap-2">
-            <span>📋</span> AI Slutrapport
+            {t("finalReportHeading")}
           </h2>
           <div className="prose prose-sm max-w-none text-dark-slate/80 whitespace-pre-wrap text-sm leading-relaxed">
             {maturity.finalReport}
@@ -80,16 +83,16 @@ export default async function AlumniPage({ params }: { params: Promise<{ slug: s
       )}
 
       {isOwnerOrAdmin && !maturity?.finalReport && project.archivedAt && (
-        <GenerateReportButton projectSlug={slug} />
+        <GenerateReportButton projectSlug={slug} t={t} />
       )}
 
       {/* Alumni grid */}
       {alumni.length === 0 ? (
         <div className="border border-dashed border-muted-teal/40 rounded-xl p-12 text-center">
           <p className="text-dark-slate/40 text-sm">
-            Inga alumni ännu.{" "}
+            {t("emptyAlumni")}{" "}
             {!project.archivedAt
-              ? "Arkivera projektet för att skapa alumni-badges."
+              ? t("emptyAlumniArchiveHint")
               : ""}
           </p>
         </div>
@@ -110,15 +113,15 @@ export default async function AlumniPage({ params }: { params: Promise<{ slug: s
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-dark-slate text-sm">{a.user.name ?? "Okänd"}</p>
+                  <p className="font-semibold text-dark-slate text-sm">{a.user.name ?? t("unknownName")}</p>
                   <p className="text-xs text-dark-slate/50 mt-0.5">
-                    {a.tokensEarned.toFixed(1)} Tribe Tokens
+                    {t("tokensEarnedLabel", { amount: a.tokensEarned.toFixed(1) })}
                   </p>
                   <p className="text-xs text-dark-slate/40">
-                    Badge: {new Date(a.badgeIssuedAt).toLocaleDateString("sv-SE")}
+                    {t("badgeIssuedLabel", { date: new Date(a.badgeIssuedAt).toLocaleDateString("sv-SE") })}
                   </p>
                 </div>
-                <span className="text-2xl" title="Alumni">🎓</span>
+                <span className="text-2xl" title={t("alumniBadgeTitle")}>🎓</span>
               </div>
             );
           })}
@@ -127,14 +130,16 @@ export default async function AlumniPage({ params }: { params: Promise<{ slug: s
 
       <div className="pt-2 border-t border-muted-teal/20">
         <Link href="/hall-of-impact" className="text-sm text-seagrass hover:underline font-medium">
-          ← Hall of Impact
+          {t("backToHallOfImpact")}
         </Link>
       </div>
     </div>
   );
 }
 
-function ArchiveButton({ projectSlug }: { projectSlug: string }) {
+type AlumniPageT = Awaited<ReturnType<typeof getTranslations<"AlumniPage">>>;
+
+function ArchiveButton({ projectSlug, t }: { projectSlug: string; t: AlumniPageT }) {
   async function doArchive() {
     "use server";
     await archiveProject(projectSlug);
@@ -145,13 +150,13 @@ function ArchiveButton({ projectSlug }: { projectSlug: string }) {
         type="submit"
         className="px-4 py-2 text-sm rounded border border-dark-slate/30 text-dark-slate/60 hover:border-dark-slate/60 hover:text-dark-slate transition-colors"
       >
-        Arkivera projekt
+        {t("archiveProjectButton")}
       </button>
     </form>
   );
 }
 
-function GenerateReportButton({ projectSlug }: { projectSlug: string }) {
+function GenerateReportButton({ projectSlug, t }: { projectSlug: string; t: AlumniPageT }) {
   async function doGenerate() {
     "use server";
     await fetch(`${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/api/maturity/report`, {
@@ -166,7 +171,7 @@ function GenerateReportButton({ projectSlug }: { projectSlug: string }) {
         type="submit"
         className="px-4 py-2 text-sm rounded bg-coral text-white font-medium hover:bg-watermelon transition-colors"
       >
-        Generera AI Slutrapport
+        {t("generateReportButton")}
       </button>
     </form>
   );

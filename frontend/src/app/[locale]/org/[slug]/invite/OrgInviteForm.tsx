@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { sendOrgInvite } from "./actions";
 
 export default function OrgInviteForm({ orgId, slug }: { orgId: string; slug: string }) {
+  const t = useTranslations("OrgInviteForm");
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -12,9 +14,9 @@ export default function OrgInviteForm({ orgId, slug }: { orgId: string; slug: st
   if (sent) {
     return (
       <p className="text-xs text-seagrass mt-2">
-        Invite sent!{" "}
+        {t("inviteSentMessage")}{" "}
         <button onClick={() => { setSent(false); setOpen(false); }} className="underline">
-          Send another
+          {t("sendAnotherButton")}
         </button>
       </p>
     );
@@ -26,7 +28,7 @@ export default function OrgInviteForm({ orgId, slug }: { orgId: string; slug: st
         onClick={() => setOpen(true)}
         className="mt-3 text-xs text-coral hover:underline"
       >
-        + Invite by email
+        {t("inviteByEmailButton")}
       </button>
     );
   }
@@ -42,7 +44,7 @@ export default function OrgInviteForm({ orgId, slug }: { orgId: string; slug: st
       <input
         name="email"
         type="email"
-        placeholder="colleague@example.com"
+        placeholder={t("emailPlaceholder")}
         required
         className="flex-1 text-xs px-2 py-1.5 border border-muted-teal/60 rounded focus:outline-none focus:border-seagrass"
       />
@@ -50,10 +52,10 @@ export default function OrgInviteForm({ orgId, slug }: { orgId: string; slug: st
         type="submit"
         className="text-xs px-3 py-1.5 bg-coral text-white rounded hover:bg-watermelon transition-colors"
       >
-        Send
+        {t("sendButton")}
       </button>
       <button type="button" onClick={() => setOpen(false)} className="text-xs text-dark-slate/40 hover:text-dark-slate">
-        Cancel
+        {t("cancelButton")}
       </button>
     </form>
   );

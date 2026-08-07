@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -19,14 +20,9 @@ import ShareButton from "@/components/ShareButton";
 import LikeCommentBlock from "@/components/LikeCommentBlock";
 import { getLikeCommentData } from "@/lib/socialInteractions";
 
-const ORG_EVENT_META: EventMeta = {
-  member_joined:  { icon: "👤", label: (_, a) => `${a} joined the organisation` },
-  project_added:  { icon: "📁", label: (p, a) => `${a} added a project: "${p.title}"` },
-};
-
-
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
   const { locale, slug } = await params;
+  const t = await getTranslations({ locale, namespace: "OrgDetailPage" });
   const org = await prisma.organisation.findUnique({
     where: { slug },
     select: { name: true, description: true, imageUrl: true, isPublic: true },
@@ -36,7 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     locale,
     path: `/org/${slug}`,
     title: org.name,
-    description: org.description ?? "An organisation on GoodTribes.org",
+    description: org.description ?? t("metaDescriptionFallback"),
     imageUrl: org.imageUrl,
   });
 }
@@ -76,6 +72,11 @@ export default async function OrgDetailPage({
   searchParams: Promise<{ tab?: string }>;
 }) {
   const { locale, slug } = await params;
+  const t = await getTranslations({ locale, namespace: "OrgDetailPage" });
+  const ORG_EVENT_META: EventMeta = {
+    member_joined: { icon: "👤", label: (_, a) => t("memberJoinedEvent", { actor: a }) },
+    project_added: { icon: "📁", label: (p, a) => t("projectAddedEvent", { actor: a, title: String(p.title ?? "") }) },
+  };
   const { tab } = await searchParams;
   const activeTab =
     tab === "projects" ? "projects" :
@@ -172,7 +173,7 @@ export default async function OrgDetailPage({
 
       {/* Breadcrumb */}
       <nav className="mb-6 text-sm text-dark-slate/50">
-        <Link href="/org" className="hover:text-dark-slate transition-colors">Organisations</Link>
+        <Link href="/org" className="hover:text-dark-slate transition-colors">{t("breadcrumbOrganisations")}</Link>
         <span className="mx-2">/</span>
         <span className="text-dark-slate">{org.name}</span>
       </nav>
@@ -200,12 +201,12 @@ export default async function OrgDetailPage({
               {org.verified && <OrgVerifiedBadge />}
             </div>
             {!org.isPublic && (
-              <span className="text-xs bg-dry-sage text-dark-slate px-2 py-1 rounded">Private</span>
+              <span className="text-xs bg-dry-sage text-dark-slate px-2 py-1 rounded">{t("privateBadge")}</span>
             )}
             {reviewAgg._count > 0 && (
               <p className="text-sm text-dark-slate/60 mt-1">
                 <span className="text-amber-400">★</span>{" "}
-                {reviewAgg._avg.rating?.toFixed(1)} ({reviewAgg._count} {reviewAgg._count === 1 ? "recension" : "recensioner"})
+                {reviewAgg._avg.rating?.toFixed(1)} {t("reviewCount", { count: reviewAgg._count })}
               </p>
             )}
           </div>
@@ -217,7 +218,7 @@ export default async function OrgDetailPage({
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-dark-slate">{ownerName}</p>
-              <p className="text-xs text-dark-slate/50">Owner</p>
+              <p className="text-xs text-dark-slate/50">{t("ownerLabel")}</p>
             </div>
           </div>
 
@@ -225,17 +226,17 @@ export default async function OrgDetailPage({
           <div className="grid grid-cols-2 gap-3">
             <div className="border border-muted-teal/30 rounded p-3 text-center">
               <p className="text-xl font-bold text-dark-slate">{org.members.length}</p>
-              <p className="text-xs text-dark-slate/50 mt-0.5">Members</p>
+              <p className="text-xs text-dark-slate/50 mt-0.5">{t("membersLabel")}</p>
             </div>
             <div className="border border-muted-teal/30 rounded p-3 text-center">
               <p className="text-xl font-bold text-dark-slate">{org._count.projects}</p>
-              <p className="text-xs text-dark-slate/50 mt-0.5">Projects</p>
+              <p className="text-xs text-dark-slate/50 mt-0.5">{t("projectsLabel")}</p>
             </div>
           </div>
 
           {org.neededSkills.length > 0 && (
             <div className="flex flex-wrap gap-1">
-              <span className="text-[10px] font-medium text-dark-slate/40 mr-0.5 self-center">Seeking:</span>
+              <span className="text-[10px] font-medium text-dark-slate/40 mr-0.5 self-center">{t("seekingLabel")}</span>
               {org.neededSkills.map(({ skill: s }) => (
                 <span
                   key={s.id}
@@ -257,7 +258,7 @@ export default async function OrgDetailPage({
                   disabled={!!joinRequest}
                   className="px-5 py-2 rounded bg-coral text-white text-sm font-bold uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed hover:bg-watermelon transition-colors"
                 >
-                  {joinRequest ? "Request sent" : "Request to join"}
+                  {joinRequest ? t("requestSentButton") : t("requestToJoinButton")}
                 </button>
               </form>
             )}
@@ -266,7 +267,7 @@ export default async function OrgDetailPage({
                 href="/login"
                 className="px-5 py-2 rounded bg-coral text-white text-sm font-bold uppercase tracking-wide hover:bg-watermelon transition-colors"
               >
-                Log in to join
+                {t("loginToJoinButton")}
               </Link>
             )}
             {isOwner && (
@@ -275,7 +276,7 @@ export default async function OrgDetailPage({
                 data-tour="org-edit"
                 className="px-3 py-1.5 rounded border border-muted-teal text-xs font-medium text-dark-slate/70 hover:text-dark-slate hover:border-dark-slate/40 transition-colors"
               >
-                Edit
+                {t("editButton")}
               </Link>
             )}
             {isMemberOrOwner && (
@@ -284,7 +285,7 @@ export default async function OrgDetailPage({
                 data-tour="org-workspace"
                 className="px-3 py-1.5 rounded border border-muted-teal text-xs font-medium text-dark-slate/70 hover:text-dark-slate hover:border-dark-slate/40 transition-colors"
               >
-                Workspace
+                {t("workspaceButton")}
               </Link>
             )}
             {isMemberOrOwner && (
@@ -292,7 +293,7 @@ export default async function OrgDetailPage({
                 href={`/org/${slug}/partnerships`}
                 className="px-3 py-1.5 rounded border border-muted-teal text-xs font-medium text-dark-slate/70 hover:text-dark-slate hover:border-dark-slate/40 transition-colors"
               >
-                Partnerskap
+                {t("partnershipsButton")}
               </Link>
             )}
             {userId && !isOwner && (
@@ -321,13 +322,13 @@ export default async function OrgDetailPage({
 
       {recentReviews.length > 0 && (
         <div className="mb-10 border border-muted-teal/30 rounded-lg p-5 bg-white">
-          <h2 className="text-sm font-semibold text-dark-slate mb-3">Recensioner</h2>
+          <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("reviewsHeading")}</h2>
           <div className="flex flex-col gap-3">
             {recentReviews.map((r) => (
               <div key={r.id} className="text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-amber-400 text-xs">{"★".repeat(r.rating)}<span className="text-muted-teal/40">{"★".repeat(5 - r.rating)}</span></span>
-                  <span className="font-medium text-dark-slate">{r.author.name ?? "Anonym"}</span>
+                  <span className="font-medium text-dark-slate">{r.author.name ?? t("anonymousAuthor")}</span>
                 </div>
                 {r.comment && <p className="text-dark-slate/70 mt-0.5">{r.comment}</p>}
               </div>
@@ -357,14 +358,14 @@ export default async function OrgDetailPage({
                 href={`/org/${slug}`}
                 className={`pb-3 text-sm font-medium border-b-2 whitespace-nowrap ${activeTab === "story" ? "border-coral text-coral" : "border-transparent text-dark-slate/50 hover:text-dark-slate"}`}
               >
-                Story
+                {t("storyTab")}
               </Link>
               <Link
                 href={`/org/${slug}?tab=projects`}
                 data-tour="org-projects-tab"
                 className={`pb-3 text-sm font-medium border-b-2 whitespace-nowrap ${activeTab === "projects" ? "border-coral text-coral" : "border-transparent text-dark-slate/50 hover:text-dark-slate"}`}
               >
-                Projects ({org._count.projects})
+                {t("projectsTabLabel", { count: org._count.projects })}
               </Link>
               {isMemberOrOwner && (
                 <>
@@ -373,13 +374,13 @@ export default async function OrgDetailPage({
                     data-tour="org-resources-tab"
                     className={`pb-3 text-sm font-medium border-b-2 whitespace-nowrap ${activeTab === "resources" ? "border-coral text-coral" : "border-transparent text-dark-slate/50 hover:text-dark-slate"}`}
                   >
-                    Resources
+                    {t("resourcesTab")}
                   </Link>
                   <Link
                     href={`/org/${slug}?tab=activity`}
                     className={`pb-3 text-sm font-medium border-b-2 whitespace-nowrap ${activeTab === "activity" ? "border-coral text-coral" : "border-transparent text-dark-slate/50 hover:text-dark-slate"}`}
                   >
-                    Activity
+                    {t("activityTab")}
                   </Link>
                 </>
               )}
@@ -395,12 +396,12 @@ export default async function OrgDetailPage({
               </div>
             ) : (
               <p className="text-dark-slate/40 italic text-sm">
-                No description yet.
+                {t("noDescriptionYet")}
                 {isOwner && (
                   <>
                     {" "}
                     <Link href={`/org/${slug}/edit`} className="text-coral hover:underline not-italic">
-                      Add one →
+                      {t("addOneLink")}
                     </Link>
                   </>
                 )}
@@ -427,7 +428,7 @@ export default async function OrgDetailPage({
                       {p.description && (
                         <p className="text-sm text-dark-slate/60 line-clamp-2">{p.description}</p>
                       )}
-                      <p className="text-xs text-dark-slate/40 mt-1">{p._count.members} member{p._count.members !== 1 ? "s" : ""}</p>
+                      <p className="text-xs text-dark-slate/40 mt-1">{t("memberCount", { count: p._count.members })}</p>
                     </div>
                     <svg className="w-4 h-4 text-dark-slate/30 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -436,7 +437,7 @@ export default async function OrgDetailPage({
                 ))}
               </div>
             ) : (
-              <p className="text-dark-slate/40 italic text-sm">No public projects yet.</p>
+              <p className="text-dark-slate/40 italic text-sm">{t("noPublicProjectsYet")}</p>
             )
           )}
 
@@ -456,7 +457,7 @@ export default async function OrgDetailPage({
         {/* Right: team */}
         <div className="md:col-span-2 flex flex-col gap-8">
           <section>
-            <h2 className="text-sm font-semibold text-dark-slate mb-3">The Team</h2>
+            <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("theTeamHeading")}</h2>
             {org.members.length > 0 ? (
               isOwner && userId ? (
                 <OrgTeamManager
@@ -482,7 +483,7 @@ export default async function OrgDetailPage({
                 </div>
               )
             ) : (
-              <p className="text-xs text-dark-slate/40">No members yet.</p>
+              <p className="text-xs text-dark-slate/40">{t("noMembersYet")}</p>
             )}
             {isOwner && (
               <div data-tour="org-invite">

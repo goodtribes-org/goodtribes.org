@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { searchUsersToAdd, addMemberDirectly, inviteMemberByEmail, getPendingInvites } from "./member-actions";
 
 function looksLikeEmail(value: string): boolean {
@@ -40,6 +41,7 @@ export default function AddOrInviteMember({
   onAdded?: (user: UserResult) => void;
   onInviteSent?: () => void;
 }) {
+  const t = useTranslations("AddOrInviteMember");
   const [isPending, startTransition] = useTransition();
   const [addQuery, setAddQuery] = useState("");
   const [addResults, setAddResults] = useState<UserResult[]>([]);
@@ -105,13 +107,13 @@ export default function AddOrInviteMember({
           type="text"
           value={addQuery}
           onChange={(e) => { setAddQuery(e.target.value); setInviteState({ status: "idle" }); }}
-          placeholder="Sök på namn eller e-post…"
+          placeholder={t("searchPlaceholder")}
           className="w-full text-sm border border-muted-teal/30 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-seagrass/40 placeholder:text-dark-slate/30"
         />
         {addQuery.trim() && (
           <div className="mt-1 border border-muted-teal/30 rounded-xl bg-white shadow-sm divide-y divide-muted-teal/10 max-h-64 overflow-y-auto">
             {addResults.length === 0 && searched && !looksLikeEmail(addQuery) && (
-              <p className="px-3 py-2 text-xs text-dark-slate/40 italic">Inga träffar.</p>
+              <p className="px-3 py-2 text-xs text-dark-slate/40 italic">{t("noMatches")}</p>
             )}
             {addResults.map((u) => (
               <button
@@ -126,18 +128,18 @@ export default function AddOrInviteMember({
                   <span className="block text-sm text-dark-slate truncate">{u.name ?? "?"}</span>
                   <span className="block text-xs text-dark-slate/40 truncate">{u.email}</span>
                 </span>
-                <span className="text-xs font-semibold text-seagrass shrink-0">+ Lägg till</span>
+                <span className="text-xs font-semibold text-seagrass shrink-0">{t("addButton")}</span>
               </button>
             ))}
             {searched && addResults.length === 0 && looksLikeEmail(addQuery) && (
               <div className="p-3">
                 <p className="text-sm text-dark-slate mb-2">
-                  Ingen användare med den e-posten ännu — bjud in <span className="font-medium">{addQuery.trim()}</span> via länk
+                  {t("inviteByEmailPrompt", { email: addQuery.trim() })}
                 </p>
                 <textarea
                   value={inviteMessage}
                   onChange={(e) => setInviteMessage(e.target.value)}
-                  placeholder="Skriv ett personligt hälsningsord (valfritt)…"
+                  placeholder={t("inviteMessagePlaceholder")}
                   rows={2}
                   className="w-full text-xs border border-muted-teal/30 rounded-md px-2 py-1.5 mb-2 focus:outline-none focus:ring-1 focus:ring-seagrass/40 resize-none placeholder:text-dark-slate/30"
                 />
@@ -147,7 +149,7 @@ export default function AddOrInviteMember({
                   onClick={handleInviteByEmail}
                   className="text-xs font-semibold bg-seagrass text-white px-3 py-1.5 rounded-lg hover:bg-seagrass/90 disabled:opacity-50 transition-colors"
                 >
-                  Bjud in →
+                  {t("sendInviteButton")}
                 </button>
               </div>
             )}
@@ -155,14 +157,14 @@ export default function AddOrInviteMember({
         )}
       </div>
       {inviteState.error && <p className="text-xs text-coral mt-1.5">{inviteState.error}</p>}
-      {inviteState.status === "sent" && <p className="text-xs text-seagrass mt-1.5">Inbjudan skickad — de blir medlem när de klickar på länken i mejlet.</p>}
+      {inviteState.status === "sent" && <p className="text-xs text-seagrass mt-1.5">{t("inviteSentMessage")}</p>}
 
       {/* Pending email invites — only ever populated for a founder/admin,
           since getPendingInvites returns [] for anyone else. */}
       {pendingInvites.length > 0 && (
         <div className="mt-4 pt-4 border-t border-muted-teal/15">
           <p className="text-xs font-semibold text-dark-slate/40 uppercase tracking-wide mb-2">
-            Inbjudna, väntar på svar
+            {t("pendingInvitesHeading")}
           </p>
           <ul className="flex flex-col gap-1.5">
             {pendingInvites.map((inv) => {
@@ -171,7 +173,7 @@ export default function AddOrInviteMember({
                 <li key={inv.id} className="flex items-center justify-between gap-2 text-sm">
                   <span className="text-dark-slate/70 truncate">{inv.email}</span>
                   <span className={`text-xs shrink-0 ${expired ? "text-dark-slate/30" : "text-seagrass/80"}`}>
-                    {expired ? "Utgången" : "Väntar"}
+                    {expired ? t("statusExpired") : t("statusPending")}
                   </span>
                 </li>
               );

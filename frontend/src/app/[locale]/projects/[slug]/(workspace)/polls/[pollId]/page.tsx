@@ -7,6 +7,7 @@ import Link from "next/link";
 import VotingForm from "./VotingForm";
 import CloseButton from "./CloseButton";
 import { isLeadRole } from "@/lib/authz";
+import { getTranslations } from "next-intl/server";
 
 
 function formatDate(date: Date): string {
@@ -18,14 +19,6 @@ function formatDate(date: Date): string {
     minute: "2-digit",
   });
 }
-
-const TYPE_LABELS: Record<string, string> = {
-  yes_no: "Ja/Nej-omröstning",
-  multiple: "Flerval",
-  ranked: "Rangordning",
-  legal_type_change: "Byte av juridisk form",
-  profit_distribution: "Vinstfördelning",
-};
 
 function AvatarInitial({ name }: { name: string | null }) {
   const initials = (name ?? "?")
@@ -49,6 +42,15 @@ export default async function PollDetailPage({
   const { slug, pollId } = await params;
   const session = await auth();
   const userId = session?.user?.id ?? null;
+  const t = await getTranslations("PollDetailPage");
+
+  const TYPE_LABELS: Record<string, string> = {
+    yes_no: t("typeYesNo"),
+    multiple: t("typeMultiple"),
+    ranked: t("typeRanked"),
+    legal_type_change: t("typeLegalTypeChange"),
+    profit_distribution: t("typeProfitDistribution"),
+  };
 
   const project = await prisma.project.findUnique({
     where: { slug },
@@ -149,7 +151,7 @@ export default async function PollDetailPage({
         href={`/projects/${slug}/polls`}
         className="inline-block text-sm text-dark-slate/50 hover:text-seagrass"
       >
-        ← Omröstningar
+        {t("backToPolls")}
       </Link>
 
       {/* Poll header card */}
@@ -158,16 +160,16 @@ export default async function PollDetailPage({
         <div className="flex items-center gap-2 flex-wrap mb-3">
           {poll.status === "open" ? (
             <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
-              Öppen
+              {t("statusOpen")}
             </span>
           ) : (
             <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
-              Avslutad
+              {t("statusClosed")}
             </span>
           )}
           {poll.isBinding && (
             <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-              Bindande
+              {t("binding")}
             </span>
           )}
           <span className="text-xs text-dark-slate/40">
@@ -185,15 +187,16 @@ export default async function PollDetailPage({
 
         {/* Meta row */}
         <div className="flex items-center gap-2 text-xs text-dark-slate/40 flex-wrap">
-          <span>Skapad av {poll.createdBy.name ?? "Okänd"}</span>
+          <span>{t("createdBy", { name: poll.createdBy.name ?? t("unknownUser") })}</span>
           <span>·</span>
           <span>{formatDate(poll.createdAt)}</span>
           {poll.deadline && (
             <>
               <span>·</span>
               <span>
-                {isPollOpen ? "Stänger" : "Stängdes"}{" "}
-                {formatDate(poll.deadline)}
+                {isPollOpen
+                  ? t("closesOn", { date: formatDate(poll.deadline) })
+                  : t("closedOn", { date: formatDate(poll.deadline) })}
               </span>
             </>
           )}
@@ -213,7 +216,10 @@ export default async function PollDetailPage({
           {/* Header */}
           <div className="px-4 py-3 bg-dark-slate/[0.03] border-b border-muted-teal flex items-center justify-between gap-2 flex-wrap">
             <span className="text-sm font-medium text-dark-slate">
-              {uniqueVoters} deltagare · {totalWeight % 1 === 0 ? totalWeight : totalWeight.toFixed(1)} tokens totalt
+              {t("resultsSummary", {
+                count: uniqueVoters,
+                tokens: totalWeight % 1 === 0 ? totalWeight : totalWeight.toFixed(1),
+              })}
             </span>
             {poll.quorumPercent !== null && (
               <span
@@ -223,7 +229,10 @@ export default async function PollDetailPage({
                     : "bg-yellow-50 text-yellow-700"
                 }`}
               >
-                Kvorum: {uniqueVoters > 0 ? Math.round((uniqueVoters / Math.max(voterIds.length, 1)) * 100) : 0}% av {poll.quorumPercent}% krävs
+                {t("quorumLabel", {
+                  percent: uniqueVoters > 0 ? Math.round((uniqueVoters / Math.max(voterIds.length, 1)) * 100) : 0,
+                  required: poll.quorumPercent,
+                })}
               </span>
             )}
           </div>
@@ -237,7 +246,7 @@ export default async function PollDetailPage({
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2 min-w-0">
                       {isMyVote && (
-                        <span className="shrink-0 text-coral text-sm font-bold" title="Din röst">
+                        <span className="shrink-0 text-coral text-sm font-bold" title={t("yourVote")}>
                           ✓
                         </span>
                       )}
@@ -264,9 +273,9 @@ export default async function PollDetailPage({
                   </div>
 
                   <p className="text-xs text-dark-slate/40 mt-1">
-                    {opt.weight % 1 === 0 ? opt.weight : opt.weight.toFixed(1)} tokens
+                    {opt.weight % 1 === 0 ? opt.weight : opt.weight.toFixed(1)} {t("tokensSuffix")}
                     {" · "}
-                    {opt.voterCount} röst{opt.voterCount !== 1 ? "er" : ""}
+                    {t("voteCountSuffix", { count: opt.voterCount })}
                   </p>
                 </div>
               );
@@ -296,16 +305,16 @@ export default async function PollDetailPage({
         <div className="border border-dashed border-muted-teal rounded-lg p-6 text-center">
           <p className="text-sm text-dark-slate/60">
             <Link href="/login" className="text-seagrass hover:underline">
-              Logga in
+              {t("loginPrompt")}
             </Link>{" "}
-            för att rösta.
+            {t("loginToVote")}
           </p>
         </div>
       )}
 
       {/* Closed notice */}
       {poll.status === "closed" && !showResults && (
-        <p className="text-sm text-dark-slate/40 text-center">Omröstningen är avslutad.</p>
+        <p className="text-sm text-dark-slate/40 text-center">{t("pollClosedNotice")}</p>
       )}
 
       {/* Voter list — visible to members */}
@@ -313,14 +322,14 @@ export default async function PollDetailPage({
         <div className="border border-muted-teal rounded-lg overflow-hidden">
           <div className="px-4 py-3 bg-dark-slate/[0.03] border-b border-muted-teal">
             <h2 className="text-sm font-semibold text-dark-slate">
-              Röster ({poll.votes.length})
+              {t("votesHeading", { count: poll.votes.length })}
             </h2>
           </div>
 
           <div className="divide-y divide-muted-teal/50">
             {poll.votes.map((vote) => {
-              const name = userNameMap[vote.userId] ?? "Okänd";
-              const optionLabel = optionLabelMap[vote.pollOptionId] ?? "–";
+              const name = userNameMap[vote.userId] ?? t("unknownUser");
+              const optionLabel = optionLabelMap[vote.pollOptionId] ?? t("noOptionLabel");
               const w = vote.tokenWeight;
               return (
                 <div
@@ -335,7 +344,7 @@ export default async function PollDetailPage({
                     <span className="text-xs text-dark-slate/50">{optionLabel}</span>
                   </div>
                   <span className="text-xs text-dark-slate/50 shrink-0">
-                    {w % 1 === 0 ? w : w.toFixed(1)} tokens
+                    {w % 1 === 0 ? w : w.toFixed(1)} {t("tokensSuffix")}
                   </span>
                 </div>
               );

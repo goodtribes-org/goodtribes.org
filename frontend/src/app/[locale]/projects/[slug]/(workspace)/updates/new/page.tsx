@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import NewBlogPostForm from "./NewBlogPostForm";
 import { isLeadRole } from "@/lib/authz";
 
@@ -8,9 +9,9 @@ import { isLeadRole } from "@/lib/authz";
 export default async function NewUpdatePage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -23,9 +24,11 @@ export default async function NewUpdatePage({
   const role = project.members[0]?.role;
   if (!isLeadRole(role)) redirect(`/projects/${slug}/updates`);
 
+  const t = await getTranslations({ locale, namespace: "UpdatesNewPage" });
+
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-8">Post an update</h1>
+      <h1 className="text-2xl font-bold mb-8">{t("heading")}</h1>
       <NewBlogPostForm slug={slug} />
     </div>
   );

@@ -4,29 +4,30 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import ScrollToHash from "@/components/ScrollToHash";
 import { isLeadRole } from "@/lib/authz";
 
 
-function timeAgo(date: Date): string {
+function timeAgo(date: Date, t: Awaited<ReturnType<typeof getTranslations>>): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (seconds < 60) return "just now";
+  if (seconds < 60) return t("timeJustNow");
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return t("timeMinutesAgo", { minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t("timeHoursAgo", { hours });
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
+  if (days < 30) return t("timeDaysAgo", { days });
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export default async function UpdatesPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }) {
-  const { slug } = await params;
-  const session = await auth();
+  const { slug, locale } = await params;
+  const [session, t] = await Promise.all([auth(), getTranslations({ locale, namespace: "UpdatesPage" })]);
 
   const project = await prisma.project.findUnique({
     where: { slug },
@@ -49,9 +50,9 @@ export default async function UpdatesPage({
       <div className="flex items-center justify-between mb-8">
         <div>
           <Link href={`/projects/${slug}`} className="text-sm text-dark-slate/50 hover:text-seagrass">
-            ← {project.title}
+            {t("backToProject", { title: project.title })}
           </Link>
-          <h1 className="text-2xl font-bold mt-1">Updates</h1>
+          <h1 className="text-2xl font-bold mt-1">{t("heading")}</h1>
         </div>
         <div className="flex items-center gap-2">
           {canPost && (
@@ -59,7 +60,7 @@ export default async function UpdatesPage({
               href={`/projects/${slug}/updates/new`}
               className="bg-coral text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-watermelon transition-colors"
             >
-              + Post update
+              {t("postUpdateButton")}
             </Link>
           )}
         </div>
@@ -67,10 +68,10 @@ export default async function UpdatesPage({
 
       {project.blogPosts.length === 0 ? (
         <div className="border border-dashed border-muted-teal rounded-lg p-10 text-center">
-          <p className="text-dark-slate/50">No updates yet.</p>
+          <p className="text-dark-slate/50">{t("emptyState")}</p>
           {canPost && (
             <Link href={`/projects/${slug}/updates/new`} className="text-seagrass hover:underline text-sm mt-2 inline-block">
-              Post the first update →
+              {t("postFirstUpdate")}
             </Link>
           )}
         </div>
@@ -82,9 +83,9 @@ export default async function UpdatesPage({
                 {post.author.image && (
                   <img src={post.author.image} alt="" className="w-6 h-6 rounded-full" />
                 )}
-                <span>{post.author.name ?? "Unknown"}</span>
+                <span>{post.author.name ?? t("unknownAuthor")}</span>
                 <span>·</span>
-                <span>{timeAgo(post.createdAt)}</span>
+                <span>{timeAgo(post.createdAt, t)}</span>
               </div>
               <h2 className="text-lg font-semibold mb-3">{post.title}</h2>
               <p className="text-dark-slate/70 text-sm whitespace-pre-wrap leading-relaxed">

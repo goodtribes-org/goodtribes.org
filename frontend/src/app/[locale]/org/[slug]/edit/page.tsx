@@ -1,13 +1,15 @@
 export const dynamic = "force-dynamic";
 
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma"
 import { notFound, redirect } from "next/navigation";
 import EditOrgForm from "./EditOrgForm";
 
 
-export default async function EditOrgPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export default async function EditOrgPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
+  const { locale, slug } = await params;
+  const t = await getTranslations({ locale, namespace: "EditOrgPage" });
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -34,8 +36,8 @@ export default async function EditOrgPage({ params }: { params: Promise<{ slug: 
 
   return (
     <div className="max-w-lg mx-auto mt-12">
-      <h1 className="text-2xl font-bold mb-1">Edit organisation</h1>
-      <p className="text-dark-slate/70 mb-8">Update the details for {org.name}.</p>
+      <h1 className="text-2xl font-bold mb-1">{t("pageTitle")}</h1>
+      <p className="text-dark-slate/70 mb-8">{t("pageSubtitle", { orgName: org.name })}</p>
 
       <EditOrgForm
         orgId={org.id}

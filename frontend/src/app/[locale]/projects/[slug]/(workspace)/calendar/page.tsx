@@ -5,6 +5,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import GanttView from "@/components/GanttView";
 import { isLeadRole } from "@/lib/authz";
 import Tooltip from "@/components/Tooltip";
@@ -15,15 +16,15 @@ import { updateCard, moveCard, addCardDependency, removeCardDependency } from ".
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
-  const project = await prisma.project.findUnique({
-    where: { slug },
-    select: { title: true },
-  });
+  const { slug, locale } = await params;
+  const [project, t] = await Promise.all([
+    prisma.project.findUnique({ where: { slug }, select: { title: true } }),
+    getTranslations({ locale, namespace: "CalendarPage" }),
+  ]);
   if (!project) return {};
-  return { title: `${project.title} — Planering — GoodTribes.org` };
+  return { title: t("pageTitle", { projectTitle: project.title }) };
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -77,12 +78,21 @@ function isOverdue(date: Date | null, status: string) {
   return date < new Date();
 }
 
-const MONTH_NAMES_SV = [
-  "Januari", "Februari", "Mars", "April", "Maj", "Juni",
-  "Juli", "Augusti", "September", "Oktober", "November", "December",
-];
+const MONTH_KEYS = [
+  "monthJanuary", "monthFebruary", "monthMarch", "monthApril", "monthMay", "monthJune",
+  "monthJuly", "monthAugust", "monthSeptember", "monthOctober", "monthNovember", "monthDecember",
+] as const;
 
-const DAY_NAMES_SV = ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"];
+const DAY_KEYS = ["dayMon", "dayTue", "dayWed", "dayThu", "dayFri", "daySat", "daySun"] as const;
+
+const TYPE_LABEL_KEYS: Record<CalendarEntry["type"], string> = {
+  milestone: "typeMilestone",
+  task: "typeTask",
+  todo: "typeTodo",
+  meeting: "typeMeeting",
+  deadline: "typeDeadline",
+  custom: "typeCustom",
+};
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -90,11 +100,12 @@ export default async function CalendarPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
   searchParams: Promise<{ year?: string; month?: string; view?: string }>;
 }) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const sp = await searchParams;
+  const t = await getTranslations({ locale, namespace: "CalendarPage" });
 
   const view = sp.view === "gantt" ? "gantt" : "calendar";
   const now = new Date();
@@ -186,20 +197,16 @@ export default async function CalendarPage({
     dayEvents[k].push(entry);
   }
 
-  const EVENT_TYPE_LABEL: Record<string, string> = {
-    meeting: "Möte", deadline: "Deadline", custom: "Anpassad",
-  };
-
   for (const m of milestones) {
     if (!m.dueDate) continue;
-    const lines = ["Milstolpe", m.description].filter((s): s is string => Boolean(s));
+    const lines = [t("typeMilestone"), m.description].filter((s): s is string => Boolean(s));
     addEntry(m.dueDate, { id: m.id, title: m.title, type: "milestone", color: TYPE_COLORS.milestone, tooltip: lines });
   }
   for (const c of kanbanCardsMonth) {
     if (!c.dueDate) continue;
     const lines = [
       c.title,
-      c.assignee?.name ? `Ansvarig: ${c.assignee.name}` : null,
+      c.assignee?.name ? t("assigneeLabel", { name: c.assignee.name }) : null,
       c.description ?? null,
     ].filter((s): s is string => Boolean(s));
     addEntry(c.dueDate, {
@@ -212,8 +219,8 @@ export default async function CalendarPage({
     const knownTypes: string[] = ["milestone", "task", "meeting", "deadline", "custom"];
     const type: CalendarEntry["type"] = knownTypes.includes(e.type) ? (e.type as CalendarEntry["type"]) : "custom";
     const lines = [
-      EVENT_TYPE_LABEL[e.type] ?? "Händelse",
-      e.createdBy.name ? `Ansvarig: ${e.createdBy.name}` : null,
+      e.type in TYPE_LABEL_KEYS ? t(TYPE_LABEL_KEYS[e.type as CalendarEntry["type"]]) : t("eventTypeFallback"),
+      e.createdBy.name ? t("assigneeLabel", { name: e.createdBy.name }) : null,
       e.description ?? null,
     ].filter((s): s is string => Boolean(s));
     addEntry(e.startsAt, { id: e.id, title: e.title, type, color: TYPE_COLORS[type], tooltip: lines });
@@ -260,26 +267,26 @@ export default async function CalendarPage({
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                Ny händelse
+                {t("newEventButton")}
               </Link>
             )}
             <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
               <Link
                 href={`?view=calendar&year=${prev.year}&month=${prev.month + 1}`}
                 className="p-1.5 rounded hover:bg-muted-teal/20 transition-colors text-dark-slate/60 hover:text-dark-slate"
-                aria-label="Föregående månad"
+                aria-label={t("prevMonthAriaLabel")}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </Link>
               <span className="text-base font-semibold text-dark-slate min-w-[10rem] text-center">
-                {MONTH_NAMES_SV[month]} {year}
+                {t(MONTH_KEYS[month])} {year}
               </span>
               <Link
                 href={`?view=calendar&year=${next.year}&month=${next.month + 1}`}
                 className="p-1.5 rounded hover:bg-muted-teal/20 transition-colors text-dark-slate/60 hover:text-dark-slate"
-                aria-label="Nästa månad"
+                aria-label={t("nextMonthAriaLabel")}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -291,22 +298,22 @@ export default async function CalendarPage({
                 href={`?view=calendar&year=${year}&month=${month + 1}`}
                 className="px-4 py-1.5 text-sm font-medium rounded-md transition-colors bg-white text-dark-slate shadow-sm"
               >
-                Kalender
+                {t("calendarViewLabel")}
               </Link>
               <Link
                 href="?view=gantt"
                 className="px-4 py-1.5 text-sm font-medium rounded-md transition-colors text-dark-slate/50 hover:text-dark-slate"
               >
-                Gantt
+                {t("ganttViewLabel")}
               </Link>
             </div>
           </div>
           {/* Legend */}
           <div className="flex flex-wrap gap-3 mb-4 text-xs text-dark-slate/70">
-            {(["milestone", "task", "todo", "meeting", "deadline", "custom"] as const).map((t) => (
-              <span key={t} className="flex items-center gap-1.5">
-                <span className={`w-2.5 h-2.5 rounded-full ${TYPE_COLORS[t]}`} />
-                {{ milestone: "Milstolpe", task: "Kanban", todo: "Todo", meeting: "Möte", deadline: "Deadline", custom: "Anpassad" }[t]}
+            {(["milestone", "task", "todo", "meeting", "deadline", "custom"] as const).map((entryType) => (
+              <span key={entryType} className="flex items-center gap-1.5">
+                <span className={`w-2.5 h-2.5 rounded-full ${TYPE_COLORS[entryType]}`} />
+                {t(TYPE_LABEL_KEYS[entryType])}
               </span>
             ))}
           </div>
@@ -317,8 +324,8 @@ export default async function CalendarPage({
           <div className="overflow-x-auto">
             <div className="min-w-[320px]">
               <div className="grid grid-cols-7 mb-1">
-                {DAY_NAMES_SV.map((d) => (
-                  <div key={d} className="text-center text-xs font-medium text-dark-slate/50 py-1">{d}</div>
+                {DAY_KEYS.map((dayKey) => (
+                  <div key={dayKey} className="text-center text-xs font-medium text-dark-slate/50 py-1">{t(dayKey)}</div>
                 ))}
               </div>
               <div className="border border-muted-teal/20 rounded-lg overflow-hidden">
@@ -377,7 +384,7 @@ export default async function CalendarPage({
                             )}
                             {overflow > 0 && (
                               <div className="text-[10px] text-dark-slate/40 px-1 leading-none">
-                                +{overflow} fler
+                                {t("moreItemsCount", { count: overflow })}
                               </div>
                             )}
                           </div>
@@ -394,13 +401,13 @@ export default async function CalendarPage({
           {/* ── Milestones section ─────────────────────────────────────────── */}
           <div className="mt-10">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold text-dark-slate">Milstolpar</h2>
+              <h2 className="text-base font-bold text-dark-slate">{t("milestonesHeading")}</h2>
               {isOwnerOrAdmin && (
                 <Link
                   href={`/projects/${slug}/calendar/new?type=milestone`}
                   className="text-xs text-coral hover:text-watermelon font-medium transition-colors"
                 >
-                  + Ny milstolpe
+                  {t("newMilestoneLink")}
                 </Link>
               )}
             </div>
@@ -408,7 +415,7 @@ export default async function CalendarPage({
             {totalMilestones > 0 && (
               <div className="mb-5">
                 <div className="flex justify-between text-xs text-dark-slate/60 mb-1.5">
-                  <span>{doneMilestones} av {totalMilestones} slutförda</span>
+                  <span>{t("milestonesProgress", { done: doneMilestones, total: totalMilestones })}</span>
                   <span>{milestonePct}%</span>
                 </div>
                 <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -419,7 +426,7 @@ export default async function CalendarPage({
 
             <div className="space-y-2 mb-6">
               {allMilestones.length === 0 && (
-                <p className="text-sm text-dark-slate/40 py-4 text-center">Inga milstolpar ännu.</p>
+                <p className="text-sm text-dark-slate/40 py-4 text-center">{t("noMilestonesYet")}</p>
               )}
               {allMilestones.map((m) => {
                 const overdue = isOverdue(m.dueDate, m.status);
@@ -475,7 +482,7 @@ export default async function CalendarPage({
                       )}
                       {m.dueDate && (
                         <p className={`text-xs mt-1 ${overdue ? "text-watermelon font-medium" : "text-dark-slate/40"}`}>
-                          {overdue ? "Försenad — " : "Förfaller "}
+                          {overdue ? t("overdueLabel") : t("dueLabel")}
                           {formatDateSv(m.dueDate)}
                         </p>
                       )}
@@ -486,7 +493,7 @@ export default async function CalendarPage({
                         <button
                           type="submit"
                           className="text-xs text-dark-slate/20 hover:text-watermelon transition-colors mt-0.5"
-                          aria-label="Ta bort milstolpe"
+                          aria-label={t("deleteMilestoneAriaLabel")}
                         >
                           ✕
                         </button>
@@ -515,7 +522,7 @@ export default async function CalendarPage({
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                  Ny händelse
+                  {t("newEventButton")}
                 </Link>
               )}
               <div className="ml-auto flex items-center gap-1 bg-gray-100 rounded-lg p-1">
@@ -523,19 +530,19 @@ export default async function CalendarPage({
                   href={`?view=calendar&year=${year}&month=${month + 1}`}
                   className="px-4 py-1.5 text-sm font-medium rounded-md transition-colors text-dark-slate/50 hover:text-dark-slate"
                 >
-                  Kalender
+                  {t("calendarViewLabel")}
                 </Link>
                 <Link
                   href="?view=gantt"
                   className="px-4 py-1.5 text-sm font-medium rounded-md transition-colors bg-white text-dark-slate shadow-sm"
                 >
-                  Gantt
+                  {t("ganttViewLabel")}
                 </Link>
               </div>
             </div>
           </div>
           {allKanbanCards.length === 0 && allTodoItems.length === 0 ? (
-            <p className="text-sm text-dark-slate/40 py-8 text-center">Inga uppgifter ännu.</p>
+            <p className="text-sm text-dark-slate/40 py-8 text-center">{t("noTasksYet")}</p>
           ) : (
             <div>
               <GanttView

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "../../(workspace)/edit/actions";
 import GuideStepIndicator from "@/components/GuideStepIndicator";
 import type { ProjectPhaseValue } from "@/lib/projectPhase";
@@ -28,6 +29,7 @@ interface Props {
 // phase-menu checklist popover already use — so ticking it here is the
 // exact same thing as ticking it anywhere else in the app.
 export default function PhaseGuide({ slug, phase, phaseLabel, projectTitle, items, completedKeys }: Props) {
+  const t = useTranslations("PhaseGuide");
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [done, setDone] = useState<Set<string>>(new Set(completedKeys));
@@ -63,17 +65,17 @@ export default function PhaseGuide({ slug, phase, phaseLabel, projectTitle, item
   return (
     <div className="py-10">
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-xl font-bold text-dark-slate">{phaseLabel}-guiden — {projectTitle}</h1>
+        <h1 className="text-xl font-bold text-dark-slate">{t("title", { phaseLabel, projectTitle })}</h1>
         <button
           type="button"
           onClick={goToProject}
           className="text-sm text-dark-slate/50 hover:text-dark-slate"
         >
-          Hoppa över guiden →
+          {t("skipGuide")}
         </button>
       </div>
       <p className="text-sm text-dark-slate/60 mb-8">
-        En valfri genomgång av checklistan för {phaseLabel.toLowerCase()}. Hoppa över när som helst — inget här krävs.
+        {t("subtitle", { phaseLabel: phaseLabel.toLowerCase() })}
       </p>
 
       <GuideStepIndicator
@@ -91,7 +93,7 @@ export default function PhaseGuide({ slug, phase, phaseLabel, projectTitle, item
               href={`/projects/${slug}/${current.href}`}
               className="inline-flex items-center gap-1 text-sm font-medium text-seagrass hover:underline mb-4"
             >
-              Öppna →
+              {t("openLink")}
             </a>
           )}
           <label className="flex items-center gap-2 cursor-pointer w-fit">
@@ -102,7 +104,7 @@ export default function PhaseGuide({ slug, phase, phaseLabel, projectTitle, item
               onChange={() => toggleItem(current.key)}
               className="accent-seagrass w-4 h-4"
             />
-            <span className="text-sm text-dark-slate/80">Markera som klar</span>
+            <span className="text-sm text-dark-slate/80">{t("markDone")}</span>
           </label>
         </div>
         <div className="flex justify-between pt-2">
@@ -112,14 +114,14 @@ export default function PhaseGuide({ slug, phase, phaseLabel, projectTitle, item
             disabled={step === 0}
             className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2 disabled:opacity-30"
           >
-            ← Tillbaka
+            {t("back")}
           </button>
           <button
             type="button"
             onClick={goNext}
             className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity"
           >
-            {isLast ? "Klar, ta mig till projektet" : "Nästa →"}
+            {isLast ? t("finish") : t("next")}
           </button>
         </div>
       </div>

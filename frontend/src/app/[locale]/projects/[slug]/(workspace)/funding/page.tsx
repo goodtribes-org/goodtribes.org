@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import type { Metadata } from "next";
@@ -13,11 +13,12 @@ import PledgeForm from "./PledgeForm";
 import ConnectStripeButton from "./ConnectStripeButton";
 
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
+  const { locale, slug } = await params;
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) return {};
-  return { title: `${project.title} — Finansiering — GoodTribes.org` };
+  const t = await getTranslations({ locale, namespace: "FundingPage" });
+  return { title: t("pageTitle", { projectTitle: project.title }) };
 }
 
 function daysLeft(deadline: Date): number {
@@ -30,6 +31,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
   const session = await auth();
   const userId = session?.user?.id ?? null;
   const locale = await getLocale();
+  const t = await getTranslations("FundingPage");
   const fmt = (amount: number, currency: string) => formatCurrency(amount, currency, locale);
 
   const project = await prisma.project.findUnique({
@@ -71,9 +73,9 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
     if (!isOwnerOrAdmin) {
       return (
         <div className="max-w-xl">
-          <h1 className="text-xl font-bold text-dark-slate mb-4">Finansiering</h1>
+          <h1 className="text-xl font-bold text-dark-slate mb-4">{t("heading")}</h1>
           <p className="text-dark-slate/40 text-sm">
-            Ingen finansieringskampanj har startats för det här projektet ännu.
+            {t("noCampaignYet")}
           </p>
         </div>
       );
@@ -86,39 +88,39 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
 
     return (
       <div className="max-w-2xl">
-        <h1 className="text-xl font-bold text-dark-slate mb-6">Finansiering</h1>
+        <h1 className="text-xl font-bold text-dark-slate mb-6">{t("heading")}</h1>
         <div className="border border-dashed border-muted-teal/50 rounded-xl p-8">
-          <h2 className="font-semibold text-dark-slate mb-1">Starta en kampanj</h2>
+          <h2 className="font-semibold text-dark-slate mb-1">{t("startCampaignHeading")}</h2>
           <p className="text-sm text-dark-slate/50 mb-6">
-            Sätt ett mål och samla in stöd från finansiärer.
+            {t("startCampaignSubtitle")}
           </p>
           <form action={createCampaign.bind(null, project.id, slug)} className="space-y-5">
             {/* Title */}
             <div>
-              <label className="block text-xs font-medium text-dark-slate/60 mb-1">Kampanjnamn</label>
+              <label className="block text-xs font-medium text-dark-slate/60 mb-1">{t("campaignNameLabel")}</label>
               <input
                 name="title"
                 required
                 className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass"
-                placeholder="t.ex. Finansiera vår första prototyp"
+                placeholder={t("campaignNamePlaceholder")}
               />
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-xs font-medium text-dark-slate/60 mb-1">Beskrivning (valfritt)</label>
+              <label className="block text-xs font-medium text-dark-slate/60 mb-1">{t("descriptionLabel")}</label>
               <textarea
                 name="description"
                 rows={3}
                 className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass resize-none"
-                placeholder="Vad ska pengarna användas till?"
+                placeholder={t("descriptionPlaceholder")}
               />
             </div>
 
             {/* Goal + Currency */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-dark-slate/60 mb-1">Mål (belopp)</label>
+                <label className="block text-xs font-medium text-dark-slate/60 mb-1">{t("goalLabel")}</label>
                 <input
                   name="goal"
                   type="number"
@@ -129,7 +131,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-dark-slate/60 mb-1">Valuta</label>
+                <label className="block text-xs font-medium text-dark-slate/60 mb-1">{t("currencyLabel")}</label>
                 <select
                   name="currency"
                   defaultValue={suggestedCurrency}
@@ -150,20 +152,20 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
             {/* Type + Deadline */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-dark-slate/60 mb-1">Kampanjtyp</label>
+                <label className="block text-xs font-medium text-dark-slate/60 mb-1">{t("campaignTypeLabel")}</label>
                 <select
                   name="campaignType"
                   defaultValue="donation"
                   className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass bg-white"
                   id="campaignTypeSelect"
                 >
-                  <option value="donation">Donation</option>
-                  <option value="reward">Belöningsnivåer</option>
-                  <option value="token">Token-baserad</option>
+                  <option value="donation">{t("campaignTypeDonation")}</option>
+                  <option value="reward">{t("campaignTypeReward")}</option>
+                  <option value="token">{t("campaignTypeToken")}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-dark-slate/60 mb-1">Deadline (valfritt)</label>
+                <label className="block text-xs font-medium text-dark-slate/60 mb-1">{t("deadlineLabel")}</label>
                 <input
                   name="deadline"
                   type="date"
@@ -175,47 +177,47 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
             {/* Token exchange rate (only meaningful for token-based campaigns) */}
             <div>
               <label className="block text-xs font-medium text-dark-slate/60 mb-1">
-                Växelkurs (endast för token-baserad finansiering)
+                {t("tokenExchangeRateLabel")}
               </label>
               <input
                 name="tokenExchangeRate"
                 type="number"
                 min="1"
                 step="0.01"
-                placeholder="t.ex. 100 (100 kr = 1 Tribe Token)"
+                placeholder={t("tokenExchangeRatePlaceholder")}
                 className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass"
               />
             </div>
 
             {/* Platform fee (read-only) */}
             <div>
-              <label className="block text-xs font-medium text-dark-slate/60 mb-1">Plattformsavgift</label>
+              <label className="block text-xs font-medium text-dark-slate/60 mb-1">{t("platformFeeLabel")}</label>
               <input type="hidden" name="platformFee" value="5" />
               <p className="text-sm text-dark-slate/50 border border-muted-teal/30 rounded-md px-3 py-2 bg-dry-sage/30">
-                GoodTribes tar 5% — ändra i projektinställningar
+                {t("platformFeeNote")}
               </p>
             </div>
 
             {/* Reward tiers (static form rows; JS-free server action approach) */}
             <div className="border border-muted-teal/30 rounded-lg p-4 space-y-4">
               <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest">
-                Belöningsnivåer
+                {t("rewardTiersHeading")}
               </p>
               <p className="text-xs text-dark-slate/40">
-                Fylls i om kampanjtyp är "Belöningsnivåer". Lägg till upp till tre nivåer.
+                {t("rewardTiersHint")}
               </p>
               {[0, 1, 2].map((i) => (
                 <div key={i} className="grid grid-cols-2 gap-3 border-t border-muted-teal/20 pt-4 first:border-t-0 first:pt-0">
                   <div className="col-span-2">
-                    <label className="block text-xs font-medium text-dark-slate/60 mb-1">Titel</label>
+                    <label className="block text-xs font-medium text-dark-slate/60 mb-1">{t("tierTitleLabel")}</label>
                     <input
                       name="tierTitle"
                       className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass"
-                      placeholder={`Nivå ${i + 1}`}
+                      placeholder={t("tierTitlePlaceholder", { number: i + 1 })}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-dark-slate/60 mb-1">Minimibelopp</label>
+                    <label className="block text-xs font-medium text-dark-slate/60 mb-1">{t("tierMinAmountLabel")}</label>
                     <input
                       name="tierMinAmount"
                       type="number"
@@ -225,21 +227,21 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-dark-slate/60 mb-1">Max finansiärer (valfritt)</label>
+                    <label className="block text-xs font-medium text-dark-slate/60 mb-1">{t("tierMaxBackersLabel")}</label>
                     <input
                       name="tierMaxBackers"
                       type="number"
                       min="1"
                       className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass"
-                      placeholder="obegränsat"
+                      placeholder={t("tierMaxBackersPlaceholder")}
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-xs font-medium text-dark-slate/60 mb-1">Beskrivning</label>
+                    <label className="block text-xs font-medium text-dark-slate/60 mb-1">{t("tierDescriptionLabel")}</label>
                     <input
                       name="tierDescription"
                       className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass"
-                      placeholder="Vad får finansiären?"
+                      placeholder={t("tierDescriptionPlaceholder")}
                     />
                   </div>
                 </div>
@@ -250,7 +252,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
               type="submit"
               className="bg-coral text-white text-sm font-medium px-5 py-2.5 rounded-md hover:bg-watermelon transition-colors"
             >
-              Starta kampanj
+              {t("startCampaignButton")}
             </button>
           </form>
         </div>
@@ -264,7 +266,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
 
   return (
     <div className="max-w-4xl">
-      <h1 className="text-xl font-bold text-dark-slate mb-6">Finansiering</h1>
+      <h1 className="text-xl font-bold text-dark-slate mb-6">{t("heading")}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* LEFT: main campaign info + pledge */}
@@ -288,15 +290,15 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                       : "bg-dry-sage text-dark-slate/60",
                   ].join(" ")}
                 >
-                  {campaign.status === "active" ? "Aktiv" : "Avslutad"}
+                  {campaign.status === "active" ? t("statusActive") : t("statusClosed")}
                 </span>
                 {campaign.deadline && (
                   <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-1 rounded-full">
                     {remaining === 0
-                      ? "Sista dag"
+                      ? t("lastDay")
                       : remaining === null
                       ? ""
-                      : `${remaining} dag${remaining !== 1 ? "ar" : ""} kvar`}
+                      : t("daysLeft", { days: remaining })}
                   </span>
                 )}
               </div>
@@ -314,23 +316,25 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-dark-slate/50 mt-2">
                 <span>
                   <span className="font-semibold text-dark-slate text-sm">{fmt(raised, campaign.currency)}</span>
-                  {raisedSecondary && <span className="text-dark-slate/40"> (≈ {raisedSecondary})</span>}{" "}
-                  insamlat av {fmt(campaign.goal, campaign.currency)} ({pct}%)
+                  {raisedSecondary && (
+                    <span className="text-dark-slate/40"> {t("approxConversion", { value: raisedSecondary })}</span>
+                  )}{" "}
+                  {t("raisedOfGoal", { goal: fmt(campaign.goal, campaign.currency), pct })}
                 </span>
                 <span>·</span>
                 <span>
                   <span className="font-semibold text-dark-slate">{confirmedPledges.length}</span>{" "}
-                  finansiär{confirmedPledges.length !== 1 ? "er" : ""}
+                  {t("backersCount", { count: confirmedPledges.length })}
                 </span>
                 {remaining !== null && (
                   <>
                     <span>·</span>
                     <span>
                       {campaign.status === "closed"
-                        ? "Avslutad"
+                        ? t("statusClosed")
                         : remaining === 0
-                        ? "Sista dag"
-                        : `${remaining} dag${remaining !== 1 ? "ar" : ""} kvar`}
+                        ? t("lastDay")
+                        : t("daysLeft", { days: remaining })}
                     </span>
                   </>
                 )}
@@ -353,14 +357,14 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
               <div className="border-t border-muted-teal/20 pt-5">
                 {!userId ? (
                   <p className="text-sm text-dark-slate/50">
-                    <a href="/login" className="text-coral hover:underline">Logga in</a> för att stödja kampanjen.
+                    <a href="/login" className="text-coral hover:underline">{t("loginPrompt")}</a> {t("loginToSupportSuffix")}
                   </p>
                 ) : stripeReady && campaign.stripeOnboardingStatus === "complete" ? (
                   <>
                     <p className="text-sm font-medium text-dark-slate mb-3">
                       {myTotal > 0
-                        ? `Du har bidragit med totalt ${fmt(myTotal, campaign.currency)} (${myPledges.length} bidrag)`
-                        : "Stöd projektet"}
+                        ? t("myContributionTotal", { amount: fmt(myTotal, campaign.currency), count: myPledges.length })
+                        : t("supportProject")}
                     </p>
                     <PledgeForm
                       campaignId={campaign.id}
@@ -384,12 +388,12 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                 ) : (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
-                      <span>Betalning ej konfigurerad — pledges är manuella</span>
+                      <span>{t("paymentNotConfigured")}</span>
                     </div>
                     <p className="text-sm font-medium text-dark-slate">
                       {myTotal > 0
-                        ? `Du har bidragit med totalt ${fmt(myTotal, campaign.currency)} (${myPledges.length} bidrag) — lägg till fler nedan`
-                        : "Pledga ditt stöd"}
+                        ? t("myContributionTotalManual", { amount: fmt(myTotal, campaign.currency), count: myPledges.length })
+                        : t("pledgeYourSupport")}
                     </p>
                     <form action={pledge.bind(null, campaign.id, slug)} className="space-y-3">
                       <div className="flex gap-2">
@@ -397,7 +401,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                           name="amount"
                           type="number"
                           min="1"
-                          placeholder={`Belopp (${campaign.currency})`}
+                          placeholder={t("amountPlaceholder", { currency: campaign.currency })}
                           required
                           className="flex-1 border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass"
                         />
@@ -405,13 +409,13 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                           type="submit"
                           className="bg-seagrass text-white text-sm font-medium px-4 py-2 rounded-md hover:opacity-90 transition-opacity whitespace-nowrap"
                         >
-                          Pledga
+                          {t("pledgeButton")}
                         </button>
                       </div>
                       <input
                         name="message"
                         className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass"
-                        placeholder="Meddelande (valfritt)"
+                        placeholder={t("messagePlaceholder")}
                       />
                     </form>
                     {myPledges.length > 0 && (
@@ -433,7 +437,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
             {isOwnerOrAdmin && campaign.status === "active" && (
               <form action={closeCampaign.bind(null, campaign.id, slug)} className="border-t border-muted-teal/20 pt-4">
                 <button type="submit" className="text-xs text-dark-slate/40 hover:text-dark-slate underline">
-                  Avsluta kampanj
+                  {t("closeCampaignButton")}
                 </button>
               </form>
             )}
@@ -443,7 +447,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
           {confirmedPledges.length > 0 && (
             <section>
               <h3 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">
-                Finansiärer
+                {t("backersHeading")}
               </h3>
               <div className="divide-y divide-muted-teal/20 border border-muted-teal/30 rounded-lg overflow-hidden">
                 {confirmedPledges.map((p) => (
@@ -453,7 +457,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                       {(p.user.name ?? "?")[0].toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-dark-slate">{p.user.name ?? "Anonym"}</p>
+                      <p className="text-sm font-medium text-dark-slate">{p.user.name ?? t("anonymousBacker")}</p>
                       {p.rewardTier && (
                         <p className="text-xs text-seagrass">{p.rewardTier.title}</p>
                       )}
@@ -474,11 +478,11 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
           {isMember && (
             <section>
               <h3 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">
-                Hur medlen används
+                {t("expensesHeading")}
               </h3>
 
               {campaign.expenses.length === 0 ? (
-                <p className="text-sm text-dark-slate/40">Inga utgifter registrerade ännu.</p>
+                <p className="text-sm text-dark-slate/40">{t("noExpensesYet")}</p>
               ) : (
                 <div className="divide-y divide-muted-teal/20 border border-muted-teal/30 rounded-lg overflow-hidden mb-4">
                   {campaign.expenses.map((exp) => (
@@ -504,7 +508,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                   ))}
                   {/* Total */}
                   <div className="flex items-center justify-between px-4 py-3 bg-dry-sage/30">
-                    <span className="text-xs font-semibold text-dark-slate/50 uppercase tracking-wider">Totalt</span>
+                    <span className="text-xs font-semibold text-dark-slate/50 uppercase tracking-wider">{t("expensesTotal")}</span>
                     <span className="text-sm font-bold text-dark-slate">
                       {fmt(
                         campaign.expenses.reduce((s, e) => s + e.amount, 0),
@@ -519,7 +523,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
               {isOwnerOrAdmin && (
                 <div className="border border-dashed border-muted-teal/40 rounded-lg p-4">
                   <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">
-                    Lägg till utgift
+                    {t("addExpenseHeading")}
                   </p>
                   <form action={addExpense.bind(null, campaign.id, slug)} className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
@@ -527,7 +531,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                         <input
                           name="title"
                           required
-                          placeholder="Titel, t.ex. Domänregistrering"
+                          placeholder={t("expenseTitlePlaceholder")}
                           className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass"
                         />
                       </div>
@@ -537,14 +541,14 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                           type="number"
                           min="1"
                           required
-                          placeholder={`Belopp (${campaign.currency})`}
+                          placeholder={t("amountPlaceholder", { currency: campaign.currency })}
                           className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass"
                         />
                       </div>
                       <div>
                         <input
                           name="description"
-                          placeholder="Notering (valfritt)"
+                          placeholder={t("expenseNotePlaceholder")}
                           className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass"
                         />
                       </div>
@@ -554,7 +558,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                           defaultValue=""
                           className="w-full border border-muted-teal/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-seagrass bg-white"
                         >
-                          <option value="">Ingen milstolpe</option>
+                          <option value="">{t("noMilestoneOption")}</option>
                           {project.milestones.map((m) => (
                             <option key={m.id} value={m.id}>{m.title}</option>
                           ))}
@@ -565,7 +569,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                       type="submit"
                       className="text-sm font-medium text-seagrass hover:text-dark-slate border border-seagrass/40 hover:border-dark-slate/40 px-3 py-1.5 rounded-md transition-colors"
                     >
-                      + Lägg till utgift
+                      {t("addExpenseButton")}
                     </button>
                   </form>
                 </div>
@@ -576,7 +580,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                   href={`/api/projects/${slug}/funding/export`}
                   className="inline-block mt-3 text-xs font-medium text-dark-slate/50 hover:text-dark-slate underline"
                 >
-                  Exportera rapport (CSV)
+                  {t("exportReportLink")}
                 </a>
               )}
             </section>
@@ -587,7 +591,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
         {campaign.campaignType === "reward" && campaign.rewardTiers.length > 0 && (
           <div className="space-y-3">
             <h3 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest">
-              Belöningsnivåer
+              {t("rewardTiersHeading")}
             </h3>
             {campaign.rewardTiers.map((tier) => {
               const backerCount = tier._count.pledges;
@@ -620,13 +624,13 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
                         />
                       </div>
                       <p className="text-xs text-dark-slate/40">
-                        {backerCount} / {tier.maxBackers} finansiärer
-                        {isFull && " — full"}
+                        {t("tierBackersCount", { count: backerCount, max: tier.maxBackers })}
+                        {isFull && ` ${t("tierFullSuffix")}`}
                       </p>
                     </div>
                   )}
                   {!isFull && campaign.status === "active" && userId && (
-                    <p className="text-xs text-seagrass font-medium">Välj i formuläret nedan</p>
+                    <p className="text-xs text-seagrass font-medium">{t("selectInFormBelow")}</p>
                   )}
                 </div>
               );

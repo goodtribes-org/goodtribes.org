@@ -6,14 +6,16 @@ import { auth } from "@/auth";
 import type { Metadata } from "next";
 import ActivityFeed from "@/components/ActivityFeed";
 import { fetchActivityItems, getFeedInteractionData } from "@/lib/activityFeed";
+import { getTranslations } from "next-intl/server";
 
 const PAGE_SIZE = 20;
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
+  const { locale, slug } = await params;
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) return {};
-  return { title: `${project.title} — Flöde — GoodTribes.org` };
+  const t = await getTranslations({ locale, namespace: "ActivityPage" });
+  return { title: t("pageTitle", { title: project.title }) };
 }
 
 export default async function ProjectActivityPage({
@@ -26,6 +28,7 @@ export default async function ProjectActivityPage({
   const { slug } = await params;
   const { page: pageStr } = await searchParams;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
+  const t = await getTranslations("ActivityPage");
 
   const [session, project] = await Promise.all([
     auth(),
@@ -46,8 +49,8 @@ export default async function ProjectActivityPage({
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-dark-slate">Flöde</h1>
-        <p className="text-sm text-dark-slate/50 mt-1">Senaste aktivitet i {project.title}</p>
+        <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
+        <p className="text-sm text-dark-slate/50 mt-1">{t("subtitle", { title: project.title })}</p>
       </div>
 
       <ActivityFeed
@@ -64,7 +67,7 @@ export default async function ProjectActivityPage({
         memberProjectIds={memberProjectIds}
         pendingJoinProjectIds={pendingJoinProjectIds}
         projectId={project.id}
-        emptyMessage="Ingen aktivitet i projektet ännu."
+        emptyMessage={t("emptyMessage")}
       />
     </div>
   );

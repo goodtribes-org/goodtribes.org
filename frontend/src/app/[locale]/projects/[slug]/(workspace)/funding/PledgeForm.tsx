@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { formatCurrency } from "@/lib/currency";
 
 type RewardTier = {
@@ -29,6 +29,7 @@ export default function PledgeForm({
   tokenExchangeRate,
 }: Props) {
   const locale = useLocale();
+  const t = useTranslations("FundingPage");
   const fmt = (amount: number, currency: string) => formatCurrency(amount, currency, locale);
   const [selectedAmount, setSelectedAmount] = useState<number>(0);
   const [selectedTierId, setSelectedTierId] = useState<string | null>(null);
@@ -140,8 +141,8 @@ export default function PledgeForm({
                   )}
                   {tier.maxBackers !== null && (
                     <p className="text-xs text-dark-slate/40 mt-1">
-                      {backerCount} / {tier.maxBackers} finansiärer
-                      {isFull && " — full"}
+                      {t("tierBackersCount", { count: backerCount, max: tier.maxBackers })}
+                      {isFull && ` ${t("tierFullSuffix")}`}
                     </p>
                   )}
                 </button>
@@ -154,7 +155,7 @@ export default function PledgeForm({
       {/* Amount input */}
       <div>
         <label className="block text-xs font-medium text-dark-slate/60 mb-1">
-          Belopp ({currency})
+          {t("amountPlaceholder", { currency })}
         </label>
         <input
           type="number"
@@ -185,7 +186,7 @@ export default function PledgeForm({
       {/* Message */}
       <div>
         <label className="block text-xs font-medium text-dark-slate/60 mb-1">
-          Meddelande (valfritt)
+          {t("messagePlaceholder")}
         </label>
         <textarea
           rows={2}
@@ -209,7 +210,7 @@ export default function PledgeForm({
         disabled={loading || !selectedAmount || selectedAmount < 10}
         className="w-full bg-coral text-white text-sm font-medium px-5 py-2.5 rounded-md hover:bg-watermelon transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? "Omdirigerar till betalning…" : "Stöd projektet"}
+        {loading ? "Omdirigerar till betalning…" : t("supportProject")}
       </button>
     </form>
   );

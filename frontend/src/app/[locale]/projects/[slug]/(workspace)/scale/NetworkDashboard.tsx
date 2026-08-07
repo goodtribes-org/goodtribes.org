@@ -1,9 +1,10 @@
 import type { NetworkStats } from "@/lib/networkStats";
 import CountryMap from "@/components/CountryMap";
 import { countByCountry } from "@/lib/geo";
+import { getTranslations } from "next-intl/server";
 import NetworkInsightsButton from "./NetworkInsightsButton";
 
-export default function NetworkDashboard({
+export default async function NetworkDashboard({
   stats,
   parentSlug,
   isOwnerOrAdmin,
@@ -12,33 +13,34 @@ export default function NetworkDashboard({
   parentSlug: string;
   isOwnerOrAdmin: boolean;
 }) {
+  const t = await getTranslations("NetworkDashboard");
   const countryCounts = countByCountry(stats.instances.map((i) => i.country));
 
   return (
     <div className="mb-8">
-      <h2 className="text-sm font-semibold text-dark-slate mb-3">Nätverksöversikt</h2>
+      <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("heading")}</h2>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-dry-sage/30 rounded-xl px-4 py-4 mb-4">
         <div className="text-center">
           <p className="text-2xl font-bold text-seagrass">{stats.totalContributors}</p>
-          <p className="text-xs text-dark-slate/50 mt-0.5">Bidragsgivare</p>
+          <p className="text-xs text-dark-slate/50 mt-0.5">{t("contributors")}</p>
         </div>
         <div className="text-center">
           <p className="text-2xl font-bold text-seagrass">{Math.round(stats.totalTokens)}</p>
-          <p className="text-xs text-dark-slate/50 mt-0.5">Tribe Tokens</p>
+          <p className="text-xs text-dark-slate/50 mt-0.5">{t("tribeTokens")}</p>
         </div>
         <div className="text-center">
           <p className="text-2xl font-bold text-seagrass">{stats.totalTasksDone}</p>
-          <p className="text-xs text-dark-slate/50 mt-0.5">Avklarade uppgifter</p>
+          <p className="text-xs text-dark-slate/50 mt-0.5">{t("tasksDone")}</p>
         </div>
         <div className="text-center">
           <p className="text-2xl font-bold text-seagrass">{stats.totalFundsRaised.toLocaleString("sv-SE")}</p>
-          <p className="text-xs text-dark-slate/50 mt-0.5">Insamlat (alla valutor)</p>
+          <p className="text-xs text-dark-slate/50 mt-0.5">{t("fundsRaised")}</p>
         </div>
       </div>
 
       <div className="mb-4">
-        <CountryMap counts={countryCounts} unitLabel="instanser" />
+        <CountryMap counts={countryCounts} unitLabel={t("mapUnitLabel")} />
       </div>
 
       {isOwnerOrAdmin && <NetworkInsightsButton parentSlug={parentSlug} />}
@@ -47,12 +49,12 @@ export default function NetworkDashboard({
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-dry-sage/30 text-left text-xs text-dark-slate/50 uppercase tracking-wider">
-              <th className="px-3 py-2 font-semibold">Instans</th>
-              <th className="px-3 py-2 font-semibold">Plats</th>
-              <th className="px-3 py-2 font-semibold text-right">Bidragsgivare</th>
-              <th className="px-3 py-2 font-semibold text-right">Tokens</th>
-              <th className="px-3 py-2 font-semibold text-right">Uppgifter</th>
-              <th className="px-3 py-2 font-semibold text-right">Insamlat</th>
+              <th className="px-3 py-2 font-semibold">{t("colInstance")}</th>
+              <th className="px-3 py-2 font-semibold">{t("colLocation")}</th>
+              <th className="px-3 py-2 font-semibold text-right">{t("colContributors")}</th>
+              <th className="px-3 py-2 font-semibold text-right">{t("colTokens")}</th>
+              <th className="px-3 py-2 font-semibold text-right">{t("colTasks")}</th>
+              <th className="px-3 py-2 font-semibold text-right">{t("colFundsRaised")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-muted-teal/20">
@@ -60,7 +62,7 @@ export default function NetworkDashboard({
               <tr key={inst.slug}>
                 <td className="px-3 py-2 font-medium text-dark-slate">{inst.title}</td>
                 <td className="px-3 py-2 text-dark-slate/50">
-                  {inst.region ? `${inst.region}${inst.country ? `, ${inst.country}` : ""}` : "—"}
+                  {inst.region ? `${inst.region}${inst.country ? `, ${inst.country}` : ""}` : t("noLocation")}
                 </td>
                 <td className="px-3 py-2 text-right text-dark-slate">{inst.contributors}</td>
                 <td className="px-3 py-2 text-right text-dark-slate">{Math.round(inst.tokens)}</td>

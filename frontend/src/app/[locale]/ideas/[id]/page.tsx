@@ -6,6 +6,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import { IdeaSidebar, CommentForm } from "./IdeaInteractions";
 import ScrollToHash from "@/components/ScrollToHash";
 import FlagContentButton from "@/components/FlagContentButton";
@@ -18,28 +19,14 @@ import IdeaPromoteButton from "./IdeaPromoteButton";
 
 const STATUS_STEPS = ["open", "review", "shortlisted", "approved", "converted"];
 
-const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  draft:       { bg: "bg-gray-100", text: "text-gray-600", label: "Draft" },
-  open:        { bg: "bg-teal-50", text: "text-teal-700", label: "Open" },
-  review:      { bg: "bg-amber-100", text: "text-amber-700", label: "Under Review" },
-  shortlisted: { bg: "bg-purple-100", text: "text-purple-700", label: "Shortlisted" },
-  approved:    { bg: "bg-green-100", text: "text-green-700", label: "Approved" },
-  converted:   { bg: "bg-coral/10", text: "text-coral", label: "Converted" },
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  draft:       { bg: "bg-gray-100", text: "text-gray-600" },
+  open:        { bg: "bg-teal-50", text: "text-teal-700" },
+  review:      { bg: "bg-amber-100", text: "text-amber-700" },
+  shortlisted: { bg: "bg-purple-100", text: "text-purple-700" },
+  approved:    { bg: "bg-green-100", text: "text-green-700" },
+  converted:   { bg: "bg-coral/10", text: "text-coral" },
 };
-
-const REGION_LABELS: Record<string, string> = {
-  local: "Local", regional: "Regional", national: "National", global: "Global",
-};
-
-function timeAgo(date: Date): string {
-  const s = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (s < 60) return "just now";
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
-}
 
 function formatReach(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -57,6 +44,33 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function IdeaDetailPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
+  const t = await getTranslations("IdeaDetailPage");
+
+  const statusLabels: Record<string, string> = {
+    draft: t("statusDraft"),
+    open: t("statusOpen"),
+    review: t("statusReview"),
+    shortlisted: t("statusShortlisted"),
+    approved: t("statusApproved"),
+    converted: t("statusConverted"),
+  };
+
+  const regionLabels: Record<string, string> = {
+    local: t("regionLocal"),
+    regional: t("regionRegional"),
+    national: t("regionNational"),
+    global: t("regionGlobal"),
+  };
+
+  function timeAgo(date: Date): string {
+    const s = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (s < 60) return t("timeJustNow");
+    const m = Math.floor(s / 60);
+    if (m < 60) return t("timeMinutesAgo", { minutes: m });
+    const h = Math.floor(m / 60);
+    if (h < 24) return t("timeHoursAgo", { hours: h });
+    return t("timeDaysAgo", { days: Math.floor(h / 24) });
+  }
 
   const [session, idea] = await Promise.all([
     auth(),
@@ -114,7 +128,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
       <ScrollToHash />
       {/* Breadcrumb */}
       <nav className="mb-6 text-sm text-dark-slate/50 flex items-center gap-2">
-        <Link href="/ideas" className="hover:text-dark-slate transition-colors">Ideas</Link>
+        <Link href="/ideas" className="hover:text-dark-slate transition-colors">{t("breadcrumbIdeas")}</Link>
         <span>/</span>
         <span className="text-dark-slate truncate max-w-xs">{idea.title}</span>
       </nav>
@@ -142,7 +156,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
                     {done ? "✓" : i + 1}
                   </div>
                   <span className={`text-[9px] mt-1 font-medium uppercase tracking-wider ${done ? info.text : "text-gray-400"}`}>
-                    {info?.label ?? step}
+                    {statusLabels[step] ?? step}
                   </span>
                   {i < STATUS_STEPS.length - 1 && (
                     <div className={`hidden md:block absolute mt-3.5 w-full h-0.5 -right-1/2 ${done && currentStep > i ? "bg-seagrass" : "bg-gray-200"}`} />
@@ -186,14 +200,14 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           {/* Header */}
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusInfo.bg} ${statusInfo.text}`}>
-              {statusInfo.label}
+              {statusLabels[idea.status] ?? idea.status}
             </span>
             {idea.category && (
               <span className="text-xs font-medium text-dark-slate/50 uppercase tracking-wider">{idea.category}</span>
             )}
             {idea.targetRegion && (
               <span className="text-xs px-2 py-0.5 border border-muted-teal rounded-full text-dark-slate/50">
-                {REGION_LABELS[idea.targetRegion] ?? idea.targetRegion}
+                {regionLabels[idea.targetRegion] ?? idea.targetRegion}
               </span>
             )}
           </div>
@@ -208,23 +222,23 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
                 {(idea.author.name ?? "?")[0].toUpperCase()}
               </div>
             )}
-            <span>{idea.author.name ?? "Unknown"}</span>
+            <span>{idea.author.name ?? t("unknownAuthor")}</span>
             <span>·</span>
             <span>{timeAgo(idea.createdAt)}</span>
             <span>·</span>
-            <span>{idea.viewCount} views</span>
+            <span>{t("viewsCount", { count: idea.viewCount })}</span>
           </div>
 
           {/* Contributors */}
           {idea.contributors.filter((c) => c.userId !== idea.author.id).length > 0 && (
             <div className="flex items-center gap-2 mb-6 -mt-3">
-              <span className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider">Co-authors:</span>
+              <span className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider">{t("coAuthorsLabel")}</span>
               <div className="flex flex-wrap gap-1.5">
                 {idea.contributors
                   .filter((c) => c.userId !== idea.author.id)
                   .map((c) => (
                     <span key={c.id} className="text-xs bg-dry-sage text-dark-slate/60 px-2.5 py-1 rounded-full">
-                      {c.user.name ?? "Unknown"}
+                      {c.user.name ?? t("unknownAuthor")}
                     </span>
                   ))}
               </div>
@@ -245,7 +259,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
             <section className="mb-6">
               <h2 className="flex items-center gap-2 text-sm font-semibold text-dark-slate uppercase tracking-wider mb-3">
                 <span className="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs">!</span>
-                Problem
+                {t("problemHeading")}
               </h2>
               <div className="bg-red-50/50 border border-red-100 rounded-xl p-4">
                 <p className="text-sm text-dark-slate/80 leading-relaxed whitespace-pre-wrap">
@@ -260,7 +274,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
             <section className="mb-6">
               <h2 className="flex items-center gap-2 text-sm font-semibold text-dark-slate uppercase tracking-wider mb-3">
                 <span className="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs">✓</span>
-                Solution
+                {t("solutionHeading")}
               </h2>
               <div className="bg-green-50/50 border border-green-100 rounded-xl p-4">
                 <p className="text-sm text-dark-slate/80 leading-relaxed whitespace-pre-wrap">{idea.solution}</p>
@@ -284,17 +298,17 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           {/* Impact */}
           {(idea.sdgGoals.length > 0 || idea.estimatedReach) && (
             <section className="mb-6">
-              <h2 className="text-sm font-semibold text-dark-slate uppercase tracking-wider mb-3">Impact</h2>
+              <h2 className="text-sm font-semibold text-dark-slate uppercase tracking-wider mb-3">{t("impactHeading")}</h2>
               <div className="flex flex-wrap gap-4 items-start">
                 {idea.estimatedReach && (
                   <div className="bg-dry-sage rounded-xl px-4 py-3 text-center">
                     <p className="text-2xl font-bold text-dark-slate">{formatReach(idea.estimatedReach)}</p>
-                    <p className="text-xs text-dark-slate/50 mt-0.5">people potentially reached</p>
+                    <p className="text-xs text-dark-slate/50 mt-0.5">{t("peopleReachedLabel")}</p>
                   </div>
                 )}
                 {idea.sdgGoals.length > 0 && (
                   <div>
-                    <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-2">Agenda 2030:</p>
+                    <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-2">{t("agenda2030Label")}</p>
                     <div className="flex flex-wrap gap-2">
                       {idea.sdgGoals.map((n) => (
                         <div key={n} className="flex items-center gap-1.5">
@@ -312,12 +326,12 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           {/* Convert to project CTA */}
           {idea.promotedToProject ? (
             <div className="mb-8 p-5 border-2 border-dashed border-seagrass/40 rounded-xl bg-seagrass/5">
-              <p className="text-sm font-semibold text-dark-slate mb-1">This idea became a project!</p>
+              <p className="text-sm font-semibold text-dark-slate mb-1">{t("becameProjectBanner")}</p>
               <Link
                 href={`/projects/${idea.promotedToProject.slug}`}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-seagrass text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
               >
-                View the project →
+                {t("viewProjectLink")}
               </Link>
             </div>
           ) : (
@@ -325,16 +339,16 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
             userId &&
             (isAuthor || isModerator) && (
               <div className="mb-8 p-5 border-2 border-dashed border-seagrass/40 rounded-xl bg-seagrass/5">
-                <p className="text-sm font-semibold text-dark-slate mb-1">This idea has been approved!</p>
+                <p className="text-sm font-semibold text-dark-slate mb-1">{t("approvedBanner")}</p>
                 <p className="text-sm text-dark-slate/60 mb-3">
-                  Ready to turn it into a real project and recruit volunteers?
+                  {t("readyToConvertText")}
                 </p>
                 <IdeaPromoteButton ideaId={idea.id} />
                 <Link
                   href={`/projects/new?from=${idea.id}&title=${encodeURIComponent(idea.title)}`}
                   className="inline-block mt-2 text-xs text-dark-slate/50 hover:text-dark-slate hover:underline"
                 >
-                  Customize the details before creating it →
+                  {t("customizeDetailsLink")}
                 </Link>
               </div>
             )
@@ -343,13 +357,13 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           {!userId && (
             <div className="mb-8 p-5 border-2 border-dashed border-muted-teal/40 rounded-xl bg-muted-teal/5">
               <p className="text-sm text-dark-slate/60 mb-3">
-                Think this idea is ready to become a project? Log in to vote and contribute.
+                {t("loggedOutPrompt")}
               </p>
               <Link
                 href="/login"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-coral text-white text-sm font-medium rounded-lg hover:bg-watermelon transition-colors"
               >
-                Log in to participate →
+                {t("logInToParticipateLink")}
               </Link>
             </div>
           )}
@@ -357,7 +371,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           {/* Comments */}
           <section>
             <h2 className="text-base font-semibold text-dark-slate mb-4">
-              {idea.comments.length} comment{idea.comments.length !== 1 ? "s" : ""}
+              {t("commentsHeading", { count: idea.comments.length })}
             </h2>
 
             <div className="flex flex-col gap-5 mb-6">
@@ -372,7 +386,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
                   )}
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-dark-slate">{comment.author.name ?? "Unknown"}</span>
+                      <span className="text-sm font-medium text-dark-slate">{comment.author.name ?? t("unknownAuthor")}</span>
                       <span className="text-xs text-dark-slate/40">{timeAgo(comment.createdAt)}</span>
                     </div>
                     <p className="text-sm text-dark-slate/80 leading-relaxed">{comment.content}</p>
@@ -386,7 +400,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
               <CommentForm ideaId={idea.id} />
             ) : (
               <p className="text-sm text-dark-slate/50">
-                <Link href="/login" className="text-coral hover:underline">Log in</Link> to leave a comment.
+                <Link href="/login" className="text-coral hover:underline">{t("logInLinkText")}</Link> {t("toLeaveCommentSuffix")}
               </p>
             )}
           </section>

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { LeanCanvas } from "@prisma/client";
 import { completeIdeaGuideStep, updateIdeaDetails } from "./actions";
 import { toggleChecklistItem } from "../(workspace)/edit/actions";
@@ -57,6 +58,7 @@ export default function IdeaGuide({
   leanCanvas,
   hasInvitedSomeone,
 }: Props) {
+  const t = useTranslations("IdeaGuide");
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [done, setDone] = useState<Set<string>>(new Set(completedKeys));
@@ -163,17 +165,17 @@ export default function IdeaGuide({
     <div className="py-10">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-2">
-          <h1 className="text-xl font-bold text-dark-slate">Snabbstart — {title}</h1>
+          <h1 className="text-xl font-bold text-dark-slate">{t("title", { title })}</h1>
           <button
             type="button"
             onClick={goToProject}
             className="text-sm text-dark-slate/50 hover:text-dark-slate"
           >
-            Hoppa över guiden →
+            {t("skipGuide")}
           </button>
         </div>
         <p className="text-sm text-dark-slate/60 mb-8">
-          En valfri genomgång av idé-fasens delsteg. Hoppa över när som helst — inget här krävs.
+          {t("subtitle")}
         </p>
 
         {/* Step indicator — every step is freely clickable once done, including
@@ -191,42 +193,42 @@ export default function IdeaGuide({
       <div className={step === 0 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div>
           <label className="block text-sm font-medium text-dark-slate mb-2">
-            Omslagsbild <span className="text-dark-slate/50 font-normal">(valfritt)</span>
+            {t("coverImageLabel")} <span className="text-dark-slate/50 font-normal">{t("optionalLabel")}</span>
           </label>
           <FileUpload visibility="public" accept="image/*" onUpload={setImageUrl} />
         </div>
 
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-dark-slate mb-1">
-            Projektnamn <span className="text-watermelon">*</span>
+            {t("projectNameLabel")} <span className="text-watermelon">*</span>
           </label>
           <input
             id="title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Projektnamn"
+            placeholder={t("projectNamePlaceholder")}
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
           />
         </div>
 
         <div>
           <label htmlFor="summary" className="block text-sm font-medium text-dark-slate mb-1">
-            Kort sammanfattning <span className="text-watermelon">*</span> <span className="text-dark-slate/50 font-normal">(visas på projektkortet)</span>
+            {t("summaryLabel")} <span className="text-watermelon">*</span> <span className="text-dark-slate/50 font-normal">{t("summaryHint")}</span>
           </label>
           <textarea
             id="summary"
             rows={2}
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
-            placeholder="1–2 meningar"
+            placeholder={t("summaryPlaceholder")}
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral resize-none"
           />
         </div>
 
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-dark-slate mb-1">
-            Beskrivning <span className="text-watermelon">*</span>
+            {t("descriptionLabel")} <span className="text-watermelon">*</span>
           </label>
           <RichTextEditor
             content={description}
@@ -236,14 +238,14 @@ export default function IdeaGuide({
             }}
           />
           {descriptionError && (
-            <p className="text-xs text-watermelon mt-1">Projektnamn, sammanfattning och beskrivning krävs.</p>
+            <p className="text-xs text-watermelon mt-1">{t("descriptionError")}</p>
           )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="category" className="block text-sm font-medium text-dark-slate mb-1">
-              Kategori
+              {t("categoryLabel")}
             </label>
             <select
               id="category"
@@ -251,20 +253,20 @@ export default function IdeaGuide({
               onChange={(e) => setCategory(e.target.value)}
               className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral bg-white"
             >
-              <option value="">— none —</option>
+              <option value="">{t("categoryNoneOption")}</option>
               {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div>
             <label htmlFor="tags" className="block text-sm font-medium text-dark-slate mb-1">
-              Taggar <span className="text-dark-slate/50 font-normal">(kommaseparerat)</span>
+              {t("tagsLabel")} <span className="text-dark-slate/50 font-normal">{t("tagsHint")}</span>
             </label>
             <input
               id="tags"
               type="text"
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
-              placeholder="climate, youth"
+              placeholder={t("tagsPlaceholder")}
               className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
             />
           </div>
@@ -277,7 +279,7 @@ export default function IdeaGuide({
             onClick={handleDetailsNext}
             className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            {isPending ? "Sparar…" : "Nästa →"}
+            {isPending ? t("saving") : t("next")}
           </button>
         </div>
       </div>
@@ -285,9 +287,9 @@ export default function IdeaGuide({
       {/* Step 2 — Välj SDG */}
       <div className={step === 1 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div>
-          <label className="block text-sm font-medium text-dark-slate mb-1">Välj SDG</label>
+          <label className="block text-sm font-medium text-dark-slate mb-1">{t("sdgLabel")}</label>
           <p className="text-xs text-dark-slate/50 mb-4">
-            Här kan du välja SDG som kopplar till projektet.
+            {t("sdgHint")}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {SDG_NUMBERS.map((n) => {
@@ -315,14 +317,14 @@ export default function IdeaGuide({
           </div>
         </div>
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(0)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">← Tillbaka</button>
+          <button type="button" onClick={() => setStep(0)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
             type="button"
             disabled={isPending}
             onClick={handleSdgNext}
             className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            {isPending ? "Sparar…" : "Nästa →"}
+            {isPending ? t("saving") : t("next")}
           </button>
         </div>
       </div>
@@ -331,21 +333,21 @@ export default function IdeaGuide({
           its 10-column grid has room at the 900px+ breakpoint) */}
       <div className={step === 2 ? "flex flex-col gap-5" : "hidden"}>
         <div className="max-w-3xl">
-          <label className="block text-sm font-medium text-dark-slate mb-1">Lean Canvas</label>
+          <label className="block text-sm font-medium text-dark-slate mb-1">{t("leanCanvasLabel")}</label>
           <p className="text-xs text-dark-slate/50 mb-3">
-            Ett enkelsidigt planeringsverktyg — problem, lösning, målgrupp, kanaler, intäkter.
+            {t("leanCanvasHint")}
           </p>
         </div>
         <LeanCanvasGrid projectSlug={slug} canvas={leanCanvas} canEdit />
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(1)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">← Tillbaka</button>
+          <button type="button" onClick={() => setStep(1)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
             type="button"
             disabled={isPending}
             onClick={handleLeanCanvasNext}
             className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            {isPending ? "Sparar…" : "Nästa →"}
+            {isPending ? t("saving") : t("next")}
           </button>
         </div>
       </div>
@@ -354,10 +356,10 @@ export default function IdeaGuide({
       <div className={step === 3 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div className="rounded-xl border border-seagrass/20 bg-seagrass/5 p-5">
           <label className="block text-base font-semibold text-dark-slate mb-1">
-            🎉 Dela idén med vänner
+            {t("inviteFriendsLabel")}
           </label>
           <p className="text-sm text-dark-slate/60 mb-4">
-            Bra idéer blir ännu bättre med fler perspektiv. Bjud in vänner och kollegor att kika på din idé och tycka till — både de som redan är med på GoodTribes och de som inte är det än. Helt valfritt, men det tar bara en minut.
+            {t("inviteFriendsHint")}
           </p>
           <AddOrInviteMember
             projectId={projectId}
@@ -367,14 +369,14 @@ export default function IdeaGuide({
           />
         </div>
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(2)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">← Tillbaka</button>
+          <button type="button" onClick={() => setStep(2)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
             type="button"
             disabled={isPending}
             onClick={handleFeedbackNext}
             className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            {isPending ? "Sparar…" : "Nästa →"}
+            {isPending ? t("saving") : t("next")}
           </button>
         </div>
       </div>
@@ -382,15 +384,15 @@ export default function IdeaGuide({
       {/* Step 5 — Sprint */}
       <div className={step === 4 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div>
-          <label className="block text-sm font-medium text-dark-slate mb-1">Sprint</label>
+          <label className="block text-sm font-medium text-dark-slate mb-1">{t("sprintLabel")}</label>
           <p className="text-xs text-dark-slate/50 mb-4">
-            Valfritt — förbered sprint-arbetet redan nu genom att bocka av det som redan är klart, eller starta en riktig, asynkron Design Sprint direkt.
+            {t("sprintHint")}
           </p>
           <a
             href={`/projects/${slug}/sprints`}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors mb-4"
           >
-            Öppna Design Sprints →
+            {t("openDesignSprints")}
           </a>
           <div className="flex flex-col gap-2">
             {SPRINT_PREP_ITEMS.map((item) => {
@@ -416,14 +418,14 @@ export default function IdeaGuide({
           </div>
         </div>
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(3)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">← Tillbaka</button>
+          <button type="button" onClick={() => setStep(3)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
             type="button"
             disabled={isPending}
             onClick={handleSprintFinish}
             className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            {isPending ? "Sparar…" : "Klar, ta mig till projektet"}
+            {isPending ? t("saving") : t("finishButton")}
           </button>
         </div>
       </div>

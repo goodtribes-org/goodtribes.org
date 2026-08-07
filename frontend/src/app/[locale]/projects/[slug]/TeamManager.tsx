@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { removeMember, changeMemberRole } from "./member-actions";
 import type { ProjectRole } from "@/lib/authz";
 
@@ -12,6 +13,12 @@ type Member = {
 };
 
 const ROLES: ProjectRole[] = ["ADMIN", "MEMBER", "FOLLOWER"];
+const ROLE_LABEL_KEYS: Record<ProjectRole, "roleAdmin" | "roleMember" | "roleFollower"> = {
+  FOUNDER: "roleAdmin", // unreachable: ROLES excludes FOUNDER, kept for type completeness
+  ADMIN: "roleAdmin",
+  MEMBER: "roleMember",
+  FOLLOWER: "roleFollower",
+};
 
 export default function TeamManager({
   projectId,
@@ -24,6 +31,7 @@ export default function TeamManager({
   members: Member[];
   currentUserId: string;
 }) {
+  const t = useTranslations("TeamManager");
   const [isPending, startTransition] = useTransition();
 
   return (
@@ -41,11 +49,11 @@ export default function TeamManager({
               ) : initials}
             </div>
             <span className="text-sm text-dark-slate flex-1 min-w-0 truncate">
-              {m.user.name ?? "Unknown"}
-              {isSelf && <span className="text-dark-slate/40 ml-1">(you)</span>}
+              {m.user.name ?? t("unknownName")}
+              {isSelf && <span className="text-dark-slate/40 ml-1">{t("selfIndicator")}</span>}
             </span>
             {isOwner ? (
-              <span className="text-xs text-coral font-semibold uppercase tracking-wide">Founder</span>
+              <span className="text-xs text-coral font-semibold uppercase tracking-wide">{t("founderBadge")}</span>
             ) : (
               <>
                 <select
@@ -57,17 +65,17 @@ export default function TeamManager({
                   className="text-xs border border-muted-teal/50 rounded px-2 py-1 text-dark-slate/70 focus:outline-none focus:ring-1 focus:ring-seagrass disabled:opacity-50"
                 >
                   {ROLES.map((r) => (
-                    <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
+                    <option key={r} value={r}>{t(ROLE_LABEL_KEYS[r])}</option>
                   ))}
                 </select>
                 <button
                   disabled={isPending}
                   onClick={() => {
-                    if (!confirm(`Remove ${m.user.name ?? "this member"} from the project?`)) return;
+                    if (!confirm(t("confirmRemoveMember", { name: m.user.name ?? t("genericMember") }))) return;
                     startTransition(() => removeMember(projectId, m.user.id, slug));
                   }}
                   className="text-xs text-dark-slate/30 hover:text-coral transition-colors disabled:opacity-40"
-                  title="Remove member"
+                  title={t("removeMemberTitle")}
                 >
                   ✕
                 </button>

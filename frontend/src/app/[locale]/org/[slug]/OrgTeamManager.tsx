@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { removeOrgMember, changeOrgMemberRole } from "./member-actions";
 import MessageButton from "@/components/MessageButton";
 
@@ -25,7 +26,13 @@ export default function OrgTeamManager({
   currentUserId: string;
   ownerId: string;
 }) {
+  const t = useTranslations("OrgTeamManager");
   const [isPending, startTransition] = useTransition();
+
+  const ROLE_LABELS: Record<(typeof ORG_ROLES)[number], string> = {
+    ADMIN: t("roleAdmin"),
+    MEMBER: t("roleMember"),
+  };
 
   return (
     <div className="space-y-2">
@@ -40,12 +47,12 @@ export default function OrgTeamManager({
               {initials}
             </div>
             <span className="text-sm text-dark-slate flex-1 min-w-0 truncate">
-              {m.user.name ?? "Unknown"}
-              {isSelf && <span className="text-dark-slate/40 ml-1">(you)</span>}
+              {m.user.name ?? t("unknownName")}
+              {isSelf && <span className="text-dark-slate/40 ml-1">{t("youLabel")}</span>}
             </span>
-            {!isSelf && <MessageButton toUserId={m.user.id} toUserName={m.user.name ?? "this person"} />}
+            {!isSelf && <MessageButton toUserId={m.user.id} toUserName={m.user.name ?? t("unknownPersonFallback")} />}
             {isOwner ? (
-              <span className="text-xs text-coral font-semibold uppercase tracking-wide">Owner</span>
+              <span className="text-xs text-coral font-semibold uppercase tracking-wide">{t("ownerBadge")}</span>
             ) : (
               <>
                 <select
@@ -57,17 +64,17 @@ export default function OrgTeamManager({
                   className="text-xs border border-muted-teal/50 rounded px-2 py-1 text-dark-slate/70 focus:outline-none focus:ring-1 focus:ring-seagrass disabled:opacity-50"
                 >
                   {ORG_ROLES.map((r) => (
-                    <option key={r} value={r}>{r.charAt(0) + r.slice(1).toLowerCase()}</option>
+                    <option key={r} value={r}>{ROLE_LABELS[r]}</option>
                   ))}
                 </select>
                 <button
                   disabled={isPending}
                   onClick={() => {
-                    if (!confirm(`Remove ${m.user.name ?? "this member"} from the organisation?`)) return;
+                    if (!confirm(t("removeConfirm", { name: m.user.name ?? t("unknownMemberFallback") }))) return;
                     startTransition(() => removeOrgMember(orgId, m.user.id, slug));
                   }}
                   className="text-xs text-dark-slate/30 hover:text-coral transition-colors disabled:opacity-40"
-                  title="Remove member"
+                  title={t("removeMemberTitle")}
                 >
                   ✕
                 </button>

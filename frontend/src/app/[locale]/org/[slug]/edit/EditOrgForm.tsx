@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { useTranslations } from "next-intl";
 import FileUpload from "@/components/FileUpload";
 import { updateOrg, deleteOrg } from "./actions";
 import { CATEGORIES } from "@/lib/categories";
@@ -29,6 +30,7 @@ export default function EditOrgForm({
   skills,
   currentSkillIds,
 }: Props) {
+  const t = useTranslations("EditOrgForm");
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -38,7 +40,7 @@ export default function EditOrgForm({
 
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-dark-slate mb-1">
-            Name <span className="text-watermelon">*</span>
+            {t("nameLabel")} <span className="text-watermelon">*</span>
           </label>
           <input
             id="name"
@@ -52,7 +54,7 @@ export default function EditOrgForm({
 
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-dark-slate mb-1">
-            Description
+            {t("descriptionLabel")}
           </label>
           <textarea
             id="description"
@@ -64,7 +66,7 @@ export default function EditOrgForm({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-dark-slate mb-2">Logo</label>
+          <label className="block text-sm font-medium text-dark-slate mb-2">{t("logoLabel")}</label>
           <FileUpload
             visibility="public"
             accept="image/*"
@@ -78,7 +80,7 @@ export default function EditOrgForm({
 
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-dark-slate mb-1">
-            Category <span className="text-dark-slate/50 font-normal">(optional)</span>
+            {t("categoryLabel")} <span className="text-dark-slate/50 font-normal">{t("optionalSuffix")}</span>
           </label>
           <select
             id="category"
@@ -86,21 +88,21 @@ export default function EditOrgForm({
             defaultValue={category ?? ""}
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral bg-white"
           >
-            <option value="">— none —</option>
+            <option value="">{t("noneOption")}</option>
             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
 
         <div>
           <label htmlFor="country" className="block text-sm font-medium text-dark-slate mb-1">
-            Land <span className="text-dark-slate/50 font-normal">(valfritt — används för partnerskapsmatchning)</span>
+            {t("countryLabel")} <span className="text-dark-slate/50 font-normal">{t("countryHint")}</span>
           </label>
           <input
             id="country"
             name="country"
             type="text"
             defaultValue={country ?? ""}
-            placeholder="t.ex. Sverige"
+            placeholder={t("countryPlaceholder")}
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
           />
         </div>
@@ -108,7 +110,7 @@ export default function EditOrgForm({
         {skills.length > 0 && (
           <div>
             <label className="block text-sm font-medium text-dark-slate mb-2">
-              Skills sought <span className="text-dark-slate/50 font-normal">(optional)</span>
+              {t("skillsSoughtLabel")} <span className="text-dark-slate/50 font-normal">{t("optionalSuffix")}</span>
             </label>
             <div className="flex flex-wrap gap-2">
               {skills.map((s) => (
@@ -138,7 +140,7 @@ export default function EditOrgForm({
             className="accent-seagrass w-4 h-4"
           />
           <label htmlFor="isPublic" className="text-sm text-dark-slate">
-            Show organisation publicly
+            {t("showPubliclyLabel")}
           </label>
         </div>
 
@@ -146,21 +148,21 @@ export default function EditOrgForm({
           type="submit"
           className="w-full bg-coral text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-watermelon transition-colors mt-2"
         >
-          Save changes
+          {t("saveButton")}
         </button>
       </form>
 
       <div className="mt-12 border-t border-muted-teal/40 pt-8">
         <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-3">
-          Danger zone
+          {t("dangerZoneHeading")}
         </h2>
         <p className="text-sm text-dark-slate/70 mb-4">
-          Removing the organisation is permanent and cannot be undone.
+          {t("dangerZoneDescription")}
         </p>
         <form
           action={deleteOrg}
           onSubmit={(e) => {
-            if (!confirm("Delete this organisation? This cannot be undone.")) e.preventDefault();
+            if (!confirm(t("deleteConfirm"))) e.preventDefault();
           }}
         >
           <input type="hidden" name="orgId" value={orgId} />
@@ -168,7 +170,7 @@ export default function EditOrgForm({
             type="submit"
             className="border border-watermelon text-watermelon text-sm font-medium px-4 py-2 rounded-md hover:bg-watermelon hover:text-white transition-colors"
           >
-            Delete organisation
+            {t("deleteButton")}
           </button>
         </form>
       </div>

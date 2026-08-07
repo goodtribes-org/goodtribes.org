@@ -1,14 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-
-const STATUS_LABEL: Record<string, string> = {
-  pending: "Väntar på röstning",
-  approved_by_members: "Godkänt av medlemmarna — väntar på Stiftelsen",
-  rejected_by_members: "Avslaget av medlemmarna",
-  vetoed_by_foundation: "Nedlagt veto av Stiftelsen",
-  executed: "Genomförd",
-};
+import { getTranslations } from "next-intl/server";
 
 export default async function ProfitDistributionPage({
   params,
@@ -16,6 +9,14 @@ export default async function ProfitDistributionPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const t = await getTranslations("ProfitDistributionPage");
+  const STATUS_LABEL: Record<string, string> = {
+    pending: t("statusPending"),
+    approved_by_members: t("statusApprovedByMembers"),
+    rejected_by_members: t("statusRejectedByMembers"),
+    vetoed_by_foundation: t("statusVetoedByFoundation"),
+    executed: t("statusExecuted"),
+  };
 
   const project = await prisma.project.findUnique({
     where: { slug },
@@ -38,15 +39,15 @@ export default async function ProfitDistributionPage({
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-dark-slate">Vinstfördelning</h1>
+        <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
         <p className="text-sm text-dark-slate/60 mt-1">
-          Se PRD 4a för hela flödet: styrelsens förslag, medlemmarnas röstning och Stiftelsens genomförande.
+          {t("subtitle")}
         </p>
       </div>
 
       {proposals.length === 0 ? (
         <p className="text-sm text-dark-slate/40">
-          Inget vinstfördelningsförslag har lagts fram för {project.title} ännu.
+          {t("emptyState", { title: project.title })}
         </p>
       ) : (
         <div className="flex flex-col gap-4">
@@ -54,33 +55,38 @@ export default async function ProfitDistributionPage({
             <div key={p.id} className="border border-muted-teal rounded-lg p-5">
               <div className="flex items-center justify-between gap-2 mb-2">
                 <span className="text-sm font-semibold text-dark-slate">
-                  {p.auditedProfitSek.toLocaleString("sv-SE")} kr
+                  {t("amountSek", { amount: p.auditedProfitSek.toLocaleString("sv-SE") })}
                 </span>
                 <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
                   {STATUS_LABEL[p.status] ?? p.status}
                 </span>
               </div>
               <p className="text-sm text-dark-slate/60 mb-2">
-                {p.proposedOperationsPct}% drift, {p.proposedImpactFundPct}% Impact-fond,{" "}
-                {100 - p.proposedOperationsPct - p.proposedImpactFundPct}% till bidragsgivare
+                {t("breakdown", {
+                  opsPct: p.proposedOperationsPct,
+                  impactPct: p.proposedImpactFundPct,
+                  remainingPct: 100 - p.proposedOperationsPct - p.proposedImpactFundPct,
+                })}
               </p>
               {p.pollId && (
                 <Link
                   href={`/projects/${slug}/polls/${p.pollId}`}
                   className="text-sm text-seagrass hover:underline"
                 >
-                  Se omröstningen →
+                  {t("viewPoll")}
                 </Link>
               )}
               {p.decisionNote && (
-                <p className="text-xs text-dark-slate/50 mt-2">Motivering: {p.decisionNote}</p>
+                <p className="text-xs text-dark-slate/50 mt-2">{t("decisionNote", { note: p.decisionNote })}</p>
               )}
               {p.distribution && (
                 <div className="mt-3 pt-3 border-t border-muted-teal/50 text-xs text-dark-slate/60">
-                  Drift: {p.distribution.operationsShareSek.toLocaleString("sv-SE")} kr · Impact-fond:{" "}
-                  {p.distribution.impactFundShareSek.toLocaleString("sv-SE")} kr · Till bidragsgivare:{" "}
-                  {p.distribution.remainingShareSek.toLocaleString("sv-SE")} kr (
-                  {p.distribution.allocations.length} personliga andelar)
+                  {t("distributionSummary", {
+                    operations: p.distribution.operationsShareSek.toLocaleString("sv-SE"),
+                    impactFund: p.distribution.impactFundShareSek.toLocaleString("sv-SE"),
+                    remaining: p.distribution.remainingShareSek.toLocaleString("sv-SE"),
+                    count: p.distribution.allocations.length,
+                  })}
                 </div>
               )}
             </div>

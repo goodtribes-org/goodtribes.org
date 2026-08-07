@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { updateProject, advanceProjectPhase, requestSandboxGraduation, toggleChecklistItem, updateGithubColumnMap } from "./actions";
 import { COLUMNS } from "@/lib/kanbanColumns";
 import { columnForStatus } from "@/lib/githubColumnMap";
@@ -45,6 +46,7 @@ interface Props {
 }
 
 export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, currentOrgId, github, initial, completedChecklistKeys, ownershipInterests, graduationRequest }: Props) {
+  const t = useTranslations("EditProjectForm");
   const [description, setDescription] = useState(initial.description ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set(initial.sdgGoals));
   const [aiSuggested, setAiSuggested] = useState<number[]>([]);
@@ -108,7 +110,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
       {orgs.length > 0 && (
         <div>
           <label htmlFor="orgId" className="block text-sm font-medium text-dark-slate mb-1">
-            Organisation <span className="text-dark-slate/50 font-normal">(optional)</span>
+            {t("orgLabel")} <span className="text-dark-slate/50 font-normal">{t("optionalSuffix")}</span>
           </label>
           <select
             id="orgId"
@@ -116,7 +118,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
             defaultValue={currentOrgId ?? ""}
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral bg-white"
           >
-            <option value="">— none —</option>
+            <option value="">{t("noneOption")}</option>
             {orgs.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
           </select>
         </div>
@@ -125,7 +127,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
       {/* Cover image */}
       <div>
         <label className="block text-sm font-medium text-dark-slate mb-2">
-          Cover image <span className="text-dark-slate/50 font-normal">(optional)</span>
+          {t("coverImageLabel")} <span className="text-dark-slate/50 font-normal">{t("optionalSuffix")}</span>
         </label>
         <FileUpload
           visibility="public"
@@ -138,7 +140,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
 
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-dark-slate mb-1">
-          Title <span className="text-watermelon">*</span>
+          {t("titleLabel")} <span className="text-watermelon">*</span>
         </label>
         <input
           id="title" name="title" type="text" required
@@ -149,7 +151,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
 
       <div>
         <label htmlFor="githubProject" className="block text-sm font-medium text-dark-slate mb-1">
-          GitHub-projekt <span className="text-dark-slate/50 font-normal">(kanban-tavla, valfritt)</span>
+          {t("githubProjectLabel")} <span className="text-dark-slate/50 font-normal">{t("githubProjectHint")}</span>
         </label>
         <input
           id="githubProject"
@@ -160,36 +162,34 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
         />
         {github?.lastSyncError ? (
-          <p className="text-xs text-watermelon mt-1">Senaste synk misslyckades: {github.lastSyncError}</p>
+          <p className="text-xs text-watermelon mt-1">{t("githubSyncFailed", { error: github.lastSyncError })}</p>
         ) : github?.lastSyncedAt ? (
           <p className="text-xs text-dark-slate/50 mt-1">
             {github.projectTitle ? `${github.projectTitle} · ` : ""}
-            senast synkad {new Date(github.lastSyncedAt).toLocaleString("sv-SE")}
+            {t("githubLastSynced", { date: new Date(github.lastSyncedAt).toLocaleString("sv-SE") })}
           </p>
         ) : (
           <p className="text-xs text-dark-slate/50 mt-1">
-            Tavlans issues och pull requests hämtas in som uppgifter var femte minut, och
-            hamnar i kolumnen som deras Status pekar på. Töm fältet för att koppla bort
-            tavlan och ta bort de hämtade uppgifterna.
+            {t("githubSyncHelp")}
           </p>
         )}
       </div>
 
       <div>
         <label htmlFor="summary" className="block text-sm font-medium text-dark-slate mb-1">
-          Summary <span className="text-dark-slate/50 font-normal">(visas på projektkortet)</span>
+          {t("summaryLabel")} <span className="text-dark-slate/50 font-normal">{t("summaryHint")}</span>
         </label>
         <textarea
           id="summary" name="summary" rows={2}
           defaultValue={initial.summary ?? ""}
-          placeholder="Kort sammanfattning av projektet — 1–2 meningar"
+          placeholder={t("summaryPlaceholder")}
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral resize-none"
         />
       </div>
 
       <div>
         <label className="block text-sm font-medium text-dark-slate mb-2">
-          Description
+          {t("descriptionLabel")}
         </label>
         <input type="hidden" name="description" value={description} />
         <RichTextEditor content={description} onChange={setDescription} />
@@ -197,14 +197,14 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
 
       <div>
         <label htmlFor="category" className="block text-sm font-medium text-dark-slate mb-1">
-          Category
+          {t("categoryLabel")}
         </label>
         <select
           id="category" name="category"
           defaultValue={initial.category ?? ""}
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral bg-white"
         >
-          <option value="">— none —</option>
+          <option value="">{t("noneOption")}</option>
           {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
@@ -212,7 +212,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
       {/* Fas — fasövergångar sker bara framåt, ett steg i taget (PRD 4d) */}
       <div className="border border-muted-teal rounded-md p-4 flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-dark-slate">Fas</p>
+          <p className="text-sm font-medium text-dark-slate">{t("phaseLabel")}</p>
           <p className="text-sm text-dark-slate/70 mt-0.5">{PROJECT_PHASE_LABEL[initial.phase] ?? initial.phase}</p>
         </div>
         {nextPhase ? (
@@ -222,23 +222,27 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
             onClick={() => startAdvancing(() => advanceProjectPhase(slug))}
             className="text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors disabled:opacity-60 flex-shrink-0"
           >
-            {isAdvancing ? "Avancerar…" : `Avancera till ${PROJECT_PHASE_LABEL[nextPhase]} →`}
+            {isAdvancing ? t("advancingButton") : t("advanceToPhaseButton", { phase: PROJECT_PHASE_LABEL[nextPhase] })}
           </button>
         ) : (
-          <span className="text-xs text-dark-slate/40 flex-shrink-0">Sista fasen uppnådd</span>
+          <span className="text-xs text-dark-slate/40 flex-shrink-0">{t("finalPhaseReached")}</span>
         )}
       </div>
 
       {initial.isSandbox && (
         <div className="border-2 border-amber-300 bg-amber-50/40 rounded-md p-4 flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-dark-slate">🧪 Sandbox-projekt</p>
+            <p className="text-sm font-medium text-dark-slate">{t("sandboxHeading")}</p>
             {graduationRequest?.status === "pending" ? (
-              <p className="text-xs text-dark-slate/60 mt-0.5">Din ansökan granskas av Stiftelsen.</p>
+              <p className="text-xs text-dark-slate/60 mt-0.5">{t("graduationPending")}</p>
             ) : graduationRequest?.status === "rejected" ? (
-              <p className="text-xs text-dark-slate/60 mt-0.5">Ansökan avslogs{graduationRequest.decisionNote ? `: ${graduationRequest.decisionNote}` : "."}</p>
+              <p className="text-xs text-dark-slate/60 mt-0.5">
+                {graduationRequest.decisionNote
+                  ? t("graduationRejectedWithNote", { note: graduationRequest.decisionNote })
+                  : t("graduationRejectedPlain")}
+              </p>
             ) : (
-              <p className="text-xs text-dark-slate/60 mt-0.5">Redo att lämna Sandbox? Ansök om att bli ett GoodTribes-godkänt projekt.</p>
+              <p className="text-xs text-dark-slate/60 mt-0.5">{t("graduationPrompt")}</p>
             )}
           </div>
           {graduationRequest?.status !== "pending" && (
@@ -248,7 +252,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
               onClick={() => startGraduating(() => requestSandboxGraduation(slug))}
               className="text-sm font-medium text-amber-700 border border-amber-400 rounded-md px-4 py-2 hover:bg-amber-100 transition-colors disabled:opacity-60 flex-shrink-0"
             >
-              {isGraduating ? "Skickar…" : "Ansök om att bli ett GoodTribes-godkänt projekt"}
+              {isGraduating ? t("graduatingButton") : t("applyGraduationButton")}
             </button>
           )}
         </div>
@@ -258,16 +262,16 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
         {!abandonedAt ? (
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-dark-slate">🏳️ Herrelöst projekt</p>
+              <p className="text-sm font-medium text-dark-slate">{t("abandonedHeading")}</p>
               <p className="text-xs text-dark-slate/60 mt-0.5">
-                Står projektet still? Markera det som herrelöst så kan andra medlemmar anmäla intresse för att ta över.
+                {t("abandonedHint")}
               </p>
             </div>
             <button
               type="button"
               disabled={isAbandoning}
               onClick={() => {
-                if (!confirm("Markera projektet som herrelöst? Alla inloggade kan då anmäla intresse för att ta över det.")) return;
+                if (!confirm(t("confirmMarkAbandoned"))) return;
                 startAbandoning(async () => {
                   const res = await markProjectAbandoned(slug);
                   if (!("error" in res)) setAbandonedAt(new Date().toISOString());
@@ -275,16 +279,16 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
               }}
               className="text-sm font-medium text-amber-700 border border-amber-400 rounded-md px-4 py-2 hover:bg-amber-100 transition-colors disabled:opacity-60 flex-shrink-0"
             >
-              {isAbandoning ? "Sparar…" : "Markera som herrelöst"}
+              {isAbandoning ? t("savingButton") : t("markAbandonedButton")}
             </button>
           </div>
         ) : (
           <div>
             <div className="flex items-center justify-between gap-4 mb-3">
               <div>
-                <p className="text-sm font-medium text-dark-slate">🏳️ Söker ny ägare</p>
+                <p className="text-sm font-medium text-dark-slate">{t("seekingOwnerHeading")}</p>
                 <p className="text-xs text-dark-slate/60 mt-0.5">
-                  Projektet visas som herrelöst för alla besökare. Välj en intresserad person nedan, eller avbryt.
+                  {t("seekingOwnerHint")}
                 </p>
               </div>
               <button
@@ -298,30 +302,30 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
                 }}
                 className="text-sm font-medium text-dark-slate/60 border border-dark-slate/20 rounded-md px-4 py-2 hover:bg-white transition-colors disabled:opacity-60 flex-shrink-0"
               >
-                {isAbandoning ? "Sparar…" : "Avbryt"}
+                {isAbandoning ? t("savingButton") : t("cancelButton")}
               </button>
             </div>
 
             {ownershipInterests.length === 0 ? (
-              <p className="text-xs text-dark-slate/40 italic">Ingen har anmält intresse än.</p>
+              <p className="text-xs text-dark-slate/40 italic">{t("noInterestYet")}</p>
             ) : (
               <ul className="space-y-2">
                 {ownershipInterests.map((interest) => (
                   <li key={interest.id} className="flex items-center justify-between gap-3 bg-white rounded-md px-3 py-2 border border-amber-200">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-dark-slate truncate">{interest.user.name ?? "Okänd"}</p>
+                      <p className="text-sm font-medium text-dark-slate truncate">{interest.user.name ?? t("unknownName")}</p>
                       {interest.message && <p className="text-xs text-dark-slate/60 truncate">{interest.message}</p>}
                     </div>
                     <button
                       type="button"
                       disabled={isTransferring}
                       onClick={() => {
-                        if (!confirm(`Gör ${interest.user.name ?? "denna person"} till ny ägare av projektet?`)) return;
+                        if (!confirm(t("confirmTransferOwnership", { name: interest.user.name ?? t("genericPerson") }))) return;
                         startTransferring(async () => { await transferOwnership(slug, interest.user.id); });
                       }}
                       className="text-xs font-medium text-white bg-seagrass hover:bg-seagrass/90 rounded-md px-3 py-1.5 transition-colors disabled:opacity-60 flex-shrink-0"
                     >
-                      Gör till ägare
+                      {t("makeOwnerButton")}
                     </button>
                   </li>
                 ))}
@@ -333,7 +337,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
 
       {checklist && (
         <div className="border border-muted-teal rounded-md p-4">
-          <p className="text-sm font-medium text-dark-slate mb-3">Checklista — {PROJECT_PHASE_LABEL[initial.phase]}</p>
+          <p className="text-sm font-medium text-dark-slate mb-3">{t("checklistHeading", { phase: PROJECT_PHASE_LABEL[initial.phase] })}</p>
           <div className="flex flex-col gap-2">
             {checklist.map((item) => (
               <label key={item.key} className="flex items-center gap-2 cursor-pointer">
@@ -353,12 +357,12 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
 
       <div>
         <label htmlFor="tags" className="block text-sm font-medium text-dark-slate mb-1">
-          Tags <span className="text-dark-slate/50 font-normal">(comma-separated)</span>
+          {t("tagsLabel")} <span className="text-dark-slate/50 font-normal">{t("tagsHint")}</span>
         </label>
         <input
           id="tags" name="tags" type="text"
           defaultValue={initial.tags.join(", ")}
-          placeholder="climate, youth, africa"
+          placeholder={t("tagsPlaceholder")}
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
         />
       </div>
@@ -367,12 +371,12 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
       <div>
         <div className="flex items-center justify-between mb-2">
           <label className="block text-sm font-medium text-dark-slate">
-            UN SDG Goals
+            {t("sdgGoalsLabel")}
           </label>
           {description.length >= 20 && (
             <button type="button" onClick={handleSuggest} disabled={isSuggesting}
               className="flex items-center gap-1.5 text-xs font-medium text-seagrass hover:text-dark-slate disabled:opacity-50">
-              {isSuggesting ? "Analyzing…" : "✨ Suggest with AI"}
+              {isSuggesting ? t("analyzingButton") : t("suggestWithAiButton")}
             </button>
           )}
         </div>
@@ -392,7 +396,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
                 <span className={`text-xs ${isChecked ? "text-dark-slate font-medium" : "text-dark-slate/60"}`}>
                   {label}
                 </span>
-                {isSuggested && <span className="ml-auto text-[9px] font-semibold uppercase tracking-wider text-seagrass">AI</span>}
+                {isSuggested && <span className="ml-auto text-[9px] font-semibold uppercase tracking-wider text-seagrass">{t("aiBadge")}</span>}
               </label>
             );
           })}
@@ -402,7 +406,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
       {skills.length > 0 && (
         <div>
           <label className="block text-sm font-medium text-dark-slate mb-2">
-            Skills needed <span className="text-dark-slate/50 font-normal">(optional)</span>
+            {t("skillsNeededLabel")} <span className="text-dark-slate/50 font-normal">{t("optionalSuffix")}</span>
           </label>
           <div className="flex flex-wrap gap-2">
             {skills.map((s) => (
@@ -426,11 +430,11 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={isPending}
           className="bg-coral text-white rounded-md px-6 py-2 text-sm font-medium hover:bg-watermelon transition-colors disabled:opacity-60">
-          {isPending ? "Saving…" : "Save changes"}
+          {isPending ? t("savingButton") : t("saveChangesButton")}
         </button>
         <a href={`/projects/${slug}`}
           className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">
-          Cancel
+          {t("cancelButton")}
         </a>
       </div>
     </form>
@@ -444,10 +448,9 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
         className="mt-8 border border-muted-teal/40 rounded-xl p-4 flex flex-col gap-3"
       >
         <div>
-          <h2 className="text-sm font-medium text-dark-slate">GitHub-status → kolumn</h2>
+          <h2 className="text-sm font-medium text-dark-slate">{t("githubColumnMapHeading")}</h2>
           <p className="text-xs text-dark-slate/50 mt-1">
-            Varje Status på tavlan hamnar i den kolumn du väljer här. Stängda issues och
-            mergade pull requests hamnar alltid i Done.
+            {t("githubColumnMapHint")}
           </p>
         </div>
 
@@ -475,7 +478,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
           disabled={isMappingPending}
           className="self-start px-4 py-2 bg-seagrass text-white text-sm font-medium rounded hover:bg-seagrass/90 transition-colors disabled:opacity-60"
         >
-          {isMappingPending ? "Sparar…" : "Spara kolumnmappning"}
+          {isMappingPending ? t("savingButton") : t("saveColumnMappingButton")}
         </button>
       </form>
     )}

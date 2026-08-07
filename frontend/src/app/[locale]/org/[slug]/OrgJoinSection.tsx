@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { respondToOrgJoinRequest } from "./actions";
 import MessageButton from "@/components/MessageButton";
 
@@ -16,6 +17,7 @@ export function OrgJoinRequestsPanel({
   requests: OrgJoinRequest[];
   slug: string;
 }) {
+  const t = useTranslations("OrgJoinSection");
   const [isPending, startTransition] = useTransition();
 
   if (requests.length === 0) return null;
@@ -23,7 +25,7 @@ export function OrgJoinRequestsPanel({
   return (
     <section className="border border-yellow-200 bg-yellow-50 rounded-lg p-5 mb-8">
       <h3 className="text-sm font-semibold mb-3 text-yellow-800">
-        {requests.length} join request{requests.length !== 1 ? "s" : ""} pending
+        {t("pendingRequestsHeading", { count: requests.length })}
       </h3>
       <div className="space-y-3">
         {requests.map((req) => (
@@ -32,10 +34,10 @@ export function OrgJoinRequestsPanel({
               <img src={req.user.image} alt="" className="w-8 h-8 rounded-full flex-shrink-0" />
             )}
             <p className="text-sm font-medium flex-1 min-w-0 truncate">
-              {req.user.name ?? "Unknown"}
+              {req.user.name ?? t("unknownName")}
             </p>
             <div className="flex gap-2 flex-shrink-0">
-              <MessageButton toUserId={req.user.id} toUserName={req.user.name ?? "this person"} />
+              <MessageButton toUserId={req.user.id} toUserName={req.user.name ?? t("unknownPersonFallback")} />
               <button
                 disabled={isPending}
                 onClick={() =>
@@ -45,7 +47,7 @@ export function OrgJoinRequestsPanel({
                 }
                 className="text-xs font-medium bg-seagrass text-white px-3 py-1 rounded hover:opacity-90 disabled:opacity-60"
               >
-                Approve
+                {t("approveButton")}
               </button>
               <button
                 disabled={isPending}
@@ -56,7 +58,7 @@ export function OrgJoinRequestsPanel({
                 }
                 className="text-xs font-medium border border-muted-teal text-dark-slate/60 px-3 py-1 rounded hover:border-coral hover:text-coral disabled:opacity-60"
               >
-                Decline
+                {t("declineButton")}
               </button>
             </div>
           </div>

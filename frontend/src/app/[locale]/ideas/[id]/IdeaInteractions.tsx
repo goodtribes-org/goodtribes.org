@@ -1,18 +1,12 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { toggleVote, toggleEndorsement, toggleFollow, setIdeaStatus, addComment } from "./actions";
 import ShareButton from "@/components/ShareButton";
 import FlagContentButton from "@/components/FlagContentButton";
 
-const STATUSES = [
-  { value: "draft", label: "Draft" },
-  { value: "open", label: "Open" },
-  { value: "review", label: "Under Review" },
-  { value: "shortlisted", label: "Shortlisted" },
-  { value: "approved", label: "Approved" },
-  { value: "converted", label: "Converted" },
-];
+const STATUS_VALUES = ["draft", "open", "review", "shortlisted", "approved", "converted"] as const;
 
 interface SidebarProps {
   ideaId: string;
@@ -30,11 +24,21 @@ interface SidebarProps {
   shareTitle: string;
 }
 
+const STATUS_LABEL_KEYS: Record<string, string> = {
+  draft: "statusDraft",
+  open: "statusOpen",
+  review: "statusReview",
+  shortlisted: "statusShortlisted",
+  approved: "statusApproved",
+  converted: "statusConverted",
+};
+
 export function IdeaSidebar({
   ideaId, voteCount, hasVoted, endorseCount, hasEndorsed,
   followCount, hasFollowed, isLoggedIn, isAuthor, isModerator, currentStatus,
   shareUrl, shareTitle,
 }: SidebarProps) {
+  const t = useTranslations("IdeaInteractions");
   const [pending, startTransition] = useTransition();
   const [votes, setVotes] = useState(voteCount);
   const [voted, setVoted] = useState(hasVoted);
@@ -75,7 +79,7 @@ export function IdeaSidebar({
       <button
         onClick={handleVote}
         disabled={!isLoggedIn || pending}
-        title={isLoggedIn ? (voted ? "Remove vote" : "Upvote this idea") : "Log in to vote"}
+        title={isLoggedIn ? (voted ? t("removeVoteTitle") : t("upvoteTitle")) : t("logInToVoteTitle")}
         className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl border-2 transition-all ${
           voted
             ? "border-seagrass bg-seagrass/10 text-seagrass"
@@ -86,14 +90,14 @@ export function IdeaSidebar({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
         </svg>
         <span className="text-xl font-bold">{votes}</span>
-        <span className="text-[10px] uppercase tracking-wider">votes</span>
+        <span className="text-[10px] uppercase tracking-wider">{t("votesLabel")}</span>
       </button>
 
       {/* Endorse */}
       <button
         onClick={handleEndorse}
         disabled={!isLoggedIn || pending}
-        title={isLoggedIn ? (endorsed ? "Remove endorsement" : "I'd work on this") : "Log in to endorse"}
+        title={isLoggedIn ? (endorsed ? t("removeEndorsementTitle") : t("endorseTitle")) : t("logInToEndorseTitle")}
         className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl border-2 transition-all ${
           endorsed
             ? "border-coral bg-coral/10 text-coral"
@@ -104,14 +108,14 @@ export function IdeaSidebar({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
         <span className="text-xl font-bold">{endorses}</span>
-        <span className="text-[10px] uppercase tracking-wider text-center leading-tight">I'd contribute</span>
+        <span className="text-[10px] uppercase tracking-wider text-center leading-tight">{t("contributeLabel")}</span>
       </button>
 
       {/* Follow */}
       <button
         onClick={handleFollow}
         disabled={!isLoggedIn || pending}
-        title={isLoggedIn ? (followed ? "Unfollow" : "Follow for updates") : "Log in to follow"}
+        title={isLoggedIn ? (followed ? t("unfollowTitle") : t("followTitle")) : t("logInToFollowTitle")}
         className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl border-2 transition-all ${
           followed
             ? "border-purple-400 bg-purple-50 text-purple-600"
@@ -122,23 +126,23 @@ export function IdeaSidebar({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
         </svg>
         <span className="text-xl font-bold">{follows}</span>
-        <span className="text-[10px] uppercase tracking-wider">following</span>
+        <span className="text-[10px] uppercase tracking-wider">{t("followingLabel")}</span>
       </button>
 
       {/* Status change (author + moderator) */}
       {(isAuthor || isModerator) && (
         <div className="mt-1">
-          <label className="text-[10px] text-dark-slate/50 uppercase tracking-wider block mb-1">Status</label>
+          <label className="text-[10px] text-dark-slate/50 uppercase tracking-wider block mb-1">{t("statusFieldLabel")}</label>
           <select
             defaultValue={currentStatus}
             onChange={handleStatus}
             disabled={pending}
             className="w-full text-xs border border-muted-teal rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-coral"
           >
-            {STATUSES.filter(s =>
-              isModerator || ["draft", "open"].includes(s.value)
-            ).map((s) => (
-              <option key={s.value} value={s.value}>{s.label}</option>
+            {STATUS_VALUES.filter((value) =>
+              isModerator || ["draft", "open"].includes(value)
+            ).map((value) => (
+              <option key={value} value={value}>{t(STATUS_LABEL_KEYS[value])}</option>
             ))}
           </select>
         </div>
@@ -162,6 +166,7 @@ interface CommentFormProps {
 }
 
 export function CommentForm({ ideaId }: CommentFormProps) {
+  const t = useTranslations("IdeaInteractions");
   const [pending, startTransition] = useTransition();
   const ref = useRef<HTMLTextAreaElement>(null);
 
@@ -180,7 +185,7 @@ export function CommentForm({ ideaId }: CommentFormProps) {
       <textarea
         ref={ref}
         rows={3}
-        placeholder="Share your thoughts, ask questions, or suggest improvements..."
+        placeholder={t("commentPlaceholder")}
         className="w-full border border-muted-teal rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral resize-none"
       />
       <div className="flex justify-end">
@@ -189,7 +194,7 @@ export function CommentForm({ ideaId }: CommentFormProps) {
           disabled={pending}
           className="px-4 py-2 bg-coral text-white text-sm font-medium rounded-lg hover:bg-watermelon transition-colors disabled:opacity-50"
         >
-          {pending ? "Posting..." : "Post comment"}
+          {pending ? t("postingButton") : t("postCommentButton")}
         </button>
       </div>
     </form>

@@ -4,16 +4,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
+import { getTranslations } from "next-intl/server";
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) return {};
-  return { title: `Token-fördelning — ${project.title} — GoodTribes.org` };
+  const t = await getTranslations({ locale, namespace: "TokensPage" });
+  return { title: t("pageTitle", { title: project.title }) };
 }
 
 export default async function TokensPage({
@@ -22,6 +24,7 @@ export default async function TokensPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const t = await getTranslations("TokensPage");
 
   const project = await prisma.project.findUnique({
     where: { slug },
@@ -59,30 +62,30 @@ export default async function TokensPage({
       {/* Breadcrumb */}
       <nav className="text-sm text-dark-slate/50">
         <Link href="/projects" className="hover:text-dark-slate transition-colors">
-          Projects
+          {t("breadcrumbProjects")}
         </Link>
         <span className="mx-2">/</span>
         <Link href={`/projects/${slug}`} className="hover:text-dark-slate transition-colors">
           {project.title}
         </Link>
         <span className="mx-2">/</span>
-        <span className="text-dark-slate">Tribe Tokens</span>
+        <span className="text-dark-slate">{t("breadcrumbTribeTokens")}</span>
       </nav>
 
       <div>
-        <h1 className="text-2xl font-bold text-dark-slate">Tribe Tokens</h1>
+        <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
         <p className="text-dark-slate/60 text-sm mt-1">
-          Token-fördelning bland bidragsgivare i {project.title}
+          {t("subtitle", { title: project.title })}
         </p>
       </div>
 
       {/* Leaderboard */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">Token-fördelning</h2>
+        <h2 className="text-xl font-semibold mb-4">{t("sectionHeading")}</h2>
         {leaderboard.length === 0 ? (
           <div className="border border-dashed border-muted-teal rounded-lg p-10 text-center">
             <p className="text-dark-slate/50 text-sm">
-              Inga tokens har delats ut ännu. Bocka av deluppgifter och flytta kort till Klart för att tjäna tokens.
+              {t("emptyState")}
             </p>
           </div>
         ) : (
@@ -103,7 +106,7 @@ export default async function TokensPage({
                   {/* Rank */}
                   <span className="w-7 text-center text-sm font-bold text-dark-slate/40 flex-shrink-0">
                     {rank === 1 ? (
-                      <span title="Förstaplacerad">🥇</span>
+                      <span title={t("firstPlaceTitle")}>🥇</span>
                     ) : (
                       rank
                     )}
@@ -124,7 +127,7 @@ export default async function TokensPage({
 
                   {/* Name */}
                   <span className="flex-1 text-sm font-medium text-dark-slate truncate">
-                    {entry.name ?? "Okänd"}
+                    {entry.name ?? t("unknownName")}
                   </span>
 
                   {/* Tokens */}
@@ -132,7 +135,7 @@ export default async function TokensPage({
                     {entry.total % 1 === 0
                       ? entry.total.toFixed(0)
                       : entry.total.toFixed(1)}{" "}
-                    <span className="font-normal text-dark-slate/50">tokens</span>
+                    <span className="font-normal text-dark-slate/50">{t("tokensSuffix")}</span>
                   </span>
                 </div>
               );

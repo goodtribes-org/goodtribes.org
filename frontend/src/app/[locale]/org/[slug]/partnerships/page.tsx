@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { ORG_LEAD_ROLES } from "@/lib/org-authz";
@@ -8,8 +9,9 @@ import PartnershipActions from "@/components/PartnershipActions";
 import ProposeMatchButton from "@/components/ProposeMatchButton";
 import { findMatchingProjectsForOrg } from "@/lib/partnershipMatching";
 
-export default async function OrgPartnershipsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export default async function OrgPartnershipsPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
+  const { locale, slug } = await params;
+  const t = await getTranslations({ locale, namespace: "OrgPartnerships" });
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
@@ -38,19 +40,19 @@ export default async function OrgPartnershipsPage({ params }: { params: Promise<
   return (
     <div className="max-w-2xl">
       <nav className="mb-6 text-sm text-dark-slate/50">
-        <Link href="/org" className="hover:text-dark-slate transition-colors">Organisations</Link>
+        <Link href="/org" className="hover:text-dark-slate transition-colors">{t("breadcrumbOrganisations")}</Link>
         <span className="mx-2">/</span>
         <Link href={`/org/${slug}`} className="hover:text-dark-slate transition-colors">{org.name}</Link>
         <span className="mx-2">/</span>
-        <span className="text-dark-slate">Partnerskap</span>
+        <span className="text-dark-slate">{t("breadcrumbCurrent")}</span>
       </nav>
 
-      <h1 className="text-xl font-bold text-dark-slate mb-6">Partnerskap</h1>
+      <h1 className="text-xl font-bold text-dark-slate mb-6">{t("pageTitle")}</h1>
 
       <div className="border border-dashed border-muted-teal/50 rounded-xl p-6 mb-8">
-        <h2 className="font-semibold text-dark-slate mb-1">Föreslå ett partnerskap</h2>
+        <h2 className="font-semibold text-dark-slate mb-1">{t("proposeHeading")}</h2>
         <p className="text-sm text-dark-slate/50 mb-4">
-          Ange slug för projektet ni vill sponsra eller samarbeta med.
+          {t("proposeDescription")}
         </p>
         <ProposePartnershipForm organisationSlug={org.slug} />
       </div>
@@ -58,7 +60,7 @@ export default async function OrgPartnershipsPage({ params }: { params: Promise<
       {matches.length > 0 && (
         <section className="mb-8">
           <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">
-            Projekt som matchar er kategori
+            {t("matchingProjectsHeading")}
           </h2>
           <div className="divide-y divide-muted-teal/20 border border-muted-teal/30 rounded-lg overflow-hidden">
             {matches.map((m) => (
@@ -78,7 +80,7 @@ export default async function OrgPartnershipsPage({ params }: { params: Promise<
 
       {pending.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">Väntande</h2>
+          <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">{t("pendingHeading")}</h2>
           <div className="divide-y divide-muted-teal/20 border border-muted-teal/30 rounded-lg overflow-hidden">
             {pending.map((p) => (
               <div key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
@@ -87,7 +89,7 @@ export default async function OrgPartnershipsPage({ params }: { params: Promise<
                     {p.project.title}
                   </Link>
                   <p className="text-xs text-dark-slate/40">
-                    {p.proposedBy === "org" ? "Väntar på projektets svar" : "Väntar på ert svar"} · {p.type}
+                    {p.proposedBy === "org" ? t("pendingStatusOrg") : t("pendingStatusSelf")} · {p.type}
                   </p>
                 </div>
                 {p.proposedBy === "project" && <PartnershipActions partnershipId={p.id} mode="respond" />}
@@ -99,7 +101,7 @@ export default async function OrgPartnershipsPage({ params }: { params: Promise<
 
       {active.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">Aktiva</h2>
+          <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">{t("activeHeading")}</h2>
           <div className="divide-y divide-muted-teal/20 border border-muted-teal/30 rounded-lg overflow-hidden">
             {active.map((p) => (
               <div key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
@@ -118,13 +120,13 @@ export default async function OrgPartnershipsPage({ params }: { params: Promise<
 
       {other.length > 0 && (
         <section>
-          <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">Historik</h2>
+          <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">{t("historyHeading")}</h2>
           <div className="divide-y divide-muted-teal/20 border border-muted-teal/30 rounded-lg overflow-hidden">
             {other.map((p) => (
               <div key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
                 <span className="text-sm text-dark-slate/60">{p.project.title}</span>
                 <span className="text-xs text-dark-slate/40">
-                  {p.status === "declined" ? "Avvisad" : "Återkallad"}
+                  {p.status === "declined" ? t("statusDeclined") : t("statusRevoked")}
                 </span>
               </div>
             ))}

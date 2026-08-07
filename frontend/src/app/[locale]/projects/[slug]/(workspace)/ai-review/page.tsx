@@ -3,14 +3,9 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import AIReviewActions from "./AIReviewActions";
 
-
-const AGENT_LABELS: Record<string, string> = {
-  writer: "Skribent",
-  analyst: "Analytiker",
-  researcher: "Researcher",
-};
 
 const AGENT_ICONS: Record<string, string> = {
   writer: "✍️",
@@ -22,7 +17,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) return {};
-  return { title: `${project.title} — AI Granskning — GoodTribes.org` };
+  const t = await getTranslations("AIReviewPage");
+  return { title: t("metaTitle", { projectTitle: project.title }) };
 }
 
 export default async function AiReviewPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -32,6 +28,14 @@ export default async function AiReviewPage({ params }: { params: Promise<{ slug:
   if (!session?.user?.id) {
     redirect("/login");
   }
+
+  const t = await getTranslations("AIReviewPage");
+
+  const AGENT_LABELS: Record<string, string> = {
+    writer: t("agentWriter"),
+    analyst: t("agentAnalyst"),
+    researcher: t("agentResearcher"),
+  };
 
   const project = await prisma.project.findUnique({
     where: { slug },
@@ -67,7 +71,7 @@ export default async function AiReviewPage({ params }: { params: Promise<{ slug:
           &larr; {project.title}
         </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-2xl font-bold text-dark-slate">AI Granskning</h1>
+          <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
           {runs.length > 0 && (
             <span className="px-2.5 py-0.5 rounded-full bg-coral text-white text-xs font-bold">
               {runs.length}
@@ -77,7 +81,7 @@ export default async function AiReviewPage({ params }: { params: Promise<{ slug:
       </div>
 
       {runs.length === 0 ? (
-        <p className="text-dark-slate/50 text-sm">Inga AI-leveranser väntar på granskning.</p>
+        <p className="text-dark-slate/50 text-sm">{t("emptyState")}</p>
       ) : (
         <div className="flex flex-col gap-6">
           {runs.map((run) => (
@@ -90,14 +94,14 @@ export default async function AiReviewPage({ params }: { params: Promise<{ slug:
                 <div className="flex items-center gap-2 min-w-0">
                   <span
                     className="flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded bg-muted-teal/30 text-dark-slate shrink-0"
-                    title={`Agent: ${run.agentType}`}
+                    title={t("agentTitle", { agentType: run.agentType })}
                   >
                     <span>{AGENT_ICONS[run.agentType] ?? "🤖"}</span>
                     {AGENT_LABELS[run.agentType] ?? run.agentType}
                   </span>
                   {run.attemptNumber > 1 && (
                     <span className="text-xs font-medium px-2 py-0.5 rounded bg-amber-100 text-amber-700 shrink-0">
-                      Försök {run.attemptNumber}
+                      {t("attemptNumber", { number: run.attemptNumber })}
                     </span>
                   )}
                   <h2 className="text-sm font-semibold text-dark-slate truncate">
@@ -123,7 +127,7 @@ export default async function AiReviewPage({ params }: { params: Promise<{ slug:
                     {run.outputMarkdown}
                   </pre>
                 ) : (
-                  <p className="text-sm text-dark-slate/40 italic">Inget innehåll genererat.</p>
+                  <p className="text-sm text-dark-slate/40 italic">{t("noContentGenerated")}</p>
                 )}
               </div>
 

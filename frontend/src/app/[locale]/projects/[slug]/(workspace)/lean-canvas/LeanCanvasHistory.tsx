@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { getLeanCanvasHistory } from "./actions";
 import type { LeanCanvasField } from "./fields";
 
@@ -10,31 +11,32 @@ type Version = {
   savedBy: { name: string | null } | null;
 } & Record<LeanCanvasField, string | null>;
 
-const FIELD_LABELS: Record<LeanCanvasField, string> = {
-  problem: "Problem",
-  alternatives: "Alternativ",
-  customerSegments: "Kundsegment",
-  earlyAdopters: "Tidiga användare",
-  uniqueValueProposition: "Unikt värdeerbjudande",
-  concept: "Koncept",
-  solution: "Lösning",
-  channels: "Kanaler",
-  revenueStreams: "Intäktsströmmar",
-  costStructure: "Kostnadsstruktur",
-  impact: "Impact",
-  keyMetrics: "Nyckeltal",
-  unfairAdvantage: "Orättvis fördel",
-};
-
 function formatDate(d: Date) {
   return new Date(d).toLocaleString("sv-SE", { dateStyle: "medium", timeStyle: "short" });
 }
 
 export default function LeanCanvasHistory({ projectSlug }: { projectSlug: string }) {
+  const t = useTranslations("LeanCanvasHistory");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [versions, setVersions] = useState<Version[] | null>(null);
   const [selected, setSelected] = useState<Version | null>(null);
+
+  const FIELD_LABELS: Record<LeanCanvasField, string> = {
+    problem: t("fieldProblem"),
+    alternatives: t("fieldAlternatives"),
+    customerSegments: t("fieldCustomerSegments"),
+    earlyAdopters: t("fieldEarlyAdopters"),
+    uniqueValueProposition: t("fieldUniqueValueProposition"),
+    concept: t("fieldConcept"),
+    solution: t("fieldSolution"),
+    channels: t("fieldChannels"),
+    revenueStreams: t("fieldRevenueStreams"),
+    costStructure: t("fieldCostStructure"),
+    impact: t("fieldImpact"),
+    keyMetrics: t("fieldKeyMetrics"),
+    unfairAdvantage: t("fieldUnfairAdvantage"),
+  };
 
   async function handleOpen() {
     setOpen(true);
@@ -53,7 +55,7 @@ export default function LeanCanvasHistory({ projectSlug }: { projectSlug: string
         onClick={handleOpen}
         className="flex items-center gap-1 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors"
       >
-        Historik
+        {t("historyButton")}
       </button>
 
       {open && (
@@ -64,10 +66,10 @@ export default function LeanCanvasHistory({ projectSlug }: { projectSlug: string
           >
             {!selected ? (
               <>
-                <h2 className="text-lg font-bold text-dark-slate mb-4">Versionshistorik</h2>
-                {loading && <p className="text-sm text-dark-slate/50">Laddar…</p>}
+                <h2 className="text-lg font-bold text-dark-slate mb-4">{t("modalTitle")}</h2>
+                {loading && <p className="text-sm text-dark-slate/50">{t("loading")}</p>}
                 {versions && versions.length === 0 && (
-                  <p className="text-sm text-dark-slate/40 italic">Inga sparade versioner ännu.</p>
+                  <p className="text-sm text-dark-slate/40 italic">{t("emptyState")}</p>
                 )}
                 {versions && versions.length > 0 && (
                   <ul className="space-y-1.5">
@@ -79,7 +81,7 @@ export default function LeanCanvasHistory({ projectSlug }: { projectSlug: string
                           className="w-full text-left flex items-center justify-between gap-3 border border-dark-slate/10 rounded-lg px-3 py-2 hover:border-seagrass transition-colors"
                         >
                           <span className="text-sm text-dark-slate">{formatDate(v.createdAt)}</span>
-                          <span className="text-xs text-dark-slate/50">{v.savedBy?.name ?? "Okänd"}</span>
+                          <span className="text-xs text-dark-slate/50">{v.savedBy?.name ?? t("unknownUser")}</span>
                         </button>
                       </li>
                     ))}
@@ -87,7 +89,7 @@ export default function LeanCanvasHistory({ projectSlug }: { projectSlug: string
                 )}
                 <div className="flex justify-end mt-4">
                   <button type="button" onClick={() => setOpen(false)} className="text-sm text-dark-slate/50 hover:text-dark-slate transition-colors">
-                    Stäng
+                    {t("close")}
                   </button>
                 </div>
               </>
@@ -95,19 +97,21 @@ export default function LeanCanvasHistory({ projectSlug }: { projectSlug: string
               <>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-bold text-dark-slate">
-                    Version från {formatDate(selected.createdAt)}
+                    {t("versionFrom", { date: formatDate(selected.createdAt) })}
                   </h2>
                   <button type="button" onClick={() => setSelected(null)} className="text-sm text-seagrass hover:underline">
-                    ← Tillbaka
+                    {t("back")}
                   </button>
                 </div>
-                <p className="text-xs text-dark-slate/50 mb-4">Sparad av {selected.savedBy?.name ?? "Okänd"} — skrivskyddad</p>
+                <p className="text-xs text-dark-slate/50 mb-4">
+                  {t("savedByReadOnly", { name: selected.savedBy?.name ?? t("unknownUser") })}
+                </p>
                 <div className="space-y-3">
                   {(Object.keys(FIELD_LABELS) as LeanCanvasField[]).map((field) => (
                     <div key={field}>
                       <h3 className="text-xs font-bold text-dark-slate uppercase tracking-wide">{FIELD_LABELS[field]}</h3>
                       <p className="text-sm text-dark-slate/80 whitespace-pre-wrap mt-0.5">
-                        {selected[field] || <span className="text-dark-slate/30 italic">Tomt</span>}
+                        {selected[field] || <span className="text-dark-slate/30 italic">{t("emptyField")}</span>}
                       </p>
                     </div>
                   ))}

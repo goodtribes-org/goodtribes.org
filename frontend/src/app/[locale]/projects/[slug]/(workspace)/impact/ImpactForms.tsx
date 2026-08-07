@@ -1,12 +1,14 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { addImpactMetric, updateImpactMetric } from "./actions";
 
 // ---------------------------------------------------------------------------
 // AddMetricForm
 // ---------------------------------------------------------------------------
 export function AddMetricForm({ projectSlug }: { projectSlug: string }) {
+  const t = useTranslations("ImpactForms");
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
@@ -27,7 +29,7 @@ export function AddMetricForm({ projectSlug }: { projectSlug: string }) {
         onClick={() => setOpen(true)}
         className="text-sm font-medium text-coral hover:text-watermelon transition-colors"
       >
-        + Lägg till mätvärde
+        {t("addMetric")}
       </button>
     );
   }
@@ -35,55 +37,55 @@ export function AddMetricForm({ projectSlug }: { projectSlug: string }) {
   return (
     <div className="border border-muted-teal/40 rounded-lg p-4 bg-white">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-dark-slate">Nytt mätvärde</h3>
+        <h3 className="text-sm font-semibold text-dark-slate">{t("newMetricHeading")}</h3>
         <button
           type="button"
           onClick={() => setOpen(false)}
           className="text-xs text-dark-slate/40 hover:text-dark-slate transition-colors"
         >
-          Avbryt
+          {t("cancel")}
         </button>
       </div>
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-dark-slate/60 mb-1">Etikett *</label>
+            <label className="block text-xs text-dark-slate/60 mb-1">{t("labelField")}</label>
             <input
               name="label"
               type="text"
               required
-              placeholder="t.ex. Ton plast återvunnet"
+              placeholder={t("labelPlaceholder")}
               className="w-full border border-muted-teal rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
             />
           </div>
           <div>
-            <label className="block text-xs text-dark-slate/60 mb-1">Enhet *</label>
+            <label className="block text-xs text-dark-slate/60 mb-1">{t("unitField")}</label>
             <input
               name="unit"
               type="text"
               required
-              placeholder="t.ex. ton"
+              placeholder={t("unitPlaceholder")}
               className="w-full border border-muted-teal rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
             />
           </div>
         </div>
         <div>
-          <label className="block text-xs text-dark-slate/60 mb-1">Målvärde (valfritt)</label>
+          <label className="block text-xs text-dark-slate/60 mb-1">{t("targetValueField")}</label>
           <input
             name="targetValue"
             type="number"
             step="any"
             min="0"
-            placeholder="t.ex. 1000"
+            placeholder={t("targetValuePlaceholder")}
             className="w-full border border-muted-teal rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
           />
         </div>
         <div>
-          <label className="block text-xs text-dark-slate/60 mb-1">Beskrivning (valfritt)</label>
+          <label className="block text-xs text-dark-slate/60 mb-1">{t("descriptionField")}</label>
           <input
             name="description"
             type="text"
-            placeholder="Kort förklaring av mätvärdet"
+            placeholder={t("descriptionPlaceholder")}
             className="w-full border border-muted-teal rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
           />
         </div>
@@ -93,14 +95,14 @@ export function AddMetricForm({ projectSlug }: { projectSlug: string }) {
             disabled={pending}
             className="bg-coral text-white text-sm font-medium px-4 py-2 rounded hover:bg-watermelon transition-colors disabled:opacity-50"
           >
-            {pending ? "Sparar…" : "Lägg till"}
+            {pending ? t("saving") : t("add")}
           </button>
           <button
             type="button"
             onClick={() => setOpen(false)}
             className="text-sm text-dark-slate/50 hover:text-dark-slate px-3 py-2 transition-colors"
           >
-            Avbryt
+            {t("cancel")}
           </button>
         </div>
       </form>
@@ -118,6 +120,7 @@ interface UpdateMetricFormProps {
 }
 
 export function UpdateMetricForm({ metricId, projectSlug, currentValue }: UpdateMetricFormProps) {
+  const t = useTranslations("ImpactForms");
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
@@ -138,7 +141,7 @@ export function UpdateMetricForm({ metricId, projectSlug, currentValue }: Update
         onClick={() => setOpen(true)}
         className="text-xs font-medium text-dark-slate/50 hover:text-coral border border-muted-teal/40 hover:border-coral rounded px-2.5 py-1 transition-colors"
       >
-        Uppdatera
+        {t("update")}
       </button>
     );
   }
@@ -148,7 +151,7 @@ export function UpdateMetricForm({ metricId, projectSlug, currentValue }: Update
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-2">
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs text-dark-slate/60 mb-1">Nytt värde *</label>
+            <label className="block text-xs text-dark-slate/60 mb-1">{t("newValueField")}</label>
             <input
               name="value"
               type="number"
@@ -159,11 +162,11 @@ export function UpdateMetricForm({ metricId, projectSlug, currentValue }: Update
             />
           </div>
           <div>
-            <label className="block text-xs text-dark-slate/60 mb-1">Anteckning</label>
+            <label className="block text-xs text-dark-slate/60 mb-1">{t("noteField")}</label>
             <input
               name="note"
               type="text"
-              placeholder="Valfri kommentar"
+              placeholder={t("notePlaceholder")}
               className="w-full border border-muted-teal rounded px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
             />
           </div>
@@ -174,14 +177,14 @@ export function UpdateMetricForm({ metricId, projectSlug, currentValue }: Update
             disabled={pending}
             className="bg-coral text-white text-xs font-medium px-3 py-1.5 rounded hover:bg-watermelon transition-colors disabled:opacity-50"
           >
-            {pending ? "Sparar…" : "Spara"}
+            {pending ? t("saving") : t("save")}
           </button>
           <button
             type="button"
             onClick={() => setOpen(false)}
             className="text-xs text-dark-slate/40 hover:text-dark-slate transition-colors"
           >
-            Avbryt
+            {t("cancel")}
           </button>
         </div>
       </form>

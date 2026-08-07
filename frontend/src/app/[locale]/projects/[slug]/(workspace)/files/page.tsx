@@ -6,18 +6,21 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import ResourceLibrary from "@/components/ResourceLibrary";
+import { getTranslations } from "next-intl/server";
 
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
+  const { locale, slug } = await params;
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) return {};
-  return { title: `${project.title} — Filer — GoodTribes.org` };
+  const t = await getTranslations({ locale, namespace: "FilesPage" });
+  return { title: t("pageTitle", { title: project.title }) };
 }
 
 export default async function ProjectFilesPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const session = await auth();
+  const t = await getTranslations("FilesPage");
 
   const project = await prisma.project.findUnique({
     where: { slug },
@@ -43,9 +46,9 @@ export default async function ProjectFilesPage({ params }: { params: Promise<{ s
     <div className="max-w-2xl">
       <div className="mb-6">
         <Link href={`/projects/${slug}`} className="text-xs text-dark-slate/40 hover:text-dark-slate">
-          ← {project.title}
+          {t("backToProject", { title: project.title })}
         </Link>
-        <h1 className="text-xl font-bold text-dark-slate mt-0.5">Filer</h1>
+        <h1 className="text-xl font-bold text-dark-slate mt-0.5">{t("heading")}</h1>
       </div>
 
       {isMember ? (
@@ -55,7 +58,7 @@ export default async function ProjectFilesPage({ params }: { params: Promise<{ s
           canUpload={isMember}
         />
       ) : (
-        <p className="text-dark-slate/40 italic text-sm">Endast projektmedlemmar kan se filer.</p>
+        <p className="text-dark-slate/40 italic text-sm">{t("membersOnlyNotice")}</p>
       )}
     </div>
   );

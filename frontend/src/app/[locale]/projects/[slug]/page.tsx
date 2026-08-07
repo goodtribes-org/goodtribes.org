@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import { getTranslations } from "next-intl/server";
+import type { useTranslations } from "next-intl";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -73,19 +75,19 @@ function MemberAvatar({
   return inner;
 }
 
-function relativeTime(date: Date): string {
+function relativeTime(date: Date, t: ReturnType<typeof useTranslations>): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (seconds < 60) return "Just nu";
+  if (seconds < 60) return t("justNow");
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} min sedan`;
+  if (minutes < 60) return t("minutesAgo", { minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} tim sedan`;
+  if (hours < 24) return t("hoursAgo", { hours });
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} dag${days !== 1 ? "ar" : ""} sedan`;
+  if (days < 7) return t("daysAgo", { days });
   return date.toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
 }
 
-function MiniCalendar({ events }: { events: { startsAt: Date }[] }) {
+function MiniCalendar({ events, t }: { events: { startsAt: Date }[]; t: ReturnType<typeof useTranslations> }) {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
@@ -106,7 +108,15 @@ function MiniCalendar({ events }: { events: { startsAt: Date }[] }) {
   const today = now.getDate();
 
   const monthName = now.toLocaleDateString("sv-SE", { month: "long", year: "numeric" });
-  const dayLabels = ["M", "T", "O", "T", "F", "L", "S"];
+  const dayLabels = [
+    t("calendarDayMon"),
+    t("calendarDayTue"),
+    t("calendarDayWed"),
+    t("calendarDayThu"),
+    t("calendarDayFri"),
+    t("calendarDaySat"),
+    t("calendarDaySun"),
+  ];
 
   const cells: (number | null)[] = [];
   for (let i = 0; i < startDow; i++) cells.push(null);
@@ -152,11 +162,12 @@ export async function generateMetadata({
   const { locale, slug } = await params;
   const project = await prisma.project.findUnique({ where: { slug } });
   if (!project) return {};
+  const t = await getTranslations({ locale, namespace: "ProjectDetailPage" });
   return buildMetadata({
     locale,
     path: `/projects/${slug}`,
     title: project.title,
-    description: project.description ? stripHtml(project.description) : "A project on GoodTribes.org",
+    description: project.description ? stripHtml(project.description) : t("defaultProjectDescription"),
     imageUrl: project.imageUrl,
   });
 }
@@ -171,6 +182,7 @@ export default async function ProjectDetailPage({
   const { locale, slug } = await params;
   const { page: feedPageStr } = await searchParams;
   const session = await auth();
+  const t = await getTranslations("ProjectDetailPage");
 
   const project = await prisma.project.findUnique({
     where: { slug },
@@ -414,7 +426,7 @@ export default async function ProjectDetailPage({
                 {project.members.length > 0 && (
                   <div className="mb-4">
                     <p className="text-sm font-semibold text-dark-slate/70 mb-2 uppercase tracking-wide">
-                      GoodTribes teamet <span className="text-[9px] font-normal text-dark-slate/40">· {project.members.length} {project.members.length === 1 ? "medlem" : "medlemmar"}</span>
+                      {t("teamHeading")} <span className="text-[9px] font-normal text-dark-slate/40">· {t("membersCount", { count: project.members.length })}</span>
                     </p>
                     <div className="flex flex-wrap gap-3">
                       {sortedMembers.slice(0, 12).map((m, i) => {
@@ -431,7 +443,7 @@ export default async function ProjectDetailPage({
                           <div className={avatarClass}>{avatarContent}</div>
                         );
                         return (
-                          <Tooltip key={i} lines={isProjectOwner ? ["Founder"] : []}>
+                          <Tooltip key={i} lines={isProjectOwner ? [t("founderLabel")] : []}>
                             <div className="flex flex-col items-center gap-1 w-14">
                               {avatar}
                               <span className="text-[9px] text-dark-slate/60 text-center truncate w-full leading-tight">{firstName}</span>
@@ -455,7 +467,7 @@ export default async function ProjectDetailPage({
                         projectId={project.id}
                         slug={slug}
                         existingStatus={userJoinRequest?.status ?? null}
-                        label="Join"
+                        label={t("joinCta")}
                         className="flex justify-center w-full py-2.5 bg-coral text-white rounded-xl font-bold text-base hover:bg-coral/90 transition-colors shadow-md"
                       />
                     ) : (
@@ -463,19 +475,19 @@ export default async function ProjectDetailPage({
                         href={`/login?callbackUrl=${encodeURIComponent(`/projects/${slug}`)}`}
                         className="flex justify-center w-full py-2.5 bg-coral text-white rounded-xl font-bold text-base hover:bg-coral/90 transition-colors shadow-md"
                       >
-                        Join
+                        {t("joinCta")}
                       </Link>
                     )}
                   </div>
                 )}
                 {(project as typeof project & { sdgGoals: number[] }).sdgGoals.length > 0 && (
                   <div className="mt-2">
-                    <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">Agenda 2030:</p>
+                    <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">{t("agenda2030Label")}</p>
                     <div className="grid grid-cols-6 gap-1">
                       {[...Array.from({ length: 17 }, (_, i) => i + 1), 18].map((n) => {
                         const isSelected = (project as typeof project & { sdgGoals: number[] }).sdgGoals.includes(n) || n === 18;
                         return (
-                          <Tooltip key={n} lines={[`SDG ${n}`, SDG_LABELS_SV[n] ?? ""]}>
+                          <Tooltip key={n} lines={[t("sdgBadgeLabel", { number: n }), SDG_LABELS_SV[n] ?? ""]}>
                             <a href={SDG_UN_URLS[n] ?? "https://www.un.org/sustainabledevelopment/sustainable-development-goals/"} target="_blank" rel="noopener noreferrer" className="transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg block cursor-pointer">
                               <SdgIcon n={n} size={44} dark={!isSelected} />
                             </a>
@@ -511,8 +523,7 @@ export default async function ProjectDetailPage({
 
       {project.forkedFromProject && (
         <div className="max-w-2xl mx-auto mb-4 px-4 text-sm text-dark-slate/60 text-center">
-          Gaffling
-          {" av "}
+          {t("forkedFromLabel")}{" "}
           <Link href={`/projects/${project.forkedFromProject.slug}`} className="text-seagrass hover:underline">
             {project.forkedFromProject.title}
           </Link>
@@ -522,7 +533,7 @@ export default async function ProjectDetailPage({
       {project.forks.length > 0 && (
         <div className="max-w-2xl mx-auto mb-6 px-4 flex items-center justify-center text-sm">
           <span className="text-dark-slate/40">
-            {project.forks.length} {project.forks.length === 1 ? "fork" : "forkar"}:{" "}
+            {t("forksCountLabel", { count: project.forks.length })}{" "}
             {project.forks.map((f, i) => (
               <span key={f.slug}>
                 {i > 0 && ", "}
@@ -547,9 +558,9 @@ export default async function ProjectDetailPage({
           {isRealMember && (
             <section>
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-semibold text-dark-slate">Flöde</h2>
+                <h2 className="text-base font-semibold text-dark-slate">{t("activityHeading")}</h2>
                 <Link href={`/projects/${slug}/activity`} className="text-xs text-seagrass hover:underline">
-                  Se hela flödet →
+                  {t("viewFullActivityFeed")}
                 </Link>
               </div>
               <ActivityFeed
@@ -566,13 +577,13 @@ export default async function ProjectDetailPage({
                 memberProjectIds={feedMemberProjectIds}
                 pendingJoinProjectIds={feedPendingJoinProjectIds}
                 projectId={project.id}
-                emptyMessage="Ingen aktivitet i projektet ännu."
+                emptyMessage={t("noActivityYet")}
               />
             </section>
           )}
 
           <section>
-            <h2 className="text-base font-semibold text-dark-slate mb-4">Om projektet</h2>
+            <h2 className="text-base font-semibold text-dark-slate mb-4">{t("aboutProjectHeading")}</h2>
             {project.description ? (
               project.description.trimStart().startsWith("<") ? (
                 <article
@@ -591,25 +602,25 @@ export default async function ProjectDetailPage({
                 </article>
               )
             ) : (
-              <p className="text-dark-slate/40 italic text-sm">Ingen beskrivning ännu.</p>
+              <p className="text-dark-slate/40 italic text-sm">{t("noDescriptionYet")}</p>
             )}
           </section>
 
           {latestUpdate && (
             <section>
-              <h2 className="text-sm font-semibold text-dark-slate mb-3">Senaste uppdatering</h2>
+              <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("latestUpdateHeading")}</h2>
               <div className="border border-muted-teal/30 rounded-xl p-4">
                 <p className="font-semibold text-dark-slate text-sm mb-1">{latestUpdate.title}</p>
                 <p className="text-sm text-dark-slate/60 line-clamp-3">{latestUpdate.body}</p>
                 <div className="flex items-center justify-between mt-3">
                   <span className="text-xs text-dark-slate/40">
-                    {relativeTime(latestUpdate.createdAt)}
+                    {relativeTime(latestUpdate.createdAt, t)}
                   </span>
                   <Link
                     href={`/projects/${slug}/updates`}
                     className="text-xs text-seagrass hover:text-seagrass/80 font-medium"
                   >
-                    Alla uppdateringar →
+                    {t("allUpdatesLink")}
                   </Link>
                 </div>
               </div>
@@ -619,9 +630,9 @@ export default async function ProjectDetailPage({
           {!isRealMember && (
             <section>
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-semibold text-dark-slate">Flöde</h2>
+                <h2 className="text-base font-semibold text-dark-slate">{t("activityHeading")}</h2>
                 <Link href={`/projects/${slug}/activity`} className="text-xs text-seagrass hover:underline">
-                  Se hela flödet →
+                  {t("viewFullActivityFeed")}
                 </Link>
               </div>
               <ActivityFeed
@@ -638,7 +649,7 @@ export default async function ProjectDetailPage({
                 memberProjectIds={feedMemberProjectIds}
                 pendingJoinProjectIds={feedPendingJoinProjectIds}
                 projectId={project.id}
-                emptyMessage="Ingen aktivitet i projektet ännu."
+                emptyMessage={t("noActivityYet")}
               />
             </section>
           )}
@@ -650,7 +661,7 @@ export default async function ProjectDetailPage({
           {/* Skills needed */}
           {project.neededSkills.length > 0 && (
             <section>
-              <h2 className="text-sm font-semibold text-dark-slate mb-3">Söker kompetenser</h2>
+              <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("skillsNeededHeading")}</h2>
               <div className="flex flex-wrap gap-2">
                 {project.neededSkills.map(({ skill }) => (
                   <Link
@@ -668,7 +679,7 @@ export default async function ProjectDetailPage({
           {/* Links */}
           {projectLinks.length > 0 && (
             <section className="border border-muted-teal/30 rounded-xl p-4">
-              <h2 className="text-sm font-semibold text-dark-slate mb-3">Länkar</h2>
+              <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("linksHeading")}</h2>
               <ul className="space-y-2">
                 {projectLinks.map((url, i) => {
                   let hostname = url;
@@ -697,9 +708,9 @@ export default async function ProjectDetailPage({
           {mostActiveMembers.length > 0 && (
             <section className="border border-muted-teal/30 rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-dark-slate">Mest aktiva medlemmar</h2>
+                <h2 className="text-sm font-semibold text-dark-slate">{t("mostActiveMembersHeading")}</h2>
                 <Link href={`/projects/${slug}/tokens`} className="text-xs text-seagrass hover:underline">
-                  Alla →
+                  {t("viewAllTokensLink")}
                 </Link>
               </div>
               <ol className="space-y-2">
@@ -722,7 +733,7 @@ export default async function ProjectDetailPage({
                         {avatarContent}
                       </div>
                       <span className="flex-1 min-w-0 text-sm text-dark-slate truncate">{m.name}</span>
-                      <span className="text-xs font-semibold text-coral">{Math.round(m.tokens)} p</span>
+                      <span className="text-xs font-semibold text-coral">{Math.round(m.tokens)} {t("pointsAbbreviation")}</span>
                     </div>
                   );
                   return (
@@ -747,11 +758,11 @@ export default async function ProjectDetailPage({
           {/* Kanban summary — bar chart */}
           {kanbanCards.length > 0 && (() => {
             const cols = [
-              { key: "BACKLOG", label: "Wishlist", bg: "#b2b09b" },
-              { key: "TODO",    label: "Att göra", bg: "#7bad93" },
-              { key: "DOING",   label: "Pågår",    bg: "#ff6f59" },
-              { key: "REVIEW",  label: "Granskas", bg: "#f59e0b" },
-              { key: "DONE",    label: "Klart",    bg: "#43aa8b" },
+              { key: "BACKLOG", label: t("columnBacklog"), bg: "#b2b09b" },
+              { key: "TODO",    label: t("columnTodo"),    bg: "#7bad93" },
+              { key: "DOING",   label: t("columnDoing"),   bg: "#ff6f59" },
+              { key: "REVIEW",  label: t("columnReview"),  bg: "#f59e0b" },
+              { key: "DONE",    label: t("columnDone"),    bg: "#43aa8b" },
             ];
             const total = kanbanCards.reduce((sum, k) => sum + 1 + (k.subtasks?.length ?? 0), 0);
             const doneCards = kanbanCards.filter(k => k.column === "DONE").length;
@@ -766,9 +777,9 @@ export default async function ProjectDetailPage({
             return (
               <section className="border border-muted-teal/30 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-sm font-semibold text-dark-slate">Att göra</h2>
+                  <h2 className="text-sm font-semibold text-dark-slate">{t("tasksHeading")}</h2>
                   <Link href={`/projects/${slug}/tasks`} className="text-xs text-seagrass hover:underline">
-                    Öppna →
+                    {t("openArrowLink")}
                   </Link>
                 </div>
 
@@ -799,7 +810,7 @@ export default async function ProjectDetailPage({
                 </div>
 
                 <p className="text-xs text-dark-slate/40 mt-3 text-center">
-                  {done} av {total} uppgifter klara
+                  {t("tasksProgressLabel", { done, total })}
                 </p>
               </section>
             );
@@ -815,9 +826,9 @@ export default async function ProjectDetailPage({
             return (
               <section className="border border-muted-teal/30 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-semibold text-dark-slate">Uppgifter</h2>
+                  <h2 className="text-sm font-semibold text-dark-slate">{t("tasksListHeading")}</h2>
                   <Link href={`/projects/${slug}/tasks`} className="text-xs text-seagrass hover:underline">
-                    Öppna →
+                    {t("openArrowLink")}
                   </Link>
                 </div>
                 <div className="max-h-64 overflow-y-auto space-y-3">
@@ -854,9 +865,9 @@ export default async function ProjectDetailPage({
           {recentChannelMessages.length > 0 && (
             <section className="border border-muted-teal/30 rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-dark-slate">Kanaler</h2>
+                <h2 className="text-sm font-semibold text-dark-slate">{t("channelsHeading")}</h2>
                 <Link href={`/messages?project=${slug}`} className="text-xs text-seagrass hover:underline">
-                  Öppna →
+                  {t("openArrowLink")}
                 </Link>
               </div>
               <ul className="space-y-3">
@@ -875,7 +886,7 @@ export default async function ProjectDetailPage({
                             {msg.author.name?.split(" ")[0] ?? "?"}
                           </span>
                           <span className="text-[10px] text-dark-slate/40 shrink-0">
-                            #{msg.room.name} · {relativeTime(msg.createdAt)}
+                            #{msg.room.name} · {relativeTime(msg.createdAt, t)}
                           </span>
                         </div>
                         <p className="text-xs text-dark-slate/70 leading-snug line-clamp-2">
@@ -890,7 +901,7 @@ export default async function ProjectDetailPage({
                 href={`/messages?project=${slug}`}
                 className="mt-3 block text-center text-xs text-white bg-seagrass hover:bg-seagrass/90 rounded-lg py-1.5 transition-colors"
               >
-                Öppna kanaler
+                {t("openChannelsButton")}
               </Link>
             </section>
           )}
@@ -898,7 +909,7 @@ export default async function ProjectDetailPage({
           {/* GitHub — read-only mirror of the mapped project board */}
           {project.githubBoard && (
             <section className="border border-muted-teal/30 rounded-xl p-4">
-              <h2 className="text-sm font-semibold text-dark-slate mb-3">GitHub</h2>
+              <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("githubHeading")}</h2>
               <a
                 href={
                   project.githubBoard.projectUrl ??
@@ -913,38 +924,38 @@ export default async function ProjectDetailPage({
               </a>
               <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <dt className="text-dark-slate/50">Öppna issues</dt>
+                  <dt className="text-dark-slate/50">{t("openIssuesLabel")}</dt>
                   <dd className="text-base font-semibold text-dark-slate">{openGithubIssues}</dd>
                 </div>
                 <div>
-                  <dt className="text-dark-slate/50">Öppna PR:er</dt>
+                  <dt className="text-dark-slate/50">{t("openPrsLabel")}</dt>
                   <dd className="text-base font-semibold text-dark-slate">{openGithubPrs}</dd>
                 </div>
               </dl>
               {project.githubBoard.lastSyncError ? (
                 <p className="mt-3 text-xs text-watermelon">
-                  Synk misslyckades: {project.githubBoard.lastSyncError}
+                  {t("syncFailedLabel", { error: project.githubBoard.lastSyncError })}
                 </p>
               ) : project.githubBoard.lastSyncedAt ? (
                 <p className="mt-3 text-xs text-dark-slate/50">
-                  Synkad {relativeTime(project.githubBoard.lastSyncedAt)} · skrivskyddad spegling
+                  {t("syncedLabel", { time: relativeTime(project.githubBoard.lastSyncedAt, t) })}
                 </p>
               ) : (
-                <p className="mt-3 text-xs text-dark-slate/50">Väntar på första synk…</p>
+                <p className="mt-3 text-xs text-dark-slate/50">{t("waitingFirstSyncLabel")}</p>
               )}
               <Link
                 href={`/projects/${slug}/tasks`}
                 className="mt-2 block text-xs text-seagrass hover:underline"
               >
-                Visa som uppgifter →
+                {t("viewAsTasksLink")}
               </Link>
             </section>
           )}
 
           {/* Calendar widget */}
           <section className="border border-muted-teal/30 rounded-xl p-4">
-            <h2 className="text-sm font-semibold text-dark-slate mb-3">Kalender</h2>
-            <MiniCalendar events={monthEvents} />
+            <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("calendarHeading")}</h2>
+            <MiniCalendar events={monthEvents} t={t} />
             {upcomingEvents.length > 0 && (
               <ul className="mt-3 space-y-1.5 border-t border-muted-teal/20 pt-3">
                 {upcomingEvents.slice(0, 3).map((ev) => (
@@ -961,14 +972,14 @@ export default async function ProjectDetailPage({
               href={`/projects/${slug}/calendar`}
               className="mt-2 block text-xs text-seagrass hover:underline"
             >
-              Öppna kalender →
+              {t("openCalendarLink")}
             </Link>
           </section>
 
           {/* Costs */}
           {fundingCampaign && fundingCampaign.expenses.length > 0 && (
             <section className="border border-muted-teal/30 rounded-xl p-4">
-              <h2 className="text-sm font-semibold text-dark-slate mb-3">Kostnader</h2>
+              <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("costsHeading")}</h2>
               <ul className="space-y-2">
                 {fundingCampaign.expenses.map((exp) => (
                   <li key={exp.id} className="flex justify-between items-center text-xs">
@@ -983,7 +994,7 @@ export default async function ProjectDetailPage({
                 href={`/projects/${slug}/funding`}
                 className="mt-3 block text-xs text-seagrass hover:underline"
               >
-                Alla utgifter →
+                {t("allExpensesLink")}
               </Link>
             </section>
           )}
@@ -991,8 +1002,8 @@ export default async function ProjectDetailPage({
           {/* Join CTA */}
           {!isMember && userId && (
             <div className="border border-seagrass/40 rounded-xl p-4 bg-seagrass/5">
-              <h2 className="text-sm font-semibold text-dark-slate mb-1">Vill du bidra?</h2>
-              <p className="text-xs text-dark-slate/60 mb-3">Ansök om att gå med i projektet.</p>
+              <h2 className="text-sm font-semibold text-dark-slate mb-1">{t("wantToContributeHeading")}</h2>
+              <p className="text-xs text-dark-slate/60 mb-3">{t("applyToJoinText")}</p>
               <JoinButton
                 projectId={project.id}
                 slug={slug}
@@ -1003,13 +1014,13 @@ export default async function ProjectDetailPage({
           {!isMember && !userId && (
             <div className="border border-muted-teal/30 rounded-xl p-4 text-center">
               <p className="text-sm text-dark-slate/60 mb-3">
-                Logga in för att gå med i projektet
+                {t("loginToJoinText")}
               </p>
               <Link
                 href={`/login?callbackUrl=${encodeURIComponent(`/projects/${slug}`)}`}
                 className="text-sm text-coral font-medium hover:underline"
               >
-                Logga in →
+                {t("loginArrowLink")}
               </Link>
             </div>
           )}
@@ -1023,7 +1034,7 @@ export default async function ProjectDetailPage({
                     {raised.toLocaleString("sv-SE")}
                   </span>
                   <span className="text-xs text-dark-slate/50">
-                    av {fundingCampaign.goal.toLocaleString("sv-SE")} {fundingCampaign.currency}
+                    {t("fundingGoalLabel", { goal: fundingCampaign.goal.toLocaleString("sv-SE"), currency: fundingCampaign.currency })}
                   </span>
                 </div>
                 <div className="w-full h-2 bg-muted-teal/20 rounded-full overflow-hidden">
@@ -1033,15 +1044,15 @@ export default async function ProjectDetailPage({
                   />
                 </div>
                 <div className="flex justify-between text-xs text-dark-slate/50">
-                  <span className="font-semibold text-dark-slate">{fundingPct}% finansierat</span>
-                  {daysLeft !== null && <span>{daysLeft} dagar kvar</span>}
+                  <span className="font-semibold text-dark-slate">{t("fundingPercentLabel", { pct: fundingPct })}</span>
+                  {daysLeft !== null && <span>{t("daysLeftLabel", { days: daysLeft })}</span>}
                 </div>
               </div>
               <Link
                 href={`/projects/${slug}/funding`}
                 className="block w-full text-center px-4 py-2.5 bg-coral text-white rounded-xl font-semibold text-sm hover:bg-coral/90 transition-colors"
               >
-                Stöd projektet
+                {t("supportProjectButton")}
               </Link>
             </section>
           )}

@@ -2,6 +2,7 @@
 
 import { Link, usePathname } from "@/i18n/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Home,
   ListChecks,
@@ -34,37 +35,43 @@ import {
 
 type NavItem = { label: string; href: string; icon: LucideIcon; getHref?: (slug: string) => string; commercialOnly?: boolean };
 
-const MAIN_ITEMS: NavItem[] = [
-  { label: "Startsidan", href: "",          icon: Home },
-  { label: "Att göra",   href: "/tasks",     icon: ListChecks },
-  { label: "Kalender",   href: "/calendar",  icon: Calendar },
-  { label: "Chat",       href: "/kanaler",   icon: MessageCircle, getHref: (slug) => `/messages?project=${slug}` },
-  { label: "Blogg",      href: "/updates",   icon: Megaphone },
-  { label: "Filer",      href: "/files",     icon: Folder },
-  { label: "Wiki",       href: "/wiki",      icon: BookOpen },
-  { label: "Idéverkstad", href: "/idea-sessions", icon: Lightbulb },
-  { label: "Lean Canvas", href: "/lean-canvas",   icon: LayoutGrid },
-  { label: "Design Sprints", href: "/sprints",    icon: Rocket },
-];
+function buildMainItems(t: ReturnType<typeof useTranslations>): NavItem[] {
+  return [
+    { label: t("navHome"), href: "",          icon: Home },
+    { label: t("navTasks"),   href: "/tasks",     icon: ListChecks },
+    { label: t("navCalendar"),   href: "/calendar",  icon: Calendar },
+    { label: t("navChat"),       href: "/kanaler",   icon: MessageCircle, getHref: (slug) => `/messages?project=${slug}` },
+    { label: t("navBlog"),      href: "/updates",   icon: Megaphone },
+    { label: t("navFiles"),      href: "/files",     icon: Folder },
+    { label: t("navWiki"),       href: "/wiki",      icon: BookOpen },
+    { label: t("navIdeaWorkshop"), href: "/idea-sessions", icon: Lightbulb },
+    { label: t("navLeanCanvas"), href: "/lean-canvas",   icon: LayoutGrid },
+    { label: t("navDesignSprints"), href: "/sprints",    icon: Rocket },
+  ];
+}
 
-const TOOLS_ITEMS: NavItem[] = [
-  { label: "Omröstningar",    href: "/polls",              icon: Vote },
-  { label: "Bidrag",          href: "/funding",             icon: HandCoins },
-  { label: "Tokens",          href: "/tokens",               icon: Coins },
-  { label: "Vinstfördelning", href: "/profit-distribution", icon: PiggyBank, commercialOnly: true },
-];
+function buildToolsItems(t: ReturnType<typeof useTranslations>): NavItem[] {
+  return [
+    { label: t("navPolls"),    href: "/polls",              icon: Vote },
+    { label: t("navFunding"),          href: "/funding",             icon: HandCoins },
+    { label: t("navTokens"),          href: "/tokens",               icon: Coins },
+    { label: t("navProfitDistribution"), href: "/profit-distribution", icon: PiggyBank, commercialOnly: true },
+  ];
+}
 
-const ADMIN_ITEMS: NavItem[] = [
-  { label: "Redigera",      href: "/edit",                icon: Pencil },
-  { label: "Medlemmar",     href: "/members",              icon: Users },
-  { label: "Alumni",        href: "/alumni",               icon: GraduationCap },
-  { label: "Impact",        href: "/impact",               icon: Target },
-  { label: "Skalning",      href: "/scale",                icon: TrendingUp },
-  { label: "Partnerskap",   href: "/partnerships",         icon: Handshake },
-  { label: "AI-granskning", href: "/ai-review",            icon: Bot },
-  { label: "Juridisk form", href: "/legal-type",           icon: Scale },
-  { label: "Fork",          href: "/fork/new",             icon: GitFork, getHref: (slug) => `/fork/new?sourceId=${slug}` },
-];
+function buildAdminItems(t: ReturnType<typeof useTranslations>): NavItem[] {
+  return [
+    { label: t("navEdit"),      href: "/edit",                icon: Pencil },
+    { label: t("navMembers"),     href: "/members",              icon: Users },
+    { label: t("navAlumni"),        href: "/alumni",               icon: GraduationCap },
+    { label: t("navImpact"),        href: "/impact",               icon: Target },
+    { label: t("navScaling"),      href: "/scale",                icon: TrendingUp },
+    { label: t("navPartnerships"),   href: "/partnerships",         icon: Handshake },
+    { label: t("navAiReview"), href: "/ai-review",            icon: Bot },
+    { label: t("navLegalType"), href: "/legal-type",           icon: Scale },
+    { label: t("navFork"),          href: "/fork/new",             icon: GitFork, getHref: (slug) => `/fork/new?sourceId=${slug}` },
+  ];
+}
 
 function Row({
   item,
@@ -145,6 +152,10 @@ export default function ProjectSideNav({
   isCommercial?: boolean;
 }) {
   const pathname = usePathname();
+  const t = useTranslations("ProjectSideNav");
+  const MAIN_ITEMS = buildMainItems(t);
+  const TOOLS_ITEMS = buildToolsItems(t);
+  const ADMIN_ITEMS = buildAdminItems(t);
   const base = `/projects/${slug}`;
 
   function isActive(href: string) {
@@ -163,9 +174,9 @@ export default function ProjectSideNav({
   const onHome = pathname === base;
   const iconOnly = !onHome;
 
-  const visibleToolsItems = TOOLS_ITEMS.filter((t) => !t.commercialOnly || isCommercial);
-  const toolsActive = visibleToolsItems.some((t) => isActive(t.href));
-  const adminActive = ADMIN_ITEMS.some((t) => isActive(t.href));
+  const visibleToolsItems = TOOLS_ITEMS.filter((item) => !item.commercialOnly || isCommercial);
+  const toolsActive = visibleToolsItems.some((item) => isActive(item.href));
+  const adminActive = ADMIN_ITEMS.some((item) => isActive(item.href));
 
   const [toolsOpen, setToolsOpen] = useState(toolsActive);
   const [adminOpen, setAdminOpen] = useState(adminActive);
@@ -225,7 +236,7 @@ export default function ProjectSideNav({
           ))}
 
           <div className="pt-1">
-            <GroupToggle label="Community" icon={Users2} open={toolsOpen} active={toolsActive} onClick={() => setToolsOpen((v) => !v)} iconOnly={iconOnly} />
+            <GroupToggle label={t("toolsGroupLabel")} icon={Users2} open={toolsOpen} active={toolsActive} onClick={() => setToolsOpen((v) => !v)} iconOnly={iconOnly} />
             {toolsOpen && (
               <div className="space-y-0.5 mt-0.5">
                 {visibleToolsItems.map((item) => (
@@ -237,7 +248,7 @@ export default function ProjectSideNav({
 
           {isOwner && (
             <div className="pt-1">
-              <GroupToggle label="Admin" icon={Settings} open={adminOpen} active={adminActive} onClick={() => setAdminOpen((v) => !v)} iconOnly={iconOnly} />
+              <GroupToggle label={t("adminGroupLabel")} icon={Settings} open={adminOpen} active={adminActive} onClick={() => setAdminOpen((v) => !v)} iconOnly={iconOnly} />
               {adminOpen && (
                 <div className="space-y-0.5 mt-0.5">
                   {ADMIN_ITEMS.map((item) => (

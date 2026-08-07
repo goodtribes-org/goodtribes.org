@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
@@ -10,20 +11,22 @@ import { LEGAL_TYPES, LEGAL_TYPE_LABEL, isCommercialLegalType } from "@/lib/lega
 import { canInvoice } from "@/lib/projectApproval";
 import { proposeLegalTypeChange } from "./actions";
 
-export const metadata: Metadata = {
-  title: "Juridisk form — GoodTribes.org",
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  pending: "Väntar på omröstning",
-  approved_by_members: "Godkänt av medlemmarna — väntar på Stiftelsen",
-  rejected_by_members: "Avslaget av medlemmarna",
-  executed: "Genomfört",
-  rejected_by_foundation: "Avslaget av Stiftelsen",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "LegalTypePage" });
+  return { title: t("pageTitle") };
+}
 
 export default async function LegalTypePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const t = await getTranslations("LegalTypePage");
+  const STATUS_LABEL: Record<string, string> = {
+    pending: t("statusPending"),
+    approved_by_members: t("statusApprovedByMembers"),
+    rejected_by_members: t("statusRejectedByMembers"),
+    executed: t("statusExecuted"),
+    rejected_by_foundation: t("statusRejectedByFoundation"),
+  };
   const session = await auth();
   const userId = session?.user?.id ?? null;
 
@@ -57,24 +60,24 @@ export default async function LegalTypePage({ params }: { params: Promise<{ slug
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
         <Link href={`/projects/${slug}`} className="text-sm text-dark-slate/50 hover:text-seagrass">
-          ← {project.title}
+          {t("backToProject", { title: project.title })}
         </Link>
-        <h1 className="text-2xl font-bold text-dark-slate mt-1">Juridisk form</h1>
-        <p className="text-sm text-dark-slate/50 mt-1">Se PRD 4c för vad varje form innebär juridiskt.</p>
+        <h1 className="text-2xl font-bold text-dark-slate mt-1">{t("heading")}</h1>
+        <p className="text-sm text-dark-slate/50 mt-1">{t("subtitle")}</p>
       </div>
 
       <section className="border border-muted-teal/40 rounded-lg p-5 bg-white mb-6">
-        <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-wide mb-1">Nuvarande form</p>
+        <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-wide mb-1">{t("currentTypeLabel")}</p>
         <p className="text-lg font-medium text-dark-slate">{LEGAL_TYPE_LABEL[project.legalType] ?? project.legalType}</p>
         {project.commercialUmbrellaEntity && (
-          <p className="text-sm text-dark-slate/50 mt-1">Produktlinje under {project.commercialUmbrellaEntity.name}</p>
+          <p className="text-sm text-dark-slate/50 mt-1">{t("productLineUnder", { name: project.commercialUmbrellaEntity.name })}</p>
         )}
       </section>
 
       {pendingRequest ? (
         <section className="border border-amber-300 bg-amber-50 rounded-lg p-5">
           <p className="text-sm font-medium text-dark-slate mb-1">
-            Begäran om byte till {LEGAL_TYPE_LABEL[pendingRequest.requestedType] ?? pendingRequest.requestedType}
+            {t("changeRequestTitle", { type: LEGAL_TYPE_LABEL[pendingRequest.requestedType] ?? pendingRequest.requestedType })}
           </p>
           <p className="text-sm text-amber-800">{STATUS_LABEL[pendingRequest.status] ?? pendingRequest.status}</p>
           {pendingRequest.pollId && (
@@ -82,20 +85,19 @@ export default async function LegalTypePage({ params }: { params: Promise<{ slug
               href={`/projects/${slug}/polls/${pendingRequest.pollId}`}
               className="inline-block mt-2 text-sm text-seagrass hover:underline font-medium"
             >
-              Se omröstningen →
+              {t("viewPoll")}
             </Link>
           )}
         </section>
       ) : isMember ? (
         <section className="border border-muted-teal/40 rounded-lg p-5 bg-white">
-          <p className="text-sm font-medium text-dark-slate mb-3">Föreslå ändring</p>
+          <p className="text-sm font-medium text-dark-slate mb-3">{t("proposeChangeHeading")}</p>
           <p className="text-xs text-dark-slate/50 mb-3">
-            Skapar en Tribe Token-viktad omröstning bland projektets medlemmar. Ett godkänt röstresultat är en
-            begäran — Stiftelsen genomför den faktiska övergången (PRD 4c).
+            {t("proposeChangeDescription")}
           </p>
           {isCommercialLegalType(project.legalType) && !eligibleForOwnAb && (
             <p className="text-xs text-dark-slate/50 mb-3">
-              Du kan föreslå eget helägt AB när projektet fakturerar under paraply-AB:et.
+              {t("ownAbHint")}
             </p>
           )}
           <form action={proposeLegalTypeChange.bind(null, project.id, slug)} className="flex flex-col gap-3">
@@ -103,20 +105,20 @@ export default async function LegalTypePage({ params }: { params: Promise<{ slug
               name="requestedType"
               className="border border-muted-teal rounded px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-coral"
             >
-              {otherTypes.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
+              {otherTypes.map((ot) => (
+                <option key={ot.value} value={ot.value}>{ot.label}</option>
               ))}
             </select>
             <button
               type="submit"
               className="self-start bg-coral text-white text-sm font-medium px-4 py-2 rounded hover:bg-watermelon transition-colors"
             >
-              Starta omröstning
+              {t("startPoll")}
             </button>
           </form>
         </section>
       ) : (
-        <p className="text-sm text-dark-slate/40">Endast projektmedlemmar kan föreslå en ändring.</p>
+        <p className="text-sm text-dark-slate/40">{t("membersOnlyNotice")}</p>
       )}
     </div>
   );

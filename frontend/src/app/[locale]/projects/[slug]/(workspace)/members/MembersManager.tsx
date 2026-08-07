@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { respondToJoinRequest } from "../../join-actions";
 import { removeMember, changeMemberRole } from "../../member-actions";
 import type { ProjectRole } from "@/lib/authz";
@@ -59,6 +60,7 @@ export default function MembersManager({
   viewerRole: ProjectRole | null;
   viewerIsSiteAdmin: boolean;
 }) {
+  const t = useTranslations("MembersManager");
   const viewerIsFounder = viewerRole === "FOUNDER";
   const canAddDirectly = viewerIsSiteAdmin || viewerIsFounder || viewerRole === "ADMIN";
   const [members, setMembers] = useState(initialMembers);
@@ -90,20 +92,20 @@ export default function MembersManager({
   }
 
   function handlePromoteToFounder(userId: string, name: string | null) {
-    if (!confirm(`Gör ${name ?? "medlemmen"} till grundare? De får då samma befogenheter som du.`)) return;
+    if (!confirm(t("confirmPromoteToFounder", { name: name ?? t("genericMember") }))) return;
     handleRoleChange(userId, "FOUNDER");
   }
 
   return (
     <div className="max-w-3xl space-y-8">
-      <h1 className="text-2xl font-bold text-dark-slate">Projektmedlemmar</h1>
+      <h1 className="text-2xl font-bold text-dark-slate">{t("pageTitle")}</h1>
 
       {/* Add an existing user directly, no invite/approval needed — or,
           for an email with no matching account, send an invite link
           instead so external (not-yet-registered) people can join too. */}
       {canAddDirectly && (
         <section>
-          <h2 className="text-sm font-semibold text-dark-slate mb-3">Lägg till medlem direkt</h2>
+          <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("addMemberHeading")}</h2>
           <AddOrInviteMember
             projectId={project.id}
             slug={project.slug}
@@ -116,7 +118,7 @@ export default function MembersManager({
       {requests.length > 0 && (
         <section>
           <h2 className="text-sm font-semibold text-dark-slate mb-3 flex items-center gap-2">
-            Ansökningar
+            {t("requestsHeading")}
             <span className="bg-coral text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
               {requests.length}
             </span>
@@ -126,7 +128,7 @@ export default function MembersManager({
               <div key={req.id} className="flex items-start gap-3 p-4">
                 <Avatar name={req.user.name} image={req.user.image} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-dark-slate">{req.user.name ?? "Okänd"}</p>
+                  <p className="text-sm font-semibold text-dark-slate">{req.user.name ?? t("unknownName")}</p>
                   {req.message && (
                     <p className="text-xs text-dark-slate/60 mt-0.5 line-clamp-2">{req.message}</p>
                   )}
@@ -135,20 +137,20 @@ export default function MembersManager({
                   </p>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <MessageButton toUserId={req.user.id} toUserName={req.user.name ?? "denna person"} />
+                  <MessageButton toUserId={req.user.id} toUserName={req.user.name ?? t("thisPersonFallback")} />
                   <button
                     disabled={isPending}
                     onClick={() => handleRespond(req.id, "approved")}
                     className="text-xs font-semibold bg-seagrass text-white px-3 py-1.5 rounded-lg hover:bg-seagrass/90 disabled:opacity-50 transition-colors"
                   >
-                    Godkänn
+                    {t("approveButton")}
                   </button>
                   <button
                     disabled={isPending}
                     onClick={() => handleRespond(req.id, "rejected")}
                     className="text-xs font-semibold border border-gray-200 text-dark-slate/60 px-3 py-1.5 rounded-lg hover:border-coral hover:text-coral disabled:opacity-50 transition-colors"
                   >
-                    Avvisa
+                    {t("rejectButton")}
                   </button>
                 </div>
               </div>
@@ -158,13 +160,13 @@ export default function MembersManager({
       )}
 
       {requests.length === 0 && (
-        <p className="text-sm text-dark-slate/40 italic">Inga väntande ansökningar.</p>
+        <p className="text-sm text-dark-slate/40 italic">{t("noRequestsEmpty")}</p>
       )}
 
       {/* Current members */}
       <section>
         <h2 className="text-sm font-semibold text-dark-slate mb-3">
-          Nuvarande medlemmar ({members.length})
+          {t("currentMembersHeading", { count: members.length })}
         </h2>
         <div className="border border-muted-teal/30 rounded-xl divide-y divide-muted-teal/15">
           {members.map((m) => {
@@ -176,13 +178,13 @@ export default function MembersManager({
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-dark-slate truncate">
                     {m.name ?? "—"}
-                    {isSelf && <span className="ml-1.5 text-[10px] text-dark-slate/40">(du)</span>}
+                    {isSelf && <span className="ml-1.5 text-[10px] text-dark-slate/40">{t("selfIndicator")}</span>}
                   </p>
                   <p className="text-xs text-dark-slate/40 truncate">{m.email}</p>
                 </div>
                 {isOwner ? (
                   <span className="text-xs font-semibold text-seagrass/80 px-2 py-1 bg-seagrass/10 rounded-md">
-                    Grundare
+                    {t("roleFounder")}
                   </span>
                 ) : (
                   <>
@@ -192,28 +194,28 @@ export default function MembersManager({
                       onChange={(e) => handleRoleChange(m.userId, e.target.value as ProjectRole)}
                       className="text-xs border border-gray-200 rounded-md px-2 py-1 bg-white text-dark-slate/70 focus:outline-none focus:border-seagrass disabled:opacity-50"
                     >
-                      <option value="ADMIN">Admin</option>
-                      <option value="MEMBER">Medlem</option>
+                      <option value="ADMIN">{t("roleAdmin")}</option>
+                      <option value="MEMBER">{t("roleMemberOption")}</option>
                     </select>
                     {(viewerIsFounder || viewerIsSiteAdmin) && !isSelf && (
                       <button
                         disabled={isPending}
                         onClick={() => handlePromoteToFounder(m.userId, m.name)}
                         className="text-xs font-medium text-seagrass/80 hover:text-seagrass whitespace-nowrap disabled:opacity-50"
-                        title="Gör till grundare"
+                        title={t("makeFounderButton")}
                       >
-                        Gör till grundare
+                        {t("makeFounderButton")}
                       </button>
                     )}
                   </>
                 )}
-                {!isSelf && <MessageButton toUserId={m.userId} toUserName={m.name ?? "denna person"} />}
+                {!isSelf && <MessageButton toUserId={m.userId} toUserName={m.name ?? t("thisPersonFallback")} />}
                 {!isOwner && !isSelf && (
                   <button
                     disabled={isPending}
                     onClick={() => handleRemove(m.userId)}
                     className="text-xs text-dark-slate/30 hover:text-coral transition-colors disabled:opacity-50 ml-1"
-                    title="Ta bort"
+                    title={t("removeMemberTitle")}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
