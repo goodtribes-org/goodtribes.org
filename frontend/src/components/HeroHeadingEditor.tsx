@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { updateHeroHeading } from "@/app/[locale]/home-hero-actions";
+import type { Locale } from "next-intl";
 
-export default function HeroHeadingEditor({ initialHeading }: { initialHeading: string }) {
+export default function HeroHeadingEditor({ initialHeading, locale }: { initialHeading: string; locale: Locale }) {
   const [heading, setHeading] = useState(initialHeading);
   const [saved, setSaved] = useState(initialHeading);
   const [error, setError] = useState<string | null>(null);
@@ -12,7 +13,7 @@ export default function HeroHeadingEditor({ initialHeading }: { initialHeading: 
   function handleSave() {
     setError(null);
     startTransition(async () => {
-      const result = await updateHeroHeading(heading);
+      const result = await updateHeroHeading(heading, locale);
       if ("error" in result) {
         setError(result.error);
         return;

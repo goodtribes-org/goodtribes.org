@@ -509,6 +509,7 @@ model KanbanCardSubtask {
 model HomeHeroSlide {
   id          String        @id @default(cuid())
   order       Int           @default(0)
+  locale      String        @default("sv")
   imageUrl    String
   alt         String
   heading     String
@@ -528,8 +529,11 @@ model HomeHeroSlide {
 // headline shown above the hero carousel on the homepage.
 model HomeHeroSettings {
   id        String   @id @default(cuid())
+  locale    String   @default("sv")
   heading   String
   updatedAt DateTime @updatedAt
+
+  @@unique([locale])
 }
 
 // Editorial content for the About/Privacy/Terms pages (replaces Strapi,
@@ -554,10 +558,13 @@ model SitePage {
 model OnboardingStep {
   id        String   @id @default(cuid())
   order     Int      @default(0)
+  locale    String   @default("sv")
   label     String
   href      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([order, locale])
 }
 
 model KanbanCardComment {

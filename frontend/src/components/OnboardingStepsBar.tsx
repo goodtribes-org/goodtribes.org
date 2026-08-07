@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
-export type OnboardingStepData = { id: string; label: string; href: string };
+export type OnboardingStepData = { id: string; order: number; label: string; href: string };
 
 // Linjen mellan cirklarna: 5 segment som tonar från varm gul till röd.
 const LINE_SEGMENT_COLORS = ["#ffcc00", "#f49a01", "#e86903", "#dd3704", "#d10505"];
@@ -17,6 +18,8 @@ const CIRCLE_CLASSES = [
 ];
 
 export default function OnboardingStepsBar({ steps, canEdit }: { steps: OnboardingStepData[]; canEdit: boolean }) {
+  const t = useTranslations("Nav");
+  const tEdit = useTranslations("SitePageEditor");
   return (
     <div className="relative flex justify-center py-6">
       {canEdit && (
@@ -24,7 +27,7 @@ export default function OnboardingStepsBar({ steps, canEdit }: { steps: Onboardi
           href="/site-admin/hero-carousel"
           className="absolute top-1 right-4 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors bg-white/70 rounded-md px-2 py-1"
         >
-          ✎ Redigera
+          ✎ {tEdit("edit")}
         </Link>
       )}
       <div className="relative grid grid-cols-1 md:grid-cols-6 gap-x-12 gap-y-10 w-full max-w-4xl">
@@ -51,7 +54,7 @@ export default function OnboardingStepsBar({ steps, canEdit }: { steps: Onboardi
                 href={s.href}
                 className="mt-2 text-coral text-xs font-bold px-3 py-1 rounded-full border border-coral hover:bg-coral/5 transition-colors whitespace-nowrap"
               >
-                Sign in
+                {t("signIn")}
               </a>
             )}
           </div>

@@ -19,6 +19,8 @@ import LeaderboardWidget from "@/components/LeaderboardWidget";
 import NewMembersWidget from "@/components/NewMembersWidget";
 import SdgCoverageWidget from "@/components/SdgCoverageWidget";
 import { isValidProjectPhase } from "@/lib/projectPhase";
+import { routing } from "@/i18n/routing";
+import type { Locale } from "next-intl";
 
 const PAGE_SIZE = 12;
 const IDEA_PREVIEW_SIZE = 8;
@@ -49,8 +51,10 @@ async function getLeaderboard() {
 }
 
 export default async function HomePage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: Locale }>;
   searchParams: Promise<{
     sort?: string;
     q?: string;
@@ -60,6 +64,7 @@ export default async function HomePage({
     page?: string;
   }>;
 }) {
+  const { locale } = await params;
   const { sort: sortParam, q, phase, category, sdg, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const sdgNum = sdg ? parseInt(sdg) : undefined;
@@ -141,15 +146,38 @@ export default async function HomePage({
         votes: userId ? { where: { userId }, select: { id: true } } : false,
       },
     }),
-    prisma.homeHeroSlide.findMany({ orderBy: { order: "asc" } }),
-    prisma.homeHeroSettings.findFirst(),
-    prisma.onboardingStep.findMany({ orderBy: { order: "asc" } }),
+    prisma.homeHeroSlide.findMany({ where: { locale }, orderBy: { order: "asc" } }),
+    prisma.homeHeroSettings.findUnique({ where: { locale } }),
+    prisma.onboardingStep.findMany({ where: { locale }, orderBy: { order: "asc" } }),
   ]);
 
-  const heroSlidesForStack = heroSlides.map(toHeroSlideData);
+  // Falls back to the site's default locale's editorial content rather than
+  // showing a blank hero/heading/onboarding bar the first time a non-default
+  // locale hasn't been translated by a site admin yet.
+  let finalHeroSlides = heroSlides;
+  let finalHeroSettings = heroSettings;
+  let finalOnboardingSteps = onboardingSteps;
+  if (locale !== routing.defaultLocale) {
+    const [fallbackSlides, fallbackSettings, fallbackSteps] = await Promise.all([
+      finalHeroSlides.length === 0
+        ? prisma.homeHeroSlide.findMany({ where: { locale: routing.defaultLocale }, orderBy: { order: "asc" } })
+        : Promise.resolve(null),
+      finalHeroSettings === null
+        ? prisma.homeHeroSettings.findUnique({ where: { locale: routing.defaultLocale } })
+        : Promise.resolve(null),
+      finalOnboardingSteps.length === 0
+        ? prisma.onboardingStep.findMany({ where: { locale: routing.defaultLocale }, orderBy: { order: "asc" } })
+        : Promise.resolve(null),
+    ]);
+    if (fallbackSlides) finalHeroSlides = fallbackSlides;
+    if (fallbackSettings) finalHeroSettings = fallbackSettings;
+    if (fallbackSteps) finalOnboardingSteps = fallbackSteps;
+  }
+
+  const heroSlidesForStack = finalHeroSlides.map(toHeroSlideData);
   const canEditHero = userId ? await isSiteAdmin(userId) : false;
-  const heroHeading = heroSettings?.heading ?? "Välkommen till GoodTribes";
-  const onboardingStepsForBar = onboardingSteps.map((s) => ({ id: s.id, label: s.label, href: s.href }));
+  const heroHeading = finalHeroSettings?.heading ?? (locale === "en" ? "Welcome to GoodTribes" : "Välkommen till GoodTribes");
+  const onboardingStepsForBar = finalOnboardingSteps.map((s) => ({ id: s.id, order: s.order, label: s.label, href: s.href }));
 
   const totalRaised = pledgeSum._sum.amount ?? 0;
   const completedTasks = completedCards + completedSubtasks;

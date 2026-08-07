@@ -14,6 +14,7 @@ import {
   type ObstacleInput,
   type PointInput,
 } from "@/app/[locale]/home-hero-actions";
+import type { Locale } from "next-intl";
 
 const EMPTY_FORM = {
   imageUrl: "",
@@ -29,7 +30,7 @@ const EMPTY_FORM = {
   tintOpacity: 10 as HeroTintOpacity,
 };
 
-export default function HeroCarouselEditor({ initialSlides }: { initialSlides: HeroSlideData[] }) {
+export default function HeroCarouselEditor({ initialSlides, locale }: { initialSlides: HeroSlideData[]; locale: Locale }) {
   const [slides, setSlides] = useState(initialSlides);
   const [editingId, setEditingId] = useState<string | "new" | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -63,7 +64,7 @@ export default function HeroCarouselEditor({ initialSlides }: { initialSlides: H
   function handleSave() {
     setError(null);
     startTransition(async () => {
-      const result = editingId === "new" ? await createHeroSlide(form) : await updateHeroSlide(editingId as string, form);
+      const result = editingId === "new" ? await createHeroSlide(form, locale) : await updateHeroSlide(editingId as string, form);
 
       if ("error" in result) {
         setError(result.error);

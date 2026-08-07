@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { requireSiteAdmin } from "@/lib/authz";
 import { Prisma } from "@prisma/client";
 import type { HomeHeroSlide } from "@prisma/client";
+import type { Locale } from "next-intl";
 
 async function requireAdmin() {
   const session = await auth();
@@ -58,15 +59,20 @@ function toData(input: HeroSlideInput) {
 
 type SaveResult = { error: string } | { ok: true; slide: HomeHeroSlide };
 
-export async function createHeroSlide(input: HeroSlideInput): Promise<SaveResult> {
+// locale is the locale the admin was viewing/editing when they hit save —
+// each locale keeps its own independent set of slides (a slide only exists
+// in the locale it was created under; there's no shared image/order link
+// between a Swedish and English slide the way SitePage links translations
+// of "the same" page).
+export async function createHeroSlide(input: HeroSlideInput, locale: Locale): Promise<SaveResult> {
   await requireAdmin();
 
   const data = toData(input);
   if (!data) return { error: "Bild, alt-text, rubrik, text och menyetikett krävs." };
 
-  const last = await prisma.homeHeroSlide.findFirst({ orderBy: { order: "desc" } });
+  const last = await prisma.homeHeroSlide.findFirst({ where: { locale }, orderBy: { order: "desc" } });
   const slide = await prisma.homeHeroSlide.create({
-    data: { ...data, order: (last?.order ?? -1) + 1 },
+    data: { ...data, locale, order: (last?.order ?? -1) + 1 },
   });
 
   revalidatePath("/");
@@ -105,26 +111,29 @@ export async function reorderHeroSlides(orderedIds: string[]) {
 
 type OkOrError = { error: string } | { ok: true };
 
-export async function updateHeroHeading(heading: string): Promise<OkOrError> {
+export async function updateHeroHeading(heading: string, locale: Locale): Promise<OkOrError> {
   await requireAdmin();
 
   const trimmed = heading.trim();
   if (!trimmed) return { error: "Rubrik krävs." };
 
-  const existing = await prisma.homeHeroSettings.findFirst();
-  if (existing) {
-    await prisma.homeHeroSettings.update({ where: { id: existing.id }, data: { heading: trimmed } });
-  } else {
-    await prisma.homeHeroSettings.create({ data: { heading: trimmed } });
-  }
+  await prisma.homeHeroSettings.upsert({
+    where: { locale },
+    update: { heading: trimmed },
+    create: { locale, heading: trimmed },
+  });
 
   revalidatePath("/");
   return { ok: true };
 }
 
-export type OnboardingStepInput = { id: string; label: string; href: string };
+export type OnboardingStepInput = { order: number; label: string; href: string };
 
-export async function updateOnboardingSteps(steps: OnboardingStepInput[]): Promise<OkOrError> {
+// Upserts by (order, locale) rather than updating an existing row by id —
+// the six steps are a fixed set per locale, but a locale that has never
+// been translated yet has zero rows, so the first save for that locale
+// needs to create them rather than fail to find something to update.
+export async function updateOnboardingSteps(steps: OnboardingStepInput[], locale: Locale): Promise<OkOrError> {
   await requireAdmin();
 
   for (const s of steps) {
@@ -133,7 +142,11 @@ export async function updateOnboardingSteps(steps: OnboardingStepInput[]): Promi
 
   await prisma.$transaction(
     steps.map((s) =>
-      prisma.onboardingStep.update({ where: { id: s.id }, data: { label: s.label.trim(), href: s.href.trim() } })
+      prisma.onboardingStep.upsert({
+        where: { order_locale: { order: s.order, locale } },
+        update: { label: s.label.trim(), href: s.href.trim() },
+        create: { order: s.order, locale, label: s.label.trim(), href: s.href.trim() },
+      })
     )
   );
 
