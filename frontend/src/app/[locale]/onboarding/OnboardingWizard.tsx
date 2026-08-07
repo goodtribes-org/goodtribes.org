@@ -1,32 +1,28 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { saveOnboarding } from "./actions";
 
-const GOALS = [
-  {
-    value: "start",
-    title: "Starta ett projekt",
-    desc: "Jag har en idé och vill hitta medgrundare och frivilliga.",
-    icon: "🚀",
-  },
-  {
-    value: "join",
-    title: "Gå med i ett projekt",
-    desc: "Jag vill bidra med mina kunskaper till ett befintligt initiativ.",
-    icon: "🤝",
-  },
-  {
-    value: "explore",
-    title: "Utforska plattformen",
-    desc: "Jag vill se vad som finns innan jag bestämmer mig.",
-    icon: "🔍",
-  },
-];
+const GOAL_VALUES = ["start", "join", "explore"] as const;
+
+const GOAL_ICONS: Record<(typeof GOAL_VALUES)[number], string> = {
+  start: "🚀",
+  join: "🤝",
+  explore: "🔍",
+};
 
 export default function OnboardingWizard() {
+  const t = useTranslations("OnboardingWizard");
   const [goal, setGoal] = useState<string>("explore");
   const [pending, setPending] = useState(false);
+
+  const GOALS = GOAL_VALUES.map((value) => ({
+    value,
+    title: t(`goal_${value}_title`),
+    desc: t(`goal_${value}_desc`),
+    icon: GOAL_ICONS[value],
+  }));
 
   async function handleSubmit() {
     setPending(true);
@@ -86,7 +82,7 @@ export default function OnboardingWizard() {
           disabled={pending}
           className="px-6 py-2.5 rounded-lg bg-seagrass text-white text-sm font-semibold hover:bg-seagrass/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {pending ? "Sparar…" : "Kom igång →"}
+          {pending ? t("savingButton") : t("getStartedButton")}
         </button>
       </div>
     </div>

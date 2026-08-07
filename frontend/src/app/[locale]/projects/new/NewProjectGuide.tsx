@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { createProject } from "./actions";
 import FileUpload from "@/components/FileUpload";
 import RichTextEditor from "@/components/RichTextEditor";
@@ -21,6 +22,7 @@ interface Props {
 // there's no separate bare "just a title" page before the guide begins
 // (see [slug]/guide/IdeaGuide.tsx for the remaining steps).
 export default function NewProjectGuide({ initial = {}, ideaId, fromThread, contextNote }: Props) {
+  const t = useTranslations("NewProjectGuide");
   const [submitting, setSubmitting] = useState(false);
   const [imageUrl, setImageUrl] = useState(initial.imageUrl ?? "");
   const [description, setDescription] = useState(initial.description ?? "");
@@ -29,9 +31,9 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
 
   return (
     <div className="py-10 max-w-3xl mx-auto">
-      <h1 className="text-xl font-bold text-dark-slate mb-2">Snabbstart — Nytt projekt</h1>
+      <h1 className="text-xl font-bold text-dark-slate mb-2">{t("heading")}</h1>
       <p className="text-sm text-dark-slate/60 mb-8">
-        {contextNote ?? "En valfri genomgång av idé-fasens delsteg. Hoppa över när som helst — inget här krävs."}
+        {contextNote ?? t("contextNoteDefault")}
       </p>
 
       <GuideStepIndicator steps={IDEA_GUIDE_STEPS} currentIndex={0} doneKeys={new Set()} />
@@ -57,14 +59,14 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
 
         <div>
           <label className="block text-sm font-medium text-dark-slate mb-2">
-            Omslagsbild <span className="text-dark-slate/50 font-normal">(valfritt)</span>
+            {t("coverImageLabel")} <span className="text-dark-slate/50 font-normal">{t("optionalLabel")}</span>
           </label>
           <FileUpload visibility="public" accept="image/*" onUpload={setImageUrl} />
         </div>
 
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-dark-slate mb-1">
-            Projektnamn <span className="text-watermelon">*</span>
+            {t("projectNameLabel")} <span className="text-watermelon">*</span>
           </label>
           <input
             id="title"
@@ -72,7 +74,7 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
             type="text"
             required
             defaultValue={initial.title ?? ""}
-            placeholder="Projektnamn"
+            placeholder={t("projectNamePlaceholder")}
             autoFocus
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
           />
@@ -80,21 +82,21 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
 
         <div>
           <label htmlFor="summary" className="block text-sm font-medium text-dark-slate mb-1">
-            Kort sammanfattning <span className="text-watermelon">*</span> <span className="text-dark-slate/50 font-normal">(visas på projektkortet)</span>
+            {t("summaryLabel")} <span className="text-watermelon">*</span> <span className="text-dark-slate/50 font-normal">{t("summaryHelper")}</span>
           </label>
           <textarea
             id="summary"
             name="summary"
             rows={2}
             required
-            placeholder="1–2 meningar"
+            placeholder={t("summaryPlaceholder")}
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral resize-none"
           />
         </div>
 
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-dark-slate mb-1">
-            Beskrivning <span className="text-watermelon">*</span>
+            {t("descriptionLabel")} <span className="text-watermelon">*</span>
           </label>
           <input type="hidden" name="description" value={description} />
           <RichTextEditor
@@ -105,28 +107,28 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
             }}
           />
           {descriptionError && (
-            <p className="text-xs text-watermelon mt-1">Beskrivning krävs.</p>
+            <p className="text-xs text-watermelon mt-1">{t("descriptionRequiredError")}</p>
           )}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-dark-slate mb-2">
-            Verksamhetstyp
+            {t("legalTypeLabel")}
           </label>
           <div className="grid grid-cols-2 gap-2">
-            {CREATABLE_LEGAL_TYPES.map((t) => (
+            {CREATABLE_LEGAL_TYPES.map((legalType) => (
               <label
-                key={t.value}
+                key={legalType.value}
                 className="flex items-start gap-2 border border-muted-teal rounded-md px-3 py-2 cursor-pointer hover:border-seagrass/60 transition-colors"
               >
                 <input
                   type="radio"
                   name="legalType"
-                  value={t.value}
-                  defaultChecked={t.value === "NONPROFIT_UMBRELLA"}
+                  value={legalType.value}
+                  defaultChecked={legalType.value === "NONPROFIT_UMBRELLA"}
                   className="mt-0.5 accent-seagrass"
                 />
-                <span className="text-xs text-dark-slate/80">{t.label.split(" — ")[0]}</span>
+                <span className="text-xs text-dark-slate/80">{legalType.label.split(" — ")[0]}</span>
               </label>
             ))}
           </div>
@@ -135,7 +137,7 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="category" className="block text-sm font-medium text-dark-slate mb-1">
-              Kategori
+              {t("categoryLabel")}
             </label>
             <select
               id="category"
@@ -149,7 +151,7 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
           </div>
           <div>
             <label htmlFor="tags" className="block text-sm font-medium text-dark-slate mb-1">
-              Taggar <span className="text-dark-slate/50 font-normal">(kommaseparerat)</span>
+              {t("tagsLabel")} <span className="text-dark-slate/50 font-normal">{t("tagsHelper")}</span>
             </label>
             <input
               id="tags"
@@ -168,7 +170,7 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
             disabled={submitting}
             className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            {submitting ? "Skapar…" : "Nästa →"}
+            {submitting ? t("submittingButton") : t("nextButton")}
           </button>
         </div>
       </form>
