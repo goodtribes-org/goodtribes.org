@@ -130,5 +130,12 @@
     "createAccountLink": "Skapa konto →",
     "alreadyHaveAccount": "Har du redan ett konto?",
     "logInLink": "Logga in →"
+  },
+  "SitePageEditor": {
+    "edit": "Redigera",
+    "editPage": "Redigera sidan",
+    "save": "Spara",
+    "saving": "Sparar…",
+    "cancel": "Avbryt"
   }
 }

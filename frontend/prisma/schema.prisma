@@ -539,13 +539,16 @@ model HomeHeroSettings {
 // via EditableSitePage.tsx.
 model SitePage {
   id          String   @id @default(cuid())
-  slug        String   @unique
+  slug        String
+  locale      String   @default("sv")
   title       String
   body        String
   order       Int      @default(0)
   updatedAt   DateTime @updatedAt
   updatedById String?
   updatedBy   User?    @relation("SitePageUpdatedBy", fields: [updatedById], references: [id])
+
+  @@unique([slug, locale])
 }
 
 model OnboardingStep {

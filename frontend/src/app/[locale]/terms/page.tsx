@@ -5,18 +5,21 @@ import { getSitePage } from "@/lib/sitePages";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { DEFAULT_SITE_PAGES } from "@/lib/defaultSitePages";
 import EditableSitePage from "@/components/EditableSitePage";
+import type { Locale } from "next-intl";
 
 export const metadata: Metadata = { title: "Terms of Service — GoodTribes.org" };
 
-export default async function TermsPage() {
+export default async function TermsPage({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
   const session = await auth();
   const canEdit = session?.user?.id ? await isSiteAdmin(session.user.id) : false;
 
-  const page = (await getSitePage("terms")) ?? DEFAULT_SITE_PAGES.terms;
+  const page = (await getSitePage("terms", locale)) ?? DEFAULT_SITE_PAGES.terms[locale];
 
   return (
     <EditableSitePage
       slug="terms"
+      locale={locale}
       canEdit={canEdit}
       title={page.title}
       body={sanitizeHtml(page.body)}

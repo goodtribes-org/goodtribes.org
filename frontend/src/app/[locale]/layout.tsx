@@ -94,7 +94,7 @@ export default async function LocaleLayout({
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale as Locale);
 
-  const [session, t, rawFooterPages] = await Promise.all([auth(), getTranslations("Footer"), getFooterPages()]);
+  const [session, t, rawFooterPages] = await Promise.all([auth(), getTranslations("Footer"), getFooterPages(locale as Locale)]);
   const canEditFooter = session?.user?.id ? await isSiteAdmin(session.user.id) : false;
   // Fixed pages (about/privacy/terms) keep their translated nav label
   // regardless of whatever H1 title is set on the page itself; only
@@ -165,6 +165,7 @@ export default async function LocaleLayout({
                       <FooterPageManager
                         pages={footerPages}
                         lockedLabels={[t("hallOfImpact"), t("shop"), t("academy"), t("dreamWall"), t("contact"), t("suggestions")]}
+                        locale={locale as Locale}
                       />
                     )}
                   </div>

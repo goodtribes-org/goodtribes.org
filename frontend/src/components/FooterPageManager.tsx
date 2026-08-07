@@ -3,13 +3,16 @@
 import { useState, useTransition } from "react";
 import { createFooterPage, deleteFooterPage, reorderFooterPages } from "@/app/[locale]/site-pages-actions";
 import type { FooterPage } from "@/lib/sitePages";
+import type { Locale } from "next-intl";
 
 export default function FooterPageManager({
   pages,
   lockedLabels,
+  locale,
 }: {
   pages: FooterPage[];
   lockedLabels: string[];
+  locale: Locale;
 }) {
   const [editing, setEditing] = useState(false);
   const [list, setList] = useState(pages);
@@ -24,7 +27,7 @@ export default function FooterPageManager({
     [next[index], next[target]] = [next[target], next[index]];
     setList(next);
     startTransition(async () => {
-      await reorderFooterPages(next.map((p) => p.slug));
+      await reorderFooterPages(next.map((p) => p.slug), locale);
     });
   }
 
@@ -33,7 +36,7 @@ export default function FooterPageManager({
     if (!title) return;
     setError(null);
     startTransition(async () => {
-      const result = await createFooterPage(title);
+      const result = await createFooterPage(title, locale);
       if ("error" in result) { setError(result.error); return; }
       setList((prev) => [...prev, { slug: result.slug, title, href: `/pages/${result.slug}`, locked: false }]);
       setNewTitle("");

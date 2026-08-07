@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_SITE_PAGES } from "@/lib/defaultSitePages";
 import type { SitePageSlug } from "@/app/[locale]/site-pages-actions";
+import type { Locale } from "next-intl";
+import { routing } from "@/i18n/routing";
 
 export interface SitePageContent {
   title: string;
@@ -10,14 +12,25 @@ export interface SitePageContent {
 /**
  * Reads editorial content for a static page (About/Privacy/Terms, or a
  * footer-created custom page) saved via the inline edit pencil (see
- * EditableSitePage.tsx). Returns null until a site admin has saved an edit
- * for that slug, so callers can fall back to hardcoded copy in the page
- * component — mirrors the old getStrapiPage fallback contract this replaces.
+ * EditableSitePage.tsx). Falls back from the requested locale to the site's
+ * default locale (sv) if no row exists yet for that locale — e.g. a custom
+ * page an admin only ever wrote in Swedish still renders for an English
+ * visitor instead of 404ing. Returns null only when neither locale has a
+ * row, so callers can fall back further to hardcoded copy (see
+ * DEFAULT_SITE_PAGES) for the three fixed slugs.
  */
-export async function getSitePage(slug: string): Promise<SitePageContent | null> {
-  const page = await prisma.sitePage.findUnique({ where: { slug } });
-  if (!page) return null;
-  return { title: page.title, body: page.body };
+export async function getSitePage(slug: string, locale: Locale): Promise<SitePageContent | null> {
+  const page = await prisma.sitePage.findUnique({ where: { slug_locale: { slug, locale } } });
+  if (page) return { title: page.title, body: page.body };
+
+  if (locale !== routing.defaultLocale) {
+    const fallback = await prisma.sitePage.findUnique({
+      where: { slug_locale: { slug, locale: routing.defaultLocale } },
+    });
+    if (fallback) return { title: fallback.title, body: fallback.body };
+  }
+
+  return null;
 }
 
 export interface FooterPage {
@@ -36,31 +49,48 @@ const FIXED_FOOTER_META: Record<SitePageSlug, { href: string; order: number }> =
   terms: { href: "/terms", order: -1 },
 };
 
+type FooterRow = { slug: string; title: string; order: number };
+
 /**
  * The ordered list of editorial pages to link from the footer: the three
  * fixed pages plus any custom pages a site admin has added (see
  * createFooterPage in site-pages-actions.ts). `locked` pages can't be
- * removed from the footer manager, only reordered.
+ * removed from the footer manager, only reordered. Same locale fallback
+ * chain as getSitePage — a custom page only written in the default locale
+ * still shows up (using that locale's title) in another locale's footer.
  */
-export async function getFooterPages(): Promise<FooterPage[]> {
-  const rows = await prisma.sitePage.findMany({ select: { slug: true, title: true, order: true } });
-  const bySlug = new Map(rows.map((r) => [r.slug, r]));
+export async function getFooterPages(locale: Locale): Promise<FooterPage[]> {
+  const rows = await prisma.sitePage.findMany({ where: { locale }, select: { slug: true, title: true, order: true } });
+  const bySlug = new Map<string, FooterRow>(rows.map((r) => [r.slug, r]));
+
+  const fallbackRows: FooterRow[] =
+    locale !== routing.defaultLocale
+      ? await prisma.sitePage.findMany({
+          where: { locale: routing.defaultLocale },
+          select: { slug: true, title: true, order: true },
+        })
+      : [];
+  const fallbackBySlug = new Map<string, FooterRow>(fallbackRows.map((r) => [r.slug, r]));
 
   const fixed = (Object.keys(FIXED_FOOTER_META) as SitePageSlug[]).map((slug) => {
     const meta = FIXED_FOOTER_META[slug];
-    const row = bySlug.get(slug);
+    const row = bySlug.get(slug) ?? fallbackBySlug.get(slug);
     return {
       slug,
       href: meta.href,
       locked: true,
-      title: row?.title ?? DEFAULT_SITE_PAGES[slug].title,
+      title: row?.title ?? DEFAULT_SITE_PAGES[slug][locale].title,
       order: row?.order ?? meta.order,
     };
   });
 
-  const custom = rows
-    .filter((r) => !(r.slug in FIXED_FOOTER_META))
-    .map((r) => ({ slug: r.slug, href: `/pages/${r.slug}`, locked: false, title: r.title, order: r.order }));
+  const allCustomSlugs = new Set(
+    [...rows, ...fallbackRows].map((r) => r.slug).filter((slug) => !(slug in FIXED_FOOTER_META))
+  );
+  const custom = [...allCustomSlugs].map((slug) => {
+    const row = (bySlug.get(slug) ?? fallbackBySlug.get(slug))!;
+    return { slug, href: `/pages/${slug}`, locked: false, title: row.title, order: row.order };
+  });
 
   return [...fixed, ...custom].sort((a, b) => a.order - b.order);
 }

@@ -1,18 +1,22 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import RichTextEditor from "@/components/RichTextEditor";
 import { updateSitePage } from "@/app/[locale]/site-pages-actions";
+import type { Locale } from "next-intl";
 
 interface Props {
   slug: string;
+  locale: Locale;
   canEdit: boolean;
   title: string;
   body: string;
   titleClassName?: string;
 }
 
-export default function EditableSitePage({ slug, canEdit, title, body, titleClassName }: Props) {
+export default function EditableSitePage({ slug, locale, canEdit, title, body, titleClassName }: Props) {
+  const t = useTranslations("SitePageEditor");
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(title);
   const [draftBody, setDraftBody] = useState(body);
@@ -22,7 +26,7 @@ export default function EditableSitePage({ slug, canEdit, title, body, titleClas
   function handleSave() {
     setError(null);
     startTransition(async () => {
-      const result = await updateSitePage(slug, draftTitle, draftBody);
+      const result = await updateSitePage(slug, locale, draftTitle, draftBody);
       if ("error" in result) { setError(result.error); return; }
       setEditing(false);
     });
@@ -47,14 +51,14 @@ export default function EditableSitePage({ slug, canEdit, title, body, titleClas
             disabled={isPending}
             className="bg-coral text-white text-sm font-medium px-4 py-1.5 rounded hover:bg-watermelon disabled:opacity-50 transition-colors"
           >
-            {isPending ? "Saving…" : "Save"}
+            {isPending ? t("saving") : t("save")}
           </button>
           <button
             type="button"
             onClick={() => { setDraftTitle(title); setDraftBody(body); setError(null); setEditing(false); }}
             className="text-sm text-dark-slate/50 px-3 py-1.5 rounded hover:text-dark-slate transition-colors"
           >
-            Cancel
+            {t("cancel")}
           </button>
         </div>
       </div>
@@ -69,10 +73,10 @@ export default function EditableSitePage({ slug, canEdit, title, body, titleClas
           <button
             type="button"
             onClick={() => setEditing(true)}
-            title="Redigera sidan"
+            title={t("editPage")}
             className="shrink-0 text-xs text-dark-slate/40 hover:text-dark-slate border border-muted-teal/40 px-3 py-1 rounded transition-colors"
           >
-            ✎ Redigera
+            ✎ {t("edit")}
           </button>
         )}
       </div>

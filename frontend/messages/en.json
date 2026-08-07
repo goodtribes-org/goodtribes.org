@@ -130,5 +130,12 @@
     "createAccountLink": "Create account →",
     "alreadyHaveAccount": "Already have an account?",
     "logInLink": "Log in →"
+  },
+  "SitePageEditor": {
+    "edit": "Edit",
+    "editPage": "Edit page",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel"
   }
 }
