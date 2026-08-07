@@ -1,17 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import SortToggle from "./SortToggle";
 import { DISPLAY_PHASES as STAGES } from "@/lib/projectPhase";
-import { CATEGORIES, CATEGORY_LABELS } from "@/lib/categories";
-
-const SDG_LABELS: Record<number, string> = {
-  1: "Ingen fattigdom", 2: "Ingen hunger", 3: "God hälsa", 4: "God utbildning",
-  5: "Jämställdhet", 6: "Rent vatten", 7: "Hållbar energi", 8: "Anständiga arbetsvillkor",
-  9: "Hållbar industri", 10: "Minskad ojämlikhet", 11: "Hållbara städer",
-  12: "Hållbar konsumtion", 13: "Bekämpa klimatförändringarna", 14: "Hav och marina resurser",
-  15: "Ekosystem och biologisk mångfald", 16: "Fredliga samhällen", 17: "Globalt partnerskap",
-};
+import { CATEGORIES, CATEGORY_KEYS } from "@/lib/categories";
 
 interface Props {
   sort: string;
@@ -25,6 +18,9 @@ interface Props {
 }
 
 export default function ProjectFilters({ sort, q, phase, category, sdg, basePath, onNavigate }: Props) {
+  const t = useTranslations("Filters");
+  const tSdg = useTranslations("Sdg");
+  const tCategories = useTranslations("Categories");
   const [query, setQuery] = useState(q ?? "");
 
   function buildUrl(overrides: Record<string, string | undefined>) {
@@ -56,7 +52,7 @@ export default function ProjectFilters({ sort, q, phase, category, sdg, basePath
         onChange={(e) => onNavigate(buildUrl({ phase: e.target.value || undefined, page: undefined }))}
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
-        <option value="">Alla faser</option>
+        <option value="">{t("allStages")}</option>
         {STAGES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
       </select>
 
@@ -66,8 +62,8 @@ export default function ProjectFilters({ sort, q, phase, category, sdg, basePath
         onChange={(e) => onNavigate(buildUrl({ category: e.target.value || undefined, page: undefined }))}
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
-        <option value="">Alla kategorier</option>
-        {CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</option>)}
+        <option value="">{t("allCategories")}</option>
+        {CATEGORIES.map((c) => <option key={c} value={c}>{tCategories(CATEGORY_KEYS[c])}</option>)}
       </select>
 
       {/* SDG */}
@@ -76,9 +72,9 @@ export default function ProjectFilters({ sort, q, phase, category, sdg, basePath
         onChange={(e) => onNavigate(buildUrl({ sdg: e.target.value || undefined, page: undefined }))}
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
-        <option value="">Alla globala mål</option>
+        <option value="">{t("allSdgGoals")}</option>
         {Array.from({ length: 17 }, (_, i) => i + 1).map((n) => (
-          <option key={n} value={n}>SDG {n} — {SDG_LABELS[n]}</option>
+          <option key={n} value={n}>SDG {n} — {tSdg(`sdg${n}`)}</option>
         ))}
       </select>
 
@@ -88,14 +84,14 @@ export default function ProjectFilters({ sort, q, phase, category, sdg, basePath
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Sök projekt…"
+          placeholder={t("searchProjectsPlaceholder")}
           className="w-48 text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate placeholder-dark-slate/40 focus:outline-none focus:ring-2 focus:ring-coral"
         />
         <button
           type="submit"
           className="px-3 py-1.5 bg-coral text-white text-xs font-medium rounded-lg hover:bg-watermelon transition-colors"
         >
-          Sök
+          {t("search")}
         </button>
       </form>
 
@@ -108,7 +104,7 @@ export default function ProjectFilters({ sort, q, phase, category, sdg, basePath
           }}
           className="text-xs text-dark-slate/50 hover:text-dark-slate underline"
         >
-          Rensa filter
+          {t("clearFilters")}
         </a>
       )}
     </div>

@@ -7,6 +7,7 @@ import TiptapLink from "@tiptap/extension-link";
 import Mention from "@tiptap/extension-mention";
 import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
+import { useLocale, useTranslations } from "next-intl";
 import { createMentionSuggestion, type MentionItem } from "./mentionSuggestion";
 
 type EmojiPickerProps = {
@@ -82,6 +83,8 @@ export default function RichTextEditor({
   // instead of a separate row of differently-styled buttons outside the box.
   trailingControls?: React.ReactNode;
 }) {
+  const t = useTranslations("RichTextEditor");
+  const locale = useLocale();
   const [showEmoji, setShowEmoji] = useState(false);
   const [showToolbar, setShowToolbar] = useState(!collapsibleToolbar);
   const emojiRef = useRef<HTMLDivElement>(null);
@@ -177,7 +180,7 @@ export default function RichTextEditor({
   function renderEmojiButton(buttonClassName: string, icon: React.ReactNode) {
     return (
       <div ref={emojiRef} className="relative">
-        <button type="button" onClick={() => setShowEmoji((v) => !v)} title="Infoga emoji" className={buttonClassName}>
+        <button type="button" onClick={() => setShowEmoji((v) => !v)} title={t("insertEmoji")} className={buttonClassName}>
           {icon}
         </button>
         {showEmoji && (
@@ -195,7 +198,7 @@ export default function RichTextEditor({
                 editor.chain().focus().insertContent(emoji.native).run();
                 setShowEmoji(false);
               }}
-              locale="sv"
+              locale={locale}
               theme="light"
               previewPosition="none"
               skinTonePosition="none"
@@ -219,7 +222,7 @@ export default function RichTextEditor({
   const emojiPicker = renderEmojiButton(btnClass(showEmoji), "😊");
 
   const imageUpload = (
-    <label className={btnClass()} title="Ladda upp bild (välj från galleri eller kamera)">
+    <label className={btnClass()} title={t("uploadImage")}>
       🖼
       <input
         type="file"
@@ -241,7 +244,7 @@ export default function RichTextEditor({
           <EditorContent editor={editor} />
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
-          <button type="button" onClick={() => setShowToolbar(true)} title="Formatera text" className={pillIconBtnClass()}>
+          <button type="button" onClick={() => setShowToolbar(true)} title={t("formatText")} className={pillIconBtnClass()}>
             <span className="text-[13px] font-bold">Aa</span>
           </button>
           {renderEmojiButton(pillIconBtnClass(showEmoji), emojiIcon)}
@@ -257,57 +260,57 @@ export default function RichTextEditor({
       <div className="relative flex flex-wrap items-center gap-0.5 px-2 py-1.5 bg-gray-50 border-b border-muted-teal/30">
         {collapsibleToolbar && (
           <>
-            <Btn onClick={() => setShowToolbar(false)} active title="Dölj formatering">
+            <Btn onClick={() => setShowToolbar(false)} active title={t("hideFormatting")}>
               Aa
             </Btn>
             <Divider />
           </>
         )}
 
-        <Btn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title="Fet (Ctrl+B)">
+        <Btn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive("bold")} title={t("bold")}>
           <strong>B</strong>
         </Btn>
-        <Btn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title="Kursiv (Ctrl+I)">
+        <Btn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive("italic")} title={t("italic")}>
           <em>I</em>
         </Btn>
-        <Btn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive("strike")} title="Genomstruken">
+        <Btn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive("strike")} title={t("strikethrough")}>
           <s>S</s>
         </Btn>
-        <Btn onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive("code")} title="Inlinekod">
+        <Btn onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive("code")} title={t("inlineCode")}>
           {"<>"}
         </Btn>
 
         <Divider />
 
-        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive("heading", { level: 1 })} title="Rubrik 1">H1</Btn>
-        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive("heading", { level: 2 })} title="Rubrik 2">H2</Btn>
-        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive("heading", { level: 3 })} title="Rubrik 3">H3</Btn>
+        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive("heading", { level: 1 })} title={t("heading1")}>H1</Btn>
+        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive("heading", { level: 2 })} title={t("heading2")}>H2</Btn>
+        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive("heading", { level: 3 })} title={t("heading3")}>H3</Btn>
 
         <Divider />
 
-        <Btn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title="Punktlista">• Lista</Btn>
-        <Btn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title="Numrerad lista">1. Lista</Btn>
-        <Btn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive("blockquote")} title="Citat">❝ Citat</Btn>
-        <Btn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive("codeBlock")} title="Kodblock">{"</>"}</Btn>
+        <Btn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive("bulletList")} title={t("bulletList")}>{t("bulletListShort")}</Btn>
+        <Btn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive("orderedList")} title={t("orderedList")}>{t("orderedListShort")}</Btn>
+        <Btn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive("blockquote")} title={t("quote")}>{t("quoteShort")}</Btn>
+        <Btn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive("codeBlock")} title={t("codeBlock")}>{"</>"}</Btn>
 
         <Divider />
 
         <Btn
           onClick={() => {
             const prev = editor.isActive("link") ? editor.getAttributes("link").href : "";
-            const url = window.prompt("Länk-URL:", prev);
+            const url = window.prompt(t("linkUrlPrompt"), prev);
             if (url === null) return;
             if (url === "") editor.chain().focus().unsetLink().run();
             else editor.chain().focus().setLink({ href: url }).run();
           }}
           active={editor.isActive("link")}
-          title="Lägg till/redigera länk"
+          title={t("linkTooltip")}
         >
-          🔗 Länk
+          {t("linkShort")}
         </Btn>
 
-        <Btn onClick={() => editor.chain().focus().undo().run()} title="Ångra (Ctrl+Z)">↩ Ångra</Btn>
-        <Btn onClick={() => editor.chain().focus().redo().run()} title="Gör om (Ctrl+Y)">↪ Gör om</Btn>
+        <Btn onClick={() => editor.chain().focus().undo().run()} title={t("undo")}>{t("undoShort")}</Btn>
+        <Btn onClick={() => editor.chain().focus().redo().run()} title={t("redo")}>{t("redoShort")}</Btn>
 
         <Divider />
 

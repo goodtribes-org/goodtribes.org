@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 interface Props {
   slug: string;
   isAdmin: boolean;
@@ -7,10 +9,11 @@ interface Props {
 }
 
 export default function WorkspaceTabNav({ slug, isAdmin, pathname }: Props) {
+  const t = useTranslations("WorkspaceTabNav");
   const tabs = [
-    { label: "Messages", href: `/messages?org=${slug}`, active: pathname.startsWith("/messages") },
-    { label: "Tasks", href: `/work/${slug}/tasks`, active: pathname.startsWith(`/work/${slug}/tasks`) },
-    ...(isAdmin ? [{ label: "Admin", href: `/work/${slug}/admin`, active: pathname.startsWith(`/work/${slug}/admin`) }] : []),
+    { label: t("messages"), href: `/messages?org=${slug}`, active: pathname.startsWith("/messages") },
+    { label: t("tasks"), href: `/work/${slug}/tasks`, active: pathname.startsWith(`/work/${slug}/tasks`) },
+    ...(isAdmin ? [{ label: t("admin"), href: `/work/${slug}/admin`, active: pathname.startsWith(`/work/${slug}/admin`) }] : []),
   ];
 
   return (

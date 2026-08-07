@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { SdgIcon } from "@/components/SdgIcon";
 import { sdgIconPath, SDG_COLORS } from "@/lib/sdg";
 import { isCommercialLegalType } from "@/lib/legalType";
@@ -20,19 +21,6 @@ export type ProjectCardData = {
   kanbanCardsDone: number;
 };
 
-// Card-only Swedish stage bucket — the real ProjectPhase enum has 7 lifecycle
-// phases (see @/lib/projectPhase), simplified here to the buckets the design
-// calls for. Archival is decoupled from phase, so it's checked separately.
-const PHASE_LABEL_SV: Record<string, string> = {
-  IDEA: "Idéfas",
-  SPRINT: "Idéfas",
-  PILOT: "Aktivt",
-  PRODUCTION: "Aktivt",
-  ESTABLISH: "Aktivt",
-  SCALE: "Aktivt",
-  IMPACT: "Impact",
-};
-
 export default function ProjectCard({
   project,
   variant,
@@ -40,6 +28,22 @@ export default function ProjectCard({
   project: ProjectCardData;
   variant?: "default" | "sandbox";
 }) {
+  const t = useTranslations("ProjectCard");
+
+  // Card-only stage bucket — the real ProjectPhase enum has 7 lifecycle
+  // phases (see @/lib/projectPhase), simplified here to the buckets the
+  // design calls for. Archival is decoupled from phase, so it's checked
+  // separately.
+  const PHASE_LABEL: Record<string, string> = {
+    IDEA: t("phaseIdea"),
+    SPRINT: t("phaseIdea"),
+    PILOT: t("phaseActive"),
+    PRODUCTION: t("phaseActive"),
+    ESTABLISH: t("phaseActive"),
+    SCALE: t("phaseActive"),
+    IMPACT: t("phaseImpact"),
+  };
+
   // Falls back to the project's own isSandbox flag when the caller doesn't
   // pin a variant explicitly — listing pages that mix real and sandbox
   // projects together (homepage, /projects) rely on this so real projects
@@ -47,7 +51,7 @@ export default function ProjectCard({
   const effectiveVariant = variant ?? (project.isSandbox ? "sandbox" : "default");
   const primarySdg = project.sdgGoals[0];
   const tint = effectiveVariant === "sandbox" ? "#f59e0b" : primarySdg ? SDG_COLORS[primarySdg] : "#43aa8b";
-  const stageLabel = project.archivedAt ? "Avslutat" : PHASE_LABEL_SV[project.phase] ?? project.phase;
+  const stageLabel = project.archivedAt ? t("phaseArchived") : PHASE_LABEL[project.phase] ?? project.phase;
 
   return (
     <a
@@ -77,7 +81,7 @@ export default function ProjectCard({
           <span className="text-coral">♥</span> {project.likes}
         </span>
         <span
-          title={isCommercialLegalType(project.legalType) ? "Kommersiellt projekt" : "Ideellt projekt"}
+          title={isCommercialLegalType(project.legalType) ? t("commercialProject") : t("nonCommercialProject")}
           className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/90 border border-muted-teal/40 flex items-center justify-center"
         >
           {isCommercialLegalType(project.legalType) ? (
@@ -95,14 +99,14 @@ export default function ProjectCard({
       <div className="p-3 flex flex-col flex-1">
         <p className="font-bold text-dark-slate text-sm leading-tight mb-0.5">{project.title}</p>
         <p className="text-xs text-dark-slate/50 mb-2">
-          av <span className="text-coral">{project.owner.name ?? "Okänd"}</span>
+          {t("byAuthor")} <span className="text-coral">{project.owner.name ?? t("unknownAuthor")}</span>
         </p>
         <p className="text-xs text-dark-slate/70 leading-snug mb-2 line-clamp-3 flex-1">
-          {project.summary ?? project.description ?? "Ingen beskrivning ännu."}
+          {project.summary ?? project.description ?? t("noDescriptionYet")}
         </p>
         {project.sdgGoals.length > 0 && (
           <div className="flex flex-wrap items-center gap-1 mb-2">
-            <span className="text-[11px] font-bold text-dark-slate/40 mr-0.5">Agenda 2030:</span>
+            <span className="text-[11px] font-bold text-dark-slate/40 mr-0.5">{t("agenda2030")}</span>
             {project.sdgGoals.slice(0, 7).map((n) => (
               <SdgIcon key={n} n={n} size={20} />
             ))}
@@ -111,17 +115,17 @@ export default function ProjectCard({
         <div className="grid grid-cols-3 divide-x divide-muted-teal/30 text-center border-t border-muted-teal/20 pt-2 mt-auto">
           <div className="px-1">
             <p className="text-xs font-semibold text-dark-slate">{project.members.length}</p>
-            <p className="text-[10px] text-dark-slate/50 leading-tight">Medlemmar</p>
+            <p className="text-[10px] text-dark-slate/50 leading-tight">{t("members")}</p>
           </div>
           <div className="px-1">
             <p className="text-xs font-semibold text-dark-slate">
               {project.kanbanCardsDone}/{project._count.kanbanCards}
             </p>
-            <p className="text-[10px] text-dark-slate/50 leading-tight">Uppgifter</p>
+            <p className="text-[10px] text-dark-slate/50 leading-tight">{t("tasks")}</p>
           </div>
           <div className="px-1">
             <p className="text-xs font-semibold text-dark-slate">{stageLabel}</p>
-            <p className="text-[10px] text-dark-slate/50 leading-tight">Fas</p>
+            <p className="text-[10px] text-dark-slate/50 leading-tight">{t("stage")}</p>
           </div>
         </div>
       </div>

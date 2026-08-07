@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CATEGORIES, CATEGORY_LABELS } from "@/lib/categories";
+import { useTranslations } from "next-intl";
+import { CATEGORIES, CATEGORY_KEYS } from "@/lib/categories";
 
 interface Props {
   q?: string;
@@ -14,6 +15,8 @@ interface Props {
 }
 
 export default function OrgFilters({ q, category, skill, skills, basePath, onNavigate }: Props) {
+  const t = useTranslations("Filters");
+  const tCategories = useTranslations("Categories");
   const [query, setQuery] = useState(q ?? "");
 
   function buildUrl(overrides: Record<string, string | undefined>) {
@@ -42,8 +45,8 @@ export default function OrgFilters({ q, category, skill, skills, basePath, onNav
         onChange={(e) => onNavigate(buildUrl({ category: e.target.value || undefined, page: undefined }))}
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
-        <option value="">Alla kategorier</option>
-        {CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</option>)}
+        <option value="">{t("allCategories")}</option>
+        {CATEGORIES.map((c) => <option key={c} value={c}>{tCategories(CATEGORY_KEYS[c])}</option>)}
       </select>
 
       {/* Skill */}
@@ -52,7 +55,7 @@ export default function OrgFilters({ q, category, skill, skills, basePath, onNav
         onChange={(e) => onNavigate(buildUrl({ skill: e.target.value || undefined, page: undefined }))}
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
-        <option value="">Alla efterfrågade kompetenser</option>
+        <option value="">{t("allSkillsSought")}</option>
         {skills.map((s) => <option key={s.slug} value={s.slug}>{s.name}</option>)}
       </select>
 
@@ -62,14 +65,14 @@ export default function OrgFilters({ q, category, skill, skills, basePath, onNav
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Sök organisationer…"
+          placeholder={t("searchOrganisationsPlaceholder")}
           className="w-48 text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate placeholder-dark-slate/40 focus:outline-none focus:ring-2 focus:ring-coral"
         />
         <button
           type="submit"
           className="px-3 py-1.5 bg-coral text-white text-xs font-medium rounded-lg hover:bg-watermelon transition-colors"
         >
-          Sök
+          {t("search")}
         </button>
       </form>
 
@@ -82,7 +85,7 @@ export default function OrgFilters({ q, category, skill, skills, basePath, onNav
           }}
           className="text-xs text-dark-slate/50 hover:text-dark-slate underline"
         >
-          Rensa filter
+          {t("clearFilters")}
         </a>
       )}
     </div>

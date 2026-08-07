@@ -1,10 +1,6 @@
 "use client";
 
-const SORT_OPTIONS = [
-  { value: "new",      label: "Nya" },
-  { value: "top",      label: "Topp" },
-  { value: "trending", label: "Trendar" },
-];
+import { useTranslations } from "next-intl";
 
 interface Props {
   sort: string;
@@ -18,6 +14,13 @@ interface Props {
 }
 
 export default function SortToggle({ sort, q, phase, category, sdg, basePath, onNavigate }: Props) {
+  const t = useTranslations("Filters");
+  const SORT_OPTIONS = [
+    { value: "new", label: t("sortNew") },
+    { value: "top", label: t("sortTop") },
+    { value: "trending", label: t("sortTrending") },
+  ];
+
   function buildUrl(newSort: string) {
     const params = new URLSearchParams();
     const current: Record<string, string | undefined> = { sort: newSort, q, phase, category, sdg };

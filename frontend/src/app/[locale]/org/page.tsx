@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import Pagination from "@/components/Pagination";
 import CountryMap from "@/components/CountryMap";
@@ -37,7 +38,8 @@ export default async function OrgListPage({
     ...(skill ? { neededSkills: { some: { skill: { slug: skill } } } } : {}),
   };
 
-  const [total, orgs, ownerCountries, skillsSought] = await Promise.all([
+  const [t, total, orgs, ownerCountries, skillsSought] = await Promise.all([
+    getTranslations("OrgPage"),
     prisma.organisation.count({ where }),
     prisma.organisation.findMany({
       where,
@@ -64,21 +66,21 @@ export default async function OrgListPage({
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-dark-slate">
-          Organisationer <span className="text-dark-slate/40 font-normal">({total})</span>
+          {t("heading")} <span className="text-dark-slate/40 font-normal">({total})</span>
         </h1>
         {session?.user?.id && (
           <Link
             href="/org/new"
             className="bg-coral text-white text-sm font-medium px-4 py-2 rounded hover:bg-watermelon transition-colors"
           >
-            + Ny organisation
+            {t("newOrgCta")}
           </Link>
         )}
       </div>
 
       {Object.keys(countryCounts).length > 0 && (
         <div className="mb-6">
-          <CountryMap counts={countryCounts} unitLabel="organisationer" />
+          <CountryMap counts={countryCounts} unitLabel={t("unitLabel")} />
         </div>
       )}
 
@@ -86,9 +88,9 @@ export default async function OrgListPage({
 
       {orgs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-dark-slate/50 mb-4">Inga organisationer ännu.</p>
+          <p className="text-dark-slate/50 mb-4">{t("noOrgsYet")}</p>
           {session?.user?.id && (
-            <Link href="/org/new" className="text-coral hover:underline text-sm">Skapa den första →</Link>
+            <Link href="/org/new" className="text-coral hover:underline text-sm">{t("createFirst")}</Link>
           )}
         </div>
       ) : (
@@ -122,11 +124,11 @@ export default async function OrgListPage({
                   <div className="flex items-center gap-1 mb-0.5">
                     <p className="font-bold text-dark-slate text-sm leading-tight">{org.name}</p>
                     {org.verified && (
-                      <span title="Verifierad av GoodTribes" className="text-seagrass text-xs flex-shrink-0" aria-hidden="true">✓</span>
+                      <span title={t("verifiedTooltip")} className="text-seagrass text-xs flex-shrink-0" aria-hidden="true">✓</span>
                     )}
                   </div>
                   <p className="text-xs text-dark-slate/50 mb-2">
-                    av <span className="text-coral">{org.owner.name ?? "Okänd"}</span>
+                    {t("byAuthor")} <span className="text-coral">{org.owner.name ?? t("unknownAuthor")}</span>
                   </p>
                   {org.description && (
                     <p className="text-xs text-dark-slate/70 leading-snug mb-3 line-clamp-3 flex-1">
@@ -148,11 +150,11 @@ export default async function OrgListPage({
                   <div className="grid grid-cols-2 divide-x divide-muted-teal/30 text-center border-t border-muted-teal/20 pt-2 mt-auto">
                     <div className="px-1">
                       <p className="text-xs font-semibold text-dark-slate">{org._count.members}</p>
-                      <p className="text-[10px] text-dark-slate/50 leading-tight">Medlemmar</p>
+                      <p className="text-[10px] text-dark-slate/50 leading-tight">{t("members")}</p>
                     </div>
                     <div className="px-1">
                       <p className="text-xs font-semibold text-dark-slate">{org._count.projects}</p>
-                      <p className="text-[10px] text-dark-slate/50 leading-tight">Projekt</p>
+                      <p className="text-[10px] text-dark-slate/50 leading-tight">{t("projects")}</p>
                     </div>
                   </div>
                 </div>

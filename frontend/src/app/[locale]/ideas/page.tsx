@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import Pagination from "@/components/Pagination";
 import IdeasFilters from "./IdeasFilters";
 import { SdgIcon } from "@/components/SdgIcon";
@@ -15,42 +16,6 @@ export const metadata: Metadata = {
 };
 
 const PAGE_SIZE = 15;
-
-const STATUS_TABS = [
-  { value: "", label: "Alla" },
-  { value: "open", label: "Öppen" },
-  { value: "review", label: "Under granskning" },
-  { value: "shortlisted", label: "Utvald" },
-  { value: "approved", label: "Godkänd" },
-];
-
-
-function statusBadge(status: string) {
-  const map: Record<string, { label: string; cls: string }> = {
-    draft:       { label: "Utkast",           cls: "bg-gray-100 text-gray-500" },
-    open:        { label: "Öppen",            cls: "bg-teal-50 text-teal-700" },
-    review:      { label: "Under granskning", cls: "bg-amber-100 text-amber-700" },
-    shortlisted: { label: "Utvald",           cls: "bg-purple-100 text-purple-700" },
-    approved:    { label: "Godkänd",          cls: "bg-green-100 text-green-700" },
-    converted:   { label: "Omvandlad",        cls: "bg-coral/10 text-coral" },
-  };
-  const s = map[status] ?? map.open;
-  return <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${s.cls}`}>{s.label}</span>;
-}
-
-function timeAgo(date: Date): string {
-  const s = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (s < 60) return "just now";
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
-}
-
-const REGION_LABELS: Record<string, string> = {
-  local: "Local", regional: "Regional", national: "National", global: "Global",
-};
 
 export default async function IdeasPage({
   searchParams,
@@ -78,8 +43,10 @@ export default async function IdeasPage({
     : sort === "trending" ? { updatedAt: "desc" as const }
     : { createdAt: "desc" as const };
 
-  const [session, total, ideas] = await Promise.all([
+  const [session, t, tCard, total, ideas] = await Promise.all([
     auth(),
+    getTranslations("IdeasPage"),
+    getTranslations("ProjectCard"),
     prisma.idea.count({ where }),
     prisma.idea.findMany({
       where,
@@ -93,14 +60,35 @@ export default async function IdeasPage({
     }),
   ]);
 
+  const STATUS_TABS = [
+    { value: "", label: t("statusAll") },
+    { value: "open", label: t("statusOpen") },
+    { value: "review", label: t("statusReview") },
+    { value: "shortlisted", label: t("statusShortlisted") },
+    { value: "approved", label: t("statusApproved") },
+  ];
+
+  function statusBadge(status: string) {
+    const map: Record<string, { label: string; cls: string }> = {
+      draft:       { label: t("statusDraft"),       cls: "bg-gray-100 text-gray-500" },
+      open:        { label: t("statusOpen"),        cls: "bg-teal-50 text-teal-700" },
+      review:      { label: t("statusReview"),       cls: "bg-amber-100 text-amber-700" },
+      shortlisted: { label: t("statusShortlisted"), cls: "bg-purple-100 text-purple-700" },
+      approved:    { label: t("statusApproved"),     cls: "bg-green-100 text-green-700" },
+      converted:   { label: t("statusConverted"),    cls: "bg-coral/10 text-coral" },
+    };
+    const s = map[status] ?? map.open;
+    return <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${s.cls}`}>{s.label}</span>;
+  }
+
   return (
     <div>
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-dark-slate">Idéer</h1>
+          <h1 className="text-3xl font-bold text-dark-slate">{t("heading")}</h1>
           <p className="text-sm text-dark-slate/60 mt-1 max-w-lg">
-            Idéer från communityn för projekt och organisationer som gör skillnad. Rösta på det som engagerar dig, stötta idéer du skulle vilja jobba med, och hjälp till att förverkliga de bästa.
+            {t("subtitle")}
           </p>
         </div>
         {session?.user?.id && (
@@ -108,7 +96,7 @@ export default async function IdeasPage({
             href="/ideas/new"
             className="flex-shrink-0 px-4 py-2 bg-coral text-white text-sm font-medium rounded-lg hover:bg-watermelon transition-colors"
           >
-            + Dela idé
+            {t("shareIdeaCta")}
           </Link>
         )}
       </div>
@@ -144,13 +132,13 @@ export default async function IdeasPage({
 
       {total === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-dark-slate/50 mb-4">Inga idéer hittades.</p>
+          <p className="text-dark-slate/50 mb-4">{t("noIdeasFound")}</p>
           {session?.user?.id ? (
             <Link href="/ideas/new" className="px-5 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors">
-              Dela den första idén
+              {t("shareFirstIdea")}
             </Link>
           ) : (
-            <Link href="/login" className="text-coral hover:underline text-sm">Logga in för att dela en idé</Link>
+            <Link href="/login" className="text-coral hover:underline text-sm">{t("loginToShare")}</Link>
           )}
         </div>
       ) : (
@@ -186,14 +174,14 @@ export default async function IdeasPage({
                     {idea.title}
                   </p>
                   <p className="text-xs text-dark-slate/50 mb-2">
-                    av <span className="text-coral">{idea.author.name ?? "Okänd"}</span>
+                    {t("byAuthor")} <span className="text-coral">{idea.author.name ?? t("unknownAuthor")}</span>
                   </p>
                   <p className="text-xs text-dark-slate/70 leading-snug mb-2 line-clamp-3 flex-1">
-                    {idea.problem ?? idea.description ?? "Ingen beskrivning ännu."}
+                    {idea.problem ?? idea.description ?? t("noDescriptionYet")}
                   </p>
                   {idea.sdgGoals.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1 mb-2">
-                      <span className="text-[11px] font-bold text-dark-slate/40 mr-0.5">Agenda 2030:</span>
+                      <span className="text-[11px] font-bold text-dark-slate/40 mr-0.5">{tCard("agenda2030")}</span>
                       {idea.sdgGoals.slice(0, 7).map((n) => (
                         <SdgIcon key={n} n={n} size={20} />
                       ))}
@@ -202,15 +190,15 @@ export default async function IdeasPage({
                   <div className="grid grid-cols-3 divide-x divide-muted-teal/30 text-center border-t border-muted-teal/20 pt-2 mt-auto">
                     <div className="px-1">
                       <p className="text-xs font-semibold text-dark-slate">{idea._count.votes}</p>
-                      <p className="text-[10px] text-dark-slate/50 leading-tight">Röster</p>
+                      <p className="text-[10px] text-dark-slate/50 leading-tight">{t("votes")}</p>
                     </div>
                     <div className="px-1">
                       <p className="text-xs font-semibold text-dark-slate">{idea._count.endorsements}</p>
-                      <p className="text-[10px] text-dark-slate/50 leading-tight">Bidragsgivare</p>
+                      <p className="text-[10px] text-dark-slate/50 leading-tight">{t("contributors")}</p>
                     </div>
                     <div className="px-1">
                       <p className="text-xs font-semibold text-dark-slate">{idea._count.comments}</p>
-                      <p className="text-[10px] text-dark-slate/50 leading-tight">Kommentarer</p>
+                      <p className="text-[10px] text-dark-slate/50 leading-tight">{t("comments")}</p>
                     </div>
                   </div>
                 </div>

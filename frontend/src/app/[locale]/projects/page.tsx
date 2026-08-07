@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import ProjectFilters from "@/components/ProjectFiltersContainer";
 import Pagination from "@/components/Pagination";
@@ -46,8 +47,10 @@ export default async function ProjectsPage({
     : sort === "trending" ? { updatedAt: "desc" as const }
     : { createdAt: "desc" as const };
 
-  const [session, total, projects, ownerCountries] = await Promise.all([
+  const [session, t, tFilters, total, projects, ownerCountries] = await Promise.all([
     auth(),
+    getTranslations("ProjectsPage"),
+    getTranslations("Filters"),
     prisma.project.count({ where }),
     prisma.project.findMany({
       where,
@@ -95,7 +98,7 @@ export default async function ProjectsPage({
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-dark-slate">
-          Projekt{" "}
+          {t("heading")}{" "}
           <span className="text-dark-slate/40 font-normal">({total})</span>
         </h1>
         {session?.user?.id && (
@@ -103,14 +106,14 @@ export default async function ProjectsPage({
             href="/projects/new"
             className="px-4 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors"
           >
-            + Nytt projekt
+            {t("newProjectCta")}
           </Link>
         )}
       </div>
 
       {Object.keys(countryCounts).length > 0 && (
         <div className="mb-6">
-          <CountryMap counts={countryCounts} unitLabel="projekt" />
+          <CountryMap counts={countryCounts} unitLabel={t("unitLabel")} />
         </div>
       )}
 
@@ -118,8 +121,8 @@ export default async function ProjectsPage({
 
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-dark-slate/50 mb-4">Inga projekt matchar dina filter.</p>
-          <Link href="/projects" className="text-coral hover:underline text-sm">Rensa filter</Link>
+          <p className="text-dark-slate/50 mb-4">{t("noProjectsMatch")}</p>
+          <Link href="/projects" className="text-coral hover:underline text-sm">{tFilters("clearFilters")}</Link>
         </div>
       ) : (
         <>
