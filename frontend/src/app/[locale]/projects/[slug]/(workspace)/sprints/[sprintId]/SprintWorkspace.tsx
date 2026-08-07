@@ -91,12 +91,13 @@ export default function SprintWorkspace({
 
   return (
     <div className={`-mt-[21px] ${isCanvasPhase ? "" : "max-w-5xl mx-auto"}`}>
-      <div className="relative flex items-center justify-center gap-4 flex-wrap mb-[12px]">
+      <div className="flex items-center gap-4 flex-wrap mb-[12px]">
+        <div className="flex-1 hidden sm:block" aria-hidden="true" />
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <h1 className="text-xl font-bold text-dark-slate">{sprint.name}</h1>
           <SprintPhaseTabs phases={phases} activeTab={activeTab} onSelect={setActiveTab} pace={sprint.pace} />
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0 sm:absolute sm:right-0">
+        <div className="flex-1 flex items-center justify-end gap-2 flex-wrap">
           {isLead && hasOpenPhase && sprint.pace === "TOGETHER" && (
             <button
               type="button"

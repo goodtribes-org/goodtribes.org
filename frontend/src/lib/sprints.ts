@@ -164,11 +164,15 @@ export async function getVoterRemainingVotes(decidePhaseId: string, voterId: str
 export async function closeAndAdvancePhase(sprintPhaseId: string): Promise<void> {
   const phase = await prisma.sprintPhase.findUnique({
     where: { id: sprintPhaseId },
-    include: { sprint: true, _count: { select: { contributions: true } } },
+    include: { sprint: true, _count: { select: { contributions: true, votes: true } } },
   });
   if (!phase || phase.status !== "OPEN") return;
 
-  if (phase._count.contributions === 0) {
+  // Decide never gets its own contributions — it's dot-voting on Diverge's
+  // contributions instead — so "empty" has to mean no votes cast there,
+  // not no contributions, or Decide would always look empty and pause.
+  const isEmpty = phase.phase === "DECIDE" ? phase._count.votes === 0 : phase._count.contributions === 0;
+  if (isEmpty) {
     await prisma.sprint.update({ where: { id: phase.sprintId }, data: { status: "PAUSED" } });
     await createNotification({
       userId: phase.sprint.createdById,
