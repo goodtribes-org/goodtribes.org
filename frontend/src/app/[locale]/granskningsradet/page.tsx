@@ -2,6 +2,8 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import Link from "next/link";
+import type { Locale } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { isCouncilMember } from "@/lib/authz";
@@ -14,7 +16,13 @@ export const metadata: Metadata = {
   description: "Communityns valda organ för att hantera regelbrott och etisk granskning.",
 };
 
-export default async function CouncilPage() {
+export default async function CouncilPage({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "ReviewCouncilPage" });
   const session = await auth();
   const userId = session?.user?.id ?? null;
 
@@ -48,25 +56,24 @@ export default async function CouncilPage() {
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-dark-slate">Granskningsrådet</h1>
+        <h1 className="text-2xl font-bold text-dark-slate">{t("title")}</h1>
         <p className="text-sm text-dark-slate/50 mt-1">
-          Communityns GT-valda organ för att hantera anmälningar om regelbrott och etisk granskning av flaggade
-          projekt (PRD 5.53).
+          {t("subtitle")}
         </p>
       </div>
 
       <section className="mb-8">
         <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-3">
-          Nuvarande ledamöter ({activeMembers.length})
+          {t("currentMembersHeading", { count: activeMembers.length })}
         </h2>
         {activeMembers.length === 0 ? (
-          <p className="text-sm text-dark-slate/40">Inga aktiva ledamöter just nu.</p>
+          <p className="text-sm text-dark-slate/40">{t("noActiveMembers")}</p>
         ) : (
           <ul className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {activeMembers.map((m) => (
               <li key={m.id} className="border border-muted-teal/40 rounded-lg px-3 py-2 text-sm bg-white">
-                <p className="font-medium text-dark-slate">{m.user.name ?? "Okänd"}</p>
-                <p className="text-xs text-dark-slate/40">Mandat till {m.termEnd.toLocaleDateString("sv-SE")}</p>
+                <p className="font-medium text-dark-slate">{m.user.name ?? t("unknownMember")}</p>
+                <p className="text-xs text-dark-slate/40">{t("termUntil", { date: m.termEnd.toLocaleDateString("sv-SE") })}</p>
               </li>
             ))}
           </ul>
@@ -75,24 +82,24 @@ export default async function CouncilPage() {
 
       {onCouncil && (
         <div className="mb-8 border border-seagrass/30 bg-seagrass/5 rounded-lg p-4 text-sm">
-          Du är ledamot i Granskningsrådet.{" "}
+          {t("youAreMember")}{" "}
           <Link href="/granskningsradet/arenden" className="text-seagrass hover:underline font-medium">
-            Se öppna ärenden →
+            {t("seeOpenCasesLink")}
           </Link>
           {" · "}
           <Link href="/granskningsradet/etik" className="text-seagrass hover:underline font-medium">
-            Etikgranskning →
+            {t("ethicsReviewLink")}
           </Link>
         </div>
       )}
 
       <section className="mb-8">
-        <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-3">Val</h2>
+        <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-3">{t("electionHeading")}</h2>
         {!openPoll ? (
-          <p className="text-sm text-dark-slate/40">Inget val pågår just nu.</p>
+          <p className="text-sm text-dark-slate/40">{t("noOngoingElection")}</p>
         ) : !userId ? (
           <p className="text-sm text-dark-slate/40">
-            <Link href="/login" className="text-coral hover:underline">Logga in</Link> för att nominera dig eller rösta.
+            <Link href="/login" className="text-coral hover:underline">{t("logIn")}</Link> {t("toNominateOrVote")}
           </p>
         ) : (
           <div className="flex flex-col gap-4">
@@ -114,15 +121,15 @@ export default async function CouncilPage() {
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-3">Anmäl en användare</h2>
+        <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-3">{t("reportUserHeading")}</h2>
         <p className="text-sm text-dark-slate/60 mb-3">
-          Om du upplever grov misskötsel eller regelbrott från en annan användare kan du anmäla det till rådet.
+          {t("reportUserDescription")}
         </p>
         <Link
           href="/granskningsradet/anmal"
           className="inline-block px-4 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors"
         >
-          Anmäl en användare
+          {t("reportUserButton")}
         </Link>
       </section>
     </div>

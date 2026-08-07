@@ -5,6 +5,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "next-intl";
 import { PROJECT_PHASE_LABEL as PHASE_LABELS } from "@/lib/projectPhase";
 import { SdgIcon } from "@/components/SdgIcon";
 
@@ -27,10 +29,12 @@ function MatchCard({
   project,
   matchingSkillIds,
   showSdgs,
+  t,
 }: {
   project: MatchProjectCard;
   matchingSkillIds?: Set<string>;
   showSdgs?: boolean;
+  t: Awaited<ReturnType<typeof getTranslations>>;
 }) {
   const desc = project.description
     ? project.description.slice(0, 100) + (project.description.length > 100 ? "…" : "")
@@ -68,7 +72,7 @@ function MatchCard({
 
         {showSdgs && (
           <>
-            <span className="text-[9px] font-medium text-dark-slate/40">Agenda 2030:</span>
+            <span className="text-[9px] font-medium text-dark-slate/40">{t("agenda2030Label")}</span>
             {project.sdgGoals.slice(0, 7).map((n) => (
               <SdgIcon key={n} n={n} size={20} />
             ))}
@@ -76,7 +80,7 @@ function MatchCard({
         )}
 
         <span className="ml-auto text-[10px] text-dark-slate/40 flex-shrink-0">
-          {project._count.members} {project._count.members === 1 ? "medlem" : "medlemmar"}
+          {t("membersCount", { count: project._count.members })}
         </span>
       </div>
     </Link>
@@ -94,9 +98,11 @@ type OrgMatchCardData = {
 function OrgMatchCard({
   org,
   matchingSkillIds,
+  t,
 }: {
   org: OrgMatchCardData;
   matchingSkillIds: Set<string>;
+  t: Awaited<ReturnType<typeof getTranslations>>;
 }) {
   const desc = org.description
     ? org.description.slice(0, 100) + (org.description.length > 100 ? "…" : "")
@@ -126,7 +132,7 @@ function OrgMatchCard({
         )}
 
         <span className="ml-auto text-[10px] text-dark-slate/40 flex-shrink-0">
-          {org._count.members} {org._count.members === 1 ? "medlem" : "medlemmar"}
+          {t("membersCount", { count: org._count.members })}
         </span>
       </div>
     </Link>
@@ -134,13 +140,16 @@ function OrgMatchCard({
 }
 
 export default async function DashboardPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: Locale }>;
   searchParams: Promise<{ skill?: string }>;
 }) {
-  const [session, { skill: skillSlug }] = await Promise.all([auth(), searchParams]);
+  const [session, { locale }, { skill: skillSlug }] = await Promise.all([auth(), params, searchParams]);
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
+  const t = await getTranslations({ locale, namespace: "DashboardPage" });
 
   const [myMemberships, myOrgs, pendingProjectRequests, pendingOrgRequests, user, allSkills] =
     await Promise.all([
@@ -265,16 +274,16 @@ export default async function DashboardPage({
     <div className="max-w-4xl space-y-10">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-dark-slate">Dashboard</h1>
+          <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
           <p className="text-sm text-dark-slate/50 mt-1">
-            Welcome back, {session.user.name ?? "there"}
+            {t("welcomeBack", { name: session.user.name ?? t("welcomeFallbackName") })}
           </p>
         </div>
         <Link
           href="/profile/setup"
           className="text-sm text-dark-slate/60 hover:text-dark-slate border border-muted-teal rounded px-3 py-1.5 transition-colors"
         >
-          Edit profile
+          {t("editProfileLink")}
         </Link>
       </div>
 
@@ -283,7 +292,7 @@ export default async function DashboardPage({
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center gap-3">
           <span className="text-yellow-600 font-bold">{pendingCount}</span>
           <p className="text-sm text-yellow-800">
-            pending join request{pendingCount !== 1 ? "s" : ""} — awaiting approval
+            {t("pendingRequestsAlert", { count: pendingCount })}
           </p>
         </div>
       )}
@@ -291,13 +300,13 @@ export default async function DashboardPage({
       {/* My projects */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">My projects</h2>
-          <Link href="/projects/new" className="text-xs text-coral hover:underline">+ New project</Link>
+          <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">{t("myProjectsHeading")}</h2>
+          <Link href="/projects/new" className="text-xs text-coral hover:underline">{t("newProjectLink")}</Link>
         </div>
         {myProjects.length === 0 ? (
           <div className="border border-dashed border-muted-teal/40 rounded-lg p-8 text-center">
-            <p className="text-dark-slate/40 text-sm mb-3">You're not on any projects yet.</p>
-            <Link href="/projects" className="text-sm text-coral hover:underline">Browse projects →</Link>
+            <p className="text-dark-slate/40 text-sm mb-3">{t("noProjectsEmptyState")}</p>
+            <Link href="/projects" className="text-sm text-coral hover:underline">{t("browseProjectsLink")}</Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -311,7 +320,7 @@ export default async function DashboardPage({
                   <div className="flex items-center gap-2 mb-1">
                     <p className="font-medium text-dark-slate truncate">{p.title}</p>
                     {p.role === "FOUNDER" && (
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-coral flex-shrink-0">Owner</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-coral flex-shrink-0">{t("ownerLabel")}</span>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -330,13 +339,13 @@ export default async function DashboardPage({
       {/* My organisations */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">My organisations</h2>
-          <Link href="/org" className="text-xs text-coral hover:underline">Browse orgs →</Link>
+          <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">{t("myOrganisationsHeading")}</h2>
+          <Link href="/org" className="text-xs text-coral hover:underline">{t("browseOrgsLink")}</Link>
         </div>
         {myOrgs.length === 0 ? (
           <div className="border border-dashed border-muted-teal/40 rounded-lg p-8 text-center">
-            <p className="text-dark-slate/40 text-sm mb-3">You're not in any organisations yet.</p>
-            <Link href="/org" className="text-sm text-coral hover:underline">Browse organisations →</Link>
+            <p className="text-dark-slate/40 text-sm mb-3">{t("noOrganisationsEmptyState")}</p>
+            <Link href="/org" className="text-sm text-coral hover:underline">{t("browseOrganisationsLink")}</Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -358,7 +367,7 @@ export default async function DashboardPage({
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-dark-slate truncate">{org.name}</p>
                     {org.ownerId === userId && (
-                      <p className="text-xs text-dark-slate/40">Owner</p>
+                      <p className="text-xs text-dark-slate/40">{t("ownerLabel")}</p>
                     )}
                   </div>
                   <svg className="w-4 h-4 text-dark-slate/30 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -374,14 +383,14 @@ export default async function DashboardPage({
       {/* Onboarding checklist — shown until user has at least one project */}
       {myProjects.length === 0 && !session.user.onboardingDone && (
         <section className="border border-seagrass/30 bg-seagrass/5 rounded-xl p-6">
-          <h2 className="font-semibold text-dark-slate mb-1">Get started</h2>
-          <p className="text-sm text-dark-slate/50 mb-5">A few steps to make the most of GoodTribes.</p>
+          <h2 className="font-semibold text-dark-slate mb-1">{t("getStartedHeading")}</h2>
+          <p className="text-sm text-dark-slate/50 mb-5">{t("getStartedDescription")}</p>
           <ol className="space-y-3">
             {[
-              { label: "Create your account", done: true },
-              { label: "Complete your profile", href: "/profile/setup", done: !!session.user.name },
-              { label: "Browse projects and ideas", href: "/projects" },
-              { label: "Join or create a project", href: "/projects/new", done: myProjects.length > 0 },
+              { label: t("onboardingCreateAccount"), done: true },
+              { label: t("onboardingCompleteProfile"), href: "/profile/setup", done: !!session.user.name },
+              { label: t("onboardingBrowseProjects"), href: "/projects" },
+              { label: t("onboardingJoinProject"), href: "/projects/new", done: myProjects.length > 0 },
             ].map((step, i) => (
               <li key={i} className="flex items-center gap-3">
                 <span className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${step.done ? "bg-seagrass text-white" : "border-2 border-muted-teal/40 text-dark-slate/30"}`}>
@@ -401,9 +410,9 @@ export default async function DashboardPage({
       {/* Hitta en match — merged from the old standalone /match page */}
       <div id="match" className="space-y-10 scroll-mt-6">
         <div>
-          <h2 className="text-lg font-bold text-dark-slate">Hitta en match</h2>
+          <h2 className="text-lg font-bold text-dark-slate">{t("findMatchHeading")}</h2>
           <p className="text-sm text-dark-slate/50 mt-1">
-            Projekt och organisationer som matchar dina kompetenser och intressen.
+            {t("findMatchDescription")}
           </p>
         </div>
 
@@ -412,15 +421,15 @@ export default async function DashboardPage({
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">
-                Projekt som söker din kompetens
+                {t("skillMatchedProjectsHeading")}
               </h3>
               {!hasSkills && (
                 <p className="text-xs text-dark-slate/40 mt-0.5">
-                  Lägg till kompetenser i din{" "}
+                  {t("addSkillsToProfilePrefix")}{" "}
                   <Link href="/profile/setup" className="text-coral hover:underline">
-                    profil
+                    {t("profileLinkText")}
                   </Link>{" "}
-                  för att se matchade projekt.
+                  {t("addSkillsToProfileSuffix")}
                 </p>
               )}
             </div>
@@ -429,7 +438,7 @@ export default async function DashboardPage({
           {hasSkills && skillMatches.length === 0 && (
             <div className="border border-dashed border-muted-teal/40 rounded-lg p-8 text-center">
               <p className="text-dark-slate/40 text-sm">
-                Inga aktiva projekt söker dina kompetenser just nu.
+                {t("noSkillMatchedProjectsEmptyState")}
               </p>
             </div>
           )}
@@ -437,7 +446,7 @@ export default async function DashboardPage({
           {skillMatches.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {skillMatches.map((p) => (
-                <MatchCard key={p.slug} project={p} matchingSkillIds={matchingSkillIdSet} />
+                <MatchCard key={p.slug} project={p} matchingSkillIds={matchingSkillIdSet} t={t} />
               ))}
             </div>
           )}
@@ -448,23 +457,23 @@ export default async function DashboardPage({
           <section>
             <div className="mb-4">
               <h3 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">
-                Organisationer som söker din kompetens
+                {t("skillMatchedOrgsHeading")}
               </h3>
               <p className="text-xs text-dark-slate/40 mt-0.5">
-                Organisationer som letar efter volontärer med dina kompetenser.
+                {t("skillMatchedOrgsDescription")}
               </p>
             </div>
 
             {orgMatches.length === 0 ? (
               <div className="border border-dashed border-muted-teal/40 rounded-lg p-8 text-center">
                 <p className="text-dark-slate/40 text-sm">
-                  Inga organisationer söker dina kompetenser just nu.
+                  {t("noSkillMatchedOrgsEmptyState")}
                 </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {orgMatches.map((o) => (
-                  <OrgMatchCard key={o.slug} org={o} matchingSkillIds={matchingSkillIdSet} />
+                  <OrgMatchCard key={o.slug} org={o} matchingSkillIds={matchingSkillIdSet} t={t} />
                 ))}
               </div>
             )}
@@ -476,23 +485,23 @@ export default async function DashboardPage({
           <section>
             <div className="mb-4">
               <h3 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">
-                Baserat på dina intressen
+                {t("interestMatchedHeading")}
               </h3>
               <p className="text-xs text-dark-slate/40 mt-0.5">
-                Projekt kopplade till de globala målen du bryr dig om.
+                {t("interestMatchedDescription")}
               </p>
             </div>
 
             {interestMatches.length === 0 ? (
               <div className="border border-dashed border-muted-teal/40 rounded-lg p-8 text-center">
                 <p className="text-dark-slate/40 text-sm">
-                  Inga aktiva projekt matchar dina intresseområden just nu.
+                  {t("noInterestMatchedEmptyState")}
                 </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {interestMatches.map((p) => (
-                  <MatchCard key={p.slug} project={p} showSdgs />
+                  <MatchCard key={p.slug} project={p} showSdgs t={t} />
                 ))}
               </div>
             )}
@@ -503,10 +512,10 @@ export default async function DashboardPage({
         <section>
           <div className="mb-4">
             <h3 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide">
-              Utforska efter kompetens
+              {t("exploreBySkillHeading")}
             </h3>
             <p className="text-xs text-dark-slate/40 mt-0.5">
-              Filtrera aktiva projekt efter den kompetens de söker.
+              {t("exploreBySkillDescription")}
             </p>
           </div>
 
@@ -519,7 +528,7 @@ export default async function DashboardPage({
                   : "border-muted-teal/50 text-dark-slate/60 hover:border-muted-teal hover:text-dark-slate"
               }`}
             >
-              Alla
+              {t("allSkillsFilter")}
             </Link>
             {allSkills.map((s) => (
               <Link
@@ -538,7 +547,7 @@ export default async function DashboardPage({
 
           {exploreProjects.length === 0 ? (
             <div className="border border-dashed border-muted-teal/40 rounded-lg p-8 text-center">
-              <p className="text-dark-slate/40 text-sm">Inga projekt matchar filtret.</p>
+              <p className="text-dark-slate/40 text-sm">{t("noExploreProjectsEmptyState")}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -555,6 +564,7 @@ export default async function DashboardPage({
                         )
                       : undefined
                   }
+                  t={t}
                 />
               ))}
             </div>
@@ -565,34 +575,34 @@ export default async function DashboardPage({
       {/* Pending join requests */}
       {(pendingProjectRequests.length > 0 || pendingOrgRequests.length > 0) && (
         <section>
-          <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-4">Pending requests</h2>
+          <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-4">{t("pendingRequestsHeading")}</h2>
           <div className="flex flex-col gap-2">
             {pendingProjectRequests.map((r) => (
               <div key={r.id} className="flex items-center justify-between border border-muted-teal/40 rounded-lg px-4 py-3 bg-white">
                 <div>
                   <p className="text-sm text-dark-slate">
-                    Join request for{" "}
+                    {t("joinRequestForPrefix")}{" "}
                     <Link href={`/projects/${r.project.slug}`} className="font-medium text-coral hover:underline">
                       {r.project.title}
                     </Link>
                   </p>
-                  <p className="text-xs text-dark-slate/40 mt-0.5">Awaiting approval</p>
+                  <p className="text-xs text-dark-slate/40 mt-0.5">{t("awaitingApprovalLabel")}</p>
                 </div>
-                <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Pending</span>
+                <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">{t("pendingBadge")}</span>
               </div>
             ))}
             {pendingOrgRequests.map((r) => (
               <div key={r.id} className="flex items-center justify-between border border-muted-teal/40 rounded-lg px-4 py-3 bg-white">
                 <div>
                   <p className="text-sm text-dark-slate">
-                    Join request for{" "}
+                    {t("joinRequestForPrefix")}{" "}
                     <Link href={`/org/${r.organisation.slug}`} className="font-medium text-coral hover:underline">
                       {r.organisation.name}
                     </Link>
                   </p>
-                  <p className="text-xs text-dark-slate/40 mt-0.5">Awaiting approval</p>
+                  <p className="text-xs text-dark-slate/40 mt-0.5">{t("awaitingApprovalLabel")}</p>
                 </div>
-                <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Pending</span>
+                <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">{t("pendingBadge")}</span>
               </div>
             ))}
           </div>

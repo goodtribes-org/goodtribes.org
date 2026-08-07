@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { isCouncilMember } from "@/lib/authz";
 import { reviewFlag, reviewProjectContentFlag } from "@/app/[locale]/site-admin/ethics/actions";
 
@@ -23,6 +24,8 @@ export default async function CouncilEthicsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   if (!(await isCouncilMember(session.user.id))) notFound();
+
+  const t = await getTranslations("EthicsPage");
 
   const [legacyFlags, contentFlags] = await Promise.all([
     prisma.projectFlag.findMany({
@@ -66,7 +69,7 @@ export default async function CouncilEthicsPage() {
           title: project.title,
           slug: project.slug,
           reason: f.reason,
-          flaggedByLabel: f.flaggedBy ? f.flaggedBy.name ?? f.flaggedBy.email : "Automatiskt (system)",
+          flaggedByLabel: f.flaggedBy ? f.flaggedBy.name ?? f.flaggedBy.email : t("automaticSystemLabel"),
           createdAt: f.createdAt,
         };
       }),
@@ -76,17 +79,17 @@ export default async function CouncilEthicsPage() {
     <div className="max-w-4xl mx-auto py-10 px-4">
       <div className="mb-8">
         <Link href="/granskningsradet" className="text-sm text-dark-slate/50 hover:text-dark-slate">
-          ← Granskningsrådet
+          ← {t("backToCouncil")}
         </Link>
-        <h1 className="text-2xl font-bold text-dark-slate mt-1">Etikgranskning</h1>
+        <h1 className="text-2xl font-bold text-dark-slate mt-1">{t("title")}</h1>
         <p className="text-sm text-dark-slate/60 mt-1">
-          Flaggade projekt att granska. {flags.length} avvaktar granskning.
+          {t("subtitleIntro")} {t("pendingCount", { count: flags.length })}
         </p>
       </div>
 
       {flags.length === 0 ? (
         <div className="border border-muted-teal/30 rounded-lg p-8 text-center text-dark-slate/50">
-          Inga flaggade projekt att granska.
+          {t("noFlaggedProjects")}
         </div>
       ) : (
         <div className="flex flex-col gap-4">
@@ -103,12 +106,12 @@ export default async function CouncilEthicsPage() {
                   <p className="text-sm text-dark-slate/60 mt-0.5">{flag.reason}</p>
                 </div>
                 <span className="shrink-0 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-medium">
-                  Avvaktar
+                  {t("pendingBadge")}
                 </span>
               </div>
 
               <div className="text-xs text-dark-slate/50 mb-4">
-                Flaggad av <span className="font-medium text-dark-slate/70">{flag.flaggedByLabel}</span> ·{" "}
+                {t("flaggedBy")} <span className="font-medium text-dark-slate/70">{flag.flaggedByLabel}</span> ·{" "}
                 {flag.createdAt.toLocaleDateString("sv-SE")}
               </div>
 
@@ -124,37 +127,39 @@ export default async function CouncilEthicsPage() {
                     type="submit"
                     className="px-3 py-1.5 rounded border border-muted-teal/50 text-xs font-medium text-dark-slate/70 hover:border-dark-slate/40 hover:text-dark-slate transition-colors"
                   >
-                    Avfärda
+                    {t("dismissButton")}
                   </button>
                 </form>
 
                 <form
                   action={async () => {
                     "use server";
-                    if (flag.source === "legacy") await reviewFlag(flag.id, "warned", "Projektet har fått en varning från Granskningsrådet.");
-                    else await reviewProjectContentFlag(flag.id, "warned", "Projektet har fått en varning från Granskningsrådet.");
+                    const warnMessage = t("warnMessage");
+                    if (flag.source === "legacy") await reviewFlag(flag.id, "warned", warnMessage);
+                    else await reviewProjectContentFlag(flag.id, "warned", warnMessage);
                   }}
                 >
                   <button
                     type="submit"
                     className="px-3 py-1.5 rounded border border-amber-300 text-xs font-medium text-amber-700 hover:bg-amber-50 transition-colors"
                   >
-                    Varna projekt
+                    {t("warnButton")}
                   </button>
                 </form>
 
                 <form
                   action={async () => {
                     "use server";
-                    if (flag.source === "legacy") await reviewFlag(flag.id, "removed", "Projektet har tagits bort av Granskningsrådet.");
-                    else await reviewProjectContentFlag(flag.id, "removed", "Projektet har tagits bort av Granskningsrådet.");
+                    const removeMessage = t("removeMessage");
+                    if (flag.source === "legacy") await reviewFlag(flag.id, "removed", removeMessage);
+                    else await reviewProjectContentFlag(flag.id, "removed", removeMessage);
                   }}
                 >
                   <button
                     type="submit"
                     className="px-3 py-1.5 rounded border border-red-300 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
                   >
-                    Ta bort projekt
+                    {t("removeButton")}
                   </button>
                 </form>
               </div>
