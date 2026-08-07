@@ -2,8 +2,8 @@ export const dynamic = "force-dynamic";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
-import { redirect } from "next/navigation";
-import Link from "next/link";
+import { redirect, Link } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
 
 
 const TYPE_ICON: Record<string, string> = {
@@ -16,6 +16,9 @@ const TYPE_ICON: Record<string, string> = {
   project_update: "📢",
   member_joined: "🎉",
   milestone_completed: "🏆",
+  room_message: "💬",
+  room_thread_reply: "↩️",
+  room_mention: "📣",
 };
 
 function timeAgo(date: Date): string {
@@ -29,8 +32,8 @@ function timeAgo(date: Date): string {
 }
 
 export default async function NotificationsPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  const [session, locale] = await Promise.all([auth(), getLocale()]);
+  if (!session?.user?.id) { redirect({ href: "/login", locale }); return; }
 
   const notifications = await prisma.notification.findMany({
     where: { userId: session.user.id },

@@ -62,7 +62,8 @@
     "ariaLabel": "Notifications",
     "title": "Notifications",
     "viewAll": "View all",
-    "empty": "No notifications yet."
+    "empty": "No notifications yet.",
+    "reply": "Reply"
   },
   "Messages": {
     "navAriaLabel": "Messages",

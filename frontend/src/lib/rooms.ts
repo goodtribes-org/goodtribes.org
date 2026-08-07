@@ -56,9 +56,9 @@ export async function isRoomUnread(roomId: string, userId: string, lastReadAt: D
 const EPOCH = new Date(0);
 
 // Returns the ids of every room (DM/GROUP + project/org channels) that has a
-// message the user hasn't read yet. Shared by getUnreadRoomCount (bell/nav
-// badge) and the polling endpoint the messages sidebar uses to keep its
-// per-room unread dots live (see /api/rooms/unread).
+// message the user hasn't read yet. Used by the polling endpoint the
+// messages sidebar relies on to keep its per-room unread dots live (see
+// /api/rooms/unread).
 export async function getUnreadRoomIds(userId: string): Promise<string[]> {
   const [dmGroupParticipations, projectRooms, orgRooms] = await Promise.all([
     prisma.roomParticipant.findMany({
@@ -90,10 +90,6 @@ export async function getUnreadRoomIds(userId: string): Promise<string[]> {
   ]);
 
   return [...dmGroupUnread, ...channelUnread].filter((id): id is string => id !== null);
-}
-
-export async function getUnreadRoomCount(userId: string): Promise<number> {
-  return (await getUnreadRoomIds(userId)).length;
 }
 
 // Attaches a live `unread` flag to each room in a project/org channel group

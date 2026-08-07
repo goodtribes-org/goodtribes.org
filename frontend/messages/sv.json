@@ -62,7 +62,8 @@
     "ariaLabel": "Notiser",
     "title": "Notiser",
     "viewAll": "Visa alla",
-    "empty": "Inga notiser än."
+    "empty": "Inga notiser än.",
+    "reply": "Svara"
   },
   "Messages": {
     "navAriaLabel": "Meddelanden",
