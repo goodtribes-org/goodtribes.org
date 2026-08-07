@@ -1624,5 +1624,103 @@
     "addImage": "Add image",
     "posting": "Posting...",
     "publish": "Publish"
+  },
+  "MindMapCanvas": {
+    "addNodeButton": "Add node",
+    "saveButton": "Save",
+    "savingButton": "Saving...",
+    "regenerateButton": "Regenerate",
+    "regeneratingButton": "Regenerating...",
+    "deleteButton": "Delete",
+    "deletingButton": "Deleting...",
+    "doubleClickHint": "Double-click a node to rename it",
+    "newNodePrompt": "Name of new node:",
+    "renameNodePrompt": "New name:",
+    "savedStatus": "Saved!",
+    "regenerateConfirm": "This will overwrite the current mind map. Continue?",
+    "deleteConfirm": "Delete the mind map entirely? This cannot be undone.",
+    "genericError": "Something went wrong.",
+    "genericErrorRetry": "Something went wrong. Please try again."
+  },
+  "ProposeMatchButton": {
+    "sending": "Sending...",
+    "proposePartnership": "Propose partnership"
+  },
+  "OrgReviewButton": {
+    "leaveReviewButton": "Leave a review",
+    "reviewSentMessage": "Review sent!",
+    "reviewFormTitle": "Review",
+    "starRatingAria": "{rating} of 5 stars",
+    "commentPlaceholder": "Optional comment...",
+    "cancelButton": "Cancel",
+    "sendButton": "Send",
+    "sendingButton": "Sending...",
+    "genericErrorFallback": "Something went wrong.",
+    "submitErrorMessage": "Could not send the review. Please try again."
+  },
+  "OrgTourGate": {
+    "editTitle": "Fill in more about you",
+    "editBody": "Add a category, the skills you're looking for, and a description so the right volunteers can find you.",
+    "inviteTitle": "Invite members",
+    "inviteBody": "Invite more people to the organisation by email here.",
+    "projectsTitle": "Start your first project",
+    "projectsBody": "Projects are where the real collaboration happens — create one and link it to the organisation.",
+    "resourcesTitle": "Resources and activity",
+    "resourcesBody": "Share files with members and keep track of what's happening in the organisation.",
+    "workspaceTitle": "Workspace",
+    "workspaceBody": "An internal space for tasks and membership applications, visible only to members."
+  },
+  "FooterPageManager": {
+    "manageTitle": "Manage pages",
+    "appFeatureBadge": "app feature",
+    "deleteTitle": "Delete page",
+    "newPagePlaceholder": "New page title",
+    "addButton": "+ Add",
+    "doneButton": "Done"
+  },
+  "HeroCarouselEditor": {
+    "confirmDeleteSlide": "Delete this slide?",
+    "editButton": "Edit",
+    "removeButton": "Remove",
+    "addSlideButton": "+ Add slide",
+    "altTextPlaceholder": "Alt text (image description)",
+    "headingPlaceholder": "Heading",
+    "bodyLabel": "Text",
+    "bodyLine2Placeholder": "Extra text line after the text (optional)",
+    "obstaclesLabel": "Bullet list (optional)",
+    "addObstacleButton": "+ Add bullet",
+    "obstacleLeadPlaceholder": "Heading",
+    "obstacleTextPlaceholder": "Text",
+    "outroLabel": "Text after the bullet list (optional)",
+    "pointsLabel": "Percentage list (optional)",
+    "addPointButton": "+ Add row",
+    "pointPctPlaceholder": "10%",
+    "pointTextPlaceholder": "Text",
+    "menuLabelPlaceholder": "Menu label",
+    "tintColorLabel": "Tint color",
+    "tintOpacityLabel": "Intensity",
+    "cancelButton": "Cancel",
+    "saveButton": "Save"
+  },
+  "ResourceLibrary": {
+    "uploading": "Uploading…",
+    "uploadFile": "Upload file",
+    "uploadFailed": "Upload failed.",
+    "noResourcesYet": "No resources yet.",
+    "download": "Download"
+  },
+  "SkillManager": {
+    "heading": "My skills",
+    "toggleAdd": "+ Add",
+    "toggleCancel": "Cancel",
+    "emptyState": "No skills added yet.",
+    "removeSkillAriaLabel": "Remove {name}",
+    "nameLabel": "Name",
+    "namePlaceholder": "e.g. Drawing",
+    "tagLabel": "Tag",
+    "tagPlaceholder": "e.g. Creative",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Briefly describe the skill...",
+    "saveButton": "Save skill"
   }
 }

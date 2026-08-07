@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import FileUpload from "@/components/FileUpload";
 import RichTextEditor from "@/components/RichTextEditor";
 import { toProxyUrl } from "@/lib/storageUrl";
@@ -31,6 +32,7 @@ const EMPTY_FORM = {
 };
 
 export default function HeroCarouselEditor({ initialSlides, locale }: { initialSlides: HeroSlideData[]; locale: Locale }) {
+  const t = useTranslations("HeroCarouselEditor");
   const [slides, setSlides] = useState(initialSlides);
   const [editingId, setEditingId] = useState<string | "new" | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -92,7 +94,7 @@ export default function HeroCarouselEditor({ initialSlides, locale }: { initialS
   }
 
   function handleDelete(id: string) {
-    if (!confirm("Ta bort den här sliden?")) return;
+    if (!confirm(t("confirmDeleteSlide"))) return;
     startTransition(async () => {
       const result = await deleteHeroSlide(id);
       if ("error" in result) return;
@@ -135,10 +137,10 @@ export default function HeroCarouselEditor({ initialSlides, locale }: { initialS
               ↓
             </button>
             <button type="button" onClick={() => startEdit(s)} className="text-xs text-seagrass hover:underline">
-              Redigera
+              {t("editButton")}
             </button>
             <button type="button" onClick={() => handleDelete(s.id)} disabled={isPending} className="text-xs text-coral hover:underline disabled:opacity-40">
-              Ta bort
+              {t("removeButton")}
             </button>
           </li>
         ))}
@@ -146,7 +148,7 @@ export default function HeroCarouselEditor({ initialSlides, locale }: { initialS
 
       {editingId === null ? (
         <button type="button" onClick={startNew} className="text-sm text-seagrass hover:underline">
-          + Lägg till slide
+          {t("addSlideButton")}
         </button>
       ) : (
         <div className="space-y-4 border-t border-dark-slate/10 pt-4">
@@ -159,35 +161,35 @@ export default function HeroCarouselEditor({ initialSlides, locale }: { initialS
           <input
             value={form.alt}
             onChange={(e) => setForm((f) => ({ ...f, alt: e.target.value }))}
-            placeholder="Alt-text (beskrivning av bilden)"
+            placeholder={t("altTextPlaceholder")}
             className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
           />
           <input
             value={form.heading}
             onChange={(e) => setForm((f) => ({ ...f, heading: e.target.value }))}
-            placeholder="Rubrik"
+            placeholder={t("headingPlaceholder")}
             className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
           />
           <div>
-            <span className="text-xs font-medium text-dark-slate/60 block mb-1">Text</span>
+            <span className="text-xs font-medium text-dark-slate/60 block mb-1">{t("bodyLabel")}</span>
             <RichTextEditor content={form.body} onChange={(html) => setForm((f) => ({ ...f, body: html }))} compact />
           </div>
           <input
             value={form.bodyLine2}
             onChange={(e) => setForm((f) => ({ ...f, bodyLine2: e.target.value }))}
-            placeholder="Extra textrad efter texten (valfritt)"
+            placeholder={t("bodyLine2Placeholder")}
             className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
           />
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-dark-slate/60">Punktlista (valfritt)</span>
+              <span className="text-xs font-medium text-dark-slate/60">{t("obstaclesLabel")}</span>
               <button
                 type="button"
                 onClick={() => setForm((f) => ({ ...f, obstacles: [...f.obstacles, { lead: "", text: "" }] }))}
                 className="text-xs text-seagrass hover:underline"
               >
-                + Lägg till punkt
+                {t("addObstacleButton")}
               </button>
             </div>
             {form.obstacles.map((o, i) => (
@@ -195,13 +197,13 @@ export default function HeroCarouselEditor({ initialSlides, locale }: { initialS
                 <input
                   value={o.lead}
                   onChange={(e) => updateObstacle(i, "lead", e.target.value)}
-                  placeholder="Rubrik"
+                  placeholder={t("obstacleLeadPlaceholder")}
                   className="w-1/3 border border-gray-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:border-seagrass"
                 />
                 <input
                   value={o.text}
                   onChange={(e) => updateObstacle(i, "text", e.target.value)}
-                  placeholder="Text"
+                  placeholder={t("obstacleTextPlaceholder")}
                   className="flex-1 border border-gray-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:border-seagrass"
                 />
                 <button
@@ -209,26 +211,26 @@ export default function HeroCarouselEditor({ initialSlides, locale }: { initialS
                   onClick={() => setForm((f) => ({ ...f, obstacles: f.obstacles.filter((_, idx) => idx !== i) }))}
                   className="text-coral text-xs hover:underline"
                 >
-                  Ta bort
+                  {t("removeButton")}
                 </button>
               </div>
             ))}
           </div>
 
           <div>
-            <span className="text-xs font-medium text-dark-slate/60 block mb-1">Text efter punktlistan (valfritt)</span>
+            <span className="text-xs font-medium text-dark-slate/60 block mb-1">{t("outroLabel")}</span>
             <RichTextEditor content={form.outro} onChange={(html) => setForm((f) => ({ ...f, outro: html }))} compact />
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-dark-slate/60">Procentlista (valfritt)</span>
+              <span className="text-xs font-medium text-dark-slate/60">{t("pointsLabel")}</span>
               <button
                 type="button"
                 onClick={() => setForm((f) => ({ ...f, points: [...f.points, { pct: "", text: "" }] }))}
                 className="text-xs text-seagrass hover:underline"
               >
-                + Lägg till rad
+                {t("addPointButton")}
               </button>
             </div>
             {form.points.map((p, i) => (
@@ -236,13 +238,13 @@ export default function HeroCarouselEditor({ initialSlides, locale }: { initialS
                 <input
                   value={p.pct}
                   onChange={(e) => updatePoint(i, "pct", e.target.value)}
-                  placeholder="10 %"
+                  placeholder={t("pointPctPlaceholder")}
                   className="w-20 border border-gray-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:border-seagrass"
                 />
                 <input
                   value={p.text}
                   onChange={(e) => updatePoint(i, "text", e.target.value)}
-                  placeholder="Text"
+                  placeholder={t("pointTextPlaceholder")}
                   className="flex-1 border border-gray-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:border-seagrass"
                 />
                 <button
@@ -250,7 +252,7 @@ export default function HeroCarouselEditor({ initialSlides, locale }: { initialS
                   onClick={() => setForm((f) => ({ ...f, points: f.points.filter((_, idx) => idx !== i) }))}
                   className="text-coral text-xs hover:underline"
                 >
-                  Ta bort
+                  {t("removeButton")}
                 </button>
               </div>
             ))}
@@ -259,12 +261,12 @@ export default function HeroCarouselEditor({ initialSlides, locale }: { initialS
           <input
             value={form.menuLabel}
             onChange={(e) => setForm((f) => ({ ...f, menuLabel: e.target.value }))}
-            placeholder="Menyetikett"
+            placeholder={t("menuLabelPlaceholder")}
             className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
           />
 
           <div>
-            <span className="text-xs font-medium text-dark-slate/60 block mb-2">Färgton</span>
+            <span className="text-xs font-medium text-dark-slate/60 block mb-2">{t("tintColorLabel")}</span>
             <div className="flex gap-2">
               {HERO_TINT_COLORS.map((c) => (
                 <button
@@ -279,7 +281,7 @@ export default function HeroCarouselEditor({ initialSlides, locale }: { initialS
           </div>
 
           <div>
-            <span className="text-xs font-medium text-dark-slate/60 block mb-2">Intensitet</span>
+            <span className="text-xs font-medium text-dark-slate/60 block mb-2">{t("tintOpacityLabel")}</span>
             <div className="flex gap-2">
               {HERO_TINT_OPACITIES.map((o) => (
                 <button
@@ -299,7 +301,7 @@ export default function HeroCarouselEditor({ initialSlides, locale }: { initialS
           {error && <p className="text-xs text-coral">{error}</p>}
           <div className="flex items-center justify-end gap-3 pt-2">
             <button type="button" onClick={() => setEditingId(null)} className="text-sm text-dark-slate/50 hover:text-dark-slate transition-colors">
-              Avbryt
+              {t("cancelButton")}
             </button>
             <button
               type="button"
@@ -307,7 +309,7 @@ export default function HeroCarouselEditor({ initialSlides, locale }: { initialS
               disabled={isPending}
               className="text-sm font-medium px-4 py-2 rounded-lg bg-seagrass text-white hover:bg-seagrass/90 transition-colors disabled:opacity-50"
             >
-              Spara
+              {t("saveButton")}
             </button>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -28,6 +29,7 @@ interface Props {
 let nextNodeId = 1;
 
 function MindMapInner({ mindMapId, initialNodes, initialEdges, canEdit, regenerateSource, onDeleted }: Props) {
+  const t = useTranslations("MindMapCanvas");
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [saving, setSaving] = useState(false);
@@ -41,14 +43,14 @@ function MindMapInner({ mindMapId, initialNodes, initialEdges, canEdit, regenera
   );
 
   function addNode() {
-    const label = window.prompt("Namn på ny nod:");
+    const label = window.prompt(t("newNodePrompt"));
     if (!label?.trim()) return;
     const id = `new-${Date.now()}-${nextNodeId++}`;
     setNodes((nds) => [...nds, { id, position: { x: 0, y: 0 }, data: { label: label.trim() } }]);
   }
 
   function renameNode(node: Node) {
-    const label = window.prompt("Nytt namn:", (node.data as { label?: string })?.label ?? "");
+    const label = window.prompt(t("renameNodePrompt"), (node.data as { label?: string })?.label ?? "");
     if (!label?.trim()) return;
     setNodes((nds) => nds.map((n) => (n.id === node.id ? { ...n, data: { ...n.data, label: label.trim() } } : n)));
   }
@@ -58,11 +60,11 @@ function MindMapInner({ mindMapId, initialNodes, initialEdges, canEdit, regenera
     setStatus(null);
     const res = await saveMindMap(mindMapId, nodes, edges);
     setSaving(false);
-    setStatus(res?.error ? res.error : "Sparat!");
+    setStatus(res?.error ? res.error : t("savedStatus"));
   }
 
   async function handleRegenerate() {
-    if (!window.confirm("Detta skriver över den nuvarande mindmappen. Fortsätt?")) return;
+    if (!window.confirm(t("regenerateConfirm"))) return;
     setRegenerating(true);
     setStatus(null);
     try {
@@ -73,20 +75,20 @@ function MindMapInner({ mindMapId, initialNodes, initialEdges, canEdit, regenera
       });
       const data = await res.json();
       if (!res.ok) {
-        setStatus((data as { error?: string })?.error ?? "Något gick fel.");
+        setStatus((data as { error?: string })?.error ?? t("genericError"));
       } else {
         setNodes(data.nodes);
         setEdges(data.edges);
       }
     } catch {
-      setStatus("Något gick fel. Försök igen.");
+      setStatus(t("genericErrorRetry"));
     } finally {
       setRegenerating(false);
     }
   }
 
   async function handleDelete() {
-    if (!window.confirm("Ta bort mindmappen helt? Det går inte att ångra.")) return;
+    if (!window.confirm(t("deleteConfirm"))) return;
     setDeleting(true);
     setStatus(null);
     const res = await deleteMindMap(mindMapId);
@@ -107,7 +109,7 @@ function MindMapInner({ mindMapId, initialNodes, initialEdges, canEdit, regenera
             onClick={addNode}
             className="text-xs font-medium text-seagrass border border-seagrass/40 hover:border-seagrass px-3 py-1.5 rounded-md transition-colors"
           >
-            + Lägg till nod
+            + {t("addNodeButton")}
           </button>
           <button
             type="button"
@@ -115,7 +117,7 @@ function MindMapInner({ mindMapId, initialNodes, initialEdges, canEdit, regenera
             disabled={saving}
             className="text-xs font-medium text-white bg-coral hover:bg-watermelon px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
           >
-            {saving ? "Sparar..." : "Spara"}
+            {saving ? t("savingButton") : t("saveButton")}
           </button>
           <button
             type="button"
@@ -123,7 +125,7 @@ function MindMapInner({ mindMapId, initialNodes, initialEdges, canEdit, regenera
             disabled={regenerating}
             className="text-xs font-medium text-dark-slate/60 border border-muted-teal/40 hover:border-dark-slate/40 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
           >
-            {regenerating ? "Genererar..." : "Generera om"}
+            {regenerating ? t("regeneratingButton") : t("regenerateButton")}
           </button>
           <button
             type="button"
@@ -131,9 +133,9 @@ function MindMapInner({ mindMapId, initialNodes, initialEdges, canEdit, regenera
             disabled={deleting}
             className="text-xs font-medium text-coral border border-coral/40 hover:border-coral px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
           >
-            {deleting ? "Tar bort..." : "Ta bort"}
+            {deleting ? t("deletingButton") : t("deleteButton")}
           </button>
-          <span className="text-xs text-dark-slate/40">Dubbelklicka en nod för att byta namn</span>
+          <span className="text-xs text-dark-slate/40">{t("doubleClickHint")}</span>
           {status && <span className="text-xs text-dark-slate/60">{status}</span>}
         </div>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { createFooterPage, deleteFooterPage, reorderFooterPages } from "@/app/[locale]/site-pages-actions";
 import type { FooterPage } from "@/lib/sitePages";
 import type { Locale } from "next-intl";
@@ -14,6 +15,7 @@ export default function FooterPageManager({
   lockedLabels: string[];
   locale: Locale;
 }) {
+  const t = useTranslations("FooterPageManager");
   const [editing, setEditing] = useState(false);
   const [list, setList] = useState(pages);
   const [newTitle, setNewTitle] = useState("");
@@ -55,8 +57,8 @@ export default function FooterPageManager({
       <button
         type="button"
         onClick={() => setEditing(true)}
-        title="Hantera sidor"
-        aria-label="Hantera sidor"
+        title={t("manageTitle")}
+        aria-label={t("manageTitle")}
         className="w-4 h-4 rounded border border-dark-slate/20 text-dark-slate/40 hover:text-dark-slate hover:border-dark-slate/40 text-[9px] leading-none flex items-center justify-center transition-colors"
       >
         ✎
@@ -66,13 +68,13 @@ export default function FooterPageManager({
         <>
           <div className="fixed inset-0 z-40" onClick={() => setEditing(false)} />
           <div className="absolute z-50 top-6 right-0 w-72 bg-white border border-muted-teal/40 rounded-lg shadow-lg p-3 text-xs">
-            <p className="font-semibold text-dark-slate mb-2">Hantera sidor</p>
+            <p className="font-semibold text-dark-slate mb-2">{t("manageTitle")}</p>
             <ul className="space-y-1 mb-2">
               {lockedLabels.map((label) => (
                 <li key={label} className="flex items-center gap-2 text-dark-slate/30 px-1.5 py-1">
                   <span aria-hidden>🔒</span>
                   <span className="flex-1 truncate">{label}</span>
-                  <span className="text-[10px] border border-dark-slate/10 rounded px-1 shrink-0">appfunktion</span>
+                  <span className="text-[10px] border border-dark-slate/10 rounded px-1 shrink-0">{t("appFeatureBadge")}</span>
                 </li>
               ))}
               {list.map((p, i) => (
@@ -81,7 +83,7 @@ export default function FooterPageManager({
                   <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="text-dark-slate/40 hover:text-dark-slate disabled:opacity-30">↑</button>
                   <button type="button" onClick={() => move(i, 1)} disabled={i === list.length - 1} className="text-dark-slate/40 hover:text-dark-slate disabled:opacity-30">↓</button>
                   {!p.locked && (
-                    <button type="button" onClick={() => handleDelete(p.slug)} title="Ta bort sida" className="text-coral hover:text-watermelon">✕</button>
+                    <button type="button" onClick={() => handleDelete(p.slug)} title={t("deleteTitle")} className="text-coral hover:text-watermelon">✕</button>
                   )}
                 </li>
               ))}
@@ -93,13 +95,13 @@ export default function FooterPageManager({
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAdd(); } }}
-                placeholder="Ny sidas titel"
+                placeholder={t("newPagePlaceholder")}
                 maxLength={200}
                 className="flex-1 border border-muted-teal rounded px-1.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-coral"
               />
-              <button type="button" onClick={handleAdd} disabled={!newTitle.trim()} className="text-seagrass hover:underline disabled:opacity-40 shrink-0">+ Lägg till</button>
+              <button type="button" onClick={handleAdd} disabled={!newTitle.trim()} className="text-seagrass hover:underline disabled:opacity-40 shrink-0">{t("addButton")}</button>
             </div>
-            <button type="button" onClick={() => setEditing(false)} className="text-dark-slate/50 hover:text-dark-slate">Klar</button>
+            <button type="button" onClick={() => setEditing(false)} className="text-dark-slate/50 hover:text-dark-slate">{t("doneButton")}</button>
           </div>
         </>
       )}

@@ -1624,5 +1624,103 @@
     "addImage": "Lägg till bild",
     "posting": "Postar...",
     "publish": "Publicera"
+  },
+  "MindMapCanvas": {
+    "addNodeButton": "Lägg till nod",
+    "saveButton": "Spara",
+    "savingButton": "Sparar...",
+    "regenerateButton": "Generera om",
+    "regeneratingButton": "Genererar...",
+    "deleteButton": "Ta bort",
+    "deletingButton": "Tar bort...",
+    "doubleClickHint": "Dubbelklicka en nod för att byta namn",
+    "newNodePrompt": "Namn på ny nod:",
+    "renameNodePrompt": "Nytt namn:",
+    "savedStatus": "Sparat!",
+    "regenerateConfirm": "Detta skriver över den nuvarande mindmappen. Fortsätt?",
+    "deleteConfirm": "Ta bort mindmappen helt? Det går inte att ångra.",
+    "genericError": "Något gick fel.",
+    "genericErrorRetry": "Något gick fel. Försök igen."
+  },
+  "ProposeMatchButton": {
+    "sending": "Skickar...",
+    "proposePartnership": "Föreslå partnerskap"
+  },
+  "OrgReviewButton": {
+    "leaveReviewButton": "Lämna recension",
+    "reviewSentMessage": "Recension skickad!",
+    "reviewFormTitle": "Recensera",
+    "starRatingAria": "{rating} av 5 stjärnor",
+    "commentPlaceholder": "Valfri kommentar...",
+    "cancelButton": "Avbryt",
+    "sendButton": "Skicka",
+    "sendingButton": "Skickar...",
+    "genericErrorFallback": "Något gick fel.",
+    "submitErrorMessage": "Kunde inte skicka recensionen. Försök igen."
+  },
+  "OrgTourGate": {
+    "editTitle": "Fyll i mer om er",
+    "editBody": "Lägg till kategori, kompetenser ni söker och en beskrivning så att rätt volontärer hittar er.",
+    "inviteTitle": "Bjud in medlemmar",
+    "inviteBody": "Bjud in fler personer till organisationen via e-post här.",
+    "projectsTitle": "Starta ert första projekt",
+    "projectsBody": "Projekt är där det verkliga samarbetet händer — skapa ett och koppla det till organisationen.",
+    "resourcesTitle": "Resurser och aktivitet",
+    "resourcesBody": "Dela filer med medlemmarna och håll koll på vad som händer i organisationen.",
+    "workspaceTitle": "Workspace",
+    "workspaceBody": "En intern yta för uppgifter och medlemsansökningar, bara synlig för medlemmar."
+  },
+  "FooterPageManager": {
+    "manageTitle": "Hantera sidor",
+    "appFeatureBadge": "appfunktion",
+    "deleteTitle": "Ta bort sida",
+    "newPagePlaceholder": "Ny sidas titel",
+    "addButton": "+ Lägg till",
+    "doneButton": "Klar"
+  },
+  "HeroCarouselEditor": {
+    "confirmDeleteSlide": "Ta bort den här sliden?",
+    "editButton": "Redigera",
+    "removeButton": "Ta bort",
+    "addSlideButton": "+ Lägg till slide",
+    "altTextPlaceholder": "Alt-text (beskrivning av bilden)",
+    "headingPlaceholder": "Rubrik",
+    "bodyLabel": "Text",
+    "bodyLine2Placeholder": "Extra textrad efter texten (valfritt)",
+    "obstaclesLabel": "Punktlista (valfritt)",
+    "addObstacleButton": "+ Lägg till punkt",
+    "obstacleLeadPlaceholder": "Rubrik",
+    "obstacleTextPlaceholder": "Text",
+    "outroLabel": "Text efter punktlistan (valfritt)",
+    "pointsLabel": "Procentlista (valfritt)",
+    "addPointButton": "+ Lägg till rad",
+    "pointPctPlaceholder": "10 %",
+    "pointTextPlaceholder": "Text",
+    "menuLabelPlaceholder": "Menyetikett",
+    "tintColorLabel": "Färgton",
+    "tintOpacityLabel": "Intensitet",
+    "cancelButton": "Avbryt",
+    "saveButton": "Spara"
+  },
+  "ResourceLibrary": {
+    "uploading": "Laddar upp…",
+    "uploadFile": "Ladda upp fil",
+    "uploadFailed": "Uppladdning misslyckades.",
+    "noResourcesYet": "Inga resurser ännu.",
+    "download": "Ladda ner"
+  },
+  "SkillManager": {
+    "heading": "Mina kompetenser",
+    "toggleAdd": "+ Lägg till",
+    "toggleCancel": "Avbryt",
+    "emptyState": "Inga kompetenser tillagda ännu.",
+    "removeSkillAriaLabel": "Ta bort {name}",
+    "nameLabel": "Namn",
+    "namePlaceholder": "t.ex. Teckning",
+    "tagLabel": "Tagg",
+    "tagPlaceholder": "t.ex. Kreativt",
+    "descriptionLabel": "Beskrivning",
+    "descriptionPlaceholder": "Beskriv kompetensen kort...",
+    "saveButton": "Spara kompetens"
   }
 }

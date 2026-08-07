@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { proposePartnership } from "@/lib/actions/partnerships";
 
 export default function ProposeMatchButton({
@@ -15,6 +16,7 @@ export default function ProposeMatchButton({
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("ProposeMatchButton");
 
   function propose() {
     startTransition(async () => {
@@ -30,7 +32,7 @@ export default function ProposeMatchButton({
       onClick={propose}
       className="text-xs font-medium text-seagrass border border-seagrass/40 hover:border-seagrass hover:bg-seagrass/5 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50 flex-shrink-0"
     >
-      {isPending ? "Skickar..." : "Föreslå partnerskap"}
+      {isPending ? t("sending") : t("proposePartnership")}
     </button>
   );
 }

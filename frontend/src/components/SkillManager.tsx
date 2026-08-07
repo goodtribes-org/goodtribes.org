@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { addSkill, removeSkill } from "@/app/[locale]/profile/skill-actions";
 
 type Skill = {
@@ -17,23 +18,24 @@ type Props = {
 
 export default function SkillManager({ skills }: Props) {
   const [showForm, setShowForm] = useState(false);
+  const t = useTranslations("SkillManager");
 
   return (
     <section className="mb-8">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide">
-          Mina kompetenser
+          {t("heading")}
         </h2>
         <button
           onClick={() => setShowForm((v) => !v)}
           className="text-xs text-coral hover:text-seagrass underline underline-offset-4"
         >
-          {showForm ? "Avbryt" : "+ Lägg till"}
+          {showForm ? t("toggleCancel") : t("toggleAdd")}
         </button>
       </div>
 
       {skills.length === 0 && !showForm && (
-        <p className="text-dark-slate/50 italic text-sm">Inga kompetenser tillagda ännu.</p>
+        <p className="text-dark-slate/50 italic text-sm">{t("emptyState")}</p>
       )}
 
       {skills.length > 0 && (
@@ -49,7 +51,7 @@ export default function SkillManager({ skills }: Props) {
                 <button
                   type="submit"
                   className="ml-1 text-dark-slate/40 hover:text-coral text-xs leading-none"
-                  aria-label={`Ta bort ${skill.name}`}
+                  aria-label={t("removeSkillAriaLabel", { name: skill.name })}
                 >
                   ✕
                 </button>
@@ -62,30 +64,30 @@ export default function SkillManager({ skills }: Props) {
       {showForm && (
         <form action={addSkill} className="border border-muted-teal rounded-lg p-4 flex flex-col gap-3">
           <div>
-            <label className="block text-xs text-dark-slate/60 mb-1">Namn</label>
+            <label className="block text-xs text-dark-slate/60 mb-1">{t("nameLabel")}</label>
             <input
               name="name"
               required
-              placeholder="t.ex. Teckning"
+              placeholder={t("namePlaceholder")}
               className="w-full border border-muted-teal rounded px-3 py-2 text-sm bg-yellow-50 focus:outline-none focus:border-seagrass"
             />
           </div>
           <div>
-            <label className="block text-xs text-dark-slate/60 mb-1">Tagg</label>
+            <label className="block text-xs text-dark-slate/60 mb-1">{t("tagLabel")}</label>
             <input
               name="tag"
               required
-              placeholder="t.ex. Kreativt"
+              placeholder={t("tagPlaceholder")}
               className="w-full border border-muted-teal rounded px-3 py-2 text-sm bg-yellow-50 focus:outline-none focus:border-seagrass"
             />
           </div>
           <div>
-            <label className="block text-xs text-dark-slate/60 mb-1">Beskrivning</label>
+            <label className="block text-xs text-dark-slate/60 mb-1">{t("descriptionLabel")}</label>
             <textarea
               name="description"
               required
               rows={2}
-              placeholder="Beskriv kompetensen kort..."
+              placeholder={t("descriptionPlaceholder")}
               className="w-full border border-muted-teal rounded px-3 py-2 text-sm bg-yellow-50 focus:outline-none focus:border-seagrass resize-none"
             />
           </div>
@@ -93,7 +95,7 @@ export default function SkillManager({ skills }: Props) {
             type="submit"
             className="self-start bg-coral text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-watermelon transition-colors"
           >
-            Spara kompetens
+            {t("saveButton")}
           </button>
         </form>
       )}

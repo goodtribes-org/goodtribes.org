@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface OrgReviewButtonProps {
   organisationId: string;
@@ -8,6 +9,7 @@ interface OrgReviewButtonProps {
 }
 
 export default function OrgReviewButton({ organisationId, orgName }: OrgReviewButtonProps) {
+  const t = useTranslations("OrgReviewButton");
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState<number | null>(null);
@@ -40,7 +42,7 @@ export default function OrgReviewButton({ organisationId, orgName }: OrgReviewBu
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError((data as { error?: string }).error ?? "Något gick fel.");
+        setError((data as { error?: string }).error ?? t("genericErrorFallback"));
         setLoading(false);
         return;
       }
@@ -53,7 +55,7 @@ export default function OrgReviewButton({ organisationId, orgName }: OrgReviewBu
         window.location.reload();
       }, 1200);
     } catch {
-      setError("Kunde inte skicka recensionen. Försök igen.");
+      setError(t("submitErrorMessage"));
       setLoading(false);
     }
   }
@@ -68,7 +70,7 @@ export default function OrgReviewButton({ organisationId, orgName }: OrgReviewBu
         className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-md border border-muted-teal text-dark-slate hover:bg-dry-sage/40 transition-colors"
       >
         <span aria-hidden="true">★</span>
-        Lämna recension
+        {t("leaveReviewButton")}
       </button>
 
       {open && (
@@ -79,12 +81,12 @@ export default function OrgReviewButton({ organisationId, orgName }: OrgReviewBu
             {sent ? (
               <div className="flex flex-col items-center gap-2 py-4">
                 <span className="text-2xl" aria-hidden="true">🎉</span>
-                <p className="text-sm font-semibold text-seagrass">Recension skickad!</p>
+                <p className="text-sm font-semibold text-seagrass">{t("reviewSentMessage")}</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-3">
                 <p className="text-sm font-medium text-dark-slate">
-                  Recensera <span className="font-semibold">{orgName}</span>
+                  {t("reviewFormTitle")} <span className="font-semibold">{orgName}</span>
                 </p>
                 <div className="flex items-center gap-1" onMouseLeave={() => setHoverRating(null)}>
                   {[1, 2, 3, 4, 5].map((n) => (
@@ -94,7 +96,7 @@ export default function OrgReviewButton({ organisationId, orgName }: OrgReviewBu
                       onClick={() => setRating(n)}
                       onMouseEnter={() => setHoverRating(n)}
                       className="text-2xl leading-none focus:outline-none"
-                      aria-label={`${n} av 5 stjärnor`}
+                      aria-label={t("starRatingAria", { rating: n })}
                     >
                       <span className={n <= displayRating ? "text-amber-400" : "text-muted-teal/40"}>★</span>
                     </button>
@@ -107,7 +109,7 @@ export default function OrgReviewButton({ organisationId, orgName }: OrgReviewBu
                     onChange={(e) => setComment(e.target.value)}
                     maxLength={500}
                     rows={3}
-                    placeholder="Valfri kommentar..."
+                    placeholder={t("commentPlaceholder")}
                     className="w-full text-sm border border-muted-teal rounded-md px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-seagrass/40 placeholder:text-dark-slate/30"
                     disabled={loading}
                   />
@@ -125,14 +127,14 @@ export default function OrgReviewButton({ organisationId, orgName }: OrgReviewBu
                     className="text-sm text-dark-slate/50 hover:text-dark-slate transition-colors"
                     disabled={loading}
                   >
-                    Avbryt
+                    {t("cancelButton")}
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
                     className="text-sm font-medium bg-seagrass text-white px-3 py-1.5 rounded-md hover:bg-seagrass/80 transition-colors disabled:opacity-50"
                   >
-                    {loading ? "Skickar..." : "Skicka"}
+                    {loading ? t("sendingButton") : t("sendButton")}
                   </button>
                 </div>
               </form>
