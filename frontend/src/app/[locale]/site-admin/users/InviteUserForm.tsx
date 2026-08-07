@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { inviteUser } from "./actions";
 
 export default function InviteUserForm() {
+  const t = useTranslations("InviteUserForm");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState<{ type: "ok" | "error"; text: string } | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -14,10 +16,10 @@ export default function InviteUserForm() {
     startTransition(async () => {
       const result = await inviteUser(email);
       if (!result.ok) {
-        setMessage({ type: "error", text: result.error ?? "Något gick fel" });
+        setMessage({ type: "error", text: result.error ?? t("genericError") });
         return;
       }
-      setMessage({ type: "ok", text: `Inbjudan skickad till ${email}` });
+      setMessage({ type: "ok", text: t("inviteSent", { email }) });
       setEmail("");
     });
   }
@@ -30,7 +32,7 @@ export default function InviteUserForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="ny.anvandare@example.com"
+          placeholder={t("emailPlaceholder")}
           className="flex-1 max-w-sm border border-muted-teal/40 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
         />
         <button
@@ -38,7 +40,7 @@ export default function InviteUserForm() {
           disabled={isPending}
           className="text-sm font-medium px-4 py-2 rounded-lg bg-seagrass text-white hover:bg-seagrass/90 transition-colors disabled:opacity-50"
         >
-          {isPending ? "Skickar…" : "Bjud in användare"}
+          {isPending ? t("sending") : t("submit")}
         </button>
       </div>
       {message && (

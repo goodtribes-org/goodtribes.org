@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { isSiteOwner } from "@/lib/authz";
@@ -13,6 +14,7 @@ export default async function AdminUsersPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
+  const t = await getTranslations("SiteAdminUsers");
   const session = await auth();
   const viewerIsOwner = !!session?.user?.id && (await isSiteOwner(session.user.id));
 
@@ -36,9 +38,9 @@ export default async function AdminUsersPage({
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-dark-slate">Användare</h1>
+        <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
         <p className="text-sm text-dark-slate/60 mt-1">
-          Hantera sajt-roller och avstängningar. {viewerIsOwner ? "" : "Endast ägare kan utse sajt-administratörer."}
+          {t("description")} {viewerIsOwner ? "" : t("ownerOnlyNotice")}
         </p>
       </div>
 
@@ -50,7 +52,7 @@ export default async function AdminUsersPage({
           type="search"
           name="q"
           defaultValue={q ?? ""}
-          placeholder="Sök namn eller e-post…"
+          placeholder={t("searchPlaceholder")}
           className="w-full max-w-sm border border-muted-teal/40 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
         />
       </form>
@@ -70,7 +72,7 @@ export default async function AdminUsersPage({
             </div>
             {u.suspendedAt && (
               <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-md">
-                Avstängd
+                {t("suspendedBadge")}
               </span>
             )}
             {viewerIsOwner ? (
@@ -88,13 +90,13 @@ export default async function AdminUsersPage({
                 type="submit"
                 className="text-xs font-medium px-2 py-1 rounded-md border border-gray-200 text-dark-slate/70 hover:border-coral hover:text-coral transition-colors"
               >
-                {u.suspendedAt ? "Återaktivera" : "Stäng av"}
+                {u.suspendedAt ? t("reactivate") : t("suspend")}
               </button>
             </form>
           </div>
         ))}
         {users.length === 0 && (
-          <p className="text-sm text-dark-slate/40 italic p-4">Inga användare hittades.</p>
+          <p className="text-sm text-dark-slate/40 italic p-4">{t("noUsersFound")}</p>
         )}
       </div>
     </div>

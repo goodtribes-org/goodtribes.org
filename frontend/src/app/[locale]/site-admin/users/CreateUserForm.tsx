@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import FileUpload from "@/components/FileUpload";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_NUMBERS, SDG_LABELS_SV } from "@/lib/sdg";
@@ -9,6 +10,7 @@ import { createUser } from "./actions";
 type Skill = { id: string; name: string; tag: string };
 
 export default function CreateUserForm({ allSkills }: { allSkills: Skill[] }) {
+  const t = useTranslations("CreateUserForm");
   const [isOpen, setIsOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -33,14 +35,14 @@ export default function CreateUserForm({ allSkills }: { allSkills: Skill[] }) {
     startTransition(async () => {
       const result = await createUser(formData);
       if (!result.ok) {
-        setMessage({ type: "error", text: result.error ?? "Något gick fel" });
+        setMessage({ type: "error", text: result.error ?? t("genericError") });
         return;
       }
       formRef.current?.reset();
       setImage(null);
       setSelectedSdgs([]);
       setIsOpen(false);
-      setMessage({ type: "ok", text: `${result.name} har lagts till` });
+      setMessage({ type: "ok", text: t("userAdded", { name: result.name ?? "" }) });
     });
   }
 
@@ -58,7 +60,7 @@ export default function CreateUserForm({ allSkills }: { allSkills: Skill[] }) {
           onClick={() => setIsOpen(true)}
           className="text-sm font-medium px-4 py-2 rounded-lg bg-coral text-white hover:bg-watermelon transition-colors"
         >
-          + Lägg till ny användare
+          + {t("addNewUser")}
         </button>
         {message && (
           <p className={`text-xs mt-2 ${message.type === "ok" ? "text-seagrass" : "text-coral"}`}>{message.text}</p>
@@ -74,9 +76,9 @@ export default function CreateUserForm({ allSkills }: { allSkills: Skill[] }) {
       className="mb-8 border border-muted-teal/30 rounded-xl p-5 flex flex-col gap-4 bg-white"
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-dark-slate">Ny användare</h2>
+        <h2 className="text-sm font-semibold text-dark-slate">{t("newUser")}</h2>
         <button type="button" onClick={() => setIsOpen(false)} className="text-xs text-dark-slate/50 hover:text-dark-slate">
-          Avbryt
+          {t("cancel")}
         </button>
       </div>
 
@@ -88,7 +90,7 @@ export default function CreateUserForm({ allSkills }: { allSkills: Skill[] }) {
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-dark-slate mb-1">
-            Namn <span className="text-watermelon">*</span>
+            {t("name")} <span className="text-watermelon">*</span>
           </label>
           <input
             id="name"
@@ -100,7 +102,7 @@ export default function CreateUserForm({ allSkills }: { allSkills: Skill[] }) {
         </div>
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-dark-slate mb-1">
-            E-post <span className="text-watermelon">*</span>
+            {t("email")} <span className="text-watermelon">*</span>
           </label>
           <input
             id="email"
@@ -113,7 +115,7 @@ export default function CreateUserForm({ allSkills }: { allSkills: Skill[] }) {
       </div>
 
       <div>
-        <label htmlFor="bio" className="block text-sm font-medium text-dark-slate mb-1">Beskrivning</label>
+        <label htmlFor="bio" className="block text-sm font-medium text-dark-slate mb-1">{t("bio")}</label>
         <textarea
           id="bio"
           name="bio"
@@ -124,26 +126,26 @@ export default function CreateUserForm({ allSkills }: { allSkills: Skill[] }) {
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="availability" className="block text-sm font-medium text-dark-slate mb-1">Tillgänglighet</label>
+          <label htmlFor="availability" className="block text-sm font-medium text-dark-slate mb-1">{t("availability")}</label>
           <select
             id="availability"
             name="availability"
             defaultValue=""
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent bg-white"
           >
-            <option value="">Välj tillgänglighet...</option>
-            <option value="available">✅ Tillgänglig för nya projekt</option>
-            <option value="limited">⏳ Begränsad tid</option>
-            <option value="busy">🔴 Inte tillgänglig just nu</option>
+            <option value="">{t("availabilityPlaceholder")}</option>
+            <option value="available">✅ {t("availabilityAvailable")}</option>
+            <option value="limited">⏳ {t("availabilityLimited")}</option>
+            <option value="busy">🔴 {t("availabilityBusy")}</option>
           </select>
         </div>
         <div>
-          <label htmlFor="country" className="block text-sm font-medium text-dark-slate mb-1">Land</label>
+          <label htmlFor="country" className="block text-sm font-medium text-dark-slate mb-1">{t("country")}</label>
           <input
             id="country"
             name="country"
             type="text"
-            placeholder="t.ex. Sverige"
+            placeholder={t("countryPlaceholder")}
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
           />
         </div>
@@ -151,7 +153,7 @@ export default function CreateUserForm({ allSkills }: { allSkills: Skill[] }) {
 
       {allSkills.length > 0 && (
         <fieldset>
-          <legend className="text-sm font-medium text-dark-slate mb-3">Kompetenser</legend>
+          <legend className="text-sm font-medium text-dark-slate mb-3">{t("skills")}</legend>
           <div className="flex flex-col gap-4">
             {Object.entries(byTag).map(([tag, skills]) => (
               <div key={tag}>
@@ -173,7 +175,7 @@ export default function CreateUserForm({ allSkills }: { allSkills: Skill[] }) {
       )}
 
       <div>
-        <p className="text-sm font-medium text-dark-slate mb-3">SDG-intressen</p>
+        <p className="text-sm font-medium text-dark-slate mb-3">{t("sdgInterests")}</p>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
           {SDG_NUMBERS.map((num) => {
             const selected = selectedSdgs.includes(num);
@@ -196,7 +198,7 @@ export default function CreateUserForm({ allSkills }: { allSkills: Skill[] }) {
       </div>
 
       <fieldset className="grid sm:grid-cols-2 gap-3">
-        <legend className="text-sm font-medium text-dark-slate mb-1 sm:col-span-2">Sociala länkar</legend>
+        <legend className="text-sm font-medium text-dark-slate mb-1 sm:col-span-2">{t("socialLinks")}</legend>
         <input name="website" type="url" placeholder="Website" className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent" />
         <input name="linkedin" type="text" placeholder="LinkedIn" className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent" />
         <input name="github" type="text" placeholder="GitHub" className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent" />
@@ -205,7 +207,7 @@ export default function CreateUserForm({ allSkills }: { allSkills: Skill[] }) {
 
       <div className="flex items-center gap-3">
         <input id="showProfile" name="showProfile" type="checkbox" defaultChecked className="w-4 h-4 accent-coral" />
-        <label htmlFor="showProfile" className="text-sm text-dark-slate">Visa profilen på medlemssidan</label>
+        <label htmlFor="showProfile" className="text-sm text-dark-slate">{t("showProfileLabel")}</label>
       </div>
 
       <button
@@ -213,7 +215,7 @@ export default function CreateUserForm({ allSkills }: { allSkills: Skill[] }) {
         disabled={isPending}
         className="bg-coral text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-watermelon transition-colors disabled:opacity-50"
       >
-        {isPending ? "Lägger till…" : "Lägg till användare"}
+        {isPending ? t("addingButton") : t("addUserButton")}
       </button>
 
       {message && (

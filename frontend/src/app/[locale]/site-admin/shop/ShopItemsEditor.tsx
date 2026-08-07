@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { createShopItem, updateShopItem, setShopItemActive } from "./actions";
 
 type Item = {
@@ -15,6 +16,7 @@ type Item = {
 const EMPTY_FORM = { name: "", description: "", imageUrl: "", costGt: "" };
 
 export default function ShopItemsEditor({ initialItems }: { initialItems: Item[] }) {
+  const t = useTranslations("ShopItemsEditor");
   const [items, setItems] = useState(initialItems);
   const [editingId, setEditingId] = useState<string | "new" | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -41,14 +43,14 @@ export default function ShopItemsEditor({ initialItems }: { initialItems: Item[]
       if (editingId === "new") {
         const result = await createShopItem(params);
         if (!result.ok || !result.item) {
-          setError(result.error ?? "Något gick fel");
+          setError(result.error ?? t("genericError"));
           return;
         }
         setItems((prev) => [...prev, result.item as Item]);
       } else {
         const result = await updateShopItem(editingId as string, params);
         if (!result.ok) {
-          setError(result.error ?? "Något gick fel");
+          setError(result.error ?? t("genericError"));
           return;
         }
         setItems((prev) => prev.map((i) => (i.id === editingId ? { ...i, ...params } : i)));
@@ -75,10 +77,10 @@ export default function ShopItemsEditor({ initialItems }: { initialItems: Item[]
               <p className={`text-sm font-medium truncate ${item.active ? "text-dark-slate" : "text-dark-slate/40 line-through"}`}>
                 {item.name}
               </p>
-              <p className="text-xs text-dark-slate/50">{item.costGt} GT</p>
+              <p className="text-xs text-dark-slate/50">{t("costGt", { cost: item.costGt })}</p>
             </div>
             <button type="button" onClick={() => startEdit(item)} className="text-xs text-seagrass hover:underline shrink-0">
-              Redigera
+              {t("editButton")}
             </button>
             <button
               type="button"
@@ -86,42 +88,42 @@ export default function ShopItemsEditor({ initialItems }: { initialItems: Item[]
               onClick={() => handleToggleActive(item)}
               className="text-xs text-dark-slate/50 hover:text-dark-slate shrink-0 disabled:opacity-40"
             >
-              {item.active ? "Inaktivera" : "Aktivera"}
+              {item.active ? t("deactivateButton") : t("activateButton")}
             </button>
           </li>
         ))}
-        {items.length === 0 && <p className="text-sm text-dark-slate/40 italic">Inga varor än.</p>}
+        {items.length === 0 && <p className="text-sm text-dark-slate/40 italic">{t("emptyState")}</p>}
       </ul>
 
       {editingId === null ? (
         <button type="button" onClick={startNew} className="text-sm text-seagrass hover:underline">
-          + Lägg till vara
+          {t("addItemButton")}
         </button>
       ) : (
         <div className="space-y-3 border-t border-dark-slate/10 pt-4">
           <input
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            placeholder="Namn"
+            placeholder={t("namePlaceholder")}
             className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
           />
           <textarea
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-            placeholder="Beskrivning (valfritt)"
+            placeholder={t("descriptionPlaceholder")}
             rows={2}
             className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
           />
           <input
             value={form.imageUrl}
             onChange={(e) => setForm((f) => ({ ...f, imageUrl: e.target.value }))}
-            placeholder="Bild-URL (valfritt)"
+            placeholder={t("imageUrlPlaceholder")}
             className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
           />
           <input
             value={form.costGt}
             onChange={(e) => setForm((f) => ({ ...f, costGt: e.target.value }))}
-            placeholder="Pris i GT"
+            placeholder={t("costPlaceholder")}
             type="number"
             min="0"
             step="0.1"
@@ -130,7 +132,7 @@ export default function ShopItemsEditor({ initialItems }: { initialItems: Item[]
           {error && <p className="text-xs text-coral">{error}</p>}
           <div className="flex items-center justify-end gap-3">
             <button type="button" onClick={() => setEditingId(null)} className="text-sm text-dark-slate/50 hover:text-dark-slate transition-colors">
-              Avbryt
+              {t("cancelButton")}
             </button>
             <button
               type="button"
@@ -138,7 +140,7 @@ export default function ShopItemsEditor({ initialItems }: { initialItems: Item[]
               disabled={isPending}
               className="text-sm font-medium px-4 py-2 rounded-lg bg-seagrass text-white hover:bg-seagrass/90 transition-colors disabled:opacity-50"
             >
-              {isPending ? "Sparar…" : "Spara"}
+              {isPending ? t("savingButton") : t("saveButton")}
             </button>
           </div>
         </div>
