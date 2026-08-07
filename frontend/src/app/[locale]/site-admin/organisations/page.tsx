@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import type { Locale } from "next-intl";
 import { reviewOrgFlag, reviewOrgContentFlag, setOrganisationVerified } from "./actions";
 
 type PendingOrgFlagRow = {
@@ -12,7 +14,14 @@ type PendingOrgFlagRow = {
   createdAt: Date;
 };
 
-export default async function OrganisationsAdminPage() {
+export default async function OrganisationsAdminPage({
+  params,
+}: {
+  params: Promise<{ locale: Locale }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "SiteAdminOrganisations" });
+
   const [legacyFlags, contentFlags, orgs] = await Promise.all([
     // Legacy OrganisationFlag rows — kept as a frozen audit trail; new flags
     // no longer get created here (see FlagContentButton), so this queue
@@ -63,25 +72,31 @@ export default async function OrganisationsAdminPage() {
           name: org.name,
           slug: org.slug,
           reason: f.reason,
-          flaggedByLabel: f.flaggedBy ? f.flaggedBy.name ?? f.flaggedBy.email : "Automatiskt (system)",
+          flaggedByLabel: f.flaggedBy ? f.flaggedBy.name ?? f.flaggedBy.email : t("systemFlaggedBy"),
           createdAt: f.createdAt,
         };
       }),
   ].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
+  // Computed here (not called inside the inline "use server" actions below) —
+  // an inline server action's closure can only serialize plain data across
+  // the client/server boundary, not the `t` function itself.
+  const warnNote = t("warnNote");
+  const removeNote = t("removeNote");
+
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 space-y-12">
       <div>
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-dark-slate">Organisationsgranskning</h1>
+          <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
           <p className="text-sm text-dark-slate/60 mt-1">
-            Hantera flaggade organisationer. {flags.length} avvaktar granskning.
+            {t("subheading", { count: flags.length })}
           </p>
         </div>
 
         {flags.length === 0 ? (
           <div className="border border-muted-teal/30 rounded-lg p-8 text-center text-dark-slate/50">
-            Inga flaggade organisationer att granska.
+            {t("emptyState")}
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -103,12 +118,12 @@ export default async function OrganisationsAdminPage() {
                     </p>
                   </div>
                   <span className="shrink-0 text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-medium">
-                    Avvaktar
+                    {t("pendingBadge")}
                   </span>
                 </div>
 
                 <div className="text-xs text-dark-slate/50 mb-4">
-                  Flaggad av{" "}
+                  {t("flaggedByLabel")}{" "}
                   <span className="font-medium text-dark-slate/70">
                     {flag.flaggedByLabel}
                   </span>{" "}
@@ -127,37 +142,37 @@ export default async function OrganisationsAdminPage() {
                       type="submit"
                       className="px-3 py-1.5 rounded border border-muted-teal/50 text-xs font-medium text-dark-slate/70 hover:border-dark-slate/40 hover:text-dark-slate transition-colors"
                     >
-                      Avfärda
+                      {t("dismissAction")}
                     </button>
                   </form>
 
                   <form
                     action={async () => {
                       "use server";
-                      if (flag.source === "legacy") await reviewOrgFlag(flag.id, "warned", "Organisationen har fått en varning från administratören.");
-                      else await reviewOrgContentFlag(flag.id, "warned", "Organisationen har fått en varning från administratören.");
+                      if (flag.source === "legacy") await reviewOrgFlag(flag.id, "warned", warnNote);
+                      else await reviewOrgContentFlag(flag.id, "warned", warnNote);
                     }}
                   >
                     <button
                       type="submit"
                       className="px-3 py-1.5 rounded border border-amber-300 text-xs font-medium text-amber-700 hover:bg-amber-50 transition-colors"
                     >
-                      Varna organisation
+                      {t("warnAction")}
                     </button>
                   </form>
 
                   <form
                     action={async () => {
                       "use server";
-                      if (flag.source === "legacy") await reviewOrgFlag(flag.id, "removed", "Organisationen har avpublicerats av administratören.");
-                      else await reviewOrgContentFlag(flag.id, "removed", "Organisationen har avpublicerats av administratören.");
+                      if (flag.source === "legacy") await reviewOrgFlag(flag.id, "removed", removeNote);
+                      else await reviewOrgContentFlag(flag.id, "removed", removeNote);
                     }}
                   >
                     <button
                       type="submit"
                       className="px-3 py-1.5 rounded border border-red-300 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
                     >
-                      Avpublicera organisation
+                      {t("removeAction")}
                     </button>
                   </form>
                 </div>
@@ -169,9 +184,9 @@ export default async function OrganisationsAdminPage() {
 
       <div>
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-dark-slate">Verifiering</h2>
+          <h2 className="text-xl font-semibold text-dark-slate">{t("verificationHeading")}</h2>
           <p className="text-sm text-dark-slate/60 mt-1">
-            Verifierade organisationer visas med en badge på sin sida och i katalogen.
+            {t("verificationDescription")}
           </p>
         </div>
 
@@ -195,7 +210,7 @@ export default async function OrganisationsAdminPage() {
                       : "px-3 py-1.5 rounded bg-seagrass text-white text-xs font-medium hover:bg-seagrass/80 transition-colors"
                   }
                 >
-                  {org.verified ? "Ta bort verifiering" : "Verifiera"}
+                  {org.verified ? t("unverifyButton") : t("verifyButton")}
                 </button>
               </form>
             </div>

@@ -1722,5 +1722,22 @@
     "descriptionLabel": "Beskrivning",
     "descriptionPlaceholder": "Beskriv kompetensen kort...",
     "saveButton": "Spara kompetens"
+  },
+  "SiteAdminOrganisations": {
+    "heading": "Organisationsgranskning",
+    "subheading": "Hantera flaggade organisationer. {count} avvaktar granskning.",
+    "emptyState": "Inga flaggade organisationer att granska.",
+    "pendingBadge": "Avvaktar",
+    "flaggedByLabel": "Flaggad av",
+    "systemFlaggedBy": "Automatiskt (system)",
+    "dismissAction": "Avfärda",
+    "warnAction": "Varna organisation",
+    "warnNote": "Organisationen har fått en varning från administratören.",
+    "removeAction": "Avpublicera organisation",
+    "removeNote": "Organisationen har avpublicerats av administratören.",
+    "verificationHeading": "Verifiering",
+    "verificationDescription": "Verifierade organisationer visas med en badge på sin sida och i katalogen.",
+    "unverifyButton": "Ta bort verifiering",
+    "verifyButton": "Verifiera"
   }
 }

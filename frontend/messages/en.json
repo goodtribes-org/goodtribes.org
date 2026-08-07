@@ -1722,5 +1722,22 @@
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Briefly describe the skill...",
     "saveButton": "Save skill"
+  },
+  "SiteAdminOrganisations": {
+    "heading": "Organisation review",
+    "subheading": "Manage flagged organisations. {count} awaiting review.",
+    "emptyState": "No flagged organisations to review.",
+    "pendingBadge": "Pending",
+    "flaggedByLabel": "Flagged by",
+    "systemFlaggedBy": "Automatic (system)",
+    "dismissAction": "Dismiss",
+    "warnAction": "Warn organisation",
+    "warnNote": "The organisation has received a warning from the administrator.",
+    "removeAction": "Unpublish organisation",
+    "removeNote": "The organisation has been unpublished by the administrator.",
+    "verificationHeading": "Verification",
+    "verificationDescription": "Verified organisations show a badge on their page and in the directory.",
+    "unverifyButton": "Remove verification",
+    "verifyButton": "Verify"
   }
 }
