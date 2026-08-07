@@ -17,22 +17,22 @@ export const metadata: Metadata = {
 const PAGE_SIZE = 15;
 
 const STATUS_TABS = [
-  { value: "", label: "All" },
-  { value: "open", label: "Open" },
-  { value: "review", label: "Under Review" },
-  { value: "shortlisted", label: "Shortlisted" },
-  { value: "approved", label: "Approved" },
+  { value: "", label: "Alla" },
+  { value: "open", label: "Öppen" },
+  { value: "review", label: "Under granskning" },
+  { value: "shortlisted", label: "Utvald" },
+  { value: "approved", label: "Godkänd" },
 ];
 
 
 function statusBadge(status: string) {
   const map: Record<string, { label: string; cls: string }> = {
-    draft:       { label: "Draft",        cls: "bg-gray-100 text-gray-500" },
-    open:        { label: "Open",         cls: "bg-teal-50 text-teal-700" },
-    review:      { label: "Under Review", cls: "bg-amber-100 text-amber-700" },
-    shortlisted: { label: "Shortlisted",  cls: "bg-purple-100 text-purple-700" },
-    approved:    { label: "Approved",     cls: "bg-green-100 text-green-700" },
-    converted:   { label: "Converted",    cls: "bg-coral/10 text-coral" },
+    draft:       { label: "Utkast",           cls: "bg-gray-100 text-gray-500" },
+    open:        { label: "Öppen",            cls: "bg-teal-50 text-teal-700" },
+    review:      { label: "Under granskning", cls: "bg-amber-100 text-amber-700" },
+    shortlisted: { label: "Utvald",           cls: "bg-purple-100 text-purple-700" },
+    approved:    { label: "Godkänd",          cls: "bg-green-100 text-green-700" },
+    converted:   { label: "Omvandlad",        cls: "bg-coral/10 text-coral" },
   };
   const s = map[status] ?? map.open;
   return <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${s.cls}`}>{s.label}</span>;
@@ -98,9 +98,9 @@ export default async function IdeasPage({
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-dark-slate">Ideas</h1>
+          <h1 className="text-3xl font-bold text-dark-slate">Idéer</h1>
           <p className="text-sm text-dark-slate/60 mt-1 max-w-lg">
-            Community ideas for impact-driven projects and organisations. Vote for what excites you, endorse ideas you'd work on, and help turn the best ones into reality.
+            Idéer från communityn för projekt och organisationer som gör skillnad. Rösta på det som engagerar dig, stötta idéer du skulle vilja jobba med, och hjälp till att förverkliga de bästa.
           </p>
         </div>
         {session?.user?.id && (
@@ -108,7 +108,7 @@ export default async function IdeasPage({
             href="/ideas/new"
             className="flex-shrink-0 px-4 py-2 bg-coral text-white text-sm font-medium rounded-lg hover:bg-watermelon transition-colors"
           >
-            + Share idea
+            + Dela idé
           </Link>
         )}
       </div>
@@ -144,13 +144,13 @@ export default async function IdeasPage({
 
       {total === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-dark-slate/50 mb-4">No ideas found.</p>
+          <p className="text-dark-slate/50 mb-4">Inga idéer hittades.</p>
           {session?.user?.id ? (
             <Link href="/ideas/new" className="px-5 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors">
-              Share the first idea
+              Dela den första idén
             </Link>
           ) : (
-            <Link href="/login" className="text-coral hover:underline text-sm">Log in to share an idea</Link>
+            <Link href="/login" className="text-coral hover:underline text-sm">Logga in för att dela en idé</Link>
           )}
         </div>
       ) : (
@@ -186,10 +186,10 @@ export default async function IdeasPage({
                     {idea.title}
                   </p>
                   <p className="text-xs text-dark-slate/50 mb-2">
-                    by <span className="text-coral">{idea.author.name ?? "Unknown"}</span>
+                    av <span className="text-coral">{idea.author.name ?? "Okänd"}</span>
                   </p>
                   <p className="text-xs text-dark-slate/70 leading-snug mb-2 line-clamp-3 flex-1">
-                    {idea.problem ?? idea.description ?? "No description yet."}
+                    {idea.problem ?? idea.description ?? "Ingen beskrivning ännu."}
                   </p>
                   {idea.sdgGoals.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1 mb-2">
@@ -202,15 +202,15 @@ export default async function IdeasPage({
                   <div className="grid grid-cols-3 divide-x divide-muted-teal/30 text-center border-t border-muted-teal/20 pt-2 mt-auto">
                     <div className="px-1">
                       <p className="text-xs font-semibold text-dark-slate">{idea._count.votes}</p>
-                      <p className="text-[10px] text-dark-slate/50 leading-tight">Votes</p>
+                      <p className="text-[10px] text-dark-slate/50 leading-tight">Röster</p>
                     </div>
                     <div className="px-1">
                       <p className="text-xs font-semibold text-dark-slate">{idea._count.endorsements}</p>
-                      <p className="text-[10px] text-dark-slate/50 leading-tight">Contributors</p>
+                      <p className="text-[10px] text-dark-slate/50 leading-tight">Bidragsgivare</p>
                     </div>
                     <div className="px-1">
                       <p className="text-xs font-semibold text-dark-slate">{idea._count.comments}</p>
-                      <p className="text-[10px] text-dark-slate/50 leading-tight">Comments</p>
+                      <p className="text-[10px] text-dark-slate/50 leading-tight">Kommentarer</p>
                     </div>
                   </div>
                 </div>

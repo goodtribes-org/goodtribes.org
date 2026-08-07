@@ -95,7 +95,7 @@ export default async function ProjectsPage({
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-dark-slate">
-          Projects{" "}
+          Projekt{" "}
           <span className="text-dark-slate/40 font-normal">({total})</span>
         </h1>
         {session?.user?.id && (
@@ -103,14 +103,14 @@ export default async function ProjectsPage({
             href="/projects/new"
             className="px-4 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors"
           >
-            + New project
+            + Nytt projekt
           </Link>
         )}
       </div>
 
       {Object.keys(countryCounts).length > 0 && (
         <div className="mb-6">
-          <CountryMap counts={countryCounts} unitLabel="projects" />
+          <CountryMap counts={countryCounts} unitLabel="projekt" />
         </div>
       )}
 
@@ -118,13 +118,8 @@ export default async function ProjectsPage({
 
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-dark-slate/50 mb-4">No projects match your filters.</p>
-          <button
-            onClick={undefined}
-            className="text-coral hover:underline text-sm"
-          >
-            <Link href="/projects">Clear filters</Link>
-          </button>
+          <p className="text-dark-slate/50 mb-4">Inga projekt matchar dina filter.</p>
+          <Link href="/projects" className="text-coral hover:underline text-sm">Rensa filter</Link>
         </div>
       ) : (
         <>

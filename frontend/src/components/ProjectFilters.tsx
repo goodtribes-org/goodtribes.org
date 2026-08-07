@@ -3,14 +3,14 @@
 import { useState } from "react";
 import SortToggle from "./SortToggle";
 import { DISPLAY_PHASES as STAGES } from "@/lib/projectPhase";
-import { CATEGORIES } from "@/lib/categories";
+import { CATEGORIES, CATEGORY_LABELS } from "@/lib/categories";
 
 const SDG_LABELS: Record<number, string> = {
-  1:"No Poverty",2:"Zero Hunger",3:"Good Health",4:"Quality Education",
-  5:"Gender Equality",6:"Clean Water",7:"Clean Energy",8:"Decent Work",
-  9:"Industry & Innovation",10:"Reduced Inequalities",11:"Sustainable Cities",
-  12:"Responsible Consumption",13:"Climate Action",14:"Life Below Water",
-  15:"Life on Land",16:"Peace & Justice",17:"Partnerships",
+  1: "Ingen fattigdom", 2: "Ingen hunger", 3: "God hälsa", 4: "God utbildning",
+  5: "Jämställdhet", 6: "Rent vatten", 7: "Hållbar energi", 8: "Anständiga arbetsvillkor",
+  9: "Hållbar industri", 10: "Minskad ojämlikhet", 11: "Hållbara städer",
+  12: "Hållbar konsumtion", 13: "Bekämpa klimatförändringarna", 14: "Hav och marina resurser",
+  15: "Ekosystem och biologisk mångfald", 16: "Fredliga samhällen", 17: "Globalt partnerskap",
 };
 
 interface Props {
@@ -56,7 +56,7 @@ export default function ProjectFilters({ sort, q, phase, category, sdg, basePath
         onChange={(e) => onNavigate(buildUrl({ phase: e.target.value || undefined, page: undefined }))}
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
-        <option value="">All stages</option>
+        <option value="">Alla faser</option>
         {STAGES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
       </select>
 
@@ -66,8 +66,8 @@ export default function ProjectFilters({ sort, q, phase, category, sdg, basePath
         onChange={(e) => onNavigate(buildUrl({ category: e.target.value || undefined, page: undefined }))}
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
-        <option value="">All categories</option>
-        {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+        <option value="">Alla kategorier</option>
+        {CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</option>)}
       </select>
 
       {/* SDG */}
@@ -76,7 +76,7 @@ export default function ProjectFilters({ sort, q, phase, category, sdg, basePath
         onChange={(e) => onNavigate(buildUrl({ sdg: e.target.value || undefined, page: undefined }))}
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
-        <option value="">All SDG goals</option>
+        <option value="">Alla globala mål</option>
         {Array.from({ length: 17 }, (_, i) => i + 1).map((n) => (
           <option key={n} value={n}>SDG {n} — {SDG_LABELS[n]}</option>
         ))}
@@ -88,14 +88,14 @@ export default function ProjectFilters({ sort, q, phase, category, sdg, basePath
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search projects…"
+          placeholder="Sök projekt…"
           className="w-48 text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate placeholder-dark-slate/40 focus:outline-none focus:ring-2 focus:ring-coral"
         />
         <button
           type="submit"
           className="px-3 py-1.5 bg-coral text-white text-xs font-medium rounded-lg hover:bg-watermelon transition-colors"
         >
-          Search
+          Sök
         </button>
       </form>
 
@@ -108,7 +108,7 @@ export default function ProjectFilters({ sort, q, phase, category, sdg, basePath
           }}
           className="text-xs text-dark-slate/50 hover:text-dark-slate underline"
         >
-          Clear filters
+          Rensa filter
         </a>
       )}
     </div>

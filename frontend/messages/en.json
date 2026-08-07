@@ -41,7 +41,11 @@
     "suggestions": "Give feedback",
     "exploreTitle": "Explore",
     "foundationBlurb": "GoodTribes is a nonprofit foundation working toward long-term sustainable environmental and societal development. The foundation runs GoodTribes.org to help people and organisations who want to make the world better.",
-    "copyrightNote": "Every project contributes to the 2030 Agenda"
+    "copyrightNote": "Every project contributes to the 2030 Agenda",
+    "servicesTitle": "Services",
+    "servicesBlurb": "Explore the platform's features and ways to get involved.",
+    "organisationTitle": "Organisation",
+    "organisationBlurb": "Everything you need to know about the foundation behind GoodTribes.org."
   },
   "Install": {
     "prompt": "Install GoodTribes for quicker access, even offline.",
@@ -109,5 +113,22 @@
     "claimErrorAlreadyClaimed": "Someone else just claimed this task.",
     "claimErrorMember": "Members should assign themselves via the card editor.",
     "abandonErrorNotYours": "This isn't your task to release."
+  },
+  "Auth": {
+    "loginTitle": "Log in",
+    "loginSubtitle": "Enter your email address and we will send you a login link.",
+    "signupTitle": "Create your account",
+    "signupSubtitle": "Enter your email address and we will send you an activation link.",
+    "emailLabel": "Email address",
+    "sendLoginLink": "Send login link",
+    "sendActivationLink": "Send activation link",
+    "sending": "Sending…",
+    "genericError": "Something went wrong. Please try again.",
+    "sentMessage": "We've sent a login link to {email}. Click it to sign in.",
+    "wrongAddress": "Wrong address? Try again",
+    "newHere": "New here?",
+    "createAccountLink": "Create account →",
+    "alreadyHaveAccount": "Already have an account?",
+    "logInLink": "Log in →"
   }
 }

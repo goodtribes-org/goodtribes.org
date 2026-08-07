@@ -1,7 +1,8 @@
 import { signIn } from "@/auth";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 
 export default async function SignupPage({
   searchParams,
@@ -12,6 +13,7 @@ export default async function SignupPage({
   if (session) redirect("/");
 
   const params = await searchParams;
+  const t = await getTranslations("Auth");
 
   async function handleSignUp(formData: FormData) {
     "use server";
@@ -24,21 +26,19 @@ export default async function SignupPage({
 
   return (
     <div className="max-w-sm mx-auto mt-16">
-      <h1 className="text-2xl font-bold mb-2">Create your account</h1>
-      <p className="text-dark-slate/70 mb-8">
-        Enter your email address and we will send you an activation link.
-      </p>
+      <h1 className="text-2xl font-bold mb-2">{t("signupTitle")}</h1>
+      <p className="text-dark-slate/70 mb-8">{t("signupSubtitle")}</p>
 
       {params.error && (
         <div className="mb-6 p-3 bg-watermelon/10 border border-watermelon/40 rounded text-sm text-watermelon">
-          Something went wrong. Please try again.
+          {t("genericError")}
         </div>
       )}
 
       <form action={handleSignUp} className="flex flex-col gap-4">
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-dark-slate mb-1">
-            Email address
+            {t("emailLabel")}
           </label>
           <input
             id="email"
@@ -54,14 +54,14 @@ export default async function SignupPage({
           type="submit"
           className="w-full bg-coral text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-watermelon transition-colors"
         >
-          Send activation link
+          {t("sendActivationLink")}
         </button>
       </form>
 
       <p className="mt-6 text-sm text-dark-slate/60 text-center">
-        Already have an account?{" "}
+        {t("alreadyHaveAccount")}{" "}
         <Link href="/login" className="text-coral hover:text-seagrass underline underline-offset-4">
-          Log in →
+          {t("logInLink")}
         </Link>
       </p>
     </div>

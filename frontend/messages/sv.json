@@ -41,7 +41,11 @@
     "suggestions": "Ge förbättringsförslag",
     "exploreTitle": "Utforska",
     "foundationBlurb": "Goodtribes är en ideell stiftelse som verkar för en långsiktigt hållbar miljö- och samhällsutveckling. Stiftelsen driver Goodtribes.org för att hjälpa människor och organisationer som vill göra världen bättre.",
-    "copyrightNote": "Alla projekt bidrar till Agenda 2030"
+    "copyrightNote": "Alla projekt bidrar till Agenda 2030",
+    "servicesTitle": "Tjänster",
+    "servicesBlurb": "Utforska plattformens funktioner och sätt att bidra.",
+    "organisationTitle": "Organisation",
+    "organisationBlurb": "Allt du behöver veta om stiftelsen bakom GoodTribes.org."
   },
   "Install": {
     "prompt": "Installera GoodTribes för snabbare åtkomst, även offline.",
@@ -109,5 +113,22 @@
     "claimErrorAlreadyClaimed": "Någon annan tog just den här uppgiften.",
     "claimErrorMember": "Medlemmar väljer ansvarig via kortets redigeringsläge.",
     "abandonErrorNotYours": "Det här är inte din uppgift att lämna tillbaka."
+  },
+  "Auth": {
+    "loginTitle": "Logga in",
+    "loginSubtitle": "Ange din e-postadress så skickar vi en inloggningslänk.",
+    "signupTitle": "Skapa ditt konto",
+    "signupSubtitle": "Ange din e-postadress så skickar vi en aktiveringslänk.",
+    "emailLabel": "E-postadress",
+    "sendLoginLink": "Skicka inloggningslänk",
+    "sendActivationLink": "Skicka aktiveringslänk",
+    "sending": "Skickar…",
+    "genericError": "Något gick fel. Försök igen.",
+    "sentMessage": "Vi har skickat en inloggningslänk till {email}. Klicka på den för att logga in.",
+    "wrongAddress": "Fel adress? Försök igen",
+    "newHere": "Ny här?",
+    "createAccountLink": "Skapa konto →",
+    "alreadyHaveAccount": "Har du redan ett konto?",
+    "logInLink": "Logga in →"
   }
 }

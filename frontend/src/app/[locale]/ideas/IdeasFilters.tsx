@@ -3,17 +3,31 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+// Idea.category is its own set (distinct from @/lib/categories, which backs
+// Project/Organisation) — values stay English since they're the actual
+// stored/filtered-by value; only the visible label is Swedish.
 const CATEGORIES = [
   "Technology", "Environment", "Education", "Health",
   "Community", "Policy", "Arts & Culture", "Economy",
 ];
 
+const CATEGORY_LABELS: Record<string, string> = {
+  Technology: "Teknik",
+  Environment: "Miljö",
+  Education: "Utbildning",
+  Health: "Hälsa",
+  Community: "Community",
+  Policy: "Policy",
+  "Arts & Culture": "Kultur",
+  Economy: "Ekonomi",
+};
+
 const SDG_LABELS: Record<number, string> = {
-  1:"No Poverty",2:"Zero Hunger",3:"Good Health",4:"Quality Education",
-  5:"Gender Equality",6:"Clean Water",7:"Clean Energy",8:"Decent Work",
-  9:"Industry & Innovation",10:"Reduced Inequalities",11:"Sustainable Cities",
-  12:"Responsible Consumption",13:"Climate Action",14:"Life Below Water",
-  15:"Life on Land",16:"Peace & Justice",17:"Partnerships",
+  1: "Ingen fattigdom", 2: "Ingen hunger", 3: "God hälsa", 4: "God utbildning",
+  5: "Jämställdhet", 6: "Rent vatten", 7: "Hållbar energi", 8: "Anständiga arbetsvillkor",
+  9: "Hållbar industri", 10: "Minskad ojämlikhet", 11: "Hållbara städer",
+  12: "Hållbar konsumtion", 13: "Bekämpa klimatförändringarna", 14: "Hav och marina resurser",
+  15: "Ekosystem och biologisk mångfald", 16: "Fredliga samhällen", 17: "Globalt partnerskap",
 };
 
 interface Props {
@@ -44,9 +58,9 @@ export default function IdeasFilters({ sort, category, region, sdg, status, tota
       {/* Sort */}
       <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
         {[
-          { value: "new", label: "New" },
-          { value: "top", label: "Top" },
-          { value: "trending", label: "Trending" },
+          { value: "new", label: "Nya" },
+          { value: "top", label: "Topp" },
+          { value: "trending", label: "Trendar" },
         ].map((s) => (
           <Link
             key={s.value}
@@ -68,8 +82,8 @@ export default function IdeasFilters({ sort, category, region, sdg, status, tota
         onChange={(e) => router.push(buildUrl({ category: e.target.value || undefined, page: undefined }))}
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
-        <option value="">All categories</option>
-        {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+        <option value="">Alla kategorier</option>
+        {CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</option>)}
       </select>
 
       {/* Region */}
@@ -78,10 +92,10 @@ export default function IdeasFilters({ sort, category, region, sdg, status, tota
         onChange={(e) => router.push(buildUrl({ region: e.target.value || undefined, page: undefined }))}
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
-        <option value="">All regions</option>
-        <option value="local">Local</option>
+        <option value="">Alla regioner</option>
+        <option value="local">Lokal</option>
         <option value="regional">Regional</option>
-        <option value="national">National</option>
+        <option value="national">Nationell</option>
         <option value="global">Global</option>
       </select>
 
@@ -91,7 +105,7 @@ export default function IdeasFilters({ sort, category, region, sdg, status, tota
         onChange={(e) => router.push(buildUrl({ sdg: e.target.value || undefined, page: undefined }))}
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
-        <option value="">All SDG goals</option>
+        <option value="">Alla globala mål</option>
         {Array.from({ length: 17 }, (_, i) => i + 1).map((n) => (
           <option key={n} value={n}>SDG {n} — {SDG_LABELS[n]}</option>
         ))}
@@ -102,11 +116,11 @@ export default function IdeasFilters({ sort, category, region, sdg, status, tota
           href={buildUrl({ category: undefined, region: undefined, sdg: undefined, page: undefined })}
           className="text-xs text-dark-slate/50 hover:text-dark-slate underline"
         >
-          Clear filters
+          Rensa filter
         </Link>
       )}
 
-      <span className="ml-auto text-xs text-dark-slate/40">{total} idea{total !== 1 ? "s" : ""}</span>
+      <span className="ml-auto text-xs text-dark-slate/40">{total} {total === 1 ? "idé" : "idéer"}</span>
     </div>
   );
 }

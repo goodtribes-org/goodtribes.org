@@ -102,6 +102,13 @@ export default async function LocaleLayout({
     ...p,
     title: p.locked ? t(p.slug as "about" | "privacy" | "terms") : p.title,
   }));
+  // Split into two footer columns: the fixed about/privacy/terms pages read
+  // as organisational/legal info, custom admin-added pages read as more
+  // product-ish content alongside the other feature links — the underlying
+  // reorder list in FooterPageManager stays a single flat list either way,
+  // this split is purely how it's grouped for display.
+  const organisationPages = footerPages.filter((p) => p.locked);
+  const customFooterPages = footerPages.filter((p) => !p.locked);
 
   return (
     <html lang={locale} className={`bg-white ${inter.className}`}>
@@ -137,7 +144,7 @@ export default async function LocaleLayout({
             </header>
             <main className="max-w-6xl mx-auto px-6 pt-8 pb-12 w-full flex-1 flex flex-col">{children}</main>
             <footer className="border-t border-muted-teal/30 bg-dry-sage/10 shrink-0">
-              <div className="max-w-6xl mx-auto px-6 py-10 grid gap-8 md:grid-cols-2 text-sm">
+              <div className="max-w-6xl mx-auto px-6 py-10 grid gap-8 md:grid-cols-3 text-sm">
                 <div>
                   <Image
                     src="/img/goodtribes-logo.svg"
@@ -149,9 +156,9 @@ export default async function LocaleLayout({
                   />
                   <p className="text-dark-slate/60 leading-relaxed text-xs">{t("foundationBlurb")}</p>
                 </div>
-                <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60 justify-self-end">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <p className="font-semibold text-dark-slate uppercase tracking-wider">{t("exploreTitle")}</p>
+                <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-semibold text-dark-slate uppercase tracking-wider">{t("servicesTitle")}</p>
                     {canEditFooter && (
                       <FooterPageManager
                         pages={footerPages}
@@ -159,21 +166,38 @@ export default async function LocaleLayout({
                       />
                     )}
                   </div>
+                  <p className="text-dark-slate/40 mb-1">{t("servicesBlurb")}</p>
                   <Link href="/hall-of-impact" className="hover:text-dark-slate transition-colors">{t("hallOfImpact")}</Link>
                   <Link href="/shop" className="hover:text-dark-slate transition-colors">{t("shop")}</Link>
                   <Link href="/academy" className="hover:text-dark-slate transition-colors">{t("academy")}</Link>
                   <Link href="/dream-wall" className="hover:text-dark-slate transition-colors">{t("dreamWall")}</Link>
-                  {footerPages.map((p) => (
+                  {customFooterPages.map((p) => (
                     <Link key={p.slug} href={p.href} className="hover:text-dark-slate transition-colors">{p.title}</Link>
                   ))}
-                  <a href="mailto:hej@goodtribes.org" className="hover:text-dark-slate transition-colors">{t("contact")}</a>
                   <Link href="/suggestions" className="hover:text-dark-slate transition-colors">{t("suggestions")}</Link>
+                </nav>
+                <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
+                  <p className="font-semibold text-dark-slate uppercase tracking-wider">{t("organisationTitle")}</p>
+                  <p className="text-dark-slate/40 mb-1">{t("organisationBlurb")}</p>
+                  {organisationPages.map((p) => (
+                    <Link key={p.slug} href={p.href} className="hover:text-dark-slate transition-colors">{p.title}</Link>
+                  ))}
+                  <a href="mailto:Info@goodtribes.org" className="hover:text-dark-slate transition-colors">{t("contact")}</a>
                 </nav>
               </div>
               <div className="border-t border-muted-teal/20">
-                <p className="max-w-6xl mx-auto px-6 py-3 text-[11px] text-dark-slate/40">
-                  © {new Date().getFullYear()} GoodTribes Foundation · {t("copyrightNote")}
-                </p>
+                <div className="max-w-6xl mx-auto px-6 py-3 flex flex-col gap-1 text-[11px] text-dark-slate/40">
+                  <p>© {new Date().getFullYear()} GoodTribes Foundation · {t("copyrightNote")}</p>
+                  {/* Organisational transparency info (Google for Nonprofits requirement) —
+                      locale-invariant facts, hardcoded like the mailto link above rather
+                      than run through t(), same as this file's existing convention. */}
+                  <p>
+                    Stiftelsen GoodTribes · Org.nr 802481-8497 · Högbergsgatan 52, 118 26 Stockholm ·{" "}
+                    <a href="mailto:Info@goodtribes.org" className="hover:text-dark-slate transition-colors underline">
+                      Info@goodtribes.org
+                    </a>
+                  </p>
+                </div>
               </div>
             </footer>
           </UserEventsProvider>

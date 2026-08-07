@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import LoginForm from "./LoginForm";
 
 export default async function LoginPage({
@@ -12,26 +13,25 @@ export default async function LoginPage({
   if (session) redirect("/");
 
   const params = await searchParams;
+  const t = await getTranslations("Auth");
 
   return (
     <div className="max-w-sm mx-auto mt-16">
-      <h1 className="text-2xl font-bold mb-2">Log in</h1>
-      <p className="text-dark-slate/70 mb-8">
-        Enter your email address and we will send you a login link.
-      </p>
+      <h1 className="text-2xl font-bold mb-2">{t("loginTitle")}</h1>
+      <p className="text-dark-slate/70 mb-8">{t("loginSubtitle")}</p>
 
       {params.error && (
         <div className="mb-6 p-3 bg-watermelon/10 border border-watermelon/40 rounded text-sm text-watermelon">
-          Something went wrong. Please try again.
+          {t("genericError")}
         </div>
       )}
 
       <LoginForm callbackUrl={params.callbackUrl ?? "/"} />
 
       <p className="mt-6 text-sm text-dark-slate/60 text-center">
-        New here?{" "}
+        {t("newHere")}{" "}
         <Link href="/signup" className="text-coral hover:text-seagrass underline underline-offset-4">
-          Create account →
+          {t("createAccountLink")}
         </Link>
       </p>
 
