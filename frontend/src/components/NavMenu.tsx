@@ -18,10 +18,8 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
   const [open, setOpen] = useState(false);
   const [create, setCreate] = useState(false);
   const [discover, setDiscover] = useState(false);
-  const [sandbox, setSandbox] = useState(false);
   const createRef = useRef<HTMLDivElement>(null);
   const discoverRef = useRef<HTMLDivElement>(null);
-  const sandboxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -30,9 +28,6 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
       }
       if (discoverRef.current && !discoverRef.current.contains(e.target as Node)) {
         setDiscover(false);
-      }
-      if (sandboxRef.current && !sandboxRef.current.contains(e.target as Node)) {
-        setSandbox(false);
       }
     }
     document.addEventListener("mousedown", onClickOutside);
@@ -103,24 +98,14 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
           )}
         </div>
 
-        {/* Sandbox dropdown (top-level, same rank as Create/Discover) — visually called out as its own separate area of the site */}
-        <div ref={sandboxRef} className="relative">
-          <button
-            onClick={() => setSandbox((v) => !v)}
-            className="flex items-center gap-1 rounded-full ring-1 ring-orange-500 px-3 py-1 font-bold text-coral hover:bg-watermelon hover:text-white transition-colors whitespace-nowrap"
-          >
-            {t("sandbox")}
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`w-3 h-3 mt-0.5 transition-transform ${sandbox ? "rotate-180" : ""}`}>
-              <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-            </svg>
-          </button>
-
-          {sandbox && (
-            <div className="absolute top-full right-0 mt-1 bg-white border border-muted-teal rounded-xl shadow-lg py-1.5 min-w-48 z-50">
-              <a href="/sandbox" onClick={navLink("/sandbox", () => setSandbox(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-watermelon hover:bg-watermelon/10">{t("sandboxHome")}</a>
-            </div>
-          )}
-        </div>
+        {/* Sandbox link (top-level, same rank as Create/Discover) — visually called out as its own separate area of the site */}
+        <a
+          href="/sandbox"
+          onClick={navLink("/sandbox", () => {})}
+          className="flex items-center gap-1 rounded-full ring-1 ring-orange-500 px-3 py-1 font-bold text-coral hover:bg-coral hover:text-white transition-colors whitespace-nowrap"
+        >
+          {t("sandbox")}
+        </a>
       </div>
 
       {/* Mobile hamburger */}
@@ -162,7 +147,7 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
             <a
               href="/sandbox"
               onClick={navLink("/sandbox", () => setOpen(false))}
-              className="self-start mt-3 rounded-full ring-1 ring-orange-500 px-3 py-1 font-bold text-coral hover:bg-watermelon hover:text-white transition-colors"
+              className="self-start mt-3 rounded-full ring-1 ring-orange-500 px-3 py-1 font-bold text-coral hover:bg-coral hover:text-white transition-colors"
             >
               {t("sandbox")}
             </a>
