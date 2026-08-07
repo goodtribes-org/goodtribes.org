@@ -164,14 +164,13 @@ export default async function LocaleLayout({
                     {canEditFooter && (
                       <FooterPageManager
                         pages={footerPages}
-                        lockedLabels={[t("hallOfImpact"), t("shop"), t("academy"), t("dreamWall"), t("contact"), t("suggestions")]}
+                        lockedLabels={[t("hallOfImpact"), t("academy"), t("dreamWall"), t("contact"), t("suggestions")]}
                         locale={locale as Locale}
                       />
                     )}
                   </div>
                   <p className="text-dark-slate/40 mb-1">{t("servicesBlurb")}</p>
                   <Link href="/hall-of-impact" className="hover:text-dark-slate transition-colors">{t("hallOfImpact")}</Link>
-                  <Link href="/shop" className="hover:text-dark-slate transition-colors">{t("shop")}</Link>
                   <Link href="/academy" className="hover:text-dark-slate transition-colors">{t("academy")}</Link>
                   <Link href="/dream-wall" className="hover:text-dark-slate transition-colors">{t("dreamWall")}</Link>
                   {customFooterPages.map((p) => (
