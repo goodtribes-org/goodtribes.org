@@ -67,12 +67,18 @@ export function AttachmentPicker({ projectId, organisationId, disabled, onUpload
         onClick={() => inputRef.current?.click()}
         aria-label="Bifoga fil"
         title="Bifoga fil"
-        className="shrink-0 w-9 h-9 rounded-full text-dark-slate/50 hover:text-seagrass hover:bg-dry-sage/20 flex items-center justify-center transition-colors disabled:opacity-40 mb-1"
+        className="w-8 h-8 shrink-0 rounded-full flex items-center justify-center transition-colors text-dark-slate/50 hover:text-seagrass hover:bg-dry-sage/20 disabled:opacity-40"
       >
         {uploading ? (
           <span className="w-3.5 h-3.5 border-2 border-dark-slate/30 border-t-seagrass rounded-full animate-spin" />
         ) : (
-          "📎"
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-[18px] h-[18px]">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"
+            />
+          </svg>
         )}
       </button>
     </>

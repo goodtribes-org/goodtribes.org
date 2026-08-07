@@ -30,6 +30,15 @@ const btnClass = (active?: boolean) =>
       : "text-dark-slate/60 hover:text-dark-slate hover:bg-dark-slate/10"
   }`;
 
+// Compact composer (chat) uses round ghost icon buttons instead of the full
+// toolbar's rectangular text buttons — same size/shape as AttachmentPicker's
+// and MessageComposer's send button, so the whole input reads as one set of
+// controls rather than a mix of emoji glyphs and differently-shaped buttons.
+export const pillIconBtnClass = (active?: boolean) =>
+  `w-8 h-8 shrink-0 rounded-full flex items-center justify-center transition-colors ${
+    active ? "bg-dark-slate text-white" : "text-dark-slate/50 hover:text-seagrass hover:bg-dry-sage/20"
+  }`;
+
 function Btn({
   onClick,
   active,
@@ -59,6 +68,7 @@ export default function RichTextEditor({
   mentionables,
   collapsibleToolbar,
   onSubmit,
+  trailingControls,
 }: {
   content: string;
   onChange: (html: string) => void;
@@ -66,6 +76,11 @@ export default function RichTextEditor({
   mentionables?: MentionItem[];
   collapsibleToolbar?: boolean;
   onSubmit?: () => void;
+  // Extra controls (attach, send, …) rendered inside the same bordered pill
+  // as the compact composer's own buttons — see MessageComposer, the only
+  // caller that uses collapsibleToolbar — so they read as one control group
+  // instead of a separate row of differently-styled buttons outside the box.
+  trailingControls?: React.ReactNode;
 }) {
   const [showEmoji, setShowEmoji] = useState(false);
   const [showToolbar, setShowToolbar] = useState(!collapsibleToolbar);
@@ -159,40 +174,49 @@ export default function RichTextEditor({
     );
   }
 
-  const emojiPicker = (
-    <div ref={emojiRef} className="relative">
-      <button
-        type="button"
-        onClick={() => setShowEmoji((v) => !v)}
-        title="Infoga emoji"
-        className={btnClass(showEmoji)}
-      >
-        😊
-      </button>
-      {showEmoji && (
-        <div
-          className={`absolute right-0 z-50 shadow-xl rounded-xl overflow-hidden ${
-            isPillMode ? "bottom-full mb-1" : "top-full mt-1"
-          }`}
-        >
-          <EmojiPicker
-            data={async () => {
-              const res = await import("@emoji-mart/data");
-              return res.default;
-            }}
-            onEmojiSelect={(emoji: { native: string }) => {
-              editor.chain().focus().insertContent(emoji.native).run();
-              setShowEmoji(false);
-            }}
-            locale="sv"
-            theme="light"
-            previewPosition="none"
-            skinTonePosition="none"
-          />
-        </div>
-      )}
-    </div>
+  function renderEmojiButton(buttonClassName: string, icon: React.ReactNode) {
+    return (
+      <div ref={emojiRef} className="relative">
+        <button type="button" onClick={() => setShowEmoji((v) => !v)} title="Infoga emoji" className={buttonClassName}>
+          {icon}
+        </button>
+        {showEmoji && (
+          <div
+            className={`absolute right-0 z-50 shadow-xl rounded-xl overflow-hidden ${
+              isPillMode ? "bottom-full mb-1" : "top-full mt-1"
+            }`}
+          >
+            <EmojiPicker
+              data={async () => {
+                const res = await import("@emoji-mart/data");
+                return res.default;
+              }}
+              onEmojiSelect={(emoji: { native: string }) => {
+                editor.chain().focus().insertContent(emoji.native).run();
+                setShowEmoji(false);
+              }}
+              locale="sv"
+              theme="light"
+              previewPosition="none"
+              skinTonePosition="none"
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const emojiIcon = (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-[18px] h-[18px]">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z"
+      />
+    </svg>
   );
+
+  const emojiPicker = renderEmojiButton(btnClass(showEmoji), "😊");
 
   const imageUpload = (
     <label className={btnClass()} title="Ladda upp bild (välj från galleri eller kamera)">
@@ -212,16 +236,16 @@ export default function RichTextEditor({
 
   if (isPillMode) {
     return (
-      <div className="flex items-end gap-0.5 rounded-lg border border-gray-300 bg-white pl-3 pr-1 py-1 focus-within:border-seagrass focus-within:ring-1 focus-within:ring-seagrass/30 transition-all">
-        <div className="flex-1 min-w-0">
+      <div className="flex items-end gap-0.5 rounded-2xl border border-gray-300 bg-white pl-3 pr-1 py-1 focus-within:border-seagrass focus-within:ring-1 focus-within:ring-seagrass/30 transition-all">
+        <div className="flex-1 min-w-0 py-0.5">
           <EditorContent editor={editor} />
         </div>
-        <div className="flex items-center gap-0.5 shrink-0 pb-0.5">
-          <Btn onClick={() => setShowToolbar(true)} title="Formatera text">
-            Aa
-          </Btn>
-          {imageUpload}
-          {emojiPicker}
+        <div className="flex items-center gap-0.5 shrink-0">
+          <button type="button" onClick={() => setShowToolbar(true)} title="Formatera text" className={pillIconBtnClass()}>
+            <span className="text-[13px] font-bold">Aa</span>
+          </button>
+          {renderEmojiButton(pillIconBtnClass(showEmoji), emojiIcon)}
+          {trailingControls}
         </div>
       </div>
     );
