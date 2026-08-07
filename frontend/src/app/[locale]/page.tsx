@@ -151,32 +151,23 @@ export default async function HomePage({
     prisma.onboardingStep.findMany({ where: { locale }, orderBy: { order: "asc" } }),
   ]);
 
-  // Falls back to the site's default locale's editorial content rather than
-  // showing a blank hero/heading/onboarding bar the first time a non-default
-  // locale hasn't been translated by a site admin yet.
-  let finalHeroSlides = heroSlides;
-  let finalHeroSettings = heroSettings;
+  // Onboarding steps fall back to the site's default locale's editorial
+  // content rather than showing a blank bar the first time a non-default
+  // locale hasn't been translated by a site admin yet. The hero heading and
+  // slides do NOT get this cross-locale fallback — unlike the onboarding
+  // bar, the hero already has a locale-correct hardcoded default (below),
+  // so falling back to a different locale's real, admin-authored text would
+  // silently show Swedish copy on the English homepage forever, with no
+  // signal to a site admin that a translation is still needed.
   let finalOnboardingSteps = onboardingSteps;
-  if (locale !== routing.defaultLocale) {
-    const [fallbackSlides, fallbackSettings, fallbackSteps] = await Promise.all([
-      finalHeroSlides.length === 0
-        ? prisma.homeHeroSlide.findMany({ where: { locale: routing.defaultLocale }, orderBy: { order: "asc" } })
-        : Promise.resolve(null),
-      finalHeroSettings === null
-        ? prisma.homeHeroSettings.findUnique({ where: { locale: routing.defaultLocale } })
-        : Promise.resolve(null),
-      finalOnboardingSteps.length === 0
-        ? prisma.onboardingStep.findMany({ where: { locale: routing.defaultLocale }, orderBy: { order: "asc" } })
-        : Promise.resolve(null),
-    ]);
-    if (fallbackSlides) finalHeroSlides = fallbackSlides;
-    if (fallbackSettings) finalHeroSettings = fallbackSettings;
-    if (fallbackSteps) finalOnboardingSteps = fallbackSteps;
+  if (locale !== routing.defaultLocale && finalOnboardingSteps.length === 0) {
+    const fallbackSteps = await prisma.onboardingStep.findMany({ where: { locale: routing.defaultLocale }, orderBy: { order: "asc" } });
+    if (fallbackSteps.length) finalOnboardingSteps = fallbackSteps;
   }
 
-  const heroSlidesForStack = finalHeroSlides.map(toHeroSlideData);
+  const heroSlidesForStack = heroSlides.map(toHeroSlideData);
   const canEditHero = userId ? await isSiteAdmin(userId) : false;
-  const heroHeading = finalHeroSettings?.heading ?? (locale === "en" ? "Welcome to GoodTribes" : "Välkommen till GoodTribes");
+  const heroHeading = heroSettings?.heading ?? (locale === "en" ? "Welcome to GoodTribes" : "Välkommen till GoodTribes");
   const onboardingStepsForBar = finalOnboardingSteps.map((s) => ({ id: s.id, order: s.order, label: s.label, href: s.href }));
 
   const totalRaised = pledgeSum._sum.amount ?? 0;

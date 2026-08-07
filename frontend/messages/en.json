@@ -1739,5 +1739,11 @@
     "verificationDescription": "Verified organisations show a badge on their page and in the directory.",
     "unverifyButton": "Remove verification",
     "verifyButton": "Verify"
+  },
+  "HeroPhotoStack": {
+    "addSlideLink": "+ Add hero slide",
+    "previousAria": "Previous",
+    "nextAria": "Next",
+    "editLink": "Edit"
   }
 }

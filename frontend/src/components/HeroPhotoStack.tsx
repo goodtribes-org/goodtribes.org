@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { toProxyUrl } from "@/lib/storageUrl";
 import { heroTintClass } from "@/lib/heroTint";
@@ -51,6 +52,7 @@ export default function HeroPhotoStack({
   heading: string;
   canEdit: boolean;
 }) {
+  const t = useTranslations("HeroPhotoStack");
   const [active, setActive] = useState(0);
   const current = PHOTOS[active];
 
@@ -61,7 +63,7 @@ export default function HeroPhotoStack({
           href="/site-admin/hero-carousel"
           className="border-2 border-dashed border-dark-slate/15 rounded-2xl px-6 py-4 text-sm text-dark-slate/40 hover:text-dark-slate/60 hover:border-dark-slate/25 transition-colors"
         >
-          + Lägg till hero-slide
+          {t("addSlideLink")}
         </Link>
       </div>
     ) : null;
@@ -109,7 +111,7 @@ export default function HeroPhotoStack({
             <button
               type="button"
               onClick={() => setActive((active - 1 + PHOTOS.length) % PHOTOS.length)}
-              aria-label="Föregående"
+              aria-label={t("previousAria")}
               className="absolute -left-2 md:-left-14 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md ring-1 ring-black/5 flex items-center justify-center text-dark-slate/70 hover:text-dark-slate hover:bg-white transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
@@ -119,7 +121,7 @@ export default function HeroPhotoStack({
             <button
               type="button"
               onClick={() => setActive((active + 1) % PHOTOS.length)}
-              aria-label="Nästa"
+              aria-label={t("nextAria")}
               className="absolute -right-2 md:-right-14 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md ring-1 ring-black/5 flex items-center justify-center text-dark-slate/70 hover:text-dark-slate hover:bg-white transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
@@ -140,7 +142,7 @@ export default function HeroPhotoStack({
                     href="/site-admin/hero-carousel"
                     className="absolute top-3 right-3 z-10 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors bg-white/70 rounded-md px-2 py-1"
                   >
-                    ✎ Redigera
+                    ✎ {t("editLink")}
                   </Link>
                 )}
                 <div className={`h-full md:overflow-y-auto border border-muted-teal/20 px-6 pt-3 pb-5 flex flex-col justify-start ${heroTintClass(current.tintColor, current.tintOpacity)}`}>

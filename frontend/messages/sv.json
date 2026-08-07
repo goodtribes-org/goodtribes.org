@@ -1739,5 +1739,11 @@
     "verificationDescription": "Verifierade organisationer visas med en badge på sin sida och i katalogen.",
     "unverifyButton": "Ta bort verifiering",
     "verifyButton": "Verifiera"
+  },
+  "HeroPhotoStack": {
+    "addSlideLink": "+ Lägg till hero-slide",
+    "previousAria": "Föregående",
+    "nextAria": "Nästa",
+    "editLink": "Redigera"
   }
 }
