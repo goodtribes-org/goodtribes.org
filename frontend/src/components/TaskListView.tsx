@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import type { Member } from "@/components/KanbanBoard";
 import { TokenPayoutDialog } from "./TokenPayoutDialog";
 import type { MoveOverrides } from "@/lib/kanbanMove";
@@ -11,7 +12,8 @@ import {
   toggleSubtask,
 } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
 import GithubCardMeta from "@/components/GithubCardMeta";
-import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/kanbanCategories";
+import { CATEGORY_LABEL_KEYS, CATEGORY_ORDER } from "@/lib/kanbanCategories";
+import { COLUMN_LABEL_KEYS } from "@/lib/kanbanColumns";
 
 type Subtask = {
   id: string;
@@ -60,11 +62,11 @@ type Columns = {
 };
 
 const COLUMN_DEFS = [
-  { key: "BACKLOG", label: "Wishlist",    color: "#8b5cf6" },
-  { key: "TODO",    label: "Att göra",    color: "#f59e0b" },
-  { key: "DOING",   label: "Pågår",       color: "#3b82f6" },
-  { key: "REVIEW",  label: "Granskning",  color: "#6b7280" },
-  { key: "DONE",    label: "Klart",       color: "#10b981" },
+  { key: "BACKLOG", color: "#8b5cf6" },
+  { key: "TODO",    color: "#f59e0b" },
+  { key: "DOING",   color: "#3b82f6" },
+  { key: "REVIEW",  color: "#6b7280" },
+  { key: "DONE",    color: "#10b981" },
 ];
 
 const PRIORITY_DOT: Record<string, string> = {
@@ -96,6 +98,7 @@ export default function TaskListView({
   isLead: boolean;
   members: Member[];
 }) {
+  const tShared = useTranslations("KanbanShared");
   const [columns, setColumns] = useState<Columns>(initialColumns);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ DONE: true });
   const [addingInColumn, setAddingInColumn] = useState<string | null>(null);
@@ -160,7 +163,7 @@ export default function TaskListView({
       {COLUMN_DEFS.map((col) => (
         <SectionGroup
           key={col.key}
-          col={col}
+          col={{ ...col, label: tShared(COLUMN_LABEL_KEYS[col.key]) }}
           cards={columns[col.key as keyof Columns]}
           isLoggedIn={isLoggedIn}
           currentUserId={currentUserId}
@@ -228,6 +231,7 @@ function SectionGroup({
   onRequestDonePayout: (card: Card) => void;
   projectSlug: string;
 }) {
+  const t = useTranslations("TaskListView");
   const [, startTransition] = useTransition();
 
   return (
@@ -307,7 +311,7 @@ function SectionGroup({
                 className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-seagrass py-1.5 mt-1 transition-colors"
               >
                 <span className="text-base leading-none">+</span>
-                Lägg till uppgift
+                {t("addTaskButton")}
               </button>
             )
           )}
@@ -332,6 +336,7 @@ function TaskRow({
   onCheck: () => void;
   onDelete: () => void;
 }) {
+  const t = useTranslations("TaskListView");
   const isDone = card.column === "DONE";
   const due = formatDate(card.dueDate);
   const priorityDot = PRIORITY_DOT[card.priority] ?? "bg-gray-300";
@@ -359,7 +364,7 @@ function TaskRow({
                 ? "border-gray-300 hover:border-seagrass"
                 : "border-gray-200 cursor-default"
           }`}
-          aria-label={isDone ? "Markera som ej klar" : "Markera som klar"}
+          aria-label={isDone ? t("markAsNotDoneAria") : t("markAsDoneAria")}
         >
           {isDone && (
             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -405,7 +410,7 @@ function TaskRow({
           <button
             onClick={() => setExpanded((e) => !e)}
             className="text-gray-300 hover:text-gray-500 shrink-0 transition-colors"
-            aria-label={expanded ? "Dölj deluppgifter" : "Visa deluppgifter"}
+            aria-label={expanded ? t("hideSubtasksAria") : t("showSubtasksAria")}
           >
             <svg className={`w-4 h-4 transition-transform ${expanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -417,7 +422,7 @@ function TaskRow({
           <button
             onClick={onDelete}
             className="text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-lg leading-none"
-            aria-label="Ta bort uppgift"
+            aria-label={t("deleteTaskAria")}
           >
             ×
           </button>
@@ -469,6 +474,8 @@ function InlineAddRow({
   onAdd: (card: Card) => void;
   onClose: () => void;
 }) {
+  const t = useTranslations("TaskListView");
+  const tShared = useTranslations("KanbanShared");
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [subtasks, setSubtasks] = useState<string[]>([]);
@@ -537,20 +544,20 @@ function InlineAddRow({
             if (e.key === "Enter") { e.preventDefault(); subtaskInputRef.current?.focus(); }
             if (e.key === "Escape") onClose();
           }}
-          placeholder="Uppgiftsnamn..."
+          placeholder={t("taskNamePlaceholder")}
           className="flex-1 text-sm bg-transparent border-0 outline-none placeholder-gray-400 text-gray-800"
         />
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          title={!category ? "Kategori krävs för att kunna lägga till uppgiften" : undefined}
+          title={!category ? t("categoryRequiredTitle") : undefined}
           className={`text-xs border rounded-md px-1.5 py-1 bg-white focus:outline-none focus:border-blue-400 ${
             category ? "border-gray-200 text-gray-600" : "border-red-300 text-red-500"
           }`}
         >
-          <option value="" disabled>Kategori *</option>
+          <option value="" disabled>{t("categoryOption")}</option>
           {CATEGORY_ORDER.map((key) => (
-            <option key={key} value={key}>{CATEGORY_META[key].label}</option>
+            <option key={key} value={key}>{tShared(CATEGORY_LABEL_KEYS[key])}</option>
           ))}
         </select>
       </div>
@@ -577,7 +584,7 @@ function InlineAddRow({
             if (e.key === "Enter") { e.preventDefault(); addSubtask(); }
             if (e.key === "Escape") onClose();
           }}
-          placeholder="Lägg till deluppgift..."
+          placeholder={t("addSubtaskPlaceholder")}
           className="flex-1 text-xs bg-transparent border-0 border-b border-gray-200 focus:border-blue-400 outline-none placeholder-gray-400 text-gray-700 py-0.5"
         />
         <button type="button" onClick={addSubtask} disabled={!subtaskInput.trim()} className="text-blue-500 hover:text-blue-700 disabled:opacity-30 text-xs font-bold px-1">+</button>
@@ -587,16 +594,16 @@ function InlineAddRow({
         <button
           onClick={submit}
           disabled={!title.trim() || !category}
-          title={!category ? "Välj en kategori för att kunna lägga till uppgiften" : undefined}
+          title={!category ? t("selectCategoryTitle") : undefined}
           className="text-xs font-medium bg-seagrass text-white px-3 py-1 rounded-md hover:bg-seagrass/80 disabled:opacity-40 transition-colors"
         >
-          Lägg till
+          {t("addButton")}
         </button>
         <button
           onClick={onClose}
           className="text-xs font-medium text-gray-500 px-3 py-1 rounded-md hover:bg-gray-100 transition-colors"
         >
-          Avbryt
+          {t("cancelButton")}
         </button>
       </div>
     </div>

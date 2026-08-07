@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import type { useTranslations } from "next-intl";
 import { toProxyUrl } from "@/lib/storageUrl";
 import { PRIORITY_TOKEN_VALUES } from "@/lib/priorityTokens";
 
@@ -101,17 +102,27 @@ export const PRIORITY_META: Record<string, { label: string; color: string; dot: 
   showstopper: { label: "Showstopper", color: "text-gray-900", dot: "bg-gray-900", bottomHex: "#111827", tokenValue: PRIORITY_TOKEN_VALUES.showstopper },
 };
 
+// `label` above stays the raw stored value; consumers should call
+// t(PRIORITY_LABEL_KEYS[key]) via the "KanbanShared" namespace for display.
+export const PRIORITY_LABEL_KEYS: Record<string, string> = {
+  low: "priorityLow",
+  normal: "priorityNormal",
+  high: "priorityHigh",
+  urgent: "priorityUrgent",
+  showstopper: "priorityShowstopper",
+};
+
 // Defined in @/lib/kanbanColumns so server code can share them; re-exported here
 // because every board component imports them from this module.
 export { COLUMNS, COLUMN_ORDER } from "@/lib/kanbanColumns";
 
-export function timeAgo(date: Date | string): string {
+export function timeAgo(date: Date | string, t: ReturnType<typeof useTranslations>): string {
   const d = typeof date === "string" ? new Date(date) : date;
   const diff = Math.floor((Date.now() - d.getTime()) / 1000);
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} h ago`;
-  return `${Math.floor(diff / 86400)} d ago`;
+  if (diff < 60) return t("timeSecondsAgo", { seconds: diff });
+  if (diff < 3600) return t("timeMinutesAgo", { minutes: Math.floor(diff / 60) });
+  if (diff < 86400) return t("timeHoursAgo", { hours: Math.floor(diff / 3600) });
+  return t("timeDaysAgo", { days: Math.floor(diff / 86400) });
 }
 
 export function formatDate(date: Date | string | null): string | null {

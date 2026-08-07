@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import { updateWikiPage, deleteWikiPage, getDescendantIds } from "../actions";
 import WikiEditor from "./WikiEditor";
 import WikiSidebar from "../WikiSidebar";
@@ -17,13 +18,16 @@ import { sanitizeHtml } from "@/lib/sanitizeHtml";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string; pageSlug: string }> }): Promise<Metadata> {
   const { locale, slug, pageSlug } = await params;
-  const page = await prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: pageSlug } } });
-  const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
+  const [page, project, t] = await Promise.all([
+    prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: pageSlug } } }),
+    prisma.project.findUnique({ where: { slug }, select: { title: true } }),
+    getTranslations({ locale, namespace: "WikiPageDetail" }),
+  ]);
   if (!page || !project) return {};
   return buildMetadata({
     locale,
     path: `/projects/${slug}/wiki/${pageSlug}`,
-    title: `${page.title} — ${project.title} Wiki`,
+    title: t("pageTitle", { pageTitle: page.title, projectTitle: project.title }),
     description: page.content.slice(0, 160),
   });
 }
@@ -53,7 +57,7 @@ function renderMarkdown(content: string): string {
 export default async function WikiPageView({ params }: { params: Promise<{ locale: string; slug: string; pageSlug: string }> }) {
   const { locale, slug, pageSlug } = await params;
 
-  const [project, page, session] = await Promise.all([
+  const [project, page, session, t] = await Promise.all([
     prisma.project.findUnique({
       where: { slug },
       include: { wikiPages: { where: { hiddenAt: null }, orderBy: { order: "asc" }, select: { id: true, slug: true, title: true, parentId: true } } },
@@ -63,6 +67,7 @@ export default async function WikiPageView({ params }: { params: Promise<{ local
       include: { updatedBy: { select: { name: true } } },
     }),
     auth(),
+    getTranslations({ locale, namespace: "WikiPageDetail" }),
   ]);
 
   if (!project || !page) notFound();
@@ -93,9 +98,9 @@ export default async function WikiPageView({ params }: { params: Promise<{ local
       <aside className="w-44 shrink-0">
         <div className="mb-3">
           <Link href={`/projects/${slug}`} className="text-xs text-dark-slate/40 hover:text-dark-slate">
-            ← {project.title}
+            {t("backToProject", { title: project.title })}
           </Link>
-          <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-wider mt-3 mb-2">Wiki</p>
+          <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-wider mt-3 mb-2">{t("sidebarHeading")}</p>
         </div>
         <WikiSidebar
           projectSlug={slug}
@@ -129,7 +134,7 @@ export default async function WikiPageView({ params }: { params: Promise<{ local
         />
         {page.updatedBy && (
           <p className="text-xs text-dark-slate/30 mt-6">
-            Last edited by {page.updatedBy.name}
+            {t("lastEditedBy", { name: page.updatedBy.name ?? t("unknownUser") })}
           </p>
         )}
 

@@ -25,6 +25,7 @@ import GithubCardMeta, { isGithubCard } from "@/components/GithubCardMeta";
 import {
   CATEGORY_META,
   PRIORITY_META,
+  PRIORITY_LABEL_KEYS,
   COLUMNS,
   timeAgo,
   toDateInput,
@@ -33,6 +34,7 @@ import {
   type Member,
   type Subtask,
 } from "./kanbanShared";
+import { CATEGORY_LABEL_KEYS } from "@/lib/kanbanCategories";
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
@@ -66,6 +68,8 @@ function CardDetailModalImpl({
   onAdd?: (card: Card) => void;
 }) {
   const t = useTranslations("Kanban");
+  const tCard = useTranslations("KanbanCardModal");
+  const tShared = useTranslations("KanbanShared");
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description ?? "");
   const [priority, setPriority] = useState(card.priority);
@@ -186,7 +190,7 @@ function CardDetailModalImpl({
         startDate || undefined,
         subtaskTitles.length ? subtaskTitles : undefined,
         category || undefined,
-      ).catch(() => alert("Kunde inte skapa kortet. Försök igen."));
+      ).catch(() => alert(tCard("createCardError")));
     } else {
       startTransition(async () => {
         try {
@@ -258,7 +262,7 @@ function CardDetailModalImpl({
       const result = await deleteSubtask(s.id);
       if (result && "error" in result) {
         setLocalSubtasks((prev) => [...prev, s]);
-        alert("Kunde inte ta bort deluppgiften. Du måste vara den som skapade kortet, admin eller founder.");
+        alert(tCard("deleteSubtaskError"));
       }
     }
   }
@@ -305,7 +309,7 @@ function CardDetailModalImpl({
     } else if (result && "error" in result) {
       setCommentError(
         result.error === "Not a project member"
-          ? "Du måste vara medlem i projektet för att kommentera."
+          ? tCard("commentMemberRequiredError")
           : result.error
       );
     }
@@ -335,15 +339,15 @@ function CardDetailModalImpl({
       <div className="relative bg-white w-full max-w-2xl max-h-[90vh] shadow-2xl flex flex-col rounded-xl mx-4">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100 shrink-0">
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{isNew ? "Nytt kort" : columnLabel}</span>
-          <button onClick={onClose} aria-label="Stäng" className="text-gray-400 hover:text-gray-700 transition-colors text-xl leading-none">×</button>
+          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{isNew ? tCard("newCardBadge") : columnLabel}</span>
+          <button onClick={onClose} aria-label={tCard("closeAria")} className="text-gray-400 hover:text-gray-700 transition-colors text-xl leading-none">×</button>
         </div>
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto px-6 pt-3 pb-5 space-y-1">
           {isGithub && (
             <div className="rounded-lg bg-dark-slate/5 px-3 py-2 mb-2 text-xs text-dark-slate/70">
-              Speglas från GitHub och uppdateras automatiskt — ändringar görs i repot.
+              {tCard("githubMirroredNotice")}
               <GithubCardMeta card={card} />
             </div>
           )}
@@ -355,12 +359,12 @@ function CardDetailModalImpl({
             disabled={!canEdit}
             rows={1}
             className="w-full text-lg font-semibold text-gray-900 resize-none border-0 border-b border-transparent hover:border-gray-200 focus:border-blue-400 outline-none bg-transparent placeholder-gray-300 focus:ring-0 leading-tight transition-colors"
-            placeholder="Kortets titel"
+            placeholder={tCard("titlePlaceholder")}
           />
 
           {/* Metadata grid */}
           <div className="grid grid-cols-[7rem_1fr] gap-y-3 gap-x-3 text-sm">
-            <span className="text-gray-400 pt-1">Prioritet</span>
+            <span className="text-gray-400 pt-1">{tCard("priorityLabel")}</span>
             {isLead ? (
               <div>
                 <select
@@ -370,29 +374,29 @@ function CardDetailModalImpl({
                   className="border border-gray-200 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:border-blue-400 bg-white disabled:opacity-60"
                 >
                   {Object.entries(PRIORITY_META).map(([k, v]) => (
-                    <option key={k} value={k}>{v.label} ({v.tokenValue} tokens)</option>
+                    <option key={k} value={k}>{tCard("priorityOptionTokens", { label: tShared(PRIORITY_LABEL_KEYS[k]), tokens: v.tokenValue })}</option>
                   ))}
                 </select>
                 {card.priorityLockedAt && !isNew && (
                   <p className="text-xs text-gray-400 mt-1">
-                    Kortet har påbörjats — ändras prioriteten uppdateras tokenvärdet för nästa gång kortet blir klart.
+                    {tCard("priorityLockedNotice")}
                   </p>
                 )}
               </div>
             ) : card.priorityLockedAt && !isNew ? (
-              <div className="flex items-center gap-1.5 text-sm text-gray-500 pt-1" title="Prioriteten är låst för icke-ledare — kortet har påbörjats">
+              <div className="flex items-center gap-1.5 text-sm text-gray-500 pt-1" title={tCard("priorityLockedTooltip")}>
                 <svg className="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
-                <span>{PRIORITY_META[priority]?.label ?? priority} ({card.lockedTokenValue ?? PRIORITY_META[priority]?.tokenValue} tokens, låst)</span>
+                <span>{tCard("priorityLockedDisplay", { label: PRIORITY_META[priority] ? tShared(PRIORITY_LABEL_KEYS[priority]) : priority, tokens: card.lockedTokenValue ?? PRIORITY_META[priority]?.tokenValue })}</span>
               </div>
             ) : (
               <p className="text-sm text-gray-400 pt-1">
-                {PRIORITY_META[priority]?.label ?? priority} ({PRIORITY_META[priority]?.tokenValue} tokens)
+                {tCard("priorityDisplay", { label: PRIORITY_META[priority] ? tShared(PRIORITY_LABEL_KEYS[priority]) : priority, tokens: PRIORITY_META[priority]?.tokenValue })}
               </p>
             )}
 
-            <span className="text-gray-400 pt-2">Kategori{isNew && <span className="text-red-400"> *</span>}</span>
+            <span className="text-gray-400 pt-2">{tCard("categoryLabel")}{isNew && <span className="text-red-400"> {tCard("categoryRequiredMark")}</span>}</span>
             <div>
             <div className="flex flex-wrap gap-1.5">
               {!isNew && (
@@ -403,7 +407,7 @@ function CardDetailModalImpl({
                     !category ? "border-gray-400 bg-gray-100 text-gray-600" : "border-gray-200 text-gray-400 hover:border-gray-300"
                   }`}
                 >
-                  Ingen
+                  {tCard("categoryNone")}
                 </button>
               )}
               {Object.entries(CATEGORY_META).map(([key, meta]) => (
@@ -416,16 +420,16 @@ function CardDetailModalImpl({
                     category === key ? "" : "border-gray-200 text-gray-400 hover:border-gray-300"
                   }`}
                 >
-                  {meta.label}
+                  {tShared(CATEGORY_LABEL_KEYS[key])}
                 </button>
               ))}
             </div>
             {isNew && !category && (
-              <p className="text-xs text-red-400 mt-1">Välj en kategori för att kunna skapa kortet.</p>
+              <p className="text-xs text-red-400 mt-1">{tCard("categoryRequiredHint")}</p>
             )}
             </div>
 
-            <span className="text-gray-400 pt-1">Ansvarig</span>
+            <span className="text-gray-400 pt-1">{tCard("assigneeLabel")}</span>
             {isMember || isNew ? (
               <select
                 value={assigneeId}
@@ -433,7 +437,7 @@ function CardDetailModalImpl({
                 disabled={!canEdit}
                 className="border border-gray-200 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:border-blue-400 bg-white disabled:opacity-60"
               >
-                <option value="">— ingen —</option>
+                <option value="">{tCard("assigneeNoneOption")}</option>
                 {members.map((m) => (
                   <option key={m.id} value={m.id}>{m.name ?? m.id}</option>
                 ))}
@@ -490,7 +494,7 @@ function CardDetailModalImpl({
               </>
             )}
 
-            <span className="text-gray-400 pt-1">Startdatum</span>
+            <span className="text-gray-400 pt-1">{tCard("startDateLabel")}</span>
             <input
               type="date"
               value={startDate}
@@ -499,7 +503,7 @@ function CardDetailModalImpl({
               className="border border-gray-200 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:border-blue-400 disabled:opacity-60"
             />
 
-            <span className="text-gray-400 pt-1">Slutdatum</span>
+            <span className="text-gray-400 pt-1">{tCard("dueDateLabel")}</span>
             <input
               type="date"
               value={dueDate}
@@ -511,7 +515,7 @@ function CardDetailModalImpl({
 
           {/* Description */}
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Beskrivning</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{tCard("descriptionLabel")}</p>
             {canEdit ? (
               <RichTextEditor content={description} onChange={setDescription} />
             ) : description ? (
@@ -520,14 +524,14 @@ function CardDetailModalImpl({
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(description) }}
               />
             ) : (
-              <p className="text-sm text-gray-300 italic">Ingen beskrivning</p>
+              <p className="text-sm text-gray-300 italic">{tCard("descriptionEmpty")}</p>
             )}
           </div>
 
           {/* Subtasks */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Deluppgifter</p>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{tCard("subtasksLabel")}</p>
               <div className="flex items-center gap-3">
                 {localSubtasks.length > 0 && canEdit && !isNew && (
                   <button
@@ -537,9 +541,9 @@ function CardDetailModalImpl({
                       eligible.forEach((s) => handlePromoteSubtask(s));
                     }}
                     className="text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors"
-                    title="Gör om alla deluppgifter till egna kanban-kort"
+                    title={tCard("convertAllToCardsTitle")}
                   >
-                    Gör om alla till kort
+                    {tCard("convertAllToCardsButton")}
                   </button>
                 )}
                 {localSubtasks.length > 0 && (
@@ -564,7 +568,7 @@ function CardDetailModalImpl({
                       <button
                         type="button"
                         onClick={() => canEdit && handleToggle(s)}
-                        aria-label={s.done ? "Markera som inte klar" : "Markera som klar"}
+                        aria-label={s.done ? tCard("subtaskMarkNotDoneAria") : tCard("subtaskMarkDoneAria")}
                         className={`w-4 h-4 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"} ${canEdit ? "cursor-pointer" : "cursor-default"}`}
                       >
                         {s.done && (
@@ -594,7 +598,7 @@ function CardDetailModalImpl({
                         <button
                           type="button"
                           onClick={() => setSubtaskMenuOpen(subtaskMenuOpen === s.id ? null : s.id)}
-                          aria-label="Fler alternativ"
+                          aria-label={tCard("subtaskMoreOptionsAria")}
                           className="opacity-0 group-hover/sub:opacity-100 text-gray-400 hover:text-gray-700 transition-opacity px-1 text-base leading-none"
                         >
                           •••
@@ -610,7 +614,7 @@ function CardDetailModalImpl({
                               onClick={() => { setEditingSubtaskId(s.id); setEditingSubtaskTitle(s.title); setSubtaskMenuOpen(null); }}
                               className="w-full text-left text-sm px-3 py-1.5 text-gray-700 hover:bg-gray-50 transition-colors"
                             >
-                              Ändra
+                              {tCard("subtaskEdit")}
                             </button>
                             {canDeleteSubtask(s) && (
                               <button
@@ -618,7 +622,7 @@ function CardDetailModalImpl({
                                 onClick={() => { handleDeleteSubtask(s); setSubtaskMenuOpen(null); }}
                                 className="w-full text-left text-sm px-3 py-1.5 text-red-500 hover:bg-red-50 transition-colors"
                               >
-                                Ta bort
+                                {tCard("subtaskDelete")}
                               </button>
                             )}
                             {!isNew && !s.id.startsWith("temp-") && (
@@ -627,7 +631,7 @@ function CardDetailModalImpl({
                                 onClick={() => { handlePromoteSubtask(s); setSubtaskMenuOpen(null); }}
                                 className="w-full text-left text-sm px-3 py-1.5 text-gray-700 hover:bg-gray-50 transition-colors"
                               >
-                                Eget kort
+                                {tCard("subtaskConvertToOwnCard")}
                               </button>
                             )}
                           </div>
@@ -646,14 +650,14 @@ function CardDetailModalImpl({
                   value={newSubtaskInput}
                   onChange={(e) => setNewSubtaskInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddSubtask(); } }}
-                  placeholder="Lägg till deluppgift..."
+                  placeholder={tCard("subtaskAddPlaceholder")}
                   className="flex-1 text-sm border-0 border-b border-gray-200 focus:border-blue-400 outline-none py-1 placeholder-gray-300 text-gray-700"
                 />
                 <button
                   type="button"
                   onClick={handleAddSubtask}
                   disabled={!newSubtaskInput.trim()}
-                  aria-label="Lägg till deluppgift"
+                  aria-label={tCard("subtaskAddAria")}
                   className="text-blue-500 hover:text-blue-700 disabled:opacity-30 font-bold text-lg leading-none"
                 >+</button>
               </div>
@@ -668,12 +672,12 @@ function CardDetailModalImpl({
                 disabled={!isLoggedIn || !canInteractWithCard}
                 title={
                   !isLoggedIn
-                    ? "Logga in för att gilla"
+                    ? tCard("likeTitleLoginRequired")
                     : !canInteractWithCard
-                    ? "Bli medlem i projektet för att gilla"
+                    ? tCard("likeTitleMembershipRequired")
                     : cardLiked
-                    ? "Ta bort gillning"
-                    : "Gilla"
+                    ? tCard("likeTitleRemove")
+                    : tCard("likeTitleAdd")
                 }
                 className={`flex items-center gap-1 text-xs font-medium transition-colors ${
                   cardLiked ? "text-coral" : "text-gray-400 hover:text-coral"
@@ -682,10 +686,10 @@ function CardDetailModalImpl({
                 <svg className="w-4 h-4" fill={cardLiked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
-                Gilla{cardLikeCount > 0 ? ` (${cardLikeCount})` : ""}
+                {cardLikeCount > 0 ? tCard("likeButtonWithCount", { count: cardLikeCount }) : tCard("likeButton")}
               </button>
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Kommentarer{comments.length > 0 ? ` (${comments.length})` : ""}
+                {comments.length > 0 ? tCard("commentsLabelWithCount", { count: comments.length }) : tCard("commentsLabel")}
               </p>
             </div>
 
@@ -694,14 +698,14 @@ function CardDetailModalImpl({
                 {comments.map((c) => (
                   <div key={c.id} className="group bg-gray-50 rounded-lg px-3 py-2">
                     <p className="text-xs">
-                      <span className="font-semibold text-gray-700">{c.author.name ?? "Okänd"}</span>{" "}
-                      <span className="text-gray-400">· {timeAgo(c.createdAt)}</span>
+                      <span className="font-semibold text-gray-700">{c.author.name ?? tCard("commentAuthorUnknown")}</span>{" "}
+                      <span className="text-gray-400">· {timeAgo(c.createdAt, tShared)}</span>
                       {c.authorId === currentUserId && (
                         <button
                           onClick={() => handleDeleteComment(c.id)}
                           className="ml-2 text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                          Ta bort
+                          {tCard("commentDelete")}
                         </button>
                       )}
                     </p>
@@ -718,7 +722,7 @@ function CardDetailModalImpl({
                   value={commentBody}
                   onChange={(e) => setCommentBody(e.target.value)}
                   rows={1}
-                  placeholder="Skriv en kommentar..."
+                  placeholder={tCard("commentPlaceholder")}
                   className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral resize-none"
                 />
                 <button
@@ -726,11 +730,11 @@ function CardDetailModalImpl({
                   disabled={submittingComment || !commentBody.trim()}
                   className="px-4 py-2 bg-coral text-white text-sm font-medium rounded-lg hover:bg-watermelon transition-colors disabled:opacity-50"
                 >
-                  {submittingComment ? "Skickar..." : "Skicka"}
+                  {submittingComment ? tCard("commentSubmitPending") : tCard("commentSubmitButton")}
                 </button>
               </form>
             ) : !isLoggedIn ? (
-              <p className="text-xs text-gray-400">Logga in för att kommentera.</p>
+              <p className="text-xs text-gray-400">{tCard("commentLoginPrompt")}</p>
             ) : (
               <p className="text-xs text-gray-400">{t("commentJoinOrClaim")}</p>
             )}
@@ -744,33 +748,33 @@ function CardDetailModalImpl({
             <button
               onClick={save}
               disabled={!title.trim() || (isNew && !category)}
-              title={isNew && !category ? "Välj en kategori för att kunna skapa kortet" : undefined}
+              title={isNew && !category ? tCard("categoryRequiredTitle") : undefined}
               className="bg-seagrass text-white text-sm font-medium px-5 py-2 rounded-lg hover:bg-seagrass/80 disabled:opacity-40 transition-colors"
             >
-              {isNew ? "Skapa kort" : "Spara"}
+              {isNew ? tCard("saveButtonCreate") : tCard("saveButtonUpdate")}
             </button>
             <button
               onClick={onClose}
               className="text-sm font-medium text-gray-500 px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
             >
-              Avbryt
+              {tCard("cancelButton")}
             </button>
             {canDelete && (
               <div className="ml-auto">
                 {confirmDelete ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500">Är du säker?</span>
+                    <span className="text-xs text-gray-500">{tCard("deleteConfirmPrompt")}</span>
                     <button
                       onClick={() => { onDelete(card.id); onClose(); }}
                       className="text-xs font-medium text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-md transition-colors"
                     >
-                      Ja, ta bort
+                      {tCard("deleteConfirmYes")}
                     </button>
                     <button
                       onClick={() => setConfirmDelete(false)}
                       className="text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors"
                     >
-                      Avbryt
+                      {tCard("cancelButton")}
                     </button>
                   </div>
                 ) : (
@@ -781,7 +785,7 @@ function CardDetailModalImpl({
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
-                    Ta bort
+                    {tCard("deleteButton")}
                   </button>
                 )}
               </div>

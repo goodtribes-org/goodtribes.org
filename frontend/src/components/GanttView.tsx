@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef } from "react";
+import { useTranslations } from "next-intl";
 import {
   DndContext,
   DragEndEvent,
@@ -57,12 +58,12 @@ const LABEL_WIDTH = 220;
 const ROW_H = 36;
 
 const COLUMN_ORDER = ["BACKLOG", "TODO", "DOING", "REVIEW", "DONE"];
-const COLUMN_LABELS: Record<string, string> = {
-  BACKLOG: "Wishlist",
-  TODO: "Att göra",
-  DOING: "Pågående",
-  REVIEW: "Granskning",
-  DONE: "Klart",
+const COLUMN_LABEL_KEYS: Record<string, string> = {
+  BACKLOG: "columnBacklog",
+  TODO: "columnTodo",
+  DOING: "columnDoing",
+  REVIEW: "columnReview",
+  DONE: "columnDone",
 };
 const COLUMN_COLORS: Record<string, string> = {
   BACKLOG: "bg-gray-400",
@@ -72,7 +73,20 @@ const COLUMN_COLORS: Record<string, string> = {
   DONE: "bg-green-500",
 };
 
-const MONTH_NAMES_SV = ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"];
+const MONTH_KEYS = [
+  "monthJan",
+  "monthFeb",
+  "monthMar",
+  "monthApr",
+  "monthMay",
+  "monthJun",
+  "monthJul",
+  "monthAug",
+  "monthSep",
+  "monthOct",
+  "monthNov",
+  "monthDec",
+];
 
 function toDate(d: Date | string | null): Date | null {
   if (!d) return null;
@@ -150,6 +164,7 @@ export default function GanttView({
   onAddDependency,
   onRemoveDependency,
 }: GanttViewProps) {
+  const t = useTranslations("GanttView");
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [unscheduledOpen, setUnscheduledOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<string | null>(null);
@@ -220,7 +235,7 @@ export default function GanttView({
     const spanStart = cursor < rangeStart ? rangeStart : cursor;
     const spanEnd = monthEnd > rangeEnd ? rangeEnd : monthEnd;
     const days = diffDays(spanStart, spanEnd) + 1;
-    monthSpans.push({ label: `${MONTH_NAMES_SV[cursor.getMonth()]} ${cursor.getFullYear()}`, days });
+    monthSpans.push({ label: `${t(MONTH_KEYS[cursor.getMonth()])} ${cursor.getFullYear()}`, days });
     cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
   }
 
@@ -401,7 +416,7 @@ export default function GanttView({
                   style={{ width: LABEL_WIDTH, minWidth: LABEL_WIDTH }}
                   className="shrink-0 sticky left-0 bg-purple-50/60 z-10 border-r border-muted-teal/20 flex items-center px-3"
                 >
-                  <span className="text-xs font-semibold text-purple-700">Milstolpar</span>
+                  <span className="text-xs font-semibold text-purple-700">{t("milestonesRowLabel")}</span>
                 </div>
                 <div className="relative flex-1">
                   {/* Today line */}
@@ -431,7 +446,7 @@ export default function GanttView({
                     style={{ width: LABEL_WIDTH, minWidth: LABEL_WIDTH }}
                     className="shrink-0 sticky left-0 bg-amber-50/60 z-10 border-r border-muted-teal/20 flex items-center px-3"
                   >
-                    <span className="text-xs font-semibold text-amber-700">Todos</span>
+                    <span className="text-xs font-semibold text-amber-700">{t("todoGroupLabel")}</span>
                     <span className="text-xs text-amber-500/60 ml-auto">{scheduledTodos.length}</span>
                   </div>
                   <div className="relative flex-1 bg-amber-50/30">
@@ -493,7 +508,7 @@ export default function GanttView({
                         className="flex items-center gap-1.5 px-3 w-full h-full hover:bg-gray-100/80 transition-colors"
                       >
                         <span className="text-[10px] text-dark-slate/50">{isCollapsed ? "▶" : "▼"}</span>
-                        <span className="text-xs font-semibold text-dark-slate/60">{COLUMN_LABELS[col]}</span>
+                        <span className="text-xs font-semibold text-dark-slate/60">{t(COLUMN_LABEL_KEYS[col])}</span>
                         <span className="text-xs text-dark-slate/30 ml-auto">{colCards.length}</span>
                       </button>
                     </div>
@@ -512,7 +527,7 @@ export default function GanttView({
                         style={{ width: LABEL_WIDTH, minWidth: LABEL_WIDTH }}
                         className="shrink-0 sticky left-0 bg-white z-10 border-r border-muted-teal/20 flex items-center px-3"
                       >
-                        <span className="text-xs text-dark-slate/30">Släpp en uppgift här</span>
+                        <span className="text-xs text-dark-slate/30">{t("emptyColumnDropHint")}</span>
                       </div>
                       <div className="flex-1" style={{ minHeight: ROW_H }} />
                     </div>
@@ -538,7 +553,7 @@ export default function GanttView({
                             {isEditing && isOwnerOrAdmin && (
                               <div className="mt-1.5 space-y-1.5">
                                 <div>
-                                  <label className="text-[10px] text-dark-slate/50 block mb-0.5">Startdatum</label>
+                                  <label className="text-[10px] text-dark-slate/50 block mb-0.5">{t("startDateLabel")}</label>
                                   <input
                                     type="date"
                                     value={editStart}
@@ -547,7 +562,7 @@ export default function GanttView({
                                   />
                                 </div>
                                 <div>
-                                  <label className="text-[10px] text-dark-slate/50 block mb-0.5">Slutdatum</label>
+                                  <label className="text-[10px] text-dark-slate/50 block mb-0.5">{t("endDateLabel")}</label>
                                   <input
                                     type="date"
                                     value={editEnd}
@@ -560,18 +575,18 @@ export default function GanttView({
                                     onClick={() => saveEdit(card.id)}
                                     className="flex-1 bg-coral text-white text-[10px] font-medium py-0.5 rounded hover:bg-watermelon transition-colors"
                                   >
-                                    Spara
+                                    {t("saveButton")}
                                   </button>
                                   <button
                                     onClick={() => setEditingCard(null)}
                                     className="text-[10px] text-dark-slate/40 hover:text-dark-slate px-1.5"
                                   >
-                                    Avbryt
+                                    {t("cancelButton")}
                                   </button>
                                 </div>
                                 {(onAddDependency || onRemoveDependency) && (
                                   <div className="pt-1 border-t border-muted-teal/20">
-                                    <label className="text-[10px] text-dark-slate/50 block mb-0.5">Beror på</label>
+                                    <label className="text-[10px] text-dark-slate/50 block mb-0.5">{t("dependsOnLabel")}</label>
                                     {(card.dependsOnIds ?? []).map((depId) => (
                                       <div key={depId} className="flex items-center gap-1 mb-0.5">
                                         <span className="text-[10px] text-dark-slate truncate flex-1" title={cardById.get(depId)?.title}>
@@ -579,7 +594,7 @@ export default function GanttView({
                                         </span>
                                         <button
                                           onClick={() => onRemoveDependency?.(card.id, depId)}
-                                          aria-label="Ta bort beroende"
+                                          aria-label={t("removeDependencyAriaLabel")}
                                           className="text-[10px] text-dark-slate/30 hover:text-watermelon px-1"
                                         >
                                           ×
@@ -601,7 +616,7 @@ export default function GanttView({
                                       }}
                                       className="w-full border border-muted-teal/40 rounded px-1.5 py-0.5 text-[10px] focus:outline-none focus:ring-1 focus:ring-coral"
                                     >
-                                      <option value="">+ Lägg till...</option>
+                                      <option value="">{t("addDependencyOption")}</option>
                                       {cards
                                         .filter((c) => c.id !== card.id && !(card.dependsOnIds ?? []).includes(c.id))
                                         .map((c) => (
@@ -623,7 +638,7 @@ export default function GanttView({
                             {left !== null && (() => {
                               const tooltipLines = [
                                 card.title,
-                                card.assignee?.name ? `Ansvarig: ${card.assignee.name}` : null,
+                                card.assignee?.name ? t("assigneeTooltipLabel", { name: card.assignee.name }) : null,
                                 card.description ?? null,
                               ].filter((s): s is string => Boolean(s));
                               return (
@@ -658,15 +673,15 @@ export default function GanttView({
       {/* Legend — under Gantt-schemat */}
       <div className="mt-3 flex flex-wrap gap-3 text-xs text-dark-slate/70">
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-purple-500" /> Milstolpe
+          <span className="w-2.5 h-2.5 rounded-full bg-purple-500" /> {t("legendMilestoneLabel")}
         </span>
         {COLUMN_ORDER.map((col) => (
           <span key={col} className="flex items-center gap-1.5">
-            <span className={`w-2.5 h-2.5 rounded-full ${COLUMN_COLORS[col]}`} /> {COLUMN_LABELS[col]}
+            <span className={`w-2.5 h-2.5 rounded-full ${COLUMN_COLORS[col]}`} /> {t(COLUMN_LABEL_KEYS[col])}
           </span>
         ))}
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-400" /> Todo
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-400" /> {t("legendTodoLabel")}
         </span>
       </div>
 
@@ -684,10 +699,10 @@ export default function GanttView({
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
-              Ej schemalagda ({unscheduled.length + unscheduledTodos.length})
+              {t("unscheduledSectionToggle", { count: unscheduled.length + unscheduledTodos.length })}
             </button>
             {unscheduledOpen && unscheduled.length > 0 && (
-              <p className="text-xs text-dark-slate/40 mt-1 mb-2">Dra en uppgift upp i schemat för att schemalägga den.</p>
+              <p className="text-xs text-dark-slate/40 mt-1 mb-2">{t("unscheduledDragHint")}</p>
             )}
             {unscheduledOpen && (
               <div className="space-y-1 mt-2">
@@ -696,7 +711,7 @@ export default function GanttView({
                     key={card.id}
                     card={card}
                     colorClass={COLUMN_COLORS[card.column]}
-                    columnLabel={COLUMN_LABELS[card.column]}
+                    columnLabel={t(COLUMN_LABEL_KEYS[card.column])}
                   />
                 ))}
                 {unscheduledTodos.map((todo) => (
@@ -706,7 +721,7 @@ export default function GanttView({
                   >
                     <span className={`w-2 h-2 rounded-full shrink-0 ${todo.done ? "bg-green-400" : "bg-amber-400"}`} />
                     <span className={`text-sm ${todo.done ? "line-through text-dark-slate/40" : "text-dark-slate"}`}>{todo.title}</span>
-                    <span className="text-xs text-amber-400/70 ml-auto">Todo</span>
+                    <span className="text-xs text-amber-400/70 ml-auto">{t("unscheduledTodoBadge")}</span>
                   </div>
                 ))}
               </div>

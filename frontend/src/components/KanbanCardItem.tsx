@@ -18,18 +18,14 @@ import {
   Avatar,
   CATEGORY_META,
   PRIORITY_META,
+  PRIORITY_LABEL_KEYS,
   formatDate,
   type Card,
   type Subtask,
 } from "./kanbanShared";
+import { CATEGORY_LABEL_KEYS } from "@/lib/kanbanCategories";
 import { KanbanCardComments } from "./KanbanCardComments";
 import GithubCardMeta, { isGithubCard } from "@/components/GithubCardMeta";
-
-const AGENT_OPTIONS = [
-  { value: "writer",     label: "✍️  Skribent — skriver utkast, texter, rapporter" },
-  { value: "analyst",    label: "📊 Analytiker — analyserar och drar slutsatser" },
-  { value: "researcher", label: "🔍 Researcher — söker och sammanställer information" },
-];
 
 function KanbanCardItemImpl({
   card,
@@ -58,7 +54,14 @@ function KanbanCardItemImpl({
   onSubtasksChanged?: (cardId: string, subtasks: Subtask[]) => void;
   onSaved: (cardId: string, patch: Partial<Card>) => void;
 }) {
-  const t = useTranslations("Kanban");
+  const t = useTranslations("KanbanCardItem");
+  const tKanban = useTranslations("Kanban");
+  const tShared = useTranslations("KanbanShared");
+  const AGENT_OPTIONS = [
+    { value: "writer",     label: t("agentOptionWriter") },
+    { value: "analyst",    label: t("agentOptionAnalyst") },
+    { value: "researcher", label: t("agentOptionResearcher") },
+  ];
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: card.id });
   const isClaimant = !!card.openToPublic && !!currentUserId && card.assigneeId === currentUserId;
@@ -90,7 +93,9 @@ function KanbanCardItemImpl({
   const [detailsExpanded, setDetailsExpanded] = useState(false);
 
   const due = formatDate(card.dueDate);
-  const priorityMeta = PRIORITY_META[card.priority] ?? PRIORITY_META.normal;
+  const priorityKey = PRIORITY_META[card.priority] ? card.priority : "normal";
+  const priorityMeta = PRIORITY_META[priorityKey];
+  const priorityLabel = tShared(PRIORITY_LABEL_KEYS[priorityKey]);
 
   const descPreview = (() => {
     if (!card.description) return "";
@@ -134,7 +139,7 @@ function KanbanCardItemImpl({
       const result = await deleteSubtask(s.id);
       if (result && "error" in result) {
         setLocalSubtasks((prev) => [...prev, s]);
-        alert("Kunde inte ta bort deluppgiften. Du måste vara den som skapade kortet, admin eller founder.");
+        alert(t("deleteSubtaskError"));
       }
     }
   }
@@ -175,7 +180,7 @@ function KanbanCardItemImpl({
       className="bg-white border border-b-2 border-gray-200 rounded-lg shadow-[0_2px_6px_rgba(0,0,0,0.25)] group hover:shadow-[0_4px_12px_rgba(0,0,0,0.35)] hover:border-gray-300 transition-all overflow-hidden"
     >
       {categoryHex && (
-        <div className="h-1" style={{ backgroundColor: categoryHex }} title={CATEGORY_META[card.category!].label} />
+        <div className="h-1" style={{ backgroundColor: categoryHex }} title={tShared(CATEGORY_LABEL_KEYS[card.category!])} />
       )}
       <div className="px-2 py-1.5">
         <Tooltip lines={descPreview ? [descPreview] : []} className="flex gap-1.5 items-start">
@@ -184,7 +189,7 @@ function KanbanCardItemImpl({
             <p className="text-xs font-medium text-gray-800 leading-snug truncate">{card.title}</p>
             <GithubCardMeta card={card} compact />
             <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-              <Tooltip lines={[`${priorityMeta.label} (${card.lockedTokenValue ?? priorityMeta.tokenValue} tokens)${card.priorityLockedAt ? " — låst" : ""}`]}>
+              <Tooltip lines={[t("priorityTooltip", { label: priorityLabel, value: card.lockedTokenValue ?? priorityMeta.tokenValue, locked: card.priorityLockedAt ? "true" : "false" })]}>
                 <span className="inline-flex items-center gap-0.5 shrink-0">
                   <span className={`inline-block w-2 h-2 rounded-full ${priorityMeta.dot} shrink-0`} />
                   {card.priorityLockedAt && (
@@ -195,24 +200,24 @@ function KanbanCardItemImpl({
                 </span>
               </Tooltip>
               {card.openToPublic && (
-                <Tooltip lines={[card.assigneeId ? t("openTaskTooltipClaimed") : t("openTaskTooltipUnclaimed")]}>
+                <Tooltip lines={[card.assigneeId ? tKanban("openTaskTooltipClaimed") : tKanban("openTaskTooltipUnclaimed")]}>
                   <span className={`text-[9px] font-medium px-1 py-px rounded shrink-0 whitespace-nowrap ${card.assigneeId ? "bg-gray-100 text-gray-500" : "bg-emerald-100 text-emerald-700"}`}>
-                    {card.assigneeId ? t("openTaskBadgeClaimed") : t("openTaskBadge")}
+                    {card.assigneeId ? tKanban("openTaskBadgeClaimed") : tKanban("openTaskBadge")}
                   </span>
                 </Tooltip>
               )}
               {(card.startDate || card.dueDate) ? (
                 <span className="text-[10px] text-gray-400 shrink-0 whitespace-nowrap">
-                  Dates: {[formatDate(card.startDate ?? null), due].filter(Boolean).join(" – ")}
+                  {t("dateRangeLabel", { range: [formatDate(card.startDate ?? null), due].filter(Boolean).join(" – ") })}
                 </span>
               ) : (
                 <span className="text-[10px] text-gray-400 shrink-0 whitespace-nowrap">
-                  Created: {formatDate(card.createdAt)}
+                  {t("createdLabel", { date: formatDate(card.createdAt) ?? "" })}
                 </span>
               )}
               {localSubtasks.length > 0 && (
                 <span className="text-[10px] text-gray-400 shrink-0 whitespace-nowrap">
-                  {localSubtasks.filter((s) => s.done).length}/{localSubtasks.length} klara
+                  {t("subtasksDoneCount", { done: localSubtasks.filter((s) => s.done).length, total: localSubtasks.length })}
                 </span>
               )}
             </div>
@@ -229,8 +234,8 @@ function KanbanCardItemImpl({
               onClick={(e) => { e.stopPropagation(); onOpenCard(card); }}
               onPointerDown={(e) => e.stopPropagation()}
               className="flex items-center justify-center w-5 h-5 rounded bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
-              title="Ändra"
-              aria-label="Ändra"
+              title={t("editCardButton")}
+              aria-label={t("editCardButton")}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M12 4v16M4 12h16" />
@@ -246,8 +251,8 @@ function KanbanCardItemImpl({
             onClick={(e) => { e.stopPropagation(); setDetailsExpanded((v) => !v); }}
             onPointerDown={(e) => e.stopPropagation()}
             className="flex items-center justify-center w-5 h-5 rounded bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors shrink-0 mt-1"
-            title="Visa detaljer"
-            aria-label="Visa detaljer"
+            title={t("toggleDetailsButton")}
+            aria-label={t("toggleDetailsButton")}
           >
             <svg className={`w-3.5 h-3.5 transition-transform ${detailsExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
@@ -267,7 +272,7 @@ function KanbanCardItemImpl({
               {localSubtasks.length > 0 && (
                 <>
                   <span className={`text-xs font-medium ${localSubtasks.every((s) => s.done) ? "text-green-600" : "text-gray-400"}`}>
-                    {localSubtasks.filter((s) => s.done).length}/{localSubtasks.length} klart
+                    {t("subtasksDoneCountExpanded", { done: localSubtasks.filter((s) => s.done).length, total: localSubtasks.length })}
                   </span>
                   {localSubtasks.map((s) => (
                     <div key={s.id} className="relative flex items-center gap-1.5 group/sub py-0.5">
@@ -283,7 +288,7 @@ function KanbanCardItemImpl({
                             catch { setLocalSubtasks((prev) => prev.map((t) => t.id === s.id ? { ...t, done: s.done, completedById: s.completedById } : t)); }
                           });
                         }}
-                        aria-label={s.done ? "Markera som inte klar" : "Markera som klar"}
+                        aria-label={s.done ? t("markSubtaskIncomplete") : t("markSubtaskComplete")}
                         className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${s.done ? "bg-green-500 border-green-500" : "border-gray-300 group-hover/sub:border-blue-400"} ${!canInteract ? "cursor-default opacity-60" : ""}`}
                       >
                         {s.done && <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
@@ -311,7 +316,7 @@ function KanbanCardItemImpl({
                             setSubtaskMenuPos(subtaskMenuPos?.id === s.id ? null : { id: s.id, x: rect.right, y: rect.bottom });
                           }}
                           onPointerDown={(e) => e.stopPropagation()}
-                          aria-label="Fler alternativ"
+                          aria-label={t("subtaskMoreOptions")}
                           className="opacity-0 group-hover/sub:opacity-100 text-gray-400 hover:text-gray-600 transition-opacity text-xs leading-none px-0.5"
                         >
                           •••
@@ -328,7 +333,7 @@ function KanbanCardItemImpl({
                   onClick={() => setAddingSubtask(true)}
                   className="mt-1 flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-all"
                 >
-                  <span className="text-base leading-none font-light">+</span> Lägg till uppgift
+                  <span className="text-base leading-none font-light">+</span> {t("addSubtaskButton")}
                 </button>
               )}
 
@@ -345,7 +350,7 @@ function KanbanCardItemImpl({
                       if (e.key === "Escape") { setAddingSubtask(false); setNewSubtaskInput(""); }
                     }}
                     onBlur={() => { if (!newSubtaskInput.trim()) setAddingSubtask(false); else handleQuickAddSubtask().then(() => setAddingSubtask(false)); }}
-                    placeholder="Ny uppgift..."
+                    placeholder={t("newSubtaskPlaceholder")}
                     className="flex-1 text-xs border-b border-blue-400 outline-none py-0.5 placeholder-gray-300 bg-transparent text-gray-700"
                   />
                   <button
@@ -353,7 +358,7 @@ function KanbanCardItemImpl({
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={handleQuickAddSubtask}
                     disabled={!newSubtaskInput.trim()}
-                    aria-label="Lägg till deluppgift"
+                    aria-label={t("addSubtaskConfirm")}
                     className="shrink-0 flex items-center justify-center w-4 h-4 rounded bg-blue-500 hover:bg-blue-600 disabled:bg-gray-200 text-white text-xs leading-none font-bold transition-colors"
                   >
                     ✓
@@ -369,14 +374,14 @@ function KanbanCardItemImpl({
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
                       </svg>
-                      AI arbetar…
+                      {t("aiWorking")}
                     </div>
                   ) : aiStatus === "awaiting_review" ? (
                     <a
                       href={`/projects/${card.projectSlug}/ai-review`}
                       className="text-xs text-blue-500 hover:text-blue-700 underline"
                     >
-                      🤖 AI-utkast redo för granskning →
+                      {t("aiDraftReady")}
                     </a>
                   ) : aiPanelOpen ? (
                     <div className="space-y-1.5">
@@ -392,7 +397,7 @@ function KanbanCardItemImpl({
                       <textarea
                         value={additionalContext}
                         onChange={(e) => setAdditionalContext(e.target.value)}
-                        placeholder="Extra kontext till AI:n (valfritt)…"
+                        placeholder={t("aiContextPlaceholder")}
                         rows={2}
                         className="w-full text-xs border border-gray-200 rounded px-1.5 py-1 placeholder-gray-300 bg-transparent text-gray-700 resize-none"
                       />
@@ -402,14 +407,14 @@ function KanbanCardItemImpl({
                           onClick={() => { onRunAI(card.id, selectedAgent, additionalContext); setAiPanelOpen(false); }}
                           className="text-xs font-medium px-2 py-1 rounded bg-coral text-white hover:bg-watermelon transition-colors"
                         >
-                          Kör AI-agent
+                          {t("runAiAgent")}
                         </button>
                         <button
                           type="button"
                           onClick={() => setAiPanelOpen(false)}
                           className="text-xs text-gray-400 hover:text-gray-600"
                         >
-                          Avbryt
+                          {t("cancelButton")}
                         </button>
                       </div>
                     </div>
@@ -419,7 +424,7 @@ function KanbanCardItemImpl({
                       onClick={() => setAiPanelOpen(true)}
                       className="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition-colors"
                     >
-                      🤖 Tilldela AI
+                      {t("assignAiButton")}
                     </button>
                   )}
                 </div>
@@ -439,18 +444,18 @@ function KanbanCardItemImpl({
             className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[120px]"
             style={{ right: window.innerWidth - subtaskMenuPos.x, top: subtaskMenuPos.y + 4 }}
           >
-            <button type="button" onClick={() => { setEditingSubtaskId(s.id); setEditingSubtaskTitle(s.title); setSubtaskMenuPos(null); }} className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50">Ändra</button>
+            <button type="button" onClick={() => { setEditingSubtaskId(s.id); setEditingSubtaskTitle(s.title); setSubtaskMenuPos(null); }} className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50">{t("subtaskEditMenuItem")}</button>
             {canDeleteSubtask(s) && (
-              <button type="button" onClick={() => { handleCardDeleteSubtask(s); setSubtaskMenuPos(null); }} className="w-full text-left text-xs px-3 py-1.5 text-red-500 hover:bg-red-50">Ta bort</button>
+              <button type="button" onClick={() => { handleCardDeleteSubtask(s); setSubtaskMenuPos(null); }} className="w-full text-left text-xs px-3 py-1.5 text-red-500 hover:bg-red-50">{t("subtaskDeleteMenuItem")}</button>
             )}
             <button
               type="button"
               disabled={s.id.startsWith("temp-")}
-              title={s.id.startsWith("temp-") ? "Sparar…" : undefined}
+              title={s.id.startsWith("temp-") ? t("subtaskSavingTooltip") : undefined}
               onClick={() => { handleCardPromoteSubtask(s); setSubtaskMenuPos(null); }}
               className="w-full text-left text-xs px-3 py-1.5 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed"
             >
-              Eget kort
+              {t("promoteToCardButton")}
             </button>
           </div>
         </>,

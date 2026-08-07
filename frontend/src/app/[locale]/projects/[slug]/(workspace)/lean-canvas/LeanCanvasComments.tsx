@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { addLeanCanvasComment, deleteLeanCanvasComment } from "./actions";
 import { timeAgo } from "@/components/kanbanShared";
 import FlagContentButton from "@/components/FlagContentButton";
@@ -20,6 +21,8 @@ interface Props {
 }
 
 export default function LeanCanvasComments({ projectSlug, comments: initialComments, canComment, currentUserId }: Props) {
+  const t = useTranslations("LeanCanvasComments");
+  const tShared = useTranslations("KanbanShared");
   const [comments, setComments] = useState(initialComments);
   const [pending, startTransition] = useTransition();
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -49,7 +52,7 @@ export default function LeanCanvasComments({ projectSlug, comments: initialComme
   return (
     <div className="mt-8">
       <h2 className="text-sm font-bold text-dark-slate uppercase tracking-wide mb-3">
-        Kommentarer{comments.length > 0 ? ` (${comments.length})` : ""}
+        {comments.length > 0 ? t("headingWithCount", { count: comments.length }) : t("heading")}
       </h2>
 
       <div className="space-y-2 mb-4">
@@ -57,8 +60,8 @@ export default function LeanCanvasComments({ projectSlug, comments: initialComme
           <div key={c.id} className="border border-muted-teal/30 rounded-lg bg-white p-3">
             <div className="flex items-start justify-between gap-2">
               <p className="text-xs">
-                <span className="font-semibold text-dark-slate">{c.author.name ?? "Okänd"}</span>{" "}
-                <span className="text-dark-slate/40">· {timeAgo(c.createdAt)}</span>
+                <span className="font-semibold text-dark-slate">{c.author.name ?? t("unknownUser")}</span>{" "}
+                <span className="text-dark-slate/40">· {timeAgo(c.createdAt, tShared)}</span>
               </p>
               {c.author.id === currentUserId && (
                 <button
@@ -66,7 +69,7 @@ export default function LeanCanvasComments({ projectSlug, comments: initialComme
                   disabled={pending}
                   className="text-[10px] font-medium text-dark-slate/40 hover:text-coral shrink-0 transition-colors"
                 >
-                  Ta bort
+                  {t("removeButton")}
                 </button>
               )}
             </div>
@@ -75,7 +78,7 @@ export default function LeanCanvasComments({ projectSlug, comments: initialComme
           </div>
         ))}
         {comments.length === 0 && (
-          <p className="text-xs text-dark-slate/40 italic">Inga kommentarer än.</p>
+          <p className="text-xs text-dark-slate/40 italic">{t("emptyState")}</p>
         )}
       </div>
 
@@ -84,7 +87,7 @@ export default function LeanCanvasComments({ projectSlug, comments: initialComme
           <textarea
             ref={ref}
             rows={2}
-            placeholder="Skriv en kommentar..."
+            placeholder={t("commentPlaceholder")}
             className="flex-1 border border-muted-teal rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-coral resize-none"
           />
           <button
@@ -92,12 +95,12 @@ export default function LeanCanvasComments({ projectSlug, comments: initialComme
             disabled={pending}
             className="self-end bg-coral text-white text-xs font-medium px-3 py-1.5 rounded hover:bg-watermelon disabled:opacity-50 transition-colors"
           >
-            Skicka
+            {t("sendButton")}
           </button>
         </form>
       ) : (
         <p className="text-xs text-dark-slate/40">
-          {currentUserId ? "Bli medlem i projektet för att kommentera." : "Logga in för att kommentera."}
+          {currentUserId ? t("joinToCommentPrompt") : t("loginToCommentPrompt")}
         </p>
       )}
     </div>

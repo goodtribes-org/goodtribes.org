@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useEffect, useMemo, useCallback, type ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   DndContext,
   DragEndEvent,
@@ -20,6 +21,7 @@ import {
   CATEGORY_META,
   CATEGORY_ORDER,
   PRIORITY_META,
+  PRIORITY_LABEL_KEYS,
   COLUMNS,
   COLUMN_ORDER,
   categoryRank,
@@ -28,6 +30,8 @@ import {
   type Member,
   type Subtask,
 } from "./kanbanShared";
+import { CATEGORY_LABEL_KEYS } from "@/lib/kanbanCategories";
+import { COLUMN_LABEL_KEYS } from "@/lib/kanbanColumns";
 import { CardDetailModal } from "./KanbanCardModal";
 import { KanbanColumn } from "./KanbanColumn";
 import { TokenPayoutDialog } from "./TokenPayoutDialog";
@@ -62,6 +66,8 @@ export default function KanbanBoard({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations("KanbanBoard");
+  const tShared = useTranslations("KanbanShared");
   const [columns, setColumns] = useState<Columns>(initialColumns);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
@@ -262,7 +268,7 @@ export default function KanbanBoard({
       if (!res.ok) throw new Error(await res.text());
       window.location.reload();
     } catch {
-      alert("AI-agenten misslyckades. Kontrollera att ANTHROPIC_API_KEY är konfigurerad.");
+      alert(t("aiAgentFailedAlert"));
       setRunningAI((s) => { const n = new Set(s); n.delete(cardId); return n; });
     }
   }
@@ -430,7 +436,7 @@ export default function KanbanBoard({
             onClick={() => openNewCard("BACKLOG")}
             className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-coral text-white hover:bg-watermelon transition-colors shrink-0"
           >
-            <span className="text-base leading-none font-light">+</span> Lägg till kort
+            <span className="text-base leading-none font-light">+</span> {t("addCardButton")}
           </button>
         )}
 
@@ -441,9 +447,9 @@ export default function KanbanBoard({
             onChange={(e) => setFilterCategory(e.target.value)}
             className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-blue-400"
           >
-            <option value="">Alla kategorier</option>
-            {Object.entries(CATEGORY_META).map(([key, meta]) => (
-              <option key={key} value={key}>{meta.label}</option>
+            <option value="">{t("allCategories")}</option>
+            {Object.entries(CATEGORY_META).map(([key]) => (
+              <option key={key} value={key}>{tShared(CATEGORY_LABEL_KEYS[key])}</option>
             ))}
           </select>
 
@@ -453,9 +459,9 @@ export default function KanbanBoard({
             onChange={(e) => setFilterPriority(e.target.value)}
             className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-blue-400"
           >
-            <option value="">Alla prioriteter</option>
-            {Object.entries(PRIORITY_META).map(([key, meta]) => (
-              <option key={key} value={key}>{meta.label}</option>
+            <option value="">{t("allPriorities")}</option>
+            {Object.entries(PRIORITY_META).map(([key]) => (
+              <option key={key} value={key}>{tShared(PRIORITY_LABEL_KEYS[key])}</option>
             ))}
           </select>
 
@@ -466,7 +472,7 @@ export default function KanbanBoard({
               onChange={(e) => setFilterAssignee(e.target.value)}
               className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-blue-400"
             >
-              <option value="">Alla ansvariga</option>
+              <option value="">{t("allAssignees")}</option>
               {members.map((m) => (
                 <option key={m.id} value={m.id}>{m.name ?? m.id}</option>
               ))}
@@ -478,7 +484,7 @@ export default function KanbanBoard({
             type="search"
             value={filterQuery}
             onChange={(e) => setFilterQuery(e.target.value)}
-            placeholder="Sök kort…"
+            placeholder={t("searchPlaceholder")}
             className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-400 w-36"
           />
 
@@ -489,7 +495,7 @@ export default function KanbanBoard({
               onClick={() => { setFilterQuery(""); setFilterCategory(""); setFilterPriority(""); setFilterAssignee(""); }}
               className="text-xs text-gray-400 hover:text-gray-700 underline transition-colors"
             >
-              Rensa
+              {t("clearFilters")}
             </button>
           )}
           {totalVisible !== null && (
@@ -503,7 +509,7 @@ export default function KanbanBoard({
               onChange={(e) => setSwimlanesOn(e.target.checked)}
               className="accent-seagrass"
             />
-            Swimlanes (område)
+            {t("swimlanesToggle")}
           </label>
         </div>
 
@@ -514,7 +520,7 @@ export default function KanbanBoard({
               onClick={() => setHiddenColumnsMenuOpen((v) => !v)}
               className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 hover:border-gray-400 transition-colors"
             >
-              Dolda kolumner ({hiddenColumnKeys.length})
+              {t("hiddenColumnsButton", { count: hiddenColumnKeys.length })}
             </button>
             {hiddenColumnsMenuOpen && (
               <>
@@ -527,7 +533,7 @@ export default function KanbanBoard({
                       onClick={() => setColumnMode(col.key, "normal")}
                       className="w-full text-left text-sm px-3 py-1.5 text-gray-700 hover:bg-gray-50 transition-colors"
                     >
-                      Visa {col.label}
+                      {t("showColumn", { column: tShared(COLUMN_LABEL_KEYS[col.key]) })}
                     </button>
                   ))}
                 </div>
@@ -550,7 +556,7 @@ export default function KanbanBoard({
                       laneKey === "none" ? "bg-gray-100 text-gray-500" : `${CATEGORY_META[laneKey].bg} ${CATEGORY_META[laneKey].text}`
                     }`}
                   >
-                    {laneKey === "none" ? "Okategoriserat" : CATEGORY_META[laneKey].label}
+                    {laneKey === "none" ? t("uncategorized") : tShared(CATEGORY_LABEL_KEYS[laneKey])}
                   </div>
                   <div className="flex gap-3 w-full">
                     {COLUMNS.filter((col) => columnModes[col.key] !== "hidden").map((col) => (
@@ -580,7 +586,7 @@ export default function KanbanBoard({
               ))}
             </div>
           ) : totalCards > 0 ? (
-            <p className="text-sm text-gray-400 italic py-6 text-center">Inga kort matchar filtren.</p>
+            <p className="text-sm text-gray-400 italic py-6 text-center">{t("noCardsMatchFilters")}</p>
           ) : (
             <div className="flex gap-3 w-full">
               {COLUMNS.filter((col) => columnModes[col.key] !== "hidden").map((col) => (

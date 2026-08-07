@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import KanbanBoard, { type Member } from "@/components/KanbanBoard";
 import TaskListView from "@/components/TaskListView";
 import GanttView from "@/components/GanttView";
@@ -71,6 +72,7 @@ export default function TasksPage({
   openCardId?: string | null;
   helpHref: string;
 }) {
+  const t = useTranslations("TasksPage");
   const storageKey = `tasks-view-${projectSlug}`;
   const [view, setView] = useState<View>("board");
   const [addColKey, setAddColKey] = useState<string | null>(null);
@@ -100,7 +102,7 @@ export default function TasksPage({
               : "text-dark-slate/50 hover:text-dark-slate"
           }`}
         >
-          Tavla
+          {t("boardLabel")}
         </button>
         <button
           onClick={() => switchView("list")}
@@ -110,7 +112,7 @@ export default function TasksPage({
               : "text-dark-slate/50 hover:text-dark-slate"
           }`}
         >
-          Lista
+          {t("listLabel")}
         </button>
         <button
           onClick={() => switchView("gantt")}
@@ -120,7 +122,7 @@ export default function TasksPage({
               : "text-dark-slate/50 hover:text-dark-slate"
           }`}
         >
-          Gantt
+          {t("ganttLabel")}
         </button>
       </div>
       <Link
@@ -128,7 +130,7 @@ export default function TasksPage({
         className="flex items-center gap-1 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors"
       >
         <span className="flex items-center justify-center w-4 h-4 rounded-full border border-current text-[10px]">?</span>
-        Hjälp
+        {t("helpLabel")}
       </Link>
     </div>
   );

@@ -13,6 +13,16 @@ export const COLUMNS = [
 
 export const COLUMN_ORDER = COLUMNS.map((c) => c.key);
 
+// `label` above stays the raw stored value; consumers should call
+// t(COLUMN_LABEL_KEYS[key]) via the "KanbanShared" namespace for display.
+export const COLUMN_LABEL_KEYS: Record<string, string> = {
+  BACKLOG: "columnBacklog",
+  TODO: "columnTodo",
+  DOING: "columnDoing",
+  REVIEW: "columnReview",
+  DONE: "columnDone",
+};
+
 export function isColumnKey(value: unknown): value is string {
   return typeof value === "string" && COLUMN_ORDER.includes(value);
 }

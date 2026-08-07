@@ -1,16 +1,20 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import { isLeadRole } from "@/lib/authz";
 import TasksPage from "@/components/TasksPage";
 import type { Metadata } from "next";
 
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params;
-  const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
+export async function generateMetadata({ params }: { params: Promise<{ slug: string; locale: string }> }): Promise<Metadata> {
+  const { slug, locale } = await params;
+  const [project, t] = await Promise.all([
+    prisma.project.findUnique({ where: { slug }, select: { title: true } }),
+    getTranslations({ locale, namespace: "TasksPage" }),
+  ]);
   if (!project) return {};
-  return { title: `${project.title} — Uppgifter — GoodTribes.org` };
+  return { title: t("pageTitle", { projectTitle: project.title }) };
 }
 
 export default async function TasksRoutePage({

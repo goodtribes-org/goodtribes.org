@@ -20,6 +20,8 @@ function KanbanCardCommentsImpl({
   onSaved: (cardId: string, patch: Partial<Card>) => void;
 }) {
   const t = useTranslations("Kanban");
+  const tc = useTranslations("KanbanCardComments");
+  const tShared = useTranslations("KanbanShared");
   const [comments, setComments] = useState<Comment[]>(card.comments ?? []);
   const [showComments, setShowComments] = useState(false);
   const [pendingComment, setPendingComment] = useState(false);
@@ -71,15 +73,15 @@ function KanbanCardCommentsImpl({
         <button
           onClick={handleLike}
           disabled={!canInteract}
-          aria-label={liked ? "Ta bort gillning" : "Gilla"}
+          aria-label={liked ? tc("removeLikeLabel") : tc("likeLabel")}
           title={
             !isLoggedIn
-              ? "Logga in för att gilla"
+              ? tc("likeTitleLoginRequired")
               : !(isMember || isClaimant)
-              ? "Bli medlem i projektet för att gilla"
+              ? tc("likeTitleMembershipRequired")
               : liked
-              ? "Ta bort gillning"
-              : "Gilla"
+              ? tc("removeLikeLabel")
+              : tc("likeLabel")
           }
           className={`flex items-center gap-1 text-[10px] font-medium transition-colors ${
             liked ? "text-coral" : "text-gray-400 hover:text-coral"
@@ -88,13 +90,13 @@ function KanbanCardCommentsImpl({
           <svg className="w-3 h-3" fill={liked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
-          Gilla{likeCount > 0 ? ` (${likeCount})` : ""}
+          {tc("likeButtonText", { count: likeCount })}
         </button>
         <button
           onClick={() => setShowComments((v) => !v)}
           className="flex items-center gap-1 text-[10px] font-medium text-gray-400 hover:text-seagrass transition-colors cursor-pointer"
         >
-          💬 Kommentera{comments.length > 0 ? ` (${comments.length})` : ""}
+          {tc("commentButtonText", { count: comments.length })}
         </button>
       </div>
 
@@ -103,8 +105,8 @@ function KanbanCardCommentsImpl({
           {comments.map((c) => (
             <div key={c.id} className="bg-gray-50 rounded-md px-2 py-1">
               <p className="text-[10px]">
-                <span className="font-semibold text-gray-700">{c.author.name ?? "Okänd"}</span>{" "}
-                <span className="text-gray-400">· {timeAgo(c.createdAt)}</span>
+                <span className="font-semibold text-gray-700">{c.author.name ?? tc("unknownAuthor")}</span>{" "}
+                <span className="text-gray-400">· {timeAgo(c.createdAt, tShared)}</span>
               </p>
               <p className="text-[10px] text-gray-600 mt-0.5">{htmlToPreviewText(c.body)}</p>
             </div>
@@ -114,7 +116,7 @@ function KanbanCardCommentsImpl({
               <textarea
                 ref={ref}
                 rows={1}
-                placeholder="Skriv en kommentar..."
+                placeholder={tc("commentPlaceholder")}
                 className="flex-1 border border-gray-200 rounded-md px-2 py-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-coral resize-none"
               />
               <button
@@ -122,11 +124,11 @@ function KanbanCardCommentsImpl({
                 disabled={pendingComment}
                 className="px-2 py-1 bg-coral text-white text-[10px] font-medium rounded-md hover:bg-watermelon transition-colors disabled:opacity-50"
               >
-                Skicka
+                {tc("sendButton")}
               </button>
             </form>
           ) : !isLoggedIn ? (
-            <p className="text-[10px] text-gray-400">Logga in för att kommentera.</p>
+            <p className="text-[10px] text-gray-400">{tc("loginToComment")}</p>
           ) : (
             <p className="text-[10px] text-gray-400">{t("commentJoinOrClaim")}</p>
           )}

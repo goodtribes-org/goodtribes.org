@@ -3,15 +3,17 @@
 import React, { useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { useTranslations } from "next-intl";
 import { type Card, type Subtask } from "./kanbanShared";
 import { KanbanCardItem } from "./KanbanCardItem";
+import { COLUMN_LABEL_KEYS } from "@/lib/kanbanColumns";
 
 type ColumnMode = "normal" | "narrow" | "hidden";
 
-const MODE_OPTIONS: { value: ColumnMode; label: string }[] = [
-  { value: "normal", label: "Vanlig" },
-  { value: "narrow", label: "Smal" },
-  { value: "hidden", label: "Dold" },
+const MODE_OPTION_KEYS: { value: ColumnMode; labelKey: string }[] = [
+  { value: "normal", labelKey: "modeNormal" },
+  { value: "narrow", labelKey: "modeNarrow" },
+  { value: "hidden", labelKey: "modeHidden" },
 ];
 
 function KanbanColumnImpl({
@@ -54,19 +56,21 @@ function KanbanColumnImpl({
   onSaved: (cardId: string, patch: Partial<Card>) => void;
 })
  {
+  const t = useTranslations("KanbanShared");
   const { setNodeRef, isOver } = useDroppable({ id: dropId ?? col.key });
   const [modeMenuOpen, setModeMenuOpen] = useState(false);
   const openSubtaskCount = cards.reduce(
     (sum, c) => sum + (c.subtasks?.filter((s) => !s.done).length ?? 0),
     0
   );
+  const columnLabel = COLUMN_LABEL_KEYS[col.key] ? t(COLUMN_LABEL_KEYS[col.key]) : col.label;
 
   const modeMenu = onSetMode && (
     <div className="relative">
       <button
         onClick={() => setModeMenuOpen((v) => !v)}
-        aria-label="Kolumnvy"
-        title="Vanlig, smal eller dold"
+        aria-label={t("columnViewAria")}
+        title={t("columnViewTitle")}
         className="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-white border border-transparent hover:border-gray-200 transition-all"
       >
         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -77,7 +81,7 @@ function KanbanColumnImpl({
         <>
           <div className="fixed inset-0 z-40" onClick={() => setModeMenuOpen(false)} />
           <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[120px]">
-            {MODE_OPTIONS.map((opt) => (
+            {MODE_OPTION_KEYS.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
@@ -86,7 +90,7 @@ function KanbanColumnImpl({
                   mode === opt.value ? "text-dark-slate font-semibold bg-gray-50" : "text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                {opt.label}
+                {t(opt.labelKey)}
               </button>
             ))}
           </div>
@@ -111,8 +115,8 @@ function KanbanColumnImpl({
           <button
             type="button"
             onClick={() => onSetMode?.(col.key, "normal")}
-            aria-label={`Expandera ${col.label}`}
-            title={`Expandera ${col.label} (${cards.length} kort)`}
+            aria-label={t("expandColumnAria", { column: columnLabel })}
+            title={t("expandColumnTitle", { column: columnLabel, count: cards.length })}
             className="w-6 h-6 flex items-center justify-center rounded text-gray-500 hover:text-gray-800 hover:bg-white transition-all"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,11 +132,11 @@ function KanbanColumnImpl({
             className="flex-1 min-h-32 border-x border-b border-gray-200 rounded-b-lg flex flex-col items-center pt-3 gap-2 transition-colors"
             style={{ backgroundColor: isOver ? `${col.color}30` : `${col.color}12` }}
           >
-            <span className="text-xs font-semibold text-gray-500 bg-white/70 rounded-full w-5 h-5 flex items-center justify-center" title="Antal kort">
+            <span className="text-xs font-semibold text-gray-500 bg-white/70 rounded-full w-5 h-5 flex items-center justify-center" title={t("cardCountTitle")}>
               {cards.length}
             </span>
             <span className="text-xs font-semibold text-gray-600 [writing-mode:vertical-rl] rotate-180">
-              {col.label}
+              {columnLabel}
             </span>
           </div>
         </SortableContext>
@@ -148,21 +152,21 @@ function KanbanColumnImpl({
         style={{ backgroundColor: `${col.color}12`, borderTop: `1px solid ${col.color}22` }}
       >
         <span className="text-sm font-semibold text-gray-700">
-          {col.label}{" "}
-          <span className="font-normal text-gray-400" title="Antal kort">({cards.length})</span>{" "}
-          <span className="font-normal text-gray-400" title="Ej avklarade deluppgifter">({openSubtaskCount})</span>
+          {columnLabel}{" "}
+          <span className="font-normal text-gray-400" title={t("cardCountTitle")}>({cards.length})</span>{" "}
+          <span className="font-normal text-gray-400" title={t("openSubtasksTitle")}>({openSubtaskCount})</span>
         </span>
         <div className="flex items-center gap-1 relative">
           {isLoggedIn && (
             <button
               onClick={() => onOpenModal(col.key)}
               className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold text-gray-500 hover:text-gray-800 hover:bg-white border border-transparent hover:border-gray-200 transition-all"
-              title="Lägg till kort"
+              title={t("addCardTitle")}
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
               </svg>
-              Lägg till
+              {t("addCardButton")}
             </button>
           )}
           {modeMenu}
