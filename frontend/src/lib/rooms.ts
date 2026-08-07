@@ -126,7 +126,11 @@ export async function getProjectChannelGroups(userId: string) {
           id: true,
           slug: true,
           title: true,
-          rooms: { where: { type: "PROJECT_CHANNEL" }, orderBy: { order: "asc" }, select: { id: true, name: true } },
+          rooms: {
+            where: { type: "PROJECT_CHANNEL" },
+            orderBy: [{ pinned: "desc" }, { order: "asc" }],
+            select: { id: true, name: true, pinned: true },
+          },
         },
       },
     },
@@ -179,7 +183,11 @@ export async function getOrgChannelGroups(userId: string) {
             id: true,
             slug: true,
             name: true,
-            rooms: { where: { type: "ORG_CHANNEL" }, select: { id: true, name: true } },
+            rooms: {
+              where: { type: "ORG_CHANNEL" },
+              orderBy: [{ pinned: "desc" }, { order: "asc" }],
+              select: { id: true, name: true, pinned: true },
+            },
           },
         },
       },
@@ -190,12 +198,19 @@ export async function getOrgChannelGroups(userId: string) {
         id: true,
         slug: true,
         name: true,
-        rooms: { where: { type: "ORG_CHANNEL" }, select: { id: true, name: true } },
+        rooms: {
+          where: { type: "ORG_CHANNEL" },
+          orderBy: [{ pinned: "desc" }, { order: "asc" }],
+          select: { id: true, name: true, pinned: true },
+        },
       },
     }),
   ]);
 
-  const byId = new Map<string, { id: string; slug: string; name: string; rooms: { id: string; name: string | null }[] }>();
+  const byId = new Map<
+    string,
+    { id: string; slug: string; name: string; rooms: { id: string; name: string | null; pinned: boolean }[] }
+  >();
   memberships.forEach((m) => byId.set(m.organisation.id, m.organisation));
   ownedOrgs.forEach((o) => byId.set(o.id, o));
   const groups = [...byId.values()].filter((o) => o.rooms.length > 0);

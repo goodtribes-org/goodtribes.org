@@ -238,6 +238,9 @@ export function MessagesSidebar({ isLoggedIn, dmGroupRooms, projectGroups, orgGr
 
       {section === "channels" && (
       <>
+      <Link href="/kanaler" className="block px-3 py-1.5 mx-1 mt-1 mb-2 text-xs font-medium text-seagrass hover:underline">
+        Öppna kanalkatalogen →
+      </Link>
       {projectGroups.map((project) => (
         <Section key={project.id} title={project.title} defaultOpen={!focusProjectSlug || focusProjectSlug === project.slug}>
           {project.rooms.map((room) => (
