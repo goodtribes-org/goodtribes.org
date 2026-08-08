@@ -16,6 +16,7 @@ export default async function ProfilePage({
 }) {
   const { locale } = await params;
   const tPhase = await getTranslations({ locale, namespace: "ProjectPhase" });
+  const t = await getTranslations({ locale, namespace: "ProfilePage" });
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
 
@@ -77,9 +78,9 @@ export default async function ProfilePage({
           {/* Skills */}
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest">Skills</h2>
+              <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest">{t("skillsHeading")}</h2>
               <Link href="/profile/setup" className="text-xs text-coral hover:underline">
-                {skills.length > 0 ? "Edit" : "Add skills"}
+                {skills.length > 0 ? t("editSkills") : t("addSkills")}
               </Link>
             </div>
             {skills.length > 0 ? (
@@ -96,7 +97,7 @@ export default async function ProfilePage({
               </div>
             ) : (
               <p className="text-xs text-dark-slate/40 italic">
-                No skills added yet — add some to get matched with relevant projects.
+                {t("noSkills")}
               </p>
             )}
           </section>
@@ -105,8 +106,8 @@ export default async function ProfilePage({
           {Array.isArray(user.interests) && user.interests.length > 0 && (
             <section>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest">Agenda 2030</h2>
-                <Link href="/profile/setup" className="text-xs text-coral hover:underline">Edit</Link>
+                <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest">{t("agendaHeading")}</h2>
+                <Link href="/profile/setup" className="text-xs text-coral hover:underline">{t("agendaEdit")}</Link>
               </div>
               <div className="flex flex-wrap gap-2">
                 {(user.interests as number[]).map((num) => (
@@ -122,7 +123,7 @@ export default async function ProfilePage({
           {/* Social links */}
           {Object.keys(socialLinks).length > 0 && (
             <section>
-              <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">Links</h2>
+              <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">{t("linksHeading")}</h2>
               <dl className="space-y-1 text-sm">
                 {(["website", "linkedin", "github", "twitter"] as const).map((key) =>
                   socialLinks[key] ? (
@@ -147,27 +148,27 @@ export default async function ProfilePage({
           {/* Name + location + edit */}
           <div>
             <div className="flex items-start justify-between gap-4">
-              <h1 className="text-3xl font-bold text-dark-slate">{user.name ?? "Unnamed user"}</h1>
+              <h1 className="text-3xl font-bold text-dark-slate">{user.name ?? t("unnamedUser")}</h1>
               <Link
                 href="/profile/setup"
                 className="shrink-0 text-sm font-medium px-4 py-2 rounded bg-coral text-white hover:bg-watermelon transition-colors"
               >
-                Edit profile
+                {t("editProfile")}
               </Link>
             </div>
             {user.availability === "available" && (
               <span className="inline-flex items-center mt-2 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                ✅ Tillgänglig
+                ✅ {t("availableLabel")}
               </span>
             )}
             {user.availability === "limited" && (
               <span className="inline-flex items-center mt-2 px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                ⏳ Begränsad tid
+                ⏳ {t("limitedLabel")}
               </span>
             )}
             {user.availability === "busy" && (
               <span className="inline-flex items-center mt-2 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                🔴 Inte tillgänglig
+                🔴 {t("unavailableLabel")}
               </span>
             )}
             {user.country && (
@@ -180,21 +181,21 @@ export default async function ProfilePage({
             <p className="text-dark-slate/80 leading-relaxed">{user.bio}</p>
           ) : (
             <p className="text-dark-slate/40 italic text-sm">
-              No bio yet.{" "}
-              <Link href="/profile/setup" className="text-coral hover:underline">Add one →</Link>
+              {t("noBioYet")}{" "}
+              <Link href="/profile/setup" className="text-coral hover:underline">{t("addBioLink")}</Link>
             </p>
           )}
 
           {/* Visibility */}
           <p className="text-xs text-dark-slate/40">
-            {user.showProfile ? "Your profile is visible to other members." : "Your profile is hidden from other members."}
+            {user.showProfile ? t("visibleMessage") : t("hiddenMessage")}
           </p>
 
           {/* Contact */}
           <section>
-            <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">Contact</h2>
+            <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">{t("contactHeading")}</h2>
             <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-              <dt className="text-dark-slate/50">Email</dt>
+              <dt className="text-dark-slate/50">{t("emailLabel")}</dt>
               <dd>
                 <a href={`mailto:${user.email}`} className="text-coral hover:underline">
                   {user.email}
@@ -206,7 +207,7 @@ export default async function ProfilePage({
           {/* Projects */}
           {user.projectMemberships.length > 0 && (
             <section>
-              <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">Projects</h2>
+              <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">{t("projectsHeading")}</h2>
               <div className="flex flex-col gap-2">
                 {user.projectMemberships.map(({ project }) => (
                   <Link

@@ -30,6 +30,7 @@ export default async function SkillDetailPage({
 }) {
   const { locale, slug } = await params;
   const tPhase = await getTranslations({ locale, namespace: "ProjectPhase" });
+  const t = await getTranslations({ locale, namespace: "SkillDetailPage" });
 
   const skill = await prisma.skill.findUnique({
     where: { slug },
@@ -64,7 +65,7 @@ export default async function SkillDetailPage({
   return (
     <div className="max-w-2xl">
       <Link href="/skill" className="text-sm text-dark-slate/50 hover:text-seagrass mb-6 inline-block">
-        ← All skills
+        {t("backLink")}
       </Link>
 
       <div className="flex items-start justify-between gap-4 mb-4">
@@ -82,7 +83,7 @@ export default async function SkillDetailPage({
       {skill.projects.length > 0 && (
         <section className="mb-10">
           <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-4">
-            {skill.projects.length} project{skill.projects.length !== 1 ? "s" : ""} seeking this skill
+            {t("projectsSeekingSkillHeading", { count: skill.projects.length })}
           </h2>
           <div className="flex flex-col gap-3">
             {skill.projects.map(({ project }) => (
@@ -101,7 +102,7 @@ export default async function SkillDetailPage({
                   {project.description && (
                     <p className="text-sm text-dark-slate/60 line-clamp-2">{project.description}</p>
                   )}
-                  <p className="text-xs text-dark-slate/40 mt-1">{project._count.members} member{project._count.members !== 1 ? "s" : ""}</p>
+                  <p className="text-xs text-dark-slate/40 mt-1">{t("memberCount", { count: project._count.members })}</p>
                 </div>
                 <svg className="w-4 h-4 text-dark-slate/30 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -114,11 +115,11 @@ export default async function SkillDetailPage({
 
       <section>
         <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-4">
-          {skill.users.length} {skill.users.length === 1 ? "person" : "people"} with this skill
+          {t("peopleWithSkillHeading", { count: skill.users.length })}
         </h2>
 
         {skill.users.length === 0 ? (
-          <p className="text-muted-teal italic text-sm">No one has added this skill yet.</p>
+          <p className="text-muted-teal italic text-sm">{t("noOneHasSkill")}</p>
         ) : (
           <ul className="flex flex-col gap-4">
             {skill.users.map(({ user }) => {
@@ -135,7 +136,7 @@ export default async function SkillDetailPage({
                       {initials}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium">{user.name ?? "Unknown"}</p>
+                      <p className="font-medium">{user.name ?? t("unknownName")}</p>
                       {user.bio && (
                         <p className="text-sm text-dark-slate/60 mt-1 line-clamp-2">{user.bio}</p>
                       )}

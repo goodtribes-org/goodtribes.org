@@ -14,8 +14,7 @@ import { buildMetadata, APP_URL } from "@/lib/metadata";
 export const dynamic = "force-dynamic";
 
 
-const SOCIAL_LABELS: Record<string, string> = {
-  website: "Website",
+const SOCIAL_LABELS_STATIC: Record<string, string> = {
   linkedin: "LinkedIn",
   github: "GitHub",
   twitter: "Twitter / X",
@@ -27,6 +26,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; id: string }>;
 }): Promise<Metadata> {
   const { locale, id } = await params;
+  const t = await getTranslations({ locale, namespace: "MemberProfilePage" });
   const member = await prisma.user.findFirst({
     where: { id, showProfile: true },
     select: { name: true, bio: true, image: true },
@@ -35,8 +35,8 @@ export async function generateMetadata({
   return buildMetadata({
     locale,
     path: `/members/${id}`,
-    title: member.name ?? "Medlem",
-    description: member.bio ?? "En medlem på GoodTribes.org",
+    title: member.name ?? t("fallbackTitle"),
+    description: member.bio ?? t("fallbackDescription"),
     imageUrl: member.image,
   });
 }
@@ -48,7 +48,12 @@ export default async function MemberProfilePage({
 }) {
   const { locale, id } = await params;
   const tPhase = await getTranslations({ locale, namespace: "ProjectPhase" });
+  const t = await getTranslations("MemberProfilePage");
   const session = await auth();
+  const SOCIAL_LABELS: Record<string, string> = {
+    website: t("website"),
+    ...SOCIAL_LABELS_STATIC,
+  };
 
   const member = await prisma.user.findFirst({
     where: { id, showProfile: true },
@@ -91,7 +96,7 @@ export default async function MemberProfilePage({
         href="/members"
         className="text-sm text-dark-slate/50 hover:text-seagrass mb-8 inline-block"
       >
-        ← Back to members
+        ← {t("backToMembers")}
       </Link>
 
       <div className="flex items-start gap-6 mb-8">
@@ -112,7 +117,7 @@ export default async function MemberProfilePage({
             <div className="flex items-center gap-3">
               <ShareButton
                 url={`${APP_URL}/${locale}/members/${id}`}
-                title={member.name ?? "Medlem"}
+                title={member.name ?? t("fallbackTitle")}
                 variant="icon"
               />
               {session?.user?.id && session.user.id !== id && (
@@ -124,17 +129,17 @@ export default async function MemberProfilePage({
             <div className="mt-2 flex gap-2">
               <MessageButton
                 toUserId={id}
-                toUserName={member.name ?? "denna person"}
+                toUserName={member.name ?? t("thisPerson")}
               />
               <KudosButton
                 toUserId={id}
-                toUserName={member.name ?? "denna person"}
+                toUserName={member.name ?? t("thisPerson")}
               />
               <Link
                 href={`/granskningsradet/anmal?userId=${id}`}
                 className="text-xs text-dark-slate/40 hover:text-watermelon self-center"
               >
-                Anmäl till Granskningsrådet
+                {t("reportToReviewCouncil")}
               </Link>
             </div>
           )}
@@ -144,7 +149,7 @@ export default async function MemberProfilePage({
       {member.bio && (
         <section className="mb-8">
           <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-2">
-            About
+            {t("aboutHeading")}
           </h2>
           <p className="text-dark-slate">{member.bio}</p>
         </section>
@@ -153,7 +158,7 @@ export default async function MemberProfilePage({
       {skills.length > 0 && (
         <section className="mb-8">
           <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-3">
-            Skills
+            {t("skillsHeading")}
           </h2>
           <div className="flex flex-wrap gap-2">
             {skills.map((skill) => (
@@ -172,7 +177,7 @@ export default async function MemberProfilePage({
       {projects.length > 0 && (
         <section className="mb-8">
           <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-3">
-            Projects
+            {t("projectsHeading")}
           </h2>
           <div className="flex flex-col gap-3">
             {projects.map((project) => (
@@ -209,7 +214,7 @@ export default async function MemberProfilePage({
       {Object.keys(social).length > 0 && (
         <section>
           <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-3">
-            Links
+            {t("linksHeading")}
           </h2>
           <ul className="flex flex-col gap-2">
             {Object.entries(social).map(([key, value]) => (

@@ -5,28 +5,39 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { acceptMentorship } from "@/app/[locale]/mentors/actions";
 import { PROJECT_PHASE_LABEL as PHASE_LABEL, PROJECT_PHASE_COLOR as PHASE_COLOR } from "@/lib/projectPhase";
 import VolunteerTourGate from "@/components/VolunteerTourGate";
 
 export const metadata: Metadata = { title: "Workplace — GoodTribes.org" };
 
-const ROLE_LABEL: Record<string, string> = {
-  FOUNDER: "Founder",
-  ADMIN: "Admin",
-  MEMBER: "Member",
-  FOLLOWER: "Follower",
-};
+type T = Awaited<ReturnType<typeof getTranslations>>;
 
-function formatDue(date: Date | null): string {
+function roleLabel(t: T, role: string): string {
+  switch (role) {
+    case "FOUNDER":
+      return t("roleLabelFounder");
+    case "ADMIN":
+      return t("roleLabelAdmin");
+    case "MEMBER":
+      return t("roleLabelMember");
+    case "FOLLOWER":
+      return t("roleLabelFollower");
+    default:
+      return role;
+  }
+}
+
+function formatDue(t: T, date: Date | null): string {
   if (!date) return "";
   const d = new Date(date);
   const now = new Date();
   const diff = Math.ceil((d.getTime() - now.getTime()) / 86400000);
-  if (diff < 0) return `${Math.abs(diff)}d overdue`;
-  if (diff === 0) return "Due today";
-  if (diff === 1) return "Due tomorrow";
-  return `Due in ${diff}d`;
+  if (diff < 0) return t("dueOverdue", { days: Math.abs(diff) });
+  if (diff === 0) return t("dueToday");
+  if (diff === 1) return t("dueTomorrow");
+  return t("dueInDays", { days: diff });
 }
 
 function isDueSoon(date: Date | null): boolean {
@@ -42,60 +53,83 @@ const ACTIVITY_ICON: Record<string, string> = {
   milestone_completed: "✅",
 };
 
-const ACTIVITY_LABEL: Record<string, string> = {
-  member_joined: "Gick med i",
-  update_posted: "Publicerade en uppdatering i",
-  milestone_added: "Lade till milstolpe i",
-  milestone_completed: "Slutförde en milstolpe i",
-};
-
 function activityIcon(type: string): string {
   return ACTIVITY_ICON[type] ?? "📌";
 }
 
-function activityDescription(type: string, projectTitle: string): string {
-  const label = ACTIVITY_LABEL[type] ?? type;
-  return `${label} ${projectTitle}`;
+function activityDescription(t: T, type: string, projectTitle: string): string {
+  switch (type) {
+    case "member_joined":
+      return t("activityMemberJoined", { project: projectTitle });
+    case "update_posted":
+      return t("activityUpdatePosted", { project: projectTitle });
+    case "milestone_added":
+      return t("activityMilestoneAdded", { project: projectTitle });
+    case "milestone_completed":
+      return t("activityMilestoneCompleted", { project: projectTitle });
+    default:
+      return `${type} ${projectTitle}`;
+  }
 }
 
-function relativeTime(date: Date): string {
+function relativeTime(t: T, date: Date): string {
   const diffMs = Date.now() - new Date(date).getTime();
   const diffH = Math.floor(diffMs / 3600000);
-  if (diffH < 24) return diffH <= 1 ? "1 timme sedan" : `${diffH} timmar sedan`;
+  if (diffH < 24) return t("timeHoursAgo", { hours: diffH <= 1 ? 1 : diffH });
   const diffD = Math.floor(diffMs / 86400000);
-  return diffD === 1 ? "1 dag sedan" : `${diffD} dagar sedan`;
+  return t("timeDaysAgo", { days: diffD === 0 ? 1 : diffD });
 }
 
-function activityDateGroup(date: Date): string {
+type DateGroupKey = "today" | "yesterday" | "thisWeek" | "earlier";
+
+function activityDateGroup(date: Date): DateGroupKey {
   const now = new Date();
   const d = new Date(date);
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const yesterdayStart = new Date(todayStart.getTime() - 86400000);
   const weekStart = new Date(todayStart.getTime() - 6 * 86400000);
 
-  if (d >= todayStart) return "Idag";
-  if (d >= yesterdayStart) return "Igår";
-  if (d >= weekStart) return "Denna vecka";
-  return "Tidigare";
+  if (d >= todayStart) return "today";
+  if (d >= yesterdayStart) return "yesterday";
+  if (d >= weekStart) return "thisWeek";
+  return "earlier";
+}
+
+function dateGroupLabel(t: T, key: DateGroupKey): string {
+  switch (key) {
+    case "today":
+      return t("groupToday");
+    case "yesterday":
+      return t("groupYesterday");
+    case "thisWeek":
+      return t("groupThisWeek");
+    case "earlier":
+      return t("groupEarlier");
+  }
 }
 
 const TABS_BASE = [
-  { key: "overview", label: "Översikt" },
-  { key: "activity", label: "Min aktivitet" },
-  { key: "tokens", label: "Tribe Tokens" },
-  { key: "kudos", label: "Kudos" },
+  { key: "overview", labelKey: "tabOverview" },
+  { key: "activity", labelKey: "tabActivity" },
+  { key: "tokens", labelKey: "tabTokens" },
+  { key: "kudos", labelKey: "tabKudos" },
 ] as const;
 
-const MENTOR_TAB = { key: "mentor-inbox", label: "Mentor Inbox" } as const;
+const MENTOR_TAB = { key: "mentor-inbox", labelKey: "tabMentorInbox" } as const;
 
 type BaseTabKey = (typeof TABS_BASE)[number]["key"];
 type TabKey = BaseTabKey | "mentor-inbox";
 
 export default async function WorkplacePage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ tab?: string }>;
 }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "WorkplacePage" });
+
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
@@ -307,19 +341,19 @@ export default async function WorkplacePage({
 
   const allTasks = openKanban.slice(0, 15);
 
-  // Group activity events by date label
-  const groupedEvents: { label: string; events: typeof activityEvents }[] = [];
-  const ORDER = ["Idag", "Igår", "Denna vecka", "Tidigare"];
+  // Group activity events by date group key
+  const groupedEvents: { key: DateGroupKey; events: typeof activityEvents }[] = [];
+  const ORDER: DateGroupKey[] = ["today", "yesterday", "thisWeek", "earlier"];
   for (const event of activityEvents) {
-    const label = activityDateGroup(event.createdAt);
-    let group = groupedEvents.find((g) => g.label === label);
+    const key = activityDateGroup(event.createdAt);
+    let group = groupedEvents.find((g) => g.key === key);
     if (!group) {
-      group = { label, events: [] };
+      group = { key, events: [] };
       groupedEvents.push(group);
     }
     group.events.push(event);
   }
-  groupedEvents.sort((a, b) => ORDER.indexOf(a.label) - ORDER.indexOf(b.label));
+  groupedEvents.sort((a, b) => ORDER.indexOf(a.key) - ORDER.indexOf(b.key));
 
   return (
     <div className="space-y-8">
@@ -329,19 +363,21 @@ export default async function WorkplacePage({
       <div className="flex items-end justify-between">
         <div>
           <h1 className="text-3xl font-bold">
-            Hello{session.user.name ? `, ${session.user.name.split(" ")[0]}` : ""}
+            {session.user.name
+              ? t("greetingWithName", { name: session.user.name.split(" ")[0] })
+              : t("greetingNoName")}
           </h1>
           <p className="text-dark-slate/60 mt-1">
-            {memberships.length} project{memberships.length !== 1 ? "s" : ""} &nbsp;·&nbsp;{" "}
-            {totalOpenTasks} open task{totalOpenTasks !== 1 ? "s" : ""} &nbsp;·&nbsp;{" "}
-            {myIdeas.length} idea{myIdeas.length !== 1 ? "s" : ""}
+            {t("summaryProjects", { count: memberships.length })} &nbsp;·&nbsp;{" "}
+            {t("summaryOpenTasks", { count: totalOpenTasks })} &nbsp;·&nbsp;{" "}
+            {t("summaryIdeas", { count: myIdeas.length })}
           </p>
         </div>
         <Link
           href="/projects/new"
           className="bg-coral text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-watermelon transition-colors"
         >
-          + New project
+          {t("newProjectLink")}
         </Link>
       </div>
 
@@ -358,7 +394,7 @@ export default async function WorkplacePage({
                   : "border-transparent text-dark-slate/50 hover:text-dark-slate hover:border-muted-teal"
               }`}
             >
-              {tab.label}
+              {t(tab.labelKey)}
             </Link>
           ))}
         </nav>
@@ -369,12 +405,12 @@ export default async function WorkplacePage({
         <div className="space-y-12">
           {/* My Projects */}
           <section data-tour="workplace-projects">
-            <h2 className="text-xl font-semibold mb-4">My projects</h2>
+            <h2 className="text-xl font-semibold mb-4">{t("myProjectsHeading")}</h2>
             {memberships.length === 0 ? (
               <div className="border border-dashed border-muted-teal rounded-lg p-10 text-center">
-                <p className="text-dark-slate/50 mb-3">You haven&apos;t joined any projects yet.</p>
+                <p className="text-dark-slate/50 mb-3">{t("noProjectsYet")}</p>
                 <Link href="/projects" className="text-seagrass hover:underline text-sm">
-                  Explore projects →
+                  {t("exploreProjects")}
                 </Link>
               </div>
             ) : (
@@ -397,9 +433,9 @@ export default async function WorkplacePage({
                       <p className="text-sm text-dark-slate/60 line-clamp-2">{project.summary ?? project.description}</p>
                     )}
                     <div className="flex items-center gap-4 text-xs text-dark-slate/50 mt-auto pt-1 border-t border-muted-teal/40">
-                      <span className="font-medium text-seagrass">{ROLE_LABEL[role] ?? role}</span>
-                      <span>{project._count.kanbanCards} Kanban</span>
-                      <span>{project._count.members} member{project._count.members !== 1 ? "s" : ""}</span>
+                      <span className="font-medium text-seagrass">{roleLabel(t, role)}</span>
+                      <span>{t("kanbanCount", { count: project._count.kanbanCards })}</span>
+                      <span>{t("membersCount", { count: project._count.members })}</span>
                     </div>
                   </Link>
                 ))}
@@ -409,9 +445,9 @@ export default async function WorkplacePage({
 
           {/* Open Tasks */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Open tasks</h2>
+            <h2 className="text-xl font-semibold mb-4">{t("openTasksHeading")}</h2>
             {allTasks.length === 0 ? (
-              <p className="text-dark-slate/50 italic text-sm">No open tasks across your projects.</p>
+              <p className="text-dark-slate/50 italic text-sm">{t("noOpenTasks")}</p>
             ) : (
               <div className="border border-muted-teal rounded-lg overflow-hidden divide-y divide-muted-teal/50">
                 {allTasks.map((task) => (
@@ -421,7 +457,7 @@ export default async function WorkplacePage({
                     className="flex items-center gap-3 px-4 py-3 hover:bg-dry-sage/20 transition-colors"
                   >
                     <span className="text-[10px] font-semibold uppercase tracking-wider w-12 flex-shrink-0 text-coral">
-                      Board
+                      {t("boardBadge")}
                     </span>
                     <span className="flex-1 text-sm text-dark-slate truncate">{task.title}</span>
                     <span className="text-xs text-dark-slate/40 flex-shrink-0">
@@ -433,7 +469,7 @@ export default async function WorkplacePage({
                           isDueSoon(task.dueDate) ? "text-coral" : "text-dark-slate/40"
                         }`}
                       >
-                        {formatDue(task.dueDate)}
+                        {formatDue(t, task.dueDate)}
                       </span>
                     )}
                   </Link>
@@ -445,16 +481,16 @@ export default async function WorkplacePage({
           {/* My Ideas */}
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">My ideas</h2>
+              <h2 className="text-xl font-semibold">{t("myIdeasHeading")}</h2>
               <Link href="/ideas/new" className="text-seagrass hover:underline text-sm">
-                + Share idea
+                {t("shareIdeaLink")}
               </Link>
             </div>
             {myIdeas.length === 0 ? (
               <p className="text-dark-slate/50 italic text-sm">
-                You haven&apos;t shared any ideas yet.{" "}
+                {t("noIdeasYet")}{" "}
                 <Link href="/ideas" className="text-seagrass hover:underline">
-                  Browse the idea feed
+                  {t("browseIdeaFeed")}
                 </Link>
               </p>
             ) : (
@@ -467,8 +503,8 @@ export default async function WorkplacePage({
                   >
                     <span className="flex-1 text-sm text-dark-slate">{idea.title}</span>
                     <span className="text-xs text-dark-slate/40 flex-shrink-0">
-                      {idea._count.votes} vote{idea._count.votes !== 1 ? "s" : ""} &nbsp;·&nbsp;{" "}
-                      {idea._count.comments} comment{idea._count.comments !== 1 ? "s" : ""}
+                      {t("votesCount", { count: idea._count.votes })} &nbsp;·&nbsp;{" "}
+                      {t("commentsCount", { count: idea._count.comments })}
                     </span>
                   </Link>
                 ))}
@@ -487,17 +523,17 @@ export default async function WorkplacePage({
               <span className="text-5xl font-bold text-seagrass">
                 {totalTokens % 1 === 0 ? totalTokens.toFixed(0) : totalTokens.toFixed(1)}
               </span>
-              <span className="text-lg font-semibold text-dark-slate">Tribe Tokens</span>
-              <span className="text-sm text-dark-slate/50">totalt intjänade</span>
+              <span className="text-lg font-semibold text-dark-slate">{t("tribeTokensLabel")}</span>
+              <span className="text-sm text-dark-slate/50">{t("totalEarned")}</span>
             </div>
           </section>
 
           {/* Per-project breakdown */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Per projekt</h2>
+            <h2 className="text-xl font-semibold mb-4">{t("perProjectHeading")}</h2>
             {tokensByProject.length === 0 ? (
               <p className="text-dark-slate/50 italic text-sm">
-                Du har inte tjänat några tokens ännu. Bocka av deluppgifter och flytta kort till Klart för att komma igång.
+                {t("noTokensYet")}
               </p>
             ) : (
               <div className="border border-muted-teal rounded-lg overflow-hidden divide-y divide-muted-teal/50">
@@ -510,7 +546,7 @@ export default async function WorkplacePage({
                     <span className="flex-1 text-sm text-dark-slate">{row.projectTitle}</span>
                     <span className="text-sm font-bold text-seagrass flex-shrink-0">
                       {row.tokens % 1 === 0 ? row.tokens.toFixed(0) : row.tokens.toFixed(1)}{" "}
-                      <span className="font-normal text-dark-slate/50">tokens</span>
+                      <span className="font-normal text-dark-slate/50">{t("tokensUnit")}</span>
                     </span>
                     <span className="text-xs text-dark-slate/40 flex-shrink-0">→</span>
                   </Link>
@@ -521,9 +557,9 @@ export default async function WorkplacePage({
 
           {/* Recent activity */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Senaste token-aktivitet</h2>
+            <h2 className="text-xl font-semibold mb-4">{t("recentTokenActivityHeading")}</h2>
             {recentTokenActivity.length === 0 ? (
-              <p className="text-dark-slate/50 italic text-sm">Ingen aktivitet ännu.</p>
+              <p className="text-dark-slate/50 italic text-sm">{t("noActivityYet")}</p>
             ) : (
               <div className="border border-muted-teal rounded-lg overflow-hidden divide-y divide-muted-teal/50">
                 {recentTokenActivity.map((entry) => (
@@ -539,7 +575,7 @@ export default async function WorkplacePage({
                       +{entry.tokens % 1 === 0 ? entry.tokens.toFixed(0) : entry.tokens.toFixed(1)}
                     </span>
                     <span className="text-xs text-dark-slate/40 flex-shrink-0">
-                      {relativeTime(entry.createdAt)}
+                      {relativeTime(t, entry.createdAt)}
                     </span>
                   </div>
                 ))}
@@ -556,17 +592,17 @@ export default async function WorkplacePage({
           <section>
             <div className="border border-muted-teal rounded-lg p-8 flex flex-col items-center gap-2 text-center">
               <span className="text-5xl font-bold text-seagrass">{totalKudosReceived}</span>
-              <span className="text-lg font-semibold text-dark-slate">Kudos mottagna</span>
-              <span className="text-sm text-dark-slate/50">totalt</span>
+              <span className="text-lg font-semibold text-dark-slate">{t("kudosReceivedLabel")}</span>
+              <span className="text-sm text-dark-slate/50">{t("totalLabel")}</span>
             </div>
           </section>
 
           {/* Kudos list */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Mottagna kudos</h2>
+            <h2 className="text-xl font-semibold mb-4">{t("receivedKudosHeading")}</h2>
             {kudosReceived.length === 0 ? (
               <p className="text-dark-slate/50 italic text-sm">
-                Du har inte fått några kudos ännu. Bidra till projekt för att inspirera andra!
+                {t("noKudosYet")}
               </p>
             ) : (
               <div className="border border-muted-teal rounded-lg overflow-hidden divide-y divide-muted-teal/50">
@@ -578,7 +614,7 @@ export default async function WorkplacePage({
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-dark-slate">{kudos.message}</p>
                       <p className="text-xs text-dark-slate/40 mt-1">
-                        {kudos.fromUser.name ?? "Anonym"}
+                        {kudos.fromUser.name ?? t("anonymousFallback")}
                         {kudos.project && (
                           <>
                             {" "}
@@ -594,7 +630,7 @@ export default async function WorkplacePage({
                       </p>
                     </div>
                     <span className="text-xs text-dark-slate/40 flex-shrink-0 mt-0.5">
-                      {relativeTime(kudos.createdAt)}
+                      {relativeTime(t, kudos.createdAt)}
                     </span>
                   </div>
                 ))}
@@ -607,10 +643,10 @@ export default async function WorkplacePage({
       {/* Tab: Mentor Inbox */}
       {activeTab === "mentor-inbox" && mentorProfile?.verified && (
         <div className="space-y-6">
-          <h2 className="text-xl font-semibold">Mentorförfrågningar</h2>
+          <h2 className="text-xl font-semibold">{t("mentorRequestsHeading")}</h2>
           {mentorRequests.length === 0 ? (
             <p className="text-dark-slate/50 italic text-sm">
-              Du har inga aktiva mentorförfrågningar.
+              {t("noMentorRequests")}
             </p>
           ) : (
             <div className="border border-muted-teal rounded-lg overflow-hidden divide-y divide-muted-teal/50">
@@ -628,12 +664,12 @@ export default async function WorkplacePage({
                         <p className="text-sm text-dark-slate/70 mt-1">{req.message}</p>
                       )}
                       <p className="text-xs text-dark-slate/40 mt-1">
-                        {relativeTime(req.createdAt)}
+                        {relativeTime(t, req.createdAt)}
                         {req.sessionAt && (
                           <>
                             {" "}&middot;{" "}
-                            Sessionsdatum:{" "}
-                            {new Date(req.sessionAt).toLocaleDateString("sv-SE")}
+                            {t("sessionDateLabel")}{" "}
+                            {new Date(req.sessionAt).toLocaleDateString(locale === "en" ? "en-GB" : "sv-SE")}
                           </>
                         )}
                       </p>
@@ -645,7 +681,7 @@ export default async function WorkplacePage({
                           : "bg-green-100 text-green-800"
                       }`}
                     >
-                      {req.status === "pending" ? "Väntande" : "Accepterad"}
+                      {req.status === "pending" ? t("statusPending") : t("statusAccepted")}
                     </span>
                   </div>
                   <div className="flex gap-2">
@@ -657,7 +693,7 @@ export default async function WorkplacePage({
                           type="submit"
                           className="text-sm font-medium px-4 py-1.5 rounded-md bg-seagrass text-white hover:bg-seagrass/80 transition-colors"
                         >
-                          Acceptera
+                          {t("acceptButton")}
                         </button>
                       </form>
                     )}
@@ -666,7 +702,7 @@ export default async function WorkplacePage({
                         href={`/projects/${req.project.slug}`}
                         className="text-sm font-medium px-4 py-1.5 rounded-md border border-seagrass text-seagrass hover:bg-seagrass/10 transition-colors"
                       >
-                        Slutför
+                        {t("completeLink")}
                       </Link>
                     )}
                   </div>
@@ -682,36 +718,36 @@ export default async function WorkplacePage({
         <div className="space-y-10">
           {/* Sammanfattning */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Sammanfattning</h2>
+            <h2 className="text-xl font-semibold mb-4">{t("summaryHeading")}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="border border-muted-teal rounded-lg p-5 flex flex-col gap-1">
                 <span className="text-3xl font-bold text-seagrass">{distinctProjectCount}</span>
-                <span className="text-sm text-dark-slate/60">Projekt bidragit till</span>
+                <span className="text-sm text-dark-slate/60">{t("projectsContributed")}</span>
               </div>
               <div className="border border-muted-teal rounded-lg p-5 flex flex-col gap-1">
                 <span className="text-3xl font-bold text-seagrass">{activitiesThisMonth}</span>
-                <span className="text-sm text-dark-slate/60">Aktiviteter denna månad</span>
+                <span className="text-sm text-dark-slate/60">{t("activitiesThisMonthLabel")}</span>
               </div>
               <div className="border border-muted-teal rounded-lg p-5 flex flex-col gap-1">
                 <span className="text-3xl font-bold text-seagrass">{ideasCount}</span>
-                <span className="text-sm text-dark-slate/60">Idéer inskickade</span>
+                <span className="text-sm text-dark-slate/60">{t("ideasSubmitted")}</span>
               </div>
             </div>
           </section>
 
           {/* Senaste aktivitet */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">Senaste aktivitet</h2>
+            <h2 className="text-xl font-semibold mb-4">{t("recentActivityHeading")}</h2>
             {activityEvents.length === 0 ? (
               <p className="text-dark-slate/50 italic text-sm">
-                Du har ingen aktivitet ännu. Gå med i ett projekt för att komma igång.
+                {t("noActivityEventsYet")}
               </p>
             ) : (
               <div className="space-y-6">
                 {groupedEvents.map((group) => (
-                  <div key={group.label}>
+                  <div key={group.key}>
                     <p className="text-xs font-semibold uppercase tracking-wider text-dark-slate/40 mb-3">
-                      {group.label}
+                      {dateGroupLabel(t, group.key)}
                     </p>
                     <div className="border border-muted-teal rounded-lg overflow-hidden divide-y divide-muted-teal/50">
                       {group.events.map((event) => (
@@ -724,10 +760,10 @@ export default async function WorkplacePage({
                             {activityIcon(event.type)}
                           </span>
                           <span className="flex-1 text-sm text-dark-slate">
-                            {activityDescription(event.type, event.project.title)}
+                            {activityDescription(t, event.type, event.project.title)}
                           </span>
                           <span className="text-xs text-dark-slate/40 flex-shrink-0">
-                            {relativeTime(event.createdAt)}
+                            {relativeTime(t, event.createdAt)}
                           </span>
                         </Link>
                       ))}
