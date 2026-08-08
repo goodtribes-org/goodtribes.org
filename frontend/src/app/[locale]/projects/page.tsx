@@ -13,6 +13,7 @@ import ProjectCard from "@/components/ProjectCard";
 import CountryMap from "@/components/CountryMap";
 import { countByCountry } from "@/lib/geo";
 import { isValidProjectPhase } from "@/lib/projectPhase";
+import { computeTaskProgressByProject } from "@/lib/taskProgress";
 
 export const metadata: Metadata = {
   title: "Projects — GoodTribes.org",
@@ -60,7 +61,6 @@ export default async function ProjectsPage({
       include: {
         owner: { select: { name: true } },
         members: { select: { id: true } },
-        _count: { select: { kanbanCards: true } },
       },
     }),
     prisma.project.findMany({ where, select: { owner: { select: { country: true } } } }),
@@ -68,7 +68,7 @@ export default async function ProjectsPage({
 
   const countryCounts = countByCountry(ownerCountries.map((p) => p.owner.country));
 
-  const [projectLikeCounts, doneTaskCounts] = await Promise.all([
+  const [projectLikeCounts, taskProgressCards] = await Promise.all([
     projects.length
       ? prisma.feedLike.groupBy({
           by: ["targetId"],
@@ -77,19 +77,18 @@ export default async function ProjectsPage({
         })
       : Promise.resolve([]),
     projects.length
-      ? prisma.kanbanCard.groupBy({
-          by: ["projectSlug"],
-          where: { projectSlug: { in: projects.map((p) => p.slug) }, column: "DONE" },
-          _count: true,
+      ? prisma.kanbanCard.findMany({
+          where: { projectSlug: { in: projects.map((p) => p.slug) } },
+          select: { projectSlug: true, column: true, subtasks: { select: { done: true } } },
         })
       : Promise.resolve([]),
   ]);
   const likesByProjectId = new Map(projectLikeCounts.map((g) => [g.targetId, g._count]));
-  const doneTasksBySlug = new Map(doneTaskCounts.map((g) => [g.projectSlug, g._count]));
+  const taskProgressBySlug = computeTaskProgressByProject(taskProgressCards);
   const projectsWithLikes = projects.map((p) => ({
     ...p,
     likes: likesByProjectId.get(p.id) ?? 0,
-    kanbanCardsDone: doneTasksBySlug.get(p.slug) ?? 0,
+    taskProgress: taskProgressBySlug.get(p.slug) ?? { total: 0, done: 0 },
   }));
 
   const rawParams = { sort: sortParam, q, phase, category, sdg, page: pageStr };

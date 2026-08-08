@@ -19,6 +19,7 @@ import LeaderboardWidget from "@/components/LeaderboardWidget";
 import NewMembersWidget from "@/components/NewMembersWidget";
 import SdgCoverageWidget from "@/components/SdgCoverageWidget";
 import { isValidProjectPhase } from "@/lib/projectPhase";
+import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "next-intl";
 import { getTranslations } from "next-intl/server";
@@ -134,7 +135,6 @@ export default async function HomePage({
       include: {
         owner: { select: { name: true } },
         members: { select: { id: true } },
-        _count: { select: { kanbanCards: true, todoItems: true } },
       },
     }),
     prisma.idea.count({ where: { status: { not: "draft" } } }),
@@ -177,7 +177,7 @@ export default async function HomePage({
   const totalTokens = Math.round(tokenSum._sum.tokens ?? 0);
   const coveredGoals = Array.from(new Set(sdgProjects.flatMap((p) => p.sdgGoals)));
 
-  const [projectLikeCounts, doneTaskCounts] = await Promise.all([
+  const [projectLikeCounts, taskProgressCards] = await Promise.all([
     projects.length
       ? prisma.feedLike.groupBy({
           by: ["targetId"],
@@ -186,19 +186,18 @@ export default async function HomePage({
         })
       : Promise.resolve([]),
     projects.length
-      ? prisma.kanbanCard.groupBy({
-          by: ["projectSlug"],
-          where: { projectSlug: { in: projects.map((p) => p.slug) }, column: "DONE" },
-          _count: true,
+      ? prisma.kanbanCard.findMany({
+          where: { projectSlug: { in: projects.map((p) => p.slug) } },
+          select: { projectSlug: true, column: true, subtasks: { select: { done: true } } },
         })
       : Promise.resolve([]),
   ]);
   const likesByProjectId = new Map(projectLikeCounts.map((g) => [g.targetId, g._count]));
-  const doneTasksBySlug = new Map(doneTaskCounts.map((g) => [g.projectSlug, g._count]));
+  const taskProgressBySlug = computeTaskProgressByProject(taskProgressCards);
   const projectsWithLikes = projects.map((p) => ({
     ...p,
     likes: likesByProjectId.get(p.id) ?? 0,
-    kanbanCardsDone: doneTasksBySlug.get(p.slug) ?? 0,
+    taskProgress: taskProgressBySlug.get(p.slug) ?? { total: 0, done: 0 },
   }));
 
   const ideasWithVote = ideas.map((idea) => ({ ...idea, myVoteId: idea.votes?.[0]?.id ?? null }));

@@ -23,6 +23,7 @@ import { handwritingFont } from "@/lib/fonts";
 import { isLeadRole, isSiteAdmin } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
+import { computeTaskProgress } from "@/lib/taskProgress";
 import ShareButton from "@/components/ShareButton";
 import LikeCommentBlock from "@/components/LikeCommentBlock";
 import { getLikeCommentData } from "@/lib/socialInteractions";
@@ -343,10 +344,6 @@ export default async function ProjectDetailPage({
         )
       )
     : null;
-  const totalTasks = kanbanCards.length;
-  const doneTasks = kanbanCards.filter((c) => c.column === "DONE").length;
-  const taskPct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
-
   const openGithub = kanbanCards.filter(
     (c) => c.source === "github" && c.githubState === "open" && !c.githubMerged
   );
@@ -764,10 +761,7 @@ export default async function ProjectDetailPage({
               { key: "REVIEW",  label: t("columnReview"),  bg: "#f59e0b" },
               { key: "DONE",    label: t("columnDone"),    bg: "#43aa8b" },
             ];
-            const total = kanbanCards.reduce((sum, k) => sum + 1 + (k.subtasks?.length ?? 0), 0);
-            const doneCards = kanbanCards.filter(k => k.column === "DONE").length;
-            const doneSubtasks = kanbanCards.reduce((sum, k) => sum + (k.subtasks?.filter(s => s.done).length ?? 0), 0);
-            const done = doneCards + doneSubtasks;
+            const { total, done } = computeTaskProgress(kanbanCards);
             const counts = cols.map(c => {
               if (c.key === "DONE") return done;
               const cardsInCol = kanbanCards.filter(k => k.column === c.key);

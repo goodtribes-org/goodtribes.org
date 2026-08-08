@@ -8,6 +8,7 @@ import { htmlToPreviewText } from "@/lib/renderBody";
 import SortToggleContainer from "@/components/SortToggleContainer";
 import Pagination from "@/components/Pagination";
 import ProjectCard from "@/components/ProjectCard";
+import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import SandboxHero from "./SandboxHero";
 
 export const metadata: Metadata = {
@@ -54,7 +55,6 @@ export default async function SandboxPage({
       include: {
         owner: { select: { name: true } },
         members: { select: { id: true } },
-        _count: { select: { kanbanCards: true, todoItems: true } },
       },
     }),
     prisma.idea.findMany({
@@ -86,7 +86,7 @@ export default async function SandboxPage({
     prisma.kanbanCard.count({ where: { column: "DONE", project: { isSandbox: true } } }),
   ]);
 
-  const [projectLikeCounts, doneTaskCounts] = await Promise.all([
+  const [projectLikeCounts, taskProgressCards] = await Promise.all([
     projects.length
       ? prisma.feedLike.groupBy({
           by: ["targetId"],
@@ -95,19 +95,18 @@ export default async function SandboxPage({
         })
       : Promise.resolve([]),
     projects.length
-      ? prisma.kanbanCard.groupBy({
-          by: ["projectSlug"],
-          where: { projectSlug: { in: projects.map((p) => p.slug) }, column: "DONE" },
-          _count: true,
+      ? prisma.kanbanCard.findMany({
+          where: { projectSlug: { in: projects.map((p) => p.slug) } },
+          select: { projectSlug: true, column: true, subtasks: { select: { done: true } } },
         })
       : Promise.resolve([]),
   ]);
   const likesByProjectId = new Map(projectLikeCounts.map((g) => [g.targetId, g._count]));
-  const doneTasksBySlug = new Map(doneTaskCounts.map((g) => [g.projectSlug, g._count]));
+  const taskProgressBySlug = computeTaskProgressByProject(taskProgressCards);
   const projectsWithLikes = projects.map((p) => ({
     ...p,
     likes: likesByProjectId.get(p.id) ?? 0,
-    kanbanCardsDone: doneTasksBySlug.get(p.slug) ?? 0,
+    taskProgress: taskProgressBySlug.get(p.slug) ?? { total: 0, done: 0 },
   }));
 
   const rawParams = { sort: sortParam, page: pageStr };

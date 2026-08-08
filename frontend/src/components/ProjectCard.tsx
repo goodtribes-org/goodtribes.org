@@ -17,8 +17,7 @@ export type ProjectCardData = {
   likes: number;
   owner: { name: string | null };
   members: { id: string }[];
-  _count: { kanbanCards: number };
-  kanbanCardsDone: number;
+  taskProgress: { total: number; done: number };
 };
 
 export default function ProjectCard({
@@ -119,7 +118,7 @@ export default function ProjectCard({
           </div>
           <div className="px-1">
             <p className="text-xs font-semibold text-dark-slate">
-              {project.kanbanCardsDone}/{project._count.kanbanCards}
+              {project.taskProgress.done}/{project.taskProgress.total}
             </p>
             <p className="text-[10px] text-dark-slate/50 leading-tight">{t("tasks")}</p>
           </div>
