@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { htmlToPreviewText } from "@/lib/renderBody";
 import { timeAgo } from "@/lib/timeAgo";
 import { FEED_LIKE_EMOJI } from "@/lib/feedLikeEmoji";
+import { getTranslations } from "next-intl/server";
 
 export { FEED_LIKE_EMOJI };
 
@@ -25,21 +26,28 @@ export type PulseItem = {
   projectSlug?: string;
 };
 
-const activityLabel: Record<string, string> = {
-  member_joined:  "gick med i projektet",
-  task_completed: "slutförde en uppgift",
-  task_created:   "skapade en uppgift",
-  task_moved:     "flyttade en uppgift",
-  todo_completed: "checkade av en punkt",
-};
+// Both maps are built per-call (not module-level) since the strings are locale-dependent —
+// see the `getTranslations` calls at the top of `fetchActivityItems`/`getFeedInteractionData`,
+// which read the request-scoped locale set by `setRequestLocale` in `[locale]/layout.tsx`.
+function buildActivityLabel(t: Awaited<ReturnType<typeof getTranslations<"ActivityFeed">>>): Record<string, string> {
+  return {
+    member_joined: t("memberJoined"),
+    task_completed: t("taskCompleted"),
+    task_created: t("taskCreated"),
+    task_moved: t("taskMoved"),
+    todo_completed: t("todoCompleted"),
+  };
+}
 
-const columnLabel: Record<string, string> = {
-  BACKLOG: "Wishlist",
-  TODO: "Att göra",
-  DOING: "Pågår",
-  REVIEW: "Granskning",
-  DONE: "Klart",
-};
+function buildColumnLabel(t: Awaited<ReturnType<typeof getTranslations<"KanbanShared">>>): Record<string, string> {
+  return {
+    BACKLOG: t("columnBacklog"),
+    TODO: t("columnTodo"),
+    DOING: t("columnDoing"),
+    REVIEW: t("columnReview"),
+    DONE: t("columnDone"),
+  };
+}
 
 // Each source is fetched independently and over-fetched, then merged/sorted/sliced by the
 // caller — so `perSourceLimit` should be at least as large as the window the caller needs.
@@ -53,6 +61,13 @@ export async function fetchActivityItems(
   opts?: { projectId: string; projectSlug: string }
 ): Promise<PulseItem[]> {
   const LIMIT = perSourceLimit;
+
+  const [t, tColumn] = await Promise.all([
+    getTranslations("ActivityFeed"),
+    getTranslations("KanbanShared"),
+  ]);
+  const activityLabel = buildActivityLabel(t);
+  const columnLabel = buildColumnLabel(tColumn);
 
   const [feedPosts, blogPosts, milestones, projects, ideas, activities, channelMessages, kanbanComments, ideaComments] =
     await Promise.all([
@@ -183,8 +198,8 @@ export async function fetchActivityItems(
     ...feedPosts.map((p) => ({
       id: `post-${p.id}`, targetType: "feedPost", targetId: p.id,
       avatarName: p.author.name, avatarImage: p.author.image,
-      projectName: "Inlägg", projectHref: null, projectId: null,
-      action: "skrev ett inlägg",
+      projectName: t("postsPseudoProjectName"), projectHref: null, projectId: null,
+      action: t("wrotePost"),
       body: p.body,
       imageUrl: p.imageUrl,
       href: null, date: p.createdAt,
@@ -193,32 +208,32 @@ export async function fetchActivityItems(
       id: `blog-${p.id}`, targetType: "blogPost", targetId: p.id,
       avatarName: p.author.name, avatarImage: p.author.image, projectImage: p.project.imageUrl,
       projectName: p.project.title, projectHref: `/projects/${p.projectSlug}`, projectId: p.project.id,
-      action: "postade en uppdatering",
+      action: t("postedUpdate"),
       href: `/projects/${p.projectSlug}/updates#post-${p.id}`, date: p.createdAt,
     })),
     ...milestones.map((m) => ({
       id: `milestone-${m.id}`, targetType: "milestone", targetId: m.id,
       avatarName: m.createdBy.name, avatarImage: m.createdBy.image, projectImage: m.project.imageUrl,
       projectName: m.project.title, projectHref: `/projects/${m.project.slug}`, projectId: m.project.id,
-      action: `Milstolpe klar: ${m.title}`,
+      action: t("milestoneCompleted", { title: m.title }),
       href: `/projects/${m.project.slug}/calendar#milestone-${m.id}`, date: m.updatedAt,
     })),
     ...projects.map((p) => ({
       id: `project-${p.id}`, targetType: "project", targetId: p.id,
       avatarName: p.owner.name, avatarImage: p.owner.image, projectImage: p.imageUrl,
       projectName: p.title, projectHref: `/projects/${p.slug}`, projectId: p.id,
-      action: "Nytt projekt skapat",
+      action: t("newProjectCreated"),
       href: `/projects/${p.slug}`, date: p.createdAt,
     })),
     ...ideas.map((i) => {
       const parts = [];
-      if (i.problem) parts.push(`Problem: ${i.problem}`);
-      if (i.solution) parts.push(`Lösning: ${i.solution}`);
+      if (i.problem) parts.push(`${t("ideaProblemLabel")} ${i.problem}`);
+      if (i.solution) parts.push(`${t("ideaSolutionLabel")} ${i.solution}`);
       return {
         id: `idea-${i.id}`, targetType: "idea", targetId: i.id,
         avatarName: i.author.name, avatarImage: i.author.image,
-        projectName: "Idéer", projectHref: "/ideas", projectId: null,
-        action: `Ny idé: ${i.title}`,
+        projectName: t("ideasPseudoProjectName"), projectHref: "/ideas", projectId: null,
+        action: t("newIdea", { title: i.title }),
         body: parts.length > 0 ? parts.join(" ") : undefined,
         href: `/ideas/${i.id}`, date: i.createdAt,
       };
@@ -233,12 +248,15 @@ export async function fetchActivityItems(
       const isCardActivity = a.type === "task_completed" || a.type === "task_created" || a.type === "task_moved";
       const action =
         a.type === "task_completed" && payload?.title
-          ? `slutförde uppgiften "${payload.title}"`
+          ? t("taskCompletedWithTitle", { title: payload.title })
           : a.type === "task_created" && payload?.title
-          ? `skapade uppgiften "${payload.title}"`
+          ? t("taskCreatedWithTitle", { title: payload.title })
           : a.type === "task_moved" && payload?.title
-          ? `flyttade uppgiften "${payload.title}" till ${columnLabel[payload.toColumn ?? ""] ?? payload.toColumn}`
-          : activityLabel[a.type] ?? "aktivitet";
+          ? t("taskMovedWithTitle", {
+              title: payload.title,
+              column: columnLabel[payload.toColumn ?? ""] ?? payload.toColumn ?? "",
+            })
+          : activityLabel[a.type] ?? t("genericActivity");
       const href =
         isCardActivity && payload?.cardId
           ? `/projects/${project.slug}/tasks?card=${payload.cardId}`
@@ -268,7 +286,7 @@ export async function fetchActivityItems(
         projectSlug: project.slug,
         avatarName: m.author.name, avatarImage: m.author.image, projectImage: project.imageUrl,
         projectName: project.title, projectHref: `/projects/${project.slug}`, projectId: project.id,
-        action: "skickade ett meddelande",
+        action: t("sentMessage"),
         body: htmlToPreviewText(m.body),
         href: `/messages/${m.roomId}`, date: m.createdAt,
       };
@@ -279,15 +297,15 @@ export async function fetchActivityItems(
       projectSlug: c.card.projectSlug,
       avatarName: c.author.name, avatarImage: c.author.image, projectImage: c.card.project.imageUrl,
       projectName: c.card.project.title, projectHref: `/projects/${c.card.projectSlug}`, projectId: c.card.project.id,
-      action: `kommenterade på "${c.card.title}"`,
+      action: t("commentedOnCard", { title: c.card.title }),
       body: htmlToPreviewText(c.body),
       href: `/projects/${c.card.projectSlug}/tasks?card=${c.card.id}`, date: c.createdAt,
     })),
     ...ideaComments.map((c) => ({
       id: `icomment-${c.id}`, targetType: "ideaComment", targetId: c.id,
       avatarName: c.author.name, avatarImage: c.author.image,
-      projectName: "Idéer", projectHref: "/ideas", projectId: null,
-      action: `kommenterade på idén "${c.idea.title}"`,
+      projectName: t("ideasPseudoProjectName"), projectHref: "/ideas", projectId: null,
+      action: t("commentedOnIdea", { title: c.idea.title }),
       body: c.content,
       href: `/ideas/${c.idea.id}#comment-${c.id}`, date: c.createdAt,
     })),
@@ -320,6 +338,8 @@ export const MEMBERSHIP_GATED_TARGET_TYPES = new Set(["kanbanCardComment", "chan
 // feed and one made on the card/channel itself are the same row and always show identically
 // on both surfaces.
 export async function getFeedInteractionData(items: PulseItem[], userId: string | null): Promise<FeedInteractionData> {
+  const t = await getTranslations("ActivityFeed");
+  const someone = t("someone");
   const kanbanItems = items.filter((i) => i.targetType === "kanbanCardComment" && i.cardId);
   const channelItems = items.filter((i) => i.targetType === "channelMessage");
   const otherItems = items.filter((i) => i.targetType !== "kanbanCardComment" && i.targetType !== "channelMessage");
@@ -390,14 +410,14 @@ export async function getFeedInteractionData(items: PulseItem[], userId: string 
   for (const c of otherComments) {
     const key = `${c.targetType}:${c.targetId}`;
     const arr = commentsByTarget.get(key) ?? [];
-    arr.push({ id: c.id, author: c.author.name ?? "Någon", body: c.body, timeAgo: timeAgo(c.createdAt) });
+    arr.push({ id: c.id, author: c.author.name ?? someone, body: c.body, timeAgo: timeAgo(c.createdAt) });
     commentsByTarget.set(key, arr);
   }
 
   const commentsByCardId = new Map<string, FeedComment[]>();
   for (const c of cardComments) {
     const arr = commentsByCardId.get(c.cardId) ?? [];
-    arr.push({ id: c.id, author: c.author.name ?? "Någon", body: htmlToPreviewText(c.body), timeAgo: timeAgo(c.createdAt) });
+    arr.push({ id: c.id, author: c.author.name ?? someone, body: htmlToPreviewText(c.body), timeAgo: timeAgo(c.createdAt) });
     commentsByCardId.set(c.cardId, arr);
   }
   for (const item of kanbanItems) {
@@ -407,7 +427,7 @@ export async function getFeedInteractionData(items: PulseItem[], userId: string 
   const commentsByThreadParent = new Map<string, FeedComment[]>();
   for (const c of channelReplies) {
     const arr = commentsByThreadParent.get(c.threadParentId!) ?? [];
-    arr.push({ id: c.id, author: c.author.name ?? "Någon", body: htmlToPreviewText(c.body), timeAgo: timeAgo(c.createdAt) });
+    arr.push({ id: c.id, author: c.author.name ?? someone, body: htmlToPreviewText(c.body), timeAgo: timeAgo(c.createdAt) });
     commentsByThreadParent.set(c.threadParentId!, arr);
   }
   for (const item of channelItems) {

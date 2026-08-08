@@ -5,12 +5,18 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma"
 import { SdgIcon } from "@/components/SdgIcon";
 import ShareButton from "@/components/ShareButton";
-import { APP_URL } from "@/lib/metadata";
+import { APP_URL, buildMetadata } from "@/lib/metadata";
+import { getTranslations } from "next-intl/server";
 
-export const metadata: Metadata = {
-  title: "Hall of Impact — GoodTribes.org",
-  description: "Projekt som förändrat världen",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "HallOfImpactPage" });
+  return buildMetadata({ locale, path: "/hall-of-impact", title: t("heading"), description: t("subtitle") });
+}
 
 export default async function HallOfImpactPage({
   params,
@@ -18,6 +24,7 @@ export default async function HallOfImpactPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "HallOfImpactPage" });
   const projects = await prisma.project.findMany({
     where: { OR: [{ phase: "IMPACT" }, { archivedAt: { not: null } }] },
     include: {
@@ -42,28 +49,28 @@ export default async function HallOfImpactPage({
     <div className="max-w-5xl space-y-10">
       {/* Hero */}
       <div className="text-center py-8">
-        <h1 className="text-3xl font-bold text-dark-slate mb-2">Hall of Impact</h1>
-        <p className="text-dark-slate/50 text-sm mb-4">Projekt som förändrat världen</p>
+        <h1 className="text-3xl font-bold text-dark-slate mb-2">{t("heading")}</h1>
+        <p className="text-dark-slate/50 text-sm mb-4">{t("subtitle")}</p>
         <div className="flex justify-center mb-6">
-          <ShareButton url={`${APP_URL}/${locale}/hall-of-impact`} title="Hall of Impact — GoodTribes.org" />
+          <ShareButton url={`${APP_URL}/${locale}/hall-of-impact`} title={`${t("heading")} — GoodTribes.org`} />
         </div>
 
         <div className="grid grid-cols-3 gap-3 sm:inline-flex sm:gap-8 bg-dry-sage/30 rounded-xl px-4 sm:px-8 py-4">
           <div className="text-center">
             <p className="text-2xl font-bold text-seagrass">{projects.length}</p>
-            <p className="text-xs text-dark-slate/50 mt-0.5">Avslutade projekt</p>
+            <p className="text-xs text-dark-slate/50 mt-0.5">{t("completedProjects")}</p>
           </div>
           <div className="hidden sm:block w-px bg-muted-teal/30" />
           <div className="text-center">
             <p className="text-2xl font-bold text-seagrass">{totalAlumni}</p>
-            <p className="text-xs text-dark-slate/50 mt-0.5">Bidragsgivare totalt</p>
+            <p className="text-xs text-dark-slate/50 mt-0.5">{t("totalContributors")}</p>
           </div>
           <div className="hidden sm:block w-px bg-muted-teal/30" />
           <div className="text-center">
             <p className="text-2xl font-bold text-seagrass">
               {projects.reduce((sum, p) => sum + p.impactMetrics.length, 0)}
             </p>
-            <p className="text-xs text-dark-slate/50 mt-0.5">Impact-mätvärden</p>
+            <p className="text-xs text-dark-slate/50 mt-0.5">{t("impactMetrics")}</p>
           </div>
         </div>
       </div>
@@ -73,7 +80,7 @@ export default async function HallOfImpactPage({
         <div className="border border-dashed border-muted-teal/40 rounded-xl p-16 text-center">
           <p className="text-4xl mb-4">🏆</p>
           <p className="text-dark-slate/40 text-sm">
-            Inga avslutade projekt ännu. De bästa projekten hamnar här.
+            {t("emptyState")}
           </p>
         </div>
       ) : (
@@ -118,7 +125,7 @@ export default async function HallOfImpactPage({
                 {/* SDG badges */}
                 {project.sdgGoals.length > 0 && (
                   <div className="flex flex-wrap items-center gap-1">
-                    <span className="text-[9px] font-medium text-dark-slate/40 mr-0.5">Agenda 2030:</span>
+                    <span className="text-[9px] font-medium text-dark-slate/40 mr-0.5">{t("agenda2030")}</span>
                     {project.sdgGoals.slice(0, 7).map((n) => (
                       <SdgIcon key={n} n={n} size={24} />
                     ))}
@@ -131,7 +138,7 @@ export default async function HallOfImpactPage({
                     {project.impactMetrics.map((m) => (
                       <div key={m.label} className="flex items-center gap-1.5">
                         <span className="text-seagrass font-bold text-xs">
-                          {m.currentValue.toLocaleString("sv-SE")}
+                          {m.currentValue.toLocaleString(locale)}
                         </span>
                         <span className="text-xs text-dark-slate/50">
                           {m.unit} {m.label.toLowerCase()}
@@ -144,10 +151,10 @@ export default async function HallOfImpactPage({
                 {/* Footer */}
                 <div className="mt-auto pt-2 flex items-center justify-between text-xs text-dark-slate/40">
                   <span>
-                    {project.alumni.length} bidragsgivare
+                    {t("contributorsCount", { count: project.alumni.length })}
                   </span>
                   <span className="text-coral group-hover:underline text-xs font-medium">
-                    Läs mer →
+                    {t("readMore")}
                   </span>
                 </div>
               </div>

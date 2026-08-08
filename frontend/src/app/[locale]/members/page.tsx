@@ -3,15 +3,22 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import MembersFilter from "@/components/MembersFilter";
 import Pagination from "@/components/Pagination";
+import { getTranslations } from "next-intl/server";
+import { buildMetadata } from "@/lib/metadata";
 
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 24;
 
-export const metadata: Metadata = {
-  title: "Members — GoodTribes.org",
-  description: "Members of the GoodTribes network",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "MembersPage" });
+  return buildMetadata({ locale, path: "/members", title: t("pageTitle"), description: t("metaDescription") });
+}
 
 export default async function MembersPage({
   searchParams,
@@ -20,6 +27,7 @@ export default async function MembersPage({
 }) {
   const { skill, page: pageStr } = await searchParams;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
+  const t = await getTranslations("MembersPage");
 
   const where = {
     showProfile: true,
@@ -55,10 +63,8 @@ export default async function MembersPage({
   return (
     <div>
       <div className="mb-10">
-        <h1 className="text-4xl font-bold mb-2">Members</h1>
-        <p className="text-lg text-dark-slate/70">
-          People in the GoodTribes network who have chosen to be visible.
-        </p>
+        <h1 className="text-4xl font-bold mb-2">{t("pageTitle")}</h1>
+        <p className="text-lg text-dark-slate/70">{t("subtitle")}</p>
       </div>
 
       <MembersFilter skills={allSkills} activeSkill={skill} total={total} />
@@ -66,16 +72,16 @@ export default async function MembersPage({
       {members.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <p className="text-dark-slate/50 mb-2">
-            {skill ? "No members with that skill yet." : "No members have chosen to show their profile yet."}
+            {skill ? t("noMembersWithSkill") : t("noMembersAtAll")}
           </p>
           <p className="text-sm text-dark-slate/40 mb-4">
-            Want to appear here?{" "}
+            {t("wantToAppearHere")}{" "}
             <Link href="/profile/setup" className="text-coral hover:underline">
-              Set up your profile
+              {t("setUpYourProfile")}
             </Link>
           </p>
           {skill && (
-            <Link href="/members" className="text-xs text-dark-slate/40 hover:underline">Clear filter →</Link>
+            <Link href="/members" className="text-xs text-dark-slate/40 hover:underline">{t("clearFilter")}</Link>
           )}
         </div>
       ) : (

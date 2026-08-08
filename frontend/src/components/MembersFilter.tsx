@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export default function MembersFilter({
   skills,
@@ -12,6 +13,7 @@ export default function MembersFilter({
   total: number;
 }) {
   const router = useRouter();
+  const t = useTranslations("MembersFilter");
 
   function toggle(slug: string) {
     if (activeSkill === slug) router.push("/members");
@@ -21,7 +23,7 @@ export default function MembersFilter({
   return (
     <div className="mb-8">
       <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs text-dark-slate/50 font-medium mr-1">Filter by skill</span>
+        <span className="text-xs text-dark-slate/50 font-medium mr-1">{t("filterBySkill")}</span>
         {skills.map((s) => (
           <button
             key={s.slug}
@@ -37,7 +39,7 @@ export default function MembersFilter({
         ))}
         {activeSkill && (
           <button onClick={() => router.push("/members")} className="text-xs text-coral hover:underline ml-1">
-            Clear ({total})
+            {t("clear", { count: total })}
           </button>
         )}
       </div>

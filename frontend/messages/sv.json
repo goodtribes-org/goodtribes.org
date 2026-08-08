@@ -946,23 +946,22 @@
     "noTasksYet": "Inga uppgifter ännu."
   },
   "NewEventForm": {
-    "requiredMark": "*",
     "titleLabel": "Titel",
-    "titlePlaceholderMilestone": "Milstolpens titel",
-    "titlePlaceholderEvent": "Händelsens titel",
+    "milestoneTitlePlaceholder": "Milstolpens titel",
+    "eventTitlePlaceholder": "Händelsens titel",
     "descriptionLabel": "Beskrivning",
     "descriptionPlaceholder": "Valfri beskrivning",
     "typeLabel": "Typ",
-    "optionMeeting": "Möte",
-    "optionDeadline": "Deadline",
-    "optionCustom": "Anpassad",
-    "optionMilestone": "Milstolpe",
+    "typeMeeting": "Möte",
+    "typeDeadline": "Deadline",
+    "typeCustom": "Anpassad",
+    "typeMilestone": "Milstolpe",
     "dueDateLabel": "Förfallodatum",
     "startsAtLabel": "Starttid",
     "endsAtLabel": "Sluttid",
     "submitMilestone": "Skapa milstolpe",
     "submitEvent": "Skapa händelse",
-    "cancelButton": "Avbryt"
+    "cancel": "Avbryt"
   },
   "IdeaGuide": {
     "title": "Snabbstart — {title}",
@@ -1448,26 +1447,6 @@
     "newPagePlaceholder": "Ny sida…",
     "noParentOption": "Ingen överordnad sida"
   },
-  "SprintWorkspace": {
-    "phaseLabelUnderstand": "Förstå",
-    "phaseLabelDiverge": "Skissa",
-    "phaseLabelDecide": "Besluta",
-    "phaseLabelPrototype": "Prototypa",
-    "phaseLabelValidate": "Testa",
-    "guidanceUnderstand": "Samla in \"How Might We\"-frågor om problemet på ritytan och i listan nedan. Bidrag är anonyma här — fokusera på idén, inte på vem som skrev den.",
-    "guidanceDiverge": "Skissa så många lösningar som möjligt på ritytan. Fortfarande anonymt — bredd före perfektion.",
-    "guidanceDecide": "Fördela dina 3 prickar på de skisser från Skissa-fasen som du tror mest på. Bara sammanlagda röster visas, aldrig vem som röstat på vad.",
-    "guidancePrototype": "Bygg en enkel prototyp av den vinnande idén och dela en länk till den.",
-    "guidanceValidate": "Testa prototypen med riktiga användare och samla feedback.",
-    "advancing": "Avancerar…",
-    "advanceButton": "Avancera till nästa fas →",
-    "deleteContentTitle": "Radera fasens innehåll",
-    "deletingContent": "Raderar…",
-    "deleteContentButton": "Radera innehåll",
-    "deleteContentConfirm": "Radera allt innehåll i \"{phase}\" permanent — ritytan, bidrag och röster? Det går inte att ångra.",
-    "helpButton": "Hjälp",
-    "phaseNotOpened": "Den här fasen har inte öppnats än."
-  },
   "SprintCanvas": {
     "syncedNotice": "Synkroniserat med en annan deltagares ändringar."
   },
@@ -1480,21 +1459,6 @@
     "commentPlaceholder": "Skriv en kommentar…",
     "hideComments": "Dölj kommentarer",
     "commentsCount": "Kommentarer ({count})"
-  },
-  "ContributionBoard": {
-    "typeHmw": "How Might We",
-    "typeSketch": "Skiss",
-    "typePrototypeLink": "Prototyplänk",
-    "typeFeedback": "Feedback",
-    "placeholderHmw": "How might we…?",
-    "placeholderSketch": "Beskriv din skiss…",
-    "placeholderPrototypeLink": "Länk till prototypen…",
-    "placeholderFeedback": "Din feedback…",
-    "submitting": "Skickar…",
-    "submitButton": "Skicka bidrag",
-    "unknownAuthor": "Okänd",
-    "anonymousContribution": "Anonymt bidrag",
-    "emptyState": "Inga bidrag ännu."
   },
   "DotVoting": {
     "typeHmw": "How Might We",
@@ -1521,25 +1485,6 @@
     "paceTogether": "Gemensamt",
     "paceSpreadOut": "Utspritt över tid",
     "emptyState": "Inga sprintar ännu."
-  },
-  "NewSprintForm": {
-    "heading": "Starta ny sprint",
-    "nameLabel": "Namn",
-    "namePlaceholder": "T.ex. Onboarding-flödet",
-    "paceLabel": "Tempo",
-    "paceTogetherLabel": "Gemensamt",
-    "paceTogetherDescription": "— inga deadlines, en ledare avancerar faserna manuellt när gruppen är redo.",
-    "paceSpreadOutLabel": "Utspritt över tid",
-    "paceSpreadOutDescription": "— automatiska deadlines, fasen stängs och nästa öppnas av sig själv.",
-    "phaseDaysLabel": "Dagar per fas",
-    "submitButtonPending": "Skapar…",
-    "submitButton": "Starta sprint"
-  },
-  "DeleteSprintButton": {
-    "confirmMessage": "Radera sprinten \"{sprintName}\" permanent? Alla bidrag, röster och ritytor i den försvinner. Det går inte att ångra.",
-    "deleteTitle": "Radera sprint",
-    "deleting": "Raderar…",
-    "delete": "Radera"
   },
   "SprintPhaseTabs": {
     "phaseUnderstand": "Förstå",
@@ -2003,24 +1948,6 @@
     "submittingButton": "Skapar…",
     "nextButton": "Nästa →"
   },
-  "NewEventForm": {
-    "titleLabel": "Titel",
-    "milestoneTitlePlaceholder": "Milstolpens titel",
-    "eventTitlePlaceholder": "Händelsens titel",
-    "descriptionLabel": "Beskrivning",
-    "descriptionPlaceholder": "Valfri beskrivning",
-    "typeLabel": "Typ",
-    "typeMeeting": "Möte",
-    "typeDeadline": "Deadline",
-    "typeCustom": "Anpassad",
-    "typeMilestone": "Milstolpe",
-    "dueDateLabel": "Förfallodatum",
-    "startsAtLabel": "Starttid",
-    "endsAtLabel": "Sluttid",
-    "submitMilestone": "Skapa milstolpe",
-    "submitEvent": "Skapa händelse",
-    "cancel": "Avbryt"
-  },
   "WorkspaceProposePartnershipForm": {
     "genericError": "Hittade ingen organisation med den slugen, eller något annat gick fel.",
     "successMessage": "Förslaget har skickats!",
@@ -2476,5 +2403,61 @@
   },
   "PhaseMenuBar": {
     "guideLinkLabel": "{phase} guiden"
+  },
+  "ActivityFeed": {
+    "memberJoined": "gick med i projektet",
+    "taskCompleted": "slutförde en uppgift",
+    "taskCreated": "skapade en uppgift",
+    "taskMoved": "flyttade en uppgift",
+    "todoCompleted": "checkade av en punkt",
+    "genericActivity": "aktivitet",
+    "taskCompletedWithTitle": "slutförde uppgiften \"{title}\"",
+    "taskCreatedWithTitle": "skapade uppgiften \"{title}\"",
+    "taskMovedWithTitle": "flyttade uppgiften \"{title}\" till {column}",
+    "wrotePost": "skrev ett inlägg",
+    "postedUpdate": "postade en uppdatering",
+    "milestoneCompleted": "Milstolpe klar: {title}",
+    "newProjectCreated": "Nytt projekt skapat",
+    "newIdea": "Ny idé: {title}",
+    "ideaProblemLabel": "Problem:",
+    "ideaSolutionLabel": "Lösning:",
+    "sentMessage": "skickade ett meddelande",
+    "commentedOnCard": "kommenterade på \"{title}\"",
+    "commentedOnIdea": "kommenterade på idén \"{title}\"",
+    "postsPseudoProjectName": "Inlägg",
+    "ideasPseudoProjectName": "Idéer",
+    "someone": "Någon"
+  },
+  "MembersFilter": {
+    "filterBySkill": "Filtrera efter kompetens",
+    "clear": "Rensa ({count})"
+  },
+  "MembersPage": {
+    "pageTitle": "Medlemmar",
+    "metaDescription": "Medlemmar i GoodTribes-nätverket",
+    "subtitle": "Personer i GoodTribes-nätverket som har valt att synas.",
+    "noMembersWithSkill": "Inga medlemmar med den kompetensen än.",
+    "noMembersAtAll": "Inga medlemmar har valt att visa sin profil än.",
+    "wantToAppearHere": "Vill du synas här?",
+    "setUpYourProfile": "Skapa din profil",
+    "clearFilter": "Rensa filter →"
+  },
+  "HallOfImpactPage": {
+    "heading": "Hall of Impact",
+    "subtitle": "Projekt som förändrat världen",
+    "completedProjects": "Avslutade projekt",
+    "totalContributors": "Bidragsgivare totalt",
+    "impactMetrics": "Impact-mätvärden",
+    "emptyState": "Inga avslutade projekt ännu. De bästa projekten hamnar här.",
+    "agenda2030": "Agenda 2030:",
+    "contributorsCount": "{count} bidragsgivare",
+    "readMore": "Läs mer →"
+  },
+  "FeedPage": {
+    "pageTitle": "Plattformsflöde",
+    "metaDescription": "Senaste aktivitet från hela GoodTribes",
+    "heading": "Plattformsflöde",
+    "subtitle": "Senaste aktivitet från hela GoodTribes",
+    "emptyMessage": "Ingen aktivitet ännu."
   }
 }

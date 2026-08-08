@@ -946,23 +946,22 @@
     "noTasksYet": "No tasks yet."
   },
   "NewEventForm": {
-    "requiredMark": "*",
     "titleLabel": "Title",
-    "titlePlaceholderMilestone": "Milestone title",
-    "titlePlaceholderEvent": "Event title",
+    "milestoneTitlePlaceholder": "Milestone title",
+    "eventTitlePlaceholder": "Event title",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Optional description",
     "typeLabel": "Type",
-    "optionMeeting": "Meeting",
-    "optionDeadline": "Deadline",
-    "optionCustom": "Custom",
-    "optionMilestone": "Milestone",
+    "typeMeeting": "Meeting",
+    "typeDeadline": "Deadline",
+    "typeCustom": "Custom",
+    "typeMilestone": "Milestone",
     "dueDateLabel": "Due date",
     "startsAtLabel": "Start time",
     "endsAtLabel": "End time",
     "submitMilestone": "Create milestone",
     "submitEvent": "Create event",
-    "cancelButton": "Cancel"
+    "cancel": "Cancel"
   },
   "IdeaGuide": {
     "title": "Quick start — {title}",
@@ -1448,26 +1447,6 @@
     "newPagePlaceholder": "New page…",
     "noParentOption": "No parent page"
   },
-  "SprintWorkspace": {
-    "phaseLabelUnderstand": "Understand",
-    "phaseLabelDiverge": "Sketch",
-    "phaseLabelDecide": "Decide",
-    "phaseLabelPrototype": "Prototype",
-    "phaseLabelValidate": "Validate",
-    "guidanceUnderstand": "Collect \"How Might We\" questions about the problem on the canvas and in the list below. Contributions are anonymous here — focus on the idea, not who wrote it.",
-    "guidanceDiverge": "Sketch as many solutions as possible on the canvas. Still anonymous — breadth before perfection.",
-    "guidanceDecide": "Distribute your 3 dots across the sketches from the Sketch phase that you believe in most. Only the combined votes are shown, never who voted for what.",
-    "guidancePrototype": "Build a simple prototype of the winning idea and share a link to it.",
-    "guidanceValidate": "Test the prototype with real users and gather feedback.",
-    "advancing": "Advancing…",
-    "advanceButton": "Advance to next phase →",
-    "deleteContentTitle": "Delete phase content",
-    "deletingContent": "Deleting…",
-    "deleteContentButton": "Delete content",
-    "deleteContentConfirm": "Permanently delete all content in \"{phase}\" — the canvas, contributions, and votes? This cannot be undone.",
-    "helpButton": "Help",
-    "phaseNotOpened": "This phase hasn't been opened yet."
-  },
   "SprintCanvas": {
     "syncedNotice": "Synced with another participant's changes."
   },
@@ -1480,21 +1459,6 @@
     "commentPlaceholder": "Write a comment…",
     "hideComments": "Hide comments",
     "commentsCount": "Comments ({count})"
-  },
-  "ContributionBoard": {
-    "typeHmw": "How Might We",
-    "typeSketch": "Sketch",
-    "typePrototypeLink": "Prototype link",
-    "typeFeedback": "Feedback",
-    "placeholderHmw": "How might we…?",
-    "placeholderSketch": "Describe your sketch…",
-    "placeholderPrototypeLink": "Link to the prototype…",
-    "placeholderFeedback": "Your feedback…",
-    "submitting": "Submitting…",
-    "submitButton": "Submit contribution",
-    "unknownAuthor": "Unknown",
-    "anonymousContribution": "Anonymous contribution",
-    "emptyState": "No contributions yet."
   },
   "DotVoting": {
     "typeHmw": "How Might We",
@@ -1521,25 +1485,6 @@
     "paceTogether": "Together",
     "paceSpreadOut": "Spread out over time",
     "emptyState": "No sprints yet."
-  },
-  "NewSprintForm": {
-    "heading": "Start new sprint",
-    "nameLabel": "Name",
-    "namePlaceholder": "E.g. Onboarding flow",
-    "paceLabel": "Pace",
-    "paceTogetherLabel": "Together",
-    "paceTogetherDescription": "— no deadlines, a lead advances the phases manually when the group is ready.",
-    "paceSpreadOutLabel": "Spread out over time",
-    "paceSpreadOutDescription": "— automatic deadlines, the phase closes and the next one opens on its own.",
-    "phaseDaysLabel": "Days per phase",
-    "submitButtonPending": "Creating…",
-    "submitButton": "Start sprint"
-  },
-  "DeleteSprintButton": {
-    "confirmMessage": "Delete the sprint \"{sprintName}\" permanently? All contributions, votes, and canvases in it will be lost. This cannot be undone.",
-    "deleteTitle": "Delete sprint",
-    "deleting": "Deleting…",
-    "delete": "Delete"
   },
   "SprintPhaseTabs": {
     "phaseUnderstand": "Understand",
@@ -2003,24 +1948,6 @@
     "submittingButton": "Creating…",
     "nextButton": "Next →"
   },
-  "NewEventForm": {
-    "titleLabel": "Title",
-    "milestoneTitlePlaceholder": "Milestone title",
-    "eventTitlePlaceholder": "Event title",
-    "descriptionLabel": "Description",
-    "descriptionPlaceholder": "Optional description",
-    "typeLabel": "Type",
-    "typeMeeting": "Meeting",
-    "typeDeadline": "Deadline",
-    "typeCustom": "Custom",
-    "typeMilestone": "Milestone",
-    "dueDateLabel": "Due date",
-    "startsAtLabel": "Start time",
-    "endsAtLabel": "End time",
-    "submitMilestone": "Create milestone",
-    "submitEvent": "Create event",
-    "cancel": "Cancel"
-  },
   "WorkspaceProposePartnershipForm": {
     "genericError": "Couldn't find an organisation with that slug, or something else went wrong.",
     "successMessage": "The proposal has been sent!",
@@ -2476,5 +2403,61 @@
   },
   "PhaseMenuBar": {
     "guideLinkLabel": "{phase} guide"
+  },
+  "ActivityFeed": {
+    "memberJoined": "joined the project",
+    "taskCompleted": "completed a task",
+    "taskCreated": "created a task",
+    "taskMoved": "moved a task",
+    "todoCompleted": "checked off an item",
+    "genericActivity": "activity",
+    "taskCompletedWithTitle": "completed the task \"{title}\"",
+    "taskCreatedWithTitle": "created the task \"{title}\"",
+    "taskMovedWithTitle": "moved the task \"{title}\" to {column}",
+    "wrotePost": "wrote a post",
+    "postedUpdate": "posted an update",
+    "milestoneCompleted": "Milestone completed: {title}",
+    "newProjectCreated": "New project created",
+    "newIdea": "New idea: {title}",
+    "ideaProblemLabel": "Problem:",
+    "ideaSolutionLabel": "Solution:",
+    "sentMessage": "sent a message",
+    "commentedOnCard": "commented on \"{title}\"",
+    "commentedOnIdea": "commented on the idea \"{title}\"",
+    "postsPseudoProjectName": "Post",
+    "ideasPseudoProjectName": "Ideas",
+    "someone": "Someone"
+  },
+  "MembersFilter": {
+    "filterBySkill": "Filter by skill",
+    "clear": "Clear ({count})"
+  },
+  "MembersPage": {
+    "pageTitle": "Members",
+    "metaDescription": "Members of the GoodTribes network",
+    "subtitle": "People in the GoodTribes network who have chosen to be visible.",
+    "noMembersWithSkill": "No members with that skill yet.",
+    "noMembersAtAll": "No members have chosen to show their profile yet.",
+    "wantToAppearHere": "Want to appear here?",
+    "setUpYourProfile": "Set up your profile",
+    "clearFilter": "Clear filter →"
+  },
+  "HallOfImpactPage": {
+    "heading": "Hall of Impact",
+    "subtitle": "Projects that changed the world",
+    "completedProjects": "Completed projects",
+    "totalContributors": "Total contributors",
+    "impactMetrics": "Impact metrics",
+    "emptyState": "No completed projects yet. The best projects end up here.",
+    "agenda2030": "2030 Agenda:",
+    "contributorsCount": "{count} contributors",
+    "readMore": "Read more →"
+  },
+  "FeedPage": {
+    "pageTitle": "Platform feed",
+    "metaDescription": "Latest activity across all of GoodTribes",
+    "heading": "Platform feed",
+    "subtitle": "Latest activity across all of GoodTribes",
+    "emptyMessage": "No activity yet."
   }
 }

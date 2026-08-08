@@ -111,9 +111,37 @@ export default async function LocaleLayout({
   const organisationPages = footerPages.filter((p) => p.locked);
   const customFooterPages = footerPages.filter((p) => !p.locked);
 
+  // Organisation/NGO structured data (schema.org) — locale-invariant facts about the
+  // foundation itself, same convention as the hardcoded org info in the footer below.
+  // Next.js doesn't require this to live inside a literal <head>; crawlers parse JSON-LD
+  // anywhere in the document. Improves rich-result eligibility and nonprofit verification
+  // (e.g. Google for Nonprofits) since none of this was previously machine-readable.
+  const organisationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NGO",
+    name: "GoodTribes Foundation",
+    alternateName: "GoodTribes.org",
+    url: APP_URL,
+    logo: `${APP_URL}/img/goodtribes-logo.svg`,
+    email: "Info@goodtribes.org",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Högbergsgatan 52",
+      postalCode: "118 26",
+      addressLocality: "Stockholm",
+      addressCountry: "SE",
+    },
+    identifier: "802481-8497",
+  };
+
   return (
     <html lang={locale} className={`bg-white ${inter.className}`}>
       <body className="min-h-screen bg-white text-dark-slate flex flex-col">
+        {/* Static, locally-constructed object — no user input reaches this __html. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organisationJsonLd) }}
+        />
         <NextIntlClientProvider>
           <SessionProvider session={session}>
           <UserEventsProvider enabled={!!session?.user}>

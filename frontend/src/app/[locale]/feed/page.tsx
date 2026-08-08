@@ -4,11 +4,18 @@ import type { Metadata } from "next";
 import { auth } from "@/auth";
 import ActivityFeed from "@/components/ActivityFeed";
 import { fetchActivityItems, getFeedInteractionData } from "@/lib/activityFeed";
+import { getTranslations } from "next-intl/server";
+import { buildMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "Plattformsflöde — GoodTribes.org",
-  description: "Senaste aktivitet från hela GoodTribes",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "FeedPage" });
+  return buildMetadata({ locale, path: "/feed", title: t("pageTitle"), description: t("metaDescription") });
+}
 
 const PAGE_SIZE = 20;
 
@@ -20,6 +27,7 @@ export default async function FeedPage({
   const { page: pageStr } = await searchParams;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
   const session = await auth();
+  const t = await getTranslations("FeedPage");
 
   // Each source is over-fetched up to the current page's window, so `total` (and thus
   // pagination) grows as the user pages further rather than reflecting the true lifetime count.
@@ -34,8 +42,8 @@ export default async function FeedPage({
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-dark-slate">Plattformsflöde</h1>
-        <p className="text-sm text-dark-slate/50 mt-1">Senaste aktivitet från hela GoodTribes</p>
+        <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
+        <p className="text-sm text-dark-slate/50 mt-1">{t("subtitle")}</p>
       </div>
 
       <ActivityFeed
@@ -51,6 +59,7 @@ export default async function FeedPage({
         commentsByTarget={commentsByTarget}
         memberProjectIds={memberProjectIds}
         pendingJoinProjectIds={pendingJoinProjectIds}
+        emptyMessage={t("emptyMessage")}
       />
     </div>
   );

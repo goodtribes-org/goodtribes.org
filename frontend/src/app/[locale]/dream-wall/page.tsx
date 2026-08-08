@@ -7,13 +7,17 @@ import { getTranslations } from "next-intl/server";
 import { PostDreamForm, ReactionButtons } from "./DreamWallClient";
 import FlagContentButton from "@/components/FlagContentButton";
 import ShareButton from "@/components/ShareButton";
-import { APP_URL } from "@/lib/metadata";
+import { APP_URL, buildMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: "Drömväggen — GoodTribes.org",
-  description:
-    "En mening. En vision. En förändring. Dela din dröm med GoodTribes-gemenskapen.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "DreamWallPage" });
+  return buildMetadata({ locale, path: "/dream-wall", title: t("heading"), description: t("subtitle") });
+}
 
 
 function relativeTime(date: Date, t: Awaited<ReturnType<typeof getTranslations>>): string {
