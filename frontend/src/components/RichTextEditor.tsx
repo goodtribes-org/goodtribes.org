@@ -156,6 +156,17 @@ export default function RichTextEditor({
     },
   });
 
+  useEffect(() => {
+    if (!editor) return;
+    // Only external content changes (e.g. switching which record is being
+    // edited) should force a resync — comparing against the editor's own
+    // current HTML avoids clobbering cursor position on every keystroke,
+    // since after typing `content` (set via onChange) already matches it.
+    if (content !== editor.getHTML()) {
+      editor.commands.setContent(content, { emitUpdate: false });
+    }
+  }, [content, editor]);
+
   const uploadImage = useCallback(
     async (file: File) => {
       const formData = new FormData();
