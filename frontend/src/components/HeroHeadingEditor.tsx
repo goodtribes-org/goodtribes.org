@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { updateHeroHeading } from "@/app/[locale]/home-hero-actions";
 import type { Locale } from "next-intl";
 
 export default function HeroHeadingEditor({ initialHeading, locale }: { initialHeading: string; locale: Locale }) {
+  const t = useTranslations("HeroHeadingEditor");
   const [heading, setHeading] = useState(initialHeading);
   const [saved, setSaved] = useState(initialHeading);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +29,7 @@ export default function HeroHeadingEditor({ initialHeading, locale }: { initialH
       <input
         value={heading}
         onChange={(e) => setHeading(e.target.value)}
-        placeholder="Rubrik ovanför hero-karusellen"
+        placeholder={t("headingPlaceholder")}
         className="flex-1 border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
       />
       <button
@@ -36,7 +38,7 @@ export default function HeroHeadingEditor({ initialHeading, locale }: { initialH
         disabled={isPending || heading === saved}
         className="text-sm font-medium px-4 py-2 rounded-lg bg-seagrass text-white hover:bg-seagrass/90 transition-colors disabled:opacity-50"
       >
-        Spara
+        {t("saveButton")}
       </button>
       {error && <p className="text-xs text-coral">{error}</p>}
     </div>

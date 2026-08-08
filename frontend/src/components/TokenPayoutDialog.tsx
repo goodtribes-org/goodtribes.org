@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { computeCardPayees, CREATOR_BONUS_TOKENS, APPROVER_BONUS_TOKENS } from "@/lib/payoutMath";
 import { getPriorityTokenValue } from "@/lib/priorityTokens";
 import type { Card, Member } from "./kanbanShared";
@@ -26,6 +27,7 @@ export function TokenPayoutDialog({
   onConfirm: (overrides: MoveOverrides) => void;
   onCancel: () => void;
 }) {
+  const t = useTranslations("TokenPayoutDialog");
   const tokenValue = card.lockedTokenValue ?? getPriorityTokenValue(card.priority);
   const subtasks = card.subtasks ?? [];
   const hasSubtasks = subtasks.length > 0;
@@ -43,7 +45,7 @@ export function TokenPayoutDialog({
   });
 
   function memberName(userId: string) {
-    return members.find((m) => m.id === userId)?.name ?? "Okänd";
+    return members.find((m) => m.id === userId)?.name ?? t("unknownMember");
   }
 
   function handleConfirm() {
@@ -62,10 +64,9 @@ export function TokenPayoutDialog({
         className="bg-white rounded-xl shadow-xl max-w-md w-full p-5 max-h-[85vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-bold text-gray-900 mb-1">Bekräfta tokenutbetalning</h2>
+        <h2 className="text-lg font-bold text-gray-900 mb-1">{t("title")}</h2>
         <p className="text-sm text-gray-500 mb-4">
-          "{card.title}" flyttas till Done — så här fördelas {tokenValue} tokens. Stämmer inte vem som gjorde en
-          deluppgift kan du ändra det här innan du bekräftar.
+          {t("description", { title: card.title, tokenValue })}
         </p>
 
         {hasSubtasks ? (
@@ -80,7 +81,7 @@ export function TokenPayoutDialog({
                   }
                   className="border border-gray-200 rounded-md px-2 py-1 text-xs bg-white focus:outline-none focus:border-blue-400"
                 >
-                  <option value="">— ingen —</option>
+                  <option value="">{t("noAssignee")}</option>
                   {members.map((m) => (
                     <option key={m.id} value={m.id}>{m.name ?? m.id}</option>
                   ))}
@@ -90,13 +91,13 @@ export function TokenPayoutDialog({
           </ul>
         ) : (
           <div className="flex items-center gap-2 text-sm mb-4">
-            <span className="flex-1 text-gray-700">Ansvarig (får {tokenValue} tokens)</span>
+            <span className="flex-1 text-gray-700">{t("responsibleLabel", { tokenValue })}</span>
             <select
               value={fallbackAssigneeId ?? ""}
               onChange={(e) => setFallbackAssigneeId(e.target.value || null)}
               className="border border-gray-200 rounded-md px-2 py-1 text-xs bg-white focus:outline-none focus:border-blue-400"
             >
-              <option value="">— ingen —</option>
+              <option value="">{t("noAssignee")}</option>
               {members.map((m) => (
                 <option key={m.id} value={m.id}>{m.name ?? m.id}</option>
               ))}
@@ -105,10 +106,10 @@ export function TokenPayoutDialog({
         )}
 
         <div className="border-t border-gray-100 pt-3 mb-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Tokens som delas ut</p>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">{t("distributedHeading")}</p>
           {payees.length === 0 ? (
             <p className="text-sm text-gray-400 italic">
-              Ingen tilldelad deluppgift eller ansvarig — inga tokens delas ut för själva arbetet.
+              {t("noPayeesMessage")}
             </p>
           ) : (
             <ul className="space-y-1">
@@ -122,11 +123,11 @@ export function TokenPayoutDialog({
           )}
           <ul className="space-y-1 mt-2 pt-2 border-t border-gray-50">
             <li className="flex justify-between text-sm text-gray-500">
-              <span>Kortskapare-bonus ({card.createdBy?.name ?? "Okänd"})</span>
+              <span>{t("creatorBonusLabel", { name: card.createdBy?.name ?? t("unknownMember") })}</span>
               <span className="font-semibold">+{CREATOR_BONUS_TOKENS}</span>
             </li>
             <li className="flex justify-between text-sm text-gray-500">
-              <span>Godkännande-bonus (du)</span>
+              <span>{t("approverBonusLabel")}</span>
               <span className="font-semibold">+{APPROVER_BONUS_TOKENS}</span>
             </li>
           </ul>
@@ -134,14 +135,14 @@ export function TokenPayoutDialog({
 
         <div className="flex items-center justify-end gap-3">
           <button type="button" onClick={onCancel} className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
-            Avbryt
+            {t("cancelButton")}
           </button>
           <button
             type="button"
             onClick={handleConfirm}
             className="text-sm font-medium px-4 py-2 rounded-lg bg-coral text-white hover:bg-watermelon transition-colors"
           >
-            Bekräfta och flytta till Done
+            {t("confirmButton")}
           </button>
         </div>
       </div>

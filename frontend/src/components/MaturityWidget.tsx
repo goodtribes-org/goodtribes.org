@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 interface Props {
   projectSlug: string;
@@ -17,6 +18,7 @@ function ringColor(score: number): string {
 }
 
 export default function MaturityWidget({ projectSlug, initialScore, initialScalingPlan, isOwnerOrAdmin }: Props) {
+  const t = useTranslations("MaturityWidget");
   const [score, setScore] = useState<number | null>(initialScore);
   const [scalingPlan, setScalingPlan] = useState<string | null>(initialScalingPlan);
   const [loading, setLoading] = useState(false);
@@ -47,7 +49,7 @@ export default function MaturityWidget({ projectSlug, initialScore, initialScali
 
   return (
     <div className="border border-muted-teal/30 rounded p-4">
-      <h2 className="text-sm font-semibold text-dark-slate mb-3">Mognad</h2>
+      <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("title")}</h2>
       <div className="flex items-center gap-4">
         <svg width="80" height="80" viewBox="0 0 80 80" className="shrink-0">
           <circle
@@ -83,7 +85,7 @@ export default function MaturityWidget({ projectSlug, initialScore, initialScali
         <div className="flex flex-col gap-2">
           {score !== null && score >= 70 && (
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-green-500 px-2 py-0.5 rounded-full">
-              Redo att skalas
+              {t("readyToScale")}
             </span>
           )}
           {scalingPlan && (
@@ -91,7 +93,7 @@ export default function MaturityWidget({ projectSlug, initialScore, initialScali
               href={`/projects/${projectSlug}/scale`}
               className="text-xs text-seagrass hover:underline font-medium"
             >
-              Visa skalningsplan
+              {t("viewScalingPlan")}
             </Link>
           )}
           {isOwnerOrAdmin && (
@@ -100,13 +102,13 @@ export default function MaturityWidget({ projectSlug, initialScore, initialScali
               disabled={loading}
               className="text-xs px-3 py-1 rounded bg-coral text-white font-medium hover:bg-watermelon disabled:opacity-50 transition-colors"
             >
-              {loading ? "Beräknar..." : "Beräkna"}
+              {loading ? t("calculating") : t("calculate")}
             </button>
           )}
         </div>
       </div>
       {score !== null && (
-        <p className="text-xs text-dark-slate/50 mt-2">Poäng: {score}/100</p>
+        <p className="text-xs text-dark-slate/50 mt-2">{t("scoreLabel", { score })}</p>
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { updateOnboardingSteps } from "@/app/[locale]/home-hero-actions";
 import type { OnboardingStepData } from "@/components/OnboardingStepsBar";
 import type { Locale } from "next-intl";
@@ -12,6 +13,7 @@ export default function OnboardingStepsEditor({
   initialSteps: OnboardingStepData[];
   locale: Locale;
 }) {
+  const t = useTranslations("OnboardingStepsEditor");
   const [steps, setSteps] = useState(initialSteps);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -45,13 +47,13 @@ export default function OnboardingStepsEditor({
           <input
             value={s.label}
             onChange={(e) => update(s.order, "label", e.target.value)}
-            placeholder="Text"
+            placeholder={t("textPlaceholder")}
             className="flex-1 border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
           />
           <input
             value={s.href}
             onChange={(e) => update(s.order, "href", e.target.value)}
-            placeholder="Länk"
+            placeholder={t("linkPlaceholder")}
             className="w-40 border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
           />
         </div>
@@ -63,9 +65,9 @@ export default function OnboardingStepsEditor({
           disabled={isPending}
           className="text-sm font-medium px-4 py-2 rounded-lg bg-seagrass text-white hover:bg-seagrass/90 transition-colors disabled:opacity-50"
         >
-          Spara alla steg
+          {t("saveAllSteps")}
         </button>
-        {saved && <span className="text-xs text-seagrass">Sparat.</span>}
+        {saved && <span className="text-xs text-seagrass">{t("saved")}</span>}
         {error && <p className="text-xs text-coral">{error}</p>}
       </div>
     </div>

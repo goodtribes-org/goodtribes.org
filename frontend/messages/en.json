@@ -2352,5 +2352,72 @@
     "projectSlugPlaceholder": "Project slug",
     "umbrellaAbIfApplicableOption": "— umbrella AB if applicable —",
     "setButton": "Set"
+  },
+  "SiteAdminProfitDistribution": {
+    "heading": "Profit distribution",
+    "description": "The board's proposal for distributing a commercial project's profit (PRD 4a). An approved vote result is a request — not an automatic payout.",
+    "pendingHeading": "Awaiting the Foundation's decision ({count})",
+    "noPending": "No pending proposals.",
+    "proposalSummary": "Audited profit: {amount} SEK — {operationsPct}% operations, {impactFundPct}% Impact fund, {contributorsPct}% to contributors",
+    "executeButton": "Execute distribution",
+    "vetoPlaceholder": "Reason for veto…",
+    "vetoButton": "Apply veto",
+    "newProposalHeading": "Propose new profit distribution",
+    "newProposalHint": "Only for commercial projects (Commercial — umbrella AB or own wholly-owned AB).",
+    "projectSlugPlaceholder": "Project slug",
+    "auditedProfitPlaceholder": "Audited profit (SEK)",
+    "operationsPctPlaceholder": "% operations",
+    "impactFundPctPlaceholder": "% Impact fund",
+    "createProposalButton": "Create proposal"
+  },
+  "SiteAdminTokenBackfillPage": {
+    "heading": "Token backfill",
+    "description": "Completed Kanban cards (column <code>DONE</code>) in every project that never had tokens paid out. The card's priority value is split between whoever checked off subtasks (or goes to the assignee if the card has no subtasks); cards with no one to pay are skipped.",
+    "cappedNotice": "Showing the first {count} matches — there may be more. Run the backfill and reload the page to see if any cards remain.",
+    "payableCountLabel": "Cards to pay out",
+    "tokensToDistributeLabel": "Tokens to distribute",
+    "skippedNoPayeeLabel": "Skipped (no one to pay)",
+    "emptyState": "No unpaid completed cards found.",
+    "noPayee": "no one to pay",
+    "tokensCount": "{count, plural, one {# token} other {# tokens}}"
+  },
+  "BackfillPanel": {
+    "resultSummary": "Done — {paid} cards had tokens paid out (totaling {totalTokens} tokens), {skippedNoPayee} were skipped with no one to pay. Reload the page if you want to check that the list is now empty.",
+    "confirmWarning": "This mints real tokens to real user accounts and can't be undone with a button press. Are you sure?",
+    "runningLabel": "Running…",
+    "confirmRunLabel": "Yes, distribute tokens now",
+    "cancelLabel": "Cancel",
+    "runLabel": "Run backfill"
+  },
+  "HeroHeadingEditor": {
+    "headingPlaceholder": "Heading above the hero carousel",
+    "saveButton": "Save"
+  },
+  "MaturityWidget": {
+    "title": "Maturity",
+    "readyToScale": "Ready to scale",
+    "viewScalingPlan": "View scaling plan",
+    "calculating": "Calculating...",
+    "calculate": "Calculate",
+    "scoreLabel": "Score: {score}/100"
+  },
+  "OnboardingStepsEditor": {
+    "textPlaceholder": "Text",
+    "linkPlaceholder": "Link",
+    "saveAllSteps": "Save all steps",
+    "saved": "Saved."
+  },
+  "TokenPayoutDialog": {
+    "title": "Confirm token payout",
+    "description": "\"{title}\" is moving to Done — here's how {tokenValue} tokens will be distributed. If the person who completed a subtask is wrong, you can change it here before confirming.",
+    "noAssignee": "— none —",
+    "responsibleLabel": "Responsible (gets {tokenValue} tokens)",
+    "distributedHeading": "Tokens being distributed",
+    "noPayeesMessage": "No assigned subtask or responsible person — no tokens are distributed for the work itself.",
+    "creatorBonusLabel": "Card creator bonus ({name})",
+    "approverBonusLabel": "Approval bonus (you)",
+    "unknownMember": "Unknown",
+    "cancelButton": "Cancel",
+    "confirmButton": "Confirm and move to Done"
   }
 }

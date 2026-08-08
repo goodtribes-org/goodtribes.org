@@ -2352,5 +2352,72 @@
     "projectSlugPlaceholder": "Projektets slug",
     "umbrellaAbIfApplicableOption": "— paraply-AB om tillämpligt —",
     "setButton": "Sätt"
+  },
+  "SiteAdminProfitDistribution": {
+    "heading": "Vinstfördelning",
+    "description": "Styrelsens förslag om fördelning av kommersiella projekts vinst (PRD 4a). Ett godkänt röstresultat är en begäran — inte en automatisk utbetalning.",
+    "pendingHeading": "Väntar på Stiftelsens beslut ({count})",
+    "noPending": "Inga väntande förslag.",
+    "proposalSummary": "Reviderad vinst: {amount} kr — {operationsPct}% drift, {impactFundPct}% Impact-fond, {contributorsPct}% till bidragsgivare",
+    "executeButton": "Genomför fördelning",
+    "vetoPlaceholder": "Motivering för veto…",
+    "vetoButton": "Använd veto",
+    "newProposalHeading": "Föreslå ny vinstfördelning",
+    "newProposalHint": "Endast för kommersiella projekt (Kommersiellt — paraply-AB eller eget helägt AB).",
+    "projectSlugPlaceholder": "Projektets slug",
+    "auditedProfitPlaceholder": "Reviderad vinst (kr)",
+    "operationsPctPlaceholder": "% drift",
+    "impactFundPctPlaceholder": "% Impact-fond",
+    "createProposalButton": "Skapa förslag"
+  },
+  "SiteAdminTokenBackfillPage": {
+    "heading": "Token-bakfyllning",
+    "description": "Klara Kanban-kort (kolumn <code>DONE</code>) i alla projekt som aldrig fick tokens utdelade. Kortets prioritetsvärde delas mellan de som bockade av deluppgifter (eller går till tilldelad person om kortet saknar deluppgifter); kort utan någon att betala ut till hoppas över.",
+    "cappedNotice": "Visar de {count} första träffarna — det kan finnas fler. Kör bakfyllningen och ladda om sidan för att se om ytterligare kort återstår.",
+    "payableCountLabel": "Kort att betala ut",
+    "tokensToDistributeLabel": "Tokens att dela ut",
+    "skippedNoPayeeLabel": "Hoppas över (ingen att betala)",
+    "emptyState": "Inga obetalda klara kort hittades.",
+    "noPayee": "ingen att betala ut till",
+    "tokensCount": "{count, plural, one {# token} other {# tokens}}"
+  },
+  "BackfillPanel": {
+    "resultSummary": "Klart — {paid} kort fick tokens utdelade (totalt {totalTokens} tokens), {skippedNoPayee} hoppades över utan någon att betala ut till. Ladda om sidan om du vill kontrollera att listan nu är tom.",
+    "confirmWarning": "Det här mintar riktiga tokens till riktiga användarkonton och kan inte ångras med en knapptryckning. Är du säker?",
+    "runningLabel": "Kör…",
+    "confirmRunLabel": "Ja, dela ut tokens nu",
+    "cancelLabel": "Avbryt",
+    "runLabel": "Kör bakfyllning"
+  },
+  "HeroHeadingEditor": {
+    "headingPlaceholder": "Rubrik ovanför hero-karusellen",
+    "saveButton": "Spara"
+  },
+  "MaturityWidget": {
+    "title": "Mognad",
+    "readyToScale": "Redo att skalas",
+    "viewScalingPlan": "Visa skalningsplan",
+    "calculating": "Beräknar...",
+    "calculate": "Beräkna",
+    "scoreLabel": "Poäng: {score}/100"
+  },
+  "OnboardingStepsEditor": {
+    "textPlaceholder": "Text",
+    "linkPlaceholder": "Länk",
+    "saveAllSteps": "Spara alla steg",
+    "saved": "Sparat."
+  },
+  "TokenPayoutDialog": {
+    "title": "Bekräfta tokenutbetalning",
+    "description": "\"{title}\" flyttas till Done — så här fördelas {tokenValue} tokens. Stämmer inte vem som gjorde en deluppgift kan du ändra det här innan du bekräftar.",
+    "noAssignee": "— ingen —",
+    "responsibleLabel": "Ansvarig (får {tokenValue} tokens)",
+    "distributedHeading": "Tokens som delas ut",
+    "noPayeesMessage": "Ingen tilldelad deluppgift eller ansvarig — inga tokens delas ut för själva arbetet.",
+    "creatorBonusLabel": "Kortskapare-bonus ({name})",
+    "approverBonusLabel": "Godkännande-bonus (du)",
+    "unknownMember": "Okänd",
+    "cancelButton": "Avbryt",
+    "confirmButton": "Bekräfta och flytta till Done"
   }
 }
