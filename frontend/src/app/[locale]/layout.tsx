@@ -146,9 +146,13 @@ export default async function LocaleLayout({
             </header>
             <main className="max-w-6xl mx-auto px-6 pt-8 pb-12 w-full flex-1 flex flex-col">{children}</main>
             <footer className="border-t border-muted-teal/30 bg-dry-sage/10 shrink-0">
-              <div className="max-w-6xl mx-auto px-6 py-10 grid gap-10 md:grid-cols-[2fr_3fr] text-sm">
+              <div className="max-w-6xl mx-auto px-6 py-10 grid gap-16 md:grid-cols-[3fr_5fr] text-sm">
                 <div>
-                  <div className="flex justify-center mb-3">
+                  {/* -mt compensates for transparent padding baked into the top of the
+                      logo SVG's own viewBox, so the visible mark lines up with the
+                      heading text at the top of the other columns instead of sitting
+                      visually lower. */}
+                  <div className="flex justify-center mb-3 -mt-[13px]">
                     <Image
                       src="/img/goodtribes-logo.svg"
                       alt="GoodTribes.org"
@@ -160,7 +164,27 @@ export default async function LocaleLayout({
                   </div>
                   <p className="text-dark-slate/60 leading-relaxed text-[13px]">{t("foundationBlurb")}</p>
                 </div>
-                <div className="grid gap-6 md:grid-cols-3">
+                <div className="grid gap-3 md:grid-cols-3">
+                  {/* Organisational transparency info (Google for Nonprofits requirement) —
+                      locale-invariant facts, hardcoded like the mailto link above rather
+                      than run through t(), same as this file's existing convention. */}
+                  <div className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
+                    <p className="font-semibold text-dark-slate uppercase tracking-wider">Stiftelsen GoodTribes</p>
+                    <p>Org.nr 802481-8497</p>
+                    <p>Högbergsgatan 52</p>
+                    <p>118 26 Stockholm</p>
+                    <p>Sverige</p>
+                    <a href="mailto:Info@goodtribes.org" className="hover:text-dark-slate transition-colors underline">
+                      Info@goodtribes.org
+                    </a>
+                  </div>
+                  <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
+                    <p className="font-semibold text-dark-slate uppercase tracking-wider">{t("organisationTitle")}</p>
+                    {organisationPages.map((p) => (
+                      <Link key={p.slug} href={p.href} className="hover:text-dark-slate transition-colors">{p.title}</Link>
+                    ))}
+                    <a href="mailto:Info@goodtribes.org" className="hover:text-dark-slate transition-colors">{t("contact")}</a>
+                  </nav>
                   <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
                     <div className="flex items-center gap-1.5">
                       <p className="font-semibold text-dark-slate uppercase tracking-wider">{t("servicesTitle")}</p>
@@ -180,26 +204,6 @@ export default async function LocaleLayout({
                     ))}
                     <Link href="/suggestions" className="hover:text-dark-slate transition-colors">{t("suggestions")}</Link>
                   </nav>
-                  <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
-                    <p className="font-semibold text-dark-slate uppercase tracking-wider">{t("organisationTitle")}</p>
-                    {organisationPages.map((p) => (
-                      <Link key={p.slug} href={p.href} className="hover:text-dark-slate transition-colors">{p.title}</Link>
-                    ))}
-                    <a href="mailto:Info@goodtribes.org" className="hover:text-dark-slate transition-colors">{t("contact")}</a>
-                  </nav>
-                  {/* Organisational transparency info (Google for Nonprofits requirement) —
-                      locale-invariant facts, hardcoded like the mailto link above rather
-                      than run through t(), same as this file's existing convention. */}
-                  <div className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
-                    <p className="font-semibold text-dark-slate uppercase tracking-wider">Stiftelsen GoodTribes</p>
-                    <p>Org.nr 802481-8497</p>
-                    <p>Högbergsgatan 52</p>
-                    <p>118 26 Stockholm</p>
-                    <p>Sverige</p>
-                    <a href="mailto:Info@goodtribes.org" className="hover:text-dark-slate transition-colors underline">
-                      Info@goodtribes.org
-                    </a>
-                  </div>
                 </div>
               </div>
               <div className="border-t border-muted-teal/20">
