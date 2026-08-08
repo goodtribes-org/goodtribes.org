@@ -146,7 +146,7 @@ export default async function LocaleLayout({
             </header>
             <main className="max-w-6xl mx-auto px-6 pt-8 pb-12 w-full flex-1 flex flex-col">{children}</main>
             <footer className="border-t border-muted-teal/30 bg-dry-sage/10 shrink-0">
-              <div className="max-w-6xl mx-auto px-6 py-10 grid gap-8 md:grid-cols-4 text-sm">
+              <div className="max-w-6xl mx-auto px-6 py-10 grid gap-10 md:grid-cols-[2fr_3fr] text-sm">
                 <div>
                   <div className="flex justify-center mb-3">
                     <Image
@@ -158,46 +158,48 @@ export default async function LocaleLayout({
                       className="object-contain"
                     />
                   </div>
-                  <p className="text-dark-slate/60 leading-relaxed text-xs">{t("foundationBlurb")}</p>
+                  <p className="text-dark-slate/60 leading-relaxed text-[13px]">{t("foundationBlurb")}</p>
                 </div>
-                <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
-                  <div className="flex items-center gap-1.5">
-                    <p className="font-semibold text-dark-slate uppercase tracking-wider">{t("servicesTitle")}</p>
-                    {canEditFooter && (
-                      <FooterPageManager
-                        pages={footerPages}
-                        lockedLabels={[t("hallOfImpact"), t("academy"), t("dreamWall"), t("contact"), t("suggestions")]}
-                        locale={locale as Locale}
-                      />
-                    )}
+                <div className="grid gap-6 md:grid-cols-3">
+                  <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-semibold text-dark-slate uppercase tracking-wider">{t("servicesTitle")}</p>
+                      {canEditFooter && (
+                        <FooterPageManager
+                          pages={footerPages}
+                          lockedLabels={[t("hallOfImpact"), t("academy"), t("dreamWall"), t("contact"), t("suggestions")]}
+                          locale={locale as Locale}
+                        />
+                      )}
+                    </div>
+                    <Link href="/hall-of-impact" className="hover:text-dark-slate transition-colors">{t("hallOfImpact")}</Link>
+                    <Link href="/academy" className="hover:text-dark-slate transition-colors">{t("academy")}</Link>
+                    <Link href="/dream-wall" className="hover:text-dark-slate transition-colors">{t("dreamWall")}</Link>
+                    {customFooterPages.map((p) => (
+                      <Link key={p.slug} href={p.href} className="hover:text-dark-slate transition-colors">{p.title}</Link>
+                    ))}
+                    <Link href="/suggestions" className="hover:text-dark-slate transition-colors">{t("suggestions")}</Link>
+                  </nav>
+                  <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
+                    <p className="font-semibold text-dark-slate uppercase tracking-wider">{t("organisationTitle")}</p>
+                    {organisationPages.map((p) => (
+                      <Link key={p.slug} href={p.href} className="hover:text-dark-slate transition-colors">{p.title}</Link>
+                    ))}
+                    <a href="mailto:Info@goodtribes.org" className="hover:text-dark-slate transition-colors">{t("contact")}</a>
+                  </nav>
+                  {/* Organisational transparency info (Google for Nonprofits requirement) —
+                      locale-invariant facts, hardcoded like the mailto link above rather
+                      than run through t(), same as this file's existing convention. */}
+                  <div className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
+                    <p className="font-semibold text-dark-slate uppercase tracking-wider">Stiftelsen GoodTribes</p>
+                    <p>Org.nr 802481-8497</p>
+                    <p>Högbergsgatan 52</p>
+                    <p>118 26 Stockholm</p>
+                    <p>Sverige</p>
+                    <a href="mailto:Info@goodtribes.org" className="hover:text-dark-slate transition-colors underline">
+                      Info@goodtribes.org
+                    </a>
                   </div>
-                  <Link href="/hall-of-impact" className="hover:text-dark-slate transition-colors">{t("hallOfImpact")}</Link>
-                  <Link href="/academy" className="hover:text-dark-slate transition-colors">{t("academy")}</Link>
-                  <Link href="/dream-wall" className="hover:text-dark-slate transition-colors">{t("dreamWall")}</Link>
-                  {customFooterPages.map((p) => (
-                    <Link key={p.slug} href={p.href} className="hover:text-dark-slate transition-colors">{p.title}</Link>
-                  ))}
-                  <Link href="/suggestions" className="hover:text-dark-slate transition-colors">{t("suggestions")}</Link>
-                </nav>
-                <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
-                  <p className="font-semibold text-dark-slate uppercase tracking-wider">{t("organisationTitle")}</p>
-                  {organisationPages.map((p) => (
-                    <Link key={p.slug} href={p.href} className="hover:text-dark-slate transition-colors">{p.title}</Link>
-                  ))}
-                  <a href="mailto:Info@goodtribes.org" className="hover:text-dark-slate transition-colors">{t("contact")}</a>
-                </nav>
-                {/* Organisational transparency info (Google for Nonprofits requirement) —
-                    locale-invariant facts, hardcoded like the mailto link above rather
-                    than run through t(), same as this file's existing convention. */}
-                <div className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
-                  <p className="font-semibold text-dark-slate uppercase tracking-wider">Stiftelsen GoodTribes</p>
-                  <p>Org.nr 802481-8497</p>
-                  <p>Högbergsgatan 52</p>
-                  <p>118 26 Stockholm</p>
-                  <p>Sverige</p>
-                  <a href="mailto:Info@goodtribes.org" className="hover:text-dark-slate transition-colors underline">
-                    Info@goodtribes.org
-                  </a>
                 </div>
               </div>
               <div className="border-t border-muted-teal/20">
