@@ -146,16 +146,18 @@ export default async function LocaleLayout({
             </header>
             <main className="max-w-6xl mx-auto px-6 pt-8 pb-12 w-full flex-1 flex flex-col">{children}</main>
             <footer className="border-t border-muted-teal/30 bg-dry-sage/10 shrink-0">
-              <div className="max-w-6xl mx-auto px-6 py-10 grid gap-8 md:grid-cols-3 text-sm">
+              <div className="max-w-6xl mx-auto px-6 py-10 grid gap-8 md:grid-cols-4 text-sm">
                 <div>
-                  <Image
-                    src="/img/goodtribes-logo.svg"
-                    alt="GoodTribes.org"
-                    height={50}
-                    width={81}
-                    unoptimized
-                    className="object-contain mb-3"
-                  />
+                  <div className="flex justify-center mb-3">
+                    <Image
+                      src="/img/goodtribes-logo.svg"
+                      alt="GoodTribes.org"
+                      height={96}
+                      width={155}
+                      unoptimized
+                      className="object-contain"
+                    />
+                  </div>
                   <p className="text-dark-slate/60 leading-relaxed text-xs">{t("foundationBlurb")}</p>
                 </div>
                 <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
@@ -169,7 +171,6 @@ export default async function LocaleLayout({
                       />
                     )}
                   </div>
-                  <p className="text-dark-slate/40 mb-1">{t("servicesBlurb")}</p>
                   <Link href="/hall-of-impact" className="hover:text-dark-slate transition-colors">{t("hallOfImpact")}</Link>
                   <Link href="/academy" className="hover:text-dark-slate transition-colors">{t("academy")}</Link>
                   <Link href="/dream-wall" className="hover:text-dark-slate transition-colors">{t("dreamWall")}</Link>
@@ -180,25 +181,28 @@ export default async function LocaleLayout({
                 </nav>
                 <nav className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
                   <p className="font-semibold text-dark-slate uppercase tracking-wider">{t("organisationTitle")}</p>
-                  <p className="text-dark-slate/40 mb-1">{t("organisationBlurb")}</p>
                   {organisationPages.map((p) => (
                     <Link key={p.slug} href={p.href} className="hover:text-dark-slate transition-colors">{p.title}</Link>
                   ))}
                   <a href="mailto:Info@goodtribes.org" className="hover:text-dark-slate transition-colors">{t("contact")}</a>
                 </nav>
+                {/* Organisational transparency info (Google for Nonprofits requirement) —
+                    locale-invariant facts, hardcoded like the mailto link above rather
+                    than run through t(), same as this file's existing convention. */}
+                <div className="flex flex-col gap-1.5 text-xs text-dark-slate/60">
+                  <p className="font-semibold text-dark-slate uppercase tracking-wider">Stiftelsen GoodTribes</p>
+                  <p>Org.nr 802481-8497</p>
+                  <p>Högbergsgatan 52</p>
+                  <p>118 26 Stockholm</p>
+                  <p>Sverige</p>
+                  <a href="mailto:Info@goodtribes.org" className="hover:text-dark-slate transition-colors underline">
+                    Info@goodtribes.org
+                  </a>
+                </div>
               </div>
               <div className="border-t border-muted-teal/20">
-                <div className="max-w-6xl mx-auto px-6 py-3 flex flex-col gap-1 text-[11px] text-dark-slate/40">
+                <div className="max-w-6xl mx-auto px-6 py-3 text-[11px] text-dark-slate/40">
                   <p>© {new Date().getFullYear()} GoodTribes Foundation · {t("copyrightNote")}</p>
-                  {/* Organisational transparency info (Google for Nonprofits requirement) —
-                      locale-invariant facts, hardcoded like the mailto link above rather
-                      than run through t(), same as this file's existing convention. */}
-                  <p>
-                    Stiftelsen GoodTribes · Org.nr 802481-8497 · Högbergsgatan 52, 118 26 Stockholm ·{" "}
-                    <a href="mailto:Info@goodtribes.org" className="hover:text-dark-slate transition-colors underline">
-                      Info@goodtribes.org
-                    </a>
-                  </p>
                 </div>
               </div>
             </footer>
