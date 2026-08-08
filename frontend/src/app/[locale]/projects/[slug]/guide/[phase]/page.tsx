@@ -1,8 +1,9 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { isLeadRole } from "@/lib/authz";
-import { INITIATIVE_CHECKLIST_ITEMS, PROJECT_PHASE_LABEL, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { INITIATIVE_CHECKLIST_ITEMS, type ProjectPhaseValue } from "@/lib/projectPhase";
 import PhaseGuide from "./PhaseGuide";
 import PhaseMenuBar from "../../PhaseMenuBar";
 
@@ -13,11 +14,12 @@ const GUIDE_PHASES: ProjectPhaseValue[] = ["PILOT", "PRODUCTION", "ESTABLISH", "
 export default async function PhaseGuidePage({
   params,
 }: {
-  params: Promise<{ slug: string; phase: string }>;
+  params: Promise<{ locale: string; slug: string; phase: string }>;
 }) {
-  const { slug, phase: phaseParam } = await params;
+  const { locale, slug, phase: phaseParam } = await params;
   const phase = phaseParam.toUpperCase() as ProjectPhaseValue;
   if (!GUIDE_PHASES.includes(phase)) notFound();
+  const tPhase = await getTranslations({ locale, namespace: "ProjectPhase" });
 
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
@@ -47,7 +49,7 @@ export default async function PhaseGuidePage({
         <PhaseGuide
           slug={slug}
           phase={phase}
-          phaseLabel={PROJECT_PHASE_LABEL[phase]}
+          phaseLabel={tPhase(phase)}
           projectTitle={project.title}
           items={INITIATIVE_CHECKLIST_ITEMS[phase]}
           completedKeys={project.checklistItems.map((c) => c.itemKey)}

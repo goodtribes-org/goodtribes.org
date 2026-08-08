@@ -5,11 +5,17 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_LABELS_SV } from "@/lib/sdg";
-import { PROJECT_PHASE_LABEL } from "@/lib/projectPhase";
 
-export default async function ProfilePage() {
+export default async function ProfilePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const tPhase = await getTranslations({ locale, namespace: "ProjectPhase" });
   const session = await auth();
   if (!session?.user?.email) redirect("/login");
 
@@ -214,7 +220,7 @@ export default async function ProfilePage() {
                         <p className="text-xs text-dark-slate/50 line-clamp-1 mt-0.5">{project.description}</p>
                       )}
                     </div>
-                    <span className="text-xs text-dark-slate/40 shrink-0 mt-0.5">{PROJECT_PHASE_LABEL[project.phase] ?? project.phase}</span>
+                    <span className="text-xs text-dark-slate/40 shrink-0 mt-0.5">{tPhase(project.phase)}</span>
                   </Link>
                 ))}
               </div>

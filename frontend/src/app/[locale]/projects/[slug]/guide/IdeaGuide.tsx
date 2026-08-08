@@ -59,6 +59,7 @@ export default function IdeaGuide({
   hasInvitedSomeone,
 }: Props) {
   const t = useTranslations("IdeaGuide");
+  const tChecklist = useTranslations("ProjectPhaseChecklist");
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [done, setDone] = useState<Set<string>>(new Set(completedKeys));
@@ -182,7 +183,7 @@ export default function IdeaGuide({
             back to step 1, since it's just as much a local step here as any
             other (its save goes through updateIdeaDetails). */}
         <GuideStepIndicator
-          steps={IDEA_GUIDE_STEPS}
+          steps={IDEA_GUIDE_STEPS.map((item) => ({ key: item.key, label: tChecklist(item.key) }))}
           currentIndex={step}
           doneKeys={done}
           onStepClick={(i) => setStep(i)}
@@ -410,7 +411,7 @@ export default function IdeaGuide({
                     className="accent-seagrass w-4 h-4 flex-shrink-0"
                   />
                   <span className={`text-sm ${isChecked ? "text-dark-slate font-medium" : "text-dark-slate/70"}`}>
-                    {item.label}
+                    {tChecklist(item.key)}
                   </span>
                 </label>
               );

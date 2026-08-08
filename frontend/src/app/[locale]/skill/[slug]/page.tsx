@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PROJECT_PHASE_LABEL } from "@/lib/projectPhase";
+import { getTranslations } from "next-intl/server";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
 import ShareButton from "@/components/ShareButton";
 
@@ -29,6 +29,7 @@ export default async function SkillDetailPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  const tPhase = await getTranslations({ locale, namespace: "ProjectPhase" });
 
   const skill = await prisma.skill.findUnique({
     where: { slug },
@@ -94,7 +95,7 @@ export default async function SkillDetailPage({
                   <div className="flex items-center gap-2 mb-1">
                     <p className="font-medium text-dark-slate truncate">{project.title}</p>
                     <span className="text-xs bg-dry-sage text-dark-slate/60 px-2 py-0.5 rounded flex-shrink-0">
-                      {PROJECT_PHASE_LABEL[project.phase] ?? project.phase}
+                      {tPhase(project.phase)}
                     </span>
                   </div>
                   {project.description && (

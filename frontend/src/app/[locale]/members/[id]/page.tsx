@@ -7,8 +7,8 @@ import KudosButton from "@/components/KudosButton";
 import MessageButton from "@/components/MessageButton";
 import ShareButton from "@/components/ShareButton";
 import FlagContentButton from "@/components/FlagContentButton";
+import { getTranslations } from "next-intl/server";
 import { isLeadRole } from "@/lib/authz";
-import { PROJECT_PHASE_LABEL as PHASE_LABELS } from "@/lib/projectPhase";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +47,7 @@ export default async function MemberProfilePage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
+  const tPhase = await getTranslations({ locale, namespace: "ProjectPhase" });
   const session = await auth();
 
   const member = await prisma.user.findFirst({
@@ -184,7 +185,7 @@ export default async function MemberProfilePage({
                   <div className="flex items-center gap-2 mb-1">
                     <p className="font-medium text-dark-slate truncate">{project.title}</p>
                     <span className="text-xs bg-dry-sage text-dark-slate/60 px-2 py-0.5 rounded capitalize flex-shrink-0">
-                      {PHASE_LABELS[project.phase] ?? project.phase}
+                      {tPhase(project.phase)}
                     </span>
                     {isLeadRole(project.role) && (
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-coral flex-shrink-0">

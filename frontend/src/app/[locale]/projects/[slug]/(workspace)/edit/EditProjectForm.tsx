@@ -3,7 +3,7 @@
 import { useState, useTransition, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { updateProject, advanceProjectPhase, requestSandboxGraduation, toggleChecklistItem, updateGithubColumnMap } from "./actions";
-import { COLUMNS } from "@/lib/kanbanColumns";
+import { COLUMNS, COLUMN_LABEL_KEYS } from "@/lib/kanbanColumns";
 import { columnForStatus } from "@/lib/githubColumnMap";
 import { markProjectAbandoned, unmarkProjectAbandoned, transferOwnership } from "@/app/[locale]/projects/[slug]/ownership-actions";
 import { getSdgSuggestions } from "@/app/[locale]/projects/new/actions";
@@ -11,7 +11,7 @@ import FileUpload from "@/components/FileUpload";
 import RichTextEditor from "@/components/RichTextEditor";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_NUMBERS, SDG_LABELS_EN } from "@/lib/sdg";
-import { PROJECT_PHASE_LABEL, getNextPhase, isValidProjectPhase, getChecklistForPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { getNextPhase, isValidProjectPhase, getChecklistForPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 import { CATEGORIES } from "@/lib/categories";
 
 interface Props {
@@ -47,6 +47,9 @@ interface Props {
 
 export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, currentOrgId, github, initial, completedChecklistKeys, ownershipInterests, graduationRequest }: Props) {
   const t = useTranslations("EditProjectForm");
+  const tPhase = useTranslations("ProjectPhase");
+  const tChecklist = useTranslations("ProjectPhaseChecklist");
+  const tKanban = useTranslations("KanbanShared");
   const [description, setDescription] = useState(initial.description ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set(initial.sdgGoals));
   const [aiSuggested, setAiSuggested] = useState<number[]>([]);
@@ -213,7 +216,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
       <div className="border border-muted-teal rounded-md p-4 flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-dark-slate">{t("phaseLabel")}</p>
-          <p className="text-sm text-dark-slate/70 mt-0.5">{PROJECT_PHASE_LABEL[initial.phase] ?? initial.phase}</p>
+          <p className="text-sm text-dark-slate/70 mt-0.5">{tPhase(initial.phase)}</p>
         </div>
         {nextPhase ? (
           <button
@@ -222,7 +225,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
             onClick={() => startAdvancing(() => advanceProjectPhase(slug))}
             className="text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors disabled:opacity-60 flex-shrink-0"
           >
-            {isAdvancing ? t("advancingButton") : t("advanceToPhaseButton", { phase: PROJECT_PHASE_LABEL[nextPhase] })}
+            {isAdvancing ? t("advancingButton") : t("advanceToPhaseButton", { phase: tPhase(nextPhase) })}
           </button>
         ) : (
           <span className="text-xs text-dark-slate/40 flex-shrink-0">{t("finalPhaseReached")}</span>
@@ -337,7 +340,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
 
       {checklist && (
         <div className="border border-muted-teal rounded-md p-4">
-          <p className="text-sm font-medium text-dark-slate mb-3">{t("checklistHeading", { phase: PROJECT_PHASE_LABEL[initial.phase] })}</p>
+          <p className="text-sm font-medium text-dark-slate mb-3">{t("checklistHeading", { phase: tPhase(initial.phase) })}</p>
           <div className="flex flex-col gap-2">
             {checklist.map((item) => (
               <label key={item.key} className="flex items-center gap-2 cursor-pointer">
@@ -348,7 +351,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
                   onChange={(e) => handleToggleChecklistItem(item.key, e.target.checked)}
                   className="accent-seagrass w-4 h-4"
                 />
-                <span className="text-sm text-dark-slate/80">{item.label}</span>
+                <span className="text-sm text-dark-slate/80">{tChecklist(item.key)}</span>
               </label>
             ))}
           </div>
@@ -465,7 +468,7 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
               >
                 {COLUMNS.map((col) => (
                   <option key={col.key} value={col.key}>
-                    {col.label}
+                    {tKanban(COLUMN_LABEL_KEYS[col.key])}
                   </option>
                 ))}
               </select>

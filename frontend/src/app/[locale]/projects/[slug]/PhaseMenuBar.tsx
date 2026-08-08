@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
 import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, INITIATIVE_CHECKLIST_ITEMS, type ProjectPhaseValue } from "@/lib/projectPhase";
 
@@ -27,6 +28,9 @@ interface Props {
 // checklista och går att klicka på för att fälla ut en undermeny med
 // numrerade delsteg ("1.1 Beskriv idén", "1.2 ...").
 export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, viewingPhase }: Props) {
+  const t = useTranslations("PhaseMenuBar");
+  const tPhase = useTranslations("ProjectPhase");
+  const tChecklist = useTranslations("ProjectPhaseChecklist");
   const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedKeys));
   const [isPending, startTransition] = useTransition();
   const [openPhase, setOpenPhase] = useState<ProjectPhaseValue | null>(null);
@@ -106,7 +110,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
                     isOpen ? "ring-2 ring-seagrass/30" : ""
                   }`}
                 >
-                  {i + 1}. {p.label}
+                  {i + 1}. {tPhase(p.value)}
                   <svg
                     className={`w-3 h-3 opacity-60 transition-transform ${isOpen ? "rotate-180" : ""}`}
                     fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -116,7 +120,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
                 </button>
               ) : (
                 <span aria-current={isViewing ? "step" : undefined} className={`px-3 py-1.5 rounded-full inline-block transition-colors ${pillClass}`}>
-                  {i + 1}. {p.label}
+                  {i + 1}. {tPhase(p.value)}
                 </span>
               )}
 
@@ -126,7 +130,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
                     href={p.value === "IDEA" ? `/projects/${slug}/guide` : `/projects/${slug}/guide/${p.value.toLowerCase()}`}
                     className="block px-3.5 pt-3 pb-2 text-xs font-semibold text-dark-slate/40 uppercase tracking-wide border-b border-muted-teal/10 hover:text-seagrass transition-colors"
                   >
-                    {p.label} guiden
+                    {t("guideLinkLabel", { phase: tPhase(p.value) })}
                   </a>
                   <div className="py-1">
                     {checklist.map((item, j) => {
@@ -156,9 +160,9 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
                                 : `${i + 1}.${j + 1}`}
                             </span>{" "}
                             {item.href ? (
-                              <a href={`/projects/${slug}/${item.href}`} className="hover:underline">{item.label}</a>
+                              <a href={`/projects/${slug}/${item.href}`} className="hover:underline">{tChecklist(item.key)}</a>
                             ) : (
-                              item.label
+                              tChecklist(item.key)
                             )}
                           </span>
                         </div>

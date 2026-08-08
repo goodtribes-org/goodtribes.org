@@ -30,6 +30,7 @@ interface Props {
 // exact same thing as ticking it anywhere else in the app.
 export default function PhaseGuide({ slug, phase, phaseLabel, projectTitle, items, completedKeys }: Props) {
   const t = useTranslations("PhaseGuide");
+  const tChecklist = useTranslations("ProjectPhaseChecklist");
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [done, setDone] = useState<Set<string>>(new Set(completedKeys));
@@ -79,7 +80,7 @@ export default function PhaseGuide({ slug, phase, phaseLabel, projectTitle, item
       </p>
 
       <GuideStepIndicator
-        steps={items}
+        steps={items.map((item) => ({ key: item.key, label: tChecklist(item.key) }))}
         currentIndex={step}
         doneKeys={done}
         onStepClick={(i) => setStep(i)}
@@ -87,7 +88,7 @@ export default function PhaseGuide({ slug, phase, phaseLabel, projectTitle, item
 
       <div className="flex flex-col gap-5">
         <div className="rounded-xl border border-muted-teal/30 p-5">
-          <p className="text-base font-semibold text-dark-slate mb-3">{current.label}</p>
+          <p className="text-base font-semibold text-dark-slate mb-3">{tChecklist(current.key)}</p>
           {current.href && (
             <a
               href={`/projects/${slug}/${current.href}`}

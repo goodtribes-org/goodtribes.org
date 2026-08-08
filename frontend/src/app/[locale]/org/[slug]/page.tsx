@@ -14,7 +14,6 @@ import OrgReviewButton from "@/components/OrgReviewButton";
 import ResourceLibrary from "@/components/ResourceLibrary";
 import ActivityTimeline, { type EventMeta } from "@/components/ActivityTimeline";
 import OrgTourGate from "@/components/OrgTourGate";
-import { PROJECT_PHASE_LABEL } from "@/lib/projectPhase";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
 import ShareButton from "@/components/ShareButton";
 import LikeCommentBlock from "@/components/LikeCommentBlock";
@@ -73,6 +72,7 @@ export default async function OrgDetailPage({
 }) {
   const { locale, slug } = await params;
   const t = await getTranslations({ locale, namespace: "OrgDetailPage" });
+  const tPhase = await getTranslations({ locale, namespace: "ProjectPhase" });
   const ORG_EVENT_META: EventMeta = {
     member_joined: { icon: "👤", label: (_, a) => t("memberJoinedEvent", { actor: a }) },
     project_added: { icon: "📁", label: (p, a) => t("projectAddedEvent", { actor: a, title: String(p.title ?? "") }) },
@@ -422,7 +422,7 @@ export default async function OrgDetailPage({
                       <div className="flex items-center gap-2 mb-1">
                         <p className="font-medium text-dark-slate truncate">{p.title}</p>
                         <span className="text-xs bg-dry-sage text-dark-slate/60 px-2 py-0.5 rounded flex-shrink-0">
-                          {PROJECT_PHASE_LABEL[p.phase] ?? p.phase}
+                          {tPhase(p.phase)}
                         </span>
                       </div>
                       {p.description && (

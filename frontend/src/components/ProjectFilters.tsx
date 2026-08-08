@@ -21,6 +21,7 @@ export default function ProjectFilters({ sort, q, phase, category, sdg, basePath
   const t = useTranslations("Filters");
   const tSdg = useTranslations("Sdg");
   const tCategories = useTranslations("Categories");
+  const tPhase = useTranslations("ProjectPhase");
   const [query, setQuery] = useState(q ?? "");
 
   function buildUrl(overrides: Record<string, string | undefined>) {
@@ -53,7 +54,7 @@ export default function ProjectFilters({ sort, q, phase, category, sdg, basePath
         className="text-xs border border-muted-teal rounded-lg px-3 py-1.5 bg-white text-dark-slate focus:outline-none focus:ring-2 focus:ring-coral"
       >
         <option value="">{t("allStages")}</option>
-        {STAGES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+        {STAGES.map((s) => <option key={s.value} value={s.value}>{tPhase(s.value)}</option>)}
       </select>
 
       {/* Category */}
