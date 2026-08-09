@@ -19,6 +19,7 @@ import NavMenuContainer from "@/components/NavMenuContainer";
 import FooterPageManager from "@/components/FooterPageManager";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
 import ConsentGate from "@/components/ConsentGate";
+import SandboxBetaBadge from "@/components/SandboxBetaBadge";
 import { auth } from "@/auth";
 import { isSiteAdmin } from "@/lib/authz";
 import { getFooterPages } from "@/lib/sitePages";
@@ -158,9 +159,7 @@ export default async function LocaleLayout({
                     unoptimized
                     className="object-contain"
                   />
-                  <span className="hidden lg:inline text-[10px] font-bold uppercase tracking-wider text-seagrass border border-seagrass/40 rounded-full px-2 py-0.5">
-                    Beta
-                  </span>
+                  <SandboxBetaBadge />
                 </Link>
                 <div className="shrink-0">
                   <NavMenuContainer />

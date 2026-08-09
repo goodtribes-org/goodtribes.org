@@ -3,6 +3,7 @@ const CARD_SHADOW =
 
 // Same intro photo/tilt as HeroPhotoStack's first slide, but static — no carousel.
 const PHOTO = { src: "/img/Slide1.jpg", alt: "GoodTribes — Crowdsourcing for Good" };
+const ICON = { src: "/img/sandbox-icon.svg", alt: "Sandbox" };
 const TILT = { rotate: -1, x: 0, y: 0 };
 
 export default function SandboxHero() {
@@ -18,7 +19,7 @@ export default function SandboxHero() {
             className="text-5xl md:text-6xl font-bold text-center leading-tight"
             style={{ color: "white", textShadow: "0 3px 8px rgba(0,0,0,0.25)", marginTop: 0 }}
           >
-            <span style={{ fontSize: 60 }}>Välkommen till GoodTribes</span>
+            <span style={{ fontSize: 60 }}>Sandbox</span>
           </h1>
 
           <div className="relative grid w-full gap-8 items-center md:grid-cols-2">
@@ -44,9 +45,9 @@ export default function SandboxHero() {
                 className="relative w-full min-w-0"
                 style={{ aspectRatio: "16 / 10", transform: `rotate(${TILT.rotate}deg) translate(${TILT.x}px, ${TILT.y}px)` }}
               >
-                <div className={`absolute inset-0 overflow-hidden bg-white p-3 ${CARD_SHADOW}`}>
-                  <div className="relative h-full w-full overflow-hidden">
-                    <img src={PHOTO.src} alt={PHOTO.alt} className="absolute inset-0 w-full h-full object-cover" />
+                <div className={`absolute inset-0 overflow-hidden bg-amber-50 p-3 ${CARD_SHADOW}`}>
+                  <div className="relative h-full w-full overflow-hidden flex items-center justify-center">
+                    <img src={ICON.src} alt={ICON.alt} className="w-2/3 h-2/3 object-contain" />
                   </div>
                 </div>
               </div>
