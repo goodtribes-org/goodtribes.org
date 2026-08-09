@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { signOut } from "next-auth/react";
 import { acceptAgreements } from "@/app/[locale]/agreements-actions";
+import LocaleSwitcher from "@/components/LocaleSwitcher";
 
 // Paths a logged-in user must still be able to reach without the gate
 // blocking them — most importantly the two agreement pages themselves
@@ -45,7 +46,14 @@ export default function ConsentGate({ needsAgreementConsent }: { needsAgreementC
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-dark-slate/60 p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-6">
-        <h2 className="text-lg font-bold text-dark-slate mb-2">{t("consentGateHeading")}</h2>
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <h2 className="text-lg font-bold text-dark-slate">{t("consentGateHeading")}</h2>
+          {/* The gate covers the whole viewport, including the header's own
+              language switcher — without this, a user who landed on the
+              "wrong" locale would have no way to read the agreements in
+              their preferred language before being asked to accept them. */}
+          <LocaleSwitcher />
+        </div>
         <p className="text-sm text-dark-slate/70 mb-4">{t("consentGateBody")}</p>
 
         <div className="flex flex-col gap-2 mb-4">
