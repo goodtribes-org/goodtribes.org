@@ -18,6 +18,7 @@ import UserEventsProvider from "@/components/UserEventsProvider";
 import NavMenuContainer from "@/components/NavMenuContainer";
 import FooterPageManager from "@/components/FooterPageManager";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
+import ConsentGate from "@/components/ConsentGate";
 import { auth } from "@/auth";
 import { isSiteAdmin } from "@/lib/authz";
 import { getFooterPages } from "@/lib/sitePages";
@@ -145,6 +146,7 @@ export default async function LocaleLayout({
         <NextIntlClientProvider>
           <SessionProvider session={session}>
           <UserEventsProvider enabled={!!session?.user}>
+            <ConsentGate needsAgreementConsent={!!session?.user?.needsAgreementConsent} />
             <header className="border-b border-muted-teal shrink-0">
               <nav className="w-full pl-3 pr-6 py-3 flex items-center gap-6">
                 <Link href="/" className="shrink-0 flex items-center gap-2.5">

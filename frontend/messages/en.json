@@ -133,7 +133,11 @@
     "alreadyHaveAccount": "Already have an account?",
     "logInLink": "Log in →",
     "agreeParticipantAgreement": "I have read and agree to the <link>Participant Agreement</link>",
-    "agreeCodeOfConduct": "I have read and agree to the <link>GoodTribes Code of Conduct</link>"
+    "agreeCodeOfConduct": "I have read and agree to the <link>GoodTribes Code of Conduct</link>",
+    "consentGateHeading": "Agree to continue",
+    "consentGateBody": "Before you can keep using GoodTribes.org, you need to agree to the Participant Agreement and the Code of Conduct.",
+    "consentGateLogOut": "Log out",
+    "consentGateContinue": "Continue"
   },
   "SitePageEditor": {
     "edit": "Edit",

@@ -160,6 +160,11 @@ model User {
   kanbanComments          KanbanCardComment[]       @relation("KanbanComments")
   onboardingDone          Boolean                   @default(false)
   tourDismissedAt         DateTime?
+  // Null means not yet accepted — checked at signup time (see SignupForm.tsx)
+  // and, for accounts predating this consent requirement, via a global gate
+  // rendered in [locale]/layout.tsx whenever either is still null.
+  acceptedParticipantAgreementAt DateTime?
+  acceptedCodeOfConductAt        DateTime?
   feedPosts               FeedPost[]                @relation("AuthoredFeedPosts")
   feedLikes               FeedLike[]                @relation("FeedLikes")
   feedComments            FeedComment[]             @relation("AuthoredFeedComments")

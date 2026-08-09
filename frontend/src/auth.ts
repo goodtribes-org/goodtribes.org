@@ -22,6 +22,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       session.user.id = user.id;
       session.user.onboardingDone = (user as { onboardingDone?: boolean }).onboardingDone ?? false;
       session.user.siteRole = user.siteRole ?? "USER";
+      session.user.needsAgreementConsent =
+        !user.acceptedParticipantAgreementAt || !user.acceptedCodeOfConductAt;
       return session;
     },
   },

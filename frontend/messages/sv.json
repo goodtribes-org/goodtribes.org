@@ -133,7 +133,11 @@
     "alreadyHaveAccount": "Har du redan ett konto?",
     "logInLink": "Logga in →",
     "agreeParticipantAgreement": "Jag har läst och godkänner <link>Deltagaravtalet</link>",
-    "agreeCodeOfConduct": "Jag har läst och godkänner <link>GoodTribes uppförandekod</link>"
+    "agreeCodeOfConduct": "Jag har läst och godkänner <link>GoodTribes uppförandekod</link>",
+    "consentGateHeading": "Godkänn för att fortsätta",
+    "consentGateBody": "Innan du kan fortsätta använda GoodTribes.org behöver du godkänna Deltagaravtalet och uppförandekoden.",
+    "consentGateLogOut": "Logga ut",
+    "consentGateContinue": "Fortsätt"
   },
   "SitePageEditor": {
     "edit": "Redigera",
