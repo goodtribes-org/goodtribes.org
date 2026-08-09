@@ -8,7 +8,7 @@ import { isSiteAdmin } from "@/lib/authz";
 import { promoteIdeaToProject } from "@/lib/promoteIdea";
 import { guardSocialAction } from "@/lib/socialActionGuard";
 import { runProactiveModeration } from "@/lib/proactiveModeration";
-import { indexDocuments } from "@/lib/meili";
+import { indexDocuments, deleteDocument } from "@/lib/meili";
 import { routing } from "@/i18n/routing";
 
 
@@ -94,7 +94,7 @@ export async function setIdeaStatus(ideaId: string, newStatus: string) {
 
   const idea = await prisma.idea.findUnique({
     where: { id: ideaId },
-    select: { authorId: true, title: true },
+    select: { authorId: true, title: true, problem: true, description: true, hiddenAt: true },
   });
   if (!idea) return { error: "Not found" };
 
@@ -108,6 +108,24 @@ export async function setIdeaStatus(ideaId: string, newStatus: string) {
   }
 
   await prisma.idea.update({ where: { id: ideaId }, data: { status: newStatus } });
+
+  // Keep the search index in sync with the same "drafts aren't searchable"
+  // rule createIdea applies at creation time — without this, an idea's
+  // Meilisearch doc only ever reflected whatever status it had the moment
+  // it was first created, never later transitions (draft -> open, or a
+  // moderator reverting something back to draft).
+  if (newStatus === "draft" || idea.hiddenAt) {
+    await deleteDocument("ideas", `idea-${ideaId}`);
+  } else {
+    await indexDocuments("ideas", [{
+      id: `idea-${ideaId}`,
+      type: "idea",
+      title: idea.title,
+      description: idea.problem ?? idea.description ?? "",
+      url: `/ideas/${ideaId}`,
+      locale: "sv",
+    }]).catch(() => {});
+  }
 
   // Notify followers when status changes to shortlisted/approved
   if (["shortlisted", "approved"].includes(newStatus)) {
@@ -206,7 +224,7 @@ export async function decideRevision(revisionId: string, decision: "accept" | "r
 
   const revision = await prisma.ideaRevision.findUnique({
     where: { id: revisionId },
-    include: { idea: { select: { id: true, authorId: true, title: true } } },
+    include: { idea: { select: { id: true, authorId: true, title: true, status: true, problem: true, hiddenAt: true } } },
   });
   if (!revision) return { error: "Not found" };
   if (revision.status !== "pending") return { error: "Already decided" };
@@ -231,6 +249,21 @@ export async function decideRevision(revisionId: string, decision: "accept" | "r
         update: {},
       }),
     ]);
+
+    // The accepted revision changes Idea.description, which the search doc
+    // also carries (as a problem/description fallback, same as createIdea)
+    // — without this, an idea's searchable text goes stale after every
+    // accepted co-creation edit until the next full /api/meili-sync resync.
+    if (revision.idea.status !== "draft" && !revision.idea.hiddenAt) {
+      await indexDocuments("ideas", [{
+        id: `idea-${revision.idea.id}`,
+        type: "idea",
+        title: revision.idea.title,
+        description: revision.idea.problem ?? revision.proposedDescription ?? "",
+        url: `/ideas/${revision.idea.id}`,
+        locale: "sv",
+      }]).catch(() => {});
+    }
   } else {
     await prisma.ideaRevision.update({
       where: { id: revisionId },

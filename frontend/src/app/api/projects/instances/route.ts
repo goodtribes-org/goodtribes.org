@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
     data: {
       slug: childSlug,
       title: projectTitle,
+      summary: parent.summary,
       description: parent.description,
       phase: "IDEA",
       category: parent.category,

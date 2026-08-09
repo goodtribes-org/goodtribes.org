@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { slugify } from "@/lib/slugify";
 import { awardTokens } from "@/lib/tokens";
+import { indexDocuments } from "@/lib/meili";
 
 interface Contributor {
   userId: string;
@@ -151,6 +152,17 @@ export async function forkProject(sourceSlug: string, formData: FormData) {
       throw e;
     }
   }
+
+  await indexDocuments("projects", [{
+    id: `project-${slug}`,
+    type: "project",
+    title,
+    description: source.description ?? "",
+    url: `/projects/${slug}`,
+    phase: source.phase,
+    sdgGoals: source.sdgGoals,
+    locale: "sv",
+  }]);
 
   redirect(`/projects/${slug}`);
 }
