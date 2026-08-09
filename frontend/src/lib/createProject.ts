@@ -74,6 +74,7 @@ export async function createProjectRecord(params: CreateProjectParams) {
         url: `/projects/${project.slug}`,
         phase: project.phase,
         sdgGoals: project.sdgGoals,
+        locale: "sv",
       }]);
 
       return project;

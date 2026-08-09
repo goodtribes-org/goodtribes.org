@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { multiSearch, SearchResult } from "@/lib/meili";
+import { getLocale } from "next-intl/server";
 
 export const metadata: Metadata = {
   title: "Search — GoodTribes.org",
@@ -29,8 +30,9 @@ export default async function SearchPage({
 }) {
   const { q } = await searchParams;
   const query = q?.trim() ?? "";
+  const locale = await getLocale();
 
-  const results = query.length >= 2 ? await multiSearch(query) : [];
+  const results = query.length >= 2 ? await multiSearch(query, locale) : [];
 
   const grouped: Record<SearchResult["type"], SearchResult[]> = {
     project: [],

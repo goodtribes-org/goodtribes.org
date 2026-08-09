@@ -18,6 +18,7 @@ export async function setProjectHidden(slug: string, hidden: boolean) {
   if (hidden) {
     await hideTarget("Project", project.id, { hiddenById: session.user.id, hiddenReason: "ADMIN_ACTION" });
     await deleteDocument("projects", `project-${slug}`);
+    await deleteDocument("projects", `project-${slug}__en`);
   } else {
     await unhideTarget("Project", project.id);
     await indexDocuments("projects", [{
@@ -28,6 +29,7 @@ export async function setProjectHidden(slug: string, hidden: boolean) {
       url: `/projects/${slug}`,
       phase: project.phase,
       sdgGoals: project.sdgGoals,
+      locale: "sv",
     }]);
   }
   revalidatePath("/site-admin/projects");

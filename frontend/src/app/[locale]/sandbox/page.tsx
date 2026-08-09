@@ -10,6 +10,10 @@ import Pagination from "@/components/Pagination";
 import ProjectCard from "@/components/ProjectCard";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import SandboxHero from "./SandboxHero";
+import { resolveProjectContent } from "@/lib/contentTranslation";
+import { routing } from "@/i18n/routing";
+import { getLocale } from "next-intl/server";
+import type { Locale } from "next-intl";
 
 export const metadata: Metadata = {
   title: "Sandbox — GoodTribes.org",
@@ -44,6 +48,7 @@ export default async function SandboxPage({
 
   const where = { isSandbox: true };
   const aiUser = await getAiParticipantUser();
+  const locale = (await getLocale()) as Locale;
 
   const [total, projects, recentIdeas, recentMessages, projectCount, aiSeedCount, tasksDone] = await Promise.all([
     prisma.project.count({ where }),
@@ -55,6 +60,7 @@ export default async function SandboxPage({
       include: {
         owner: { select: { name: true } },
         members: { select: { id: true } },
+        translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
       },
     }),
     prisma.idea.findMany({
@@ -105,6 +111,7 @@ export default async function SandboxPage({
   const taskProgressBySlug = computeTaskProgressByProject(taskProgressCards);
   const projectsWithLikes = projects.map((p) => ({
     ...p,
+    ...resolveProjectContent(p, p.translations, locale),
     likes: likesByProjectId.get(p.id) ?? 0,
     taskProgress: taskProgressBySlug.get(p.slug) ?? { total: 0, done: 0 },
   }));

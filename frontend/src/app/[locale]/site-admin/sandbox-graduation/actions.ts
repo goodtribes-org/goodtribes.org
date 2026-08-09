@@ -54,6 +54,7 @@ export async function approveSandboxGraduation(requestId: string, umbrellaEntity
       url: `/projects/${request.project.slug}`,
       phase: request.project.phase,
       sdgGoals: request.project.sdgGoals,
+      locale: "sv",
     }]);
   }
 

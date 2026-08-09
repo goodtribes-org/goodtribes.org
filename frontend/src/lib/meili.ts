@@ -28,6 +28,23 @@ export interface SearchResult {
   title: string;
   description?: string;
   url: string;
+  locale?: string;
+}
+
+// Registers `locale` as filterable on the projects/ideas indexes so
+// multiSearch() can filter by it. Settings apply retroactively and PATCHing
+// is idempotent, so this is safe to call on every sync rather than gating it
+// behind a one-time setup step like the messages index below.
+export async function ensureLocaleFilterable(index: "projects" | "ideas") {
+  try {
+    await fetch(`${HOST}/indexes/${index}/settings`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ filterableAttributes: ["locale"] }),
+    });
+  } catch {
+    // Best-effort — same fallback stance as indexDocuments
+  }
 }
 
 export async function deleteDocument(index: string, id: string) {
@@ -115,16 +132,38 @@ export async function searchMessages(query: string, roomIds: string[]): Promise<
   }
 }
 
-export async function multiSearch(query: string): Promise<SearchResult[]> {
+// Projects/ideas docs are locale-partitioned (see ensureLocaleFilterable +
+// meili-sync's route.ts) — a translated project/idea has both an `sv` doc
+// (bare id) and an `__en`-suffixed doc. Filtering for `locale IN [sv, wanted]`
+// and then, per base id (id with any "__en" suffix stripped), preferring the
+// wanted-locale hit over the sv one gives "translated if available, sv
+// fallback otherwise" — same fallback idiom used on the read side.
+function dedupeByLocale(hits: SearchResult[], locale: string): SearchResult[] {
+  const byBaseId = new Map<string, SearchResult>();
+  for (const hit of hits) {
+    const baseId = hit.id.endsWith("__en") ? hit.id.slice(0, -4) : hit.id;
+    const existing = byBaseId.get(baseId);
+    if (!existing || hit.locale === locale) byBaseId.set(baseId, hit);
+  }
+  return [...byBaseId.values()];
+}
+
+export async function multiSearch(query: string, locale: string = "sv"): Promise<SearchResult[]> {
   if (!query.trim()) return [];
+  // Always scope projects/ideas to sv plus (if different) the requested
+  // locale — without this, an `sv` search would also surface every other
+  // locale's doc unfiltered (e.g. a translated project's `:en`-suffixed doc
+  // leaking into a Swedish search), since a missing filter means "no
+  // locale restriction at all", not "sv only".
+  const localeFilter = locale === "sv" ? `locale = "sv"` : `locale IN ["sv", "${locale}"]`;
   try {
     const res = await fetch(`${HOST}/multi-search`, {
       method: "POST",
       headers,
       body: JSON.stringify({
         queries: [
-          { indexUid: "projects", q: query, limit: 4 },
-          { indexUid: "ideas",    q: query, limit: 3 },
+          { indexUid: "projects", q: query, limit: 8, filter: localeFilter },
+          { indexUid: "ideas",    q: query, limit: 6, filter: localeFilter },
           { indexUid: "orgs",     q: query, limit: 3 },
           { indexUid: "members",  q: query, limit: 3 },
         ],
@@ -134,7 +173,8 @@ export async function multiSearch(query: string): Promise<SearchResult[]> {
     const data = (await res.json()) as {
       results?: { hits?: SearchResult[] }[];
     };
-    return (data.results ?? []).flatMap((r) => r.hits ?? []);
+    const allHits = (data.results ?? []).flatMap((r) => r.hits ?? []);
+    return dedupeByLocale(allHits, locale);
   } catch {
     return [];
   }

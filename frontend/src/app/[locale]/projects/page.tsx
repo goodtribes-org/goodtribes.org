@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { auth } from "@/auth";
 import ProjectFilters from "@/components/ProjectFiltersContainer";
 import Pagination from "@/components/Pagination";
@@ -14,6 +14,9 @@ import CountryMap from "@/components/CountryMap";
 import { countByCountry } from "@/lib/geo";
 import { isValidProjectPhase } from "@/lib/projectPhase";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
+import { resolveProjectContent } from "@/lib/contentTranslation";
+import { routing } from "@/i18n/routing";
+import type { Locale } from "next-intl";
 
 export const metadata: Metadata = {
   title: "Projects — GoodTribes.org",
@@ -48,6 +51,8 @@ export default async function ProjectsPage({
     : sort === "trending" ? { updatedAt: "desc" as const }
     : { createdAt: "desc" as const };
 
+  const locale = (await getLocale()) as Locale;
+
   const [session, t, tFilters, total, projects, ownerCountries] = await Promise.all([
     auth(),
     getTranslations("ProjectsPage"),
@@ -61,6 +66,7 @@ export default async function ProjectsPage({
       include: {
         owner: { select: { name: true } },
         members: { select: { id: true } },
+        translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
       },
     }),
     prisma.project.findMany({ where, select: { owner: { select: { country: true } } } }),
@@ -87,6 +93,7 @@ export default async function ProjectsPage({
   const taskProgressBySlug = computeTaskProgressByProject(taskProgressCards);
   const projectsWithLikes = projects.map((p) => ({
     ...p,
+    ...resolveProjectContent(p, p.translations, locale),
     likes: likesByProjectId.get(p.id) ?? 0,
     taskProgress: taskProgressBySlug.get(p.slug) ?? { total: 0, done: 0 },
   }));

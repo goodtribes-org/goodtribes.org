@@ -8,6 +8,8 @@ import { isSiteAdmin } from "@/lib/authz";
 import { promoteIdeaToProject } from "@/lib/promoteIdea";
 import { guardSocialAction } from "@/lib/socialActionGuard";
 import { runProactiveModeration } from "@/lib/proactiveModeration";
+import { indexDocuments } from "@/lib/meili";
+import { routing } from "@/i18n/routing";
 
 
 export async function toggleVote(ideaId: string) {
@@ -247,6 +249,65 @@ export async function decideRevision(revisionId: string, decision: "accept" | "r
   }
 
   revalidatePath(`/ideas/${revision.idea.id}`);
+}
+
+// Saves (or updates) a non-default-locale translation for an idea's
+// title/description/problem/solution. The base sv columns on Idea are never
+// touched here — same permission level as decideRevision (author or
+// site-admin). No UI calls this yet; it's the plumbing an AI-draft-then-
+// approve flow will call into.
+export async function upsertIdeaTranslation(
+  ideaId: string,
+  locale: string,
+  data: { title: string; description: string | null; problem: string | null; solution: string | null }
+): Promise<{ error: string } | { ok: true }> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+
+  if (locale === routing.defaultLocale || !routing.locales.includes(locale as (typeof routing.locales)[number])) {
+    return { error: "Invalid locale" };
+  }
+
+  const title = data.title.trim();
+  if (!title) return { error: "Title is required" };
+
+  const idea = await prisma.idea.findUnique({ where: { id: ideaId } });
+  if (!idea) return { error: "Not found" };
+
+  const isAuthor = idea.authorId === session.user.id;
+  if (!isAuthor && !(await isSiteAdmin(session.user.id))) return { error: "Not authorised" };
+
+  await prisma.ideaTranslation.upsert({
+    where: { ideaId_locale: { ideaId, locale } },
+    create: {
+      ideaId,
+      locale,
+      title,
+      description: data.description?.trim() || null,
+      problem: data.problem?.trim() || null,
+      solution: data.solution?.trim() || null,
+    },
+    update: {
+      title,
+      description: data.description?.trim() || null,
+      problem: data.problem?.trim() || null,
+      solution: data.solution?.trim() || null,
+    },
+  });
+
+  if (locale === "en" && !idea.hiddenAt && idea.status !== "draft") {
+    await indexDocuments("ideas", [{
+      id: `idea-${idea.id}__en`,
+      type: "idea",
+      title,
+      description: data.problem?.trim() || data.description?.trim() || "",
+      url: `/ideas/${idea.id}`,
+      locale: "en",
+    }]).catch(() => {});
+  }
+
+  revalidatePath(`/ideas/${ideaId}`);
+  return { ok: true };
 }
 
 export async function promoteIdea(ideaId: string) {

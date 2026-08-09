@@ -16,6 +16,9 @@ import { buildMetadata, APP_URL } from "@/lib/metadata";
 import ShareButton from "@/components/ShareButton";
 import IdeaRevisions from "./IdeaRevisions";
 import IdeaPromoteButton from "./IdeaPromoteButton";
+import { resolveIdeaContent } from "@/lib/contentTranslation";
+import { routing } from "@/i18n/routing";
+import type { Locale } from "next-intl";
 
 const STATUS_STEPS = ["open", "review", "shortlisted", "approved", "converted"];
 
@@ -36,10 +39,21 @@ function formatReach(n: number): string {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; id: string }> }): Promise<Metadata> {
   const { locale, id } = await params;
-  const idea = await prisma.idea.findUnique({ where: { id }, select: { title: true, problem: true, description: true, hiddenAt: true } });
+  const idea = await prisma.idea.findUnique({
+    where: { id },
+    select: {
+      title: true,
+      problem: true,
+      description: true,
+      solution: true,
+      hiddenAt: true,
+      translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
+    },
+  });
   if (!idea || idea.hiddenAt) return {};
-  const desc = idea.problem ?? idea.description ?? "An idea on GoodTribes.org";
-  return buildMetadata({ locale, path: `/ideas/${id}`, title: idea.title, description: desc });
+  const content = resolveIdeaContent(idea, idea.translations, locale as Locale);
+  const desc = content.problem ?? content.description ?? "An idea on GoodTribes.org";
+  return buildMetadata({ locale, path: `/ideas/${id}`, title: content.title, description: desc });
 }
 
 export default async function IdeaDetailPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
@@ -95,12 +109,14 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           orderBy: { createdAt: "desc" },
         },
         promotedToProject: { select: { slug: true } },
+        translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
       },
     }),
   ]);
 
   if (!idea) notFound();
 
+  const content = resolveIdeaContent(idea, idea.translations, locale as Locale);
   const userId = session?.user?.id;
   const hasVoted = userId ? idea.votes.some((v) => v.userId === userId) : false;
   const hasEndorsed = userId ? idea.endorsements.some((e) => e.userId === userId) : false;
@@ -130,13 +146,13 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
       <nav className="mb-6 text-sm text-dark-slate/50 flex items-center gap-2">
         <Link href="/ideas" className="hover:text-dark-slate transition-colors">{t("breadcrumbIdeas")}</Link>
         <span>/</span>
-        <span className="text-dark-slate truncate max-w-xs">{idea.title}</span>
+        <span className="text-dark-slate truncate max-w-xs">{content.title}</span>
       </nav>
 
       {/* Cover image */}
       {idea.imageUrl && (
         <div className="relative w-full h-48 rounded-2xl overflow-hidden mb-6 bg-dry-sage">
-          <Image src={idea.imageUrl} alt={idea.title} fill unoptimized className="object-cover" />
+          <Image src={idea.imageUrl} alt={content.title} fill unoptimized className="object-cover" />
         </div>
       )}
 
@@ -191,7 +207,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
             isModerator={isModerator}
             currentStatus={idea.status}
             shareUrl={`${APP_URL}/${locale}/ideas/${id}`}
-            shareTitle={idea.title}
+            shareTitle={content.title}
           />
         </div>
 
@@ -212,7 +228,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
             )}
           </div>
 
-          <h1 className="text-2xl font-bold text-dark-slate mb-3 leading-snug">{idea.title}</h1>
+          <h1 className="text-2xl font-bold text-dark-slate mb-3 leading-snug">{content.title}</h1>
 
           <div className="flex items-center gap-3 mb-6 text-sm text-dark-slate/50">
             {idea.author.image ? (
@@ -255,7 +271,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           )}
 
           {/* Problem */}
-          {(idea.problem || (!idea.solution && idea.description)) && (
+          {(content.problem || (!content.solution && content.description)) && (
             <section className="mb-6">
               <h2 className="flex items-center gap-2 text-sm font-semibold text-dark-slate uppercase tracking-wider mb-3">
                 <span className="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs">!</span>
@@ -263,21 +279,21 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
               </h2>
               <div className="bg-red-50/50 border border-red-100 rounded-xl p-4">
                 <p className="text-sm text-dark-slate/80 leading-relaxed whitespace-pre-wrap">
-                  {idea.problem ?? idea.description}
+                  {content.problem ?? content.description}
                 </p>
               </div>
             </section>
           )}
 
           {/* Solution */}
-          {idea.solution && (
+          {content.solution && (
             <section className="mb-6">
               <h2 className="flex items-center gap-2 text-sm font-semibold text-dark-slate uppercase tracking-wider mb-3">
                 <span className="w-6 h-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xs">✓</span>
                 {t("solutionHeading")}
               </h2>
               <div className="bg-green-50/50 border border-green-100 rounded-xl p-4">
-                <p className="text-sm text-dark-slate/80 leading-relaxed whitespace-pre-wrap">{idea.solution}</p>
+                <p className="text-sm text-dark-slate/80 leading-relaxed whitespace-pre-wrap">{content.solution}</p>
               </div>
             </section>
           )}
@@ -345,7 +361,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
                 </p>
                 <IdeaPromoteButton ideaId={idea.id} />
                 <Link
-                  href={`/projects/new?from=${idea.id}&title=${encodeURIComponent(idea.title)}`}
+                  href={`/projects/new?from=${idea.id}&title=${encodeURIComponent(content.title)}`}
                   className="inline-block mt-2 text-xs text-dark-slate/50 hover:text-dark-slate hover:underline"
                 >
                   {t("customizeDetailsLink")}

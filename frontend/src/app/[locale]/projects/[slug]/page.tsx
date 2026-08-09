@@ -30,6 +30,9 @@ import { getLikeCommentData } from "@/lib/socialInteractions";
 import { toProxyUrl } from "@/lib/storageUrl";
 import ActivityFeed from "@/components/ActivityFeed";
 import { fetchActivityItems, getFeedInteractionData } from "@/lib/activityFeed";
+import { resolveProjectContent } from "@/lib/contentTranslation";
+import { routing } from "@/i18n/routing";
+import type { Locale } from "next-intl";
 
 const FEED_PAGE_SIZE = 20;
 
@@ -161,14 +164,20 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
-  const project = await prisma.project.findUnique({ where: { slug } });
+  const project = await prisma.project.findUnique({
+    where: { slug },
+    include: {
+      translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
+    },
+  });
   if (!project) return {};
+  const content = resolveProjectContent(project, project.translations, locale as Locale);
   const t = await getTranslations({ locale, namespace: "ProjectDetailPage" });
   return buildMetadata({
     locale,
     path: `/projects/${slug}`,
-    title: project.title,
-    description: project.description ? stripHtml(project.description) : t("defaultProjectDescription"),
+    title: content.title,
+    description: content.description ? stripHtml(content.description) : t("defaultProjectDescription"),
     imageUrl: project.imageUrl,
   });
 }
@@ -207,9 +216,12 @@ export default async function ProjectDetailPage({
       },
       forkedFromProject: { select: { title: true, slug: true } },
       forks: { select: { title: true, slug: true } },
+      translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
     },
   });
   if (!project) notFound();
+
+  const content = resolveProjectContent(project, project.translations, locale as Locale);
 
   const userId = session?.user?.id;
   const userMembership = project.members.find((m) => m.user.id === userId);
@@ -395,7 +407,7 @@ export default async function ProjectDetailPage({
                 transform: "rotate(-3deg)",
               }}
             >
-              {project.title}
+              {content.title}
             </h1>
           </div>
           <div className="px-4 pb-10">
@@ -407,11 +419,11 @@ export default async function ProjectDetailPage({
               >
                 {project.imageUrl ? (
                   <div className="relative w-full h-full">
-                    <Image src={project.imageUrl} alt={project.title} fill unoptimized className="object-cover" />
+                    <Image src={project.imageUrl} alt={content.title} fill unoptimized className="object-cover" />
                   </div>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-dry-sage/20">
-                    <span className="text-6xl font-bold text-dark-slate/20">{project.title[0]}</span>
+                    <span className="text-6xl font-bold text-dark-slate/20">{content.title[0]}</span>
                   </div>
                 )}
               </div>
@@ -581,21 +593,21 @@ export default async function ProjectDetailPage({
 
           <section>
             <h2 className="text-base font-semibold text-dark-slate mb-4">{t("aboutProjectHeading")}</h2>
-            {project.description ? (
-              project.description.trimStart().startsWith("<") ? (
+            {content.description ? (
+              content.description.trimStart().startsWith("<") ? (
                 <article
                   className="prose max-w-[760px] mx-auto text-dark-slate leading-relaxed
                     prose-headings:text-dark-slate
                     prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
                     prose-strong:text-dark-slate prose-img:rounded-xl prose-img:max-w-full"
-                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(project.description) }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(content.description) }}
                 />
               ) : (
                 <article className="prose max-w-[760px] mx-auto text-dark-slate leading-relaxed
                   prose-headings:text-dark-slate
                   prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
                   prose-strong:text-dark-slate prose-img:rounded-xl">
-                  <ReactMarkdown>{project.description}</ReactMarkdown>
+                  <ReactMarkdown>{content.description}</ReactMarkdown>
                 </article>
               )
             ) : (
@@ -1067,8 +1079,8 @@ export default async function ProjectDetailPage({
       <div className="mt-6 pt-6 border-t border-muted-teal/20 flex justify-end items-center gap-3">
         <ShareButton
           url={`${APP_URL}/${locale}/projects/${slug}`}
-          title={project.title}
-          text={project.description ? stripHtml(project.description) : undefined}
+          title={content.title}
+          text={content.description ? stripHtml(content.description) : undefined}
         />
         {userId && !isOwnerOrAdmin && <FlagContentButton targetType="Project" targetId={project.id} />}
       </div>

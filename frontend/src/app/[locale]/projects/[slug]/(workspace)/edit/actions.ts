@@ -156,9 +156,11 @@ export async function updateProject(slug: string, formData: FormData) {
       url: `/projects/${slug}`,
       phase: project.phase,
       sdgGoals,
+      locale: "sv",
     }]);
   } else {
     await deleteDocument("projects", `project-${slug}`);
+    await deleteDocument("projects", `project-${slug}__en`);
   }
 
   revalidatePath(`/projects/${slug}`);
@@ -205,6 +207,7 @@ export async function advanceProjectPhase(slug: string) {
       url: `/projects/${slug}`,
       phase: nextPhase,
       sdgGoals: project.sdgGoals,
+      locale: "sv",
     }]);
   }
 

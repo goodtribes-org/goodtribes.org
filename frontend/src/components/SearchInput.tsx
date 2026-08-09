@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import Link from "next/link";
 
 interface SearchResult {
@@ -33,6 +34,7 @@ export default function SearchInput() {
   const [loading, setLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const locale = useLocale();
 
   useEffect(() => {
     if (query.length < 2) {
@@ -43,7 +45,7 @@ export default function SearchInput() {
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&locale=${locale}`);
         const data: SearchResult[] = await res.json();
         setResults(data);
         setOpen(true);
@@ -54,7 +56,7 @@ export default function SearchInput() {
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, locale]);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {

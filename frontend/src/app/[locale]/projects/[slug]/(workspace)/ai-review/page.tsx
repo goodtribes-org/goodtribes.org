@@ -3,8 +3,11 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import AIReviewActions from "./AIReviewActions";
+import { resolveProjectContent } from "@/lib/contentTranslation";
+import { routing } from "@/i18n/routing";
+import type { Locale } from "next-intl";
 
 
 const AGENT_ICONS: Record<string, string> = {
@@ -15,10 +18,15 @@ const AGENT_ICONS: Record<string, string> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
+  const locale = (await getLocale()) as Locale;
+  const project = await prisma.project.findUnique({
+    where: { slug },
+    select: { title: true, summary: true, description: true, translations: locale !== routing.defaultLocale ? { where: { locale } } : false },
+  });
   if (!project) return {};
+  const content = resolveProjectContent(project, project.translations, locale);
   const t = await getTranslations("AIReviewPage");
-  return { title: t("metaTitle", { projectTitle: project.title }) };
+  return { title: t("metaTitle", { projectTitle: content.title }) };
 }
 
 export default async function AiReviewPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -30,6 +38,7 @@ export default async function AiReviewPage({ params }: { params: Promise<{ slug:
   }
 
   const t = await getTranslations("AIReviewPage");
+  const locale = (await getLocale()) as Locale;
 
   const AGENT_LABELS: Record<string, string> = {
     writer: t("agentWriter"),
@@ -39,9 +48,10 @@ export default async function AiReviewPage({ params }: { params: Promise<{ slug:
 
   const project = await prisma.project.findUnique({
     where: { slug },
-    select: { title: true },
+    select: { title: true, summary: true, description: true, translations: locale !== routing.defaultLocale ? { where: { locale } } : false },
   });
   if (!project) notFound();
+  const content = resolveProjectContent(project, project.translations, locale);
 
   const runs = await prisma.aiTaskRun.findMany({
     where: {
@@ -68,7 +78,7 @@ export default async function AiReviewPage({ params }: { params: Promise<{ slug:
           href={`/projects/${slug}`}
           className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
         >
-          &larr; {project.title}
+          &larr; {content.title}
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>

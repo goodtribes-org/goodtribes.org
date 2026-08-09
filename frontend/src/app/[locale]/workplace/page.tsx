@@ -9,6 +9,9 @@ import { getTranslations } from "next-intl/server";
 import { acceptMentorship } from "@/app/[locale]/mentors/actions";
 import { PROJECT_PHASE_LABEL as PHASE_LABEL, PROJECT_PHASE_COLOR as PHASE_COLOR } from "@/lib/projectPhase";
 import VolunteerTourGate from "@/components/VolunteerTourGate";
+import { resolveProjectContent, resolveIdeaContent } from "@/lib/contentTranslation";
+import { routing } from "@/i18n/routing";
+import type { Locale } from "next-intl";
 
 export const metadata: Metadata = { title: "Workplace — GoodTribes.org" };
 
@@ -171,6 +174,7 @@ export default async function WorkplacePage({
             phase: true,
             summary: true,
             description: true,
+            translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
             _count: {
               select: {
                 kanbanCards: { where: { column: { not: "DONE" } } },
@@ -194,7 +198,10 @@ export default async function WorkplacePage({
       where: { authorId: userId },
       orderBy: { createdAt: "desc" },
       take: 5,
-      include: { _count: { select: { votes: true, comments: true } } },
+      include: {
+        _count: { select: { votes: true, comments: true } },
+        translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
+      },
     }),
   ]);
 
@@ -415,22 +422,24 @@ export default async function WorkplacePage({
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {memberships.map(({ role, project }) => (
+                {memberships.map(({ role, project }) => {
+                  const content = resolveProjectContent(project, project.translations, locale as Locale);
+                  return (
                   <Link
                     key={project.id}
                     href={`/projects/${project.slug}`}
                     className="border border-muted-teal rounded-lg p-5 hover:border-seagrass hover:shadow-sm transition-all flex flex-col gap-3"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-semibold text-dark-slate leading-tight">{project.title}</h3>
+                      <h3 className="font-semibold text-dark-slate leading-tight">{content.title}</h3>
                       <span
                         className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full flex-shrink-0 ${PHASE_COLOR[project.phase] ?? PHASE_COLOR.IDEA}`}
                       >
                         {PHASE_LABEL[project.phase] ?? project.phase}
                       </span>
                     </div>
-                    {(project.summary ?? project.description) && (
-                      <p className="text-sm text-dark-slate/60 line-clamp-2">{project.summary ?? project.description}</p>
+                    {(content.summary ?? content.description) && (
+                      <p className="text-sm text-dark-slate/60 line-clamp-2">{content.summary ?? content.description}</p>
                     )}
                     <div className="flex items-center gap-4 text-xs text-dark-slate/50 mt-auto pt-1 border-t border-muted-teal/40">
                       <span className="font-medium text-seagrass">{roleLabel(t, role)}</span>
@@ -438,7 +447,8 @@ export default async function WorkplacePage({
                       <span>{t("membersCount", { count: project._count.members })}</span>
                     </div>
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>
@@ -495,19 +505,22 @@ export default async function WorkplacePage({
               </p>
             ) : (
               <div className="border border-muted-teal rounded-lg overflow-hidden divide-y divide-muted-teal/50">
-                {myIdeas.map((idea) => (
+                {myIdeas.map((idea) => {
+                  const ideaContent = resolveIdeaContent(idea, idea.translations, locale as Locale);
+                  return (
                   <Link
                     key={idea.id}
                     href={`/ideas/${idea.id}`}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-dry-sage/20 transition-colors"
                   >
-                    <span className="flex-1 text-sm text-dark-slate">{idea.title}</span>
+                    <span className="flex-1 text-sm text-dark-slate">{ideaContent.title}</span>
                     <span className="text-xs text-dark-slate/40 flex-shrink-0">
                       {t("votesCount", { count: idea._count.votes })} &nbsp;·&nbsp;{" "}
                       {t("commentsCount", { count: idea._count.comments })}
                     </span>
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>

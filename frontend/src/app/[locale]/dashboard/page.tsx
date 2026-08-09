@@ -9,6 +9,8 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
 import { PROJECT_PHASE_LABEL as PHASE_LABELS } from "@/lib/projectPhase";
 import { SdgIcon } from "@/components/SdgIcon";
+import { resolveProjectContent } from "@/lib/contentTranslation";
+import { routing } from "@/i18n/routing";
 
 export const metadata: Metadata = {
   title: "Dashboard — GoodTribes.org",
@@ -17,12 +19,14 @@ export const metadata: Metadata = {
 type MatchProjectCard = {
   slug: string;
   title: string;
+  summary: string | null;
   description: string | null;
   category: string | null;
   phase: string;
   _count: { members: number };
   sdgGoals: number[];
   neededSkills: { skill: { id: string; name: string; slug: string } }[];
+  translations?: { locale: string; title: string; summary: string | null; description: string | null }[] | false;
 };
 
 function MatchCard({
@@ -30,14 +34,17 @@ function MatchCard({
   matchingSkillIds,
   showSdgs,
   t,
+  locale,
 }: {
   project: MatchProjectCard;
   matchingSkillIds?: Set<string>;
   showSdgs?: boolean;
   t: Awaited<ReturnType<typeof getTranslations>>;
+  locale: Locale;
 }) {
-  const desc = project.description
-    ? project.description.slice(0, 100) + (project.description.length > 100 ? "…" : "")
+  const content = resolveProjectContent(project, project.translations, locale);
+  const desc = content.description
+    ? content.description.slice(0, 100) + (content.description.length > 100 ? "…" : "")
     : null;
 
   return (
@@ -46,7 +53,7 @@ function MatchCard({
       className="flex flex-col gap-2 border border-muted-teal/40 rounded-lg p-4 hover:shadow-md hover:border-muted-teal transition-all bg-white"
     >
       <div className="flex items-start justify-between gap-2">
-        <p className="font-semibold text-dark-slate text-sm leading-snug">{project.title}</p>
+        <p className="font-semibold text-dark-slate text-sm leading-snug">{content.title}</p>
         {project.category && (
           <span className="text-[10px] font-semibold uppercase tracking-wide bg-dry-sage/40 text-dark-slate/60 rounded px-1.5 py-0.5 flex-shrink-0">
             {project.category}
@@ -156,7 +163,16 @@ export default async function DashboardPage({
       prisma.projectMember.findMany({
         where: { userId },
         include: {
-          project: { select: { slug: true, title: true, phase: true, description: true } },
+          project: {
+            select: {
+              slug: true,
+              title: true,
+              summary: true,
+              phase: true,
+              description: true,
+              translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
+            },
+          },
         },
         orderBy: { joinedAt: "desc" },
       }),
@@ -186,7 +202,11 @@ export default async function DashboardPage({
       }),
     ]);
 
-  const myProjects = myMemberships.map((m) => ({ ...m.project, role: m.role }));
+  const myProjects = myMemberships.map((m) => ({
+    ...m.project,
+    ...resolveProjectContent(m.project, m.project.translations, locale),
+    role: m.role,
+  }));
   const pendingCount = pendingProjectRequests.length + pendingOrgRequests.length;
 
   const userSkillIds = (user?.skills ?? []).map((s) => s.skillId);
@@ -198,6 +218,7 @@ export default async function DashboardPage({
   const matchProjectSelect = {
     slug: true,
     title: true,
+    summary: true,
     description: true,
     category: true,
     phase: true,
@@ -206,6 +227,7 @@ export default async function DashboardPage({
     neededSkills: {
       include: { skill: { select: { id: true, name: true, slug: true } } },
     },
+    translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
   } as const;
 
   const [skillMatches, orgMatches, interestMatches, exploreProjects] = await Promise.all([
@@ -446,7 +468,7 @@ export default async function DashboardPage({
           {skillMatches.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {skillMatches.map((p) => (
-                <MatchCard key={p.slug} project={p} matchingSkillIds={matchingSkillIdSet} t={t} />
+                <MatchCard key={p.slug} project={p} matchingSkillIds={matchingSkillIdSet} t={t} locale={locale} />
               ))}
             </div>
           )}
@@ -501,7 +523,7 @@ export default async function DashboardPage({
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {interestMatches.map((p) => (
-                  <MatchCard key={p.slug} project={p} showSdgs t={t} />
+                  <MatchCard key={p.slug} project={p} showSdgs t={t} locale={locale} />
                 ))}
               </div>
             )}
@@ -565,6 +587,7 @@ export default async function DashboardPage({
                       : undefined
                   }
                   t={t}
+                  locale={locale}
                 />
               ))}
             </div>

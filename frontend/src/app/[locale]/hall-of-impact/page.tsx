@@ -7,6 +7,9 @@ import { SdgIcon } from "@/components/SdgIcon";
 import ShareButton from "@/components/ShareButton";
 import { APP_URL, buildMetadata } from "@/lib/metadata";
 import { getTranslations } from "next-intl/server";
+import { resolveProjectContent } from "@/lib/contentTranslation";
+import { routing } from "@/i18n/routing";
+import type { Locale } from "next-intl";
 
 export async function generateMetadata({
   params,
@@ -36,6 +39,7 @@ export default async function HallOfImpactPage({
       },
       maturity: { select: { score: true } },
       _count: { select: { members: true } },
+      translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
     },
     orderBy: [
       { maturity: { score: "desc" } },
@@ -85,7 +89,9 @@ export default async function HallOfImpactPage({
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-          {projects.map((project) => (
+          {projects.map((project) => {
+            const content = resolveProjectContent(project, project.translations, locale as Locale);
+            return (
             <Link
               key={project.id}
               href={`/projects/${project.slug}`}
@@ -96,7 +102,7 @@ export default async function HallOfImpactPage({
                 {project.imageUrl ? (
                   <img
                     src={project.imageUrl}
-                    alt={project.title}
+                    alt={content.title}
                     className="object-cover w-full h-full"
                   />
                 ) : (
@@ -113,7 +119,7 @@ export default async function HallOfImpactPage({
               <div className="flex flex-col gap-2 p-4 flex-1">
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-semibold text-dark-slate text-sm leading-snug group-hover:text-coral transition-colors">
-                    {project.title}
+                    {content.title}
                   </p>
                   {project.category && (
                     <span className="text-[10px] font-semibold uppercase tracking-wide bg-dry-sage/40 text-dark-slate/60 rounded px-1.5 py-0.5 flex-shrink-0">
@@ -159,7 +165,8 @@ export default async function HallOfImpactPage({
                 </div>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

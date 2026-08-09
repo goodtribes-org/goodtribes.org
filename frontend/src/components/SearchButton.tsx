@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 
 interface SearchResult {
@@ -34,6 +34,7 @@ export default function SearchButton() {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const locale = useLocale();
 
   // Focus input when panel opens
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function SearchButton() {
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&locale=${locale}`);
         const data: SearchResult[] = await res.json();
         setResults(data);
       } catch {
@@ -57,7 +58,7 @@ export default function SearchButton() {
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, locale]);
 
   // Close on outside click
   useEffect(() => {

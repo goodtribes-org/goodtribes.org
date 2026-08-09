@@ -712,6 +712,25 @@ model Project {
   forkProfitSharesGiven       ForkProfitShare[]           @relation("ForkProfitShareForkedProject")
   forkTokenGrantsGiven        ForkTokenGrant[]            @relation("ForkTokenGrantForkedProject")
   ownershipInterests          ProjectOwnershipInterest[]
+  translations                ProjectTranslation[]
+}
+
+// Per-locale override of title/summary/description for a Project. The base
+// columns on Project stay the canonical sv content and are never removed —
+// a row here only exists for additional locales (today: en). Callers fall
+// back to the base columns when no row exists, same idiom as getSitePage().
+model ProjectTranslation {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  locale      String
+  title       String
+  summary     String?
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@unique([projectId, locale])
+  @@index([projectId])
 }
 
 // Expressions of interest in taking over a project a founder has marked
@@ -816,6 +835,24 @@ model Idea {
   // (same role Room plays for convertedToProjectId/convertedToIdeaId).
   promotedToProjectId String?  @unique
   promotedToProject   Project? @relation("IdeaPromotedToProject", fields: [promotedToProjectId], references: [id], onDelete: SetNull)
+  translations         IdeaTranslation[]
+}
+
+// Per-locale override of title/description/problem/solution for an Idea.
+// Same fallback idiom as ProjectTranslation — base columns stay canonical sv.
+model IdeaTranslation {
+  id          String   @id @default(cuid())
+  ideaId      String
+  idea        Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  locale      String
+  title       String
+  description String?
+  problem     String?
+  solution    String?
+  updatedAt   DateTime @updatedAt
+
+  @@unique([ideaId, locale])
+  @@index([ideaId])
 }
 
 // PRD 5.15 co-creation — a pull-request-style proposed edit to an idea's

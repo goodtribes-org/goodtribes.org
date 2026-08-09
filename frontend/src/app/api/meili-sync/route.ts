@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
-import { indexDocuments } from "@/lib/meili";
+import { indexDocuments, ensureLocaleFilterable } from "@/lib/meili";
 
 
 export async function POST() {
@@ -12,12 +12,13 @@ export async function POST() {
   const [projects, ideas, users] = await Promise.all([
     prisma.project.findMany({
       where: { hiddenAt: null },
-      include: { owner: { select: { name: true } } },
+      include: { owner: { select: { name: true } }, translations: true },
     }),
     prisma.idea.findMany({
       include: {
         author: { select: { name: true } },
         _count: { select: { votes: true } },
+        translations: true,
       },
     }),
     prisma.user.findMany({
@@ -26,30 +27,46 @@ export async function POST() {
   ]);
 
   await Promise.all([
+    ensureLocaleFilterable("projects"),
+    ensureLocaleFilterable("ideas"),
     indexDocuments(
       "projects",
-      projects.map((p) => ({
-        id: `project-${p.slug}`,
-        type: "project",
-        title: p.title,
-        description: p.description ?? "",
-        url: `/projects/${p.slug}`,
-        phase: p.phase,
-        sdgGoals: p.sdgGoals,
-        ownerName: p.owner.name ?? "",
-      }))
+      projects.flatMap((p) => {
+        const base = {
+          id: `project-${p.slug}`,
+          type: "project",
+          title: p.title,
+          description: p.description ?? "",
+          url: `/projects/${p.slug}`,
+          phase: p.phase,
+          sdgGoals: p.sdgGoals,
+          ownerName: p.owner.name ?? "",
+          locale: "sv",
+        };
+        const en = p.translations.find((t) => t.locale === "en");
+        return en
+          ? [base, { ...base, id: `project-${p.slug}__en`, title: en.title, description: en.description ?? "", locale: "en" }]
+          : [base];
+      })
     ),
     indexDocuments(
       "ideas",
-      ideas.map((i) => ({
-        id: `idea-${i.id}`,
-        type: "idea",
-        title: i.title,
-        description: i.description ?? "",
-        url: `/ideas/${i.id}`,
-        authorName: i.author.name ?? "",
-        votes: i._count.votes,
-      }))
+      ideas.flatMap((i) => {
+        const base = {
+          id: `idea-${i.id}`,
+          type: "idea",
+          title: i.title,
+          description: i.description ?? "",
+          url: `/ideas/${i.id}`,
+          authorName: i.author.name ?? "",
+          votes: i._count.votes,
+          locale: "sv",
+        };
+        const en = i.translations.find((t) => t.locale === "en");
+        return en
+          ? [base, { ...base, id: `idea-${i.id}__en`, title: en.title, description: en.description ?? "", locale: "en" }]
+          : [base];
+      })
     ),
     indexDocuments(
       "members",

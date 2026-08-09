@@ -74,6 +74,7 @@ export async function createIdea(formData: FormData) {
       title: idea.title,
       description: idea.problem ?? "",
       url: `/ideas/${idea.id}`,
+      locale: "sv",
     }]).catch(() => {});
   }
 

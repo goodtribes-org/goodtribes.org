@@ -23,6 +23,7 @@ import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "next-intl";
 import { getTranslations } from "next-intl/server";
+import { resolveProjectContent, resolveIdeaContent } from "@/lib/contentTranslation";
 
 const PAGE_SIZE = 12;
 const IDEA_PREVIEW_SIZE = 8;
@@ -135,6 +136,7 @@ export default async function HomePage({
       include: {
         owner: { select: { name: true } },
         members: { select: { id: true } },
+        translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
       },
     }),
     prisma.idea.count({ where: { status: { not: "draft" } } }),
@@ -146,6 +148,7 @@ export default async function HomePage({
         author: { select: { name: true } },
         _count: { select: { votes: true, comments: true, endorsements: true } },
         votes: userId ? { where: { userId }, select: { id: true } } : false,
+        translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
       },
     }),
     prisma.homeHeroSlide.findMany({ where: { locale }, orderBy: { order: "asc" } }),
@@ -196,11 +199,16 @@ export default async function HomePage({
   const taskProgressBySlug = computeTaskProgressByProject(taskProgressCards);
   const projectsWithLikes = projects.map((p) => ({
     ...p,
+    ...resolveProjectContent(p, p.translations, locale),
     likes: likesByProjectId.get(p.id) ?? 0,
     taskProgress: taskProgressBySlug.get(p.slug) ?? { total: 0, done: 0 },
   }));
 
-  const ideasWithVote = ideas.map((idea) => ({ ...idea, myVoteId: idea.votes?.[0]?.id ?? null }));
+  const ideasWithVote = ideas.map((idea) => ({
+    ...idea,
+    ...resolveIdeaContent(idea, idea.translations, locale),
+    myVoteId: idea.votes?.[0]?.id ?? null,
+  }));
 
   const rawParams = { sort: sortParam, q, phase, category, sdg, page: pageStr };
 

@@ -5,10 +5,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import Pagination from "@/components/Pagination";
 import IdeasFilters from "./IdeasFilters";
 import { SdgIcon } from "@/components/SdgIcon";
+import { resolveIdeaContent } from "@/lib/contentTranslation";
+import { routing } from "@/i18n/routing";
+import type { Locale } from "next-intl";
 
 export const metadata: Metadata = {
   title: "Ideas — GoodTribes.org",
@@ -43,6 +46,8 @@ export default async function IdeasPage({
     : sort === "trending" ? { updatedAt: "desc" as const }
     : { createdAt: "desc" as const };
 
+  const locale = (await getLocale()) as Locale;
+
   const [session, t, tCard, total, ideas] = await Promise.all([
     auth(),
     getTranslations("IdeasPage"),
@@ -56,6 +61,7 @@ export default async function IdeasPage({
       include: {
         author: { select: { name: true } },
         _count: { select: { votes: true, comments: true, endorsements: true, followers: true } },
+        translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
       },
     }),
   ]);
@@ -144,7 +150,9 @@ export default async function IdeasPage({
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
-            {ideas.map((idea) => (
+            {ideas.map((idea) => {
+              const content = resolveIdeaContent(idea, idea.translations, locale);
+              return (
               <Link
                 key={idea.id}
                 href={`/ideas/${idea.id}`}
@@ -154,7 +162,7 @@ export default async function IdeasPage({
                   {idea.imageUrl ? (
                     <Image
                       src={idea.imageUrl}
-                      alt={idea.title}
+                      alt={content.title}
                       fill
                       unoptimized
                       className="object-cover"
@@ -162,7 +170,7 @@ export default async function IdeasPage({
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-dry-sage to-muted-teal/40 flex items-center justify-center p-4">
-                      <p className="text-xs font-semibold text-dark-slate/70 text-center leading-tight line-clamp-3">{idea.title}</p>
+                      <p className="text-xs font-semibold text-dark-slate/70 text-center leading-tight line-clamp-3">{content.title}</p>
                     </div>
                   )}
                   <div className="absolute top-2 left-2">
@@ -171,13 +179,13 @@ export default async function IdeasPage({
                 </div>
                 <div className="p-3 flex flex-col flex-1">
                   <p className="font-bold text-dark-slate text-sm leading-tight mb-0.5">
-                    {idea.title}
+                    {content.title}
                   </p>
                   <p className="text-xs text-dark-slate/50 mb-2">
                     {t("byAuthor")} <span className="text-coral">{idea.author.name ?? t("unknownAuthor")}</span>
                   </p>
                   <p className="text-xs text-dark-slate/70 leading-snug mb-2 line-clamp-3 flex-1">
-                    {idea.problem ?? idea.description ?? t("noDescriptionYet")}
+                    {content.problem ?? content.description ?? t("noDescriptionYet")}
                   </p>
                   {idea.sdgGoals.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1 mb-2">
@@ -203,7 +211,8 @@ export default async function IdeasPage({
                   </div>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
 
           <div className="mt-6">

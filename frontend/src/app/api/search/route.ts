@@ -4,7 +4,8 @@ import { multiSearch } from "@/lib/meili";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q") ?? "";
+  const locale = searchParams.get("locale") ?? "sv";
   if (q.length < 2) return NextResponse.json([]);
-  const results = await multiSearch(q);
+  const results = await multiSearch(q, locale);
   return NextResponse.json(results);
 }
