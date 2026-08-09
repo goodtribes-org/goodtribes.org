@@ -13,12 +13,31 @@ export const DEFAULT_SITE_PAGES: Record<SitePageSlug, Record<Locale, { title: st
       body: `
         <p>GoodTribes drivs som en stiftelse med ett övergripande mål: att göra världen bättre för oss som lever i den idag, och för generationerna efter oss. Vi tror inte på att vänta på att någon annan ska lösa problemen. Vi tror på att organisera underifrån.</p>
         <p>När någon har en bra idé krävs det ofta ett helt team för att genomföra den. Genom att sänka trösklarna och göra det enkelt att samarbeta skapar vi en folkrörelse för praktisk hållbarhet. Ingen ska behöva vara ensam med sin vision.</p>
+        <h2>Vår historia</h2>
+        <p><strong>Från datordonationer till en plattform för samhällsförändring</strong></p>
+        <p>Allt startade inte med en affärsplan, utan med en dator.</p>
+        <p>Innan Stiftelsen GoodTribes fanns startade Niklas Gunnäs initiativet Infos: Datordonation – ett ideellt projekt med en enkel men viktig idé: att samla in avskriven it-utrustning från offentlig sektor och näringslivet, och ge den nytt liv i händerna på barn, ungdomar och ideella organisationer som annars inte hade haft tillgång till en dator. Verksamheten var bara möjlig tack vare ett aktivt stöd och en nära samverkan med både offentlig sektor och näringslivet, som gång på gång valde att skänka istället för att skrota. Med tiden växte initiativet till något betydligt större än en enskild idé: en verksamhet som drevs av ett tiotal heltidsanställda och stöttades av omkring ett hundratal frivilliga, som tillsammans donerade datorer och annan it-utrustning till behövande runt om i Sverige. Under de år verksamheten var aktiv donerades utrustning till ett sammanlagt andrahandsvärde av omkring tio miljoner kronor – konkret, handgriplig <strong>Göra Gott</strong>-verksamhet, dator för dator, människa för människa.</p>
+        <p>Men det som förändrade allt var alla möten som skedde längs vägen. Gång på gång stötte teamet och volontärerna på människor med genuint bra idéer om hur världen kunde bli bättre. Idéer om allt från små, lokala initiativ till mer omfattande samhällsförändrande projekt. Men samma mönster återkom: de som hade idéerna saknade nästan alltid det som krävdes för att förverkliga dem – tid, kompetens, nätverk, finansiering, eller helt enkelt någon som trodde på dem.</p>
+        <p>Den insikten blev grogrunden till GoodTribes.</p>
+        <p>Att göra gott handlar inte bara om enskilda handlingar, som en donerad dator eller en god idé – det handlar om att skapa förutsättningar för att det goda ska kunna fortsätta växa. Och det i sin tur hänger ihop med att människor <strong>mår gott</strong>: känner sig sedda, har tilltro till sin egen förmåga och vet att deras engagemang gör skillnad. Och med att man <strong>lever gott</strong> – på lång sikt, hållbart, i en värld som utvecklas i linje med FN:s Agenda 2030 och de globala hållbarhetsmålen. Göra Gott, Må Gott och Leva Gott blev de tre bärande pelarna i det som skulle bli GoodTribes: inte tre separata mål, utan tre sidor av samma sak.</p>
+        <p>2021 grundades Stiftelsen GoodTribes formellt av Niklas Gunnäs, med detta som utgångspunkt: att bygga en plattform där goda idéer får de förutsättningar de behöver för att bli verkliga initiativ – där den som vill göra gott får verktygen för det, där engagemanget får näring att må gott av, och där resultatet bidrar till att fler kan leva gott, både idag och imorgon.</p>
+        <p>GoodTribes vill medverka till att uppnå FN:s Agenda 2030 och de mänskliga rättigheterna – inte som avlägsna målsättningar, utan som den grund människor behöver för att kunna leva gott, må gott, göra gott och förverkliga sina drömmar.</p>
+        <p>Från tusentals datorer som hittade nya ägare, till en plattform som ska hjälpa tusentals idéer hitta vägen från tanke till handling – det är resan som GoodTribes fortsätter på idag.</p>
         <h2>Vad vi gör</h2>
         <ul>
           <li><strong>Projekt</strong> — Vi bygger och driver öppna digitala verktyg för ideella organisationer och samhällsengagerade initiativ.</li>
           <li><strong>Community</strong> — Vi samlar människor med vilja och kompetens att bidra till något större än sig själva.</li>
           <li><strong>Transparens</strong> — Allt vi gör är öppet. Kod, beslut och riktning delas öppet.</li>
         </ul>
+        <h2>Transparens &amp; organisationsinfo</h2>
+        <p>Som en del av vårt löfte om transparens redovisar vi alltid vår organisationsinformation öppet:</p>
+        <p>
+          <strong>Stiftelsen GoodTribes</strong><br>
+          Org.nr: 802481-8497<br>
+          Högbergsgatan 52<br>
+          118 26 Stockholm, Sverige<br>
+          <a href="mailto:Info@goodtribes.org">Info@goodtribes.org</a>
+        </p>
         <h2>Kontakt</h2>
         <p>Vill du veta mer eller bli en del av GoodTribes? <a href="mailto:Info@goodtribes.org">Info@goodtribes.org</a></p>
       `.trim(),
@@ -28,12 +47,31 @@ export const DEFAULT_SITE_PAGES: Record<SitePageSlug, Record<Locale, { title: st
       body: `
         <p>GoodTribes is run as a foundation with one overarching goal: to make the world better for those of us living in it today, and for the generations after us. We do not believe in waiting for someone else to solve the problems. We believe in organising from the bottom up.</p>
         <p>When a person has a good idea, it often takes a whole team to carry it out. By lowering the barriers and making it easy to collaborate, we create a people's movement of practical sustainability. No one is left alone with their vision.</p>
+        <h2>Our History</h2>
+        <p><strong>From computer donations to a platform for social change</strong></p>
+        <p>It all started not with a business plan, but with a computer.</p>
+        <p>Before Stiftelsen GoodTribes existed, Niklas Gunnäs started the initiative Infos: Datordonation (Computer Donation) – a nonprofit project with a simple but important idea: to collect decommissioned IT equipment from the public sector and businesses, and give it new life in the hands of children, young people, and nonprofit organizations that otherwise wouldn't have had access to a computer. This was only possible thanks to active support and close collaboration with both the public sector and businesses, who repeatedly chose to donate rather than scrap. Over time, the initiative grew into something far bigger than a single idea: an operation run by around ten full-time staff and supported by roughly a hundred volunteers, who together donated computers and other IT equipment to people in need across Sweden. During the years the operation was active, equipment with a combined secondhand value of around ten million SEK was donated – concrete, hands-on <strong>Doing Good</strong>, one computer at a time, one person at a time.</p>
+        <p>But what changed everything were all the encounters along the way. Time and again, the team and volunteers met people with genuinely good ideas about how to make the world better. Ideas ranging from small, local initiatives to more far-reaching, society-changing projects. But the same pattern kept recurring: those with the ideas almost always lacked what was needed to realize them – time, skills, networks, funding, or simply someone who believed in them.</p>
+        <p>That insight became the seed of GoodTribes.</p>
+        <p>Doing good isn't only about individual acts, like a donated computer or a good idea – it's about creating the conditions for good to keep growing. And that, in turn, is connected to people <strong>feeling good</strong>: feeling seen, trusting in their own ability, and knowing their engagement makes a difference. And to <strong>living well</strong> – in the long run, sustainably, in a world developing in line with the UN's Agenda 2030 and the Sustainable Development Goals. Doing Good, Feeling Good, and Living Well became the three pillars of what would become GoodTribes: not three separate goals, but three sides of the same thing.</p>
+        <p>In 2021, Stiftelsen GoodTribes was formally founded by Niklas Gunnäs, with this as its starting point: to build a platform where good ideas get the conditions they need to become real initiatives – where those who want to do good get the tools for it, where engagement is nourished to feel good, and where the result helps more people live well, both today and tomorrow.</p>
+        <p>GoodTribes wants to contribute to achieving the UN's Agenda 2030 and human rights – not as distant goals, but as the foundation people need in order to live well, feel good, do good, and fulfill their dreams.</p>
+        <p>From thousands of computers that found new owners, to a platform that will help thousands of ideas find their way from thought to action – that's the journey GoodTribes continues today.</p>
         <h2>What we do</h2>
         <ul>
           <li><strong>Projects</strong> — We build and run open digital tools for non-profit organisations and socially engaged initiatives.</li>
           <li><strong>Community</strong> — We bring together people with the will and skills to contribute to something bigger than themselves.</li>
           <li><strong>Transparency</strong> — Everything we do is open. Code, decisions and direction are shared openly.</li>
         </ul>
+        <h2>Transparency &amp; organization info</h2>
+        <p>As part of our commitment to transparency, we always share our organization information openly:</p>
+        <p>
+          <strong>Stiftelsen GoodTribes</strong><br>
+          Org. no: 802481-8497<br>
+          Högbergsgatan 52<br>
+          118 26 Stockholm, Sweden<br>
+          <a href="mailto:Info@goodtribes.org">Info@goodtribes.org</a>
+        </p>
         <h2>Contact</h2>
         <p>Want to know more or become part of GoodTribes? <a href="mailto:Info@goodtribes.org">Info@goodtribes.org</a></p>
       `.trim(),
