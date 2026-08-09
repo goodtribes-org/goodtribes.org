@@ -47,6 +47,7 @@ const FIXED_FOOTER_META: Record<SitePageSlug, { href: string; order: number }> =
   about: { href: "/about", order: -3 },
   privacy: { href: "/privacy", order: -2 },
   terms: { href: "/terms", order: -1 },
+  "code-of-conduct": { href: "/code-of-conduct", order: 0 },
 };
 
 type FooterRow = { slug: string; title: string; order: number };

@@ -217,4 +217,104 @@ export const DEFAULT_SITE_PAGES: Record<SitePageSlug, Record<Locale, { title: st
       `.trim(),
     },
   },
+  "code-of-conduct": {
+    sv: {
+      title: "Uppförandekod för GoodTribes",
+      body: `
+        <p>GoodTribes finns för att hjälpa människor att förverkliga idéer som gör världen bättre – att Göra Gott, Må Gott och Leva Gott. Det fungerar bara om alla som deltar, i alla faser från Idé till Impact, känner sig trygga, respekterade och lyssnade på.</p>
+        <p>Den här koden gäller alla som deltar på GoodTribes: initiativtagare, medlemmar i en Tribe, volontärer, bidragsgivare och admins – i initiativ, kommentarer, meddelanden, Sandlådan och vid event som GoodTribes står bakom.</p>
+        <h2>Våra principer</h2>
+        <ol>
+          <li><strong>Var respektfull.</strong> Ni kommer inte alltid vara överens – om en idé, en prioritering eller vilken fas ett initiativ borde vara i. Det är okej. Oenighet är ingen ursäkt för personangrepp eller att köra över någon i sin egen Tribe.</li>
+          <li><strong>Anta god vilja.</strong> De flesta missförstånd beror på otydlighet, inte illvilja – särskilt i tidiga Idé-faser där tankar ofta är ofärdiga. Fråga innan du drar slutsatser om någons avsikt.</li>
+          <li><strong>Ge konstruktiv feedback, inte bara kritik.</strong> Om du inte håller med om ett initiativs riktning, föreslå ett alternativ eller peka på en tidigare idé som löste liknande problem. GoodTribes bygger på att initiativtagare vågar visa upp ofärdiga idéer utan att bli nedgjorda för det.</li>
+          <li><strong>Var ärlig om resultat och impact.</strong> Impact-signaler, SDG-koppling och insamlade medel bygger på självrapportering – det gör GoodTribes beroende av att folk är ärliga. Överdriv inte ett initiativs påverkan och dölj inte problem, missade mål eller att pengar använts på annat sätt än planerat.</li>
+          <li><strong>Respektera anonymitet i Sandlådan – men missbruka den inte.</strong> Sandlådan är GoodTribes mest öppna zon, med ett undantag: anonyma bidrag är tillåtna där som en medveten avvikelse från vår annars fullständiga transparens. Det undantaget finns för att sänka trösklar, inte för att slippa stå för sina ord – anonymitet får aldrig användas för att trakassera, vilseleda eller undvika ansvar.</li>
+          <li><strong>Respektera namnskydd vid forkning.</strong> Att forka ett initiativ är tillåtet och en del av hur GoodTribes är byggt – men en fork ärver inte rätten till originalets namn eller röstvikt. Ge alltid originalet erkännande och gör tydligt att din fork är just en fork, inte det ursprungliga initiativet.</li>
+          <li><strong>Ge nya medlemmar utrymme.</strong> Alla var nya i sin Tribe en gång. Hjälp till att förklara hur faser, tokens och Granskningsrådet fungerar istället för att döma den som frågar "fel" saker.</li>
+        </ol>
+        <h2>Det här accepterar vi inte</h2>
+        <ul>
+          <li>Trakasserier, hot eller hatiskt språk – mot en individ eller en grupp</li>
+          <li>Diskriminering på grund av kön, könsidentitet, sexuell läggning, etnicitet, religion, funktionsvariation, ålder eller andra skyddade grunder</li>
+          <li>Personangrepp, doxxing eller spridning av privat information utan samtycke</li>
+          <li>Medvetet vilseledande uppgifter om ett initiativs syfte, resultat, ekonomi eller impact-signaler</li>
+          <li>Manipulation av GT-tokens, Tribe Tokens eller röster för att ge sken av stöd eller framgång som inte finns</li>
+          <li>Idéstöld eller plagiat – att presentera någon annans initiativ eller arbete som sitt eget utan attribution eller fork-erkännande</li>
+          <li>Att utge en fork för att vara originalinitiativet, eller utnyttja namnskyddet på ett vilseledande sätt</li>
+          <li>Missbruk av anonymitet i Sandlådan för att trakassera eller undvika ansvar</li>
+          <li>Spam eller otillbörlig självpromotion som inte bidrar till communityn</li>
+        </ul>
+        <h2>Förväntningarna växer med fasen</h2>
+        <p>Ett initiativ i Idé-fas ska kunna vara rått och ofärdigt – här värdesätter vi mod att dela mer än putsad presentation. I takt med att ett initiativ rör sig mot Pilot, Produktion, Etablera, Skala och Impact växer också ansvaret: fler resurser, fler medlemmar och ofta riktiga pengar är involverade, och då väger ärlighet om resultat och ekonomi tyngre.</p>
+        <h2>Om något går snett</h2>
+        <p>De flesta överträdelser beror på ett dåligt ögonblick eller okunskap om koden, inte illvilja. Om du ser ett beteende som inte känns rätt är första steget ofta att säga till direkt, respektfullt och privat om det går.</p>
+        <p>Räcker inte det, eller om situationen är allvarlig (trakasserier, hot, diskriminering, misstänkt bedrägeri), rapportera det istället för att hantera det själv.</p>
+        <h2>Rapportera ett problem</h2>
+        <p>Kontakta <a href="mailto:Info@goodtribes.org">Info@goodtribes.org</a> eller vänd dig direkt till en admin på plattformen. Beskriv vad som hänt och var (vilket initiativ, vilken kommentar), med länkar eller skärmdumpar om möjligt.</p>
+        <p>Ärenden som rör ett initiativs innehåll eller kvalitet hanteras normalt av Granskningsrådet. AI-granskning kan flagga uppenbara problem automatiskt, men beslut om åtgärd fattas alltid av människor. Ärenden som rör brott mot stiftelsens stadgar eller misstänkt kriminalitet hanteras av admin, som kan dölja eller stänga av ett initiativ direkt i väntan på utredning.</p>
+        <h2>Konsekvenser</h2>
+        <p>Beroende på allvarlighetsgrad kan åtgärder innefatta:</p>
+        <ol>
+          <li>En privat påminnelse om uppförandekoden</li>
+          <li>En offentlig varning på initiativet eller profilen</li>
+          <li>Indragna eller frysta tokens kopplade till det aktuella initiativet</li>
+          <li>Tillfällig avstängning från communityn</li>
+          <li>Permanent avstängning och borttagning av initiativ/konto</li>
+        </ol>
+        <h2>Ett ord om inspiration</h2>
+        <p>Den här koden är inspirerad av uppförandekoder inom open source-communityn – till exempel Debians – som visat att enkla, tydliga principer fungerar bättre än långa regelverk. Vi har anpassat den till GoodTribes särskilda sammanhang: en community där riktiga pengar, riktiga insatser och riktiga drömmar står på spel, inte bara kod.</p>
+        <p><em>Denna uppförandekod är ett levande dokument och uppdateras i takt med att GoodTribes plattform och community växer.</em></p>
+      `.trim(),
+    },
+    en: {
+      title: "GoodTribes Code of Conduct",
+      body: `
+        <p>GoodTribes exists to help people turn ideas that make the world better into reality – to Do Good, Feel Good, and Live Well. That only works if everyone taking part, in every phase from Idea to Impact, feels safe, respected, and heard.</p>
+        <p>This code applies to everyone participating on GoodTribes: Founders, members of a Tribe, volunteers, contributors, and admins – in initiatives, comments, messages, the Sandbox, and at any events GoodTribes hosts.</p>
+        <h2>Our principles</h2>
+        <ol>
+          <li><strong>Be respectful.</strong> You won't always agree – about an idea, a priority, or which phase an initiative belongs in. That's fine. Disagreement is never an excuse for personal attacks or steamrolling someone in your own Tribe.</li>
+          <li><strong>Assume good faith.</strong> Most misunderstandings come from unclear communication, not ill intent – especially in early Idea phases where thinking is often unfinished. Ask before assuming someone's intent.</li>
+          <li><strong>Give constructive feedback, not just criticism.</strong> If you disagree with an initiative's direction, suggest an alternative or point to a past idea that solved a similar problem. GoodTribes depends on Founders feeling safe enough to share unfinished ideas without being torn down for it.</li>
+          <li><strong>Be honest about results and impact.</strong> Impact signals, SDG links, and funds raised all rely on self-reporting – which means GoodTribes depends on people being truthful. Don't overstate an initiative's impact, and don't hide problems, missed goals, or funds used differently than planned.</li>
+          <li><strong>Respect anonymity in the Sandbox – but don't abuse it.</strong> The Sandbox is GoodTribes' most open zone, with one exception: anonymous contributions are allowed there as a deliberate departure from our otherwise full transparency. That exception exists to lower barriers to participation, not to avoid accountability – anonymity must never be used to harass, mislead, or dodge responsibility.</li>
+          <li><strong>Respect name protection when forking.</strong> Forking an initiative is allowed and part of how GoodTribes is built – but a fork doesn't inherit the original's name or voting weight. Always credit the original and make clear that your fork is a fork, not the original initiative.</li>
+          <li><strong>Make room for newcomers.</strong> Everyone was new to their Tribe once. Help explain how phases, tokens, and the Review Council work instead of judging someone for asking the "wrong" questions.</li>
+        </ol>
+        <h2>What we don't accept</h2>
+        <ul>
+          <li>Harassment, threats, or hateful language – toward an individual or a group</li>
+          <li>Discrimination based on gender, gender identity, sexual orientation, ethnicity, religion, disability, age, or other protected grounds</li>
+          <li>Personal attacks, doxxing, or sharing private information without consent</li>
+          <li>Deliberately misleading claims about an initiative's purpose, results, finances, or impact signals</li>
+          <li>Manipulating GT, Tribe Tokens, or votes to fake support or success that doesn't exist</li>
+          <li>Idea theft or plagiarism – presenting someone else's initiative or work as your own without attribution or fork credit</li>
+          <li>Passing off a fork as the original initiative, or misusing name protection to mislead</li>
+          <li>Abusing Sandbox anonymity to harass others or dodge accountability</li>
+          <li>Spam or excessive self-promotion that doesn't contribute to the community</li>
+        </ul>
+        <h2>Expectations grow with the phase</h2>
+        <p>An initiative in the Idea phase should be allowed to be rough and unfinished – we value the courage to share over a polished pitch. As an initiative moves toward Startup, Launch, Establish, Scale, and Impact, responsibility grows too: more resources, more members, and often real money are involved, so honesty about results and finances matters more.</p>
+        <h2>If something goes wrong</h2>
+        <p>Most violations come from a bad moment or not knowing the code, not ill intent. If you notice behavior that doesn't feel right, the first step is often to say so directly, respectfully, and privately if possible.</p>
+        <p>If that's not enough, or the situation is serious (harassment, threats, discrimination, suspected fraud), report it instead of handling it yourself.</p>
+        <h2>Reporting a problem</h2>
+        <p>Contact <a href="mailto:Info@goodtribes.org">Info@goodtribes.org</a> or reach out directly to an admin on the platform. Describe what happened and where (which initiative, which comment), with links or screenshots if possible.</p>
+        <p>Cases about an initiative's content or quality are normally handled by the Review Council. AI review can flag obvious issues automatically, but decisions about action are always made by humans. Cases involving violations of the foundation's bylaws or suspected criminal activity are handled by admins, who may hide or suspend an initiative immediately pending investigation.</p>
+        <h2>Consequences</h2>
+        <p>Depending on severity, actions may include:</p>
+        <ol>
+          <li>A private reminder of the code of conduct</li>
+          <li>A public warning on the initiative or profile</li>
+          <li>Withdrawn or frozen tokens tied to the initiative in question</li>
+          <li>Temporary suspension from the community</li>
+          <li>Permanent suspension and removal of the initiative/account</li>
+        </ol>
+        <h2>A note on inspiration</h2>
+        <p>This code is inspired by codes of conduct from the open source community – such as Debian's – which have shown that simple, clear principles work better than long rulebooks. We've adapted it to GoodTribes' particular context: a community where real money, real effort, and real dreams are at stake, not just code.</p>
+        <p><em>This code of conduct is a living document and will be updated as GoodTribes' platform and community grow.</em></p>
+      `.trim(),
+    },
+  },
 };
