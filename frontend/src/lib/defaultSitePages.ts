@@ -317,4 +317,90 @@ export const DEFAULT_SITE_PAGES: Record<SitePageSlug, Record<Locale, { title: st
       `.trim(),
     },
   },
+  "participant-agreement": {
+    sv: {
+      title: "Deltagaravtal för GoodTribes-communityn",
+      body: `
+        <h2>Bakgrund</h2>
+        <p>Stiftelsen GoodTribes (org.nr 802481-8497), nedan "Stiftelsen", driver plattformen goodtribes.org. Stiftelsen är en självständig juridisk person enligt svensk stiftelselag – den ägs inte av någon fysisk eller juridisk person, utan förvaltar sin egen förmögenhet och verksamhet i enlighet med sina stadgar och sitt ändamål: att bidra till en långsiktigt hållbar miljö- och samhällsutveckling.</p>
+        <p>Det här avtalet ("Avtalet") beskriver vad det innebär att delta i GoodTribes-communityn: att skapa ett konto, lägga upp idéer och initiativ, bidra till andras initiativ, och i övrigt använda plattformen.</p>
+        <p><strong>Viktigt om ordet "medlem".</strong> När vi i vardagligt tal och på plattformen använder ordet "medlem" syftar vi på en deltagare i communityn – inte en formell medlem eller stiftare av Stiftelsen GoodTribes i juridisk mening. En stiftelse har inga medlemmar med rösträtt i stiftelsens egna angelägenheter; den styrs av sin styrelse enligt sina stadgar. Ditt deltagande i communityn ger dig inflytande över enskilda initiativ enligt punkt 4 nedan, men gör dig inte till stiftare, styrelseledamot eller ägare av Stiftelsen.</p>
+        <h2>1. Vad du godkänner genom att gå med</h2>
+        <p>Genom att skapa ett konto på goodtribes.org och bekräfta att du läst detta Avtal godkänner du villkoren nedan. Om du inte godkänner villkoren kan du inte skapa ett konto eller delta i communityn.</p>
+        <h2>2. Stiftelsens öppenhetsprincip</h2>
+        <p>Stiftelsen strävar efter total öppenhet i sin verksamhet: hur initiativ utvecklas, hur beslut fattas och hur resurser används ska i normalfallet vara synligt för alla. Undantag från detta (till exempel anonyma bidrag i Sandlådan, eller skydd av personuppgifter enligt GDPR) är medvetna och begränsade avsteg, inte en generell rätt till sekretess.</p>
+        <h2>3. Äganderätt till innehåll och initiativ</h2>
+        <p>3.1. Allt material du lägger upp på goodtribes.org – texter, bilder, projektbeskrivningar, kod, filer och annat innehåll ("Innehåll") – övergår i äganderätt till Stiftelsen, i den utsträckning det är möjligt enligt lag, i samband med att det publiceras på plattformen.</p>
+        <p>3.2. Initiativ (idéer, projekt och liknande) som skapas på plattformen tillhör på samma sätt Stiftelsen. Stiftelsen förvaltar detta ägande för det allmännyttiga syfte som initiativet drivs för, inte för egen kommersiell vinning.</p>
+        <p>3.3. Din ideella rätt (rätten att bli namngiven som upphovsperson, och rätten att invända mot kränkande ändringar av ditt verk) enligt 3 § upphovsrättslagen kvarstår hos dig i den mån den inte kan överlåtas enligt svensk lag. Genom att gå med i communityn samtycker du dock till sådan bearbetning, redigering och användning av ditt Innehåll som rimligen krävs för att driva och utveckla plattformen och det initiativ du bidragit till.</p>
+        <p>3.4. Om du tar bort ditt konto påverkar det inte Stiftelsens äganderätt till Innehåll eller initiativ som redan publicerats – de finns kvar och kan fortsätta förvaltas och vidareutvecklas av communityn.</p>
+        <h2>4. Styrning av initiativ i förhållande till bidrag</h2>
+        <p>4.1. Även om ett initiativ ägs av Stiftelsen, styrs den löpande riktningen för initiativet av de som bidrar till det – i proportion till deras bidrag, mätt genom det tokensystem (GT-tokens och Tribe Tokens) som beskrivs på plattformen.</p>
+        <p>4.2. Det innebär att din rätt att påverka ett initiativs riktning, prioriteringar och beslut ökar i takt med ditt bidrag till just det initiativet. Det ger dig inte äganderätt till initiativet och inte heller rösträtt i Stiftelsens egna angelägenheter (val av styrelse, ändring av stadgar och liknande).</p>
+        <p>4.3. Stiftelsen förbehåller sig rätten att gripa in i ett initiativs styrning om det bryter mot Stiftelsens stadgar, detta Avtal, <a href="/code-of-conduct">GoodTribes uppförandekod</a>, eller gällande lag.</p>
+        <h2>5. Ditt ansvar som deltagare</h2>
+        <p>Genom att delta i communityn åtar du dig att:</p>
+        <ul>
+          <li>följa <a href="/code-of-conduct">GoodTribes uppförandekod</a> i alla dina interaktioner på plattformen,</li>
+          <li>lämna korrekta uppgifter om dig själv och dina initiativ, särskilt gällande ekonomi och resultat,</li>
+          <li>inte lägga upp Innehåll som du inte har rätt att dela (till exempel andras upphovsrättsskyddade material utan tillstånd),</li>
+          <li>inte använda plattformen för olagliga ändamål.</li>
+        </ul>
+        <h2>6. Personuppgifter</h2>
+        <p>Stiftelsens hantering av dina personuppgifter beskrivs i vår <a href="/privacy">integritetspolicy</a>. Genom att skapa ett konto godkänner du även den policyn.</p>
+        <h2>7. Ansvarsbegränsning</h2>
+        <p>Plattformen tillhandahålls "i befintligt skick". Stiftelsen ansvarar inte för resultatet av enskilda initiativ, för innehåll som andra användare lägger upp, eller för tekniska avbrott. Stiftelsen ansvarar inte för indirekta skador som kan uppstå genom användning av plattformen, i den utsträckning det är tillåtet enligt lag.</p>
+        <h2>8. Avslutande av deltagande</h2>
+        <p>Du kan när som helst avsluta ditt konto genom att kontakta <a href="mailto:Info@goodtribes.org">Info@goodtribes.org</a>. Stiftelsen kan stänga av eller avsluta ditt konto vid allvarliga eller upprepade brott mot detta Avtal eller uppförandekoden, enligt de principer som beskrivs där.</p>
+        <h2>9. Ändringar av avtalet</h2>
+        <p>Stiftelsen kan uppdatera detta Avtal. Väsentliga ändringar meddelas i god tid innan de träder i kraft, till exempel via e-post eller ett meddelande på plattformen. Fortsatt användning av plattformen efter en ändring innebär att du godkänner de nya villkoren.</p>
+        <h2>10. Tillämplig lag och tvist</h2>
+        <p>Detta Avtal regleras av svensk lag. Tvister ska i första hand lösas genom dialog med Stiftelsen. Om det inte är möjligt avgörs tvisten av svensk domstol, med Stockholms tingsrätt som första instans.</p>
+        <h2>11. Godkännande</h2>
+        <p>Genom att markera "Jag har läst och godkänner Deltagaravtalet" vid registrering bekräftar du att du läst, förstått och godkänner villkoren i detta Avtal.</p>
+      `.trim(),
+    },
+    en: {
+      title: "Participant Agreement for the GoodTribes Community",
+      body: `
+        <h2>Background</h2>
+        <p>Stiftelsen GoodTribes (org. no. 802481-8497), hereinafter "the Foundation," operates the platform goodtribes.org. The Foundation is an independent legal entity under Swedish foundation law – it is not owned by any natural or legal person, but manages its own assets and operations in accordance with its bylaws and its purpose: to contribute to long-term sustainable environmental and social development.</p>
+        <p>This agreement ("the Agreement") describes what it means to take part in the GoodTribes community: creating an account, posting ideas and initiatives, contributing to others' initiatives, and otherwise using the platform.</p>
+        <p><strong>A note on the word "member."</strong> In everyday language and on the platform, we use the word "member" to mean a participant in the community – not a formal member or founder of Stiftelsen GoodTribes in the legal sense. A Swedish foundation has no members with voting rights over the foundation's own affairs; it is governed by its board in accordance with its bylaws. Your participation in the community gives you influence over individual initiatives as described in section 4 below, but does not make you a founder, board member, or owner of the Foundation.</p>
+        <h2>1. What you agree to by joining</h2>
+        <p>By creating an account on goodtribes.org and confirming that you have read this Agreement, you agree to the terms below. If you do not agree to these terms, you may not create an account or take part in the community.</p>
+        <h2>2. The Foundation's commitment to openness</h2>
+        <p>The Foundation strives for full openness in its operations: how initiatives develop, how decisions are made, and how resources are used should, as a rule, be visible to everyone. Exceptions to this (such as anonymous contributions in the Sandbox, or the protection of personal data under GDPR) are deliberate and limited departures, not a general right to confidentiality.</p>
+        <h2>3. Ownership of content and initiatives</h2>
+        <p>3.1. All material you post on goodtribes.org – text, images, project descriptions, code, files, and other content ("Content") – transfers in ownership to the Foundation, to the extent permitted by law, upon publication on the platform.</p>
+        <p>3.2. Initiatives (ideas, projects, and similar) created on the platform likewise belong to the Foundation. The Foundation holds this ownership for the charitable purpose the initiative serves, not for its own commercial gain.</p>
+        <p>3.3. Your moral rights (the right to be credited as the author, and the right to object to derogatory treatment of your work) under Swedish copyright law remain with you to the extent they cannot be transferred under Swedish law. By joining the community, however, you consent to such editing, adaptation, and use of your Content as is reasonably necessary to operate and develop the platform and the initiative you contributed to.</p>
+        <p>3.4. Deleting your account does not affect the Foundation's ownership of Content or initiatives already published – they remain and may continue to be maintained and developed by the community.</p>
+        <h2>4. Governance of initiatives in proportion to contribution</h2>
+        <p>4.1. Although an initiative is owned by the Foundation, its day-to-day direction is governed by those who contribute to it – in proportion to their contribution, as measured by the token system (GT and Tribe Tokens) described on the platform.</p>
+        <p>4.2. This means your ability to influence an initiative's direction, priorities, and decisions grows with your contribution to that specific initiative. It does not give you ownership of the initiative, nor voting rights over the Foundation's own affairs (such as electing the board or amending its bylaws).</p>
+        <p>4.3. The Foundation reserves the right to intervene in an initiative's governance if it violates the Foundation's bylaws, this Agreement, the <a href="/code-of-conduct">GoodTribes Code of Conduct</a>, or applicable law.</p>
+        <h2>5. Your responsibilities as a participant</h2>
+        <p>By taking part in the community, you agree to:</p>
+        <ul>
+          <li>follow the <a href="/code-of-conduct">GoodTribes Code of Conduct</a> in all your interactions on the platform,</li>
+          <li>provide accurate information about yourself and your initiatives, particularly regarding finances and results,</li>
+          <li>not post Content you do not have the right to share (for example, others' copyrighted material without permission),</li>
+          <li>not use the platform for unlawful purposes.</li>
+        </ul>
+        <h2>6. Personal data</h2>
+        <p>The Foundation's handling of your personal data is described in our <a href="/privacy">privacy policy</a>. By creating an account, you also agree to that policy.</p>
+        <h2>7. Limitation of liability</h2>
+        <p>The platform is provided "as is." The Foundation is not responsible for the outcome of individual initiatives, for content posted by other users, or for technical disruptions. The Foundation is not liable for indirect damages arising from use of the platform, to the extent permitted by law.</p>
+        <h2>8. Ending your participation</h2>
+        <p>You may close your account at any time by contacting <a href="mailto:Info@goodtribes.org">Info@goodtribes.org</a>. The Foundation may suspend or terminate your account for serious or repeated violations of this Agreement or the Code of Conduct, in accordance with the principles described there.</p>
+        <h2>9. Changes to this Agreement</h2>
+        <p>The Foundation may update this Agreement. Material changes will be announced with reasonable notice before they take effect, for example by email or a notice on the platform. Continued use of the platform after a change constitutes acceptance of the new terms.</p>
+        <h2>10. Governing law and disputes</h2>
+        <p>This Agreement is governed by Swedish law. Disputes should first be resolved through dialogue with the Foundation. If that is not possible, disputes shall be settled by a Swedish court, with Stockholm District Court as the first instance.</p>
+        <h2>11. Acceptance</h2>
+        <p>By checking "I have read and agree to the Participant Agreement" during registration, you confirm that you have read, understood, and agree to the terms of this Agreement.</p>
+      `.trim(),
+    },
+  },
 };

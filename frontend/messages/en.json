@@ -37,6 +37,7 @@
     "about": "About GoodTribes",
     "privacy": "Privacy",
     "terms": "Terms",
+    "participant-agreement": "Participant Agreement",
     "code-of-conduct": "Code of Conduct",
     "contact": "Contact",
     "suggestions": "Give feedback",
@@ -130,7 +131,9 @@
     "newHere": "New here?",
     "createAccountLink": "Create account →",
     "alreadyHaveAccount": "Already have an account?",
-    "logInLink": "Log in →"
+    "logInLink": "Log in →",
+    "agreeParticipantAgreement": "I have read and agree to the <link>Participant Agreement</link>",
+    "agreeCodeOfConduct": "I have read and agree to the <link>GoodTribes Code of Conduct</link>"
   },
   "SitePageEditor": {
     "edit": "Edit",

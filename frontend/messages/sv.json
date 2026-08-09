@@ -37,6 +37,7 @@
     "about": "Om GoodTribes",
     "privacy": "Integritet",
     "terms": "Villkor",
+    "participant-agreement": "Deltagaravtal",
     "code-of-conduct": "Uppförandekod",
     "contact": "Kontakt",
     "suggestions": "Ge förbättringsförslag",
@@ -130,7 +131,9 @@
     "newHere": "Ny här?",
     "createAccountLink": "Skapa konto →",
     "alreadyHaveAccount": "Har du redan ett konto?",
-    "logInLink": "Logga in →"
+    "logInLink": "Logga in →",
+    "agreeParticipantAgreement": "Jag har läst och godkänner <link>Deltagaravtalet</link>",
+    "agreeCodeOfConduct": "Jag har läst och godkänner <link>GoodTribes uppförandekod</link>"
   },
   "SitePageEditor": {
     "edit": "Redigera",

@@ -101,7 +101,7 @@ export default async function LocaleLayout({
   // footer-created custom pages use their own title as the link text.
   const footerPages = rawFooterPages.map((p) => ({
     ...p,
-    title: p.locked ? t(p.slug as "about" | "privacy" | "terms" | "code-of-conduct") : p.title,
+    title: p.locked ? t(p.slug as "about" | "privacy" | "terms" | "participant-agreement" | "code-of-conduct") : p.title,
   }));
   // Split into two footer columns: the fixed about/privacy/terms pages read
   // as organisational/legal info, custom admin-added pages read as more
