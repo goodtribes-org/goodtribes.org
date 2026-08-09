@@ -148,34 +148,48 @@ function dedupeByLocale(hits: SearchResult[], locale: string): SearchResult[] {
   return [...byBaseId.values()];
 }
 
+// Queries one index directly (not via /multi-search) and swallows any
+// per-index failure (network error, or the index simply not existing yet —
+// e.g. `orgs` before the first organisation is ever created) down to an
+// empty result. This is deliberate: Meilisearch's /multi-search endpoint
+// fails its ENTIRE batch if even one of the batched indexes doesn't exist,
+// which previously meant a single missing index (most commonly `orgs`, which
+// has no bootstrap step and is only ever created as a side effect of
+// indexing the first org) silently zeroed out search results for every
+// other index too. Querying independently means a missing/broken index
+// degrades to "no hits from that category," not "no hits at all."
+async function searchIndex(
+  index: string,
+  query: string,
+  opts: { limit: number; filter?: string }
+): Promise<SearchResult[]> {
+  try {
+    const res = await fetch(`${HOST}/indexes/${index}/search`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ q: query, limit: opts.limit, ...(opts.filter ? { filter: opts.filter } : {}) }),
+    });
+    if (!res.ok) return [];
+    const data = (await res.json()) as { hits?: SearchResult[] };
+    return data.hits ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export async function multiSearch(query: string, locale: string = "sv"): Promise<SearchResult[]> {
   if (!query.trim()) return [];
   // Always scope projects/ideas to sv plus (if different) the requested
   // locale — without this, an `sv` search would also surface every other
-  // locale's doc unfiltered (e.g. a translated project's `:en`-suffixed doc
+  // locale's doc unfiltered (e.g. a translated project's `__en`-suffixed doc
   // leaking into a Swedish search), since a missing filter means "no
   // locale restriction at all", not "sv only".
   const localeFilter = locale === "sv" ? `locale = "sv"` : `locale IN ["sv", "${locale}"]`;
-  try {
-    const res = await fetch(`${HOST}/multi-search`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        queries: [
-          { indexUid: "projects", q: query, limit: 8, filter: localeFilter },
-          { indexUid: "ideas",    q: query, limit: 6, filter: localeFilter },
-          { indexUid: "orgs",     q: query, limit: 3 },
-          { indexUid: "members",  q: query, limit: 3 },
-        ],
-      }),
-    });
-    if (!res.ok) return [];
-    const data = (await res.json()) as {
-      results?: { hits?: SearchResult[] }[];
-    };
-    const allHits = (data.results ?? []).flatMap((r) => r.hits ?? []);
-    return dedupeByLocale(allHits, locale);
-  } catch {
-    return [];
-  }
+  const [projectHits, ideaHits, orgHits, memberHits] = await Promise.all([
+    searchIndex("projects", query, { limit: 8, filter: localeFilter }),
+    searchIndex("ideas", query, { limit: 6, filter: localeFilter }),
+    searchIndex("orgs", query, { limit: 3 }),
+    searchIndex("members", query, { limit: 3 }),
+  ]);
+  return dedupeByLocale([...projectHits, ...ideaHits, ...orgHits, ...memberHits], locale);
 }
