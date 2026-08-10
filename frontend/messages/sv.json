@@ -387,6 +387,21 @@
     "joinToCommentPrompt": "Bli medlem i projektet för att kommentera.",
     "loginToCommentPrompt": "Logga in för att kommentera."
   },
+  "LeanCanvasDraftPage": {
+    "newHeading": "Ny Lean Canvas",
+    "newSubtitle": "Fyll i den fritt — inget projekt behövs. Gör den till ett riktigt projekt bara om det blir bra.",
+    "newCta": "Skapa canvas-utkast",
+    "backToSandbox": "← Tillbaka till Sandbox",
+    "draftHeading": "Lean Canvas — utkast",
+    "draftSubtitle": "Fritt utkast, bara synligt för dig. Ingen kommer att se det förrän du gör det till ett projekt.",
+    "alreadyPromotedNote": "Det här utkastet är omvandlat till ett riktigt projekt och kan inte längre redigeras här.",
+    "viewLiveProject": "Visa {title} →",
+    "promoteButton": "Starta projekt av det här",
+    "promoteTitlePlaceholder": "Projektets titel",
+    "promoteConfirm": "Skapa projekt",
+    "promoting": "Skapar…",
+    "promoteCancel": "Avbryt"
+  },
   "AIReviewActions": {
     "genericError": "Något gick fel.",
     "networkError": "Nätverksfel. Försök igen.",

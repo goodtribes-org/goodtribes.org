@@ -178,6 +178,7 @@ model User {
   leanCanvasEdits         LeanCanvas[]               @relation("LeanCanvasUpdatedBy")
   leanCanvasComments      LeanCanvasComment[]        @relation("LeanCanvasCommentAuthor")
   leanCanvasVersionsSaved LeanCanvasVersion[]        @relation("LeanCanvasVersionSavedBy")
+  leanCanvasDrafts        LeanCanvasDraft[]          @relation("LeanCanvasDraftOwner")
   contentFlagsRaised     ContentFlag[]               @relation("ContentFlaggedBy")
   contentFlagReviews     ContentFlag[]               @relation("ContentFlagReviewer")
   priorityChanges        KanbanCardPriorityChange[]  @relation("PriorityChanges")
@@ -692,6 +693,7 @@ model Project {
   leanCanvas         LeanCanvas?          @relation("ProjectLeanCanvas")
   leanCanvasComments LeanCanvasComment[]  @relation("ProjectLeanCanvasComments")
   leanCanvasVersions LeanCanvasVersion[]  @relation("ProjectLeanCanvasVersions")
+  promotedFromLeanCanvasDraft LeanCanvasDraft? @relation("LeanCanvasDraftPromotedToProject")
   parentInstances    ProjectInstance[]    @relation("ParentInstances")
   childInstance      ProjectInstance?     @relation("ChildInstance")
   alumni             ProjectAlumni[]      @relation("ProjectAlumni")
@@ -1942,6 +1944,36 @@ model LeanCanvasComment {
   hiddenReason ContentHideReason?
 
   @@index([projectSlug])
+}
+
+// A project-less scratchpad, same 12 fields as LeanCanvas — lets a user try
+// the tool from Sandbox before any Project exists. No version history or
+// comments (deliberately lighter-weight than the real thing). Once promoted,
+// promotedToProjectSlug is set and the draft becomes read-only; the real
+// LeanCanvas row for that project gets a copy of the field values.
+model LeanCanvasDraft {
+  id                     String    @id @default(cuid())
+  ownerId                String
+  owner                  User      @relation("LeanCanvasDraftOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  problem                String?   @db.Text
+  alternatives           String?   @db.Text
+  customerSegments       String?   @db.Text
+  earlyAdopters          String?   @db.Text
+  uniqueValueProposition String?   @db.Text
+  concept                String?   @db.Text
+  solution               String?   @db.Text
+  channels               String?   @db.Text
+  revenueStreams         String?   @db.Text
+  costStructure          String?   @db.Text
+  impact                 String?   @db.Text
+  keyMetrics             String?   @db.Text
+  unfairAdvantage        String?   @db.Text
+  promotedToProjectSlug  String?   @unique
+  promotedToProject      Project?  @relation("LeanCanvasDraftPromotedToProject", fields: [promotedToProjectSlug], references: [slug], onDelete: SetNull)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([ownerId])
 }
 
 model ProjectInstance {

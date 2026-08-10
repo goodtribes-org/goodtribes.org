@@ -1,0 +1,62 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import LeanCanvasDraftBlock from "./LeanCanvasDraftBlock";
+import { LEAN_CANVAS_BLOCKS } from "../../projects/[slug]/(workspace)/lean-canvas/fields";
+import type { LeanCanvasField } from "../../projects/[slug]/(workspace)/lean-canvas/fields";
+
+interface Props {
+  draftId: string;
+  canvas: Partial<Record<LeanCanvasField, string | null>> | null;
+  canEdit: boolean;
+}
+
+export default function LeanCanvasDraftGrid({ draftId, canvas, canEdit }: Props) {
+  const tField = useTranslations("LeanCanvasHistory");
+  const tHint = useTranslations("LeanCanvasFields");
+  return (
+    <>
+      <style>{`
+        .leancanvas-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+        @media (min-width: 900px) {
+          .leancanvas-grid {
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: auto auto auto;
+            grid-template-areas:
+              "problem problem solution solution uvp uvp unfair unfair segments segments"
+              "alt alt metrics metrics concept concept channels channels early early"
+              "cost cost cost impact impact impact impact revenue revenue revenue";
+          }
+          .leancanvas-grid > [data-area="problem"] { grid-area: problem; }
+          .leancanvas-grid > [data-area="alt"] { grid-area: alt; }
+          .leancanvas-grid > [data-area="solution"] { grid-area: solution; }
+          .leancanvas-grid > [data-area="metrics"] { grid-area: metrics; }
+          .leancanvas-grid > [data-area="uvp"] { grid-area: uvp; }
+          .leancanvas-grid > [data-area="concept"] { grid-area: concept; }
+          .leancanvas-grid > [data-area="unfair"] { grid-area: unfair; }
+          .leancanvas-grid > [data-area="channels"] { grid-area: channels; }
+          .leancanvas-grid > [data-area="segments"] { grid-area: segments; }
+          .leancanvas-grid > [data-area="early"] { grid-area: early; }
+          .leancanvas-grid > [data-area="cost"] { grid-area: cost; }
+          .leancanvas-grid > [data-area="impact"] { grid-area: impact; }
+          .leancanvas-grid > [data-area="revenue"] { grid-area: revenue; }
+        }
+      `}</style>
+
+      <div className="leancanvas-grid">
+        {LEAN_CANVAS_BLOCKS.map((b) => (
+          <LeanCanvasDraftBlock
+            key={b.field}
+            draftId={draftId}
+            field={b.field}
+            area={b.area}
+            label={tField(`field${b.translationKey}` as Parameters<typeof tField>[0])}
+            hint={tHint(`hint${b.translationKey}` as Parameters<typeof tHint>[0])}
+            value={canvas ? (canvas[b.field] ?? null) : null}
+            canEdit={canEdit}
+          />
+        ))}
+      </div>
+    </>
+  );
+}

@@ -387,6 +387,21 @@
     "joinToCommentPrompt": "Join the project to comment.",
     "loginToCommentPrompt": "Log in to comment."
   },
+  "LeanCanvasDraftPage": {
+    "newHeading": "New Lean Canvas",
+    "newSubtitle": "Fill it in freely — no project needed. Turn it into a real project only if it turns out well.",
+    "newCta": "Create canvas draft",
+    "backToSandbox": "← Back to Sandbox",
+    "draftHeading": "Lean Canvas — draft",
+    "draftSubtitle": "A free draft, visible only to you. No one will see it until you turn it into a project.",
+    "alreadyPromotedNote": "This draft has been turned into a real project and can no longer be edited here.",
+    "viewLiveProject": "View {title} →",
+    "promoteButton": "Start a project from this",
+    "promoteTitlePlaceholder": "Project title",
+    "promoteConfirm": "Create project",
+    "promoting": "Creating…",
+    "promoteCancel": "Cancel"
+  },
   "AIReviewActions": {
     "genericError": "Something went wrong.",
     "networkError": "Network error. Please try again.",
