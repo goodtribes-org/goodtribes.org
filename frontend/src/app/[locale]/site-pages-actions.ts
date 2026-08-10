@@ -28,29 +28,38 @@ type OkOrError = { error: string } | { ok: true };
 export async function updateSitePage(slug: string, locale: Locale, title: string, body: string): Promise<OkOrError> {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
-  await requireSiteAdmin(session.user.id);
 
-  const trimmedTitle = title.trim();
-  if (!trimmedTitle) return { error: "Titel krävs." };
-  const sanitizedBody = sanitizeHtml(body);
+  try {
+    await requireSiteAdmin(session.user.id);
 
-  if ((FIXED_SLUGS as readonly string[]).includes(slug)) {
-    await prisma.sitePage.upsert({
-      where: { slug_locale: { slug, locale } },
-      update: { title: trimmedTitle, body: sanitizedBody, updatedById: session.user.id },
-      create: { slug, locale, title: trimmedTitle, body: sanitizedBody, updatedById: session.user.id },
-    });
-  } else {
-    // A custom page created under one locale can still be "edited" from
-    // another locale — that creates its own translated row rather than
-    // requiring the row to already exist for this exact locale.
-    const existsAnyLocale = await prisma.sitePage.findFirst({ where: { slug } });
-    if (!existsAnyLocale) return { error: "Sidan finns inte." };
-    await prisma.sitePage.upsert({
-      where: { slug_locale: { slug, locale } },
-      update: { title: trimmedTitle, body: sanitizedBody, updatedById: session.user.id },
-      create: { slug, locale, title: trimmedTitle, body: sanitizedBody, order: existsAnyLocale.order, updatedById: session.user.id },
-    });
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) return { error: "Titel krävs." };
+    const sanitizedBody = sanitizeHtml(body);
+
+    if ((FIXED_SLUGS as readonly string[]).includes(slug)) {
+      await prisma.sitePage.upsert({
+        where: { slug_locale: { slug, locale } },
+        update: { title: trimmedTitle, body: sanitizedBody, updatedById: session.user.id },
+        create: { slug, locale, title: trimmedTitle, body: sanitizedBody, updatedById: session.user.id },
+      });
+    } else {
+      // A custom page created under one locale can still be "edited" from
+      // another locale — that creates its own translated row rather than
+      // requiring the row to already exist for this exact locale.
+      const existsAnyLocale = await prisma.sitePage.findFirst({ where: { slug } });
+      if (!existsAnyLocale) return { error: "Sidan finns inte." };
+      await prisma.sitePage.upsert({
+        where: { slug_locale: { slug, locale } },
+        update: { title: trimmedTitle, body: sanitizedBody, updatedById: session.user.id },
+        create: { slug, locale, title: trimmedTitle, body: sanitizedBody, order: existsAnyLocale.order, updatedById: session.user.id },
+      });
+    }
+  } catch (e: unknown) {
+    // Surfaces a real message to the admin instead of a generic 500/"Try
+    // again" page, and logs with (slug, locale) context so a bad save can
+    // actually be traced in production pod logs.
+    console.error(`updateSitePage failed for slug=${slug} locale=${locale}:`, e);
+    return { error: e instanceof Error ? e.message : "Något gick fel när sidan skulle sparas." };
   }
 
   revalidatePath("/", "layout");
