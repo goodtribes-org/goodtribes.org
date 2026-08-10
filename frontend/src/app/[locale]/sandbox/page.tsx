@@ -10,6 +10,9 @@ import Pagination from "@/components/Pagination";
 import ProjectCard from "@/components/ProjectCard";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import SandboxHero from "./SandboxHero";
+import TreesAndPillars from "./TreesAndPillars";
+import WhyHowWhat from "./WhyHowWhat";
+import FeaturedDreams from "./FeaturedDreams";
 import { resolveProjectContent } from "@/lib/contentTranslation";
 import { routing } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
@@ -48,6 +51,9 @@ export default async function SandboxPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "SandboxPage" });
+  const tPillars = await getTranslations({ locale, namespace: "SandboxPillars" });
+  const tWhy = await getTranslations({ locale, namespace: "SandboxWhyHowWhat" });
+  const tDreams = await getTranslations({ locale, namespace: "SandboxFeaturedDreams" });
   const { sort: sortParam, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
@@ -216,6 +222,39 @@ export default async function SandboxPage({
         {t("explainerSuffix")}
       </p>
 
+      <TreesAndPillars
+        headings={{
+          levaGott: tPillars("levaGottHeading"),
+          maGott: tPillars("maGottHeading"),
+          goraGott: tPillars("goraGottHeading"),
+        }}
+        bodies={{
+          levaGott: tPillars("levaGottBody"),
+          maGott: tPillars("maGottBody"),
+          goraGott: tPillars("goraGottBody"),
+        }}
+      />
+
+      <WhyHowWhat
+        eyebrow={tWhy("eyebrow")}
+        headings={{ why: tWhy("whyHeading"), how: tWhy("howHeading"), what: tWhy("whatHeading") }}
+        bodies={{ why: tWhy("whyBody"), how: tWhy("howBody"), what: tWhy("whatBody") }}
+      />
+
+      <FeaturedDreams
+        sectionHeading={tDreams("sectionHeading")}
+        headings={{
+          infos: tDreams("infosHeading"),
+          goodtribe: tDreams("goodtribeHeading"),
+          dromlabbet: tDreams("dromlabbetHeading"),
+        }}
+        bodies={{
+          infos: tDreams("infosBody"),
+          goodtribe: tDreams("goodtribeBody"),
+          dromlabbet: tDreams("dromlabbetBody"),
+        }}
+      />
+
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
         <div className="rounded-lg p-3 text-center text-white bg-gradient-to-br from-coral to-watermelon shadow-sm">
           <p className="text-xl font-bold">{projectCount}</p>
@@ -313,6 +352,8 @@ export default async function SandboxPage({
           </div>
         )}
       </section>
+
+      <img src="/img/growth-leaves.png" alt="" className="w-full max-w-2xl mx-auto opacity-70 mt-6 -mb-4" />
     </div>
     </div>
   );

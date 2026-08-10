@@ -1219,6 +1219,32 @@
     "noChannelsAtAll": "You're not part of any channels yet. Channels are created by project and organisation admins.",
     "noMatches": "No channels match \"{query}\"."
   },
+  "SandboxPillars": {
+    "levaGottHeading": "Living Well",
+    "levaGottBody": "Living Well: We humans share the same basic physical needs — clean air, clean water, food, clothing, housing, security, wellbeing, and more. GoodTribes wants to give everyone the opportunity to meet these needs by being able to make a living through their commitment to long-term sustainable environmental and social development.",
+    "maGottHeading": "Feeling Good",
+    "maGottBody": "Feeling Good: We humans share the same basic psychological needs — belonging, appreciation, love, self-determination, freedom, fairness, growth, and engagement. GoodTribes wants to give everyone the freedom and opportunity to realize their dreams and their full potential.",
+    "goraGottHeading": "Doing Good",
+    "goraGottBody": "Doing Good: We humans share the same underlying desire for happiness, meaning, and being part of something bigger than ourselves. GoodTribes is grounded in research showing that people experience their greatest and most lasting happiness, satisfaction, and meaning when we make the world better together with others."
+  },
+  "SandboxWhyHowWhat": {
+    "eyebrow": "(Y)our Goal",
+    "whyHeading": "Why",
+    "whyBody": "We need a change that leads to long-term sustainable global development — a world where everyone has the opportunity to Live Well, Feel Good, and Do Good for themselves and others. To get there, we need a new way of thinking and acting, grounded in research, nature, and people's basic needs and desires. We have to become the change we want to see.",
+    "howHeading": "How",
+    "howBody": "Change the world — three simple steps. 1. Click \"Make a dream real\". 2. Explore and share dreams/projects. 3. Collaborate with others to realize your dream(s)/project(s). History shows that all grassroots environmental and social change starts with a small group of engaged people working together toward a shared dream.",
+    "whatHeading": "What",
+    "whatBody": "GoodTribes is an open dream factory where people can collaborate to realize dreams, projects, and ventures that directly or indirectly contribute to long-term sustainable environmental and social development. Studies show that what people regret most at the end of their lives is not having tried to realize their dreams and full potential."
+  },
+  "SandboxFeaturedDreams": {
+    "sectionHeading": "Featured dreams & projects",
+    "infosHeading": "Infos: Datordonation",
+    "infosBody": "Infos: Datordonation donated decommissioned IT equipment from the public sector and businesses to preschools, schools, and nonprofit organizations such as Amnesty and Greenpeace.",
+    "goodtribeHeading": "GoodTribes",
+    "goodtribeBody": "GoodTribes is built on people collaborating through small and large contributions to realize dreams together that directly or indirectly contribute to long-term sustainable environmental and social development.",
+    "dromlabbetHeading": "Drömlabbet",
+    "dromlabbetBody": "Drömlabbet wants to give unemployed people and newcomers education, opportunity, and resources to realize their own and others' dreams using the GoodTribes platform."
+  },
   "SandboxPage": {
     "metaDescription": "An experimental area mixing AI-generated content with user contributions.",
     "heroKicker": "🧪 Sandbox — experimental zone",

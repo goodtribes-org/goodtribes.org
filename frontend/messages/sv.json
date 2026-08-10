@@ -1219,6 +1219,32 @@
     "noChannelsAtAll": "Du är inte med i några kanaler ännu. Kanaler skapas av projekt- och organisationsadmins.",
     "noMatches": "Inga kanaler matchar \"{query}\"."
   },
+  "SandboxPillars": {
+    "levaGottHeading": "Leva Gott",
+    "levaGottBody": "Leva Gott: Vi människor har samma grundläggande fysiska behov av ren luft, rent vatten, mat, kläder, bostad, trygghet, välmående osv. GoodTribes vill ge alla människor möjligheten att möta dessa behov genom att kunna försörja sig på sitt engagemang för en långsiktigt hållbar miljö- och samhällsutveckling.",
+    "maGottHeading": "Må Gott",
+    "maGottBody": "Må Gott: Vi människor har samma grundläggande psykologiska behov av gemenskap, uppskattning, kärlek, självbestämmande, frihet, rättvisa, utveckling och engagemang. GoodTribes vill ge alla människor friheten och möjligheten att förverkliga sina drömmar och sin fulla potential.",
+    "goraGottHeading": "Göra Gott",
+    "goraGottBody": "Göra Gott: Vi människor har samma övergripande önskan om lycka, mening och att vara en del av ett större sammanhang. GoodTribes utgår från forskningen som visar att människor upplever störst och mest långvarig lycka, tillfredsställelse och mening när vi tillsammans med andra gör världen bättre."
+  },
+  "SandboxWhyHowWhat": {
+    "eyebrow": "Målet",
+    "whyHeading": "Varför",
+    "whyBody": "Vi behöver en förändring som leder till en långsiktigt hållbar global samhällsutveckling. En värld där alla människor ges möjlighet att Leva Gott, Må Gott och Göra Gott för sig själv och andra. För att komma dit behöver vi ett nytt sätt att tänka/verka som utgår från forskning, naturen och människans grundläggande behov och önskningar. Vi måste bli den förändring vi vill se.",
+    "howHeading": "Hur",
+    "howBody": "Förändra världen — tre enkla steg. 1. Klicka på \"Förverkliga en dröm\". 2. Utforska och dela drömmar/projekt. 3. Samverka med andra för att förverkliga dina/era drömmar/projekt. Historien visar att all miljö- och samhällsförändring underifrån börjar med en liten grupp engagerade människor som samverkar för att uppnå sina gemensamma drömmar.",
+    "whatHeading": "Vad",
+    "whatBody": "GoodTribes är en öppen drömfabrik där människor kan samverka för att förverkliga sina drömmar/projekt/företag som direkt eller indirekt medverkar till en långsiktigt hållbar miljö- och samhällsutveckling. Studier visar att det vi människor ångrar allra mest vid livets slut är att vi inte försökte förverkliga våra livsdrömmar och fulla potential."
+  },
+  "SandboxFeaturedDreams": {
+    "sectionHeading": "Utvalda drömmar & projekt",
+    "infosHeading": "Infos: Datordonation",
+    "infosBody": "Infos: Datordonation donerade avskriven IT-utrustning från offentlig sektor och näringslivet till förskolor, skolor och ideella organisationer som t.ex. Amnesty och Greenpeace.",
+    "goodtribeHeading": "GoodTribes",
+    "goodtribeBody": "GoodTribes bygger på att människor samverkar genom små och stora insatser för att tillsammans förverkliga drömmar som direkt eller indirekt medverkar till en långsiktigt hållbar miljö- och samhällsutveckling.",
+    "dromlabbetHeading": "Drömlabbet",
+    "dromlabbetBody": "Drömlabbet vill ge arbetslösa och nyanlända utbildning, möjligheten och resurser att förverkliga sina och andras drömmar genom att använda GoodTribes plattform."
+  },
   "SandboxPage": {
     "metaDescription": "Ett experimentellt område som blandar AI-genererat innehåll med användarbidrag.",
     "heroKicker": "🧪 Sandbox — experimentell zon",
