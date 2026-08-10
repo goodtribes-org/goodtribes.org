@@ -6,7 +6,15 @@ const PHOTO = { src: "/img/Slide1.jpg", alt: "GoodTribes — Crowdsourcing for G
 const ICON = { src: "/img/sandbox-icon.svg", alt: "Sandbox" };
 const TILT = { rotate: -1, x: 0, y: 0 };
 
-export default function SandboxHero() {
+export default function SandboxHero({
+  heading,
+  kicker,
+  description,
+}: {
+  heading: string;
+  kicker: string;
+  description: string;
+}) {
   return (
     <div className="relative">
       <div className="absolute top-0 left-0 right-0 overflow-hidden" style={{ height: "400px" }}>
@@ -19,7 +27,7 @@ export default function SandboxHero() {
             className="text-5xl md:text-6xl font-bold text-center leading-tight"
             style={{ color: "white", textShadow: "0 3px 8px rgba(0,0,0,0.25)", marginTop: 0 }}
           >
-            <span style={{ fontSize: 60 }}>Sandbox</span>
+            <span style={{ fontSize: 60 }}>{heading}</span>
           </h1>
 
           <div className="relative grid w-full gap-8 items-center md:grid-cols-2">
@@ -28,12 +36,10 @@ export default function SandboxHero() {
                 <div className="h-full border border-muted-teal/20 px-6 pt-3 pb-6 flex flex-col justify-start bg-amber-50">
                   <div className="flex flex-col items-start text-left">
                     <h2 className="text-3xl md:text-4xl font-bold text-amber-900" style={{ textWrap: "balance", fontSize: 30 }}>
-                      🧪 Sandbox — experimentell zon
+                      {kicker}
                     </h2>
                     <p className="mt-4 text-amber-800" style={{ fontSize: 15 }}>
-                      Riktiga projekt, men märkta som experimentella — testa en idé fritt innan du (eller någon annan)
-                      gör den till ett vanligt projekt. Allt här kan vara AI-genererat, halvfärdigt eller under test —
-                      vem som helst kan gaffla ett projekt utan tillstånd.
+                      {description}
                     </p>
                   </div>
                 </div>
