@@ -179,6 +179,7 @@ model User {
   leanCanvasComments      LeanCanvasComment[]        @relation("LeanCanvasCommentAuthor")
   leanCanvasVersionsSaved LeanCanvasVersion[]        @relation("LeanCanvasVersionSavedBy")
   leanCanvasDrafts        LeanCanvasDraft[]          @relation("LeanCanvasDraftOwner")
+  whiteboardDrafts        WhiteboardDraft[]          @relation("WhiteboardDraftOwner")
   contentFlagsRaised     ContentFlag[]               @relation("ContentFlaggedBy")
   contentFlagReviews     ContentFlag[]               @relation("ContentFlagReviewer")
   priorityChanges        KanbanCardPriorityChange[]  @relation("PriorityChanges")
@@ -694,6 +695,7 @@ model Project {
   leanCanvasComments LeanCanvasComment[]  @relation("ProjectLeanCanvasComments")
   leanCanvasVersions LeanCanvasVersion[]  @relation("ProjectLeanCanvasVersions")
   promotedFromLeanCanvasDraft LeanCanvasDraft? @relation("LeanCanvasDraftPromotedToProject")
+  promotedFromWhiteboardDraft WhiteboardDraft? @relation("WhiteboardDraftPromotedToProject")
   parentInstances    ProjectInstance[]    @relation("ParentInstances")
   childInstance      ProjectInstance?     @relation("ChildInstance")
   alumni             ProjectAlumni[]      @relation("ProjectAlumni")
@@ -1970,6 +1972,26 @@ model LeanCanvasDraft {
   unfairAdvantage        String?   @db.Text
   promotedToProjectSlug  String?   @unique
   promotedToProject      Project?  @relation("LeanCanvasDraftPromotedToProject", fields: [promotedToProjectSlug], references: [slug], onDelete: SetNull)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([ownerId])
+}
+
+// A project-less Excalidraw scratchpad — same idea as LeanCanvasDraft, for
+// the "try the whiteboard before starting a project" Sandbox tool. Single
+// owner only (no live collaborators, unlike SprintPhase.documentState —
+// there's no team to collaborate with before a Project/Sprint exists).
+// version mirrors SprintPhase's optimistic-lock counter. On promotion, the
+// documentState is copied into a real Sprint's first (UNDERSTAND) phase.
+model WhiteboardDraft {
+  id                     String    @id @default(cuid())
+  ownerId                String
+  owner                  User      @relation("WhiteboardDraftOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  documentState          Json?
+  version                Int       @default(1)
+  promotedToProjectSlug  String?   @unique
+  promotedToProject      Project?  @relation("WhiteboardDraftPromotedToProject", fields: [promotedToProjectSlug], references: [slug], onDelete: SetNull)
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 

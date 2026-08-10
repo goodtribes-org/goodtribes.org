@@ -188,6 +188,12 @@ export default async function SandboxPage({
             {t("tryLeanCanvasCta")}
           </Link>
           <Link
+            href="/whiteboard/new"
+            className="px-4 py-2 border border-amber-400 text-amber-800 bg-amber-50 text-sm font-medium rounded hover:bg-amber-100 transition-colors"
+          >
+            {t("tryWhiteboardCta")}
+          </Link>
+          <Link
             href="/projects/new"
             className="px-4 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors"
           >
@@ -199,10 +205,13 @@ export default async function SandboxPage({
         {t("explainerPrefix")}{" "}
         <Link href="/ideaverkstad" className="text-coral hover:underline">
           {t("explainerIdeaverkstadLink")}
-        </Link>{" "}
-        {t("explainerOr")}{" "}
+        </Link>,{" "}
         <Link href="/lean-canvas/new" className="text-coral hover:underline">
           {t("explainerLeanCanvasLink")}
+        </Link>{" "}
+        {t("explainerOr")}{" "}
+        <Link href="/whiteboard/new" className="text-coral hover:underline">
+          {t("explainerWhiteboardLink")}
         </Link>{" "}
         {t("explainerSuffix")}
       </p>
