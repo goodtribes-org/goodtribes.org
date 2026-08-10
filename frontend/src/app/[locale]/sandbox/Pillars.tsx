@@ -1,15 +1,50 @@
-// The three pillar icons are the original GoodTribe artwork (Leva Gott /
-// Må Gott / Göra Gott), recovered from the old dev-goodtribe.pantheonsite.io
-// site — see /public/img/pillar-*. Colors are matched to the icons' own
-// natural hues via existing theme tokens rather than the sandbox's coral
-// accent. The trees now live in SandboxHero, directly above this. Each
-// header fades from the pillar's base color, same "strong color → fade out"
-// treatment as the original sandbox-hero concept mockup.
+// The two tree illustrations are the original GoodTribe artwork recovered
+// from the old dev-goodtribe.pantheonsite.io site — see
+// /public/img/sandbox-tree-*.png. The pillar icons are simple white-line
+// SVGs (from the very first sandbox-hero concept mockup) rather than the
+// recovered PNGs — cleaner against the colored gradient header. On the
+// original site, the trees sit above the outer two pillars (Leva Gott /
+// Göra Gott), not the middle one — reproduced here the same way, hidden on
+// mobile where the grid stacks to a single column and "outer corner" stops
+// being meaningful. Each header fades from the pillar's base color, the
+// "strong color → fade out" treatment from that same concept mockup.
+// Row width follows the original's measured ratio (tree width ≈ 30% of its
+// container) — with the trees sized up, the row widens back out to match
+// rather than staying artificially narrow.
+function LeafIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 3c1 8-2 15-9 17z" />
+      <path d="M2 21c0-3 1.85-5.36 5.08-6" />
+    </svg>
+  );
+}
+
+function ThumbIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <path d="M7 10v12" />
+      <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
+    </svg>
+  );
+}
+
+function HeartIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="white" className="h-5 w-5">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+    </svg>
+  );
+}
+
 const PILLARS = [
-  { icon: "/img/pillar-leva-gott.png", color: "var(--color-seagrass)", key: "levaGott" as const },
-  { icon: "/img/pillar-ma-gott.png", color: "var(--color-navy)", key: "maGott" as const },
-  { icon: "/img/pillar-gora-gott.png", color: "var(--color-watermelon)", key: "goraGott" as const },
+  { Icon: LeafIcon, color: "var(--color-seagrass)", key: "levaGott" as const },
+  { Icon: ThumbIcon, color: "var(--color-navy)", key: "maGott" as const },
+  { Icon: HeartIcon, color: "var(--color-watermelon)", key: "goraGott" as const },
 ];
+
+const TREE_LEFT = { src: "/img/sandbox-tree-left.png", alt: "" };
+const TREE_RIGHT = { src: "/img/sandbox-tree-right.png", alt: "" };
 
 export default function Pillars({
   headings,
@@ -19,23 +54,49 @@ export default function Pillars({
   bodies: Record<"levaGott" | "maGott" | "goraGott", string>;
 }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {PILLARS.map((p) => (
-        <div key={p.key} className="bg-white border border-amber-200 rounded-xl overflow-hidden shadow-sm">
-          <div
-            className="flex items-center gap-2 px-4 py-3 text-white font-bold text-sm uppercase tracking-wide"
-            style={{ background: `linear-gradient(135deg, ${p.color}, color-mix(in srgb, ${p.color} 30%, white))` }}
-          >
-            <span className="bg-white rounded-full p-1 flex items-center justify-center flex-shrink-0 w-7 h-7">
-              <img src={p.icon} alt="" className="h-4 w-4 object-contain" />
-            </span>
-            <span>{headings[p.key]}</span>
-          </div>
-          <div className="p-4">
-            <p className="text-xs text-dark-slate/70 leading-relaxed text-center">{bodies[p.key]}</p>
-          </div>
+    <div className="pt-0 sm:pt-20">
+      <div className="relative max-w-4xl mx-auto">
+        {/* bottom-full anchors each tree's bottom edge to the row's top edge
+            with zero overlap; the negative margin-bottom then pulls it down
+            by a small, fixed amount so the branch tips overflow past the
+            Leva Gott / Göra Gott cards' outer corners. */}
+        <img
+          src={TREE_LEFT.src}
+          alt={TREE_LEFT.alt}
+          className="hidden sm:block absolute left-[-86px] md:left-[-130px] bottom-full mb-[-28px] md:mb-[-43px] w-[230px] md:w-[317px] h-auto z-0 pointer-events-none select-none"
+        />
+        <img
+          src={TREE_RIGHT.src}
+          alt={TREE_RIGHT.alt}
+          className="hidden sm:block absolute right-[-86px] md:right-[-130px] bottom-full mb-[-43px] md:mb-[-58px] w-[230px] md:w-[317px] h-auto z-0 pointer-events-none select-none"
+        />
+        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {PILLARS.map((p) => (
+            <div
+              key={p.key}
+              className="bg-white border border-amber-200 rounded-xl overflow-hidden shadow-sm"
+              style={
+                p.key === "levaGott"
+                  ? { transform: "translateX(-10px)" }
+                  : p.key === "maGott"
+                    ? { transform: "translateX(-5px)" }
+                    : undefined
+              }
+            >
+              <div
+                className="flex items-center gap-2 px-4 py-3 text-white font-bold text-sm uppercase tracking-wide"
+                style={{ background: `linear-gradient(135deg, ${p.color}, color-mix(in srgb, ${p.color} 30%, white))` }}
+              >
+                <p.Icon />
+                <span>{headings[p.key]}</span>
+              </div>
+              <div className="p-4">
+                <p className="text-xs text-dark-slate/70 leading-relaxed text-center">{bodies[p.key]}</p>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }

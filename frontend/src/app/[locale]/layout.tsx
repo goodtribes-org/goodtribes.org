@@ -20,6 +20,8 @@ import FooterPageManager from "@/components/FooterPageManager";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
 import ConsentGate from "@/components/ConsentGate";
 import SandboxBetaBadge from "@/components/SandboxBetaBadge";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
 import { auth } from "@/auth";
 import { isSiteAdmin } from "@/lib/authz";
 import { getFooterPages } from "@/lib/sitePages";
@@ -148,7 +150,7 @@ export default async function LocaleLayout({
           <SessionProvider session={session}>
           <UserEventsProvider enabled={!!session?.user}>
             <ConsentGate needsAgreementConsent={!!session?.user?.needsAgreementConsent} />
-            <header className="border-b border-muted-teal shrink-0">
+            <SiteHeader>
               <nav className="w-full pl-3 pr-6 py-3 flex items-center gap-6">
                 <Link href="/" className="shrink-0 flex items-center gap-2.5">
                   <Image
@@ -172,9 +174,9 @@ export default async function LocaleLayout({
                 {session?.user && <PresenceHeartbeat />}
                 <AuthNav />
               </nav>
-            </header>
+            </SiteHeader>
             <main className="max-w-6xl mx-auto px-6 pt-8 pb-12 w-full flex-1 flex flex-col">{children}</main>
-            <footer className="border-t border-muted-teal/30 bg-dry-sage/10 shrink-0">
+            <SiteFooter>
               <div className="max-w-6xl mx-auto px-6 py-10 grid gap-16 md:grid-cols-[3fr_5fr] text-sm">
                 <div>
                   {/* -mt compensates for transparent padding baked into the top of the
@@ -240,7 +242,7 @@ export default async function LocaleLayout({
                   <p>© {new Date().getFullYear()} GoodTribes Foundation · {t("copyrightNote")}</p>
                 </div>
               </div>
-            </footer>
+            </SiteFooter>
           </UserEventsProvider>
           </SessionProvider>
         </NextIntlClientProvider>

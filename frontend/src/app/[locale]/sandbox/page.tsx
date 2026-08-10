@@ -355,7 +355,15 @@ export default async function SandboxPage({
         )}
       </section>
 
-      <img src="/img/growth-leaves.png" alt="" className="w-full max-w-2xl mx-auto opacity-70 mt-6 -mb-4" />
+      {/* -mb-16 goes past this container's own pb-12 so the strip dips a
+          little below the footer's top border line instead of sitting
+          exactly flush. mr-[calc(572px-50vw)] breaks past both this
+          container's own px-6 AND the max-w-6xl boundary, landing a small
+          ~20px margin short of the true viewport edge (552px would land
+          exactly on the edge; +20px holds it back slightly). */}
+      <div className="flex justify-end mt-6 -mb-[56px] mr-[calc(572px-50vw)]">
+        <img src="/img/growth-leaves.png" alt="" className="w-2/3 max-w-md opacity-70" />
+      </div>
     </div>
     </div>
   );
