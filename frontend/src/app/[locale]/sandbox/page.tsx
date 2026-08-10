@@ -156,20 +156,35 @@ export default async function SandboxPage({
     <div className="relative -mt-8 -mb-12 flex-1" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f8f8f8" }}>
     <SandboxHero />
     <div className="max-w-6xl mx-auto px-6 pb-12">
-      <div className="flex items-center justify-between mb-6 mt-2">
+      <div className="flex items-center justify-between mb-2 mt-2 gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-dark-slate">Sandbox</h1>
           <p className="text-sm text-dark-slate/50 mt-1">
             Testa en idé fritt — samma projektverktyg, bara friare.
           </p>
         </div>
-        <Link
-          href="/projects/new"
-          className="px-4 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors flex-shrink-0"
-        >
-          + Nytt sandbox-projekt
-        </Link>
+        <div className="flex gap-2 flex-shrink-0">
+          <Link
+            href="/ideaverkstad/new"
+            className="px-4 py-2 border border-amber-400 text-amber-800 bg-amber-50 text-sm font-medium rounded hover:bg-amber-100 transition-colors"
+          >
+            🧠 Testa i Idéverkstaden
+          </Link>
+          <Link
+            href="/projects/new"
+            className="px-4 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors"
+          >
+            + Nytt sandbox-projekt
+          </Link>
+        </div>
       </div>
+      <p className="text-xs text-dark-slate/40 mb-6">
+        Inget projekt behövs för att bolla en idé —{" "}
+        <Link href="/ideaverkstad" className="text-coral hover:underline">
+          testa i Idéverkstaden
+        </Link>{" "}
+        och gör den till ett projekt bara om det blir bra.
+      </p>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
         <div className="rounded-lg p-3 text-center text-white bg-gradient-to-br from-coral to-watermelon shadow-sm">
