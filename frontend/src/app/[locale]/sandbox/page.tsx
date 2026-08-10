@@ -212,7 +212,7 @@ export default async function SandboxPage({
         <Link href="/ideaverkstad" className="text-coral hover:underline">
           {t("explainerIdeaverkstadLink")}
         </Link>,{" "}
-        <Link href="/lean-canvas/new" className="text-coral hover:underline">
+        <Link href="/lean-canvas" className="text-coral hover:underline">
           {t("explainerLeanCanvasLink")}
         </Link>{" "}
         {t("explainerOr")}{" "}

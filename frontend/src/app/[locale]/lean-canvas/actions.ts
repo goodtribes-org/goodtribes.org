@@ -15,6 +15,9 @@ export async function createLeanCanvasDraft(): Promise<void> {
   redirect(`/lean-canvas/${draft.id}`);
 }
 
+// Open by design, not just the creator — any logged-in user can edit any
+// not-yet-promoted draft, same as anyone can post in a project-less
+// Idéverkstaden thread or draw on a WhiteboardDraft.
 export async function updateLeanCanvasDraftBlock(
   draftId: string,
   field: LeanCanvasField,
@@ -24,8 +27,8 @@ export async function updateLeanCanvasDraftBlock(
   if (!session?.user?.id) redirect("/login");
   if (!LEAN_CANVAS_FIELDS.includes(field)) return;
 
-  const draft = await prisma.leanCanvasDraft.findUnique({ where: { id: draftId }, select: { ownerId: true, promotedToProjectSlug: true } });
-  if (!draft || draft.ownerId !== session.user.id || draft.promotedToProjectSlug) return;
+  const draft = await prisma.leanCanvasDraft.findUnique({ where: { id: draftId }, select: { promotedToProjectSlug: true } });
+  if (!draft || draft.promotedToProjectSlug) return;
 
   const value = (formData.get("value") as string | null)?.trim() || null;
 
@@ -33,6 +36,9 @@ export async function updateLeanCanvasDraftBlock(
   revalidatePath(`/lean-canvas/${draftId}`);
 }
 
+// Open to any logged-in user, not just the creator — whoever promotes it
+// becomes the new project's owner, same as promoting an Idéverkstaden
+// thread or a WhiteboardDraft doesn't require being its original creator.
 export async function promoteLeanCanvasDraftToProject(
   draftId: string,
   formData: FormData
@@ -41,7 +47,7 @@ export async function promoteLeanCanvasDraftToProject(
   if (!session?.user?.id) return { error: "Not logged in" };
 
   const draft = await prisma.leanCanvasDraft.findUnique({ where: { id: draftId } });
-  if (!draft || draft.ownerId !== session.user.id) return { error: "Not found" };
+  if (!draft) return { error: "Not found" };
   if (draft.promotedToProjectSlug) return { slug: draft.promotedToProjectSlug };
 
   const title = (formData.get("title") as string | null)?.trim();

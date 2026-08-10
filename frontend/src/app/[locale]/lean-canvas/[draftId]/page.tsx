@@ -25,9 +25,11 @@ export default async function LeanCanvasDraftPage({
 
   const draft = await prisma.leanCanvasDraft.findUnique({
     where: { id: draftId },
-    include: { promotedToProject: { select: { slug: true, title: true } } },
+    include: { promotedToProject: { select: { slug: true, title: true } }, owner: { select: { name: true } } },
   });
-  if (!draft || draft.ownerId !== session.user.id) notFound();
+  // Open by design — anyone logged in can view and edit any not-yet-promoted
+  // draft, same as Idéverkstaden's project-less threads and WhiteboardDraft.
+  if (!draft) notFound();
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -51,7 +53,9 @@ export default async function LeanCanvasDraftPage({
       {draft.promotedToProject ? (
         <p className="text-sm text-dark-slate/50 mb-6">{t("alreadyPromotedNote")}</p>
       ) : (
-        <p className="text-sm text-dark-slate/50 mb-6">{t("draftSubtitle")}</p>
+        <p className="text-sm text-dark-slate/50 mb-6">
+          {t("draftSubtitle", { name: draft.owner.name ?? t("unknownAuthor") })}
+        </p>
       )}
 
       <LeanCanvasDraftGrid draftId={draft.id} canvas={draft} canEdit={!draft.promotedToProject} />
