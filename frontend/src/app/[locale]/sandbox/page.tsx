@@ -10,7 +10,7 @@ import Pagination from "@/components/Pagination";
 import ProjectCard from "@/components/ProjectCard";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import SandboxHero from "./SandboxHero";
-import TreesAndPillars from "./TreesAndPillars";
+import Pillars from "./Pillars";
 import WhyHowWhat from "./WhyHowWhat";
 import FeaturedDreams from "./FeaturedDreams";
 import { resolveProjectContent } from "@/lib/contentTranslation";
@@ -173,8 +173,23 @@ export default async function SandboxPage({
 
   return (
     <div className="relative -mt-8 -mb-12 flex-1" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f6f5f2" }}>
-    <SandboxHero heading={t("heading")} kicker={t("heroKicker")} description={t("heroDescription")} />
+    <SandboxHero kicker={t("heroKicker")} description={t("heroDescription")} />
     <div className="max-w-6xl mx-auto px-6 pb-12">
+      <div className="mb-8 mt-4">
+        <Pillars
+          headings={{
+            levaGott: tPillars("levaGottHeading"),
+            maGott: tPillars("maGottHeading"),
+            goraGott: tPillars("goraGottHeading"),
+          }}
+          bodies={{
+            levaGott: tPillars("levaGottBody"),
+            maGott: tPillars("maGottBody"),
+            goraGott: tPillars("goraGottBody"),
+          }}
+        />
+      </div>
+
       <div className="flex items-center justify-between mb-2 mt-2 gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
@@ -221,19 +236,6 @@ export default async function SandboxPage({
         </Link>{" "}
         {t("explainerSuffix")}
       </p>
-
-      <TreesAndPillars
-        headings={{
-          levaGott: tPillars("levaGottHeading"),
-          maGott: tPillars("maGottHeading"),
-          goraGott: tPillars("goraGottHeading"),
-        }}
-        bodies={{
-          levaGott: tPillars("levaGottBody"),
-          maGott: tPillars("maGottBody"),
-          goraGott: tPillars("goraGottBody"),
-        }}
-      />
 
       <WhyHowWhat
         eyebrow={tWhy("eyebrow")}
