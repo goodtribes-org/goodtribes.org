@@ -50,7 +50,7 @@ export default async function SandboxPage({
   const aiUser = await getAiParticipantUser();
   const locale = (await getLocale()) as Locale;
 
-  const [total, projects, recentIdeas, recentMessages, projectCount, aiSeedCount, tasksDone] = await Promise.all([
+  const [total, projects, recentProjectsForFeed, recentIdeas, recentMessages, projectCount, aiSeedCount, tasksDone] = await Promise.all([
     prisma.project.count({ where }),
     prisma.project.findMany({
       where,
@@ -63,6 +63,12 @@ export default async function SandboxPage({
         translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
       },
     }),
+    prisma.project.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: 6,
+      select: { slug: true, title: true, createdAt: true, owner: { select: { name: true } } },
+    }),
     prisma.idea.findMany({
       where: { hiddenAt: null, status: { not: "draft" } },
       orderBy: { createdAt: "desc" },
@@ -70,7 +76,6 @@ export default async function SandboxPage({
       select: {
         id: true,
         title: true,
-        category: true,
         createdAt: true,
         author: { select: { name: true } },
       },
@@ -91,6 +96,33 @@ export default async function SandboxPage({
     prisma.project.count({ where: { isSandbox: true, ownerId: aiUser.id } }),
     prisma.kanbanCard.count({ where: { column: "DONE", project: { isSandbox: true } } }),
   ]);
+
+  const feedEvents = [
+    ...recentProjectsForFeed.map((p) => ({
+      key: `p-${p.slug}`,
+      type: "project" as const,
+      createdAt: p.createdAt,
+      href: `/projects/${p.slug}`,
+      primary: p.title,
+      secondary: `startades av ${p.owner.name ?? "Okänd"}`,
+    })),
+    ...recentIdeas.map((idea) => ({
+      key: `i-${idea.id}`,
+      type: "idea" as const,
+      createdAt: idea.createdAt,
+      href: `/ideas/${idea.id}`,
+      primary: idea.title,
+      secondary: `ny idé av ${idea.author.name ?? "Okänd"}`,
+    })),
+    ...recentMessages.map((m) => ({
+      key: `m-${m.id}`,
+      type: "message" as const,
+      createdAt: m.createdAt,
+      href: m.room.project ? `/projects/${m.room.project.slug}` : "/sandbox",
+      primary: htmlToPreviewText(m.body),
+      secondary: `${m.author.name ?? "Okänd"} i ${m.room.project?.title ?? "ett sandbox-projekt"}`,
+    })),
+  ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 10);
 
   const [projectLikeCounts, taskProgressCards] = await Promise.all([
     projects.length
@@ -117,6 +149,8 @@ export default async function SandboxPage({
   }));
 
   const rawParams = { sort: sortParam, page: pageStr };
+  const isLastPage = page * PAGE_SIZE >= total;
+  const ghostCount = isLastPage && projectsWithLikes.length > 0 ? (4 - (projectsWithLikes.length % 4)) % 4 : 0;
 
   return (
     <div className="relative -mt-8 -mb-12 flex-1" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f8f8f8" }}>
@@ -138,21 +172,21 @@ export default async function SandboxPage({
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-        <div className="border border-amber-200 bg-amber-50/60 rounded-lg p-3 text-center">
-          <p className="text-lg font-bold text-dark-slate">{projectCount}</p>
-          <p className="text-[11px] text-dark-slate/50">Sandbox-projekt</p>
+        <div className="rounded-lg p-3 text-center text-white bg-gradient-to-br from-coral to-watermelon shadow-sm">
+          <p className="text-xl font-bold">{projectCount}</p>
+          <p className="text-[11px] opacity-85">Sandbox-projekt</p>
         </div>
-        <div className="border border-amber-200 bg-amber-50/60 rounded-lg p-3 text-center">
-          <p className="text-lg font-bold text-dark-slate">{aiSeedCount}</p>
-          <p className="text-[11px] text-dark-slate/50">AI-startade</p>
+        <div className="rounded-lg p-3 text-center text-white bg-gradient-to-br from-coral to-watermelon shadow-sm">
+          <p className="text-xl font-bold">{aiSeedCount}</p>
+          <p className="text-[11px] opacity-85">AI-startade</p>
         </div>
-        <div className="border border-amber-200 bg-amber-50/60 rounded-lg p-3 text-center">
-          <p className="text-lg font-bold text-dark-slate">{projectCount - aiSeedCount}</p>
-          <p className="text-[11px] text-dark-slate/50">Mänskligt startade</p>
+        <div className="rounded-lg p-3 text-center text-white bg-gradient-to-br from-coral to-watermelon shadow-sm">
+          <p className="text-xl font-bold">{projectCount - aiSeedCount}</p>
+          <p className="text-[11px] opacity-85">Mänskligt startade</p>
         </div>
-        <div className="border border-amber-200 bg-amber-50/60 rounded-lg p-3 text-center">
-          <p className="text-lg font-bold text-dark-slate">{tasksDone}</p>
-          <p className="text-[11px] text-dark-slate/50">Uppgifter avklarade</p>
+        <div className="rounded-lg p-3 text-center text-white bg-gradient-to-br from-coral to-watermelon shadow-sm">
+          <p className="text-xl font-bold">{tasksDone}</p>
+          <p className="text-[11px] opacity-85">Uppgifter avklarade</p>
         </div>
       </div>
 
@@ -174,66 +208,61 @@ export default async function SandboxPage({
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {projectsWithLikes.map((p) => <ProjectCard key={p.slug} project={p} variant="sandbox" />)}
+              {ghostCount > 0 && (
+                <Link
+                  href="/projects/new"
+                  className="rounded-lg border-2 border-dashed border-coral/60 bg-coral/5 hover:bg-coral/10 transition-colors flex items-center justify-center aspect-[4/3] text-coral text-sm font-semibold text-center p-4"
+                >
+                  + Starta nästa
+                </Link>
+              )}
+              {Array.from({ length: Math.max(ghostCount - 1, 0) }).map((_, i) => (
+                <div
+                  key={`ghost-${i}`}
+                  className="rounded-lg border-2 border-dashed border-amber-300 bg-amber-50/40 flex items-center justify-center aspect-[4/3] text-amber-700/70 text-sm text-center p-4"
+                >
+                  🤖 AI seedar snart
+                </div>
+              ))}
             </div>
             <Pagination page={page} total={total} perPage={PAGE_SIZE} searchParams={rawParams} basePath="/sandbox" />
           </>
         )}
       </section>
 
-      <section className="mb-10">
+      <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-dark-slate">Idéer</h2>
+          <h2 className="text-lg font-bold text-dark-slate">Aktivitet i sandboxen</h2>
           <Link href="/ideas" className="text-xs text-coral hover:underline">Alla idéer →</Link>
         </div>
-        {recentIdeas.length === 0 ? (
+        {feedEvents.length === 0 ? (
           <div className="border border-dashed border-amber-300 rounded-lg p-16 text-center">
-            <p className="text-dark-slate/40 text-sm mb-3">Inga idéer ännu.</p>
-            <Link href="/ideas/new" className="text-coral hover:underline text-sm">
-              Dela den första →
+            <p className="text-dark-slate/40 text-sm mb-3">Inget har hänt i sandboxen än — bli först.</p>
+            <Link
+              href="/ideas/new"
+              className="inline-block px-4 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors"
+            >
+              Dela en idé →
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {recentIdeas.map((idea) => (
-              <Link
-                key={idea.id}
-                href={`/ideas/${idea.id}`}
-                className="border border-amber-200 bg-amber-50/30 rounded-lg p-3 hover:border-amber-400 transition-colors"
-              >
-                {idea.category && (
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-700">{idea.category}</span>
-                )}
-                <p className="text-sm font-medium text-dark-slate line-clamp-2 mt-0.5">{idea.title}</p>
-                <p className="text-[11px] text-dark-slate/40 mt-1.5">
-                  {idea.author.name ?? "Okänd"} · {timeAgo(idea.createdAt)}
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section>
-        <h2 className="text-lg font-bold text-dark-slate mb-4">Senaste i sandboxen</h2>
-        {recentMessages.length === 0 ? (
-          <p className="text-sm text-dark-slate/40">Inga inlägg ännu.</p>
-        ) : (
           <div className="flex flex-col gap-2">
-            {recentMessages.map((m) => (
+            {feedEvents.map((e) => (
               <Link
-                key={m.id}
-                href={m.room.project ? `/projects/${m.room.project.slug}` : "/sandbox"}
+                key={e.key}
+                href={e.href}
                 className="flex items-start gap-3 border border-amber-200 bg-amber-50/30 rounded-lg p-3 hover:border-amber-400 transition-colors"
               >
+                <span
+                  className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${
+                    e.type === "project" ? "bg-coral" : e.type === "idea" ? "bg-amber-500" : "bg-watermelon"
+                  }`}
+                />
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-dark-slate/50 mb-0.5">
-                    <span className="font-medium text-dark-slate">{m.author.name ?? "Okänd"}</span>
-                    {" i "}
-                    <span className="text-amber-700">{m.room.project?.title ?? "ett sandbox-projekt"}</span>
-                  </p>
-                  <p className="text-sm text-dark-slate/80 line-clamp-2">{htmlToPreviewText(m.body)}</p>
+                  <p className="text-sm font-medium text-dark-slate line-clamp-1">{e.primary}</p>
+                  <p className="text-xs text-dark-slate/50 mt-0.5">{e.secondary}</p>
                 </div>
-                <span className="text-[11px] text-dark-slate/40 flex-shrink-0">{timeAgo(m.createdAt)}</span>
+                <span className="text-[11px] text-dark-slate/40 flex-shrink-0">{timeAgo(e.createdAt)}</span>
               </Link>
             ))}
           </div>
