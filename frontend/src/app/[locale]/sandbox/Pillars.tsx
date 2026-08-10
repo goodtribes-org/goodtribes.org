@@ -74,7 +74,7 @@ export default function Pillars({
           {PILLARS.map((p) => (
             <div
               key={p.key}
-              className="bg-white border border-amber-200 rounded-xl overflow-hidden shadow-sm"
+              className="bg-white border border-[#ecd9a8] rounded-[14px] overflow-hidden shadow-[0_10px_24px_-14px_rgba(37,68,65,0.18)]"
               style={
                 p.key === "levaGott"
                   ? { transform: "translateX(-10px)" }
