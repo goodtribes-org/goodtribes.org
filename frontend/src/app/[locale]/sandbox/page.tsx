@@ -216,7 +216,7 @@ export default async function SandboxPage({
           {t("explainerLeanCanvasLink")}
         </Link>{" "}
         {t("explainerOr")}{" "}
-        <Link href="/whiteboard/new" className="text-coral hover:underline">
+        <Link href="/whiteboard" className="text-coral hover:underline">
           {t("explainerWhiteboardLink")}
         </Link>{" "}
         {t("explainerSuffix")}

@@ -20,9 +20,11 @@ type CanvasSaveResult =
   | { ok: false; conflict: true; latest: { documentState: Prisma.JsonValue; version: number } }
   | { ok: false; conflict: false; error: string };
 
-// Optimistic locking, same protocol as sprints/[sprintId]/actions.ts's
-// autosaveCanvas — mainly guards against the same owner having two tabs
-// open, since there are no other collaborators on a project-less draft.
+// Open by design, not just the creator — any logged-in user can draw on
+// any not-yet-promoted draft, same as anyone can post in a project-less
+// Idéverkstaden thread. Optimistic locking (same protocol as
+// sprints/[sprintId]/actions.ts's autosaveCanvas) now also covers real
+// concurrent editors, not just the same owner's two tabs.
 export async function autosaveWhiteboardDraft(
   draftId: string,
   documentState: Prisma.InputJsonValue,
@@ -33,9 +35,9 @@ export async function autosaveWhiteboardDraft(
 
   const draft = await prisma.whiteboardDraft.findUnique({
     where: { id: draftId },
-    select: { ownerId: true, promotedToProjectSlug: true },
+    select: { promotedToProjectSlug: true },
   });
-  if (!draft || draft.ownerId !== session.user.id) return { ok: false, conflict: false, error: "Not authorized" };
+  if (!draft) return { ok: false, conflict: false, error: "Not found" };
   if (draft.promotedToProjectSlug) return { ok: false, conflict: false, error: "Already promoted" };
 
   const result = await prisma.whiteboardDraft.updateMany({
@@ -56,6 +58,9 @@ export async function autosaveWhiteboardDraft(
   return { ok: true, version: expectedVersion + 1 };
 }
 
+// Open to any logged-in user, not just the creator — whoever promotes it
+// becomes the new project's owner, same as promoting an Idéverkstaden
+// thread doesn't require being its original creator.
 export async function promoteWhiteboardDraftToProject(
   draftId: string,
   formData: FormData
@@ -64,7 +69,7 @@ export async function promoteWhiteboardDraftToProject(
   if (!session?.user?.id) return { error: "Not logged in" };
 
   const draft = await prisma.whiteboardDraft.findUnique({ where: { id: draftId } });
-  if (!draft || draft.ownerId !== session.user.id) return { error: "Not found" };
+  if (!draft) return { error: "Not found" };
   if (draft.promotedToProjectSlug) return { slug: draft.promotedToProjectSlug };
 
   const title = (formData.get("title") as string | null)?.trim();

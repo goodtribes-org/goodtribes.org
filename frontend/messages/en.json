@@ -408,7 +408,8 @@
     "newCta": "Create whiteboard draft",
     "backToSandbox": "← Back to Sandbox",
     "draftHeading": "Whiteboard — draft",
-    "draftSubtitle": "A free draft, visible only to you. No one will see it until you turn it into a project.",
+    "draftSubtitle": "Open draft, started by {name} — anyone logged in can draw here and turn it into a project.",
+    "unknownAuthor": "Unknown",
     "alreadyPromotedNote": "This whiteboard has been turned into a real project and can no longer be edited here.",
     "viewLiveProject": "View {title} →",
     "promoteButton": "Start a project from this",
@@ -416,7 +417,16 @@
     "promoteConfirm": "Create project",
     "promoting": "Creating…",
     "promoteCancel": "Cancel",
-    "synced": "Saved."
+    "synced": "Saved.",
+    "listHeading": "Whiteboards",
+    "listSubtitle": "Open drawing spaces — try an idea freely, together with others. Anyone logged in can draw and turn a draft into a project.",
+    "listEmptyState": "No whiteboards yet.",
+    "listStartFirst": "Start the first one →",
+    "listStartedBy": "Started by {name}",
+    "listTimeJustNow": "just now",
+    "listTimeMinutesAgo": "{minutes}m ago",
+    "listTimeHoursAgo": "{hours}h ago",
+    "listTimeDaysAgo": "{days}d ago"
   },
   "AIReviewActions": {
     "genericError": "Something went wrong.",

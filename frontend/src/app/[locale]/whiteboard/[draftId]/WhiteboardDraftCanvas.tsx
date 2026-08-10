@@ -92,23 +92,18 @@ export default function WhiteboardDraftCanvas({
   }
 
   return (
-    <div>
+    <div className="relative" style={{ height: "calc(100vh - 146px)" }}>
       {syncedNotice && (
-        <div className="mb-2 text-xs text-seagrass bg-seagrass/10 border border-seagrass/30 rounded-md px-3 py-1.5 inline-block">
+        <div className="absolute top-2 left-2 z-10 text-xs text-seagrass bg-seagrass/10 border border-seagrass/30 rounded-md px-3 py-1.5">
           {t("synced")}
         </div>
       )}
-      <div
-        style={{ height: "calc(100vh - 260px)" }}
-        className="border border-amber-400 rounded-xl min-h-[420px]"
-      >
-        <Excalidraw
-          excalidrawAPI={(api) => { apiRef.current = api; }}
-          initialData={{ elements: initial?.elements ?? [] }}
-          viewModeEnabled={!canEdit}
-          onChange={handleChange}
-        />
-      </div>
+      <Excalidraw
+        excalidrawAPI={(api) => { apiRef.current = api; }}
+        initialData={{ elements: initial?.elements ?? [] }}
+        viewModeEnabled={!canEdit}
+        onChange={handleChange}
+      />
     </div>
   );
 }

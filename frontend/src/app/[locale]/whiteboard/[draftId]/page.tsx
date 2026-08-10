@@ -25,20 +25,29 @@ export default async function WhiteboardDraftPage({
 
   const draft = await prisma.whiteboardDraft.findUnique({
     where: { id: draftId },
-    include: { promotedToProject: { select: { slug: true, title: true } } },
+    include: { promotedToProject: { select: { slug: true, title: true } }, owner: { select: { name: true } } },
   });
-  if (!draft || draft.ownerId !== session.user.id) notFound();
+  // Open by design — anyone logged in can view and draw on any
+  // not-yet-promoted whiteboard draft, same as Idéverkstaden's project-less
+  // threads. No ownerId check here; see actions.ts for the same openness on
+  // the write side.
+  if (!draft) notFound();
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-        <Link href="/sandbox" className="text-sm text-dark-slate/50 hover:text-dark-slate">
-          {t("backToSandbox")}
-        </Link>
+    <div className="relative -mt-8 -mb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+      <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-b border-amber-200 bg-amber-50/40 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0">
+          <Link href="/sandbox" className="text-sm text-dark-slate/50 hover:text-dark-slate flex-shrink-0">
+            {t("backToSandbox")}
+          </Link>
+          <p className="text-xs text-dark-slate/40 truncate hidden sm:block">
+            {draft.promotedToProject ? t("alreadyPromotedNote") : t("draftSubtitle", { name: draft.owner.name ?? t("unknownAuthor") })}
+          </p>
+        </div>
         {draft.promotedToProject ? (
           <Link
             href={`/projects/${draft.promotedToProject.slug}/sprints`}
-            className="px-3 py-1.5 text-xs font-medium rounded bg-coral text-white hover:bg-watermelon transition-colors"
+            className="px-3 py-1.5 text-xs font-medium rounded bg-coral text-white hover:bg-watermelon transition-colors flex-shrink-0"
           >
             {t("viewLiveProject", { title: draft.promotedToProject.title })}
           </Link>
@@ -46,11 +55,6 @@ export default async function WhiteboardDraftPage({
           <PromoteWhiteboardForm draftId={draft.id} />
         )}
       </div>
-
-      <h1 className="text-xl font-bold text-dark-slate mb-1">{t("draftHeading")}</h1>
-      <p className="text-sm text-dark-slate/50 mb-4">
-        {draft.promotedToProject ? t("alreadyPromotedNote") : t("draftSubtitle")}
-      </p>
 
       <WhiteboardDraftCanvas
         draftId={draft.id}

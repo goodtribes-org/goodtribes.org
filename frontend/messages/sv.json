@@ -408,7 +408,8 @@
     "newCta": "Skapa whiteboard-utkast",
     "backToSandbox": "← Tillbaka till Sandbox",
     "draftHeading": "Whiteboard — utkast",
-    "draftSubtitle": "Fritt utkast, bara synligt för dig. Ingen kommer att se det förrän du gör det till ett projekt.",
+    "draftSubtitle": "Öppet utkast, startat av {name} — vem som helst inloggad kan rita här och göra det till ett projekt.",
+    "unknownAuthor": "Okänd",
     "alreadyPromotedNote": "Den här whiteboarden är omvandlad till ett riktigt projekt och kan inte längre redigeras här.",
     "viewLiveProject": "Visa {title} →",
     "promoteButton": "Starta projekt av det här",
@@ -416,7 +417,16 @@
     "promoteConfirm": "Skapa projekt",
     "promoting": "Skapar…",
     "promoteCancel": "Avbryt",
-    "synced": "Sparat."
+    "synced": "Sparat.",
+    "listHeading": "Whiteboards",
+    "listSubtitle": "Öppna ritytor — testa en idé fritt, tillsammans med andra. Vem som helst inloggad kan rita och göra ett utkast till ett projekt.",
+    "listEmptyState": "Inga whiteboards ännu.",
+    "listStartFirst": "Starta den första →",
+    "listStartedBy": "Startad av {name}",
+    "listTimeJustNow": "just nu",
+    "listTimeMinutesAgo": "{minutes} min sedan",
+    "listTimeHoursAgo": "{hours} tim sedan",
+    "listTimeDaysAgo": "{days} dagar sedan"
   },
   "AIReviewActions": {
     "genericError": "Något gick fel.",
