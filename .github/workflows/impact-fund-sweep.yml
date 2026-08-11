@@ -12,6 +12,6 @@ jobs:
     steps:
       - name: Trigger sweep endpoint
         run: |
-          curl -sf -X POST "${{ vars.APP_URL }}/api/cron/impact-fund-sweep" \
+          curl -sf --max-time 120 -X POST "${{ vars.APP_URL }}/api/cron/impact-fund-sweep" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json"

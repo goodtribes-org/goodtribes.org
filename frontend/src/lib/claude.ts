@@ -1,16 +1,18 @@
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY ?? "";
+import { isAiEnabled } from "@/lib/anthropic";
 
+// Raw fetch rather than the SDK client (see @/lib/anthropic) since this only
+// ever makes this one simple call — still shares the same enablement check.
 export async function suggestSdgGoals(
   text: string
 ): Promise<{ goals: number[]; reasoning: string } | null> {
-  if (!ANTHROPIC_API_KEY || text.trim().length < 20) return null;
+  if (!isAiEnabled() || text.trim().length < 20) return null;
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY,
+        "x-api-key": process.env.ANTHROPIC_API_KEY!,
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({

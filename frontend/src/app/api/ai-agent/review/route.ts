@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
-import Anthropic from "@anthropic-ai/sdk";
+import { getAnthropicClient, isAiEnabled } from "@/lib/anthropic";
 import { GITHUB_CARD_LOCKED_MESSAGE } from "@/lib/githubSync";
 
 
@@ -21,7 +21,7 @@ Leverera alltid ett strukturerat svar i markdown-format.`;
 }
 
 export async function POST(req: NextRequest) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!isAiEnabled()) {
     return NextResponse.json({ error: "AI not configured" }, { status: 500 });
   }
 
@@ -144,7 +144,8 @@ export async function POST(req: NextRequest) {
         ? `${baseUserMessage}\n\nPrevious attempt feedback: ${feedback}`
         : baseUserMessage;
 
-      const client = new Anthropic();
+      // isAiEnabled() was already checked above, so this can't come back null.
+      const client = (await getAnthropicClient())!;
       const message = await client.messages.create({
         model: "claude-sonnet-4-6",
         max_tokens: 2000,

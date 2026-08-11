@@ -5,6 +5,6 @@
 // src/app/api/cron/sandbox-seed/route.ts) to summarize a phase's
 // contributions/documentState into a short recap. Never call any AI API
 // from here until that's actually wired up.
-export async function generatePhaseSummary(sprintPhaseId: string): Promise<string | null> {
+export async function generatePhaseSummary(_sprintPhaseId: string): Promise<string | null> {
   return null;
 }

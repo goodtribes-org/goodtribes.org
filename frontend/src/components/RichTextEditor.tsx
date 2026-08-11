@@ -125,7 +125,6 @@ export default function RichTextEditor({
     // mentionables presence (not contents) decides whether the extension is
     // wired up at all; the live list is read via mentionablesRef instead so
     // it doesn't force the editor to be recreated when it changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [!!mentionables]);
 
   const isPillMode = !!collapsibleToolbar && !showToolbar;

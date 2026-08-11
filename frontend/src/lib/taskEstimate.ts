@@ -1,12 +1,12 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { getAnthropicClient } from "@/lib/anthropic";
 
 export async function estimateTask(
   title: string,
   description: string | null,
 ): Promise<{ hours: number; confidence: "low" | "medium" | "high"; reasoning: string } | null> {
-  if (!process.env.ANTHROPIC_API_KEY) return null;
+  const client = await getAnthropicClient();
+  if (!client) return null;
   try {
-    const client = new Anthropic();
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 200,

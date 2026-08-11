@@ -28,7 +28,7 @@ spec:
                 - /bin/sh
                 - -c
                 - |
-                  curl -sfS -X POST \
+                  curl -sfS --max-time 240 -X POST \
                     -H "Authorization: Bearer $CRON_SECRET" \
                     -H "Content-Type: application/json" \
                     http://goodtribes-frontend:{{ .Values.frontend.service.port }}/api/cron/github-sync

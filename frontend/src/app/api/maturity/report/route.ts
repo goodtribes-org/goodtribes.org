@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { getAnthropicClient } from "@/lib/anthropic";
 
 
 export async function POST(req: Request) {
@@ -37,7 +38,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  const client = await getAnthropicClient();
+  if (!client) {
     return NextResponse.json({ error: "AI not configured" }, { status: 500 });
   }
 
@@ -48,9 +50,6 @@ export async function POST(req: Request) {
         .map((m) => `${m.currentValue} ${m.unit} ${m.label}`)
         .join(", ")
     : "Inga mätvärden registrerade";
-
-  const Anthropic = (await import("@anthropic-ai/sdk")).default;
-  const client = new Anthropic();
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-6",

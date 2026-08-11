@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { computeRadialLayout, toReactFlowEdges, type RawMindMapNode, type RawMindMapEdge } from "@/lib/mindmapLayout";
+import { getAnthropicClient } from "@/lib/anthropic";
 import type { Prisma } from "@prisma/client";
 
 function stripHtml(body: string): string {
@@ -66,12 +67,10 @@ export async function POST(req: Request) {
       .join("\n");
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  const client = await getAnthropicClient();
+  if (!client) {
     return NextResponse.json({ error: "AI ej konfigurerad" }, { status: 500 });
   }
-
-  const Anthropic = (await import("@anthropic-ai/sdk")).default;
-  const client = new Anthropic();
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-6",

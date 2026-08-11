@@ -9,10 +9,7 @@ import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { JoinButton, JoinRequestsPanel } from "./JoinSection";
-import InviteForm from "./(workspace)/invite/InviteForm";
-import TeamManager from "./TeamManager";
 import FlagContentButton from "@/components/FlagContentButton";
-import KudosButton from "@/components/KudosButton";
 import { SdgIcon } from "@/components/SdgIcon";
 import Tooltip from "@/components/Tooltip";
 import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
@@ -38,45 +35,6 @@ const FEED_PAGE_SIZE = 20;
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").trim();
-}
-
-function MemberAvatar({
-  name,
-  image,
-  href,
-}: {
-  name: string;
-  image?: string | null;
-  href?: string;
-}) {
-  const initials = (name ?? "?")
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-  const inner = (
-    <div className="flex flex-col items-center gap-1">
-      <div className="w-12 h-12 rounded-full bg-dry-sage flex items-center justify-center text-sm font-semibold text-dark-slate overflow-hidden relative">
-        {image ? (
-          <Image src={image} alt={name} fill className="object-cover" unoptimized />
-        ) : (
-          initials
-        )}
-      </div>
-      <span className="text-xs text-dark-slate/60 text-center leading-tight">
-        {(name ?? "?").split(" ")[0]}
-      </span>
-    </div>
-  );
-  if (href) {
-    return (
-      <Link href={href} className="hover:opacity-75 transition-opacity" title={name}>
-        {inner}
-      </Link>
-    );
-  }
-  return inner;
 }
 
 function relativeTime(date: Date, t: ReturnType<typeof useTranslations>): string {

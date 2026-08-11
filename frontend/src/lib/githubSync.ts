@@ -131,10 +131,17 @@ export async function syncProjectBoard(board: ProjectGithubBoard): Promise<Board
     return value;
   };
 
-  let synced = 0;
   const seen = new Set<string>();
 
-  for (const item of fetched.items) {
+  // Order assignment (takeOrder) must happen synchronously in board order —
+  // done here, up front, before any of the actual writes fire. The writes
+  // themselves then run concurrently (Promise.allSettled, not a
+  // $transaction([...]) array) so one bad item's write still only fails
+  // that item, exactly like the previous sequential try/catch loop, just
+  // without paying for N sequential round-trips to Postgres. Boards are
+  // small compared to a repo's issue history (see the doc comment on
+  // syncProjectBoard), so no concurrency cap is needed here.
+  const writes = fetched.items.map((item) => {
     seen.add(item.itemId);
     const column = columnForItem(item, overrides);
     const prior = byItemId.get(item.itemId);
@@ -164,19 +171,15 @@ export async function syncProjectBoard(board: ProjectGithubBoard): Promise<Board
       githubUpdatedAt: new Date(item.updatedAt),
     };
 
-    try {
-      if (prior) {
-        await prisma.kanbanCard.update({ where: { id: prior.id }, data });
-      } else {
-        await prisma.kanbanCard.create({
+    return prior
+      ? prisma.kanbanCard.update({ where: { id: prior.id }, data })
+      : prisma.kanbanCard.create({
           data: { ...data, projectSlug: board.projectSlug, createdById: project.ownerId },
         });
-      }
-      synced++;
-    } catch {
-      // Skip the individual item; the rest of the board still syncs.
-    }
-  }
+  });
+
+  const writeResults = await Promise.allSettled(writes);
+  const synced = writeResults.filter((r) => r.status === "fulfilled").length;
 
   // Every pass sees the whole board, so anything missing was removed from it,
   // deleted, or archived. Skipped when the item list was truncated, and only
@@ -213,23 +216,58 @@ export async function syncProjectBoard(board: ProjectGithubBoard): Promise<Board
 }
 
 /** Sync every enabled board mapping. Used by the cron endpoint. */
+const SYNC_LOCK_KEY = "lock:github-sync";
+
+/**
+ * Guards against two syncAllProjectBoards() runs overlapping — a real risk
+ * since the cron fires every 5 minutes but a slow pass over many/large
+ * boards could take longer than that. The lock's TTL matches
+ * MIN_SYNC_INTERVAL_MS so a crashed run (which would otherwise never call
+ * the release below) can't wedge every future run indefinitely.
+ */
+async function withSyncLock<T>(fn: () => Promise<T>): Promise<T | null> {
+  // Imported lazily so pulling in this module's pure helpers (columnForItem,
+  // assertNotGithubCard, etc. — used from plain kanban actions with nothing
+  // to do with syncing) never opens a Redis connection as a side effect.
+  const { redisPub } = await import("@/lib/redis");
+  const acquired = await redisPub.set(
+    SYNC_LOCK_KEY,
+    "1",
+    "PX",
+    MIN_SYNC_INTERVAL_MS,
+    "NX"
+  );
+  if (!acquired) return null;
+  try {
+    return await fn();
+  } finally {
+    await redisPub.del(SYNC_LOCK_KEY).catch(() => {});
+  }
+}
+
 export async function syncAllProjectBoards(): Promise<{
   boards: number;
   results: BoardSyncResult[];
 }> {
-  const cutoff = new Date(Date.now() - MIN_SYNC_INTERVAL_MS);
-  const boards = await prisma.projectGithubBoard.findMany({
-    where: {
-      enabled: true,
-      OR: [{ lastSyncedAt: null }, { lastSyncedAt: { lt: cutoff } }],
-    },
+  const result = await withSyncLock(async () => {
+    const cutoff = new Date(Date.now() - MIN_SYNC_INTERVAL_MS);
+    const boards = await prisma.projectGithubBoard.findMany({
+      where: {
+        enabled: true,
+        OR: [{ lastSyncedAt: null }, { lastSyncedAt: { lt: cutoff } }],
+      },
+    });
+
+    const results: BoardSyncResult[] = [];
+    for (const board of boards) {
+      results.push(await syncProjectBoard(board));
+    }
+    return { boards: boards.length, results };
   });
 
-  const results: BoardSyncResult[] = [];
-  for (const board of boards) {
-    results.push(await syncProjectBoard(board));
-  }
-  return { boards: boards.length, results };
+  // Another run already holds the lock — report zero rather than blocking,
+  // since the caller (the cron route) doesn't need to wait for it.
+  return result ?? { boards: 0, results: [] };
 }
 
 /**

@@ -13,7 +13,6 @@ import FlagContentButton from "@/components/FlagContentButton";
 import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_LABELS_EN } from "@/lib/sdg";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
-import ShareButton from "@/components/ShareButton";
 import IdeaRevisions from "./IdeaRevisions";
 import IdeaPromoteButton from "./IdeaPromoteButton";
 import { resolveIdeaContent } from "@/lib/contentTranslation";

@@ -1,22 +1,15 @@
 "use server";
 
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
-import { requireSiteAdmin } from "@/lib/authz";
+import { requireAdminSession } from "@/lib/authz";
 import { reviewEntityContentFlag, type EntityFlagOutcome } from "@/lib/entityFlagReview";
 
-
-async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Forbidden");
-  return requireSiteAdmin(session.user.id);
-}
 
 type Outcome = "dismissed" | "warned" | "removed";
 
 export async function reviewOrgFlag(flagId: string, outcome: Outcome, note?: string) {
-  const admin = await requireAdmin();
+  const adminId = await requireAdminSession();
 
   const flag = await prisma.organisationFlag.findUnique({
     where: { id: flagId },
@@ -29,7 +22,7 @@ export async function reviewOrgFlag(flagId: string, outcome: Outcome, note?: str
     where: { id: flagId },
     data: {
       status: outcome === "dismissed" ? "dismissed" : "resolved",
-      reviewedById: admin.id,
+      reviewedById: adminId,
       decisionNote: note ?? null,
     },
   });
@@ -37,7 +30,7 @@ export async function reviewOrgFlag(flagId: string, outcome: Outcome, note?: str
   await prisma.organisationEthicsReview.create({
     data: {
       organisationId: flag.organisationId,
-      reviewerId: admin.id,
+      reviewerId: adminId,
       organisationFlagId: flagId,
       outcome,
       note: note ?? null,
@@ -59,7 +52,7 @@ export async function reviewOrgFlag(flagId: string, outcome: Outcome, note?: str
 // Reviews an Organisation ContentFlag (the unified flagging pipeline) — the
 // counterpart to reviewOrgFlag above for legacy OrganisationFlag rows.
 export async function reviewOrgContentFlag(contentFlagId: string, outcome: EntityFlagOutcome, note?: string) {
-  const admin = await requireAdmin();
+  const adminId = await requireAdminSession();
 
   const flag = await prisma.contentFlag.findUnique({
     where: { id: contentFlagId },
@@ -67,13 +60,13 @@ export async function reviewOrgContentFlag(contentFlagId: string, outcome: Entit
   });
   if (!flag || flag.targetType !== "Organisation") throw new Error("Flag not found");
 
-  await reviewEntityContentFlag(flag.id, "Organisation", flag.targetId, admin.id, outcome, note);
+  await reviewEntityContentFlag(flag.id, "Organisation", flag.targetId, adminId, outcome, note);
 
   revalidatePath("/site-admin/organisations");
 }
 
 export async function setOrganisationVerified(organisationId: string, verified: boolean) {
-  await requireAdmin();
+  await requireAdminSession();
 
   await prisma.organisation.update({
     where: { id: organisationId },

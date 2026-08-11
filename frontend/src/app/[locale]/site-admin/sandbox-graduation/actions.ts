@@ -1,18 +1,10 @@
 "use server";
 
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { requireSiteAdmin } from "@/lib/authz";
+import { requireAdminSession } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { indexDocuments } from "@/lib/meili";
-
-async function requireAdmin(): Promise<string> {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Forbidden");
-  await requireSiteAdmin(session.user.id);
-  return session.user.id;
-}
 
 // The Foundation's decision on a founder's application to graduate a
 // project out of Sandbox. For commercial projects this also assigns the
@@ -20,7 +12,7 @@ async function requireAdmin(): Promise<string> {
 // same action — landing under the paraply-AB and becoming GoodTribes-
 // approved happen together, not as separate steps (see PRD 4c).
 export async function approveSandboxGraduation(requestId: string, umbrellaEntityId?: string) {
-  const adminId = await requireAdmin();
+  const adminId = await requireAdminSession();
 
   const request = await prisma.sandboxGraduationRequest.findUnique({
     where: { id: requestId },
@@ -65,7 +57,7 @@ export async function approveSandboxGraduation(requestId: string, umbrellaEntity
 }
 
 export async function rejectSandboxGraduation(requestId: string, note: string) {
-  const adminId = await requireAdmin();
+  const adminId = await requireAdminSession();
 
   const request = await prisma.sandboxGraduationRequest.findUnique({ where: { id: requestId } });
   if (!request || request.status !== "pending") throw new Error("Request not ready to reject");

@@ -141,7 +141,6 @@ export default function KanbanBoard({
     setIsNewCard(true);
   }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (requestAddColumn) {
       openNewCard(requestAddColumn);
@@ -149,7 +148,6 @@ export default function KanbanBoard({
     }
   }, [requestAddColumn]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!requestOpenCardId) return;
     const found = Object.values(columns).flat().find((c) => c.id === requestOpenCardId);
@@ -254,7 +252,6 @@ export default function KanbanBoard({
       if (hasAny) lanes[laneKey] = laneCols;
     }
     return lanes;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [swimlanesOn, filteredColumns]);
 
   async function handleRunAI(cardId: string, agentType: string, additionalContext: string) {

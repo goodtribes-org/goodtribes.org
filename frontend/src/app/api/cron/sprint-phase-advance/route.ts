@@ -26,9 +26,19 @@ export async function POST(request: Request) {
     select: { id: true },
   });
 
+  // Isolated per phase: one bad row shouldn't abort the whole sweep and
+  // leave every phase after it stuck open until the next run.
+  let advanced = 0;
+  const failed: string[] = [];
   for (const phase of expired) {
-    await closeAndAdvancePhase(phase.id);
+    try {
+      await closeAndAdvancePhase(phase.id);
+      advanced++;
+    } catch (err) {
+      failed.push(phase.id);
+      console.error(`sprint-phase-advance: failed to advance phase ${phase.id}`, err);
+    }
   }
 
-  return NextResponse.json({ ok: true, advanced: expired.length });
+  return NextResponse.json({ ok: true, advanced, failed });
 }

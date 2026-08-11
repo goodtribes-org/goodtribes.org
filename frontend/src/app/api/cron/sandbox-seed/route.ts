@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { createProjectRecord } from "@/lib/createProject";
+import { getAnthropicClient } from "@/lib/anthropic";
 
 const SYSTEM_PROMPT = `Du är en kreativ idégenerator för GoodTribes, en plattform som kopplar
 volontärer och organisationer till projekt som bidrar till FN:s Agenda 2030.
@@ -31,14 +32,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  const client = await getAnthropicClient();
+  if (!client) {
     return NextResponse.json({ ok: true, seeded: 0, note: "AI ej konfigurerad" });
   }
 
   let threads: { title: string; problemStatement: string; sdgGoals: number[] }[] = [];
   try {
-    const Anthropic = (await import("@anthropic-ai/sdk")).default;
-    const client = new Anthropic();
     const message = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 1024,

@@ -51,48 +51,54 @@ export async function POST(request: NextRequest) {
   const platformFee = amount * (campaign.platformFee / 100);
   const platformFeeAmount = Math.round(platformFee * 100);
 
-  const checkoutSession = await stripe.checkout.sessions.create({
-    mode: "payment",
-    payment_method_types: buildPaymentMethods(campaign.currency),
-    line_items: [
-      {
-        price_data: {
-          currency: campaign.currency.toLowerCase(),
-          product_data: {
-            name: campaign.title,
-            description:
-              "Finansiering av " + campaign.project.title + " via GoodTribes",
+  let checkoutSession: Stripe.Checkout.Session;
+  try {
+    checkoutSession = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: buildPaymentMethods(campaign.currency),
+      line_items: [
+        {
+          price_data: {
+            currency: campaign.currency.toLowerCase(),
+            product_data: {
+              name: campaign.title,
+              description:
+                "Finansiering av " + campaign.project.title + " via GoodTribes",
+            },
+            unit_amount: amount * 100,
           },
-          unit_amount: amount * 100,
+          quantity: 1,
         },
-        quantity: 1,
+      ],
+      payment_intent_data: {
+        application_fee_amount: platformFeeAmount,
+        transfer_data: { destination: campaign.stripeAccountId },
       },
-    ],
-    payment_intent_data: {
-      application_fee_amount: platformFeeAmount,
-      transfer_data: { destination: campaign.stripeAccountId },
-    },
-    success_url:
-      process.env.NEXTAUTH_URL +
-      "/projects/" +
-      campaign.project.slug +
-      "/funding?success=1",
-    cancel_url:
-      process.env.NEXTAUTH_URL +
-      "/projects/" +
-      campaign.project.slug +
-      "/funding?cancelled=1",
-    metadata: {
-      campaignId,
-      userId: session.user.id,
-      amount: amount.toString(),
-      rewardTierId: rewardTierId ?? "",
-      message: message ?? "",
-      platformFeeAmount: platformFeeAmount.toString(),
-      campaignType: campaign.campaignType,
-      tokenExchangeRate: campaign.tokenExchangeRate?.toString() ?? "",
-    },
-  });
+      success_url:
+        process.env.NEXTAUTH_URL +
+        "/projects/" +
+        campaign.project.slug +
+        "/funding?success=1",
+      cancel_url:
+        process.env.NEXTAUTH_URL +
+        "/projects/" +
+        campaign.project.slug +
+        "/funding?cancelled=1",
+      metadata: {
+        campaignId,
+        userId: session.user.id,
+        amount: amount.toString(),
+        rewardTierId: rewardTierId ?? "",
+        message: message ?? "",
+        platformFeeAmount: platformFeeAmount.toString(),
+        campaignType: campaign.campaignType,
+        tokenExchangeRate: campaign.tokenExchangeRate?.toString() ?? "",
+      },
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Okänt fel";
+    return NextResponse.json({ error: `Kunde inte starta betalning: ${message}` }, { status: 502 });
+  }
 
   return NextResponse.json({ sessionId: checkoutSession.id, url: checkoutSession.url });
 }

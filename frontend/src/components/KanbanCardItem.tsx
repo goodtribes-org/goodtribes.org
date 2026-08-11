@@ -33,7 +33,7 @@ function KanbanCardItemImpl({
   isLoggedIn,
   isMember,
   isLead,
-  onDelete,
+  onDelete: _onDelete,
   onOpenCard,
   onAddCard,
   runningAI,
@@ -102,17 +102,6 @@ function KanbanCardItemImpl({
     const text = htmlToPreviewText(card.description);
     return text.length > 200 ? `${text.slice(0, 200)}…` : text;
   })();
-
-  function roundHalf(n: number) {
-    return Math.round(n * 2) / 2;
-  }
-
-  const estimateBadgeColor =
-    card.estimate?.aiConfidence === "high"
-      ? "bg-green-100 text-green-700"
-      : card.estimate?.aiConfidence === "medium"
-      ? "bg-yellow-100 text-yellow-700"
-      : "bg-gray-100 text-gray-500";
 
   const latestAiRun = card.aiTaskRuns?.[0];
   const aiStatus = latestAiRun?.status;

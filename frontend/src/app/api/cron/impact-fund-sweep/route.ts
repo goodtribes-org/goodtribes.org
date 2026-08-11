@@ -26,24 +26,32 @@ export async function POST(request: Request) {
     where: { processedAt: null, allocationDeadline: { lt: new Date() } },
   });
 
+  // Isolated per row: one bad allocation shouldn't abort the whole sweep and
+  // silently leave every allocation after it unprocessed until the next run.
   let defaulted = 0;
+  const failed: string[] = [];
   for (const allocation of expired) {
-    await prisma.$transaction([
-      prisma.personalProfitAllocation.update({
-        where: { id: allocation.id },
-        data: { processedAt: new Date() },
-      }),
-      prisma.impactFundLedger.create({
-        data: {
-          direction: "in",
-          amountSek: allocation.amountAvailableSek,
-          relatedAllocationId: allocation.id,
-          note: "Automatiskt default — inget val gjordes inom tidsramen (PRD 4a, Steg 2)",
-        },
-      }),
-    ]);
-    defaulted++;
+    try {
+      await prisma.$transaction([
+        prisma.personalProfitAllocation.update({
+          where: { id: allocation.id },
+          data: { processedAt: new Date() },
+        }),
+        prisma.impactFundLedger.create({
+          data: {
+            direction: "in",
+            amountSek: allocation.amountAvailableSek,
+            relatedAllocationId: allocation.id,
+            note: "Automatiskt default — inget val gjordes inom tidsramen (PRD 4a, Steg 2)",
+          },
+        }),
+      ]);
+      defaulted++;
+    } catch (err) {
+      failed.push(allocation.id);
+      console.error(`impact-fund-sweep: failed to process allocation ${allocation.id}`, err);
+    }
   }
 
-  return NextResponse.json({ ok: true, defaulted });
+  return NextResponse.json({ ok: true, defaulted, failed });
 }
