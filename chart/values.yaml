@@ -61,6 +61,18 @@ postgres:
   # Sensitive vars from goodtribes-secret:
   #   POSTGRES_PASSWORD
 
+# Nightly pg_dump uploaded to the private goodtribes-backups MinIO bucket
+# (created by minio-init-job.yaml), with old dumps pruned past retentionDays.
+# Reuses POSTGRES_PASSWORD and MINIO_ROOT_USER/MINIO_ROOT_PASSWORD, both
+# already in goodtribes-secret for the deployments above — no new secret
+# values needed. This is the only backup mechanism for Postgres; there was
+# none before (see CLAUDE.md's 2026-07-15 incident note).
+postgresBackup:
+  enabled: true
+  schedule: "0 3 * * *"
+  retentionDays: 14
+  bucket: goodtribes-backups
+
 meilisearch:
   replicaCount: 1
   image:

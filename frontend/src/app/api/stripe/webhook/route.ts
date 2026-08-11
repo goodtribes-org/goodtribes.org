@@ -15,28 +15,26 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    // Never fall back to trusting an unsigned body — that would let anyone
+    // POST a fake checkout.session.completed and mint tokens / pledges.
+    return NextResponse.json(
+      { error: "Stripe webhook ej konfigurerat" },
+      { status: 503 }
+    );
+  }
+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const rawBody = await request.text();
   const signature = request.headers.get("stripe-signature") ?? "";
 
   let event: Stripe.Event;
-
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-  if (webhookSecret) {
-    try {
-      event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Ogiltig signatur";
-      return NextResponse.json({ error: message }, { status: 400 });
-    }
-  } else {
-    // Development: skip signature verification
-    try {
-      event = JSON.parse(rawBody) as Stripe.Event;
-    } catch {
-      return NextResponse.json({ error: "Ogiltig JSON" }, { status: 400 });
-    }
+  try {
+    event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Ogiltig signatur";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 
   if (event.type === "account.updated") {
