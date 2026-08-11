@@ -9,7 +9,13 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # Docker Publish only pushes the image to ghcr.io when its own trigger
+    # wasn't a pull_request (docker-image.yml's `push: ${{ github.event_name
+    # != 'pull_request' }}`). Without this guard, a successful PR build also
+    # fires this job, which then commits a manifest pointing at an image tag
+    # that was never pushed — ArgoCD/Flux then tries to pull a nonexistent
+    # tag with no rollback.
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event != 'pull_request' }}
     permissions:
       contents: read
       packages: write

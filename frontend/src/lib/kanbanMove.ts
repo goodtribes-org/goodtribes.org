@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { logActivity } from "@/lib/activity";
 import { publishToKanban } from "@/lib/redis";
-import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { hasProjectRole, isCardClaimant, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { getPriorityTokenValue } from "@/lib/priorityTokens";
 import { mintCardCompletion, reverseCardTokens } from "@/lib/tokens";
 import { createNotification } from "@/lib/notify";
@@ -59,6 +59,14 @@ export async function moveKanbanCard(cardId: string, newColumn: string, userId: 
     where: { slug: card.projectSlug },
     select: { id: true },
   });
+  if (!project) return { error: "Card not found" };
+
+  // Same "real member or claimant of this specific open-to-public card" gate
+  // used everywhere else a card is mutated (see kanban/actions.ts) — without
+  // it, any logged-in user could move (and mint token payouts for) any
+  // project's cards.
+  const allowed = (await isRealMember(project.id, userId)) || isCardClaimant(card, userId);
+  if (!allowed) return { error: "Not authorized" };
 
   const subtasks = await prisma.kanbanCardSubtask.findMany({
     where: { cardId: card.id },
@@ -104,6 +112,28 @@ export async function moveKanbanCard(cardId: string, newColumn: string, userId: 
   // Tokens mint the moment a card actually lands in Done — a lead moving it
   // there (directly, or approving it out of Review) is the approval act.
   if (targetColumn === "DONE" && card.column !== "DONE") {
+    // Overrides reassign who gets paid — validate every target is a real
+    // project member before touching anything, so credit (and the tokens
+    // that follow it) can't be funneled to an arbitrary account.
+    const overrideTargets = new Set<string>();
+    if (overrides?.subtaskCompletedBy) {
+      for (const completedById of Object.values(overrides.subtaskCompletedBy)) {
+        if (completedById) overrideTargets.add(completedById);
+      }
+    }
+    if (overrides?.assigneeId) overrideTargets.add(overrides.assigneeId);
+
+    if (overrideTargets.size > 0) {
+      const members = await prisma.projectMember.findMany({
+        where: { projectId: project.id, userId: { in: Array.from(overrideTargets) }, NOT: { role: "FOLLOWER" } },
+        select: { userId: true },
+      });
+      const memberIds = new Set(members.map((m) => m.userId));
+      if (Array.from(overrideTargets).some((id) => !memberIds.has(id))) {
+        return { error: "Override target is not a project member" };
+      }
+    }
+
     const payees = await prisma.$transaction(async (tx) => {
       const alreadyPaid = await tx.tokenLedger.count({ where: { kanbanCardId: card.id } });
       if (alreadyPaid > 0) return [];

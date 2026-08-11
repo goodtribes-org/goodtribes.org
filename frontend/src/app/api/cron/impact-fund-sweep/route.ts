@@ -5,17 +5,21 @@ import { prisma } from "@/lib/prisma";
 // .github/workflows/impact-fund-sweep.yml). Requires the same
 // Authorization: Bearer <CRON_SECRET> header as /api/cron/digest.
 //
+// A missing CRON_SECRET fails closed rather than skipping the auth check —
+// see /api/cron/github-sync for the reference pattern. This route moves real
+// ledger balances, which makes fail-open especially costly here.
+//
 // PRD 4a Intäktsström 2, Steg 2: if a bidragsgivare doesn't actively choose a
 // target project before their PersonalProfitAllocation's deadline, their
 // share defaults to the Impact-fonden — this sweep is what actually applies
 // that default and logs it as a real ledger row.
 export async function POST(request: Request) {
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const auth = request.headers.get("authorization");
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (!secret) {
+    return NextResponse.json({ error: "CRON_SECRET not configured" }, { status: 503 });
+  }
+  if (request.headers.get("authorization") !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const expired = await prisma.personalProfitAllocation.findMany({

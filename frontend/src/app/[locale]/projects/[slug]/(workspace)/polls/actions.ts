@@ -4,12 +4,21 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { hasProjectRole, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
 
 
 export async function createPoll(formData: FormData, projectSlug: string) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
+
+  const project = await prisma.project.findUnique({
+    where: { slug: projectSlug },
+    select: { id: true },
+  });
+  if (!project) redirect(`/projects/${projectSlug}`);
+  if (!(await isRealMember(project.id, session.user.id))) {
+    redirect(`/projects/${projectSlug}/polls`);
+  }
 
   const title = (formData.get("title") as string | null)?.trim() ?? "";
   const description = (formData.get("description") as string | null)?.trim() || null;
@@ -74,6 +83,15 @@ export async function castVote(
   if (!session?.user?.id) return { error: "Not logged in" };
 
   const userId = session.user.id;
+
+  const project = await prisma.project.findUnique({
+    where: { slug: projectSlug },
+    select: { id: true },
+  });
+  if (!project) return { error: "Project not found" };
+  if (!(await isRealMember(project.id, userId))) {
+    return { error: "Not a project member" };
+  }
 
   const poll = await prisma.poll.findUnique({ where: { id: pollId } });
   if (!poll) return { error: "Poll not found" };

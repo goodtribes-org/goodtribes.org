@@ -6,16 +6,19 @@ import { closeAndAdvancePhase } from "@/lib/sprints";
 // .github/workflows/sprint-phase-advance.yml). Requires the same
 // Authorization: Bearer <CRON_SECRET> header as /api/cron/sandbox-seed.
 //
+// A missing CRON_SECRET fails closed rather than skipping the auth check —
+// see /api/cron/github-sync for the reference pattern.
+//
 // Only ever matches SPREAD_OUT sprints — TOGETHER-paced phases never get a
 // deadlineAt, so they only advance via the lead-triggered advancePhase
 // Server Action instead.
 export async function POST(request: Request) {
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const auth = request.headers.get("authorization");
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (!secret) {
+    return NextResponse.json({ error: "CRON_SECRET not configured" }, { status: 503 });
+  }
+  if (request.headers.get("authorization") !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const expired = await prisma.sprintPhase.findMany({

@@ -5,13 +5,16 @@ import { sendEmail } from "@/lib/email";
 
 // Called weekly by an external scheduler (e.g. GitHub Actions cron or Kubernetes CronJob).
 // Requires Authorization: Bearer <CRON_SECRET> header to prevent unauthorized calls.
+//
+// A missing CRON_SECRET fails closed rather than skipping the auth check —
+// see /api/cron/github-sync for the reference pattern.
 export async function POST(request: Request) {
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const auth = request.headers.get("authorization");
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (!secret) {
+    return NextResponse.json({ error: "CRON_SECRET not configured" }, { status: 503 });
+  }
+  if (request.headers.get("authorization") !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const base = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";

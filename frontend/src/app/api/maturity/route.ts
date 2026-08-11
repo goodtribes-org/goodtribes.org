@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
   let scalingPlan: string | null = existing?.scalingPlan ?? null;
 
-  if (score >= 70 && !scalingPlan) {
+  if (score >= 70 && !scalingPlan && process.env.ANTHROPIC_API_KEY) {
     const client = new Anthropic();
     try {
       const response = await client.messages.create({

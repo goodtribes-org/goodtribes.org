@@ -2,12 +2,25 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { indexDocuments, ensureLocaleFilterable } from "@/lib/meili";
+import { isSiteAdmin } from "@/lib/authz";
 
 
-export async function POST() {
-  const session = await auth();
-  if (!session?.user?.id)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+// Full reindex of every project/idea/member — expensive (unpaginated
+// findMany over all three tables) and previously gated on nothing but being
+// logged in, which meant any authenticated user could trigger it on demand.
+// Restricted to site admins, or an automated caller presenting CRON_SECRET
+// (same bearer-token convention as the /api/cron/* routes) for scheduled
+// resyncs.
+export async function POST(request: Request) {
+  const cronSecret = process.env.CRON_SECRET;
+  const isCronCall = !!cronSecret && request.headers.get("authorization") === `Bearer ${cronSecret}`;
+
+  if (!isCronCall) {
+    const session = await auth();
+    if (!session?.user?.id || !(await isSiteAdmin(session.user.id))) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
 
   const [projects, ideas, users] = await Promise.all([
     prisma.project.findMany({
