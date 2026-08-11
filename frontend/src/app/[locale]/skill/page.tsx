@@ -2,15 +2,22 @@ import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { buildMetadata } from "@/lib/metadata";
+import type { Locale } from "next-intl";
 
+export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "SkillListPage" });
+  return buildMetadata({ locale, path: "/skill", title: t("pageTitle"), description: t("pageDescription") });
+}
 
-export const metadata: Metadata = {
-  title: "Skills — GoodTribes.org",
-  description: "See what skills the GoodTribes community has to offer.",
-};
-
-export default async function SkillListPage() {
-  const session = await auth();
+export default async function SkillListPage({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
+  const [session, t] = await Promise.all([
+    auth(),
+    getTranslations({ locale, namespace: "SkillListPage" }),
+  ]);
   const userId = session?.user?.id;
 
   const skills = await prisma.skill.findMany({
@@ -29,23 +36,21 @@ export default async function SkillListPage() {
     <div>
       <div className="flex items-center justify-between mb-10">
         <div>
-          <h1 className="text-4xl font-bold mb-2">Skills</h1>
-          <p className="text-lg text-dark-slate/70">
-            What can the community's members do? Find the right person for your project.
-          </p>
+          <h1 className="text-4xl font-bold mb-2">{t("heading")}</h1>
+          <p className="text-lg text-dark-slate/70">{t("intro")}</p>
         </div>
         {userId && (
           <Link
             href="/profile"
             className="flex-shrink-0 bg-coral text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-watermelon transition-colors"
           >
-            + Add skill
+            {t("addSkillLink")}
           </Link>
         )}
       </div>
 
       {skills.length === 0 ? (
-        <p className="text-muted-teal italic">No skills yet — add your own on your profile!</p>
+        <p className="text-muted-teal italic">{t("emptyState")}</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {skills.map((skill) => (
@@ -62,7 +67,7 @@ export default async function SkillListPage() {
               </div>
               <p className="text-sm text-dark-slate/70 line-clamp-2 mb-3">{skill.description}</p>
               <p className="text-xs text-muted-teal">
-                {skill._count.users} {skill._count.users === 1 ? "person" : "people"}
+                {t("personCount", { count: skill._count.users })}
               </p>
             </Link>
           ))}

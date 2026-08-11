@@ -7,7 +7,9 @@ metadata:
     {{- include "goodtribes.labels" . | nindent 4 }}
     app.kubernetes.io/name: frontend
 spec:
+  {{- if not .Values.frontend.autoscaling.enabled }}
   replicas: {{ .Values.frontend.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "goodtribes.selectorLabels" "frontend" | nindent 6 }}
@@ -26,6 +28,14 @@ spec:
           imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.frontend.service.port }}
+          {{- if .Values.frontend.autoscaling.enabled }}
+          # Only set when autoscaling is on: the HPA's CPU-utilization target
+          # is meaningless without a request to compute a percentage against,
+          # and setting this unconditionally would silently change every
+          # existing deployment's QoS class even with autoscaling off.
+          resources:
+            {{- toYaml .Values.frontend.resources | nindent 12 }}
+          {{- end }}
           envFrom:
             - secretRef:
                 name: goodtribes-secret

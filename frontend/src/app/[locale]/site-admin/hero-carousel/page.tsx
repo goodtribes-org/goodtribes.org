@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getTranslations } from "next-intl/server";
 import { toHeroSlideData } from "@/lib/heroSlides";
 import HeroCarouselEditor from "@/components/HeroCarouselEditor";
 import HeroHeadingEditor from "@/components/HeroHeadingEditor";
@@ -9,10 +10,11 @@ import type { Locale } from "next-intl";
 export default async function HeroCarouselAdminPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
 
-  const [slides, heroSettings, onboardingSteps] = await Promise.all([
+  const [slides, heroSettings, onboardingSteps, t] = await Promise.all([
     prisma.homeHeroSlide.findMany({ where: { locale }, orderBy: { order: "asc" } }),
     prisma.homeHeroSettings.findUnique({ where: { locale } }),
     prisma.onboardingStep.findMany({ where: { locale }, orderBy: { order: "asc" } }),
+    getTranslations({ locale, namespace: "HeroCarouselAdminPage" }),
   ]);
   const initialSlides = slides.map(toHeroSlideData);
 
@@ -41,24 +43,24 @@ export default async function HeroCarouselAdminPage({ params }: { params: Promis
   return (
     <div className="max-w-4xl mx-auto px-4 space-y-10">
       <div>
-        <h1 className="text-xl font-bold text-dark-slate mb-1">Startsidan ({locale.toUpperCase()})</h1>
+        <h1 className="text-xl font-bold text-dark-slate mb-1">{t("heading", { locale: locale.toUpperCase() })}</h1>
         <p className="text-sm text-dark-slate/50">
-          Rubrik, bildkarusell och de sex startstegen som visas överst på startsidan för {locale === "sv" ? "svenska" : "engelska"} besökare.
+          {t("intro", { localeName: locale === "sv" ? t("localeSv") : t("localeEn") })}
         </p>
       </div>
 
       <section>
-        <h2 className="text-base font-semibold text-dark-slate mb-2">Rubrik</h2>
-        <HeroHeadingEditor initialHeading={draftHeading ?? "Välkommen till GoodTribes"} locale={locale} />
+        <h2 className="text-base font-semibold text-dark-slate mb-2">{t("headingSectionTitle")}</h2>
+        <HeroHeadingEditor initialHeading={draftHeading ?? t("defaultHeading")} locale={locale} />
       </section>
 
       <section>
-        <h2 className="text-base font-semibold text-dark-slate mb-2">Hero-karusell</h2>
+        <h2 className="text-base font-semibold text-dark-slate mb-2">{t("carouselSectionTitle")}</h2>
         <HeroCarouselEditor initialSlides={initialSlides} locale={locale} />
       </section>
 
       <section>
-        <h2 className="text-base font-semibold text-dark-slate mb-2">Startstegen (de sex cirklarna)</h2>
+        <h2 className="text-base font-semibold text-dark-slate mb-2">{t("stepsSectionTitle")}</h2>
         <OnboardingStepsEditor
           initialSteps={draftSteps.map((s) => ({ id: s.id, order: s.order, label: s.label, href: s.href }))}
           locale={locale}

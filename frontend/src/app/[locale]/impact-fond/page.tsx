@@ -5,19 +5,27 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getImpactFundBalance } from "@/lib/impactFund";
 import { getGtBalance } from "@/lib/tokens";
+import { getTranslations } from "next-intl/server";
+import { buildMetadata } from "@/lib/metadata";
 import ImpactFundVoteForm from "./ImpactFundVoteForm";
+import type { Locale } from "next-intl";
 
-export const metadata: Metadata = {
-  title: "Impact-fonden — GoodTribes.org",
-  description: "Öppen redovisning av Impact-fondens in- och utflöden",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "ImpactFundPage" });
+  return buildMetadata({ locale, path: "/impact-fond", title: t("heading"), description: t("pageDescription") });
+}
 
 function formatSek(amount: number) {
   return `${amount.toLocaleString("sv-SE")} kr`;
 }
 
-export default async function ImpactFundPage() {
-  const session = await auth();
+export default async function ImpactFundPage({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
+  const [session, t] = await Promise.all([
+    auth(),
+    getTranslations({ locale, namespace: "ImpactFundPage" }),
+  ]);
   const userId = session?.user?.id ?? null;
 
   const [balance, entries, openPoll] = await Promise.all([
@@ -52,15 +60,12 @@ export default async function ImpactFundPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <div className="text-center py-8">
-        <h1 className="text-3xl font-bold text-dark-slate mb-2">Impact-fonden</h1>
-        <p className="text-dark-slate/50 text-sm mb-4">
-          Kapital från kommersiella projekts vinst kanaliserat till uppstartskapital för nya initiativ (PRD 4a,
-          Utvecklingsfas 2.96). Alltid vanliga kronor — aldrig tokens.
-        </p>
+        <h1 className="text-3xl font-bold text-dark-slate mb-2">{t("heading")}</h1>
+        <p className="text-dark-slate/50 text-sm mb-4">{t("intro")}</p>
         <div className="inline-flex bg-dry-sage/30 rounded-xl px-8 py-4">
           <div className="text-center">
             <p className="text-2xl font-bold text-seagrass">{formatSek(balance)}</p>
-            <p className="text-xs text-dark-slate/50 mt-0.5">Aktuellt saldo</p>
+            <p className="text-xs text-dark-slate/50 mt-0.5">{t("currentBalance")}</p>
           </div>
         </div>
       </div>
@@ -75,26 +80,24 @@ export default async function ImpactFundPage() {
               existingVotes={existingVotes}
             />
           ) : (
-            <p className="text-sm text-dark-slate/40 text-center">
-              En omgång om uppstartskapital pågår — logga in för att rösta.
-            </p>
+            <p className="text-sm text-dark-slate/40 text-center">{t("votingOpenLoginPrompt")}</p>
           )}
         </div>
       )}
 
       <div className="border border-muted-teal rounded-lg overflow-hidden">
         <div className="px-4 py-3 bg-dark-slate/[0.03] border-b border-muted-teal">
-          <h2 className="text-sm font-semibold text-dark-slate">Transaktioner</h2>
+          <h2 className="text-sm font-semibold text-dark-slate">{t("transactionsHeading")}</h2>
         </div>
         {entries.length === 0 ? (
-          <p className="text-sm text-dark-slate/40 p-4">Ingen transaktion registrerad ännu.</p>
+          <p className="text-sm text-dark-slate/40 p-4">{t("emptyState")}</p>
         ) : (
           <div className="divide-y divide-muted-teal/50">
             {entries.map((e) => (
               <div key={e.id} className="flex items-center justify-between gap-3 px-4 py-3">
                 <div className="min-w-0">
                   <p className="text-sm text-dark-slate">
-                    {e.direction === "in" ? "Inflöde" : "Utflöde"}
+                    {e.direction === "in" ? t("directionIn") : t("directionOut")}
                     {e.targetProject && ` — ${e.targetProject.title}`}
                   </p>
                   {e.note && <p className="text-xs text-dark-slate/50 truncate">{e.note}</p>}

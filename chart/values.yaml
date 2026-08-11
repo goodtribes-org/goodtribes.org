@@ -8,6 +8,26 @@ frontend:
     pullPolicy: IfNotPresent
   service:
     port: 3000
+  # Off by default — capacity today is a fixed replicaCount with no
+  # connection-level backpressure (a concern for long-lived SSE connections,
+  # e.g. chat and kanban live-sync, under concurrent load). Turn on once
+  # someone has verified the cluster has metrics-server and picked resource
+  # values that fit real usage — the defaults below are untested guesses,
+  # not a measured baseline.
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  # Only applied to the container when autoscaling.enabled is true — see the
+  # comment on the Deployment template for why.
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
   env:
     NEXT_PUBLIC_MEILI_HOST: http://goodtribes-meilisearch:7700
     S3_ENDPOINT: http://goodtribes-minio:9000

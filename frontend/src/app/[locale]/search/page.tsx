@@ -3,18 +3,15 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { multiSearch, SearchResult } from "@/lib/meili";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { buildMetadata } from "@/lib/metadata";
+import type { Locale } from "next-intl";
 
-export const metadata: Metadata = {
-  title: "Search — GoodTribes.org",
-};
-
-const TYPE_LABEL: Record<SearchResult["type"], string> = {
-  project: "Project",
-  idea: "Idea",
-  org: "Org",
-  member: "Member",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "SearchPage" });
+  return buildMetadata({ locale, path: "/search", title: t("pageTitle") });
+}
 
 const TYPE_COLOR: Record<SearchResult["type"], string> = {
   project: "bg-coral/10 text-coral border-coral/20",
@@ -31,6 +28,14 @@ export default async function SearchPage({
   const { q } = await searchParams;
   const query = q?.trim() ?? "";
   const locale = await getLocale();
+  const t = await getTranslations({ locale, namespace: "SearchPage" });
+
+  const TYPE_LABEL: Record<SearchResult["type"], string> = {
+    project: t("typeProject"),
+    idea: t("typeIdea"),
+    org: t("typeOrg"),
+    member: t("typeMember"),
+  };
 
   const results = query.length >= 2 ? await multiSearch(query, locale) : [];
 
@@ -43,10 +48,10 @@ export default async function SearchPage({
   for (const r of results) grouped[r.type].push(r);
 
   const sections: { type: SearchResult["type"]; label: string; href: string }[] = [
-    { type: "project", label: "Projects",      href: "/projects" },
-    { type: "org",     label: "Organisations", href: "/org" },
-    { type: "idea",    label: "Ideas",         href: "/ideas" },
-    { type: "member",  label: "Members",       href: "/members" },
+    { type: "project", label: t("sectionProjects"),      href: "/projects" },
+    { type: "org",     label: t("sectionOrganisations"), href: "/org" },
+    { type: "idea",    label: t("sectionIdeas"),         href: "/ideas" },
+    { type: "member",  label: t("sectionMembers"),       href: "/members" },
   ];
 
   return (
@@ -57,25 +62,25 @@ export default async function SearchPage({
           name="q"
           defaultValue={query}
           autoFocus
-          placeholder="Search projects, ideas, members…"
+          placeholder={t("searchPlaceholder")}
           className="flex-1 border border-muted-teal/60 rounded-md px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-seagrass"
         />
         <button
           type="submit"
           className="px-5 py-2.5 bg-coral text-white text-sm font-medium rounded-md hover:bg-watermelon transition-colors"
         >
-          Search
+          {t("searchButton")}
         </button>
       </form>
 
       {!query ? (
         <div className="text-center py-16">
-          <p className="text-dark-slate/40 text-sm">Type something to search.</p>
+          <p className="text-dark-slate/40 text-sm">{t("typeToSearch")}</p>
         </div>
       ) : results.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-dark-slate/50 mb-2">No results for &ldquo;{query}&rdquo;</p>
-          <p className="text-dark-slate/30 text-sm">Try a different term, or browse below:</p>
+          <p className="text-dark-slate/50 mb-2">{t("noResults", { query })}</p>
+          <p className="text-dark-slate/30 text-sm">{t("tryDifferentTerm")}</p>
           <div className="flex justify-center gap-4 mt-4">
             {sections.map((s) => (
               <Link key={s.type} href={s.href} className="text-coral hover:underline text-sm">
@@ -87,7 +92,7 @@ export default async function SearchPage({
       ) : (
         <div className="space-y-8">
           <p className="text-sm text-dark-slate/50">
-            {results.length} result{results.length !== 1 ? "s" : ""} for &ldquo;{query}&rdquo;
+            {t("resultCount", { count: results.length, query })}
           </p>
 
           {sections.map(({ type, label }) => {

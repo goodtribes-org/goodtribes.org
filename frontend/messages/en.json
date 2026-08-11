@@ -2694,5 +2694,410 @@
     "groupYesterday": "Yesterday",
     "groupThisWeek": "This week",
     "groupEarlier": "Earlier"
+  },
+  "MentorsPage": {
+    "pageDescription": "Find a mentor in the GoodTribes network",
+    "heading": "Mentors",
+    "intro": "Experienced people who help projects grow. Book a session and take your project to the next level.",
+    "becomeMentorCta": "Become a mentor →",
+    "emptyState": "No verified mentors yet.",
+    "applyFirstCta": "Apply to be the first →",
+    "mentorBadge": "Mentor",
+    "sessionCount": "{count, plural, one {# completed session} other {# completed sessions}}",
+    "bookMentorCta": "Book mentor →"
+  },
+  "MentorProfilePage": {
+    "backToMentors": "← All mentors",
+    "mentorBadge": "Mentor",
+    "sessionCount": "{count, plural, one {# completed session} other {# completed sessions}}",
+    "ratingSummary": "{rating} / 5 ({count, plural, one {# review} other {# reviews}})",
+    "defaultRecipientName": "this person",
+    "categoriesHeading": "Categories",
+    "aboutHeading": "About the mentor",
+    "feedbackHeading": "Reviews",
+    "bookingHeading": "Book a mentoring session",
+    "bookingIntro": "Tell us about your project and what you'd like help with. The mentor will get back to you with available times.",
+    "mustBeLoggedIn": "You need to be <link>logged in</link> to book a mentor."
+  },
+  "MentorApplyPage": {
+    "pageTitle": "Become a mentor",
+    "pageDescription": "Apply to become a mentor on GoodTribes and help projects grow.",
+    "backToMentors": "← Back to mentors",
+    "alreadyVerified": "You're already a verified mentor.",
+    "seeMentorPage": "See the mentor page →",
+    "underReview": "Your application is under review.",
+    "willReturn": "We'll be in touch once it's been reviewed.",
+    "heading": "Become a mentor",
+    "intro": "Share your experience and help projects that want to make a difference take the next step."
+  },
+  "ForkNewPage": {
+    "heading": "Fork “{title}”",
+    "intro": "A fork creates a new, independent project without permission from the original (PRD 4f). The new project always starts as non-profit (under the Foundation's umbrella) — there's no shortcut around the normal process for becoming commercial.",
+    "titleLabel": "Title of the new project",
+    "titlePlaceholder": "{title} (fork)",
+    "contributorsHeading": "Contributors to the original",
+    "contributorsIntro": "If the new project ever becomes profitable, these people automatically get a share of the profit distribution, proportional to their token holdings in the original — that part is mandatory. Giving them tokens (and thus voting rights) in the new project right now is entirely optional.",
+    "sharePercent": "{percent}% profit share",
+    "optionalTokensPlaceholder": "Optional tokens",
+    "submitButton": "Fork",
+    "unknownContributor": "Unknown"
+  },
+  "EditProjectPage": {
+    "heading": "Edit project",
+    "dangerZoneHeading": "Danger zone",
+    "dangerZoneWarning": "Deleting a project permanently removes all kanban cards, todos, wiki pages, milestones, and activity. This cannot be undone."
+  },
+  "SprintsPage": {
+    "heading": "Design Sprints",
+    "intro": "An asynchronous, step-by-step way to explore, sketch, and test ideas together — without everyone needing to be online at the same time.",
+    "statusActive": "Active",
+    "statusPaused": "Paused",
+    "statusCompleted": "Completed",
+    "phaseUnderstand": "Understand",
+    "phaseDiverge": "Diverge",
+    "phaseDecide": "Decide",
+    "phasePrototype": "Prototype",
+    "phaseValidate": "Validate",
+    "paceTogether": "Together",
+    "paceSpreadOut": "Spread out over time",
+    "emptyState": "No sprints yet."
+  },
+  "SprintPage": {
+    "anonymousUser": "Anonymous"
+  },
+  "LeanCanvasPage": {
+    "helpLink": "Help"
+  },
+  "IdeaSessionsPage": {
+    "heading": "Idea Workshop",
+    "intro": "Bounce new approaches off the project's members — write @AI to invite the AI, which has access to the project's description, milestones, tasks, and wiki.",
+    "startSessionButton": "+ Start idea session",
+    "emptyState": "No idea sessions yet for this project.",
+    "unnamedSession": "Unnamed idea session",
+    "roomMeta": "{participants} participants · {messages} posts · last active {timeAgo}",
+    "justNow": "just now",
+    "minutesAgo": "{minutes} min ago",
+    "hoursAgo": "{hours} hr ago",
+    "daysAgo": "{days} days ago"
+  },
+  "PartnershipsPage": {
+    "heading": "Partnerships",
+    "proposeHeading": "Propose a partnership",
+    "proposeIntro": "Enter the slug of the organisation you want to partner with.",
+    "matchesHeading": "Organisations that could be partners",
+    "pendingHeading": "Pending",
+    "activeHeading": "Active",
+    "historyHeading": "History",
+    "waitingForOrg": "Waiting for the organisation's response",
+    "waitingForUs": "Waiting for our response",
+    "statusDeclined": "Declined",
+    "statusRevoked": "Revoked"
+  },
+  "ProjectMembersPage": {
+    "metaTitleSuffix": "Members"
+  },
+  "NewPollPage": {
+    "backToPolls": "← Back to polls",
+    "heading": "New poll"
+  },
+  "NewCalendarEventPage": {
+    "metaTitleSuffix": "New event",
+    "backToCalendar": "← Calendar",
+    "heading": "New event"
+  },
+  "NewOrgPage": {
+    "heading": "New organisation",
+    "intro": "Fill in the details for your organisation."
+  },
+  "NewProjectPage": {
+    "pageTitle": "New Project",
+    "fromIdeaNote": "Starting from an idea — give the project a name, then fill in the rest right after.",
+    "fromThreadNote": "Starting from an idea session in the Idea Workshop — give the project a name, then fill in the rest right after.",
+    "fromThreadDescriptionSuffix": "(From a discussion in the Idea Workshop.)"
+  },
+  "MicroTasksPage": {
+    "pageDescription": "Take on a single, well-scoped task on a project — without joining it.",
+    "heading": "Open tasks",
+    "intro": "Take on a single task on a project — no membership required. Perfect if you want to contribute once without committing.",
+    "allFilter": "All",
+    "emptyState": "No open tasks right now.",
+    "clearFilter": "Clear filter"
+  },
+  "ProfileSetupPage": {
+    "editHeading": "Edit profile",
+    "welcomeHeading": "Welcome!",
+    "editIntro": "Update your details below.",
+    "welcomeIntro": "Tell us a little about yourself to get started."
+  },
+  "SearchPage": {
+    "pageTitle": "Search",
+    "searchPlaceholder": "Search projects, ideas, members…",
+    "searchButton": "Search",
+    "typeToSearch": "Type something to search.",
+    "noResults": "No results for “{query}”",
+    "tryDifferentTerm": "Try a different term, or browse below:",
+    "resultCount": "{count, plural, one {# result} other {# results}} for “{query}”",
+    "typeProject": "Project",
+    "typeIdea": "Idea",
+    "typeOrg": "Org",
+    "typeMember": "Member",
+    "sectionProjects": "Projects",
+    "sectionOrganisations": "Organisations",
+    "sectionIdeas": "Ideas",
+    "sectionMembers": "Members"
+  },
+  "OnboardingPage": {
+    "pageTitle": "Get started",
+    "heading": "What do you want to do?",
+    "intro": "One last question — then you're ready to make a difference."
+  },
+  "ShopAdminPage": {
+    "heading": "Shop",
+    "intro": "Manage items that can be redeemed for GT."
+  },
+  "ExclusionCasesPage": {
+    "pageTitle": "Cases — Review Council",
+    "backToCouncil": "← Review Council",
+    "heading": "Open cases",
+    "caseCount": "{count, plural, one {# case} other {# cases}} awaiting action.",
+    "emptyState": "No open cases.",
+    "unknownUser": "Unknown",
+    "statusOpen": "Awaiting response",
+    "statusUnderReview": "Under vote",
+    "statusResolved": "Resolved"
+  },
+  "SuggestionsAdminPage": {
+    "heading": "Suggestions",
+    "intro": "Suggestions from users. {count, plural, one {# is} other {# are}} awaiting review.",
+    "emptyState": "No suggestions to review.",
+    "fromLabel": "From",
+    "dismissButton": "Dismiss",
+    "markReviewedButton": "Mark reviewed"
+  },
+  "CouncilAdminPage": {
+    "heading": "Review Council",
+    "intro": "Start and close elections for the Review Council (PRD 5.53). The council's own pages are at <link>/granskningsradet</link>.",
+    "currentMembersHeading": "Current members ({count})",
+    "noActiveMembers": "No active members.",
+    "termUntil": "{name} — term until {date}",
+    "startNewElectionHeading": "Start a new election",
+    "electionInProgress": "An election (“{title}”) is already in progress — close it before starting a new one.",
+    "closeElectionButton": "Close election",
+    "defaultElectionTitle": "Review Council election",
+    "descriptionPlaceholder": "Optional description of the election…",
+    "deadlineLabel": "Deadline (optional)",
+    "startElectionButton": "Start election",
+    "previousElectionsHeading": "Previous elections",
+    "noElectionsYet": "No elections yet.",
+    "statusOpen": "Active",
+    "statusClosed": "Closed",
+    "electionMeta": "{options} candidates · {votes} votes"
+  },
+  "ImpactFundAdminPage": {
+    "heading": "The Impact Fund",
+    "intro": "Distribute the fund's balance as seed capital to new projects via a platform-wide GT vote (PRD 5.50.4).",
+    "currentBalance": "Current balance: {amount}",
+    "activeRoundHeading": "Round in progress",
+    "openNewRoundHeading": "Open a new round",
+    "candidateSlugsLabel": "Candidate projects (slugs, one per line or comma-separated)",
+    "openRoundButton": "Open round",
+    "roundInProgress": "A round is in progress with {count} candidate projects. Close the vote to proceed to payout.",
+    "closeRoundButton": "Close round",
+    "votingClosedIntro": "Voting has closed. The ranking below is a guide — enter an amount per project (max {amount} total).",
+    "executePayoutButton": "Execute payout",
+    "previousRoundsHeading": "Previous rounds",
+    "noRoundsYet": "No rounds yet.",
+    "openedBy": "Opened by {name} — {date}",
+    "unknownUser": "Unknown"
+  },
+  "SandboxGraduationAdminPage": {
+    "heading": "Sandbox applications",
+    "intro": "Applications to leave Sandbox and become a GoodTribes-approved project. Commercial projects are simultaneously assigned an umbrella company and have invoicing unlocked.",
+    "pendingHeading": "Awaiting the Foundation's decision ({count})",
+    "emptyState": "No pending applications.",
+    "commercialNote": "Commercial — requires an umbrella company before approval",
+    "nonprofitNote": "Non-profit",
+    "chooseUmbrella": "— choose umbrella company —",
+    "approveButton": "Approve",
+    "rejectionPlaceholder": "Reason for rejection…",
+    "rejectButton": "Reject"
+  },
+  "HeroCarouselAdminPage": {
+    "heading": "Homepage ({locale})",
+    "intro": "Heading, image carousel, and the six starting steps shown at the top of the homepage for {localeName} visitors.",
+    "localeSv": "Swedish",
+    "localeEn": "English",
+    "headingSectionTitle": "Heading",
+    "defaultHeading": "Welcome to GoodTribes",
+    "carouselSectionTitle": "Hero carousel",
+    "stepsSectionTitle": "Starting steps (the six circles)"
+  },
+  "ExclusionCasePage": {
+    "pageTitle": "Case — Review Council",
+    "decisionNone": "No action",
+    "decisionWarning": "Warning",
+    "decisionProjectBan": "Exclusion from the project",
+    "decisionPlatformBan": "Exclusion from the whole platform",
+    "backToOpenCases": "← Open cases",
+    "heading": "Report against {name}",
+    "unknownUser": "Unknown",
+    "concernsProject": "Concerns the project {link}",
+    "reportHeading": "Report",
+    "reportedByLine": "Reported by {name} · {date}",
+    "responseHeading": "Response from the reported party",
+    "noResponseYet": "You haven't responded to the report yet.",
+    "respondButton": "Respond to the report",
+    "responseWindowElapsed": "No response was given within the response window.",
+    "awaitingResponse": "Awaiting a response from the reported party.",
+    "decisionHeading": "Decision",
+    "decidedOn": "Decided {date}",
+    "proposedDecisionHeading": "Proposed decision",
+    "voteTally": "{votes} of {total} members have voted",
+    "voteApprove": "Approves",
+    "voteReject": "Rejects",
+    "handledByCouncil": "This case is being handled by the Review Council."
+  },
+  "NotificationsPage": {
+    "heading": "Notifications",
+    "emptyState": "No notifications yet.",
+    "justNow": "just now",
+    "minutesAgo": "{minutes}m ago",
+    "hoursAgo": "{hours}h ago",
+    "daysAgo": "{days}d ago"
+  },
+  "SettingsPage": {
+    "pageTitle": "Settings",
+    "heading": "Settings",
+    "profileHeading": "Profile",
+    "noNameSet": "No name set",
+    "noBioYet": "No bio yet",
+    "skillCount": "{count, plural, one {# skill} other {# skills}}",
+    "editProfileLink": "Edit profile"
+  },
+  "WorkPage": {
+    "pageTitle": "Workspaces",
+    "heading": "My workspaces",
+    "intro": "Choose an organisation to work in.",
+    "noOrgsIntro": "You're not part of any organisation yet.",
+    "exploreOrgsLink": "Explore organisations"
+  },
+  "WorkAdminPage": {
+    "heading": "Pending applications",
+    "emptyState": "No pending applications.",
+    "unnamedUser": "Unnamed",
+    "approveButton": "Approve",
+    "rejectButton": "Reject"
+  },
+  "WorkTasksPage": {
+    "newTaskHeading": "New task",
+    "titlePlaceholder": "Task title",
+    "descriptionPlaceholder": "Description (optional)",
+    "addButton": "Add",
+    "emptyState": "No tasks yet.",
+    "doneHeading": "Done",
+    "markNotDone": "Mark as not done",
+    "markDone": "Mark as done"
+  },
+  "NewIdeaPage": {
+    "pageTitle": "New idea",
+    "heading": "Share an idea",
+    "intro": "Got an idea that could make an impact? Walk through the steps below — the more detail you provide, the more likely others will rally behind it."
+  },
+  "ShopPage": {
+    "pageDescription": "Redeem your GT for rewards.",
+    "heading": "Shop",
+    "intro": "Redeem your GT for rewards.",
+    "yourBalance": "Your balance",
+    "emptyState": "No items in the shop yet.",
+    "redemptionHistoryHeading": "Your redemption history"
+  },
+  "AcademyPage": {
+    "pageDescription": "Learn everything you need to change the world",
+    "intro": "Learn everything you need to change the world",
+    "newGuideButton": "+ New guide",
+    "categoryAll": "All",
+    "categoryProjectManagement": "Project management",
+    "categoryCrowdfunding": "Crowdfunding",
+    "categoryCommunity": "Community",
+    "categoryTech": "Tech",
+    "categoryImpact": "Impact",
+    "difficultyBeginner": "Beginner",
+    "difficultyAdvanced": "Advanced",
+    "emptyState": "No guides published yet. Coming soon!",
+    "readTime": "~{minutes} min",
+    "byAuthor": "by {name}",
+    "unknownAuthor": "Unknown",
+    "completionCount": "{count, plural, one {# completed} other {# completed}}",
+    "readLink": "Read →"
+  },
+  "AcademyGuidePage": {
+    "backToAcademy": "Back to Academy",
+    "completedBadge": "Completed",
+    "byAuthor": "by {name}",
+    "unknownAuthor": "Unknown",
+    "readTime": "~{minutes} min",
+    "completionCount": "{count, plural, one {# completed} other {# completed}}",
+    "unpublishedNotice": "This guide isn't published yet and is only visible to you.",
+    "publishButton": "Publish guide",
+    "completedNotice": "You've completed this guide!",
+    "difficultyBeginner": "Beginner",
+    "difficultyAdvanced": "Advanced"
+  },
+  "ImpactFundPage": {
+    "pageDescription": "Open accounting of the Impact Fund's in- and outflows",
+    "heading": "The Impact Fund",
+    "intro": "Capital from commercial projects' profit, channeled into seed capital for new initiatives (PRD 4a, Development phase 2.96). Always regular currency — never tokens.",
+    "currentBalance": "Current balance",
+    "votingOpenLoginPrompt": "A round for seed capital is in progress — log in to vote.",
+    "transactionsHeading": "Transactions",
+    "emptyState": "No transactions recorded yet.",
+    "directionIn": "Inflow",
+    "directionOut": "Outflow"
+  },
+  "MinaFordelningarPage": {
+    "heading": "My allocations",
+    "intro": "Your personal share of profit-sharing projects' surplus (PRD 4a, Step 2). The money is already yours — choose which project you want to direct it to.",
+    "pendingHeading": "Awaiting your choice ({count})",
+    "noPending": "Nothing is awaiting your choice right now.",
+    "amountFromProject": "{amount} kr — from {project}",
+    "deadlineNote": "If you don't choose before {date}, the share automatically goes to the Impact Fund.",
+    "chooseProject": "— choose project —",
+    "allocateButton": "Direct my share",
+    "historyHeading": "History",
+    "noHistory": "No history yet.",
+    "amountFromProjectShort": "{amount} kr from {project}",
+    "toImpactFundUnset": "→ Impact Fund (not chosen in time)"
+  },
+  "SkillListPage": {
+    "pageTitle": "Skills",
+    "pageDescription": "See what skills the GoodTribes community has to offer.",
+    "heading": "Skills",
+    "intro": "What can the community's members do? Find the right person for your project.",
+    "addSkillLink": "+ Add skill",
+    "emptyState": "No skills yet — add your own on your profile!",
+    "personCount": "{count, plural, one {# person} other {# people}}"
+  },
+  "AcceptInvitePage": {
+    "notFoundHeading": "Invite not found",
+    "notFoundIntro": "This invite link is invalid or has expired.",
+    "browseProjectsLink": "Browse projects →",
+    "expiredHeading": "Invite expired",
+    "expiredIntro": "This invite has already been used or has expired.",
+    "invitedBy": "You've been invited by {name}",
+    "unknownInviter": "someone",
+    "joinIntro": "Join as a collaborator and start contributing.",
+    "emailMismatch": "This invite was sent to <email>{inviteEmail}</email>, but you're signed in as <email>{sessionEmail}</email>.",
+    "acceptButton": "Accept invitation →",
+    "loginToAccept": "Log in to accept →"
+  },
+  "AcceptOrgInvitePage": {
+    "heading": "Organisation invitation",
+    "alreadyUsed": "This invitation has already been used.",
+    "expired": "This invitation has expired.",
+    "browseOrgsLink": "Browse organisations →",
+    "invitedTo": "You've been invited to join",
+    "acceptButton": "Accept & join →",
+    "loginPrompt": "Log in to accept this invitation.",
+    "loginButton": "Log in →"
   }
 }

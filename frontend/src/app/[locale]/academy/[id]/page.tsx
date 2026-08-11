@@ -14,6 +14,7 @@ import ShareButton from "@/components/ShareButton";
 import FlagContentButton from "@/components/FlagContentButton";
 import LikeCommentBlock from "@/components/LikeCommentBlock";
 import { getLikeCommentData } from "@/lib/socialInteractions";
+import { getTranslations } from "next-intl/server";
 
 
 export async function generateMetadata({
@@ -43,12 +44,6 @@ const CATEGORY_COLORS: Record<string, string> = {
   Impact:         "bg-green-100 text-green-700",
 };
 
-const DIFFICULTY_BADGES: Record<string, { label: string; cls: string }> = {
-  beginner:  { label: "Nybörjare",  cls: "bg-green-100 text-green-700" },
-  avancerad: { label: "Avancerad",  cls: "bg-orange-100 text-orange-700" },
-  advanced:  { label: "Avancerad",  cls: "bg-orange-100 text-orange-700" },
-};
-
 export default async function AcademyGuidePage({
   params,
 }: {
@@ -56,7 +51,7 @@ export default async function AcademyGuidePage({
 }) {
   const { locale, id } = await params;
 
-  const [session, guide] = await Promise.all([
+  const [session, guide, t] = await Promise.all([
     auth(),
     prisma.academyGuide.findUnique({
       where: { id },
@@ -65,7 +60,14 @@ export default async function AcademyGuidePage({
         _count: { select: { completions: true } },
       },
     }),
+    getTranslations({ locale, namespace: "AcademyGuidePage" }),
   ]);
+
+  const DIFFICULTY_BADGES: Record<string, { label: string; cls: string }> = {
+    beginner:  { label: t("difficultyBeginner"),  cls: "bg-green-100 text-green-700" },
+    avancerad: { label: t("difficultyAdvanced"),  cls: "bg-orange-100 text-orange-700" },
+    advanced:  { label: t("difficultyAdvanced"),  cls: "bg-orange-100 text-orange-700" },
+  };
 
   const isAdmin = !!session?.user?.id && (await isSiteAdmin(session.user.id));
   const isAuthor = !!session?.user?.id && guide?.authorId === session.user.id;
@@ -94,7 +96,7 @@ export default async function AcademyGuidePage({
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
-        Tillbaka till Academy
+        {t("backToAcademy")}
       </Link>
 
       {/* Guide header */}
@@ -108,7 +110,7 @@ export default async function AcademyGuidePage({
           </span>
           {hasCompleted && (
             <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-seagrass/20 text-seagrass">
-              Avklarad
+              {t("completedBadge")}
             </span>
           )}
         </div>
@@ -117,9 +119,9 @@ export default async function AcademyGuidePage({
 
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4 text-sm text-dark-slate/50">
-            <span>av {guide.author.name ?? "Okänd"}</span>
-            <span>~{guide.readTimeMinutes} min</span>
-            <span>{guide._count.completions} avklarade</span>
+            <span>{t("byAuthor", { name: guide.author.name ?? t("unknownAuthor") })}</span>
+            <span>{t("readTime", { minutes: guide.readTimeMinutes })}</span>
+            <span>{t("completionCount", { count: guide._count.completions })}</span>
           </div>
           <div className="flex items-center gap-3">
             {guide.published && (
@@ -139,15 +141,13 @@ export default async function AcademyGuidePage({
       {/* Publish banner for unpublished guides */}
       {!guide.published && canManage && (
         <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3">
-          <p className="text-sm text-amber-800 font-medium">
-            Den här guiden är inte publicerad och syns bara för dig.
-          </p>
+          <p className="text-sm text-amber-800 font-medium">{t("unpublishedNotice")}</p>
           <form action={publishGuide.bind(null, id)}>
             <button
               type="submit"
               className="shrink-0 px-4 py-1.5 rounded bg-seagrass text-white text-sm font-semibold hover:bg-seagrass/80 transition-colors"
             >
-              Publicera guide
+              {t("publishButton")}
             </button>
           </form>
         </div>
@@ -170,7 +170,7 @@ export default async function AcademyGuidePage({
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Du har klarat den här guiden!
+              {t("completedNotice")}
             </div>
           ) : (
             <CompleteGuideForm guideId={id} />

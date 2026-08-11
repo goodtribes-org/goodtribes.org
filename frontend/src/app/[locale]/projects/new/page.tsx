@@ -2,20 +2,30 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { htmlToPreviewText } from "@/lib/renderBody";
+import { getTranslations } from "next-intl/server";
+import { buildMetadata } from "@/lib/metadata";
 import NewProjectGuide from "./NewProjectGuide";
 import type { Metadata } from "next";
+import type { Locale } from "next-intl";
 
-export const metadata: Metadata = {
-  title: "New Project — GoodTribes.org",
-};
-
+export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "NewProjectPage" });
+  return buildMetadata({ locale, path: "/projects/new", title: t("pageTitle") });
+}
 
 export default async function NewProjectPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: Locale }>;
   searchParams: Promise<{ from?: string; fromThread?: string; title?: string }>;
 }) {
-  const session = await auth();
+  const { locale } = await params;
+  const [session, t] = await Promise.all([
+    auth(),
+    getTranslations({ locale, namespace: "NewProjectPage" }),
+  ]);
   if (!session?.user?.id) redirect("/login");
 
   const { from: ideaId, fromThread, title: titleParam } = await searchParams;
@@ -47,7 +57,7 @@ export default async function NewProjectPage({
       initial = {
         title: titleParam ?? room.name ?? undefined,
         description: firstMessage
-          ? `${htmlToPreviewText(firstMessage.body)}\n\n(Från en diskussion i Idéverkstaden.)`
+          ? `${htmlToPreviewText(firstMessage.body)}\n\n${t("fromThreadDescriptionSuffix")}`
           : undefined,
       };
     }
@@ -66,9 +76,9 @@ export default async function NewProjectPage({
         fromThread={fromThreadValid ? fromThread : undefined}
         contextNote={
           fromIdea
-            ? "Starting from an idea — give the project a name, then fill in the rest right after."
+            ? t("fromIdeaNote")
             : fromThreadValid
-              ? "Startar från en idésession i Idéverkstaden — ge projektet ett namn, fyll i resten direkt efter."
+              ? t("fromThreadNote")
               : undefined
         }
       />

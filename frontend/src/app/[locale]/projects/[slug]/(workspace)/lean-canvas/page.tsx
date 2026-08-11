@@ -5,10 +5,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import { hasProjectRole, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import LeanCanvasGrid from "./LeanCanvasGrid";
 import LeanCanvasComments from "./LeanCanvasComments";
 import LeanCanvasHistory from "./LeanCanvasHistory";
+import type { Locale } from "next-intl";
 
 export async function generateMetadata({
   params,
@@ -24,10 +26,13 @@ export async function generateMetadata({
 export default async function LeanCanvasPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: Locale; slug: string }>;
 }) {
-  const { slug } = await params;
-  const session = await auth();
+  const { locale, slug } = await params;
+  const [session, t] = await Promise.all([
+    auth(),
+    getTranslations({ locale, namespace: "LeanCanvasPage" }),
+  ]);
 
   const project = await prisma.project.findUnique({
     where: { slug },
@@ -68,7 +73,7 @@ export default async function LeanCanvasPage({
             className="flex items-center gap-1 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors"
           >
             <span className="flex items-center justify-center w-4 h-4 rounded-full border border-current text-[10px]">?</span>
-            Hjälp
+            {t("helpLink")}
           </Link>
         </div>
       </div>

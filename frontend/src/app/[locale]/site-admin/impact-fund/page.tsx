@@ -1,13 +1,16 @@
 import { prisma } from "@/lib/prisma";
+import { getTranslations } from "next-intl/server";
 import { getImpactFundBalance } from "@/lib/impactFund";
 import { openAllocationRound, closeAllocationRound, executeAllocationRound } from "./actions";
+import type { Locale } from "next-intl";
 
 function formatSek(amount: number) {
   return `${amount.toLocaleString("sv-SE")} kr`;
 }
 
-export default async function ImpactFundAdminPage() {
-  const [balance, rounds] = await Promise.all([
+export default async function ImpactFundAdminPage({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
+  const [balance, rounds, t] = await Promise.all([
     getImpactFundBalance(),
     prisma.impactFundAllocationRound.findMany({
       orderBy: { createdAt: "desc" },
@@ -15,6 +18,7 @@ export default async function ImpactFundAdminPage() {
         openedBy: { select: { name: true } },
       },
     }),
+    getTranslations({ locale, namespace: "ImpactFundAdminPage" }),
   ]);
 
   const activeRound = rounds.find((r) => r.status === "open" || r.status === "closed");
@@ -38,17 +42,14 @@ export default async function ImpactFundAdminPage() {
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-dark-slate">Impact-fonden</h1>
-        <p className="text-sm text-dark-slate/60 mt-1">
-          Fördela fondens saldo som uppstartskapital till nya projekt via en plattformsomfattande GT-röstning (PRD
-          5.50.4).
-        </p>
-        <p className="text-sm text-dark-slate/80 mt-2 font-medium">Aktuellt saldo: {formatSek(balance)}</p>
+        <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
+        <p className="text-sm text-dark-slate/60 mt-1">{t("intro")}</p>
+        <p className="text-sm text-dark-slate/80 mt-2 font-medium">{t("currentBalance", { amount: formatSek(balance) })}</p>
       </div>
 
       <section className="mb-8">
         <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-3">
-          {activeRound ? "Pågående omgång" : "Öppna ny omgång"}
+          {activeRound ? t("activeRoundHeading") : t("openNewRoundHeading")}
         </h2>
 
         {!activeRound && (
@@ -57,7 +58,7 @@ export default async function ImpactFundAdminPage() {
             className="flex flex-col gap-3 border border-muted-teal/30 rounded-lg p-4"
           >
             <label className="text-xs text-dark-slate/50">
-              Kandidatprojekt (slugs, ett per rad eller kommaseparerade)
+              {t("candidateSlugsLabel")}
               <textarea
                 name="candidateSlugsRaw"
                 rows={4}
@@ -69,7 +70,7 @@ export default async function ImpactFundAdminPage() {
               type="submit"
               className="self-start bg-coral text-white text-sm font-medium px-4 py-2 rounded hover:bg-watermelon transition-colors"
             >
-              Öppna omgång
+              {t("openRoundButton")}
             </button>
           </form>
         )}
@@ -77,8 +78,7 @@ export default async function ImpactFundAdminPage() {
         {activeRound && activeRound.status === "open" && activePoll && (
           <div className="border border-amber-300 bg-amber-50 rounded-lg p-4">
             <p className="text-sm text-amber-800 mb-3">
-              En omgång pågår med {activePoll.options.length} kandidatprojekt. Avsluta röstningen för att gå vidare
-              till utbetalning.
+              {t("roundInProgress", { count: activePoll.options.length })}
             </p>
             <ul className="text-sm text-amber-900 mb-3 flex flex-col gap-1">
               {activePoll.options.map((o) => (
@@ -90,7 +90,7 @@ export default async function ImpactFundAdminPage() {
                 type="submit"
                 className="px-3 py-1.5 rounded bg-coral text-white text-xs font-medium hover:bg-watermelon transition-colors"
               >
-                Avsluta omgång
+                {t("closeRoundButton")}
               </button>
             </form>
           </div>
@@ -99,8 +99,7 @@ export default async function ImpactFundAdminPage() {
         {activeRound && activeRound.status === "closed" && activePoll && (
           <div className="border border-muted-teal/40 rounded-lg p-4">
             <p className="text-sm text-dark-slate/60 mb-3">
-              Röstningen är avslutad. Rangordningen nedan är vägledande — ange belopp per projekt (max{" "}
-              {formatSek(balance)} totalt).
+              {t("votingClosedIntro", { amount: formatSek(balance) })}
             </p>
             <form action={executeAllocationRound.bind(null, activePoll.id)} className="flex flex-col gap-3">
               {[...activePoll.options]
@@ -124,7 +123,7 @@ export default async function ImpactFundAdminPage() {
                 type="submit"
                 className="self-start bg-coral text-white text-sm font-medium px-4 py-2 rounded hover:bg-watermelon transition-colors"
               >
-                Genomför utbetalning
+                {t("executePayoutButton")}
               </button>
             </form>
           </div>
@@ -132,14 +131,14 @@ export default async function ImpactFundAdminPage() {
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-3">Tidigare omgångar</h2>
+        <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-3">{t("previousRoundsHeading")}</h2>
         {rounds.length === 0 ? (
-          <p className="text-sm text-dark-slate/40">Inga omgångar ännu.</p>
+          <p className="text-sm text-dark-slate/40">{t("noRoundsYet")}</p>
         ) : (
           <ul className="flex flex-col gap-2 text-sm">
             {rounds.map((r) => (
               <li key={r.id} className="flex items-center justify-between border border-muted-teal/30 rounded px-3 py-2">
-                <span>Öppnad av {r.openedBy.name ?? "Okänd"} — {r.createdAt.toLocaleDateString("sv-SE")}</span>
+                <span>{t("openedBy", { name: r.openedBy.name ?? t("unknownUser"), date: r.createdAt.toLocaleDateString("sv-SE") })}</span>
                 <span className="text-xs text-dark-slate/50">{r.status}</span>
               </li>
             ))}

@@ -14,6 +14,7 @@ import FlagContentButton from "@/components/FlagContentButton";
 import LikeCommentBlock from "@/components/LikeCommentBlock";
 import { getLikeCommentData } from "@/lib/socialInteractions";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
+import { escapeHtml } from "@/lib/renderBody";
 
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string; pageSlug: string }> }): Promise<Metadata> {
@@ -40,16 +41,19 @@ function renderWikiContent(content: string): string {
   return renderMarkdown(content);
 }
 
+// Escaped defensively here too, not just relied on upstream — this function
+// itself has no way to know whether the content it's given was ever run
+// through sanitizeHtml() by whatever write path produced it.
 function renderMarkdown(content: string): string {
   return content
     .split("\n")
     .map((line) => {
-      if (line.startsWith("### ")) return `<h3 class="text-base font-bold mt-4 mb-1">${line.slice(4)}</h3>`;
-      if (line.startsWith("## ")) return `<h2 class="text-lg font-bold mt-5 mb-2">${line.slice(3)}</h2>`;
-      if (line.startsWith("# ")) return `<h1 class="text-xl font-bold mt-6 mb-2">${line.slice(2)}</h1>`;
-      if (line.startsWith("- ") || line.startsWith("* ")) return `<li class="ml-4 list-disc text-sm">${line.slice(2)}</li>`;
+      if (line.startsWith("### ")) return `<h3 class="text-base font-bold mt-4 mb-1">${escapeHtml(line.slice(4))}</h3>`;
+      if (line.startsWith("## ")) return `<h2 class="text-lg font-bold mt-5 mb-2">${escapeHtml(line.slice(3))}</h2>`;
+      if (line.startsWith("# ")) return `<h1 class="text-xl font-bold mt-6 mb-2">${escapeHtml(line.slice(2))}</h1>`;
+      if (line.startsWith("- ") || line.startsWith("* ")) return `<li class="ml-4 list-disc text-sm">${escapeHtml(line.slice(2))}</li>`;
       if (line.trim() === "") return `<div class="h-3"></div>`;
-      return `<p class="text-sm leading-relaxed text-dark-slate/80">${line}</p>`;
+      return `<p class="text-sm leading-relaxed text-dark-slate/80">${escapeHtml(line)}</p>`;
     })
     .join("");
 }

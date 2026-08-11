@@ -1,14 +1,21 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getTranslations } from "next-intl/server";
 import { forkProject } from "../actions";
+import type { Locale } from "next-intl";
 
 export default async function ForkNewPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: Locale }>;
   searchParams: Promise<{ sourceId?: string }>;
 }) {
+  const { locale } = await params;
   const { sourceId } = await searchParams;
   if (!sourceId) notFound();
+
+  const t = await getTranslations({ locale, namespace: "ForkNewPage" });
 
   const source = await prisma.project.findUnique({ where: { slug: sourceId }, select: { title: true } });
   if (!source) notFound();
@@ -27,10 +34,11 @@ export default async function ForkNewPage({
     where: { id: { in: withBalance.map((c) => c.userId) } },
     select: { id: true, name: true },
   });
-  const nameMap = Object.fromEntries(users.map((u) => [u.id, u.name ?? "Okänd"]));
+  const unknownContributor = t("unknownContributor");
+  const nameMap = Object.fromEntries(users.map((u) => [u.id, u.name ?? unknownContributor]));
   const contributors = withBalance.map((c) => ({
     userId: c.userId,
-    name: nameMap[c.userId] ?? "Okänd",
+    name: nameMap[c.userId] ?? unknownContributor,
     weight: c.weight,
     sharePercent: totalWeight > 0 ? (c.weight / totalWeight) * 100 : 0,
   }));
@@ -38,21 +46,17 @@ export default async function ForkNewPage({
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-dark-slate">Gaffla &quot;{sourceTitle}&quot;</h1>
-        <p className="text-sm text-dark-slate/60 mt-1">
-          En gaffling skapar ett nytt, fristående projekt utan tillstånd från originalet (PRD 4f). Det nya
-          projektet startar alltid som ideellt (under Stiftelsens paraply) — ingen genväg runt den vanliga
-          processen för att bli kommersiellt.
-        </p>
+        <h1 className="text-2xl font-bold text-dark-slate">{t("heading", { title: sourceTitle })}</h1>
+        <p className="text-sm text-dark-slate/60 mt-1">{t("intro")}</p>
       </div>
 
       <form action={forkProject.bind(null, sourceId)} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-dark-slate mb-1">Titel på det nya projektet</label>
+          <label className="block text-sm font-medium text-dark-slate mb-1">{t("titleLabel")}</label>
           <input
             name="title"
             type="text"
-            placeholder={`${sourceTitle} (fork)`}
+            placeholder={t("titlePlaceholder", { title: sourceTitle })}
             className="w-full border border-muted-teal rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
           />
         </div>
@@ -60,26 +64,22 @@ export default async function ForkNewPage({
         {contributors.length > 0 && (
           <div>
             <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-2">
-              Bidragsgivare i originalet
+              {t("contributorsHeading")}
             </h2>
-            <p className="text-xs text-dark-slate/50 mb-3">
-              Om det nya projektet någon gång blir vinstdrivande får dessa personer automatiskt en andel av
-              vinstdelningen, proportionellt mot sitt tokeninnehav i originalet — det är obligatoriskt. Att ge dem
-              tokens (och därmed rösträtt) i det nya projektet redan nu är helt valfritt.
-            </p>
+            <p className="text-xs text-dark-slate/50 mb-3">{t("contributorsIntro")}</p>
             <div className="flex flex-col gap-2">
               {contributors.map((c) => (
                 <div key={c.userId} className="flex items-center gap-3 border border-muted-teal rounded-lg px-4 py-3">
                   <div className="flex-1 min-w-0 text-sm">
                     <span className="font-medium text-dark-slate">{c.name}</span>
-                    <span className="text-dark-slate/50 ml-2">{c.sharePercent.toFixed(1)}% vinstandel</span>
+                    <span className="text-dark-slate/50 ml-2">{t("sharePercent", { percent: c.sharePercent.toFixed(1) })}</span>
                   </div>
                   <input
                     name={`grant_${c.userId}`}
                     type="number"
                     min="0"
                     step="0.1"
-                    placeholder="Valfria tokens"
+                    placeholder={t("optionalTokensPlaceholder")}
                     className="w-32 border border-muted-teal rounded px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-coral"
                   />
                 </div>
@@ -92,7 +92,7 @@ export default async function ForkNewPage({
           type="submit"
           className="bg-coral text-white text-sm font-medium px-5 py-2.5 rounded hover:bg-watermelon transition-colors"
         >
-          Gaffla
+          {t("submitButton")}
         </button>
       </form>
     </div>
