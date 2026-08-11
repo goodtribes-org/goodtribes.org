@@ -1,24 +1,16 @@
 "use server";
 
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { requireSiteAdmin } from "@/lib/authz";
+import { requireAdminSession } from "@/lib/authz";
 import { getImpactFundBalance } from "@/lib/impactFund";
-
-async function requireAdmin(): Promise<string> {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Forbidden");
-  await requireSiteAdmin(session.user.id);
-  return session.user.id;
-}
 
 // PRD 5.50.4: opens a platform-wide GT-weighted vote over site-admin-nominated
 // candidate projects for the Impact-fond's next round of startup capital —
 // same election mechanics as Granskningsrådet (site-admin/council/actions.ts's
 // createCouncilElection), reused for a different PlatformPoll type.
 export async function openAllocationRound(formData: FormData) {
-  const adminId = await requireAdmin();
+  const adminId = await requireAdminSession();
 
   const raw = (formData.get("candidateSlugsRaw") as string | null) ?? "";
   const slugs = [...new Set(raw.split(/[\s,]+/).map((s) => s.trim()).filter(Boolean))];
@@ -54,7 +46,7 @@ export async function openAllocationRound(formData: FormData) {
 // specify one; matches executeLegalTypeChange's human-judgment-after-a-vote
 // shape rather than a rigid split.
 export async function closeAllocationRound(pollId: string) {
-  await requireAdmin();
+  await requireAdminSession();
 
   const round = await prisma.impactFundAllocationRound.findUnique({ where: { pollId } });
   if (!round || round.status !== "open") throw new Error("Round not open");
@@ -72,7 +64,7 @@ export async function closeAllocationRound(pollId: string) {
 // candidate project (informed by the vote ranking shown on the admin page),
 // capped so the total never exceeds the fund's current balance.
 export async function executeAllocationRound(pollId: string, formData: FormData) {
-  const adminId = await requireAdmin();
+  const adminId = await requireAdminSession();
 
   const round = await prisma.impactFundAllocationRound.findUnique({ where: { pollId } });
   if (!round || round.status !== "closed") throw new Error("Round not ready to execute");

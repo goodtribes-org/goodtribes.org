@@ -2,17 +2,29 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
+import { buildMetadata } from "@/lib/metadata";
+import type { Locale } from "next-intl";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "MentorsPage" });
+  return buildMetadata({
+    locale,
+    path: "/mentors",
+    title: t("heading"),
+    description: t("pageDescription"),
+  });
+}
 
-export const metadata: Metadata = {
-  title: "Mentorer — GoodTribes.org",
-  description: "Hitta en mentor inom GoodTribes-nätverket",
-};
-
-export default async function MentorsPage() {
-  const session = await auth();
+export default async function MentorsPage({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
+  const [session, t] = await Promise.all([
+    auth(),
+    getTranslations({ locale, namespace: "MentorsPage" }),
+  ]);
 
   const [mentors, existingMentor] = await Promise.all([
     prisma.mentor.findMany({
@@ -34,27 +46,25 @@ export default async function MentorsPage() {
     <div>
       <div className="mb-10 flex flex-col sm:flex-row sm:items-end gap-4">
         <div className="flex-1">
-          <h1 className="text-4xl font-bold mb-2">Mentorer</h1>
-          <p className="text-lg text-dark-slate/70">
-            Erfarna personer som hjälper projekt att växa. Boka en session och ta ditt projekt till nästa nivå.
-          </p>
+          <h1 className="text-4xl font-bold mb-2">{t("heading")}</h1>
+          <p className="text-lg text-dark-slate/70">{t("intro")}</p>
         </div>
         {showApplyButton && (
           <Link
             href="/mentors/apply"
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-coral text-white text-sm font-medium rounded-xl hover:bg-watermelon transition-colors whitespace-nowrap"
           >
-            Bli mentor →
+            {t("becomeMentorCta")}
           </Link>
         )}
       </div>
 
       {mentors.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-dark-slate/50 mb-2">Inga verifierade mentorer ännu.</p>
+          <p className="text-dark-slate/50 mb-2">{t("emptyState")}</p>
           {showApplyButton && (
             <Link href="/mentors/apply" className="text-sm text-coral hover:underline mt-2">
-              Ansök om att bli den första →
+              {t("applyFirstCta")}
             </Link>
           )}
         </div>
@@ -90,11 +100,11 @@ export default async function MentorsPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <h2 className="text-lg font-semibold">{user.name}</h2>
                       <span className="text-xs bg-seagrass/10 text-seagrass font-medium px-2 py-0.5 rounded-full">
-                        Mentor
+                        {t("mentorBadge")}
                       </span>
                     </div>
                     <p className="text-xs text-dark-slate/50 mt-0.5">
-                      {sessionCount} genomf{sessionCount === 1 ? "ord" : "örda"} session{sessionCount !== 1 ? "er" : ""}
+                      {t("sessionCount", { count: sessionCount })}
                     </p>
                   </div>
                 </div>
@@ -126,7 +136,7 @@ export default async function MentorsPage() {
                   href={`/mentors/${user.id}`}
                   className="mt-auto inline-flex items-center gap-1 text-sm font-medium text-coral hover:text-watermelon transition-colors"
                 >
-                  Boka mentor →
+                  {t("bookMentorCta")}
                 </Link>
               </div>
             );

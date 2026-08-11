@@ -1,16 +1,21 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createTask, toggleTask } from "../actions";
+import type { Locale } from "next-intl";
 
 
 export default async function TasksPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: Locale; slug: string }>;
 }) {
-  const { slug } = await params;
-  await auth();
+  const { locale, slug } = await params;
+  const [, t] = await Promise.all([
+    auth(),
+    getTranslations({ locale, namespace: "WorkTasksPage" }),
+  ]);
 
   const org = await prisma.organisation.findUnique({
     where: { slug },
@@ -31,17 +36,17 @@ export default async function TasksPage({
       <form action={createTask} className="mb-8 border border-muted-teal rounded-xl p-6 bg-white">
         <input type="hidden" name="orgId" value={org.id} />
         <input type="hidden" name="slug" value={slug} />
-        <h2 className="text-base font-semibold mb-4">New task</h2>
+        <h2 className="text-base font-semibold mb-4">{t("newTaskHeading")}</h2>
         <input
           name="title"
           required
-          placeholder="Task title"
+          placeholder={t("titlePlaceholder")}
           className="w-full border border-muted-teal rounded-lg px-4 py-2 text-sm bg-white focus:outline-none focus:border-seagrass mb-3"
         />
         <textarea
           name="description"
           rows={2}
-          placeholder="Description (optional)"
+          placeholder={t("descriptionPlaceholder")}
           className="w-full border border-muted-teal rounded-lg px-4 py-2 text-sm bg-white focus:outline-none focus:border-seagrass resize-none mb-3"
         />
         <div className="flex justify-end">
@@ -49,29 +54,29 @@ export default async function TasksPage({
             type="submit"
             className="bg-seagrass text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-seagrass/80 transition-colors"
           >
-            Add
+            {t("addButton")}
           </button>
         </div>
       </form>
 
       {tasks.length === 0 && (
-        <p className="text-muted-teal italic">No tasks yet.</p>
+        <p className="text-muted-teal italic">{t("emptyState")}</p>
       )}
 
       {open.length > 0 && (
         <div className="flex flex-col gap-3 mb-8">
           {open.map((task) => (
-            <TaskRow key={task.id} task={task} slug={slug} />
+            <TaskRow key={task.id} task={task} slug={slug} t={t} />
           ))}
         </div>
       )}
 
       {done.length > 0 && (
         <div>
-          <p className="text-xs text-dark-slate/50 uppercase tracking-wide mb-3">Done</p>
+          <p className="text-xs text-dark-slate/50 uppercase tracking-wide mb-3">{t("doneHeading")}</p>
           <div className="flex flex-col gap-3">
             {done.map((task) => (
-              <TaskRow key={task.id} task={task} slug={slug} />
+              <TaskRow key={task.id} task={task} slug={slug} t={t} />
             ))}
           </div>
         </div>
@@ -83,9 +88,11 @@ export default async function TasksPage({
 function TaskRow({
   task,
   slug,
+  t,
 }: {
   task: { id: string; title: string; description: string | null; done: boolean };
   slug: string;
+  t: Awaited<ReturnType<typeof getTranslations>>;
 }) {
   return (
     <div
@@ -104,7 +111,7 @@ function TaskRow({
               ? "bg-seagrass border-seagrass text-white"
               : "border-muted-teal hover:border-seagrass"
           }`}
-          aria-label={task.done ? "Mark as not done" : "Mark as done"}
+          aria-label={task.done ? t("markNotDone") : t("markDone")}
         >
           {task.done && (
             <svg viewBox="0 0 12 12" className="w-3 h-3 fill-current">

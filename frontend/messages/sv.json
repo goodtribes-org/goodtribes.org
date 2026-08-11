@@ -2694,5 +2694,410 @@
     "groupYesterday": "Igår",
     "groupThisWeek": "Denna vecka",
     "groupEarlier": "Tidigare"
+  },
+  "MentorsPage": {
+    "pageDescription": "Hitta en mentor inom GoodTribes-nätverket",
+    "heading": "Mentorer",
+    "intro": "Erfarna personer som hjälper projekt att växa. Boka en session och ta ditt projekt till nästa nivå.",
+    "becomeMentorCta": "Bli mentor →",
+    "emptyState": "Inga verifierade mentorer ännu.",
+    "applyFirstCta": "Ansök om att bli den första →",
+    "mentorBadge": "Mentor",
+    "sessionCount": "{count, plural, one {# genomförd session} other {# genomförda sessioner}}",
+    "bookMentorCta": "Boka mentor →"
+  },
+  "MentorProfilePage": {
+    "backToMentors": "← Alla mentorer",
+    "mentorBadge": "Mentor",
+    "sessionCount": "{count, plural, one {# genomförd session} other {# genomförda sessioner}}",
+    "ratingSummary": "{rating} / 5 ({count, plural, one {# omdöme} other {# omdömen}})",
+    "defaultRecipientName": "denna person",
+    "categoriesHeading": "Kategorier",
+    "aboutHeading": "Om mentorn",
+    "feedbackHeading": "Omdömen",
+    "bookingHeading": "Boka mentorssession",
+    "bookingIntro": "Berätta om ditt projekt och vad du vill ha hjälp med. Mentorn återkommer med lediga tider.",
+    "mustBeLoggedIn": "Du måste vara <link>inloggad</link> för att boka en mentor."
+  },
+  "MentorApplyPage": {
+    "pageTitle": "Bli mentor",
+    "pageDescription": "Ansök om att bli mentor på GoodTribes och hjälp projekt att växa.",
+    "backToMentors": "← Tillbaka till mentorer",
+    "alreadyVerified": "Du är redan en verifierad mentor.",
+    "seeMentorPage": "Se mentorssidan →",
+    "underReview": "Din ansökan är under granskning.",
+    "willReturn": "Vi återkommer när den har granskats.",
+    "heading": "Bli mentor",
+    "intro": "Dela din erfarenhet och hjälp projekt som vill göra skillnad att ta nästa steg."
+  },
+  "ForkNewPage": {
+    "heading": "Gaffla ”{title}”",
+    "intro": "En gaffling skapar ett nytt, fristående projekt utan tillstånd från originalet (PRD 4f). Det nya projektet startar alltid som ideellt (under Stiftelsens paraply) — ingen genväg runt den vanliga processen för att bli kommersiellt.",
+    "titleLabel": "Titel på det nya projektet",
+    "titlePlaceholder": "{title} (fork)",
+    "contributorsHeading": "Bidragsgivare i originalet",
+    "contributorsIntro": "Om det nya projektet någon gång blir vinstdrivande får dessa personer automatiskt en andel av vinstdelningen, proportionellt mot sitt tokeninnehav i originalet — det är obligatoriskt. Att ge dem tokens (och därmed rösträtt) i det nya projektet redan nu är helt valfritt.",
+    "sharePercent": "{percent}% vinstandel",
+    "optionalTokensPlaceholder": "Valfria tokens",
+    "submitButton": "Gaffla",
+    "unknownContributor": "Okänd"
+  },
+  "EditProjectPage": {
+    "heading": "Redigera projekt",
+    "dangerZoneHeading": "Farozon",
+    "dangerZoneWarning": "Att ta bort ett projekt tar permanent bort alla kanban-kort, att-göra-punkter, wikisidor, milstolpar och aktivitet. Detta kan inte ångras."
+  },
+  "SprintsPage": {
+    "heading": "Design Sprints",
+    "intro": "Ett asynkront, steg-för-steg-arbetssätt för att undersöka, skissa och testa idéer tillsammans — utan att alla behöver vara online samtidigt.",
+    "statusActive": "Pågår",
+    "statusPaused": "Pausad",
+    "statusCompleted": "Avslutad",
+    "phaseUnderstand": "Förstå",
+    "phaseDiverge": "Skissa",
+    "phaseDecide": "Besluta",
+    "phasePrototype": "Prototypa",
+    "phaseValidate": "Testa",
+    "paceTogether": "Gemensamt",
+    "paceSpreadOut": "Utspritt över tid",
+    "emptyState": "Inga sprintar ännu."
+  },
+  "SprintPage": {
+    "anonymousUser": "Anonym"
+  },
+  "LeanCanvasPage": {
+    "helpLink": "Hjälp"
+  },
+  "IdeaSessionsPage": {
+    "heading": "Idéverkstad",
+    "intro": "Bolla nya angreppssätt med projektets medlemmar — skriv @AI för att bjuda in AI, som har tillgång till projektets beskrivning, milstolpar, uppgifter och wiki.",
+    "startSessionButton": "+ Starta idésession",
+    "emptyState": "Inga idésessioner ännu för det här projektet.",
+    "unnamedSession": "Namnlös idésession",
+    "roomMeta": "{participants} deltagare · {messages} inlägg · senast aktiv {timeAgo}",
+    "justNow": "just nu",
+    "minutesAgo": "{minutes} min sedan",
+    "hoursAgo": "{hours} tim sedan",
+    "daysAgo": "{days} dagar sedan"
+  },
+  "PartnershipsPage": {
+    "heading": "Partnerskap",
+    "proposeHeading": "Föreslå ett partnerskap",
+    "proposeIntro": "Ange slug för organisationen ni vill knyta till er som partner.",
+    "matchesHeading": "Organisationer som kan vara partners",
+    "pendingHeading": "Väntande",
+    "activeHeading": "Aktiva",
+    "historyHeading": "Historik",
+    "waitingForOrg": "Väntar på organisationens svar",
+    "waitingForUs": "Väntar på ert svar",
+    "statusDeclined": "Avvisad",
+    "statusRevoked": "Återkallad"
+  },
+  "ProjectMembersPage": {
+    "metaTitleSuffix": "Medlemmar"
+  },
+  "NewPollPage": {
+    "backToPolls": "← Tillbaka till omröstningar",
+    "heading": "Ny omröstning"
+  },
+  "NewCalendarEventPage": {
+    "metaTitleSuffix": "Ny händelse",
+    "backToCalendar": "← Kalender",
+    "heading": "Ny händelse"
+  },
+  "NewOrgPage": {
+    "heading": "Ny organisation",
+    "intro": "Fyll i uppgifterna för din organisation."
+  },
+  "NewProjectPage": {
+    "pageTitle": "Nytt projekt",
+    "fromIdeaNote": "Startar från en idé — ge projektet ett namn, fyll i resten direkt efter.",
+    "fromThreadNote": "Startar från en idésession i Idéverkstaden — ge projektet ett namn, fyll i resten direkt efter.",
+    "fromThreadDescriptionSuffix": "(Från en diskussion i Idéverkstaden.)"
+  },
+  "MicroTasksPage": {
+    "pageDescription": "Ta dig an en enskild, avgränsad uppgift på ett projekt — utan att gå med i projektet.",
+    "heading": "Öppna uppgifter",
+    "intro": "Ta dig an en enskild uppgift på ett projekt — inget medlemskap krävs. Perfekt om du vill bidra en gång utan att binda dig.",
+    "allFilter": "Alla",
+    "emptyState": "Inga öppna uppgifter just nu.",
+    "clearFilter": "Rensa filter"
+  },
+  "ProfileSetupPage": {
+    "editHeading": "Redigera profil",
+    "welcomeHeading": "Välkommen!",
+    "editIntro": "Uppdatera dina uppgifter nedan.",
+    "welcomeIntro": "Berätta lite om dig själv för att komma igång."
+  },
+  "SearchPage": {
+    "pageTitle": "Sök",
+    "searchPlaceholder": "Sök projekt, idéer, medlemmar…",
+    "searchButton": "Sök",
+    "typeToSearch": "Skriv något för att söka.",
+    "noResults": "Inga resultat för ”{query}”",
+    "tryDifferentTerm": "Försök med ett annat sökord, eller bläddra nedan:",
+    "resultCount": "{count, plural, one {# resultat} other {# resultat}} för ”{query}”",
+    "typeProject": "Projekt",
+    "typeIdea": "Idé",
+    "typeOrg": "Organisation",
+    "typeMember": "Medlem",
+    "sectionProjects": "Projekt",
+    "sectionOrganisations": "Organisationer",
+    "sectionIdeas": "Idéer",
+    "sectionMembers": "Medlemmar"
+  },
+  "OnboardingPage": {
+    "pageTitle": "Kom igång",
+    "heading": "Vad vill du göra?",
+    "intro": "En sista fråga — sedan är du redo att göra skillnad."
+  },
+  "ShopAdminPage": {
+    "heading": "Shop",
+    "intro": "Hantera varor som kan lösas in mot GT."
+  },
+  "ExclusionCasesPage": {
+    "pageTitle": "Ärenden — Granskningsrådet",
+    "backToCouncil": "← Granskningsrådet",
+    "heading": "Öppna ärenden",
+    "caseCount": "{count, plural, one {# ärende} other {# ärenden}} väntar på hantering.",
+    "emptyState": "Inga öppna ärenden.",
+    "unknownUser": "Okänd",
+    "statusOpen": "Väntar på svar",
+    "statusUnderReview": "Under omröstning",
+    "statusResolved": "Avgjort"
+  },
+  "SuggestionsAdminPage": {
+    "heading": "Förbättringsförslag",
+    "intro": "Förslag från användare. {count, plural, one {# avvaktar} other {# avvaktar}} granskning.",
+    "emptyState": "Inga förslag att granska.",
+    "fromLabel": "Från",
+    "dismissButton": "Avfärda",
+    "markReviewedButton": "Markera granskad"
+  },
+  "CouncilAdminPage": {
+    "heading": "Granskningsrådet",
+    "intro": "Starta och avsluta val till Granskningsrådet (PRD 5.53). Rådets egna sidor finns på <link>/granskningsradet</link>.",
+    "currentMembersHeading": "Nuvarande ledamöter ({count})",
+    "noActiveMembers": "Inga aktiva ledamöter.",
+    "termUntil": "{name} — mandat till {date}",
+    "startNewElectionHeading": "Starta nytt val",
+    "electionInProgress": "Ett val (”{title}”) pågår redan — avsluta det innan ett nytt startas.",
+    "closeElectionButton": "Avsluta val",
+    "defaultElectionTitle": "Val till Granskningsrådet",
+    "descriptionPlaceholder": "Valfri beskrivning av valet…",
+    "deadlineLabel": "Deadline (valfritt)",
+    "startElectionButton": "Starta val",
+    "previousElectionsHeading": "Tidigare val",
+    "noElectionsYet": "Inga val ännu.",
+    "statusOpen": "Pågår",
+    "statusClosed": "Avslutat",
+    "electionMeta": "{options} kandidater · {votes} röster"
+  },
+  "ImpactFundAdminPage": {
+    "heading": "Impact-fonden",
+    "intro": "Fördela fondens saldo som uppstartskapital till nya projekt via en plattformsomfattande GT-röstning (PRD 5.50.4).",
+    "currentBalance": "Aktuellt saldo: {amount}",
+    "activeRoundHeading": "Pågående omgång",
+    "openNewRoundHeading": "Öppna ny omgång",
+    "candidateSlugsLabel": "Kandidatprojekt (slugs, ett per rad eller kommaseparerade)",
+    "openRoundButton": "Öppna omgång",
+    "roundInProgress": "En omgång pågår med {count} kandidatprojekt. Avsluta röstningen för att gå vidare till utbetalning.",
+    "closeRoundButton": "Avsluta omgång",
+    "votingClosedIntro": "Röstningen är avslutad. Rangordningen nedan är vägledande — ange belopp per projekt (max {amount} totalt).",
+    "executePayoutButton": "Genomför utbetalning",
+    "previousRoundsHeading": "Tidigare omgångar",
+    "noRoundsYet": "Inga omgångar ännu.",
+    "openedBy": "Öppnad av {name} — {date}",
+    "unknownUser": "Okänd"
+  },
+  "SandboxGraduationAdminPage": {
+    "heading": "Sandbox-ansökningar",
+    "intro": "Ansökningar om att lämna Sandbox och bli ett GoodTribes-godkänt projekt. För kommersiella projekt tilldelas samtidigt ett paraply-AB och fakturering låses upp.",
+    "pendingHeading": "Väntar på Stiftelsens beslut ({count})",
+    "emptyState": "Inga väntande ansökningar.",
+    "commercialNote": "Kommersiellt — kräver paraply-AB innan godkännande",
+    "nonprofitNote": "Ideellt",
+    "chooseUmbrella": "— välj paraply-AB —",
+    "approveButton": "Godkänn",
+    "rejectionPlaceholder": "Motivering för avslag…",
+    "rejectButton": "Avslå"
+  },
+  "HeroCarouselAdminPage": {
+    "heading": "Startsidan ({locale})",
+    "intro": "Rubrik, bildkarusell och de sex startstegen som visas överst på startsidan för {localeName} besökare.",
+    "localeSv": "svenska",
+    "localeEn": "engelska",
+    "headingSectionTitle": "Rubrik",
+    "defaultHeading": "Välkommen till GoodTribes",
+    "carouselSectionTitle": "Hero-karusell",
+    "stepsSectionTitle": "Startstegen (de sex cirklarna)"
+  },
+  "ExclusionCasePage": {
+    "pageTitle": "Ärende — Granskningsrådet",
+    "decisionNone": "Ingen åtgärd",
+    "decisionWarning": "Varning",
+    "decisionProjectBan": "Uteslutning från projektet",
+    "decisionPlatformBan": "Uteslutning från hela plattformen",
+    "backToOpenCases": "← Öppna ärenden",
+    "heading": "Anmälan mot {name}",
+    "unknownUser": "Okänd",
+    "concernsProject": "Gäller projektet {link}",
+    "reportHeading": "Anmälan",
+    "reportedByLine": "Anmäld av {name} · {date}",
+    "responseHeading": "Svar från den anmälda",
+    "noResponseYet": "Du har inte svarat på anmälan ännu.",
+    "respondButton": "Svara på anmälan",
+    "responseWindowElapsed": "Inget svar lämnades inom svarsfönstret.",
+    "awaitingResponse": "Väntar på svar från den anmälda.",
+    "decisionHeading": "Beslut",
+    "decidedOn": "Avgjort {date}",
+    "proposedDecisionHeading": "Föreslaget beslut",
+    "voteTally": "{votes} av {total} ledamöter har röstat",
+    "voteApprove": "Godkänner",
+    "voteReject": "Avslår",
+    "handledByCouncil": "Ärendet hanteras av Granskningsrådet."
+  },
+  "NotificationsPage": {
+    "heading": "Notiser",
+    "emptyState": "Inga notiser ännu.",
+    "justNow": "just nu",
+    "minutesAgo": "{minutes} min sedan",
+    "hoursAgo": "{hours} tim sedan",
+    "daysAgo": "{days} dagar sedan"
+  },
+  "SettingsPage": {
+    "pageTitle": "Inställningar",
+    "heading": "Inställningar",
+    "profileHeading": "Profil",
+    "noNameSet": "Inget namn angivet",
+    "noBioYet": "Ingen bio ännu",
+    "skillCount": "{count, plural, one {# kompetens} other {# kompetenser}}",
+    "editProfileLink": "Redigera profil"
+  },
+  "WorkPage": {
+    "pageTitle": "Arbetsrum",
+    "heading": "Mina arbetsrum",
+    "intro": "Välj en organisation att arbeta i.",
+    "noOrgsIntro": "Du är inte med i någon organisation ännu.",
+    "exploreOrgsLink": "Utforska organisationer"
+  },
+  "WorkAdminPage": {
+    "heading": "Väntande ansökningar",
+    "emptyState": "Inga väntande ansökningar.",
+    "unnamedUser": "Namnlös",
+    "approveButton": "Godkänn",
+    "rejectButton": "Avslå"
+  },
+  "WorkTasksPage": {
+    "newTaskHeading": "Ny uppgift",
+    "titlePlaceholder": "Uppgiftens titel",
+    "descriptionPlaceholder": "Beskrivning (valfritt)",
+    "addButton": "Lägg till",
+    "emptyState": "Inga uppgifter ännu.",
+    "doneHeading": "Klart",
+    "markNotDone": "Markera som ej klar",
+    "markDone": "Markera som klar"
+  },
+  "NewIdeaPage": {
+    "pageTitle": "Ny idé",
+    "heading": "Dela en idé",
+    "intro": "Har du en idé som kan göra skillnad? Gå igenom stegen nedan — ju mer detaljer du ger, desto mer sannolikt att andra samlas kring den."
+  },
+  "ShopPage": {
+    "pageDescription": "Lös in dina GT mot belöningar.",
+    "heading": "Shop",
+    "intro": "Lös in dina GT mot belöningar.",
+    "yourBalance": "Ditt saldo",
+    "emptyState": "Inga varor i shopen än.",
+    "redemptionHistoryHeading": "Din inlösenhistorik"
+  },
+  "AcademyPage": {
+    "pageDescription": "Lär dig allt du behöver för att förändra världen",
+    "intro": "Lär dig allt du behöver för att förändra världen",
+    "newGuideButton": "+ Ny guide",
+    "categoryAll": "Alla",
+    "categoryProjectManagement": "Projektledning",
+    "categoryCrowdfunding": "Crowdfunding",
+    "categoryCommunity": "Community",
+    "categoryTech": "Teknik",
+    "categoryImpact": "Impact",
+    "difficultyBeginner": "Nybörjare",
+    "difficultyAdvanced": "Avancerad",
+    "emptyState": "Inga guider publicerade ännu. Kom snart!",
+    "readTime": "~{minutes} min",
+    "byAuthor": "av {name}",
+    "unknownAuthor": "Okänd",
+    "completionCount": "{count, plural, one {# avklarad} other {# avklarade}}",
+    "readLink": "Läs →"
+  },
+  "AcademyGuidePage": {
+    "backToAcademy": "Tillbaka till Academy",
+    "completedBadge": "Avklarad",
+    "byAuthor": "av {name}",
+    "unknownAuthor": "Okänd",
+    "readTime": "~{minutes} min",
+    "completionCount": "{count, plural, one {# avklarad} other {# avklarade}}",
+    "unpublishedNotice": "Den här guiden är inte publicerad och syns bara för dig.",
+    "publishButton": "Publicera guide",
+    "completedNotice": "Du har klarat den här guiden!",
+    "difficultyBeginner": "Nybörjare",
+    "difficultyAdvanced": "Avancerad"
+  },
+  "ImpactFundPage": {
+    "pageDescription": "Öppen redovisning av Impact-fondens in- och utflöden",
+    "heading": "Impact-fonden",
+    "intro": "Kapital från kommersiella projekts vinst kanaliserat till uppstartskapital för nya initiativ (PRD 4a, Utvecklingsfas 2.96). Alltid vanliga kronor — aldrig tokens.",
+    "currentBalance": "Aktuellt saldo",
+    "votingOpenLoginPrompt": "En omgång om uppstartskapital pågår — logga in för att rösta.",
+    "transactionsHeading": "Transaktioner",
+    "emptyState": "Ingen transaktion registrerad ännu.",
+    "directionIn": "Inflöde",
+    "directionOut": "Utflöde"
+  },
+  "MinaFordelningarPage": {
+    "heading": "Mina fördelningar",
+    "intro": "Din personliga andel av vinstdelande projekts överskott (PRD 4a, Steg 2). Pengarna är redan dina — välj vilket projekt du vill rikta dem till.",
+    "pendingHeading": "Väntar på ditt val ({count})",
+    "noPending": "Inget väntar på ditt val just nu.",
+    "amountFromProject": "{amount} kr — från {project}",
+    "deadlineNote": "Väljer du inget innan {date} går andelen automatiskt till Impact-fonden.",
+    "chooseProject": "— välj projekt —",
+    "allocateButton": "Rikta min andel",
+    "historyHeading": "Historik",
+    "noHistory": "Ingen historik ännu.",
+    "amountFromProjectShort": "{amount} kr från {project}",
+    "toImpactFundUnset": "→ Impact-fonden (ej valt i tid)"
+  },
+  "SkillListPage": {
+    "pageTitle": "Kompetenser",
+    "pageDescription": "Se vilka kompetenser GoodTribes-communityn har att erbjuda.",
+    "heading": "Kompetenser",
+    "intro": "Vad kan communityns medlemmar? Hitta rätt person för ditt projekt.",
+    "addSkillLink": "+ Lägg till kompetens",
+    "emptyState": "Inga kompetenser ännu — lägg till din egen på din profil!",
+    "personCount": "{count, plural, one {# person} other {# personer}}"
+  },
+  "AcceptInvitePage": {
+    "notFoundHeading": "Inbjudan hittades inte",
+    "notFoundIntro": "Den här inbjudningslänken är ogiltig eller har gått ut.",
+    "browseProjectsLink": "Bläddra bland projekt →",
+    "expiredHeading": "Inbjudan har gått ut",
+    "expiredIntro": "Den här inbjudan har redan använts eller har gått ut.",
+    "invitedBy": "Du har blivit inbjuden av {name}",
+    "unknownInviter": "någon",
+    "joinIntro": "Gå med som medarbetare och börja bidra.",
+    "emailMismatch": "Den här inbjudan skickades till <email>{inviteEmail}</email>, men du är inloggad som <email>{sessionEmail}</email>.",
+    "acceptButton": "Acceptera inbjudan →",
+    "loginToAccept": "Logga in för att acceptera →"
+  },
+  "AcceptOrgInvitePage": {
+    "heading": "Organisationsinbjudan",
+    "alreadyUsed": "Den här inbjudan har redan använts.",
+    "expired": "Den här inbjudan har gått ut.",
+    "browseOrgsLink": "Bläddra bland organisationer →",
+    "invitedTo": "Du har blivit inbjuden att gå med i",
+    "acceptButton": "Acceptera och gå med →",
+    "loginPrompt": "Logga in för att acceptera den här inbjudan.",
+    "loginButton": "Logga in →"
   }
 }

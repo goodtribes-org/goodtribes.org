@@ -2,15 +2,20 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import { isLeadRole } from "@/lib/authz";
 import ProposePartnershipForm from "./ProposePartnershipForm";
 import PartnershipActions from "@/components/PartnershipActions";
 import ProposeMatchButton from "@/components/ProposeMatchButton";
 import { findMatchingOrgsForProject } from "@/lib/partnershipMatching";
+import type { Locale } from "next-intl";
 
-export default async function ProjectPartnershipsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const session = await auth();
+export default async function ProjectPartnershipsPage({ params }: { params: Promise<{ locale: Locale; slug: string }> }) {
+  const { locale, slug } = await params;
+  const [session, t] = await Promise.all([
+    auth(),
+    getTranslations({ locale, namespace: "PartnershipsPage" }),
+  ]);
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
 
@@ -37,20 +42,18 @@ export default async function ProjectPartnershipsPage({ params }: { params: Prom
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-xl font-bold text-dark-slate mb-6">Partnerskap</h1>
+      <h1 className="text-xl font-bold text-dark-slate mb-6">{t("heading")}</h1>
 
       <div className="border border-dashed border-muted-teal/50 rounded-xl p-6 mb-8">
-        <h2 className="font-semibold text-dark-slate mb-1">Föreslå ett partnerskap</h2>
-        <p className="text-sm text-dark-slate/50 mb-4">
-          Ange slug för organisationen ni vill knyta till er som partner.
-        </p>
+        <h2 className="font-semibold text-dark-slate mb-1">{t("proposeHeading")}</h2>
+        <p className="text-sm text-dark-slate/50 mb-4">{t("proposeIntro")}</p>
         <ProposePartnershipForm projectSlug={slug} />
       </div>
 
       {matches.length > 0 && (
         <section className="mb-8">
           <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">
-            Organisationer som kan vara partners
+            {t("matchesHeading")}
           </h2>
           <div className="divide-y divide-muted-teal/20 border border-muted-teal/30 rounded-lg overflow-hidden">
             {matches.map((m) => (
@@ -70,7 +73,7 @@ export default async function ProjectPartnershipsPage({ params }: { params: Prom
 
       {pending.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">Väntande</h2>
+          <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">{t("pendingHeading")}</h2>
           <div className="divide-y divide-muted-teal/20 border border-muted-teal/30 rounded-lg overflow-hidden">
             {pending.map((p) => (
               <div key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
@@ -79,7 +82,7 @@ export default async function ProjectPartnershipsPage({ params }: { params: Prom
                     {p.organisation.name}
                   </Link>
                   <p className="text-xs text-dark-slate/40">
-                    {p.proposedBy === "project" ? "Väntar på organisationens svar" : "Väntar på ert svar"} · {p.type}
+                    {p.proposedBy === "project" ? t("waitingForOrg") : t("waitingForUs")} · {p.type}
                   </p>
                 </div>
                 {p.proposedBy === "org" && <PartnershipActions partnershipId={p.id} mode="respond" />}
@@ -91,7 +94,7 @@ export default async function ProjectPartnershipsPage({ params }: { params: Prom
 
       {active.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">Aktiva</h2>
+          <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">{t("activeHeading")}</h2>
           <div className="divide-y divide-muted-teal/20 border border-muted-teal/30 rounded-lg overflow-hidden">
             {active.map((p) => (
               <div key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
@@ -110,13 +113,13 @@ export default async function ProjectPartnershipsPage({ params }: { params: Prom
 
       {other.length > 0 && (
         <section>
-          <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">Historik</h2>
+          <h2 className="text-xs font-semibold text-dark-slate/50 uppercase tracking-widest mb-3">{t("historyHeading")}</h2>
           <div className="divide-y divide-muted-teal/20 border border-muted-teal/30 rounded-lg overflow-hidden">
             {other.map((p) => (
               <div key={p.id} className="flex items-center justify-between gap-3 px-4 py-3">
                 <span className="text-sm text-dark-slate/60">{p.organisation.name}</span>
                 <span className="text-xs text-dark-slate/40">
-                  {p.status === "declined" ? "Avvisad" : "Återkallad"}
+                  {p.status === "declined" ? t("statusDeclined") : t("statusRevoked")}
                 </span>
               </div>
             ))}

@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect, Link } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 
 const TYPE_ICON: Record<string, string> = {
@@ -21,19 +21,21 @@ const TYPE_ICON: Record<string, string> = {
   room_mention: "📣",
 };
 
-function timeAgo(date: Date): string {
+function timeAgo(date: Date, t: Awaited<ReturnType<typeof getTranslations>>): string {
   const s = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (s < 60) return "just now";
+  if (s < 60) return t("justNow");
   const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
+  if (m < 60) return t("minutesAgo", { minutes: m });
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
+  if (h < 24) return t("hoursAgo", { hours: h });
+  return t("daysAgo", { days: Math.floor(h / 24) });
 }
 
 export default async function NotificationsPage() {
   const [session, locale] = await Promise.all([auth(), getLocale()]);
   if (!session?.user?.id) { redirect({ href: "/login", locale }); return; }
+
+  const t = await getTranslations({ locale, namespace: "NotificationsPage" });
 
   const notifications = await prisma.notification.findMany({
     where: { userId: session.user.id },
@@ -48,11 +50,11 @@ export default async function NotificationsPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-8">Notifications</h1>
+      <h1 className="text-2xl font-bold mb-8">{t("heading")}</h1>
 
       {notifications.length === 0 ? (
         <div className="border border-dashed border-muted-teal rounded-lg p-10 text-center">
-          <p className="text-dark-slate/50">No notifications yet.</p>
+          <p className="text-dark-slate/50">{t("emptyState")}</p>
         </div>
       ) : (
         <div className="border border-muted-teal rounded-lg overflow-hidden divide-y divide-muted-teal/40">
@@ -64,7 +66,7 @@ export default async function NotificationsPage() {
                   <p className="text-sm text-dark-slate">{n.title}</p>
                   {n.body && <p className="text-xs text-dark-slate/50 mt-0.5 truncate">{n.body}</p>}
                 </div>
-                <span className="text-xs text-dark-slate/40 flex-shrink-0 mt-0.5">{timeAgo(n.createdAt)}</span>
+                <span className="text-xs text-dark-slate/40 flex-shrink-0 mt-0.5">{timeAgo(n.createdAt, t)}</span>
               </div>
             );
             return n.url ? (

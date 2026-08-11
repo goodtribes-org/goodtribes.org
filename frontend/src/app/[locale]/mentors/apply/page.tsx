@@ -3,18 +3,30 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { buildMetadata } from "@/lib/metadata";
 import ApplyForm from "./ApplyForm";
+import type { Locale } from "next-intl";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "MentorApplyPage" });
+  return buildMetadata({
+    locale,
+    path: "/mentors/apply",
+    title: t("pageTitle"),
+    description: t("pageDescription"),
+  });
+}
 
-export const metadata: Metadata = {
-  title: "Bli mentor — GoodTribes.org",
-  description: "Ansök om att bli mentor på GoodTribes och hjälp projekt att växa.",
-};
-
-export default async function ApplyMentorPage() {
-  const session = await auth();
+export default async function ApplyMentorPage({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
+  const [session, t] = await Promise.all([
+    auth(),
+    getTranslations({ locale, namespace: "MentorApplyPage" }),
+  ]);
   if (!session?.user?.id) redirect("/login");
 
   const existing = await prisma.mentor.findUnique({
@@ -29,20 +41,20 @@ export default async function ApplyMentorPage() {
           href="/mentors"
           className="text-sm text-dark-slate/50 hover:text-seagrass mb-8 inline-block"
         >
-          ← Tillbaka till mentorer
+          {t("backToMentors")}
         </Link>
         <div className="p-6 border border-muted-teal/40 rounded-xl text-center">
           {existing.verified ? (
             <>
-              <p className="font-semibold text-dark-slate mb-1">Du är redan en verifierad mentor.</p>
+              <p className="font-semibold text-dark-slate mb-1">{t("alreadyVerified")}</p>
               <Link href="/mentors" className="text-sm text-coral hover:underline">
-                Se mentorssidan →
+                {t("seeMentorPage")}
               </Link>
             </>
           ) : (
             <>
-              <p className="font-semibold text-dark-slate mb-1">Din ansökan är under granskning.</p>
-              <p className="text-sm text-dark-slate/60">Vi återkommer när den har granskats.</p>
+              <p className="font-semibold text-dark-slate mb-1">{t("underReview")}</p>
+              <p className="text-sm text-dark-slate/60">{t("willReturn")}</p>
             </>
           )}
         </div>
@@ -56,14 +68,12 @@ export default async function ApplyMentorPage() {
         href="/mentors"
         className="text-sm text-dark-slate/50 hover:text-seagrass mb-8 inline-block"
       >
-        ← Tillbaka till mentorer
+        {t("backToMentors")}
       </Link>
 
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Bli mentor</h1>
-        <p className="text-lg text-dark-slate/70">
-          Dela din erfarenhet och hjälp projekt som vill göra skillnad att ta nästa steg.
-        </p>
+        <h1 className="text-4xl font-bold mb-2">{t("heading")}</h1>
+        <p className="text-lg text-dark-slate/70">{t("intro")}</p>
       </div>
 
       <ApplyForm />

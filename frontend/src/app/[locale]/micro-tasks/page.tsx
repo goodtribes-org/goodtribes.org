@@ -4,22 +4,30 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
+import { getTranslations } from "next-intl/server";
+import { buildMetadata } from "@/lib/metadata";
 
 import Pagination from "@/components/Pagination";
 import { CATEGORY_META, PRIORITY_META, formatDate } from "@/components/kanbanShared";
+import type { Locale } from "next-intl";
 
-export const metadata: Metadata = {
-  title: "Öppna uppgifter — GoodTribes.org",
-  description: "Ta dig an en enskild, avgränsad uppgift på ett projekt — utan att gå med i projektet.",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "MicroTasksPage" });
+  return buildMetadata({ locale, path: "/micro-tasks", title: t("heading"), description: t("pageDescription") });
+}
 
 const PAGE_SIZE = 12;
 
 export default async function MicroTasksPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: Locale }>;
   searchParams: Promise<{ category?: string; page?: string }>;
 }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "MicroTasksPage" });
   const { category, page: pageStr } = await searchParams;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
 
@@ -51,12 +59,10 @@ export default async function MicroTasksPage({
     <div>
       <div className="mb-4">
         <h1 className="text-2xl font-bold text-dark-slate">
-          Öppna uppgifter{" "}
+          {t("heading")}{" "}
           <span className="text-dark-slate/40 font-normal">({total})</span>
         </h1>
-        <p className="text-sm text-dark-slate/60 mt-1">
-          Ta dig an en enskild uppgift på ett projekt — inget medlemskap krävs. Perfekt om du vill bidra en gång utan att binda dig.
-        </p>
+        <p className="text-sm text-dark-slate/60 mt-1">{t("intro")}</p>
       </div>
 
       <div className="flex flex-wrap gap-1.5 mb-4">
@@ -66,7 +72,7 @@ export default async function MicroTasksPage({
             !category ? "border-gray-400 bg-gray-100 text-gray-600" : "border-gray-200 text-gray-400 hover:border-gray-300"
           }`}
         >
-          Alla
+          {t("allFilter")}
         </Link>
         {Object.entries(CATEGORY_META).map(([key, meta]) => (
           <Link
@@ -84,10 +90,10 @@ export default async function MicroTasksPage({
 
       {cards.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-dark-slate/50 mb-4">Inga öppna uppgifter just nu.</p>
+          <p className="text-dark-slate/50 mb-4">{t("emptyState")}</p>
           {category && (
             <Link href="/micro-tasks" className="text-coral hover:underline text-sm">
-              Rensa filter
+              {t("clearFilter")}
             </Link>
           )}
         </div>

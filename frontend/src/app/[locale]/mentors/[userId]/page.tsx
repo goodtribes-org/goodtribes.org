@@ -2,8 +2,10 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import BookingForm from "./BookingForm";
 import MessageButton from "@/components/MessageButton";
+import type { Locale } from "next-intl";
 
 export const dynamic = "force-dynamic";
 
@@ -11,10 +13,13 @@ export const dynamic = "force-dynamic";
 export default async function MentorProfilePage({
   params,
 }: {
-  params: Promise<{ userId: string }>;
+  params: Promise<{ locale: Locale; userId: string }>;
 }) {
-  const { userId } = await params;
-  const session = await auth();
+  const { locale, userId } = await params;
+  const [session, t] = await Promise.all([
+    auth(),
+    getTranslations({ locale, namespace: "MentorProfilePage" }),
+  ]);
 
   const [mentor, ownedProjects] = await Promise.all([
     prisma.mentor.findUnique({
@@ -66,7 +71,7 @@ export default async function MentorProfilePage({
         href="/mentors"
         className="text-sm text-dark-slate/50 hover:text-seagrass mb-8 inline-block"
       >
-        ← Alla mentorer
+        {t("backToMentors")}
       </Link>
 
       {/* Mentor header */}
@@ -82,20 +87,18 @@ export default async function MentorProfilePage({
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-3xl font-bold">{user.name}</h1>
             <span className="text-sm bg-seagrass/10 text-seagrass font-medium px-2.5 py-0.5 rounded-full">
-              Mentor
+              {t("mentorBadge")}
             </span>
           </div>
           <div className="flex items-center gap-4 mt-1 text-sm text-dark-slate/60">
-            <span>{acceptedRequests.length} genomförda sessioner</span>
+            <span>{t("sessionCount", { count: acceptedRequests.length })}</span>
             {avgRating !== null && (
-              <span>
-                {avgRating.toFixed(1)} / 5 ({feedbacks.length} omdömen)
-              </span>
+              <span>{t("ratingSummary", { rating: avgRating.toFixed(1), count: feedbacks.length })}</span>
             )}
           </div>
           {session?.user?.id && session.user.id !== userId && (
             <div className="mt-2">
-              <MessageButton toUserId={userId} toUserName={user.name ?? "denna person"} />
+              <MessageButton toUserId={userId} toUserName={user.name ?? t("defaultRecipientName")} />
             </div>
           )}
         </div>
@@ -104,7 +107,7 @@ export default async function MentorProfilePage({
       {/* Categories */}
       {mentor.categories.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-3">Kategorier</h2>
+          <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-3">{t("categoriesHeading")}</h2>
           <div className="flex flex-wrap gap-2">
             {mentor.categories.map((cat) => (
               <span
@@ -121,7 +124,7 @@ export default async function MentorProfilePage({
       {/* Bio */}
       {bio && (
         <section className="mb-8">
-          <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-2">Om mentorn</h2>
+          <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-2">{t("aboutHeading")}</h2>
           <p className="text-dark-slate whitespace-pre-line">{bio}</p>
         </section>
       )}
@@ -129,7 +132,7 @@ export default async function MentorProfilePage({
       {/* Feedback */}
       {feedbacks.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-3">Omdömen</h2>
+          <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-3">{t("feedbackHeading")}</h2>
           <div className="flex flex-col gap-3">
             {feedbacks.map((fb, i) => (
               <div key={i} className="border border-muted-teal/40 rounded-xl p-4">
@@ -152,20 +155,20 @@ export default async function MentorProfilePage({
 
       {/* Booking form */}
       <section className="border-t border-muted-teal/40 pt-8">
-        <h2 className="text-xl font-semibold mb-1">Boka mentorssession</h2>
-        <p className="text-sm text-dark-slate/60 mb-5">
-          Berätta om ditt projekt och vad du vill ha hjälp med. Mentorn återkommer med lediga tider.
-        </p>
+        <h2 className="text-xl font-semibold mb-1">{t("bookingHeading")}</h2>
+        <p className="text-sm text-dark-slate/60 mb-5">{t("bookingIntro")}</p>
 
         {session?.user?.id ? (
           <BookingForm mentorId={mentor.id} projects={ownedProjects} />
         ) : (
           <p className="text-sm text-dark-slate/60">
-            Du måste vara{" "}
-            <Link href="/login" className="text-coral hover:underline">
-              inloggad
-            </Link>{" "}
-            för att boka en mentor.
+            {t.rich("mustBeLoggedIn", {
+              link: (chunks) => (
+                <Link href="/login" className="text-coral hover:underline">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </p>
         )}
       </section>

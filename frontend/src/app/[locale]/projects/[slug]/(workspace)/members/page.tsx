@@ -3,13 +3,18 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import MembersManager from "./MembersManager";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { isLeadRole, isSiteAdmin } from "@/lib/authz";
+import type { Locale } from "next-intl";
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params;
-  const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
+export async function generateMetadata({ params }: { params: Promise<{ locale: Locale; slug: string }> }): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const [project, t] = await Promise.all([
+    prisma.project.findUnique({ where: { slug }, select: { title: true } }),
+    getTranslations({ locale, namespace: "ProjectMembersPage" }),
+  ]);
   if (!project) return {};
-  return { title: `${project.title} — Medlemmar` };
+  return { title: `${project.title} — ${t("metaTitleSuffix")}` };
 }
 
 export default async function MembersPage({ params }: { params: Promise<{ slug: string }> }) {

@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { getAnthropicClient } from "@/lib/anthropic";
 import { prisma } from "@/lib/prisma";
 import { publishToRoom, publishToUser } from "@/lib/redis";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
@@ -80,7 +80,8 @@ export async function triggerAiThreadReply(room: Room): Promise<void> {
   const aiUser = await getAiParticipantUser();
 
   try {
-    if (!process.env.ANTHROPIC_API_KEY) {
+    const client = await getAnthropicClient();
+    if (!client) {
       await persistAiMessage(room.id, "AI är inte konfigurerad just nu.", aiUser.id);
       return;
     }
@@ -97,7 +98,6 @@ export async function triggerAiThreadReply(room: Room): Promise<void> {
     }));
 
     const system = await buildSystemPrompt(room);
-    const client = new Anthropic();
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 1024,

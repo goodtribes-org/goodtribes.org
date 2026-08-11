@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { getNetworkStats } from "@/lib/networkStats";
+import { getAnthropicClient } from "@/lib/anthropic";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -20,7 +21,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  const client = await getAnthropicClient();
+  if (!client) {
     return NextResponse.json({ error: "AI not configured" }, { status: 500 });
   }
 
@@ -31,9 +33,6 @@ export async function POST(req: Request) {
         `${i.title}${i.country ? ` (${i.country})` : ""}: ${i.contributors} bidragsgivare, ${Math.round(i.tokens)} tokens, ${i.tasksDone} avklarade uppgifter, ${i.fundsRaised} insamlat`
     )
     .join("\n");
-
-  const Anthropic = (await import("@anthropic-ai/sdk")).default;
-  const client = new Anthropic();
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-6",

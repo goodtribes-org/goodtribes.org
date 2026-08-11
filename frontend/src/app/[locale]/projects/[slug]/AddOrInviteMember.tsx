@@ -56,7 +56,6 @@ export default function AddOrInviteMember({
 
   useEffect(() => {
     refreshPendingInvites();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
   useEffect(() => {

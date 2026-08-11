@@ -1,33 +1,36 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getTranslations } from "next-intl/server";
 import { hasProjectRole, PROJECT_LEAD_ROLES, isSiteAdmin } from "@/lib/authz";
 import { listSprintsForProject } from "@/lib/sprints";
 import { Link } from "@/i18n/navigation";
 import NewSprintForm from "./NewSprintForm";
 import DeleteSprintButton from "./DeleteSprintButton";
+import type { Locale } from "next-intl";
 
-const STATUS_LABEL: Record<string, string> = {
-  ACTIVE: "Pågår",
-  PAUSED: "Pausad",
-  COMPLETED: "Avslutad",
-};
-
-const PHASE_LABEL: Record<string, string> = {
-  UNDERSTAND: "Förstå",
-  DIVERGE: "Skissa",
-  DECIDE: "Besluta",
-  PROTOTYPE: "Prototypa",
-  VALIDATE: "Testa",
-};
-
-export default async function SprintsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const [session, project] = await Promise.all([
+export default async function SprintsPage({ params }: { params: Promise<{ locale: Locale; slug: string }> }) {
+  const { locale, slug } = await params;
+  const [session, project, t] = await Promise.all([
     auth(),
     prisma.project.findUnique({ where: { slug }, select: { id: true, title: true } }),
+    getTranslations({ locale, namespace: "SprintsPage" }),
   ]);
   if (!project) notFound();
+
+  const STATUS_LABEL: Record<string, string> = {
+    ACTIVE: t("statusActive"),
+    PAUSED: t("statusPaused"),
+    COMPLETED: t("statusCompleted"),
+  };
+
+  const PHASE_LABEL: Record<string, string> = {
+    UNDERSTAND: t("phaseUnderstand"),
+    DIVERGE: t("phaseDiverge"),
+    DECIDE: t("phaseDecide"),
+    PROTOTYPE: t("phasePrototype"),
+    VALIDATE: t("phaseValidate"),
+  };
 
   const [isLead, isAdmin] = session?.user?.id
     ? await Promise.all([
@@ -40,11 +43,8 @@ export default async function SprintsPage({ params }: { params: Promise<{ slug: 
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-xl font-bold text-dark-slate mb-1">Design Sprints</h1>
-      <p className="text-sm text-dark-slate/60 mb-6">
-        Ett asynkront, steg-för-steg-arbetssätt för att undersöka, skissa och testa idéer tillsammans —
-        utan att alla behöver vara online samtidigt.
-      </p>
+      <h1 className="text-xl font-bold text-dark-slate mb-1">{t("heading")}</h1>
+      <p className="text-sm text-dark-slate/60 mb-6">{t("intro")}</p>
 
       <div className="border border-muted-teal/30 rounded-xl divide-y divide-muted-teal/15 mb-8">
         {sprints.map((s) => (
@@ -53,7 +53,7 @@ export default async function SprintsPage({ params }: { params: Promise<{ slug: 
               <div className="min-w-0">
                 <p className="text-sm font-medium text-dark-slate truncate">{s.name}</p>
                 <p className="text-xs text-dark-slate/40">
-                  {PHASE_LABEL[s.currentPhase]} · {s.pace === "TOGETHER" ? "Gemensamt" : "Utspritt över tid"}
+                  {PHASE_LABEL[s.currentPhase]} · {s.pace === "TOGETHER" ? t("paceTogether") : t("paceSpreadOut")}
                 </p>
               </div>
               <span
@@ -72,7 +72,7 @@ export default async function SprintsPage({ params }: { params: Promise<{ slug: 
           </div>
         ))}
         {sprints.length === 0 && (
-          <p className="text-sm text-dark-slate/40 italic p-4">Inga sprintar ännu.</p>
+          <p className="text-sm text-dark-slate/40 italic p-4">{t("emptyState")}</p>
         )}
       </div>
 

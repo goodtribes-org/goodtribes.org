@@ -107,12 +107,6 @@ function diffDays(a: Date, b: Date): number {
   return Math.round((b.getTime() - a.getTime()) / 86400000);
 }
 
-function fmtDate(d: Date | string | null): string | null {
-  const date = toDate(d);
-  if (!date) return null;
-  return date.toLocaleDateString("sv-SE", { day: "numeric", month: "short", year: "numeric" });
-}
-
 // useDroppable/useDraggable must be called from a real component (one hook
 // call per rendered instance), not inline inside a .map() callback — these
 // stay in this file since they're only ever used here, not shared elsewhere.

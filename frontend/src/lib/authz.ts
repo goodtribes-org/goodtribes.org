@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 import type { SiteRole, ProjectRole } from "@prisma/client";
 
 export type { ProjectRole };
@@ -73,6 +74,17 @@ export async function requireSiteAdmin(userId: string) {
     throw new Error("Forbidden");
   }
   return user;
+}
+
+// The common opener for every site-admin server action: get the session,
+// require site-admin, hand back the admin's own userId for audit fields
+// (reviewedById, executedById, etc). Every call site that used to hand-roll
+// this only ever needed the id, never the rest of the user row.
+export async function requireAdminSession(): Promise<string> {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Forbidden");
+  await requireSiteAdmin(session.user.id);
+  return session.user.id;
 }
 
 // Granskningsrådet (PRD 5.53) — a community-elected, term-limited body,

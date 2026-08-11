@@ -25,13 +25,6 @@ type JoinRequest = {
   createdAt: string;
 };
 
-const ROLE_LABELS: Record<string, string> = {
-  FOUNDER: "Grundare",
-  ADMIN: "Admin",
-  MEMBER: "Bidragsgivare",
-  FOLLOWER: "Följare",
-};
-
 function Avatar({ name, image }: { name: string | null; image: string | null }) {
   const initials = (name ?? "?").charAt(0).toUpperCase();
   return (

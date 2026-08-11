@@ -1,19 +1,24 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import EditProjectForm from "./EditProjectForm";
 import DeleteProjectButton from "@/components/DeleteProjectButton";
 import { isLeadRole } from "@/lib/authz";
 import { parseColumnMap, parseStatusOptions } from "@/lib/githubColumnMap";
+import type { Locale } from "next-intl";
 
 
 export default async function EditProjectPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: Locale; slug: string }>;
 }) {
-  const { slug } = await params;
-  const session = await auth();
+  const { locale, slug } = await params;
+  const [session, t] = await Promise.all([
+    auth(),
+    getTranslations({ locale, namespace: "EditProjectPage" }),
+  ]);
   if (!session?.user?.id) redirect("/login");
 
   const [project, skills, userOrgs] = await Promise.all([
@@ -65,7 +70,7 @@ export default async function EditProjectPage({
         <a href={`/projects/${slug}`} className="text-sm text-dark-slate/50 hover:text-seagrass">
           ← {project.title}
         </a>
-        <h1 className="text-2xl font-bold mt-1">Edit project</h1>
+        <h1 className="text-2xl font-bold mt-1">{t("heading")}</h1>
       </div>
       <EditProjectForm
         slug={slug}
@@ -110,10 +115,8 @@ export default async function EditProjectPage({
       />
       {isOwner && (
         <div className="mt-12 pt-8 border-t border-red-200">
-          <h2 className="text-sm font-semibold text-red-700 mb-2">Danger zone</h2>
-          <p className="text-xs text-dark-slate/60 mb-4">
-            Deleting a project permanently removes all kanban cards, todos, wiki pages, milestones, and activity. This cannot be undone.
-          </p>
+          <h2 className="text-sm font-semibold text-red-700 mb-2">{t("dangerZoneHeading")}</h2>
+          <p className="text-xs text-dark-slate/60 mb-4">{t("dangerZoneWarning")}</p>
           <DeleteProjectButton slug={slug} />
         </div>
       )}

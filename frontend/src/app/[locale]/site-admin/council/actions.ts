@@ -1,25 +1,17 @@
 "use server";
 
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { requireSiteAdmin } from "@/lib/authz";
+import { requireAdminSession } from "@/lib/authz";
 
 const COUNCIL_SEAT_COUNT = 5;
 const COUNCIL_TERM_MONTHS = 12;
-
-async function requireAdmin(): Promise<string> {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Forbidden");
-  await requireSiteAdmin(session.user.id);
-  return session.user.id;
-}
 
 // Bootstraps a new Granskningsrådet election (PRD 5.53). Site-admin starts
 // it since no council exists yet to run its own elections — a one-time
 // chicken-and-egg exception, not an ongoing staff role in council affairs.
 export async function createCouncilElection(formData: FormData) {
-  const adminId = await requireAdmin();
+  const adminId = await requireAdminSession();
 
   const title = (formData.get("title") as string)?.trim() || "Val till Granskningsrådet";
   const description = (formData.get("description") as string | null)?.trim() || null;
@@ -45,7 +37,7 @@ export async function createCouncilElection(formData: FormData) {
 // Tallies GT-weighted votes, seats the top `seatCount` candidates as
 // ReviewCouncilMembers for `termMonths`, and closes the poll.
 export async function closeCouncilElection(pollId: string) {
-  await requireAdmin();
+  await requireAdminSession();
 
   const poll = await prisma.platformPoll.findUnique({
     where: { id: pollId },

@@ -1,13 +1,24 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma"
+import { getTranslations } from "next-intl/server";
+import { buildMetadata } from "@/lib/metadata";
 import OnboardingWizard from "./OnboardingWizard";
+import type { Metadata } from "next";
+import type { Locale } from "next-intl";
 
+export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "OnboardingPage" });
+  return buildMetadata({ locale, path: "/onboarding", title: t("pageTitle") });
+}
 
-export const metadata = { title: "Kom igång – GoodTribes" };
-
-export default async function OnboardingPage() {
-  const session = await auth();
+export default async function OnboardingPage({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
+  const [session, t] = await Promise.all([
+    auth(),
+    getTranslations({ locale, namespace: "OnboardingPage" }),
+  ]);
   if (!session?.user?.id) redirect("/login");
 
   const user = await prisma.user.findUnique({
@@ -22,11 +33,9 @@ export default async function OnboardingPage() {
       <div className="max-w-2xl mx-auto">
         <div className="mb-12 text-center">
           <h1 className="text-3xl font-extrabold tracking-tight text-dark-slate mb-2">
-            Vad vill du göra?
+            {t("heading")}
           </h1>
-          <p className="text-dark-slate/60">
-            En sista fråga — sedan är du redo att göra skillnad.
-          </p>
+          <p className="text-dark-slate/60">{t("intro")}</p>
         </div>
         <OnboardingWizard />
       </div>

@@ -1,19 +1,22 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getTranslations } from "next-intl/server";
 import { hasProjectRole, PROJECT_LEAD_ROLES, isRealMember, isSiteAdmin } from "@/lib/authz";
 import { getSprintForProject, getPhaseData, getVotingBoard, getVoterRemainingVotes, PHASE_ORDER } from "@/lib/sprints";
 import SprintWorkspace from "./SprintWorkspace";
+import type { Locale } from "next-intl";
 
 export default async function SprintPage({
   params,
 }: {
-  params: Promise<{ slug: string; sprintId: string }>;
+  params: Promise<{ locale: Locale; slug: string; sprintId: string }>;
 }) {
-  const { slug, sprintId } = await params;
-  const [session, project] = await Promise.all([
+  const { locale, slug, sprintId } = await params;
+  const [session, project, t] = await Promise.all([
     auth(),
     prisma.project.findUnique({ where: { slug }, select: { id: true } }),
+    getTranslations({ locale, namespace: "SprintPage" }),
   ]);
   if (!project) notFound();
 
@@ -63,7 +66,7 @@ export default async function SprintPage({
       isLead={isLead}
       isMember={isMember}
       canDelete={isLead || isAdmin}
-      userName={session?.user?.name ?? "Anonym"}
+      userName={session?.user?.name ?? t("anonymousUser")}
     />
   );
 }

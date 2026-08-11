@@ -178,7 +178,6 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
     });
     const timeout = setTimeout(() => setHighlightId(null), 2500);
     return () => clearTimeout(timeout);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -470,7 +469,6 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
                                   {m.attachments.map((a) =>
                                     a.mimeType.startsWith("image/") ? (
                                       <a key={a.id} href={`/api/files/${a.key}`} target="_blank" rel="noopener noreferrer">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
                                           src={`/api/files/${a.key}`}
                                           alt={a.name}

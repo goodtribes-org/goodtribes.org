@@ -1,11 +1,17 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma"
+import { getTranslations } from "next-intl/server";
 import ProfileSetupForm from "./ProfileSetupForm";
+import type { Locale } from "next-intl";
 
 
-export default async function ProfileSetupPage() {
-  const session = await auth();
+export default async function ProfileSetupPage({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
+  const [session, t] = await Promise.all([
+    auth(),
+    getTranslations({ locale, namespace: "ProfileSetupPage" }),
+  ]);
   if (!session) redirect("/login");
 
   const user = await prisma.user.findUnique({
@@ -35,12 +41,10 @@ export default async function ProfileSetupPage() {
   return (
     <div className="max-w-lg mx-auto mt-12">
       <h1 className="text-2xl font-bold mb-1">
-        {session.user?.onboardingDone ? "Edit profile" : "Welcome!"}
+        {session.user?.onboardingDone ? t("editHeading") : t("welcomeHeading")}
       </h1>
       <p className="text-dark-slate/70 mb-8">
-        {session.user?.onboardingDone
-          ? "Update your details below."
-          : "Tell us a little about yourself to get started."}
+        {session.user?.onboardingDone ? t("editIntro") : t("welcomeIntro")}
       </p>
 
       <ProfileSetupForm

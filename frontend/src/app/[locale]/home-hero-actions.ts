@@ -1,18 +1,12 @@
 "use server";
 
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { requireSiteAdmin } from "@/lib/authz";
+import { requireAdminSession } from "@/lib/authz";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { Prisma } from "@prisma/client";
 import type { HomeHeroSlide } from "@prisma/client";
 import type { Locale } from "next-intl";
-
-async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Forbidden");
-  return requireSiteAdmin(session.user.id);
-}
 
 export type ObstacleInput = { lead: string; text: string };
 export type PointInput = { pct: string; text: string };
@@ -42,14 +36,16 @@ function toData(input: HeroSlideInput) {
   const obstacles = input.obstacles.filter((o) => o.lead.trim() || o.text.trim());
   const points = input.points.filter((p) => p.pct.trim() || p.text.trim());
 
+  const outro = input.outro.trim();
+
   return {
     imageUrl,
     alt,
     heading,
-    body,
+    body: sanitizeHtml(body),
     bodyLine2: input.bodyLine2.trim() || null,
     obstacles: obstacles.length ? (obstacles as unknown as Prisma.InputJsonValue) : Prisma.DbNull,
-    outro: input.outro.trim() || null,
+    outro: outro ? sanitizeHtml(outro) : null,
     points: points.length ? (points as unknown as Prisma.InputJsonValue) : Prisma.DbNull,
     menuLabel,
     tintColor: input.tintColor,
@@ -65,7 +61,7 @@ type SaveResult = { error: string } | { ok: true; slide: HomeHeroSlide };
 // between a Swedish and English slide the way SitePage links translations
 // of "the same" page).
 export async function createHeroSlide(input: HeroSlideInput, locale: Locale): Promise<SaveResult> {
-  await requireAdmin();
+  await requireAdminSession();
 
   const data = toData(input);
   if (!data) return { error: "Bild, alt-text, rubrik, text och menyetikett krävs." };
@@ -80,7 +76,7 @@ export async function createHeroSlide(input: HeroSlideInput, locale: Locale): Pr
 }
 
 export async function updateHeroSlide(id: string, input: HeroSlideInput): Promise<SaveResult> {
-  await requireAdmin();
+  await requireAdminSession();
 
   const data = toData(input);
   if (!data) return { error: "Bild, alt-text, rubrik, text och menyetikett krävs." };
@@ -92,7 +88,7 @@ export async function updateHeroSlide(id: string, input: HeroSlideInput): Promis
 }
 
 export async function deleteHeroSlide(id: string) {
-  await requireAdmin();
+  await requireAdminSession();
   await prisma.homeHeroSlide.delete({ where: { id } });
 
   revalidatePath("/");
@@ -100,7 +96,7 @@ export async function deleteHeroSlide(id: string) {
 }
 
 export async function reorderHeroSlides(orderedIds: string[]) {
-  await requireAdmin();
+  await requireAdminSession();
   await prisma.$transaction(
     orderedIds.map((id, index) => prisma.homeHeroSlide.update({ where: { id }, data: { order: index } }))
   );
@@ -112,7 +108,7 @@ export async function reorderHeroSlides(orderedIds: string[]) {
 type OkOrError = { error: string } | { ok: true };
 
 export async function updateHeroHeading(heading: string, locale: Locale): Promise<OkOrError> {
-  await requireAdmin();
+  await requireAdminSession();
 
   const trimmed = heading.trim();
   if (!trimmed) return { error: "Rubrik krävs." };
@@ -134,7 +130,7 @@ export type OnboardingStepInput = { order: number; label: string; href: string }
 // been translated yet has zero rows, so the first save for that locale
 // needs to create them rather than fail to find something to update.
 export async function updateOnboardingSteps(steps: OnboardingStepInput[], locale: Locale): Promise<OkOrError> {
-  await requireAdmin();
+  await requireAdminSession();
 
   for (const s of steps) {
     if (!s.label.trim() || !s.href.trim()) return { error: "Text och länk krävs för varje steg." };

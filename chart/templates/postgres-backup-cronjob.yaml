@@ -1,0 +1,80 @@
+{{- if .Values.postgresBackup.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: goodtribes-postgres-backup
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "goodtribes.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.postgresBackup.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            {{- include "goodtribes.labels" . | nindent 12 }}
+        spec:
+          restartPolicy: OnFailure
+          volumes:
+            - name: backup
+              emptyDir: {}
+          initContainers:
+            # Dumps to a shared emptyDir first; the sidecar below uploads it to
+            # MinIO. Two containers instead of one image with both pg_dump and
+            # mc installed.
+            - name: pg-dump
+              image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
+              # $VAR is expanded by sh, not Kubernetes — envFrom vars are never
+              # substituted via the $(VAR) syntax (see redis-deployment.yaml
+              # for the incident this convention comes from).
+              command:
+                - sh
+                - -c
+                - |
+                  set -eu
+                  STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+                  FILENAME="goodtribes-${STAMP}.dump"
+                  PGPASSWORD="$POSTGRES_PASSWORD" pg_dump \
+                    -h goodtribes-postgres -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+                    --format=custom --file "/backup/${FILENAME}"
+                  echo "$FILENAME" > /backup/latest-filename
+              envFrom:
+                - secretRef:
+                    name: goodtribes-secret
+              env:
+                {{- range $key, $value := .Values.postgres.env }}
+                - name: {{ $key }}
+                  value: {{ $value | quote }}
+                {{- end }}
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+          containers:
+            - name: upload-and-prune
+              image: minio/mc:latest
+              command:
+                - sh
+                - -c
+                - |
+                  set -eu
+                  mc alias set local http://goodtribes-minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+                  FILENAME="$(cat /backup/latest-filename)"
+                  mc cp "/backup/${FILENAME}" "local/{{ .Values.postgresBackup.bucket }}/${FILENAME}"
+                  # Prune anything past the retention window so the bucket
+                  # doesn't grow unbounded.
+                  mc find "local/{{ .Values.postgresBackup.bucket }}" \
+                    --older-than {{ .Values.postgresBackup.retentionDays }}d \
+                    --exec "mc rm {}"
+              envFrom:
+                - secretRef:
+                    name: goodtribes-secret
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+{{- end }}

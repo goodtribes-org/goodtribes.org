@@ -1,24 +1,16 @@
 "use server";
 
-import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { requireSiteAdmin } from "@/lib/authz";
+import { requireAdminSession } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
-
-async function requireAdmin(): Promise<string> {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Forbidden");
-  await requireSiteAdmin(session.user.id);
-  return session.user.id;
-}
 
 // PRD 4a Intäktsström 2, Steg 1: the board's ("styrelsen") proposed split of
 // a commercial project's audited profit — creates the linked Tribe
 // Token-weighted Poll members vote on, same direct-create pattern as
 // legal-type/actions.ts's proposeLegalTypeChange.
 export async function proposeProfitDistribution(formData: FormData) {
-  const adminId = await requireAdmin();
+  const adminId = await requireAdminSession();
 
   const projectSlug = (formData.get("projectSlug") as string | null)?.trim();
   const auditedProfitSek = parseInt((formData.get("auditedProfitSek") as string | null) ?? "", 10);
@@ -81,7 +73,7 @@ export async function proposeProfitDistribution(formData: FormData) {
 // whole SEK — any leftover from flooring is folded into the Impact-fond's
 // inflow, never lost), and logs the Impact-fond's share as a real ledger row.
 export async function executeProfitDistribution(proposalId: string) {
-  const adminId = await requireAdmin();
+  const adminId = await requireAdminSession();
 
   const proposal = await prisma.profitDistributionProposal.findUnique({ where: { id: proposalId } });
   if (!proposal || proposal.status !== "approved_by_members") throw new Error("Proposal not ready to execute");
@@ -177,7 +169,7 @@ export async function executeProfitDistribution(proposalId: string) {
 // PRD 4a: "styrelsen har vetorätt om utfallet skulle utgöra en fara för
 // Stiftelsens fortsatta verksamhet" — mirrors rejectLegalTypeChange.
 export async function vetoProfitDistribution(proposalId: string, note: string) {
-  const adminId = await requireAdmin();
+  const adminId = await requireAdminSession();
 
   const proposal = await prisma.profitDistributionProposal.findUnique({ where: { id: proposalId } });
   if (!proposal || proposal.status !== "approved_by_members") throw new Error("Proposal not ready to veto");

@@ -1,14 +1,19 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import NewPollForm from "./NewPollForm";
+import type { Locale } from "next-intl";
 
 export default async function NewPollPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: Locale; slug: string }>;
 }) {
-  const { slug } = await params;
-  const session = await auth();
+  const { locale, slug } = await params;
+  const [session, t] = await Promise.all([
+    auth(),
+    getTranslations({ locale, namespace: "NewPollPage" }),
+  ]);
   if (!session?.user?.id) redirect("/login");
 
   return (
@@ -18,9 +23,9 @@ export default async function NewPollPage({
           href={`/projects/${slug}/polls`}
           className="text-sm text-dark-slate/50 hover:text-seagrass"
         >
-          ← Tillbaka till omröstningar
+          {t("backToPolls")}
         </a>
-        <h1 className="text-2xl font-bold mt-1">Ny omröstning</h1>
+        <h1 className="text-2xl font-bold mt-1">{t("heading")}</h1>
       </div>
       <NewPollForm slug={slug} />
     </div>

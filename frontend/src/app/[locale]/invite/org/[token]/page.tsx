@@ -4,16 +4,21 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { acceptOrgInvite } from "./actions";
+import type { Locale } from "next-intl";
 
 
 export default async function AcceptOrgInvitePage({
   params,
 }: {
-  params: Promise<{ token: string }>;
+  params: Promise<{ locale: Locale; token: string }>;
 }) {
-  const { token } = await params;
-  const session = await auth();
+  const { locale, token } = await params;
+  const [session, t] = await Promise.all([
+    auth(),
+    getTranslations({ locale, namespace: "AcceptOrgInvitePage" }),
+  ]);
 
   const invite = await prisma.orgInvite.findUnique({
     where: { token },
@@ -27,20 +32,20 @@ export default async function AcceptOrgInvitePage({
 
   return (
     <div className="max-w-md mx-auto mt-16 text-center">
-      <h1 className="text-2xl font-bold text-dark-slate mb-2">Organisation invitation</h1>
+      <h1 className="text-2xl font-bold text-dark-slate mb-2">{t("heading")}</h1>
 
       {expired || used ? (
         <div className="mt-6 p-6 border border-muted-teal/30 rounded-lg">
           <p className="text-dark-slate/60 mb-4">
-            {used ? "This invitation has already been used." : "This invitation has expired."}
+            {used ? t("alreadyUsed") : t("expired")}
           </p>
           <Link href="/org" className="text-coral hover:underline text-sm">
-            Browse organisations →
+            {t("browseOrgsLink")}
           </Link>
         </div>
       ) : (
         <div className="mt-6 p-6 border border-muted-teal/30 rounded-lg">
-          <p className="text-dark-slate/70 mb-2 text-sm">You&apos;ve been invited to join</p>
+          <p className="text-dark-slate/70 mb-2 text-sm">{t("invitedTo")}</p>
           <p className="text-xl font-bold text-dark-slate mb-6">{invite.org.name}</p>
 
           {session?.user?.id ? (
@@ -49,17 +54,17 @@ export default async function AcceptOrgInvitePage({
                 type="submit"
                 className="w-full px-6 py-3 bg-coral text-white font-bold rounded hover:bg-watermelon transition-colors"
               >
-                Accept &amp; join →
+                {t("acceptButton")}
               </button>
             </form>
           ) : (
             <div>
-              <p className="text-sm text-dark-slate/60 mb-4">Log in to accept this invitation.</p>
+              <p className="text-sm text-dark-slate/60 mb-4">{t("loginPrompt")}</p>
               <Link
                 href={`/login?callbackUrl=/invite/org/${token}`}
                 className="inline-block px-6 py-3 bg-coral text-white font-bold rounded hover:bg-watermelon transition-colors"
               >
-                Log in →
+                {t("loginButton")}
               </Link>
             </div>
           )}

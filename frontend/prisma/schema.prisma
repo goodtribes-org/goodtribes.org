@@ -1100,6 +1100,7 @@ model ActivityEvent {
   user         User          @relation("ActivityEvents", fields: [userId], references: [id])
 
   @@index([organisationId])
+  @@index([projectId])
 }
 
 model FundingCampaign {

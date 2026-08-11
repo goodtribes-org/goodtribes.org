@@ -3,14 +3,22 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { buildMetadata } from "@/lib/metadata";
+import type { Locale } from "next-intl";
 
+export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "WorkPage" });
+  return buildMetadata({ locale, path: "/work", title: t("pageTitle") });
+}
 
-export const metadata: Metadata = {
-  title: "Arbetsrum — GoodTribes.org",
-};
-
-export default async function WorkPage() {
-  const session = await auth();
+export default async function WorkPage({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
+  const [session, t] = await Promise.all([
+    auth(),
+    getTranslations({ locale, namespace: "WorkPage" }),
+  ]);
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
 
@@ -25,15 +33,15 @@ export default async function WorkPage() {
   return (
     <div>
       <div className="mb-10">
-        <h1 className="text-4xl font-bold mb-2">Mina arbetsrum</h1>
-        <p className="text-lg text-dark-slate/70">Välj en organisation att arbeta i.</p>
+        <h1 className="text-4xl font-bold mb-2">{t("heading")}</h1>
+        <p className="text-lg text-dark-slate/70">{t("intro")}</p>
       </div>
 
       {orgs.length === 0 ? (
         <p className="text-muted-teal italic">
-          Du är inte med i någon organisation ännu.{" "}
+          {t("noOrgsIntro")}{" "}
           <Link href="/org" className="underline hover:text-seagrass">
-            Utforska organisationer
+            {t("exploreOrgsLink")}
           </Link>
         </p>
       ) : (

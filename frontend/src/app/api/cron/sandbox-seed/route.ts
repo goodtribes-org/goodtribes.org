@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { createProjectRecord } from "@/lib/createProject";
+import { getAnthropicClient } from "@/lib/anthropic";
 
 const SYSTEM_PROMPT = `Du är en kreativ idégenerator för GoodTribes, en plattform som kopplar
 volontärer och organisationer till projekt som bidrar till FN:s Agenda 2030.
@@ -13,27 +14,31 @@ Svara ENDAST med giltig JSON, ingen markdown, i exakt denna form:
 // .github/workflows/sandbox-seed.yml). Requires the same
 // Authorization: Bearer <CRON_SECRET> header as /api/cron/digest.
 //
+// A missing CRON_SECRET fails closed rather than skipping the auth check —
+// see /api/cron/github-sync for the reference pattern. This route also
+// burns ANTHROPIC_API_KEY spend per call, which makes fail-open especially
+// costly here.
+//
 // Sandbox: proactively seeds new AI-generated problem statements as real,
 // flagged Project rows (isSandbox: true) so the zone never feels empty
 // (solves cold start, see PRD 4e) — owned by the same AI participant User
 // row (getAiParticipantUser) Idéverkstaden's @AI replies already use.
 export async function POST(request: Request) {
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const auth = request.headers.get("authorization");
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (!secret) {
+    return NextResponse.json({ error: "CRON_SECRET not configured" }, { status: 503 });
+  }
+  if (request.headers.get("authorization") !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  const client = await getAnthropicClient();
+  if (!client) {
     return NextResponse.json({ ok: true, seeded: 0, note: "AI ej konfigurerad" });
   }
 
   let threads: { title: string; problemStatement: string; sdgGoals: number[] }[] = [];
   try {
-    const Anthropic = (await import("@anthropic-ai/sdk")).default;
-    const client = new Anthropic();
     const message = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 1024,

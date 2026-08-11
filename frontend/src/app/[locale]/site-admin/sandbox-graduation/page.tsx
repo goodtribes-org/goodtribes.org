@@ -1,33 +1,34 @@
 import { prisma } from "@/lib/prisma";
+import { getTranslations } from "next-intl/server";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { approveSandboxGraduation, rejectSandboxGraduation } from "./actions";
+import type { Locale } from "next-intl";
 
-export default async function SandboxGraduationAdminPage() {
-  const [pendingRequests, umbrellaEntities] = await Promise.all([
+export default async function SandboxGraduationAdminPage({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
+  const [pendingRequests, umbrellaEntities, t] = await Promise.all([
     prisma.sandboxGraduationRequest.findMany({
       where: { status: "pending" },
       orderBy: { createdAt: "asc" },
       include: { project: { select: { title: true, slug: true, legalType: true } } },
     }),
     prisma.commercialUmbrellaEntity.findMany({ orderBy: { createdAt: "asc" } }),
+    getTranslations({ locale, namespace: "SandboxGraduationAdminPage" }),
   ]);
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-dark-slate">Sandbox-ansökningar</h1>
-        <p className="text-sm text-dark-slate/60 mt-1">
-          Ansökningar om att lämna Sandbox och bli ett GoodTribes-godkänt projekt. För kommersiella projekt tilldelas
-          samtidigt ett paraply-AB och fakturering låses upp.
-        </p>
+        <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
+        <p className="text-sm text-dark-slate/60 mt-1">{t("intro")}</p>
       </div>
 
       <section>
         <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-3">
-          Väntar på Stiftelsens beslut ({pendingRequests.length})
+          {t("pendingHeading", { count: pendingRequests.length })}
         </h2>
         {pendingRequests.length === 0 ? (
-          <p className="text-sm text-dark-slate/40">Inga väntande ansökningar.</p>
+          <p className="text-sm text-dark-slate/40">{t("emptyState")}</p>
         ) : (
           <div className="flex flex-col gap-4">
             {pendingRequests.map((r) => {
@@ -36,7 +37,7 @@ export default async function SandboxGraduationAdminPage() {
                 <div key={r.id} className="border border-muted-teal/40 rounded-lg p-5 bg-white">
                   <p className="font-semibold text-dark-slate">{r.project.title}</p>
                   <p className="text-sm text-dark-slate/60 mb-3">
-                    {isCommercial ? "Kommersiellt — kräver paraply-AB innan godkännande" : "Ideellt"}
+                    {isCommercial ? t("commercialNote") : t("nonprofitNote")}
                   </p>
 
                   <form
@@ -52,7 +53,7 @@ export default async function SandboxGraduationAdminPage() {
                         required
                         className="border border-muted-teal rounded px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-coral"
                       >
-                        <option value="">— välj paraply-AB —</option>
+                        <option value="">{t("chooseUmbrella")}</option>
                         {umbrellaEntities.map((e) => (
                           <option key={e.id} value={e.id}>{e.name}</option>
                         ))}
@@ -62,7 +63,7 @@ export default async function SandboxGraduationAdminPage() {
                       type="submit"
                       className="px-4 py-1.5 rounded bg-coral text-white text-xs font-medium hover:bg-watermelon transition-colors"
                     >
-                      Godkänn
+                      {t("approveButton")}
                     </button>
                   </form>
 
@@ -76,14 +77,14 @@ export default async function SandboxGraduationAdminPage() {
                     <input
                       name="note"
                       type="text"
-                      placeholder="Motivering för avslag…"
+                      placeholder={t("rejectionPlaceholder")}
                       className="flex-1 min-w-40 border border-muted-teal rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
                     />
                     <button
                       type="submit"
                       className="px-4 py-1.5 rounded border border-red-300 text-red-600 text-xs font-medium hover:bg-red-50 transition-colors"
                     >
-                      Avslå
+                      {t("rejectButton")}
                     </button>
                   </form>
                 </div>

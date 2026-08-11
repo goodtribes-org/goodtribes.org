@@ -12,6 +12,6 @@ jobs:
     steps:
       - name: Trigger digest endpoint
         run: |
-          curl -sf -X POST "${{ vars.APP_URL }}/api/cron/digest" \
+          curl -sf --max-time 120 -X POST "${{ vars.APP_URL }}/api/cron/digest" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json"

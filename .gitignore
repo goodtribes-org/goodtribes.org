@@ -3,3 +3,7 @@ ds-bundle/
 .design-sync/.cache/
 .design-sync/learnings/
 .design-sync/node_modules
+
+# npm workspaces hoist deps to the repo root; frontend/.gitignore only
+# covers frontend/node_modules, not this one.
+/node_modules

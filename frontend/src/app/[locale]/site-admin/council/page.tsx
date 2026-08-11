@@ -1,9 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { createCouncilElection, closeCouncilElection } from "./actions";
+import type { Locale } from "next-intl";
 
-export default async function CouncilAdminPage() {
-  const [activeMembers, polls] = await Promise.all([
+export default async function CouncilAdminPage({ params }: { params: Promise<{ locale: Locale }> }) {
+  const { locale } = await params;
+  const [activeMembers, polls, t] = await Promise.all([
     prisma.reviewCouncilMember.findMany({
       where: { termEnd: { gt: new Date() } },
       include: { user: { select: { name: true, email: true } } },
@@ -14,6 +17,7 @@ export default async function CouncilAdminPage() {
       orderBy: { createdAt: "desc" },
       include: { _count: { select: { options: true, votes: true } } },
     }),
+    getTranslations({ locale, namespace: "CouncilAdminPage" }),
   ]);
 
   const openPoll = polls.find((p) => p.status === "open");
@@ -21,24 +25,29 @@ export default async function CouncilAdminPage() {
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-dark-slate">Granskningsrådet</h1>
+        <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
         <p className="text-sm text-dark-slate/60 mt-1">
-          Starta och avsluta val till Granskningsrådet (PRD 5.53). Rådets egna sidor finns på{" "}
-          <Link href="/granskningsradet" className="text-coral hover:underline">/granskningsradet</Link>.
+          {t.rich("intro", {
+            link: (chunks) => (
+              <Link href="/granskningsradet" className="text-coral hover:underline">
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       </div>
 
       <section className="mb-8">
         <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-3">
-          Nuvarande ledamöter ({activeMembers.length})
+          {t("currentMembersHeading", { count: activeMembers.length })}
         </h2>
         {activeMembers.length === 0 ? (
-          <p className="text-sm text-dark-slate/40">Inga aktiva ledamöter.</p>
+          <p className="text-sm text-dark-slate/40">{t("noActiveMembers")}</p>
         ) : (
           <ul className="flex flex-col gap-1 text-sm">
             {activeMembers.map((m) => (
               <li key={m.id} className="text-dark-slate/80">
-                {m.user.name ?? m.user.email} — mandat till {m.termEnd.toLocaleDateString("sv-SE")}
+                {t("termUntil", { name: m.user.name ?? m.user.email, date: m.termEnd.toLocaleDateString("sv-SE") })}
               </li>
             ))}
           </ul>
@@ -46,16 +55,16 @@ export default async function CouncilAdminPage() {
       </section>
 
       <section className="mb-8">
-        <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-3">Starta nytt val</h2>
+        <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-3">{t("startNewElectionHeading")}</h2>
         {openPoll ? (
           <div className="border border-amber-300 bg-amber-50 rounded-lg p-4 text-sm text-amber-800 flex items-center justify-between gap-4">
-            <span>Ett val ("{openPoll.title}") pågår redan — avsluta det innan ett nytt startas.</span>
+            <span>{t("electionInProgress", { title: openPoll.title })}</span>
             <form action={closeCouncilElection.bind(null, openPoll.id)}>
               <button
                 type="submit"
                 className="px-3 py-1.5 rounded bg-coral text-white text-xs font-medium hover:bg-watermelon transition-colors flex-shrink-0"
               >
-                Avsluta val
+                {t("closeElectionButton")}
               </button>
             </form>
           </div>
@@ -64,17 +73,17 @@ export default async function CouncilAdminPage() {
             <input
               name="title"
               type="text"
-              defaultValue="Val till Granskningsrådet"
+              defaultValue={t("defaultElectionTitle")}
               className="border border-muted-teal rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
             />
             <textarea
               name="description"
               rows={3}
-              placeholder="Valfri beskrivning av valet…"
+              placeholder={t("descriptionPlaceholder")}
               className="border border-muted-teal rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral resize-none"
             />
             <label className="text-xs text-dark-slate/50">
-              Deadline (valfritt)
+              {t("deadlineLabel")}
               <input
                 name="deadline"
                 type="date"
@@ -85,23 +94,23 @@ export default async function CouncilAdminPage() {
               type="submit"
               className="self-start bg-coral text-white text-sm font-medium px-4 py-2 rounded hover:bg-watermelon transition-colors"
             >
-              Starta val
+              {t("startElectionButton")}
             </button>
           </form>
         )}
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-3">Tidigare val</h2>
+        <h2 className="text-sm font-semibold text-dark-slate/60 uppercase tracking-wide mb-3">{t("previousElectionsHeading")}</h2>
         {polls.length === 0 ? (
-          <p className="text-sm text-dark-slate/40">Inga val ännu.</p>
+          <p className="text-sm text-dark-slate/40">{t("noElectionsYet")}</p>
         ) : (
           <ul className="flex flex-col gap-2 text-sm">
             {polls.map((p) => (
               <li key={p.id} className="flex items-center justify-between border border-muted-teal/30 rounded px-3 py-2">
                 <span>{p.title}</span>
                 <span className="text-xs text-dark-slate/50">
-                  {p.status === "open" ? "Pågår" : "Avslutat"} · {p._count.options} kandidater · {p._count.votes} röster
+                  {p.status === "open" ? t("statusOpen") : t("statusClosed")} · {t("electionMeta", { options: p._count.options, votes: p._count.votes })}
                 </span>
               </li>
             ))}
