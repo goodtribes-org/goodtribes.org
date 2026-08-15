@@ -111,28 +111,37 @@ export default function HeroSlideText({
   const [first, ...rest] = slides;
 
   return (
-    <div className="flex justify-center px-4 pt-6 pb-2">
-      <div className="flex w-full max-w-6xl flex-col items-center gap-16">
-        {/* Text till bilden som ligger kvar i hero */}
-        <div className="w-full" style={{ maxWidth: 620 }}>
-          <TextCard slide={first} canEdit={canEdit} t={t} />
+    <div className="flex flex-col gap-16">
+      {/* Text till bilden som ligger kvar i hero */}
+      <div className="flex justify-center px-4 pt-6">
+        <div className="flex w-full max-w-6xl justify-center">
+          <div className="w-full" style={{ maxWidth: 620 }}>
+            <TextCard slide={first} canEdit={canEdit} t={t} />
+          </div>
         </div>
+      </div>
 
-        {/* Resten av bilderna + deras texter, utanför hero — text under varje bild */}
-        {rest.map((slide, i) => {
-          const tilt = PHOTO_TILT[(i + 1) % PHOTO_TILT.length];
-          return (
-            <div key={slide.id} className="flex w-full flex-col items-center gap-6" style={{ maxWidth: 620 }}>
-              <div className="w-full">
-                <PhotoCard slide={slide} tilt={tilt} />
-              </div>
-              <div className="w-full">
-                <TextCard slide={slide} canEdit={canEdit} t={t} />
+      {/* Resten av bilderna + deras texter, utanför hero — varje bild kant-till-kant med sin egen blurrade bakgrund, text under */}
+      {rest.map((slide, i) => {
+        const tilt = PHOTO_TILT[(i + 1) % PHOTO_TILT.length];
+        return (
+          <div key={slide.id} className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+            <div className="absolute inset-0 overflow-hidden">
+              <img src={toProxyUrl(slide.imageUrl)} alt="" className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110" />
+            </div>
+            <div className="relative z-10 flex justify-center px-4 py-10">
+              <div className="flex w-full flex-col items-center gap-6" style={{ maxWidth: 620 }}>
+                <div className="w-full">
+                  <PhotoCard slide={slide} tilt={tilt} />
+                </div>
+                <div className="w-full">
+                  <TextCard slide={slide} canEdit={canEdit} t={t} />
+                </div>
               </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
