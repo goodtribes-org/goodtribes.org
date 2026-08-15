@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
 import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, INITIATIVE_CHECKLIST_ITEMS, type ProjectPhaseValue } from "@/lib/projectPhase";
@@ -57,7 +57,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
   }, [openPhase]);
 
   function handleToggle(p: ProjectPhaseValue, itemKey: string, done: boolean) {
-    if (!canEdit || p !== displayPhase) return;
+    if (!canEdit) return;
     setDoneKeys((prev) => {
       const next = new Set(prev);
       if (done) next.add(itemKey); else next.delete(itemKey);
@@ -66,63 +66,102 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
     startTransition(() => toggleChecklistItem(slug, p, itemKey, done));
   }
 
+  // Klar-andel per fas — driver linjen som kommer efter fasens ord (t.ex.
+  // 3 av 4 punkter klara = linjen är 75% grön, 25% grå). Beräknas för alla
+  // faser i förväg eftersom linjen framför fas i visar fas i-1:s andel.
+  const phaseProgress = DISPLAY_PHASES.map((p) => {
+    const items = getChecklistForPhase(p.value) ?? [];
+    const done = items.filter((item) => doneKeys.has(item.key)).length;
+    const total = items.length;
+    return { total, pct: total > 0 ? Math.round((done / total) * 100) : 0, complete: total > 0 && done === total };
+  });
+
   return (
     <div ref={menuRef}>
-      <nav className="relative flex flex-wrap items-center justify-center gap-5 text-sm w-fit mx-auto">
-        {/* Linje mellan faserna, samma mönster som stegen på startsidan — pillren (bg-white/bg-seagrass) döljer linjen där de sitter. Grön fram till uppnådd fas, grå därefter. */}
-        <div
-          className="hidden sm:flex absolute left-0 right-0"
-          style={{ top: "50%", transform: "translateY(-50%)" }}
-          aria-hidden="true"
-        >
-          {DISPLAY_PHASES.slice(1).map((_, i) => (
-            <div
-              key={i}
-              className={`flex-1 border-t-2 border-dashed ${i < currentIndex ? "border-seagrass/60" : "border-dark-slate/20"}`}
-            />
-          ))}
-        </div>
+      <nav className="flex flex-wrap sm:flex-nowrap items-center gap-y-3 text-sm w-full">
         {DISPLAY_PHASES.map((p, i) => {
           const isCurrent = i === currentIndex;
           const isPast = i < currentIndex;
+          const isReached = i <= currentIndex;
           const isViewing = p.value === viewingDisplayPhase;
           const checklist = getChecklistForPhase(p.value);
           const isOpen = openPhase === p.value;
-          const canEditThis = canEdit && p.value === displayPhase;
+          const canEditThis = canEdit;
 
-          const pillClass = isCurrent
-            ? "bg-seagrass text-white font-bold shadow-sm"
-            : isPast
-              ? "bg-white border border-seagrass/60 text-seagrass/80 hover:border-seagrass hover:text-seagrass"
-              : isViewing
-                ? "bg-white border-2 border-seagrass/40 text-dark-slate/35 hover:border-seagrass/60 hover:text-dark-slate/60"
-                : "bg-white border border-dark-slate/15 text-dark-slate/35 hover:border-dark-slate/30 hover:text-dark-slate/60";
+          // När en fas egen checklista är 100% klar blir dess prick och namn
+          // gröna — oavsett om fasen faktiskt är aktiv än. Utöver det tänds
+          // NÄSTA fas i förskott (prick grön, namn svart) — men bara om ALLA
+          // faser fram till och med denna är helt klara, inte bara den
+          // närmast föregående.
+          const isOwnPhaseComplete = phaseProgress[i].complete;
+          const unlockedByPrevPhase = i > 0 && phaseProgress.slice(0, i).every((pp) => pp.complete);
+          const dotIsGreen = isReached || unlockedByPrevPhase || isOwnPhaseComplete;
+
+          const labelClass = isOwnPhaseComplete
+            ? "text-seagrass font-bold"
+            : unlockedByPrevPhase
+              ? "text-black font-bold"
+              : isCurrent
+                ? "text-dark-slate font-bold"
+                : isPast
+                  ? "text-seagrass/70 font-semibold hover:text-seagrass"
+                  : "text-dark-slate/35 font-semibold hover:text-dark-slate/60";
+
+          const itemContent = (
+            <>
+              <span
+                className={`w-2.5 h-2.5 rounded-full flex-shrink-0 border transition-colors mr-1.5 ${
+                  dotIsGreen ? "bg-seagrass border-seagrass" : "bg-white border-dark-slate/25"
+                }`}
+                aria-hidden="true"
+              />
+              <span className={`uppercase tracking-wide text-xs transition-colors ${labelClass}`}>{tPhase(p.value)}</span>
+              <svg
+                className={`w-3 h-3 flex-shrink-0 opacity-50 transition-transform ${isOpen ? "rotate-180" : ""} ${
+                  isOwnPhaseComplete
+                    ? "text-seagrass"
+                    : unlockedByPrevPhase
+                      ? "text-black"
+                      : isCurrent
+                        ? "text-dark-slate"
+                        : isPast
+                          ? "text-seagrass/70"
+                          : "text-dark-slate/35"
+                }`}
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+              </svg>
+            </>
+          );
 
           return (
-            <div key={p.value} className="relative z-10 flex items-center">
-              {checklist ? (
-                <button
-                  type="button"
-                  onClick={() => setOpenPhase((prev) => (prev === p.value ? null : p.value))}
-                  aria-expanded={isOpen}
-                  aria-current={isViewing ? "step" : undefined}
-                  className={`flex items-center gap-1 px-3 py-1.5 rounded-full transition-colors ${pillClass} ${
-                    isOpen ? "ring-2 ring-seagrass/30" : ""
-                  }`}
-                >
-                  {i + 1}. {tPhase(p.value)}
-                  <svg
-                    className={`w-3 h-3 opacity-60 transition-transform ${isOpen ? "rotate-180" : ""}`}
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              ) : (
-                <span aria-current={isViewing ? "step" : undefined} className={`px-3 py-1.5 rounded-full inline-block transition-colors ${pillClass}`}>
-                  {i + 1}. {tPhase(p.value)}
-                </span>
+            <Fragment key={p.value}>
+              {i > 0 && (
+                <div
+                  className="hidden sm:block flex-1 h-0.5 mx-1 rounded-full"
+                  style={{
+                    background: `linear-gradient(to right, var(--color-seagrass) ${phaseProgress[i - 1].pct}%, color-mix(in srgb, var(--color-dark-slate) 20%, transparent) ${phaseProgress[i - 1].pct}% 100%)`,
+                  }}
+                  aria-hidden="true"
+                />
               )}
+              <div className="relative z-10 flex items-center shrink-0">
+                {checklist ? (
+                  <button
+                    type="button"
+                    onClick={() => setOpenPhase((prev) => (prev === p.value ? null : p.value))}
+                    aria-expanded={isOpen}
+                    aria-current={isViewing ? "step" : undefined}
+                    className="flex items-center px-1.5 py-1 rounded-full transition-colors"
+                  >
+                    {itemContent}
+                  </button>
+                ) : (
+                  <span aria-current={isViewing ? "step" : undefined} className="flex items-center px-1.5 py-1">
+                    {itemContent}
+                  </span>
+                )}
 
               {isOpen && checklist && (
                 <div className="absolute left-0 top-full mt-2 w-72 bg-white border border-muted-teal/20 rounded-xl shadow-lg z-20 overflow-hidden animate-[fadeIn_0.12s_ease-out]">
@@ -171,9 +210,28 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
                   </div>
                 </div>
               )}
-            </div>
+              </div>
+            </Fragment>
           );
         })}
+        {/* Mållinje efter Impact — andelsfärgad som mellan faserna, men i
+            orange, avslutat med en orange prick (samma storlek som fasernas)
+            som markerar målet bortom Impact. Pricken är bara ihålig med
+            orange kant tills Impacts checklista är 100% klar, då fylls
+            den helt. */}
+        <div
+          className="hidden sm:block flex-1 h-0.5 mx-1 rounded-full"
+          style={{
+            background: `linear-gradient(to right, #f97316 ${phaseProgress[phaseProgress.length - 1].pct}%, color-mix(in srgb, var(--color-dark-slate) 20%, transparent) ${phaseProgress[phaseProgress.length - 1].pct}% 100%)`,
+          }}
+          aria-hidden="true"
+        />
+        <span
+          className={`w-2.5 h-2.5 rounded-full flex-shrink-0 border ${
+            phaseProgress[phaseProgress.length - 1].complete ? "bg-orange-500 border-orange-500" : "bg-white border-orange-500"
+          }`}
+          aria-hidden="true"
+        />
       </nav>
     </div>
   );
