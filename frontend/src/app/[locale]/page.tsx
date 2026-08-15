@@ -7,17 +7,11 @@ import { auth } from "@/auth";
 import ProjectCard from "@/components/ProjectCard";
 import SortToggle from "@/components/SortToggleContainer";
 import Pagination from "@/components/Pagination";
-import ActivityPulse from "@/components/ActivityPulse";
 import HeroPhotoStack from "@/components/HeroPhotoStack";
 import WhyHowWhat from "@/components/WhyHowWhat";
 import { toHeroSlideData } from "@/lib/heroSlides";
 import { isSiteAdmin } from "@/lib/authz";
-import HomeStatsWidget from "@/components/HomeStatsWidget";
 import OnboardingStepsBar from "@/components/OnboardingStepsBar";
-import ImpactStatsWidget from "@/components/ImpactStatsWidget";
-import LeaderboardWidget from "@/components/LeaderboardWidget";
-import NewMembersWidget from "@/components/NewMembersWidget";
-import SdgCoverageWidget from "@/components/SdgCoverageWidget";
 import { isValidProjectPhase } from "@/lib/projectPhase";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import { routing } from "@/i18n/routing";
@@ -26,31 +20,6 @@ import { getTranslations } from "next-intl/server";
 import { resolveProjectContent } from "@/lib/contentTranslation";
 
 const PAGE_SIZE = 12;
-
-async function getLeaderboard() {
-  // Ranks everyone with a name, same as a project's "Mest aktiva medlemmar" —
-  // showProfile only gates whether a row links to a public profile page (see
-  // LeaderboardWidget), not whether the ranking itself includes you.
-  const users = await prisma.user.findMany({
-    where: { name: { not: null as null } },
-    select: { id: true, name: true, image: true, showProfile: true },
-  });
-  if (users.length === 0) return [];
-  const userMap = new Map(users.map((u) => [u.id, u]));
-
-  const tokenGroups = await prisma.tokenLedger.groupBy({
-    by: ["userId"],
-    where: { userId: { in: users.map((u) => u.id) } },
-    _sum: { tokens: true },
-    orderBy: { _sum: { tokens: "desc" } },
-    take: 5,
-  });
-
-  return tokenGroups.map((g) => {
-    const user = userMap.get(g.userId)!;
-    return { id: user.id, name: user.name!, image: user.image, showProfile: user.showProfile, tokens: g._sum.tokens ?? 0 };
-  });
-}
 
 export default async function HomePage({
   params,
@@ -94,37 +63,12 @@ export default async function HomePage({
     : { createdAt: "desc" as const };
 
   const [
-    projectCount,
-    orgCount,
-    memberCount,
-    pledgeSum,
-    tokenSum,
-    completedCards,
-    completedSubtasks,
-    leaderboard,
-    newMembers,
-    sdgProjects,
     totalFiltered,
     projects,
     heroSlides,
     heroSettings,
     onboardingSteps,
   ] = await Promise.all([
-    prisma.project.count({ where: { hiddenAt: null } }),
-    prisma.organisation.count({ where: { isPublic: true } }),
-    prisma.user.count({ where: { showProfile: true } }),
-    prisma.fundingPledge.aggregate({ where: { pledgeStatus: "confirmed" }, _sum: { amount: true } }),
-    prisma.tokenLedger.aggregate({ _sum: { tokens: true } }),
-    prisma.kanbanCard.count({ where: { column: "DONE" } }),
-    prisma.kanbanCardSubtask.count({ where: { done: true } }),
-    getLeaderboard(),
-    prisma.user.findMany({
-      where: { name: { not: null as null } },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-      select: { id: true, name: true, image: true, showProfile: true },
-    }),
-    prisma.project.findMany({ where: { hiddenAt: null }, select: { sdgGoals: true } }),
     prisma.project.count({ where }),
     prisma.project.findMany({
       where,
@@ -160,11 +104,6 @@ export default async function HomePage({
   const canEditHero = userId ? await isSiteAdmin(userId) : false;
   const heroHeading = heroSettings?.heading ?? (locale === "en" ? "Welcome to GoodTribes" : "Välkommen till GoodTribes");
   const onboardingStepsForBar = finalOnboardingSteps.map((s) => ({ id: s.id, order: s.order, label: s.label, href: s.href }));
-
-  const totalRaised = pledgeSum._sum.amount ?? 0;
-  const completedTasks = completedCards + completedSubtasks;
-  const totalTokens = Math.round(tokenSum._sum.tokens ?? 0);
-  const coveredGoals = Array.from(new Set(sdgProjects.flatMap((p) => p.sdgGoals)));
 
   const [projectLikeCounts, taskProgressCards] = await Promise.all([
     projects.length
@@ -245,41 +184,6 @@ export default async function HomePage({
             />
           </>
         )}
-      </section>
-
-      {/* Del 4 — Activity Pulse */}
-      <section>
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-lg font-bold text-dark-slate">{t("activityHeading")}</h2>
-                <p className="text-xs text-dark-slate/50 mt-0.5">{t("activitySubheading")}</p>
-              </div>
-              <Link href="/feed" className="text-xs text-coral hover:underline">
-                {t("seeAllActivityLink")}
-              </Link>
-            </div>
-            <ActivityPulse />
-          </div>
-          <div className="flex flex-col gap-6">
-            <LeaderboardWidget entries={leaderboard} />
-            <NewMembersWidget
-              members={newMembers.map((m) => ({ id: m.id, name: m.name!, image: m.image, showProfile: m.showProfile }))}
-            />
-            <ImpactStatsWidget
-              totalRaised={totalRaised}
-              totalTokens={totalTokens}
-              completedTasks={completedTasks}
-            />
-            <SdgCoverageWidget coveredGoals={coveredGoals} />
-            <HomeStatsWidget
-              projectCount={projectCount}
-              orgCount={orgCount}
-              memberCount={memberCount}
-            />
-          </div>
-        </div>
       </section>
 
       </div>

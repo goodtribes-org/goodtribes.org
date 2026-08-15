@@ -1288,6 +1288,9 @@
     "seeAllIdeasLink": "See all ideas →",
     "noIdeasYet": "No ideas yet.",
     "shareFirstIdeaLink": "Share the first idea",
+    "pulseHeading": "Happening now",
+    "pulseSubheading": "Latest activity on the platform",
+    "seeAllPulseLink": "See all activity →",
     "activityHeading": "Sandbox activity",
     "allIdeasLink": "All ideas →",
     "emptyActivity": "Nothing has happened in the sandbox yet — be first.",
@@ -1846,10 +1849,7 @@
     "exploreProjectsHeading": "Explore projects",
     "seeAllProjectsLink": "See all projects →",
     "noProjectsMatchFilters": "No projects match your filters.",
-    "clearFiltersLink": "Clear filters",
-    "activityHeading": "Happening now",
-    "activitySubheading": "Latest activity on the platform",
-    "seeAllActivityLink": "See all activity →"
+    "clearFiltersLink": "Clear filters"
   },
   "SiteAdminProjects": {
     "heading": "Projects",

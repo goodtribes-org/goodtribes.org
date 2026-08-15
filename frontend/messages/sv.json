@@ -1288,6 +1288,9 @@
     "seeAllIdeasLink": "Se alla idéer →",
     "noIdeasYet": "Inga idéer ännu.",
     "shareFirstIdeaLink": "Dela den första idén",
+    "pulseHeading": "Händer just nu",
+    "pulseSubheading": "Senaste aktivitet på plattformen",
+    "seeAllPulseLink": "Se all aktivitet →",
     "activityHeading": "Aktivitet i sandboxen",
     "allIdeasLink": "Alla idéer →",
     "emptyActivity": "Inget har hänt i sandboxen än — bli först.",
@@ -1846,10 +1849,7 @@
     "exploreProjectsHeading": "Utforska projekt",
     "seeAllProjectsLink": "Se alla projekt →",
     "noProjectsMatchFilters": "Inga projekt matchar dina filter.",
-    "clearFiltersLink": "Rensa filter",
-    "activityHeading": "Händer just nu",
-    "activitySubheading": "Senaste aktivitet på plattformen",
-    "seeAllActivityLink": "Se all aktivitet →"
+    "clearFiltersLink": "Rensa filter"
   },
   "SiteAdminProjects": {
     "heading": "Projekt",
