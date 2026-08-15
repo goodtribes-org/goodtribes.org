@@ -8,6 +8,7 @@ import ProjectCard from "@/components/ProjectCard";
 import SortToggle from "@/components/SortToggleContainer";
 import Pagination from "@/components/Pagination";
 import HeroPhotoStack from "@/components/HeroPhotoStack";
+import HeroSlideText from "@/components/HeroSlideText";
 import WhyHowWhat from "@/components/WhyHowWhat";
 import { toHeroSlideData } from "@/lib/heroSlides";
 import { isSiteAdmin } from "@/lib/authz";
@@ -138,6 +139,8 @@ export default async function HomePage({
       <div className="relative -mt-8" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
         <HeroPhotoStack slides={heroSlidesForStack} heading={heroHeading} canEdit={canEditHero} />
       </div>
+
+      <HeroSlideText slides={heroSlidesForStack} canEdit={canEditHero} />
 
       <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
 
