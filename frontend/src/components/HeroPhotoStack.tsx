@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { toProxyUrl } from "@/lib/storageUrl";
@@ -53,10 +52,8 @@ export default function HeroPhotoStack({
   canEdit: boolean;
 }) {
   const t = useTranslations("HeroPhotoStack");
-  const [active, setActive] = useState(0);
-  const current = PHOTOS[active];
 
-  if (!current) {
+  if (PHOTOS.length === 0) {
     return canEdit ? (
       <div className="relative z-10 flex justify-center px-4 py-12">
         <Link
@@ -69,21 +66,11 @@ export default function HeroPhotoStack({
     ) : null;
   }
 
-  const tilt = PHOTO_TILT[active % PHOTO_TILT.length];
-
   return (
-    <>
-      {/* Bakgrund: samma bild som visas, crossfadeas vid byte */}
-      <div className="absolute top-0 left-0 right-0 overflow-hidden" style={{ height: "400px" }}>
-        {PHOTOS.map((photo, i) => (
-          <div
-            key={photo.id}
-            className="absolute inset-0 transition-opacity duration-700 ease-out"
-            style={{ opacity: active === i ? 1 : 0 }}
-          >
-            <img src={toProxyUrl(photo.imageUrl)} alt="" className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110" />
-          </div>
-        ))}
+    <div className="relative">
+      {/* Bakgrund: första bilden, blurrad, täcker hela höjden av de staplade raderna */}
+      <div className="absolute inset-0 overflow-hidden">
+        <img src={toProxyUrl(PHOTOS[0].imageUrl)} alt="" className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110" />
       </div>
 
       <div className="relative z-10 flex justify-center px-4 pt-0 pb-6">
@@ -107,104 +94,87 @@ export default function HeroPhotoStack({
             <span style={{ fontSize: 56 }}>{heading}</span>
           </h1>
 
-          <div className="relative grid w-full gap-8 items-center md:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => setActive((active - 1 + PHOTOS.length) % PHOTOS.length)}
-              aria-label={t("previousAria")}
-              className="absolute -left-2 md:-left-14 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md ring-1 ring-black/5 flex items-center justify-center text-dark-slate/70 hover:text-dark-slate hover:bg-white transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActive((active + 1) % PHOTOS.length)}
-              aria-label={t("nextAria")}
-              className="absolute -right-2 md:-right-14 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow-md ring-1 ring-black/5 flex items-center justify-center text-dark-slate/70 hover:text-dark-slate hover:bg-white transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
-            </button>
-
-            {/* Text — alltid synlig, till vänster, samma storlek och polaroid-form som bilden */}
-            <div
-              className="w-full md:max-w-[620px] md:aspect-[16/10] transition-transform duration-500 ease-out"
-              style={{
-                transform: `rotate(${-tilt.rotate}deg) translate(${-tilt.x}px, ${-tilt.y}px)`,
-              }}
-            >
-              <div className={`relative h-full bg-white p-3 ${CARD_SHADOW}`}>
-                {canEdit && (
-                  <Link
-                    href="/site-admin/hero-carousel"
-                    className="absolute top-3 right-3 z-10 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors bg-white/70 rounded-md px-2 py-1"
+          <div className="flex w-full flex-col gap-16 py-6">
+            {PHOTOS.map((slide, i) => {
+              const tilt = PHOTO_TILT[i % PHOTO_TILT.length];
+              return (
+                <div key={slide.id} className="relative grid w-full gap-8 items-center md:grid-cols-2">
+                  {/* Text — samma storlek och polaroid-form som bilden */}
+                  <div
+                    className="w-full md:max-w-[620px] md:aspect-[16/10] transition-transform duration-500 ease-out"
+                    style={{
+                      transform: `rotate(${-tilt.rotate}deg) translate(${-tilt.x}px, ${-tilt.y}px)`,
+                    }}
                   >
-                    ✎ {t("editLink")}
-                  </Link>
-                )}
-                <div className={`h-full md:overflow-y-auto border border-muted-teal/20 px-6 pt-3 pb-5 flex flex-col justify-start ${heroTintClass(current.tintColor, current.tintOpacity)}`}>
-                  <div key={`text-${current.id}`} className="hero-caption-in flex flex-col items-start text-left">
-                    <h1 className={`${handwritingFont.className} text-dark-slate pr-16`} style={{ textWrap: "balance", fontSize: 26 }}>
-                      {current.heading}
-                    </h1>
-                    <RichText html={current.body} className="mt-1 text-dark-slate" />
-                    {current.bodyLine2 && (
-                      <p className="mt-1 font-semibold text-dark-slate" style={{ fontSize: 14, lineHeight: 1.5 }}>
-                        {current.bodyLine2}
-                      </p>
-                    )}
-                    {current.obstacles.length > 0 && (
-                      <>
-                        <ul className="mt-3 flex flex-col gap-2.5">
-                          {current.obstacles.map((o) => (
-                            <li key={o.lead} className="text-sm text-dark-slate">
-                              <span className="font-bold text-seagrass">{o.lead}</span> {o.text}
-                            </li>
-                          ))}
-                        </ul>
-                        {current.outro && <RichText html={current.outro} className="mt-3 text-dark-slate" />}
-                      </>
-                    )}
-                    {current.points.length > 0 && (
-                      <ul className="mt-3 flex flex-col gap-1.5">
-                        {current.points.map((p) => (
-                          <li key={p.pct} className="flex items-center gap-3">
-                            <span className="w-14 shrink-0 text-right text-sm font-bold text-coral">{p.pct}</span>
-                            <span className="text-sm text-dark-slate">{p.text}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                    <div className={`relative h-full bg-white p-3 ${CARD_SHADOW}`}>
+                      {canEdit && (
+                        <Link
+                          href="/site-admin/hero-carousel"
+                          className="absolute top-3 right-3 z-10 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors bg-white/70 rounded-md px-2 py-1"
+                        >
+                          ✎ {t("editLink")}
+                        </Link>
+                      )}
+                      <div className={`h-full md:overflow-y-auto border border-muted-teal/20 px-6 pt-3 pb-5 flex flex-col justify-start ${heroTintClass(slide.tintColor, slide.tintOpacity)}`}>
+                        <div className="hero-caption-in flex flex-col items-start text-left">
+                          <h1 className={`${handwritingFont.className} text-dark-slate pr-16`} style={{ textWrap: "balance", fontSize: 26 }}>
+                            {slide.heading}
+                          </h1>
+                          <RichText html={slide.body} className="mt-1 text-dark-slate" />
+                          {slide.bodyLine2 && (
+                            <p className="mt-1 font-semibold text-dark-slate" style={{ fontSize: 14, lineHeight: 1.5 }}>
+                              {slide.bodyLine2}
+                            </p>
+                          )}
+                          {slide.obstacles.length > 0 && (
+                            <>
+                              <ul className="mt-3 flex flex-col gap-2.5">
+                                {slide.obstacles.map((o) => (
+                                  <li key={o.lead} className="text-sm text-dark-slate">
+                                    <span className="font-bold text-seagrass">{o.lead}</span> {o.text}
+                                  </li>
+                                ))}
+                              </ul>
+                              {slide.outro && <RichText html={slide.outro} className="mt-3 text-dark-slate" />}
+                            </>
+                          )}
+                          {slide.points.length > 0 && (
+                            <ul className="mt-3 flex flex-col gap-1.5">
+                              {slide.points.map((p) => (
+                                <li key={p.pct} className="flex items-center gap-3">
+                                  <span className="w-14 shrink-0 text-right text-sm font-bold text-coral">{p.pct}</span>
+                                  <span className="text-sm text-dark-slate">{p.text}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
 
-            {/* Foto — mindre, till höger */}
-            <div className="hidden md:flex items-center justify-self-center w-full" style={{ maxWidth: 620 }}>
-              <div
-                className="relative w-full min-w-0 transition-transform duration-500 ease-out"
-                style={{
-                  aspectRatio: "16 / 10",
-                  transform: `rotate(${tilt.rotate}deg) translate(${tilt.x}px, ${tilt.y}px)`,
-                }}
-              >
-                <div
-                  key={current.id}
-                  className={`hero-caption-in absolute inset-0 overflow-hidden bg-white p-3 ${CARD_SHADOW}`}
-                >
-                  <div className="relative h-full w-full overflow-hidden">
-                    <img src={toProxyUrl(current.imageUrl)} alt={current.alt} className="absolute inset-0 w-full h-full object-cover" />
+                  {/* Foto — mindre, till höger */}
+                  <div className="hidden md:flex items-center justify-self-center w-full" style={{ maxWidth: 620 }}>
+                    <div
+                      className="relative w-full min-w-0 transition-transform duration-500 ease-out"
+                      style={{
+                        aspectRatio: "16 / 10",
+                        transform: `rotate(${tilt.rotate}deg) translate(${tilt.x}px, ${tilt.y}px)`,
+                      }}
+                    >
+                      <div className={`hero-caption-in absolute inset-0 overflow-hidden bg-white p-3 ${CARD_SHADOW}`}>
+                        <div className="relative h-full w-full overflow-hidden">
+                          <img src={toProxyUrl(slide.imageUrl)} alt={slide.alt} className="absolute inset-0 w-full h-full object-cover" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
