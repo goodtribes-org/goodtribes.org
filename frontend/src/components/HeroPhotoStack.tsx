@@ -99,7 +99,24 @@ export default function HeroPhotoStack({
               const tilt = PHOTO_TILT[i % PHOTO_TILT.length];
               return (
                 <div key={slide.id} className="relative grid w-full gap-8 items-center md:grid-cols-2">
-                  {/* Text — samma storlek och polaroid-form som bilden */}
+                  {/* Foto — till vänster */}
+                  <div className="hidden md:flex items-center justify-self-center w-full" style={{ maxWidth: 620 }}>
+                    <div
+                      className="relative w-full min-w-0 transition-transform duration-500 ease-out"
+                      style={{
+                        aspectRatio: "16 / 10",
+                        transform: `rotate(${tilt.rotate}deg) translate(${tilt.x}px, ${tilt.y}px)`,
+                      }}
+                    >
+                      <div className={`hero-caption-in absolute inset-0 overflow-hidden bg-white p-3 ${CARD_SHADOW}`}>
+                        <div className="relative h-full w-full overflow-hidden">
+                          <img src={toProxyUrl(slide.imageUrl)} alt={slide.alt} className="absolute inset-0 w-full h-full object-cover" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Text — samma storlek och polaroid-form som bilden, till höger */}
                   <div
                     className="w-full md:max-w-[620px] md:aspect-[16/10] transition-transform duration-500 ease-out"
                     style={{
@@ -148,23 +165,6 @@ export default function HeroPhotoStack({
                               ))}
                             </ul>
                           )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Foto — mindre, till höger */}
-                  <div className="hidden md:flex items-center justify-self-center w-full" style={{ maxWidth: 620 }}>
-                    <div
-                      className="relative w-full min-w-0 transition-transform duration-500 ease-out"
-                      style={{
-                        aspectRatio: "16 / 10",
-                        transform: `rotate(${tilt.rotate}deg) translate(${tilt.x}px, ${tilt.y}px)`,
-                      }}
-                    >
-                      <div className={`hero-caption-in absolute inset-0 overflow-hidden bg-white p-3 ${CARD_SHADOW}`}>
-                        <div className="relative h-full w-full overflow-hidden">
-                          <img src={toProxyUrl(slide.imageUrl)} alt={slide.alt} className="absolute inset-0 w-full h-full object-cover" />
                         </div>
                       </div>
                     </div>
