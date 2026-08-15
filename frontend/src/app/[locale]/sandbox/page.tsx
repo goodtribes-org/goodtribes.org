@@ -3,20 +3,22 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { htmlToPreviewText } from "@/lib/renderBody";
 import SortToggleContainer from "@/components/SortToggleContainer";
 import Pagination from "@/components/Pagination";
 import ProjectCard from "@/components/ProjectCard";
+import IdeaCard from "@/components/IdeaCardContainer";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import SandboxHero from "./SandboxHero";
 import Pillars from "./Pillars";
-import WhyHowWhat from "./WhyHowWhat";
-import FeaturedDreams from "./FeaturedDreams";
-import { resolveProjectContent } from "@/lib/contentTranslation";
+import { resolveProjectContent, resolveIdeaContent } from "@/lib/contentTranslation";
 import { routing } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
+
+const IDEA_PREVIEW_SIZE = 8;
 
 export async function generateMetadata({
   params,
@@ -52,8 +54,6 @@ export default async function SandboxPage({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "SandboxPage" });
   const tPillars = await getTranslations({ locale, namespace: "SandboxPillars" });
-  const tWhy = await getTranslations({ locale, namespace: "SandboxWhyHowWhat" });
-  const tDreams = await getTranslations({ locale, namespace: "SandboxFeaturedDreams" });
   const { sort: sortParam, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
@@ -65,8 +65,10 @@ export default async function SandboxPage({
 
   const where = { isSandbox: true };
   const aiUser = await getAiParticipantUser();
+  const session = await auth();
+  const userId = session?.user?.id;
 
-  const [total, projects, recentProjectsForFeed, recentIdeas, recentMessages, projectCount, aiSeedCount, tasksDone] = await Promise.all([
+  const [total, projects, recentProjectsForFeed, recentIdeas, recentMessages, projectCount, aiSeedCount, tasksDone, ideaCount, ideas] = await Promise.all([
     prisma.project.count({ where }),
     prisma.project.findMany({
       where,
@@ -111,6 +113,18 @@ export default async function SandboxPage({
     prisma.project.count({ where }),
     prisma.project.count({ where: { isSandbox: true, ownerId: aiUser.id } }),
     prisma.kanbanCard.count({ where: { column: "DONE", project: { isSandbox: true } } }),
+    prisma.idea.count({ where: { status: { not: "draft" } } }),
+    prisma.idea.findMany({
+      where: { status: { not: "draft" } },
+      orderBy: { createdAt: "desc" },
+      take: IDEA_PREVIEW_SIZE,
+      include: {
+        author: { select: { name: true } },
+        _count: { select: { votes: true, comments: true, endorsements: true } },
+        votes: userId ? { where: { userId }, select: { id: true } } : false,
+        translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
+      },
+    }),
   ]);
 
   const feedEvents = [
@@ -165,6 +179,12 @@ export default async function SandboxPage({
     ...resolveProjectContent(p, p.translations, locale),
     likes: likesByProjectId.get(p.id) ?? 0,
     taskProgress: taskProgressBySlug.get(p.slug) ?? { total: 0, done: 0 },
+  }));
+
+  const ideasWithVote = ideas.map((idea) => ({
+    ...idea,
+    ...resolveIdeaContent(idea, idea.translations, locale),
+    myVoteId: idea.votes?.[0]?.id ?? null,
   }));
 
   const rawParams = { sort: sortParam, page: pageStr };
@@ -239,45 +259,6 @@ export default async function SandboxPage({
         {t("explainerSuffix")}
       </p>
 
-      <WhyHowWhat
-        eyebrow={tWhy("eyebrow")}
-        headings={{ why: tWhy("whyHeading"), how: tWhy("howHeading"), what: tWhy("whatHeading") }}
-        bodies={{ why: tWhy("whyBody"), how: tWhy("howBody"), what: tWhy("whatBody") }}
-      />
-
-      <FeaturedDreams
-        sectionHeading={tDreams("sectionHeading")}
-        headings={{
-          infos: tDreams("infosHeading"),
-          goodtribe: tDreams("goodtribeHeading"),
-          dromlabbet: tDreams("dromlabbetHeading"),
-        }}
-        bodies={{
-          infos: tDreams("infosBody"),
-          goodtribe: tDreams("goodtribeBody"),
-          dromlabbet: tDreams("dromlabbetBody"),
-        }}
-      />
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-        <div className="rounded-lg p-3 text-center text-white bg-gradient-to-br from-coral to-watermelon shadow-sm">
-          <p className="text-xl font-bold">{projectCount}</p>
-          <p className="text-[11px] opacity-85">{t("statProjects")}</p>
-        </div>
-        <div className="rounded-lg p-3 text-center text-white bg-gradient-to-br from-coral to-watermelon shadow-sm">
-          <p className="text-xl font-bold">{aiSeedCount}</p>
-          <p className="text-[11px] opacity-85">{t("statAiStarted")}</p>
-        </div>
-        <div className="rounded-lg p-3 text-center text-white bg-gradient-to-br from-coral to-watermelon shadow-sm">
-          <p className="text-xl font-bold">{projectCount - aiSeedCount}</p>
-          <p className="text-[11px] opacity-85">{t("statHumanStarted")}</p>
-        </div>
-        <div className="rounded-lg p-3 text-center text-white bg-gradient-to-br from-coral to-watermelon shadow-sm">
-          <p className="text-xl font-bold">{tasksDone}</p>
-          <p className="text-[11px] opacity-85">{t("statTasksDone")}</p>
-        </div>
-      </div>
-
       <section id="projects" className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-dark-slate">
@@ -285,6 +266,7 @@ export default async function SandboxPage({
           </h2>
           <SortToggleContainer sort={sort} basePath="/sandbox" />
         </div>
+
         {projectsWithLikes.length === 0 ? (
           <div className="border border-dashed border-amber-300 rounded-lg p-16 text-center">
             <p className="text-dark-slate/40 text-sm mb-3">{t("emptyProjects")}</p>
@@ -317,6 +299,48 @@ export default async function SandboxPage({
           </>
         )}
       </section>
+
+      <section id="ideas" className="mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-dark-slate">
+            {t("exploreIdeasHeading")} <span className="text-dark-slate/40 font-normal">({ideaCount})</span>
+          </h2>
+          <Link href="/ideas" className="text-xs text-coral hover:underline">
+            {t("seeAllIdeasLink")}
+          </Link>
+        </div>
+        {ideas.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <p className="text-dark-slate/50 mb-4">{t("noIdeasYet")}</p>
+            <Link href="/ideas/new" className="text-coral hover:underline text-sm">
+              {t("shareFirstIdeaLink")}
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {ideasWithVote.map((idea) => <IdeaCard key={idea.id} idea={idea} isLoggedIn={!!userId} />)}
+          </div>
+        )}
+      </section>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+        <div className="rounded-lg p-3 text-center text-white bg-gradient-to-br from-coral to-watermelon shadow-sm">
+          <p className="text-xl font-bold">{projectCount}</p>
+          <p className="text-[11px] opacity-85">{t("statProjects")}</p>
+        </div>
+        <div className="rounded-lg p-3 text-center text-white bg-gradient-to-br from-coral to-watermelon shadow-sm">
+          <p className="text-xl font-bold">{aiSeedCount}</p>
+          <p className="text-[11px] opacity-85">{t("statAiStarted")}</p>
+        </div>
+        <div className="rounded-lg p-3 text-center text-white bg-gradient-to-br from-coral to-watermelon shadow-sm">
+          <p className="text-xl font-bold">{projectCount - aiSeedCount}</p>
+          <p className="text-[11px] opacity-85">{t("statHumanStarted")}</p>
+        </div>
+        <div className="rounded-lg p-3 text-center text-white bg-gradient-to-br from-coral to-watermelon shadow-sm">
+          <p className="text-xl font-bold">{tasksDone}</p>
+          <p className="text-[11px] opacity-85">{t("statTasksDone")}</p>
+        </div>
+      </div>
 
       <section>
         <div className="flex items-center justify-between mb-4">

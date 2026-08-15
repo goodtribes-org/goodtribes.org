@@ -2,15 +2,15 @@
 // from the old dev-goodtribe.pantheonsite.io site — see
 // /public/img/sandbox-tree-*.png. The pillar icons are simple white-line
 // SVGs (from the very first sandbox-hero concept mockup) rather than the
-// recovered PNGs — cleaner against the colored gradient header. On the
-// original site, the trees sit above the outer two pillars (Leva Gott /
-// Göra Gott), not the middle one — reproduced here the same way, hidden on
-// mobile where the grid stacks to a single column and "outer corner" stops
-// being meaningful. Each header fades from the pillar's base color, the
-// "strong color → fade out" treatment from that same concept mockup.
-// Row width follows the original's measured ratio (tree width ≈ 30% of its
-// container) — with the trees sized up, the row widens back out to match
-// rather than staying artificially narrow.
+// recovered PNGs — cleaner against the colored gradient header. The trees
+// sit above the row's outer two slots (whichever pillars occupy them —
+// currently Dröm Gott / Leva Gott), hidden on mobile where the grid stacks
+// to a single column and "outer corner" stops being meaningful. Each header
+// fades from the pillar's base color, the "strong color → fade out"
+// treatment from that same concept mockup. Row width follows the original's
+// measured ratio (tree width ≈ 30% of its container) — with the trees sized
+// up, the row widens back out to match rather than staying artificially
+// narrow. PILLARS' array order is the display order (left to right).
 function LeafIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
@@ -48,10 +48,10 @@ function BulbIcon() {
 }
 
 const PILLARS = [
-  { Icon: LeafIcon, color: "var(--color-seagrass)", key: "levaGott" as const },
-  { Icon: ThumbIcon, color: "var(--color-navy)", key: "maGott" as const },
-  { Icon: HeartIcon, color: "var(--color-watermelon)", key: "goraGott" as const },
   { Icon: BulbIcon, color: "var(--color-coral)", key: "dreamGood" as const },
+  { Icon: HeartIcon, color: "var(--color-watermelon)", key: "goraGott" as const },
+  { Icon: ThumbIcon, color: "var(--color-navy)", key: "maGott" as const },
+  { Icon: LeafIcon, color: "var(--color-seagrass)", key: "levaGott" as const },
 ];
 
 const TREE_LEFT = { src: "/img/sandbox-tree-left.png", alt: "" };
@@ -82,14 +82,14 @@ export default function Pillars({
           className="hidden sm:block absolute right-[-86px] md:right-[-130px] bottom-full mb-[-43px] md:mb-[-58px] w-[230px] md:w-[317px] h-auto z-0 pointer-events-none select-none"
         />
         <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {PILLARS.map((p) => (
+          {PILLARS.map((p, i) => (
             <div
               key={p.key}
               className="bg-white border border-[#ecd9a8] rounded-[14px] overflow-hidden shadow-[0_10px_24px_-14px_rgba(37,68,65,0.18)]"
               style={
-                p.key === "levaGott"
+                i === 0
                   ? { transform: "translateX(-10px)" }
-                  : p.key === "maGott"
+                  : i === 1
                     ? { transform: "translateX(-5px)" }
                     : undefined
               }

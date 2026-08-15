@@ -1250,7 +1250,7 @@
     "dreamGoodHeading": "Dröm Gott",
     "dreamGoodBody": "Dröm Gott: Vi människor delar samma drömmar om ett bättre liv."
   },
-  "SandboxWhyHowWhat": {
+  "WhyHowWhat": {
     "eyebrow": "Målet",
     "whyHeading": "Varför",
     "whyBody": "Vi behöver en förändring som leder till en långsiktigt hållbar global samhällsutveckling. En värld där alla människor ges möjlighet att Leva Gott, Må Gott och Göra Gott för sig själv och andra. För att komma dit behöver vi ett nytt sätt att tänka/verka som utgår från forskning, naturen och människans grundläggande behov och önskningar. Vi måste bli den förändring vi vill se.",
@@ -1258,15 +1258,6 @@
     "howBody": "Förändra världen — tre enkla steg. 1. Klicka på \"Förverkliga en dröm\". 2. Utforska och dela drömmar/projekt. 3. Samverka med andra för att förverkliga dina/era drömmar/projekt. Historien visar att all miljö- och samhällsförändring underifrån börjar med en liten grupp engagerade människor som samverkar för att uppnå sina gemensamma drömmar.",
     "whatHeading": "Vad",
     "whatBody": "GoodTribes är en öppen drömfabrik där människor kan samverka för att förverkliga sina drömmar/projekt/företag som direkt eller indirekt medverkar till en långsiktigt hållbar miljö- och samhällsutveckling. Studier visar att det vi människor ångrar allra mest vid livets slut är att vi inte försökte förverkliga våra livsdrömmar och fulla potential."
-  },
-  "SandboxFeaturedDreams": {
-    "sectionHeading": "Utvalda drömmar & projekt",
-    "infosHeading": "Infos: Datordonation",
-    "infosBody": "Infos: Datordonation donerade avskriven IT-utrustning från offentlig sektor och näringslivet till förskolor, skolor och ideella organisationer som t.ex. Amnesty och Greenpeace.",
-    "goodtribeHeading": "GoodTribes",
-    "goodtribeBody": "GoodTribes bygger på att människor samverkar genom små och stora insatser för att tillsammans förverkliga drömmar som direkt eller indirekt medverkar till en långsiktigt hållbar miljö- och samhällsutveckling.",
-    "dromlabbetHeading": "Drömlabbet",
-    "dromlabbetBody": "Drömlabbet vill ge arbetslösa och nyanlända utbildning, möjligheten och resurser att förverkliga sina och andras drömmar genom att använda GoodTribes plattform."
   },
   "SandboxPage": {
     "metaDescription": "Ett experimentellt område som blandar AI-genererat innehåll med användarbidrag.",
@@ -1293,6 +1284,10 @@
     "startFirstProject": "Starta det första →",
     "startNext": "+ Starta nästa",
     "aiSeedingSoon": "🤖 AI seedar snart",
+    "exploreIdeasHeading": "Utforska idéer",
+    "seeAllIdeasLink": "Se alla idéer →",
+    "noIdeasYet": "Inga idéer ännu.",
+    "shareFirstIdeaLink": "Dela den första idén",
     "activityHeading": "Aktivitet i sandboxen",
     "allIdeasLink": "Alla idéer →",
     "emptyActivity": "Inget har hänt i sandboxen än — bli först.",
@@ -1852,10 +1847,6 @@
     "seeAllProjectsLink": "Se alla projekt →",
     "noProjectsMatchFilters": "Inga projekt matchar dina filter.",
     "clearFiltersLink": "Rensa filter",
-    "exploreIdeasHeading": "Utforska idéer",
-    "seeAllIdeasLink": "Se alla idéer →",
-    "noIdeasYet": "Inga idéer ännu.",
-    "shareFirstIdeaLink": "Dela den första idén",
     "activityHeading": "Händer just nu",
     "activitySubheading": "Senaste aktivitet på plattformen",
     "seeAllActivityLink": "Se all aktivitet →"

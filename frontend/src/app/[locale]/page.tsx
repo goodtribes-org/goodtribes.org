@@ -5,11 +5,11 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import ProjectCard from "@/components/ProjectCard";
-import IdeaCard from "@/components/IdeaCardContainer";
 import SortToggle from "@/components/SortToggleContainer";
 import Pagination from "@/components/Pagination";
 import ActivityPulse from "@/components/ActivityPulse";
 import HeroPhotoStack from "@/components/HeroPhotoStack";
+import WhyHowWhat from "@/components/WhyHowWhat";
 import { toHeroSlideData } from "@/lib/heroSlides";
 import { isSiteAdmin } from "@/lib/authz";
 import HomeStatsWidget from "@/components/HomeStatsWidget";
@@ -23,10 +23,9 @@ import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import { resolveProjectContent, resolveIdeaContent } from "@/lib/contentTranslation";
+import { resolveProjectContent } from "@/lib/contentTranslation";
 
 const PAGE_SIZE = 12;
-const IDEA_PREVIEW_SIZE = 8;
 
 async function getLeaderboard() {
   // Ranks everyone with a name, same as a project's "Mest aktiva medlemmar" —
@@ -69,6 +68,7 @@ export default async function HomePage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "HomePage" });
+  const tWhy = await getTranslations({ locale, namespace: "WhyHowWhat" });
   const { sort: sortParam, q, phase, category, sdg, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const sdgNum = sdg ? parseInt(sdg) : undefined;
@@ -106,8 +106,6 @@ export default async function HomePage({
     sdgProjects,
     totalFiltered,
     projects,
-    ideaCount,
-    ideas,
     heroSlides,
     heroSettings,
     onboardingSteps,
@@ -136,18 +134,6 @@ export default async function HomePage({
       include: {
         owner: { select: { name: true } },
         members: { select: { id: true } },
-        translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
-      },
-    }),
-    prisma.idea.count({ where: { status: { not: "draft" } } }),
-    prisma.idea.findMany({
-      where: { status: { not: "draft" } },
-      orderBy: { createdAt: "desc" },
-      take: IDEA_PREVIEW_SIZE,
-      include: {
-        author: { select: { name: true } },
-        _count: { select: { votes: true, comments: true, endorsements: true } },
-        votes: userId ? { where: { userId }, select: { id: true } } : false,
         translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
       },
     }),
@@ -204,12 +190,6 @@ export default async function HomePage({
     taskProgress: taskProgressBySlug.get(p.slug) ?? { total: 0, done: 0 },
   }));
 
-  const ideasWithVote = ideas.map((idea) => ({
-    ...idea,
-    ...resolveIdeaContent(idea, idea.translations, locale),
-    myVoteId: idea.votes?.[0]?.id ?? null,
-  }));
-
   const rawParams = { sort: sortParam, q, phase, category, sdg, page: pageStr };
 
   return (
@@ -221,6 +201,12 @@ export default async function HomePage({
       </div>
 
       <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
+
+      <WhyHowWhat
+        eyebrow={tWhy("eyebrow")}
+        headings={{ why: tWhy("whyHeading"), how: tWhy("howHeading"), what: tWhy("whatHeading") }}
+        bodies={{ why: tWhy("whyBody"), how: tWhy("howBody"), what: tWhy("whatBody") }}
+      />
 
       <div className="space-y-16">
 
@@ -258,31 +244,6 @@ export default async function HomePage({
               basePath="/"
             />
           </>
-        )}
-      </section>
-
-      {/* Del 3 — Idea Browser */}
-      <section id="ideas">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-dark-slate">
-            {t("exploreIdeasHeading")}{" "}
-            <span className="text-dark-slate/40 font-normal">({ideaCount})</span>
-          </h2>
-          <Link href="/ideas" className="text-xs text-coral hover:underline">
-            {t("seeAllIdeasLink")}
-          </Link>
-        </div>
-        {ideas.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p className="text-dark-slate/50 mb-4">{t("noIdeasYet")}</p>
-            <Link href="/ideas/new" className="text-coral hover:underline text-sm">
-              {t("shareFirstIdeaLink")}
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {ideasWithVote.map((idea) => <IdeaCard key={idea.id} idea={idea} isLoggedIn={!!userId} />)}
-          </div>
         )}
       </section>
 

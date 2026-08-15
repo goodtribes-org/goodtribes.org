@@ -1250,7 +1250,7 @@
     "dreamGoodHeading": "Dream Good",
     "dreamGoodBody": "Dream Good: We humans share the same dreams about a better life."
   },
-  "SandboxWhyHowWhat": {
+  "WhyHowWhat": {
     "eyebrow": "(Y)our Goal",
     "whyHeading": "Why",
     "whyBody": "We need a change that leads to long-term sustainable global development — a world where everyone has the opportunity to Live Well, Feel Good, and Do Good for themselves and others. To get there, we need a new way of thinking and acting, grounded in research, nature, and people's basic needs and desires. We have to become the change we want to see.",
@@ -1258,15 +1258,6 @@
     "howBody": "Change the world — three simple steps. 1. Click \"Make a dream real\". 2. Explore and share dreams/projects. 3. Collaborate with others to realize your dream(s)/project(s). History shows that all grassroots environmental and social change starts with a small group of engaged people working together toward a shared dream.",
     "whatHeading": "What",
     "whatBody": "GoodTribes is an open dream factory where people can collaborate to realize dreams, projects, and ventures that directly or indirectly contribute to long-term sustainable environmental and social development. Studies show that what people regret most at the end of their lives is not having tried to realize their dreams and full potential."
-  },
-  "SandboxFeaturedDreams": {
-    "sectionHeading": "Featured dreams & projects",
-    "infosHeading": "Infos: Datordonation",
-    "infosBody": "Infos: Datordonation donated decommissioned IT equipment from the public sector and businesses to preschools, schools, and nonprofit organizations such as Amnesty and Greenpeace.",
-    "goodtribeHeading": "GoodTribes",
-    "goodtribeBody": "GoodTribes is built on people collaborating through small and large contributions to realize dreams together that directly or indirectly contribute to long-term sustainable environmental and social development.",
-    "dromlabbetHeading": "Drömlabbet",
-    "dromlabbetBody": "Drömlabbet wants to give unemployed people and newcomers education, opportunity, and resources to realize their own and others' dreams using the GoodTribes platform."
   },
   "SandboxPage": {
     "metaDescription": "An experimental area mixing AI-generated content with user contributions.",
@@ -1293,6 +1284,10 @@
     "startFirstProject": "Start the first one →",
     "startNext": "+ Start the next one",
     "aiSeedingSoon": "🤖 AI seeding soon",
+    "exploreIdeasHeading": "Explore ideas",
+    "seeAllIdeasLink": "See all ideas →",
+    "noIdeasYet": "No ideas yet.",
+    "shareFirstIdeaLink": "Share the first idea",
     "activityHeading": "Sandbox activity",
     "allIdeasLink": "All ideas →",
     "emptyActivity": "Nothing has happened in the sandbox yet — be first.",
@@ -1852,10 +1847,6 @@
     "seeAllProjectsLink": "See all projects →",
     "noProjectsMatchFilters": "No projects match your filters.",
     "clearFiltersLink": "Clear filters",
-    "exploreIdeasHeading": "Explore ideas",
-    "seeAllIdeasLink": "See all ideas →",
-    "noIdeasYet": "No ideas yet.",
-    "shareFirstIdeaLink": "Share the first idea",
     "activityHeading": "Happening now",
     "activitySubheading": "Latest activity on the platform",
     "seeAllActivityLink": "See all activity →"
