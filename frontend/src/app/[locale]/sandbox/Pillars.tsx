@@ -37,10 +37,21 @@ function HeartIcon() {
   );
 }
 
+function BulbIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+      <path d="M9 18h6" />
+      <path d="M10 22h4" />
+      <path d="M12 2a7 7 0 0 0-4.24 12.6c.6.46.94 1.16 1.02 1.9L9 18h6l.22-1.5c.08-.74.42-1.44 1.02-1.9A7 7 0 0 0 12 2z" />
+    </svg>
+  );
+}
+
 const PILLARS = [
   { Icon: LeafIcon, color: "var(--color-seagrass)", key: "levaGott" as const },
   { Icon: ThumbIcon, color: "var(--color-navy)", key: "maGott" as const },
   { Icon: HeartIcon, color: "var(--color-watermelon)", key: "goraGott" as const },
+  { Icon: BulbIcon, color: "var(--color-coral)", key: "dreamGood" as const },
 ];
 
 const TREE_LEFT = { src: "/img/sandbox-tree-left.png", alt: "" };
@@ -50,8 +61,8 @@ export default function Pillars({
   headings,
   bodies,
 }: {
-  headings: Record<"levaGott" | "maGott" | "goraGott", string>;
-  bodies: Record<"levaGott" | "maGott" | "goraGott", string>;
+  headings: Record<"levaGott" | "maGott" | "goraGott" | "dreamGood", string>;
+  bodies: Record<"levaGott" | "maGott" | "goraGott" | "dreamGood", string>;
 }) {
   return (
     <div className="pt-0 sm:pt-20">
@@ -70,7 +81,7 @@ export default function Pillars({
           alt={TREE_RIGHT.alt}
           className="hidden sm:block absolute right-[-86px] md:right-[-130px] bottom-full mb-[-43px] md:mb-[-58px] w-[230px] md:w-[317px] h-auto z-0 pointer-events-none select-none"
         />
-        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {PILLARS.map((p) => (
             <div
               key={p.key}

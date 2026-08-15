@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import ProjectSideNav from "../ProjectSideNav";
 import ProjectMiniHero from "../ProjectMiniHero";
+import { ProjectSandboxAnnouncer } from "@/components/SandboxIndicator";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 
@@ -16,17 +17,19 @@ export default async function WorkspaceLayout({
   const { slug } = await params;
   const [session, project] = await Promise.all([
     auth(),
-    prisma.project.findUnique({ where: { slug }, select: { id: true, title: true, imageUrl: true, legalType: true } }),
+    prisma.project.findUnique({ where: { slug }, select: { id: true, title: true, slogan: true, imageUrl: true, legalType: true, createdAt: true, isSandbox: true } }),
   ]);
   if (!project) notFound();
 
   const isOwner = session?.user?.id
     ? await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES)
     : false;
+  const dateLabel = `${project.createdAt.getDate()}/${project.createdAt.getMonth() + 1}-${String(project.createdAt.getFullYear()).slice(-2)}`;
 
   return (
     <>
-      <ProjectMiniHero title={project.title} imageUrl={project.imageUrl} />
+      <ProjectSandboxAnnouncer isSandbox={project.isSandbox} />
+      <ProjectMiniHero title={project.title} slogan={project.slogan} imageUrl={project.imageUrl} dateLabel={dateLabel} />
       <div className="flex flex-1 flex-col sm:flex-row -mb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
         <ProjectSideNav slug={slug} isOwner={isOwner} isCommercial={isCommercialLegalType(project.legalType)} />
         <div className="flex-1 min-w-0 px-6 pt-8 pb-12">{children}</div>

@@ -181,11 +181,13 @@ export default async function SandboxPage({
             levaGott: tPillars("levaGottHeading"),
             maGott: tPillars("maGottHeading"),
             goraGott: tPillars("goraGottHeading"),
+            dreamGood: tPillars("dreamGoodHeading"),
           }}
           bodies={{
             levaGott: tPillars("levaGottBody"),
             maGott: tPillars("maGottBody"),
             goraGott: tPillars("goraGottBody"),
+            dreamGood: tPillars("dreamGoodBody"),
           }}
         />
       </div>

@@ -510,7 +510,7 @@
     "calendarDayFri": "F",
     "calendarDaySat": "L",
     "calendarDaySun": "S",
-    "teamHeading": "GoodTribes teamet",
+    "teamHeading": "The team",
     "membersCount": "{count, plural, one {# medlem} other {# medlemmar}}",
     "founderLabel": "Founder",
     "joinCta": "Join",
@@ -651,6 +651,7 @@
     "optionalSuffix": "(valfritt)",
     "coverImageLabel": "Omslagsbild",
     "titleLabel": "Titel",
+    "sloganLabel": "Slogan",
     "githubProjectLabel": "GitHub-projekt",
     "githubProjectHint": "(kanban-tavla, valfritt)",
     "githubSyncFailed": "Senaste synk misslyckades: {error}",
@@ -1245,7 +1246,9 @@
     "maGottHeading": "Må Gott",
     "maGottBody": "Må Gott: Vi människor har samma grundläggande psykologiska behov av gemenskap, uppskattning, kärlek, självbestämmande, frihet, rättvisa, utveckling och engagemang. GoodTribes vill ge alla människor friheten och möjligheten att förverkliga sina drömmar och sin fulla potential.",
     "goraGottHeading": "Göra Gott",
-    "goraGottBody": "Göra Gott: Vi människor har samma övergripande önskan om lycka, mening och att vara en del av ett större sammanhang. GoodTribes utgår från forskningen som visar att människor upplever störst och mest långvarig lycka, tillfredsställelse och mening när vi tillsammans med andra gör världen bättre."
+    "goraGottBody": "Göra Gott: Vi människor har samma övergripande önskan om lycka, mening och att vara en del av ett större sammanhang. GoodTribes utgår från forskningen som visar att människor upplever störst och mest långvarig lycka, tillfredsställelse och mening när vi tillsammans med andra gör världen bättre.",
+    "dreamGoodHeading": "Dröm Gott",
+    "dreamGoodBody": "Dröm Gott: Vi människor delar samma drömmar om ett bättre liv."
   },
   "SandboxWhyHowWhat": {
     "eyebrow": "Målet",
@@ -2060,6 +2063,8 @@
     "optionalLabel": "(valfritt)",
     "projectNameLabel": "Projektnamn",
     "projectNamePlaceholder": "Projektnamn",
+    "sloganLabel": "Slogan",
+    "sloganPlaceholder": "t.ex. Låt odjuret leva",
     "summaryLabel": "Kort sammanfattning",
     "summaryHelper": "(visas på projektkortet)",
     "summaryPlaceholder": "1–2 meningar",

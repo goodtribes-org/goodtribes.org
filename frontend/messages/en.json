@@ -510,7 +510,7 @@
     "calendarDayFri": "F",
     "calendarDaySat": "S",
     "calendarDaySun": "S",
-    "teamHeading": "The GoodTribes team",
+    "teamHeading": "The team",
     "membersCount": "{count, plural, one {# member} other {# members}}",
     "founderLabel": "Founder",
     "joinCta": "Join",
@@ -651,6 +651,7 @@
     "optionalSuffix": "(optional)",
     "coverImageLabel": "Cover image",
     "titleLabel": "Title",
+    "sloganLabel": "Slogan",
     "githubProjectLabel": "GitHub project",
     "githubProjectHint": "(kanban board, optional)",
     "githubSyncFailed": "Last sync failed: {error}",
@@ -1245,7 +1246,9 @@
     "maGottHeading": "Feeling Good",
     "maGottBody": "Feeling Good: We humans share the same basic psychological needs — belonging, appreciation, love, self-determination, freedom, fairness, growth, and engagement. GoodTribes wants to give everyone the freedom and opportunity to realize their dreams and their full potential.",
     "goraGottHeading": "Doing Good",
-    "goraGottBody": "Doing Good: We humans share the same underlying desire for happiness, meaning, and being part of something bigger than ourselves. GoodTribes is grounded in research showing that people experience their greatest and most lasting happiness, satisfaction, and meaning when we make the world better together with others."
+    "goraGottBody": "Doing Good: We humans share the same underlying desire for happiness, meaning, and being part of something bigger than ourselves. GoodTribes is grounded in research showing that people experience their greatest and most lasting happiness, satisfaction, and meaning when we make the world better together with others.",
+    "dreamGoodHeading": "Dream Good",
+    "dreamGoodBody": "Dream Good: We humans share the same dreams about a better life."
   },
   "SandboxWhyHowWhat": {
     "eyebrow": "(Y)our Goal",
@@ -2060,6 +2063,8 @@
     "optionalLabel": "(optional)",
     "projectNameLabel": "Project name",
     "projectNamePlaceholder": "Project name",
+    "sloganLabel": "Slogan",
+    "sloganPlaceholder": "e.g. Let the beast live",
     "summaryLabel": "Short summary",
     "summaryHelper": "(shown on the project card)",
     "summaryPlaceholder": "1–2 sentences",

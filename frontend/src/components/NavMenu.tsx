@@ -102,7 +102,7 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
         <a
           href="/sandbox"
           onClick={navLink("/sandbox", () => {})}
-          className="flex items-center gap-1 rounded-full ring-1 ring-orange-500 px-3 py-1 font-bold text-coral hover:bg-coral hover:text-white transition-colors whitespace-nowrap"
+          className="flex items-center gap-1 rounded-full px-3 py-1 font-bold text-coral hover:bg-coral hover:text-white transition-colors whitespace-nowrap"
         >
           {t("sandbox")}
         </a>

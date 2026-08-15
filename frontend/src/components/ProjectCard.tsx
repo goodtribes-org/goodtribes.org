@@ -6,6 +6,7 @@ import { isCommercialLegalType } from "@/lib/legalType";
 export type ProjectCardData = {
   slug: string;
   title: string;
+  slogan?: string | null;
   summary: string | null;
   description: string | null;
   phase: string;
@@ -97,6 +98,9 @@ export default function ProjectCard({
       </div>
       <div className="p-3 flex flex-col flex-1">
         <p className="font-bold text-dark-slate text-sm leading-tight mb-0.5">{project.title}</p>
+        {project.slogan && (
+          <p className="text-xs text-dark-slate/60 italic leading-tight mb-1 truncate">&quot;{project.slogan}&quot;</p>
+        )}
         <p className="text-xs text-dark-slate/50 mb-2">
           {t("byAuthor")} <span className="text-coral">{project.owner.name ?? t("unknownAuthor")}</span>
         </p>

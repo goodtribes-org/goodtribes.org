@@ -16,7 +16,8 @@ import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import ProjectSideNav from "./ProjectSideNav";
 import PhaseMenuBar from "./PhaseMenuBar";
 import OwnershipBanner from "@/components/OwnershipBanner";
-import { handwritingFont } from "@/lib/fonts";
+import { handwritingFontThin } from "@/lib/fonts";
+import { ProjectSandboxAnnouncer } from "@/components/SandboxIndicator";
 import { isLeadRole, isSiteAdmin } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
@@ -114,6 +115,8 @@ export default async function ProjectDetailPage({
   if (!project) notFound();
 
   const content = resolveProjectContent(project, project.translations, locale as Locale);
+  // Polaroid-caption date, e.g. "19/8-26" — day/month-2digitYear, no leading zeros.
+  const createdDateLabel = `${project.createdAt.getDate()}/${project.createdAt.getMonth() + 1}-${String(project.createdAt.getFullYear()).slice(-2)}`;
 
   const userId = session?.user?.id;
   const userMembership = project.members.find((m) => m.user.id === userId);
@@ -273,12 +276,16 @@ export default async function ProjectDetailPage({
 
   return (
     <div className="flex flex-1 flex-col">
+      <ProjectSandboxAnnouncer isSandbox={project.isSandbox} />
       {/* Hero + side nav + page content: one continuous full-bleed row, so the rail runs from the hero down to the footer */}
       <div
         className="relative -mt-8"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
-        <div className="absolute top-0 left-0 right-0 overflow-hidden" style={{ height: "490px" }}>
+        <div
+          className="absolute top-0 left-0 right-0 overflow-hidden border-b border-muted-teal/20"
+          style={{ height: "490px" }}
+        >
           {project.imageUrl ? (
             <Image src={project.imageUrl} alt="" fill unoptimized className="object-cover blur-2xl scale-110" sizes="100vw" />
           ) : (
@@ -289,34 +296,51 @@ export default async function ProjectDetailPage({
         <div className="relative z-10 flex flex-col sm:flex-row -mb-12">
         <ProjectSideNav slug={slug} isOwner={!!isOwnerOrAdmin} isCommercial={isCommercialLegalType(project.legalType)} />
         <div className="flex-1 min-w-0 pb-12">
-          <div className="flex justify-center pt-5 pb-2 px-6">
-            <h1
-              className={`${handwritingFont.className} text-center leading-tight md:mr-[330px]`}
-              style={{
-                color: "white",
-                fontSize: 56,
-                textShadow: "-1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999, 2px 4px 12px rgba(0,0,0,0.35)",
-                transform: "rotate(-3deg)",
-              }}
-            >
-              {content.title}
-            </h1>
-          </div>
-          <div className="px-4 pb-10">
+          <div className="px-4 pt-10 pb-10">
             <div className="flex flex-wrap justify-center gap-5 items-stretch w-full max-w-[1160px] mx-auto">
-              {/* Card 1: project image */}
+              {/* Card 1: project image — Polaroid-style, name written on the
+                  white border like a photo caption. */}
               <div
-                className="shrink-0 bg-white overflow-hidden w-full max-w-[660px] 2xl:max-w-[820px] h-64 sm:h-80 md:h-[400px] 2xl:h-[460px]"
-                style={{ border: "24px solid white", boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)", transform: "rotate(-3deg)", position: "relative", zIndex: 1 }}
+                className="shrink-0 bg-white w-full max-w-[660px] 2xl:max-w-[820px]"
+                style={{
+                  // No overflow-hidden here — the image is already fully bounded
+                  // by its own div below (position: relative + fixed height, so
+                  // `fill` never exceeds it), so this card doesn't need to clip
+                  // anything. It used to also clip Kalam's tall glyphs (ascenders
+                  // on the title, descenders like "j" on the slogan) whenever
+                  // they rendered slightly outside leading-none's tight 26px line
+                  // box — removing it here fixes that outright instead of
+                  // guessing at how many extra px of padding buffer they need.
+                  // Bottom padding covers for the missing slogan line (40px line
+                  // height + 3px gap) when there is none, so the blank zone below
+                  // the image still matches the title's zone above it.
+                  padding: project.slogan ? "0px 24px 0px" : "0px 24px 43px",
+                  boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)", transform: "rotate(-3deg)", position: "relative", zIndex: 1,
+                }}
               >
-                {project.imageUrl ? (
-                  <div className="relative w-full h-full">
+                {/* line-height is explicit (not leading-none) because `truncate`
+                    sets overflow-hidden on this element itself — Kalam's tall
+                    glyphs (ascenders here, descenders like "j" on the slogan
+                    below) need a line box big enough to actually contain them,
+                    or they clip regardless of the card's own overflow setting.
+                    40px is the smallest that keeps the clip imperceptible —
+                    tested empirically, anything smaller visibly clips descenders. */}
+                <p className={`${handwritingFontThin.className} text-center truncate px-2`} style={{ fontSize: 26, lineHeight: "40px", color: "#1a3d8f", transform: "translateY(2px)" }}>
+                  {content.title} - {createdDateLabel}
+                </p>
+                <div className="relative w-full h-64 sm:h-80 md:h-[400px] 2xl:h-[460px] mt-[3px]">
+                  {project.imageUrl ? (
                     <Image src={project.imageUrl} alt={content.title} fill unoptimized className="object-cover" />
-                  </div>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-dry-sage/20">
-                    <span className="text-6xl font-bold text-dark-slate/20">{content.title[0]}</span>
-                  </div>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-dry-sage/20">
+                      <span className="text-6xl font-bold text-dark-slate/20">{content.title[0]}</span>
+                    </div>
+                  )}
+                </div>
+                {project.slogan && (
+                  <p className={`${handwritingFontThin.className} text-center truncate px-2 mt-[3px]`} style={{ fontSize: 26, lineHeight: "40px", color: "#1a3d8f" }}>
+                    &quot;{project.slogan}&quot;
+                  </p>
                 )}
               </div>
               {/* Card 2: team + SDG + join */}
@@ -334,7 +358,7 @@ export default async function ProjectDetailPage({
                         const isProjectOwner = m.role === "FOUNDER";
                         const initials = (m.user.name ?? "?").charAt(0).toUpperCase();
                         const firstName = (m.user.name ?? "?").split(" ")[0];
-                        const avatarClass = `w-14 h-14 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-base font-semibold text-dark-slate shrink-0 ring-2 transition-all duration-200 ease-in-out hover:scale-[1.3] hover:shadow-lg cursor-pointer ${isProjectOwner ? "ring-seagrass" : "ring-white"}`;
+                        const avatarClass = `w-10 h-10 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0 ring-2 transition-all duration-200 ease-in-out hover:scale-[1.3] hover:shadow-lg cursor-pointer ${isProjectOwner ? "ring-seagrass" : "ring-white"}`;
                         const avatarContent = m.user.image ? (
                           <Image src={m.user.image} alt={m.user.name ?? ""} fill className="object-cover" unoptimized />
                         ) : initials;
@@ -345,7 +369,7 @@ export default async function ProjectDetailPage({
                         );
                         return (
                           <Tooltip key={i} lines={isProjectOwner ? [t("founderLabel")] : []}>
-                            <div className="flex flex-col items-center gap-1 w-14">
+                            <div className="flex flex-col items-center gap-1 w-10">
                               {avatar}
                               <span className="text-[9px] text-dark-slate/60 text-center truncate w-full leading-tight">{firstName}</span>
                             </div>
@@ -353,8 +377,8 @@ export default async function ProjectDetailPage({
                         );
                       })}
                       {project.members.length > 12 && (
-                        <div className="flex flex-col items-center gap-1 w-14">
-                          <div className="w-14 h-14 rounded-full ring-2 ring-white bg-muted-teal/20 flex items-center justify-center text-xs font-semibold text-dark-slate/60">+{project.members.length - 12}</div>
+                        <div className="flex flex-col items-center gap-1 w-10">
+                          <div className="w-10 h-10 rounded-full ring-2 ring-white bg-muted-teal/20 flex items-center justify-center text-xs font-semibold text-dark-slate/60">+{project.members.length - 12}</div>
                         </div>
                       )}
                     </div>

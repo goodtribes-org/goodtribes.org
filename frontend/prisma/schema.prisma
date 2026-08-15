@@ -630,6 +630,10 @@ model Project {
   id          String   @id @default(cuid())
   slug        String   @unique
   title       String
+  // Short quoted tagline shown next to the title on the Startsidan/mini-hero
+  // photo card caption (e.g. Storsjön "Låt odjuret leva" - 5/8-26) — set once
+  // at creation via NewProjectGuide, optional, no edit UI yet.
+  slogan      String?
   summary     String?
   description String?
   phase       ProjectPhase @default(IDEA)

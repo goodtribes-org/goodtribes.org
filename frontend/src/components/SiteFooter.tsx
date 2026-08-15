@@ -1,14 +1,12 @@
 "use client";
 
-import { usePathname } from "@/i18n/navigation";
+import { useSandboxIndicator } from "./SandboxIndicator";
 
-// Same sandbox-route detection as SiteHeader.tsx / SandboxBetaBadge.tsx.
 export default function SiteFooter({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const isSandbox = pathname === "/sandbox" || pathname.startsWith("/sandbox/");
+  const isSandbox = useSandboxIndicator();
 
   return (
-    <footer className={`border-t bg-dry-sage/25 shrink-0 ${isSandbox ? "border-coral" : "border-seagrass"}`}>
+    <footer className={`border-t bg-dry-sage/25 shrink-0 ${isSandbox ? "border-[#b3450c]" : "border-seagrass"}`}>
       {children}
     </footer>
   );

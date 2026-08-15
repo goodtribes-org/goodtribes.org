@@ -94,6 +94,7 @@ export default async function EditProjectPage({
         }
         initial={{
           title: project.title,
+          slogan: project.slogan,
           summary: (project as typeof project & { summary: string | null }).summary,
           description: project.description,
           phase: project.phase,

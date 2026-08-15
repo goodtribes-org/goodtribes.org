@@ -30,6 +30,7 @@ interface Props {
   } | null;
   initial: {
     title: string;
+    slogan: string | null;
     summary: string | null;
     description: string | null;
     phase: string;
@@ -148,6 +149,17 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
         <input
           id="title" name="title" type="text" required
           defaultValue={initial.title}
+          className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="slogan" className="block text-sm font-medium text-dark-slate mb-1">
+          {t("sloganLabel")} <span className="text-dark-slate/50 font-normal">{t("optionalSuffix")}</span>
+        </label>
+        <input
+          id="slogan" name="slogan" type="text"
+          defaultValue={initial.slogan ?? ""}
           className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
         />
       </div>

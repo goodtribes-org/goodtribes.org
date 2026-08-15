@@ -25,6 +25,7 @@ export async function createProject(formData: FormData) {
   const title = (formData.get("title") as string).trim();
   if (!title) throw new Error("Projektnamn krävs.");
 
+  const slogan = (formData.get("slogan") as string | null)?.trim() || null;
   const summary = (formData.get("summary") as string | null)?.trim() || null;
   const description = (formData.get("description") as string | null)?.trim() || null;
   const category = (formData.get("category") as string | null)?.trim() || null;
@@ -42,7 +43,7 @@ export async function createProject(formData: FormData) {
   const skillIds = formData.getAll("skillIds") as string[];
 
   const project = await createProjectRecord({
-    title, summary, description, category, tags, sdgGoals, imageUrl, orgId,
+    title, slogan, summary, description, category, tags, sdgGoals, imageUrl, orgId,
     legalType: legalTypeRaw, ownerId: userId, skillIds,
   });
 

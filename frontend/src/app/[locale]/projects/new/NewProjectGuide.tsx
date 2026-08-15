@@ -11,7 +11,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { CREATABLE_LEGAL_TYPES } from "@/lib/legalType";
 
 interface Props {
-  initial?: { title?: string; description?: string; sdgGoals?: number[]; category?: string; tags?: string[]; imageUrl?: string };
+  initial?: { title?: string; slogan?: string; description?: string; sdgGoals?: number[]; category?: string; tags?: string[]; imageUrl?: string };
   ideaId?: string;
   fromThread?: string;
   contextNote?: string;
@@ -76,6 +76,20 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
             defaultValue={initial.title ?? ""}
             placeholder={t("projectNamePlaceholder")}
             autoFocus
+            className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="slogan" className="block text-sm font-medium text-dark-slate mb-1">
+            {t("sloganLabel")} <span className="text-dark-slate/50 font-normal">{t("optionalLabel")}</span>
+          </label>
+          <input
+            id="slogan"
+            name="slogan"
+            type="text"
+            defaultValue={initial.slogan ?? ""}
+            placeholder={t("sloganPlaceholder")}
             className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral focus:border-transparent"
           />
         </div>

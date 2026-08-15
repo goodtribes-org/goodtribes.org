@@ -6,6 +6,7 @@ import { isCreatableLegalType } from "@/lib/legalType";
 export type CreateProjectParams = {
   title: string;
   ownerId: string;
+  slogan?: string | null;
   summary?: string | null;
   description?: string | null;
   imageUrl?: string | null;
@@ -26,6 +27,7 @@ export type CreateProjectParams = {
 export async function createProjectRecord(params: CreateProjectParams) {
   const {
     title, ownerId,
+    slogan = null,
     summary = null, description = null, imageUrl = null, category = null,
     tags = [], sdgGoals = [], orgId = null,
     // Every new project — whether from the full creation form or idea
@@ -42,7 +44,7 @@ export async function createProjectRecord(params: CreateProjectParams) {
     try {
       const project = await prisma.project.create({
         data: {
-          slug: candidate, title, summary, description, category, tags, sdgGoals, legalType,
+          slug: candidate, title, slogan, summary, description, category, tags, sdgGoals, legalType,
           ownerId, isSandbox,
           ...(imageUrl ? { imageUrl } : {}),
           ...(orgId ? { orgId } : {}),
