@@ -118,15 +118,15 @@ export default function HeroSlideText({
           <TextCard slide={first} canEdit={canEdit} t={t} />
         </div>
 
-        {/* Resten av bilderna + deras texter, utanför hero */}
+        {/* Resten av bilderna + deras texter, utanför hero — text under varje bild */}
         {rest.map((slide, i) => {
           const tilt = PHOTO_TILT[(i + 1) % PHOTO_TILT.length];
           return (
-            <div key={slide.id} className="grid w-full gap-8 items-center md:grid-cols-2">
-              <div className="hidden md:flex items-center justify-self-center w-full" style={{ maxWidth: 620 }}>
+            <div key={slide.id} className="flex w-full flex-col items-center gap-6" style={{ maxWidth: 620 }}>
+              <div className="w-full">
                 <PhotoCard slide={slide} tilt={tilt} />
               </div>
-              <div className="w-full md:max-w-[620px]">
+              <div className="w-full">
                 <TextCard slide={slide} canEdit={canEdit} t={t} />
               </div>
             </div>
