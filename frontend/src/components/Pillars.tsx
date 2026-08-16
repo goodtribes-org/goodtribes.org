@@ -93,10 +93,10 @@ export default function Pillars({
         />
 
         {heading && (
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-[-24px] md:mb-[-32px] z-10 w-full max-w-xs sm:max-w-sm px-4">
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-6 md:mb-10 z-10 w-full max-w-md sm:max-w-lg px-4">
             <div className={`bg-white p-3 ${CARD_SHADOW}`}>
               <div className="border border-muted-teal/20 px-4 sm:px-6 py-4 sm:py-5 bg-amber-50 text-center">
-                <h2 className="text-xl sm:text-3xl font-bold text-amber-900" style={{ textWrap: "balance" }}>
+                <h2 className="text-lg sm:text-2xl font-bold text-amber-900 whitespace-nowrap">
                   {heading}
                 </h2>
               </div>
