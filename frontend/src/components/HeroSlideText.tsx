@@ -3,7 +3,6 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { toProxyUrl } from "@/lib/storageUrl";
-import { heroTintClass } from "@/lib/heroTint";
 import { handwritingFont } from "@/lib/fonts";
 import { CARD_SHADOW, PHOTO_TILT } from "@/lib/heroCardStyle";
 import type { HeroSlideData } from "@/lib/heroSlides";
@@ -31,49 +30,47 @@ function RichText({ html, className }: { html: string; className: string }) {
 
 function TextCard({ slide, canEdit, t }: { slide: HeroSlideData; canEdit: boolean; t: (key: string) => string }) {
   return (
-    <div className={`relative bg-white p-3 ${CARD_SHADOW}`}>
+    <div className="relative bg-white">
       {canEdit && (
         <Link
           href="/site-admin/hero-carousel"
-          className="absolute top-3 right-3 z-10 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors bg-white/70 rounded-md px-2 py-1"
+          className="absolute top-0 right-0 z-10 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors bg-white/70 rounded-md px-2 py-1"
         >
           ✎ {t("editLink")}
         </Link>
       )}
-      <div className={`md:overflow-y-auto border border-muted-teal/20 px-6 pt-3 pb-5 flex flex-col justify-start ${heroTintClass(slide.tintColor, slide.tintOpacity)}`}>
-        <div className="flex flex-col items-start text-left">
-          <h1 className={`${handwritingFont.className} text-dark-slate pr-16`} style={{ textWrap: "balance", fontSize: 26 }}>
-            {slide.heading}
-          </h1>
-          <RichText html={slide.body} className="mt-1 text-dark-slate" />
-          {slide.bodyLine2 && (
-            <p className="mt-1 font-semibold text-dark-slate" style={{ fontSize: 14, lineHeight: 1.5 }}>
-              {slide.bodyLine2}
-            </p>
-          )}
-          {slide.obstacles.length > 0 && (
-            <>
-              <ul className="mt-3 flex flex-col gap-2.5">
-                {slide.obstacles.map((o) => (
-                  <li key={o.lead} className="text-sm text-dark-slate">
-                    <span className="font-bold text-seagrass">{o.lead}</span> {o.text}
-                  </li>
-                ))}
-              </ul>
-              {slide.outro && <RichText html={slide.outro} className="mt-3 text-dark-slate" />}
-            </>
-          )}
-          {slide.points.length > 0 && (
-            <ul className="mt-3 flex flex-col gap-1.5">
-              {slide.points.map((p) => (
-                <li key={p.pct} className="flex items-center gap-3">
-                  <span className="w-14 shrink-0 text-right text-sm font-bold text-coral">{p.pct}</span>
-                  <span className="text-sm text-dark-slate">{p.text}</span>
+      <div className="flex flex-col items-start text-left">
+        <h1 className={`${handwritingFont.className} text-dark-slate pr-16`} style={{ textWrap: "balance", fontSize: 26 }}>
+          {slide.heading}
+        </h1>
+        <RichText html={slide.body} className="mt-1 text-dark-slate" />
+        {slide.bodyLine2 && (
+          <p className="mt-1 font-semibold text-dark-slate" style={{ fontSize: 14, lineHeight: 1.5 }}>
+            {slide.bodyLine2}
+          </p>
+        )}
+        {slide.obstacles.length > 0 && (
+          <>
+            <ul className="mt-3 flex flex-col gap-2.5">
+              {slide.obstacles.map((o) => (
+                <li key={o.lead} className="text-sm text-dark-slate">
+                  <span className="font-bold text-seagrass">{o.lead}</span> {o.text}
                 </li>
               ))}
             </ul>
-          )}
-        </div>
+            {slide.outro && <RichText html={slide.outro} className="mt-3 text-dark-slate" />}
+          </>
+        )}
+        {slide.points.length > 0 && (
+          <ul className="mt-3 flex flex-col gap-1.5">
+            {slide.points.map((p) => (
+              <li key={p.pct} className="flex items-center gap-3">
+                <span className="w-14 shrink-0 text-right text-sm font-bold text-coral">{p.pct}</span>
+                <span className="text-sm text-dark-slate">{p.text}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
