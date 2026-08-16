@@ -3,18 +3,15 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { toProxyUrl } from "@/lib/storageUrl";
-import { handwritingFont } from "@/lib/fonts";
 import { PHOTO_TILT } from "@/lib/heroCardStyle";
 import HeroSlideRow from "./HeroSlideRow";
 import type { HeroSlideData } from "@/lib/heroSlides";
 
 export default function HeroPhotoStack({
   slides,
-  heading,
   canEdit,
 }: {
   slides: HeroSlideData[];
-  heading: string;
   canEdit: boolean;
 }) {
   const t = useTranslations("HeroPhotoStack");
@@ -42,18 +39,7 @@ export default function HeroPhotoStack({
 
       <div className="relative z-10 flex justify-center px-4 pt-0 pb-6">
         <div className="flex w-full max-w-6xl flex-col items-center gap-3">
-          <h1
-            className={`${handwritingFont.className} text-center leading-tight`}
-            style={{
-              color: "white",
-              textShadow: "-1px -1px 0 #999, 1px -1px 0 #999, -1px 1px 0 #999, 1px 1px 0 #999, 2px 4px 12px rgba(0,0,0,0.35)",
-              marginTop: 24,
-            }}
-          >
-            <span style={{ fontSize: 56 }}>{heading}</span>
-          </h1>
-
-          <div className="w-full py-6">
+          <div className="w-full pt-6 pb-6">
             <HeroSlideRow slide={first} tilt={PHOTO_TILT[0]} canEdit={canEdit} editLinkLabel={t("editLink")} />
           </div>
         </div>

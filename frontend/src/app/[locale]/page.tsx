@@ -137,17 +137,10 @@ export default async function HomePage({
   return (
     <div>
 
-      {/* Del 1 — Hero: full-bleed blurred bakgrund (följer bilden som visas i högen) + bilder + textkort */}
-      <div className="relative -mt-8" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-        <HeroPhotoStack slides={heroSlidesForStack} heading={heroHeading} canEdit={canEditHero} />
-      </div>
-
-      <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
-
-      <HeroSlideText slides={heroSlidesForStack} canEdit={canEditHero} />
-
-      <div className="mb-8 mt-32 sm:mt-40">
+      {/* Del 0 — Träd + "Välkommen till GoodTribes"-ruta + Dröm/Göra/Må/Leva Gott, högst upp */}
+      <div className="mb-8 pt-16 sm:pt-56 md:pt-64">
         <Pillars
+          heading={heroHeading}
           headings={{
             levaGott: tPillars("levaGottHeading"),
             maGott: tPillars("maGottHeading"),
@@ -162,6 +155,15 @@ export default async function HomePage({
           }}
         />
       </div>
+
+      {/* Del 1 — Hero: full-bleed blurred bakgrund (följer bilden som visas i högen) + bilder + textkort */}
+      <div className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+        <HeroPhotoStack slides={heroSlidesForStack} canEdit={canEditHero} />
+      </div>
+
+      <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
+
+      <HeroSlideText slides={heroSlidesForStack} canEdit={canEditHero} />
 
       <WhyHowWhat
         eyebrow={tWhy("eyebrow")}

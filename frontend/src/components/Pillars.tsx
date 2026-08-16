@@ -1,3 +1,5 @@
+import { CARD_SHADOW } from "@/lib/heroCardStyle";
+
 // The two tree illustrations are the original GoodTribe artwork recovered
 // from the old dev-goodtribe.pantheonsite.io site — see
 // /public/img/sandbox-tree-*.png. The pillar icons are simple white-line
@@ -11,6 +13,12 @@
 // measured ratio (tree width ≈ 30% of its container) — with the trees sized
 // up, the row widens back out to match rather than staying artificially
 // narrow. PILLARS' array order is the display order (left to right).
+//
+// The optional centered textbox between the trees recreates the original
+// GoodTribe hero layout (trees flanking a single textbox, recovered from
+// dev-goodtribe.pantheonsite.io) from back when this lived on /sandbox —
+// same card styling as that recovered design, just without the connector
+// line PNG (deleted when the trees moved to flank this row instead).
 function LeafIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
@@ -58,9 +66,11 @@ const TREE_LEFT = { src: "/img/sandbox-tree-left.png", alt: "" };
 const TREE_RIGHT = { src: "/img/sandbox-tree-right.png", alt: "" };
 
 export default function Pillars({
+  heading,
   headings,
   bodies,
 }: {
+  heading?: string;
   headings: Record<"levaGott" | "maGott" | "goraGott" | "dreamGood", string>;
   bodies: Record<"levaGott" | "maGott" | "goraGott" | "dreamGood", string>;
 }) {
@@ -81,6 +91,19 @@ export default function Pillars({
           alt={TREE_RIGHT.alt}
           className="hidden sm:block absolute right-[-86px] md:right-[-130px] bottom-full mb-[-43px] md:mb-[-58px] w-[230px] md:w-[317px] h-auto z-0 pointer-events-none select-none"
         />
+
+        {heading && (
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-[-24px] md:mb-[-32px] z-10 w-full max-w-xs sm:max-w-sm px-4">
+            <div className={`bg-white p-3 ${CARD_SHADOW}`}>
+              <div className="border border-muted-teal/20 px-4 sm:px-6 py-4 sm:py-5 bg-amber-50 text-center">
+                <h2 className="text-xl sm:text-3xl font-bold text-amber-900" style={{ textWrap: "balance" }}>
+                  {heading}
+                </h2>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {PILLARS.map((p, i) => (
             <div
