@@ -1,5 +1,6 @@
-const CARD_SHADOW =
-  "shadow-[0_15px_30px_-10px_rgba(0,0,0,0.4),0_2px_8px_rgba(0,0,0,0.15)] ring-1 ring-black/5";
+import { CARD_SHADOW } from "@/lib/heroCardStyle";
+
+const HERO_IMAGE = "/img/what-is-goodtribes.png";
 
 export default function SandboxHero({
   kicker,
@@ -9,18 +10,36 @@ export default function SandboxHero({
   description: string;
 }) {
   return (
-    // Normal flow with sane top clearance (pt-8) for the nav bar. A negative
-    // bottom margin pulls whatever comes after this (Pillars/trees) closer
-    // without needing to guess the card's rendered height — unlike the
-    // earlier absolute-positioned/bottom-anchored attempt, which pushed the
-    // card's top past a too-small reserved box and into the nav.
-    <div className="flex justify-center px-4 pt-14 pb-2 mb-[-64px]">
-      <div className={`relative z-0 w-full max-w-xl bg-white p-3 ${CARD_SHADOW}`}>
-        <div className="border border-muted-teal/20 px-4 sm:px-6 py-4 sm:py-5 bg-amber-50 text-left">
-          <h2 className="text-xl sm:text-3xl font-bold text-amber-900" style={{ textWrap: "balance" }}>
-            {kicker}
-          </h2>
-          <p className="mt-3 text-amber-800 text-xs sm:text-sm leading-relaxed">{description}</p>
+    <div className="relative">
+      {/* Bakgrund: samma bild, blurrad, kant till kant */}
+      <div className="absolute inset-0 overflow-hidden">
+        <img src={HERO_IMAGE} alt="" className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110" />
+      </div>
+
+      <div className="relative z-10 flex justify-center px-4 pt-14 pb-10">
+        <div className="grid w-full max-w-4xl gap-8 items-center md:grid-cols-2">
+          {/* Text — till vänster */}
+          <div className="w-full md:max-w-[500px] md:aspect-[16/10]">
+            <div className={`relative h-full bg-white p-3 ${CARD_SHADOW}`}>
+              <div className="h-full border border-muted-teal/20 px-4 sm:px-6 py-4 sm:py-5 bg-amber-50 flex flex-col justify-center text-left">
+                <h2 className="text-xl sm:text-3xl font-bold text-amber-900" style={{ textWrap: "balance" }}>
+                  {kicker}
+                </h2>
+                <p className="mt-3 text-amber-800 text-xs sm:text-sm leading-relaxed">{description}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bild — till höger */}
+          <div className="hidden md:flex items-center justify-self-center w-full" style={{ maxWidth: 500 }}>
+            <div className="relative w-full" style={{ aspectRatio: "16 / 10" }}>
+              <div className={`absolute inset-0 overflow-hidden bg-white p-3 ${CARD_SHADOW}`}>
+                <div className="relative h-full w-full overflow-hidden">
+                  <img src={HERO_IMAGE} alt={kicker} className="absolute inset-0 w-full h-full object-cover" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
