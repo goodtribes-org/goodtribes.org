@@ -291,12 +291,6 @@ export default async function SandboxPage({
         </div>
         <div className="flex gap-2 flex-shrink-0 flex-wrap">
           <Link
-            href="/ideaverkstad/new"
-            className="px-4 py-2 border border-amber-400 text-amber-800 bg-amber-50 text-sm font-medium rounded hover:bg-amber-100 transition-colors"
-          >
-            {t("tryIdeaverkstadCta")}
-          </Link>
-          <Link
             href="/lean-canvas/new"
             className="px-4 py-2 border border-amber-400 text-amber-800 bg-amber-50 text-sm font-medium rounded hover:bg-amber-100 transition-colors"
           >
@@ -318,9 +312,6 @@ export default async function SandboxPage({
       </div>
       <p className="text-xs text-dark-slate/40 mb-6">
         {t("explainerPrefix")}{" "}
-        <Link href="/ideaverkstad" className="text-coral hover:underline">
-          {t("explainerIdeaverkstadLink")}
-        </Link>,{" "}
         <Link href="/lean-canvas" className="text-coral hover:underline">
           {t("explainerLeanCanvasLink")}
         </Link>{" "}
