@@ -142,6 +142,8 @@ export default async function HomePage({
         <HeroPhotoStack slides={heroSlidesForStack} heading={heroHeading} canEdit={canEditHero} />
       </div>
 
+      <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
+
       <HeroSlideText slides={heroSlidesForStack} canEdit={canEditHero} />
 
       <div className="mb-8 mt-32 sm:mt-40">
@@ -160,8 +162,6 @@ export default async function HomePage({
           }}
         />
       </div>
-
-      <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
 
       <WhyHowWhat
         eyebrow={tWhy("eyebrow")}
