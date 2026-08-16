@@ -56,10 +56,10 @@ function BulbIcon() {
 }
 
 const PILLARS = [
-  { Icon: BulbIcon, color: "var(--color-coral)", key: "dreamGood" as const },
-  { Icon: HeartIcon, color: "var(--color-watermelon)", key: "goraGott" as const },
-  { Icon: ThumbIcon, color: "var(--color-navy)", key: "maGott" as const },
   { Icon: LeafIcon, color: "var(--color-seagrass)", key: "levaGott" as const },
+  { Icon: ThumbIcon, color: "var(--color-navy)", key: "maGott" as const },
+  { Icon: HeartIcon, color: "var(--color-watermelon)", key: "goraGott" as const },
+  { Icon: BulbIcon, color: "var(--color-coral)", key: "dreamGood" as const },
 ];
 
 const TREE_LEFT = { src: "/img/sandbox-tree-left.png", alt: "" };
