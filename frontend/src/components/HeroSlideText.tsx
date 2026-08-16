@@ -103,21 +103,12 @@ export default function HeroSlideText({
 }) {
   const t = useTranslations("HeroPhotoStack");
 
-  if (slides.length === 0) return null;
+  if (slides.length <= 1) return null;
 
-  const [first, ...rest] = slides;
+  const [, ...rest] = slides;
 
   return (
     <div className="flex flex-col gap-16">
-      {/* Text till bilden som ligger kvar i hero */}
-      <div className="flex justify-center px-4 pt-6">
-        <div className="flex w-full max-w-6xl justify-center">
-          <div className="w-full" style={{ maxWidth: 620 }}>
-            <TextCard slide={first} canEdit={canEdit} t={t} />
-          </div>
-        </div>
-      </div>
-
       {/* Resten av bilderna + deras texter, utanför hero — varje bild kant-till-kant med sin egen blurrade bakgrund, texten nedanför utan bakgrund */}
       {rest.map((slide, i) => {
         const tilt = PHOTO_TILT[(i + 1) % PHOTO_TILT.length];
