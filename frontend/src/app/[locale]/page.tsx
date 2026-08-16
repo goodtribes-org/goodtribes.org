@@ -9,6 +9,7 @@ import SortToggle from "@/components/SortToggleContainer";
 import Pagination from "@/components/Pagination";
 import HeroPhotoStack from "@/components/HeroPhotoStack";
 import HeroSlideText from "@/components/HeroSlideText";
+import Pillars from "@/components/Pillars";
 import WhyHowWhat from "@/components/WhyHowWhat";
 import { toHeroSlideData } from "@/lib/heroSlides";
 import { isSiteAdmin } from "@/lib/authz";
@@ -39,6 +40,7 @@ export default async function HomePage({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "HomePage" });
   const tWhy = await getTranslations({ locale, namespace: "WhyHowWhat" });
+  const tPillars = await getTranslations({ locale, namespace: "SandboxPillars" });
   const { sort: sortParam, q, phase, category, sdg, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const sdgNum = sdg ? parseInt(sdg) : undefined;
@@ -141,6 +143,23 @@ export default async function HomePage({
       </div>
 
       <HeroSlideText slides={heroSlidesForStack} canEdit={canEditHero} />
+
+      <div className="mb-8 mt-32 sm:mt-40">
+        <Pillars
+          headings={{
+            levaGott: tPillars("levaGottHeading"),
+            maGott: tPillars("maGottHeading"),
+            goraGott: tPillars("goraGottHeading"),
+            dreamGood: tPillars("dreamGoodHeading"),
+          }}
+          bodies={{
+            levaGott: tPillars("levaGottBody"),
+            maGott: tPillars("maGottBody"),
+            goraGott: tPillars("goraGottBody"),
+            dreamGood: tPillars("dreamGoodBody"),
+          }}
+        />
+      </div>
 
       <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
 

@@ -8,7 +8,6 @@ import Pagination from "@/components/Pagination";
 import ProjectCard from "@/components/ProjectCard";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import SandboxHero from "./SandboxHero";
-import Pillars from "./Pillars";
 import { resolveProjectContent } from "@/lib/contentTranslation";
 import { routing } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
@@ -35,7 +34,6 @@ export default async function SandboxPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "SandboxPage" });
-  const tPillars = await getTranslations({ locale, namespace: "SandboxPillars" });
   const { sort: sortParam, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
@@ -94,24 +92,7 @@ export default async function SandboxPage({
     <div className="relative -mt-8 -mb-12 flex-1" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f6f5f2" }}>
     <SandboxHero kicker={t("heroKicker")} description={t("heroDescription")} />
     <div className="max-w-6xl mx-auto px-6 pb-12">
-      <div className="mb-8 mt-4">
-        <Pillars
-          headings={{
-            levaGott: tPillars("levaGottHeading"),
-            maGott: tPillars("maGottHeading"),
-            goraGott: tPillars("goraGottHeading"),
-            dreamGood: tPillars("dreamGoodHeading"),
-          }}
-          bodies={{
-            levaGott: tPillars("levaGottBody"),
-            maGott: tPillars("maGottBody"),
-            goraGott: tPillars("goraGottBody"),
-            dreamGood: tPillars("dreamGoodBody"),
-          }}
-        />
-      </div>
-
-      <div className="flex items-center justify-between mb-2 mt-2 gap-3 flex-wrap">
+      <div className="flex items-center justify-between mb-2 mt-8 gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
           <p className="text-sm text-dark-slate/50 mt-1">{t("subtitle")}</p>
