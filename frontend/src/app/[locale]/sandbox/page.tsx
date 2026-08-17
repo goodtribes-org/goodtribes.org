@@ -92,45 +92,7 @@ export default async function SandboxPage({
     <div className="relative -mt-8 -mb-12 flex-1" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f6f5f2" }}>
     <SandboxHero kicker={t("heroKicker")} description={t("heroDescription")} />
     <div className="max-w-6xl mx-auto px-6 pb-12">
-      <div className="flex items-center justify-between mb-2 mt-8 gap-3 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
-          <p className="text-sm text-dark-slate/50 mt-1">{t("subtitle")}</p>
-        </div>
-        <div className="flex gap-2 flex-shrink-0 flex-wrap">
-          <Link
-            href="/lean-canvas/new"
-            className="px-4 py-2 border border-amber-400 text-amber-800 bg-amber-50 text-sm font-medium rounded hover:bg-amber-100 transition-colors"
-          >
-            {t("tryLeanCanvasCta")}
-          </Link>
-          <Link
-            href="/whiteboard/new"
-            className="px-4 py-2 border border-amber-400 text-amber-800 bg-amber-50 text-sm font-medium rounded hover:bg-amber-100 transition-colors"
-          >
-            {t("tryWhiteboardCta")}
-          </Link>
-          <Link
-            href="/projects/new"
-            className="px-4 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors"
-          >
-            {t("newProjectCta")}
-          </Link>
-        </div>
-      </div>
-      <p className="text-xs text-dark-slate/40 mb-6">
-        {t("explainerPrefix")}{" "}
-        <Link href="/lean-canvas" className="text-coral hover:underline">
-          {t("explainerLeanCanvasLink")}
-        </Link>{" "}
-        {t("explainerOr")}{" "}
-        <Link href="/whiteboard" className="text-coral hover:underline">
-          {t("explainerWhiteboardLink")}
-        </Link>{" "}
-        {t("explainerSuffix")}
-      </p>
-
-      <section id="projects" className="mb-10">
+      <section id="projects" className="mb-10 mt-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-dark-slate">
             {t("exploreHeading")} <span className="text-dark-slate/40 font-normal">({total})</span>
