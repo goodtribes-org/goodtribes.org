@@ -22,6 +22,17 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
 
 const IDEA_PREVIEW_SIZE = 8;
+const DRAFT_PREVIEW_SIZE = 8;
+
+function draftTimeAgo(date: Date, t: (key: string, values?: Record<string, number>) => string): string {
+  const s = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (s < 60) return t("listTimeJustNow");
+  const m = Math.floor(s / 60);
+  if (m < 60) return t("listTimeMinutesAgo", { minutes: m });
+  const h = Math.floor(m / 60);
+  if (h < 24) return t("listTimeHoursAgo", { hours: h });
+  return t("listTimeDaysAgo", { days: Math.floor(h / 24) });
+}
 
 async function getLeaderboard() {
   // Ranks everyone with a name, same as a project's "Mest aktiva medlemmar" —
@@ -69,6 +80,8 @@ export default async function SandboxPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "SandboxPage" });
+  const tLeanCanvas = await getTranslations({ locale, namespace: "LeanCanvasDraftPage" });
+  const tWhiteboard = await getTranslations({ locale, namespace: "WhiteboardDraftPage" });
   const { sort: sortParam, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
@@ -144,6 +157,29 @@ export default async function SandboxPage({
     ...resolveIdeaContent(idea, idea.translations, locale),
     myVoteId: idea.votes?.[0]?.id ?? null,
   }));
+
+  // Same access model as /lean-canvas and /whiteboard: those pages redirect
+  // anonymous visitors to /login entirely, so previews here only fetch (and
+  // only show) for a logged-in session too, rather than leaking draft
+  // content to guests who couldn't open the linked page anyway.
+  const [leanCanvasCount, leanCanvasDrafts, whiteboardCount, whiteboardDrafts] = userId
+    ? await Promise.all([
+        prisma.leanCanvasDraft.count({ where: { promotedToProjectSlug: null } }),
+        prisma.leanCanvasDraft.findMany({
+          where: { promotedToProjectSlug: null },
+          orderBy: { updatedAt: "desc" },
+          take: DRAFT_PREVIEW_SIZE,
+          include: { owner: { select: { name: true } } },
+        }),
+        prisma.whiteboardDraft.count({ where: { promotedToProjectSlug: null } }),
+        prisma.whiteboardDraft.findMany({
+          where: { promotedToProjectSlug: null },
+          orderBy: { updatedAt: "desc" },
+          take: DRAFT_PREVIEW_SIZE,
+          include: { owner: { select: { name: true } } },
+        }),
+      ])
+    : [0, [], 0, []];
 
   const totalRaised = pledgeSum._sum.amount ?? 0;
   const completedTasks = completedCards + completedSubtasks;
@@ -245,6 +281,89 @@ export default async function SandboxPage({
           </div>
         )}
       </section>
+
+      {userId && (
+        <section id="lean-canvas" className="mb-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-dark-slate">
+              {t("exploreLeanCanvasHeading")} <span className="text-dark-slate/40 font-normal">({leanCanvasCount})</span>
+            </h2>
+            <Link href="/lean-canvas" className="text-xs text-coral hover:underline">
+              {t("seeAllLeanCanvasLink")}
+            </Link>
+          </div>
+          {leanCanvasDrafts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <p className="text-dark-slate/50 mb-4">{tLeanCanvas("listEmptyState")}</p>
+              <Link href="/lean-canvas/new" className="text-coral hover:underline text-sm">
+                {tLeanCanvas("listStartFirst")}
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {leanCanvasDrafts.map((d) => (
+                <Link
+                  key={d.id}
+                  href={`/lean-canvas/${d.id}`}
+                  className="flex flex-col justify-between gap-2 rounded-lg border border-muted-teal/40 bg-white p-4 hover:shadow-md hover:border-muted-teal transition-all"
+                >
+                  <div>
+                    <span className="inline-block text-[10px] font-semibold uppercase tracking-wide text-coral bg-coral/10 rounded px-2 py-0.5 mb-2">
+                      {tLeanCanvas("cardBadge")}
+                    </span>
+                    <p className="text-sm font-medium text-dark-slate line-clamp-2">
+                      {d.problem?.slice(0, 80) || tLeanCanvas("listStartedBy", { name: d.owner.name ?? tLeanCanvas("unknownAuthor") })}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-dark-slate/40">{tLeanCanvas("listStartedBy", { name: d.owner.name ?? tLeanCanvas("unknownAuthor") })}</p>
+                    <span className="text-[11px] text-dark-slate/40 flex-shrink-0">{draftTimeAgo(d.updatedAt, tLeanCanvas)}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {userId && (
+        <section id="whiteboard" className="mb-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-dark-slate">
+              {t("exploreWhiteboardHeading")} <span className="text-dark-slate/40 font-normal">({whiteboardCount})</span>
+            </h2>
+            <Link href="/whiteboard" className="text-xs text-coral hover:underline">
+              {t("seeAllWhiteboardLink")}
+            </Link>
+          </div>
+          {whiteboardDrafts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <p className="text-dark-slate/50 mb-4">{tWhiteboard("listEmptyState")}</p>
+              <Link href="/whiteboard/new" className="text-coral hover:underline text-sm">
+                {tWhiteboard("listStartFirst")}
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {whiteboardDrafts.map((d) => (
+                <Link
+                  key={d.id}
+                  href={`/whiteboard/${d.id}`}
+                  className="flex flex-col justify-between gap-2 rounded-lg border border-muted-teal/40 bg-white p-4 hover:shadow-md hover:border-muted-teal transition-all aspect-[4/3]"
+                >
+                  <span className="inline-block self-start text-[10px] font-semibold uppercase tracking-wide text-coral bg-coral/10 rounded px-2 py-0.5">
+                    {tWhiteboard("cardBadge")}
+                  </span>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-dark-slate/40">{tWhiteboard("listStartedBy", { name: d.owner.name ?? tWhiteboard("unknownAuthor") })}</p>
+                    <span className="text-[11px] text-dark-slate/40 flex-shrink-0">{draftTimeAgo(d.updatedAt, tWhiteboard)}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="mb-10">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
