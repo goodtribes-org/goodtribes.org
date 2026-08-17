@@ -1,3 +1,5 @@
+import { handwritingFontThin } from "@/lib/fonts";
+
 const HERO_IMAGE = "/img/what-is-goodtribes.png";
 
 // Same "Polaroid" placement as the project page hero
@@ -5,15 +7,21 @@ const HERO_IMAGE = "/img/what-is-goodtribes.png";
 // narrower text card, tilted opposite ways with a heavy drop shadow,
 // overlapping slightly, sized to overflow past the full-bleed blurred
 // backdrop's bottom edge. Unlike the project hero's second card, this one
-// keeps square corners instead of rounded-2xl.
+// keeps square corners instead of rounded-2xl. The photo card also
+// borrows the project hero's caption convention — page name written on
+// the white border above the image, tagline below it.
 const CARD_SHADOW_STYLE = { boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)" };
 
 export default function SandboxHero({
   kicker,
   description,
+  photoName,
+  photoCaption,
 }: {
   kicker: string;
   description: string;
+  photoName: string;
+  photoCaption: string;
 }) {
   return (
     <div className="relative">
@@ -26,11 +34,17 @@ export default function SandboxHero({
           {/* Bild — stor, till vänster */}
           <div
             className="hidden md:block shrink-0 bg-white w-full max-w-[660px] 2xl:max-w-[820px]"
-            style={{ ...CARD_SHADOW_STYLE, padding: "0px 24px 43px", transform: "rotate(-3deg)" }}
+            style={{ ...CARD_SHADOW_STYLE, padding: "0px 24px 0px", transform: "rotate(-3deg)", position: "relative", zIndex: 1 }}
           >
+            <p className={`${handwritingFontThin.className} text-center truncate px-2`} style={{ fontSize: 26, lineHeight: "40px", color: "#1a3d8f", transform: "translateY(2px)" }}>
+              {photoName}
+            </p>
             <div className="relative w-full h-64 sm:h-80 md:h-[400px] 2xl:h-[460px] mt-[3px] overflow-hidden">
               <img src={HERO_IMAGE} alt={kicker} className="absolute inset-0 w-full h-full object-cover" />
             </div>
+            <p className={`${handwritingFontThin.className} text-center truncate px-2 mt-[3px]`} style={{ fontSize: 26, lineHeight: "40px", color: "#1a3d8f" }}>
+              {photoCaption}
+            </p>
           </div>
 
           {/* Text — smal, till höger, fyrkantiga hörn */}

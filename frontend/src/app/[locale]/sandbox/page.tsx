@@ -216,7 +216,7 @@ export default async function SandboxPage({
 
   return (
     <div className="relative -mt-8 -mb-12 flex-1" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f6f5f2" }}>
-    <SandboxHero kicker={t("heroKicker")} description={t("heroDescription")} />
+    <SandboxHero kicker={t("heroKicker")} description={t("heroDescription")} photoName="Sandbox" photoCaption={t("heroPhotoCaption")} />
     <div className="max-w-6xl mx-auto px-6 pb-12">
       <section id="projects" className="mb-10 mt-8">
         <div className="flex items-center justify-between mb-4">
