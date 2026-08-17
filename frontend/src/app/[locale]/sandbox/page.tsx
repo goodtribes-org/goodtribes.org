@@ -3,9 +3,11 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 import SortToggleContainer from "@/components/SortToggleContainer";
 import Pagination from "@/components/Pagination";
 import ProjectCard from "@/components/ProjectCard";
+import IdeaCard from "@/components/IdeaCardContainer";
 import ActivityPulse from "@/components/ActivityPulse";
 import LeaderboardWidget from "@/components/LeaderboardWidget";
 import NewMembersWidget from "@/components/NewMembersWidget";
@@ -14,10 +16,12 @@ import SdgCoverageWidget from "@/components/SdgCoverageWidget";
 import HomeStatsWidget from "@/components/HomeStatsWidget";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import SandboxHero from "./SandboxHero";
-import { resolveProjectContent } from "@/lib/contentTranslation";
+import { resolveProjectContent, resolveIdeaContent } from "@/lib/contentTranslation";
 import { routing } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
+
+const IDEA_PREVIEW_SIZE = 8;
 
 async function getLeaderboard() {
   // Ranks everyone with a name, same as a project's "Mest aktiva medlemmar" —
@@ -75,10 +79,14 @@ export default async function SandboxPage({
     : { createdAt: "desc" as const };
 
   const where = { isSandbox: true };
+  const session = await auth();
+  const userId = session?.user?.id;
 
   const [
     total,
     projects,
+    ideaCount,
+    ideas,
     siteProjectCount,
     orgCount,
     memberCount,
@@ -102,6 +110,18 @@ export default async function SandboxPage({
         translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
       },
     }),
+    prisma.idea.count({ where: { status: { not: "draft" } } }),
+    prisma.idea.findMany({
+      where: { status: { not: "draft" } },
+      orderBy: { createdAt: "desc" },
+      take: IDEA_PREVIEW_SIZE,
+      include: {
+        author: { select: { name: true } },
+        _count: { select: { votes: true, comments: true, endorsements: true } },
+        votes: userId ? { where: { userId }, select: { id: true } } : false,
+        translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
+      },
+    }),
     prisma.project.count({ where: { hiddenAt: null } }),
     prisma.organisation.count({ where: { isPublic: true } }),
     prisma.user.count({ where: { showProfile: true } }),
@@ -118,6 +138,12 @@ export default async function SandboxPage({
     }),
     prisma.project.findMany({ where: { hiddenAt: null }, select: { sdgGoals: true } }),
   ]);
+
+  const ideasWithVote = ideas.map((idea) => ({
+    ...idea,
+    ...resolveIdeaContent(idea, idea.translations, locale),
+    myVoteId: idea.votes?.[0]?.id ?? null,
+  }));
 
   const totalRaised = pledgeSum._sum.amount ?? 0;
   const completedTasks = completedCards + completedSubtasks;
@@ -194,6 +220,29 @@ export default async function SandboxPage({
             </div>
             <Pagination page={page} total={total} perPage={PAGE_SIZE} searchParams={rawParams} basePath="/sandbox" />
           </>
+        )}
+      </section>
+
+      <section id="ideas" className="mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-dark-slate">
+            {t("exploreIdeasHeading")} <span className="text-dark-slate/40 font-normal">({ideaCount})</span>
+          </h2>
+          <Link href="/ideas" className="text-xs text-coral hover:underline">
+            {t("seeAllIdeasLink")}
+          </Link>
+        </div>
+        {ideas.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <p className="text-dark-slate/50 mb-4">{t("noIdeasYet")}</p>
+            <Link href="/ideas/new" className="text-coral hover:underline text-sm">
+              {t("shareFirstIdeaLink")}
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {ideasWithVote.map((idea) => <IdeaCard key={idea.id} idea={idea} isLoggedIn={!!userId} />)}
+          </div>
         )}
       </section>
 
