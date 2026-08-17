@@ -137,7 +137,7 @@ export default async function HomePage({
   return (
     <div>
 
-      {/* Del 0 — Träd + "Välkommen till GoodTribes"-ruta + Leva/Må/Göra/Dröm Gott, högst upp */}
+      {/* Del 0 — Träd + "Välkommen till GoodTribes"-ruta + Leva/Må/Göra Gott/Dröm stort, högst upp */}
       <div className="mb-8 pt-16 sm:pt-28 md:pt-32">
         <Pillars
           heading={heroHeading}

@@ -6,7 +6,7 @@ import { CARD_SHADOW } from "@/lib/heroCardStyle";
 // SVGs (from the very first sandbox-hero concept mockup) rather than the
 // recovered PNGs — cleaner against the colored gradient header. The trees
 // sit above the row's outer two slots (whichever pillars occupy them —
-// currently Dröm Gott / Leva Gott), hidden on mobile where the grid stacks
+// currently Dröm stort / Leva Gott), hidden on mobile where the grid stacks
 // to a single column and "outer corner" stops being meaningful. Each header
 // fades from the pillar's base color, the "strong color → fade out"
 // treatment from that same concept mockup. Row width follows the original's
