@@ -1268,7 +1268,10 @@
     "emptyProjects": "No sandbox projects yet.",
     "startFirstProject": "Start the first one →",
     "startNext": "+ Start the next one",
-    "aiSeedingSoon": "🤖 AI seeding soon"
+    "aiSeedingSoon": "🤖 AI seeding soon",
+    "pulseHeading": "Happening now",
+    "pulseSubheading": "Latest activity on the platform",
+    "seeAllPulseLink": "See all activity →"
   },
   "IdeaverkstadPage": {
     "heading": "Idea Workshop",

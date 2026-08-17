@@ -1268,7 +1268,10 @@
     "emptyProjects": "Inga sandbox-projekt ännu.",
     "startFirstProject": "Starta det första →",
     "startNext": "+ Starta nästa",
-    "aiSeedingSoon": "🤖 AI seedar snart"
+    "aiSeedingSoon": "🤖 AI seedar snart",
+    "pulseHeading": "Händer just nu",
+    "pulseSubheading": "Senaste aktivitet på plattformen",
+    "seeAllPulseLink": "Se all aktivitet →"
   },
   "IdeaverkstadPage": {
     "heading": "Idéverkstaden",
