@@ -533,6 +533,7 @@
     "latestUpdateHeading": "Latest update",
     "allUpdatesLink": "All updates →",
     "skillsNeededHeading": "Looking for skills",
+    "checklistWidgetHeading": "Checklist: {phase}",
     "linksHeading": "Links",
     "mostActiveMembersHeading": "Most active members",
     "viewAllTokensLink": "All →",

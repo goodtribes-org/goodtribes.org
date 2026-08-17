@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { indexDocuments, deleteDocument } from "@/lib/meili";
-import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { hasProjectRole, isSiteAdmin, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { getNextPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 import { parseProjectInput } from "@/lib/github";
 import { syncProjectBoardInBackground } from "@/lib/githubSync";
@@ -251,7 +251,10 @@ export async function toggleChecklistItem(slug: string, phase: ProjectPhaseValue
 
   const project = await prisma.project.findUnique({ where: { slug } });
   if (!project) redirect("/projects");
-  if (!(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) redirect(`/projects/${slug}`);
+  const allowed =
+    (await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES)) ||
+    (await isSiteAdmin(session.user.id));
+  if (!allowed) redirect(`/projects/${slug}`);
 
   if (done) {
     await prisma.initiativeChecklistItem.upsert({

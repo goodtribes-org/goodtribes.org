@@ -32,6 +32,7 @@ import { resolveProjectContent } from "@/lib/contentTranslation";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "next-intl";
 import MiniCalendar from "./MiniCalendar";
+import PhaseChecklistWidget from "./PhaseChecklistWidget";
 
 const FEED_PAGE_SIZE = 20;
 
@@ -230,12 +231,10 @@ export default async function ProjectDetailPage({
         orderBy: { _sum: { tokens: "desc" } },
         take: 5,
       }),
-      project.phase === "IDEA" || project.phase === "SPRINT"
-        ? prisma.initiativeChecklistItem.findMany({
-            where: { projectId: project.id, completedAt: { not: null } },
-            select: { itemKey: true },
-          })
-        : Promise.resolve([]),
+      prisma.initiativeChecklistItem.findMany({
+        where: { projectId: project.id, completedAt: { not: null } },
+        select: { itemKey: true },
+      }),
     ]);
 
   const raised =
@@ -582,6 +581,14 @@ export default async function ProjectDetailPage({
 
         {/* Right sidebar — 320px to align with hero right card */}
         <div className="w-full md:w-[320px] shrink-0 flex flex-col gap-5">
+
+          {/* Phase checklist — same items/toggle as PhaseMenuBar's popover, always visible for the current phase */}
+          <PhaseChecklistWidget
+            slug={slug}
+            phase={project.phase}
+            completedKeys={checklistItems.map((c) => c.itemKey)}
+            canEdit={isOwnerOrAdmin}
+          />
 
           {/* Skills needed */}
           {project.neededSkills.length > 0 && (
