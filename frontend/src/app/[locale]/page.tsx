@@ -20,6 +20,28 @@ import { routing } from "@/i18n/routing";
 import type { Locale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { resolveProjectContent } from "@/lib/contentTranslation";
+import { fetchActivityItems } from "@/lib/activityFeed";
+import { timeAgo } from "@/lib/timeAgo";
+import IdeaBand from "@/components/showroom/IdeaBand";
+import LiveTicker from "@/components/showroom/LiveTicker";
+import ShowroomGrid from "@/components/showroom/ShowroomGrid";
+import ThreeSteps from "@/components/showroom/ThreeSteps";
+import ProjectExample from "@/components/showroom/ProjectExample";
+import StepsCarousel from "@/components/showroom/StepsCarousel";
+import GoodPyramid from "@/components/showroom/GoodPyramid";
+import ManifestoSection from "@/components/showroom/ManifestoSection";
+import StatsRow from "@/components/showroom/StatsRow";
+import ShowroomProjectFeed from "@/components/showroom/ShowroomProjectFeed";
+import ShowroomActivityFeed, { type ShowroomFeedEvent } from "@/components/showroom/ShowroomActivityFeed";
+import EndCta from "@/components/showroom/EndCta";
+
+const SDG_TOTAL_COUNT = 17;
+
+function initialsFromName(name: string | null): string {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  return parts.length === 1 ? parts[0].slice(0, 2).toUpperCase() : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 const PAGE_SIZE = 12;
 
@@ -134,6 +156,27 @@ export default async function HomePage({
 
   const rawParams = { sort: sortParam, q, phase, category, sdg, page: pageStr };
 
+  // Del 3-14 — "Showroom"-sektionerna längst ner (design_handoff_startsida_showroom).
+  // Ticker/aktivitetsflöde delar samma fetchActivityItems()-källa som /sandbox's
+  // Activity Pulse; statistikraden/projektflödet är egna, riktiga aggregat.
+  const [totalRaisedAgg, completedTasksCount, sdgProjects, showroomActivity] = await Promise.all([
+    prisma.fundingPledge.aggregate({ where: { pledgeStatus: "confirmed" }, _sum: { amount: true } }),
+    prisma.kanbanCardSubtask.count({ where: { done: true } }),
+    prisma.project.findMany({ where: { hiddenAt: null }, select: { sdgGoals: true } }),
+    fetchActivityItems(10),
+  ]);
+  const totalRaised = totalRaisedAgg._sum.amount ?? 0;
+  const sdgCoveredCount = new Set(sdgProjects.flatMap((p) => p.sdgGoals)).size;
+  const recentActivity = showroomActivity.slice(0, 8);
+  const tickerItems = recentActivity.map((a) => `${a.projectName} — ${a.action}`);
+  const feedEvents: ShowroomFeedEvent[] = recentActivity.slice(0, 6).map((a) => ({
+    key: a.id,
+    project: a.projectName,
+    action: a.action,
+    meta: timeAgo(a.date),
+    initials: initialsFromName(a.avatarName),
+  }));
+
   return (
     <div>
 
@@ -210,7 +253,54 @@ export default async function HomePage({
         )}
       </section>
 
+      {/* Del 3–14 — "Showroom"-sektionerna (design_handoff_startsida_showroom),
+          medvetet placerade längst ner även där de dubblerar innehåll som redan
+          finns högre upp (Pillars, WhyHowWhat, onboarding-steg, projektlistan). */}
+      <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+        <IdeaBand />
+      </section>
+
+      <section id="showroom-project-feed">
+        <ShowroomProjectFeed locale={locale} projects={projectsWithLikes.slice(0, 4)} />
+      </section>
+
+      <section id="showroom-three-steps">
+        <ThreeSteps locale={locale} />
+      </section>
+
+      <section id="showroom-project-example">
+        <ProjectExample locale={locale} />
+      </section>
+
+      <section id="showroom-pyramid">
+        <GoodPyramid locale={locale} />
+      </section>
+
+      <section id="showroom-stats-row">
+        <StatsRow
+          locale={locale}
+          totalRaised={totalRaised}
+          completedTasks={completedTasksCount}
+          sdgCoveredCount={sdgCoveredCount}
+          sdgTotalCount={SDG_TOTAL_COUNT}
+        />
+      </section>
+
+      <section id="showroom-activity-feed">
+        <ShowroomActivityFeed locale={locale} events={feedEvents} />
+      </section>
+
       </div>
+
+      <LiveTicker items={tickerItems} />
+
+      <ShowroomGrid />
+
+      <StepsCarousel />
+
+      <ManifestoSection locale={locale} />
+
+      <EndCta locale={locale} />
 
     </div>
   );
