@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { promoteWhiteboardDraftToProject } from "../actions";
 
-export default function PromoteWhiteboardForm({ draftId }: { draftId: string }) {
+export default function PromoteWhiteboardForm({ draftId, suggestedTitle }: { draftId: string; suggestedTitle: string }) {
   const t = useTranslations("WhiteboardDraftPage");
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +41,7 @@ export default function PromoteWhiteboardForm({ draftId }: { draftId: string }) 
         <input
           type="text"
           name="title"
+          defaultValue={suggestedTitle}
           placeholder={t("promoteTitlePlaceholder")}
           required
           autoFocus

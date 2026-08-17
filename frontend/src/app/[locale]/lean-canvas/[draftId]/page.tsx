@@ -45,11 +45,11 @@ export default async function LeanCanvasDraftPage({
             {t("viewLiveProject", { title: draft.promotedToProject.title })}
           </Link>
         ) : (
-          <PromoteDraftForm draftId={draft.id} suggestedTitle={draft.problem?.slice(0, 60) ?? ""} />
+          <PromoteDraftForm draftId={draft.id} suggestedTitle={draft.name ?? draft.problem?.slice(0, 60) ?? ""} />
         )}
       </div>
 
-      <h1 className="text-xl font-bold text-dark-slate mb-1">{t("draftHeading")}</h1>
+      <h1 className="text-xl font-bold text-dark-slate mb-1">{draft.name || t("draftHeading")}</h1>
       {draft.promotedToProject ? (
         <p className="text-sm text-dark-slate/50 mb-6">{t("alreadyPromotedNote")}</p>
       ) : (

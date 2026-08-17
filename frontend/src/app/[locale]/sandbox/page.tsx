@@ -312,7 +312,7 @@ export default async function SandboxPage({
                       {tLeanCanvas("cardBadge")}
                     </span>
                     <p className="text-sm font-medium text-dark-slate line-clamp-2">
-                      {d.problem?.slice(0, 80) || tLeanCanvas("listStartedBy", { name: d.owner.name ?? tLeanCanvas("unknownAuthor") })}
+                      {d.name || d.problem?.slice(0, 80) || tLeanCanvas("listStartedBy", { name: d.owner.name ?? tLeanCanvas("unknownAuthor") })}
                     </p>
                   </div>
                   <div className="flex items-center justify-between">
@@ -351,9 +351,12 @@ export default async function SandboxPage({
                   href={`/whiteboard/${d.id}`}
                   className="flex flex-col justify-between gap-2 rounded-lg border border-muted-teal/40 bg-white p-4 hover:shadow-md hover:border-muted-teal transition-all aspect-[4/3]"
                 >
-                  <span className="inline-block self-start text-[10px] font-semibold uppercase tracking-wide text-coral bg-coral/10 rounded px-2 py-0.5">
-                    {tWhiteboard("cardBadge")}
-                  </span>
+                  <div>
+                    <span className="inline-block text-[10px] font-semibold uppercase tracking-wide text-coral bg-coral/10 rounded px-2 py-0.5 mb-2">
+                      {tWhiteboard("cardBadge")}
+                    </span>
+                    {d.name && <p className="text-sm font-medium text-dark-slate line-clamp-2">{d.name}</p>}
+                  </div>
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-dark-slate/40">{tWhiteboard("listStartedBy", { name: d.owner.name ?? tWhiteboard("unknownAuthor") })}</p>
                     <span className="text-[11px] text-dark-slate/40 flex-shrink-0">{draftTimeAgo(d.updatedAt, tWhiteboard)}</span>

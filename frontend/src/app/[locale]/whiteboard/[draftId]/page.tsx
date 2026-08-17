@@ -40,6 +40,9 @@ export default async function WhiteboardDraftPage({
           <Link href="/sandbox" className="text-sm text-dark-slate/50 hover:text-dark-slate flex-shrink-0">
             {t("backToSandbox")}
           </Link>
+          <p className="text-sm font-bold text-dark-slate truncate hidden sm:block">
+            {draft.name || t("draftHeading")}
+          </p>
           <p className="text-xs text-dark-slate/40 truncate hidden sm:block">
             {draft.promotedToProject ? t("alreadyPromotedNote") : t("draftSubtitle", { name: draft.owner.name ?? t("unknownAuthor") })}
           </p>
@@ -52,7 +55,7 @@ export default async function WhiteboardDraftPage({
             {t("viewLiveProject", { title: draft.promotedToProject.title })}
           </Link>
         ) : (
-          <PromoteWhiteboardForm draftId={draft.id} />
+          <PromoteWhiteboardForm draftId={draft.id} suggestedTitle={draft.name ?? ""} />
         )}
       </div>
 

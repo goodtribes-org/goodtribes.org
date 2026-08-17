@@ -391,6 +391,8 @@
   "LeanCanvasDraftPage": {
     "newHeading": "New Lean Canvas",
     "newSubtitle": "Fill it in freely — no project needed. Turn it into a real project only if it turns out well.",
+    "nameLabel": "Name",
+    "namePlaceholder": "Give your Lean Canvas a name",
     "newCta": "Create canvas draft",
     "backToSandbox": "← Back to Sandbox",
     "draftHeading": "Lean Canvas — draft",
@@ -417,6 +419,8 @@
   "WhiteboardDraftPage": {
     "newHeading": "New whiteboard",
     "newSubtitle": "Sketch and think freely — no project needed. Turn it into a real project only if it turns out well.",
+    "nameLabel": "Name",
+    "namePlaceholder": "Give your whiteboard a name",
     "newCta": "Create whiteboard draft",
     "backToSandbox": "← Back to Sandbox",
     "draftHeading": "Whiteboard — draft",

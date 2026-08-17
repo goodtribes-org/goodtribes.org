@@ -391,6 +391,8 @@
   "LeanCanvasDraftPage": {
     "newHeading": "Ny Lean Canvas",
     "newSubtitle": "Fyll i den fritt — inget projekt behövs. Gör den till ett riktigt projekt bara om det blir bra.",
+    "nameLabel": "Namn",
+    "namePlaceholder": "Ge din Lean Canvas ett namn",
     "newCta": "Skapa canvas-utkast",
     "backToSandbox": "← Tillbaka till Sandbox",
     "draftHeading": "Lean Canvas — utkast",
@@ -417,6 +419,8 @@
   "WhiteboardDraftPage": {
     "newHeading": "Ny whiteboard",
     "newSubtitle": "Rita och tänk fritt — inget projekt behövs. Gör den till ett riktigt projekt bara om det blir bra.",
+    "nameLabel": "Namn",
+    "namePlaceholder": "Ge din whiteboard ett namn",
     "newCta": "Skapa whiteboard-utkast",
     "backToSandbox": "← Tillbaka till Sandbox",
     "draftHeading": "Whiteboard — utkast",

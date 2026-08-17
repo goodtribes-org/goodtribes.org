@@ -7,11 +7,14 @@ import { redirect } from "next/navigation";
 import { createProjectRecord } from "@/lib/createProject";
 import { LEAN_CANVAS_FIELDS, type LeanCanvasField } from "../projects/[slug]/(workspace)/lean-canvas/fields";
 
-export async function createLeanCanvasDraft(): Promise<void> {
+export async function createLeanCanvasDraft(formData: FormData): Promise<void> {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const draft = await prisma.leanCanvasDraft.create({ data: { ownerId: session.user.id } });
+  const name = (formData.get("name") as string | null)?.trim();
+  if (!name) redirect("/lean-canvas/new");
+
+  const draft = await prisma.leanCanvasDraft.create({ data: { ownerId: session.user.id, name } });
   redirect(`/lean-canvas/${draft.id}`);
 }
 

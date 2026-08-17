@@ -7,11 +7,14 @@ import { redirect } from "next/navigation";
 import { createProjectRecord } from "@/lib/createProject";
 import { Prisma } from "@prisma/client";
 
-export async function createWhiteboardDraft(): Promise<void> {
+export async function createWhiteboardDraft(formData: FormData): Promise<void> {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
-  const draft = await prisma.whiteboardDraft.create({ data: { ownerId: session.user.id } });
+  const name = (formData.get("name") as string | null)?.trim();
+  if (!name) redirect("/whiteboard/new");
+
+  const draft = await prisma.whiteboardDraft.create({ data: { ownerId: session.user.id, name } });
   redirect(`/whiteboard/${draft.id}`);
 }
 

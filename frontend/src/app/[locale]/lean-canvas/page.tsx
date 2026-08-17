@@ -71,7 +71,7 @@ export default async function LeanCanvasListPage({
               className="flex items-center justify-between gap-3 border border-muted-teal/40 rounded-lg p-4 hover:shadow-md hover:border-muted-teal transition-all bg-white"
             >
               <div className="min-w-0">
-                <p className="text-sm font-medium text-dark-slate truncate">{d.problem?.slice(0, 80) || t("listStartedBy", { name: d.owner.name ?? t("unknownAuthor") })}</p>
+                <p className="text-sm font-medium text-dark-slate truncate">{d.name || d.problem?.slice(0, 80) || t("listStartedBy", { name: d.owner.name ?? t("unknownAuthor") })}</p>
                 <p className="text-xs text-dark-slate/40 mt-0.5">{t("listStartedBy", { name: d.owner.name ?? t("unknownAuthor") })}</p>
               </div>
               <span className="text-xs text-dark-slate/40 flex-shrink-0">{timeAgo(d.updatedAt, t)}</span>

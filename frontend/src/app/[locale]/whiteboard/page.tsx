@@ -70,7 +70,12 @@ export default async function WhiteboardListPage({
               href={`/whiteboard/${d.id}`}
               className="flex items-center justify-between gap-3 border border-muted-teal/40 rounded-lg p-4 hover:shadow-md hover:border-muted-teal transition-all bg-white"
             >
-              <p className="text-sm text-dark-slate">{t("listStartedBy", { name: d.owner.name ?? t("unknownAuthor") })}</p>
+              <div className="min-w-0">
+                {d.name && <p className="text-sm font-medium text-dark-slate truncate">{d.name}</p>}
+                <p className={d.name ? "text-xs text-dark-slate/40 mt-0.5" : "text-sm text-dark-slate"}>
+                  {t("listStartedBy", { name: d.owner.name ?? t("unknownAuthor") })}
+                </p>
+              </div>
               <span className="text-xs text-dark-slate/40 flex-shrink-0">{timeAgo(d.updatedAt, t)}</span>
             </Link>
           ))}

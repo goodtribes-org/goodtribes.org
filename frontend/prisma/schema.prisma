@@ -1962,6 +1962,7 @@ model LeanCanvasDraft {
   id                     String    @id @default(cuid())
   ownerId                String
   owner                  User      @relation("LeanCanvasDraftOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  name                   String?
   problem                String?   @db.Text
   alternatives           String?   @db.Text
   customerSegments       String?   @db.Text
@@ -1993,6 +1994,7 @@ model WhiteboardDraft {
   id                     String    @id @default(cuid())
   ownerId                String
   owner                  User      @relation("WhiteboardDraftOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  name                   String?
   documentState          Json?
   version                Int       @default(1)
   promotedToProjectSlug  String?   @unique
