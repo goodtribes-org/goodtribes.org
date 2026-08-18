@@ -31,7 +31,6 @@ import StepsCarousel from "@/components/showroom/StepsCarousel";
 import GoodPyramid from "@/components/showroom/GoodPyramid";
 import ManifestoSection from "@/components/showroom/ManifestoSection";
 import StatsRow from "@/components/showroom/StatsRow";
-import ShowroomProjectFeed from "@/components/showroom/ShowroomProjectFeed";
 import ShowroomActivityFeed, { type ShowroomFeedEvent } from "@/components/showroom/ShowroomActivityFeed";
 import EndCta from "@/components/showroom/EndCta";
 
@@ -258,10 +257,6 @@ export default async function HomePage({
           finns högre upp (Pillars, WhyHowWhat, onboarding-steg, projektlistan). */}
       <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
         <IdeaBand />
-      </section>
-
-      <section id="showroom-project-feed">
-        <ShowroomProjectFeed locale={locale} projects={projectsWithLikes.slice(0, 4)} />
       </section>
 
       <section id="showroom-three-steps">

@@ -1460,10 +1460,6 @@
       "tasksLabel": "Tasks completed",
       "sdgLabel": "Agenda 2030 goals touched"
     },
-    "projectFeed": {
-      "heading": "Explore projects",
-      "seeAllLink": "See all projects →"
-    },
     "activityFeed": {
       "heading": "Happening now",
       "subheading": "Latest activity on the platform",
