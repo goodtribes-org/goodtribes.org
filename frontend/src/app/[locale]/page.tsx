@@ -174,8 +174,9 @@ export default async function HomePage({
   return (
     <div>
 
-      {/* Del 1 — Hero: full-bleed blurred bakgrund (följer bilden som visas i högen) + bilder + textkort */}
-      <div className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+      {/* Del 1 — Hero: full-bleed blurred bakgrund (följer bilden som visas i högen) + bilder + textkort.
+          -mt-8 tar bort main:s pt-8 så bakgrunden går ända upp mot toppmenyn utan marginal. */}
+      <div className="relative -mt-8" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
         <HeroPhotoStack slides={heroSlidesForStack} canEdit={canEditHero} />
       </div>
 
