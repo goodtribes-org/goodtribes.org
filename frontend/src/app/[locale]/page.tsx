@@ -186,22 +186,6 @@ export default async function HomePage({
 
       <HeroSlideText slides={heroSlidesForStack} canEdit={canEditHero} />
 
-      <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-        <IdeaBand />
-      </section>
-
-      <section id="showroom-three-steps">
-        <ThreeSteps locale={locale} />
-      </section>
-
-      <WhyHowWhat
-        eyebrow={tWhy("eyebrow")}
-        headings={{ why: tWhy("whyHeading"), how: tWhy("howHeading"), what: tWhy("whatHeading") }}
-        bodies={{ why: tWhy("whyBody"), how: tWhy("howBody"), what: tWhy("whatBody") }}
-      />
-
-      <div className="space-y-16">
-
       {/* Del 2 — Project Browser */}
       <section id="projects">
         <div className="flex items-center justify-between mb-4">
@@ -238,6 +222,22 @@ export default async function HomePage({
           </>
         )}
       </section>
+
+      <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+        <IdeaBand />
+      </section>
+
+      <section id="showroom-three-steps">
+        <ThreeSteps locale={locale} />
+      </section>
+
+      <WhyHowWhat
+        eyebrow={tWhy("eyebrow")}
+        headings={{ why: tWhy("whyHeading"), how: tWhy("howHeading"), what: tWhy("whatHeading") }}
+        bodies={{ why: tWhy("whyBody"), how: tWhy("howBody"), what: tWhy("whatBody") }}
+      />
+
+      <div className="space-y-16">
 
       {/* Del 3–14 — "Showroom"-sektionerna (design_handoff_startsida_showroom),
           medvetet placerade längst ner även där de dubblerar innehåll som redan
