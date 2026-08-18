@@ -184,7 +184,23 @@ export default async function HomePage({
 
       <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
 
-      <HeroSlideText slides={heroSlidesForStack} canEdit={canEditHero} />
+      {/* Hero-slide-listan delas i två: "Följ din dröm" + "Hitta din tribe" (index 1–2)
+          renderas här, sedan Statistikraden, sedan resten av slidesen (t.ex. "Alla
+          vinner") — det ger effekten att Statistikraden hamnar direkt under
+          "Hitta din tribe"-rutan istället för under alla hero-slides. */}
+      <HeroSlideText slides={heroSlidesForStack.slice(1, 3)} canEdit={canEditHero} tiltOffset={1} />
+
+      <section id="showroom-stats-row">
+        <StatsRow
+          locale={locale}
+          totalRaised={totalRaised}
+          completedTasks={completedTasksCount}
+          sdgCoveredCount={sdgCoveredCount}
+          sdgTotalCount={SDG_TOTAL_COUNT}
+        />
+      </section>
+
+      <HeroSlideText slides={heroSlidesForStack.slice(3)} canEdit={canEditHero} tiltOffset={3} />
 
       {/* Del 2 — Project Browser */}
       <section id="projects">
@@ -248,16 +264,6 @@ export default async function HomePage({
 
       <section id="showroom-pyramid">
         <GoodPyramid locale={locale} />
-      </section>
-
-      <section id="showroom-stats-row">
-        <StatsRow
-          locale={locale}
-          totalRaised={totalRaised}
-          completedTasks={completedTasksCount}
-          sdgCoveredCount={sdgCoveredCount}
-          sdgTotalCount={SDG_TOTAL_COUNT}
-        />
       </section>
 
       <section id="showroom-activity-feed">

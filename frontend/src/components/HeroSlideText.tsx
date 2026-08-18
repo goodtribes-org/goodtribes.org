@@ -6,24 +6,30 @@ import { PHOTO_TILT } from "@/lib/heroCardStyle";
 import HeroSlideRow from "./HeroSlideRow";
 import type { HeroSlideData } from "@/lib/heroSlides";
 
+// Renders whichever slides are passed in, each in its own full-bleed
+// section — it no longer assumes "everything but the first slide" itself.
+// The caller (homepage) owns that slicing so it can split the hero-slide
+// list around other sections it wants to insert between two slides
+// (e.g. StatsRow between slide 2 and slide 3) without breaking the tilt
+// alternation — hence `tiltOffset`, which keeps each split's tilts
+// continuing where the previous one left off instead of restarting at 0.
 export default function HeroSlideText({
   slides,
   canEdit,
+  tiltOffset = 0,
 }: {
   slides: HeroSlideData[];
   canEdit: boolean;
+  tiltOffset?: number;
 }) {
   const t = useTranslations("HeroPhotoStack");
 
-  if (slides.length <= 1) return null;
-
-  const [, ...rest] = slides;
+  if (slides.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-16">
-      {/* Resten av bilderna, utanför hero — samma bild+text-rad som goodtribes-bilden i hero, varje bild kant-till-kant med sin egen blurrade bakgrund */}
-      {rest.map((slide, i) => {
-        const tilt = PHOTO_TILT[(i + 1) % PHOTO_TILT.length];
+      {slides.map((slide, i) => {
+        const tilt = PHOTO_TILT[(i + tiltOffset) % PHOTO_TILT.length];
         return (
           <div key={slide.id} className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
             <div className="absolute inset-0 overflow-hidden">
