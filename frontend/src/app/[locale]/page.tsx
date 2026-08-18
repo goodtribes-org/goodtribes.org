@@ -180,13 +180,13 @@ export default async function HomePage({
         <HeroPhotoStack slides={heroSlidesForStack} canEdit={canEditHero} />
       </div>
 
-      <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-        <IdeaBand />
-      </section>
-
       <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
 
       <HeroSlideText slides={heroSlidesForStack} canEdit={canEditHero} />
+
+      <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+        <IdeaBand />
+      </section>
 
       <section id="showroom-three-steps">
         <ThreeSteps locale={locale} />
