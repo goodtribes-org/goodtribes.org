@@ -181,6 +181,10 @@ export default async function HomePage({
         <HeroPhotoStack slides={heroSlidesForStack} canEdit={canEditHero} />
       </div>
 
+      <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+        <IdeaBand />
+      </section>
+
       <HeroSlideText slides={heroSlidesForStack} canEdit={canEditHero} />
 
       <WhyHowWhat
@@ -231,10 +235,6 @@ export default async function HomePage({
       {/* Del 3–14 — "Showroom"-sektionerna (design_handoff_startsida_showroom),
           medvetet placerade längst ner även där de dubblerar innehåll som redan
           finns högre upp (Pillars, WhyHowWhat, onboarding-steg, projektlistan). */}
-      <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-        <IdeaBand />
-      </section>
-
       <section id="showroom-three-steps">
         <ThreeSteps locale={locale} />
       </section>
