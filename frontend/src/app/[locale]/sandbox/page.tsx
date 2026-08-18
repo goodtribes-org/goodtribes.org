@@ -218,8 +218,12 @@ export default async function SandboxPage({
   return (
     <>
     {/* Träd + rutan (nu med Sandbox-innehållet, flyttat hit från hero-bildens textkort)
-        + Leva/Må/Göra Gott/Dröm stort — flyttade hit från startsidan, högst upp på sandboxsidan. */}
-    <div className="mb-12 pt-28 sm:pt-48 md:pt-56">
+        + Leva/Må/Göra Gott/Dröm stort — flyttade hit från startsidan, högst upp på sandboxsidan.
+        Samma bakgrundsfärg (#f6f5f2) som sektionen nedanför, kant-till-kant. */}
+    <div
+      className="relative mb-12 pt-28 sm:pt-48 md:pt-56"
+      style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f6f5f2" }}
+    >
       <Pillars
         heading={t("heroKicker")}
         body={t("heroDescription")}
