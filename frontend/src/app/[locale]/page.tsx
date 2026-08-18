@@ -187,6 +187,10 @@ export default async function HomePage({
 
       <HeroSlideText slides={heroSlidesForStack} canEdit={canEditHero} />
 
+      <section id="showroom-three-steps">
+        <ThreeSteps locale={locale} />
+      </section>
+
       <WhyHowWhat
         eyebrow={tWhy("eyebrow")}
         headings={{ why: tWhy("whyHeading"), how: tWhy("howHeading"), what: tWhy("whatHeading") }}
@@ -235,10 +239,6 @@ export default async function HomePage({
       {/* Del 3–14 — "Showroom"-sektionerna (design_handoff_startsida_showroom),
           medvetet placerade längst ner även där de dubblerar innehåll som redan
           finns högre upp (Pillars, WhyHowWhat, onboarding-steg, projektlistan). */}
-      <section id="showroom-three-steps">
-        <ThreeSteps locale={locale} />
-      </section>
-
       <section id="showroom-project-example">
         <ProjectExample locale={locale} />
       </section>
