@@ -191,6 +191,10 @@ export default async function HomePage({
           "Alla vinner", index 3+). */}
       <HeroSlideText slides={heroSlidesForStack.slice(1, 2)} canEdit={canEditHero} tiltOffset={1} />
 
+      <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+        <IdeaBand />
+      </section>
+
       {/* Del 2 — Project Browser */}
       <section id="projects">
         <div className="flex items-center justify-between mb-4">
@@ -241,10 +245,6 @@ export default async function HomePage({
       </section>
 
       <HeroSlideText slides={heroSlidesForStack.slice(3)} canEdit={canEditHero} tiltOffset={3} />
-
-      <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-        <IdeaBand />
-      </section>
 
       <section id="showroom-three-steps">
         <ThreeSteps locale={locale} />
