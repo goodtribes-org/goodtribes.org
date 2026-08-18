@@ -67,10 +67,12 @@ const TREE_RIGHT = { src: "/img/sandbox-tree-right.png", alt: "" };
 
 export default function Pillars({
   heading,
+  body,
   headings,
   bodies,
 }: {
   heading?: string;
+  body?: string;
   headings: Record<"levaGott" | "maGott" | "goraGott" | "dreamGood", string>;
   bodies: Record<"levaGott" | "maGott" | "goraGott" | "dreamGood", string>;
 }) {
@@ -93,12 +95,17 @@ export default function Pillars({
         />
 
         {heading && (
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-6 md:mb-10 z-10 w-full max-w-md sm:max-w-lg px-4">
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-6 md:mb-10 z-10 w-full max-w-lg sm:max-w-xl px-4">
             <div className={`bg-white p-3 ${CARD_SHADOW}`}>
               <div className="border border-muted-teal/20 px-4 sm:px-6 py-4 sm:py-5 bg-amber-50 text-center">
-                <h2 className="text-lg sm:text-2xl font-bold text-amber-900 whitespace-nowrap">
+                <h2 className="text-lg sm:text-2xl font-bold text-amber-900" style={{ textWrap: "balance" }}>
                   {heading}
                 </h2>
+                {body && (
+                  <p className="mt-2 text-amber-800 text-xs sm:text-sm leading-relaxed">
+                    {body}
+                  </p>
+                )}
               </div>
             </div>
           </div>

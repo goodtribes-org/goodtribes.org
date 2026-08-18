@@ -16,7 +16,6 @@ import SdgCoverageWidget from "@/components/SdgCoverageWidget";
 import HomeStatsWidget from "@/components/HomeStatsWidget";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import Pillars from "@/components/Pillars";
-import SandboxHero from "./SandboxHero";
 import { resolveProjectContent, resolveIdeaContent } from "@/lib/contentTranslation";
 import { routing } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
@@ -112,7 +111,6 @@ export default async function SandboxPage({
     leaderboard,
     newMembers,
     sdgProjects,
-    heroSettings,
   ] = await Promise.all([
     prisma.project.count({ where }),
     prisma.project.findMany({
@@ -153,7 +151,6 @@ export default async function SandboxPage({
       select: { id: true, name: true, image: true, showProfile: true },
     }),
     prisma.project.findMany({ where: { hiddenAt: null }, select: { sdgGoals: true } }),
-    prisma.homeHeroSettings.findUnique({ where: { locale } }),
   ]);
 
   const ideasWithVote = ideas.map((idea) => ({
@@ -217,14 +214,15 @@ export default async function SandboxPage({
   const rawParams = { sort: sortParam, page: pageStr };
   const isLastPage = page * PAGE_SIZE >= total;
   const ghostCount = isLastPage && projectsWithLikes.length > 0 ? (4 - (projectsWithLikes.length % 4)) % 4 : 0;
-  const heroHeading = heroSettings?.heading ?? (locale === "en" ? "Welcome to GoodTribes" : "Välkommen till GoodTribes");
 
   return (
     <>
-    {/* Träd + "Välkommen till GoodTribes"-ruta + Leva/Må/Göra Gott/Dröm stort — flyttade hit från startsidan, högst upp på sandboxsidan. */}
+    {/* Träd + rutan (nu med Sandbox-innehållet, flyttat hit från hero-bildens textkort)
+        + Leva/Må/Göra Gott/Dröm stort — flyttade hit från startsidan, högst upp på sandboxsidan. */}
     <div className="mb-12 pt-28 sm:pt-48 md:pt-56">
       <Pillars
-        heading={heroHeading}
+        heading={t("heroKicker")}
+        body={t("heroDescription")}
         headings={{
           levaGott: tPillars("levaGottHeading"),
           maGott: tPillars("maGottHeading"),
@@ -241,7 +239,6 @@ export default async function SandboxPage({
     </div>
 
     <div className="relative -mt-8 -mb-12 flex-1" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f6f5f2" }}>
-    <SandboxHero kicker={t("heroKicker")} description={t("heroDescription")} photoName="Sandbox" photoCaption={t("heroPhotoCaption")} />
     <div className="max-w-6xl mx-auto px-6 pb-12">
       <section id="projects" className="mb-10 mt-8">
         <div className="flex items-center justify-between mb-4">
