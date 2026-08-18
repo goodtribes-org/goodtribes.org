@@ -12,7 +12,7 @@ export default async function HomeStatsWidget({
 }) {
   const t = await getTranslations("HomeStatsWidget");
   return (
-    <section className="border border-muted-teal/30 rounded-xl p-4">
+    <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold text-dark-slate">{t("heading")}</h2>
         <Link href="#projects" className="text-xs text-seagrass hover:underline">

@@ -17,7 +17,7 @@ export default async function ImpactStatsWidget({
   }).format(totalRaised);
 
   return (
-    <section className="border border-muted-teal/30 rounded-xl p-4">
+    <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
       <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("heading")}</h2>
 
       <div className="bg-coral/10 rounded-xl px-4 py-3 text-center mb-2">
