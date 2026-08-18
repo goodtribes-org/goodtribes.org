@@ -174,8 +174,6 @@ export default async function HomePage({
   return (
     <div>
 
-      <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
-
       {/* Del 1 — Hero: full-bleed blurred bakgrund (följer bilden som visas i högen) + bilder + textkort */}
       <div className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
         <HeroPhotoStack slides={heroSlidesForStack} canEdit={canEditHero} />
@@ -184,6 +182,8 @@ export default async function HomePage({
       <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
         <IdeaBand />
       </section>
+
+      <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
 
       <HeroSlideText slides={heroSlidesForStack} canEdit={canEditHero} />
 
