@@ -15,6 +15,7 @@ import ImpactStatsWidget from "@/components/ImpactStatsWidget";
 import SdgCoverageWidget from "@/components/SdgCoverageWidget";
 import HomeStatsWidget from "@/components/HomeStatsWidget";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
+import Pillars from "@/components/Pillars";
 import SandboxHero from "./SandboxHero";
 import { resolveProjectContent, resolveIdeaContent } from "@/lib/contentTranslation";
 import { routing } from "@/i18n/routing";
@@ -82,6 +83,7 @@ export default async function SandboxPage({
   const t = await getTranslations({ locale, namespace: "SandboxPage" });
   const tLeanCanvas = await getTranslations({ locale, namespace: "LeanCanvasDraftPage" });
   const tWhiteboard = await getTranslations({ locale, namespace: "WhiteboardDraftPage" });
+  const tPillars = await getTranslations({ locale, namespace: "SandboxPillars" });
   const { sort: sortParam, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
@@ -110,6 +112,7 @@ export default async function SandboxPage({
     leaderboard,
     newMembers,
     sdgProjects,
+    heroSettings,
   ] = await Promise.all([
     prisma.project.count({ where }),
     prisma.project.findMany({
@@ -150,6 +153,7 @@ export default async function SandboxPage({
       select: { id: true, name: true, image: true, showProfile: true },
     }),
     prisma.project.findMany({ where: { hiddenAt: null }, select: { sdgGoals: true } }),
+    prisma.homeHeroSettings.findUnique({ where: { locale } }),
   ]);
 
   const ideasWithVote = ideas.map((idea) => ({
@@ -213,8 +217,29 @@ export default async function SandboxPage({
   const rawParams = { sort: sortParam, page: pageStr };
   const isLastPage = page * PAGE_SIZE >= total;
   const ghostCount = isLastPage && projectsWithLikes.length > 0 ? (4 - (projectsWithLikes.length % 4)) % 4 : 0;
+  const heroHeading = heroSettings?.heading ?? (locale === "en" ? "Welcome to GoodTribes" : "Välkommen till GoodTribes");
 
   return (
+    <>
+    {/* Träd + "Välkommen till GoodTribes"-ruta + Leva/Må/Göra Gott/Dröm stort — flyttade hit från startsidan, högst upp på sandboxsidan. */}
+    <div className="mb-12 pt-28 sm:pt-48 md:pt-56">
+      <Pillars
+        heading={heroHeading}
+        headings={{
+          levaGott: tPillars("levaGottHeading"),
+          maGott: tPillars("maGottHeading"),
+          goraGott: tPillars("goraGottHeading"),
+          dreamGood: tPillars("dreamGoodHeading"),
+        }}
+        bodies={{
+          levaGott: tPillars("levaGottBody"),
+          maGott: tPillars("maGottBody"),
+          goraGott: tPillars("goraGottBody"),
+          dreamGood: tPillars("dreamGoodBody"),
+        }}
+      />
+    </div>
+
     <div className="relative -mt-8 -mb-12 flex-1" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f6f5f2" }}>
     <SandboxHero kicker={t("heroKicker")} description={t("heroDescription")} photoName="Sandbox" photoCaption={t("heroPhotoCaption")} />
     <div className="max-w-6xl mx-auto px-6 pb-12">
@@ -403,5 +428,6 @@ export default async function SandboxPage({
       </section>
     </div>
     </div>
+    </>
   );
 }

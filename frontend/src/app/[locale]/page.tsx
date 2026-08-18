@@ -9,7 +9,6 @@ import SortToggle from "@/components/SortToggleContainer";
 import Pagination from "@/components/Pagination";
 import HeroPhotoStack from "@/components/HeroPhotoStack";
 import HeroSlideText from "@/components/HeroSlideText";
-import Pillars from "@/components/Pillars";
 import WhyHowWhat from "@/components/WhyHowWhat";
 import { toHeroSlideData } from "@/lib/heroSlides";
 import { isSiteAdmin } from "@/lib/authz";
@@ -61,7 +60,6 @@ export default async function HomePage({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "HomePage" });
   const tWhy = await getTranslations({ locale, namespace: "WhyHowWhat" });
-  const tPillars = await getTranslations({ locale, namespace: "SandboxPillars" });
   const { sort: sortParam, q, phase, category, sdg, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const sdgNum = sdg ? parseInt(sdg) : undefined;
@@ -90,7 +88,6 @@ export default async function HomePage({
     totalFiltered,
     projects,
     heroSlides,
-    heroSettings,
     onboardingSteps,
   ] = await Promise.all([
     prisma.project.count({ where }),
@@ -106,7 +103,6 @@ export default async function HomePage({
       },
     }),
     prisma.homeHeroSlide.findMany({ where: { locale }, orderBy: { order: "asc" } }),
-    prisma.homeHeroSettings.findUnique({ where: { locale } }),
     prisma.onboardingStep.findMany({ where: { locale }, orderBy: { order: "asc" } }),
   ]);
 
@@ -126,7 +122,6 @@ export default async function HomePage({
 
   const heroSlidesForStack = heroSlides.map(toHeroSlideData);
   const canEditHero = userId ? await isSiteAdmin(userId) : false;
-  const heroHeading = heroSettings?.heading ?? (locale === "en" ? "Welcome to GoodTribes" : "Välkommen till GoodTribes");
   const onboardingStepsForBar = finalOnboardingSteps.map((s) => ({ id: s.id, order: s.order, label: s.label, href: s.href }));
 
   const [projectLikeCounts, taskProgressCards] = await Promise.all([
@@ -178,25 +173,6 @@ export default async function HomePage({
 
   return (
     <div>
-
-      {/* Del 0 — Träd + "Välkommen till GoodTribes"-ruta + Leva/Må/Göra Gott/Dröm stort, högst upp */}
-      <div className="mb-8 pt-28 sm:pt-48 md:pt-56">
-        <Pillars
-          heading={heroHeading}
-          headings={{
-            levaGott: tPillars("levaGottHeading"),
-            maGott: tPillars("maGottHeading"),
-            goraGott: tPillars("goraGottHeading"),
-            dreamGood: tPillars("dreamGoodHeading"),
-          }}
-          bodies={{
-            levaGott: tPillars("levaGottBody"),
-            maGott: tPillars("maGottBody"),
-            goraGott: tPillars("goraGottBody"),
-            dreamGood: tPillars("dreamGoodBody"),
-          }}
-        />
-      </div>
 
       <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
 
