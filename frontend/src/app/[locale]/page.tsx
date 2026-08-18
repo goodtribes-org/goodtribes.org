@@ -184,23 +184,12 @@ export default async function HomePage({
 
       <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
 
-      {/* Hero-slide-listan delas i två: "Följ din dröm" + "Hitta din tribe" (index 1–2)
-          renderas här, sedan Statistikraden, sedan resten av slidesen (t.ex. "Alla
-          vinner") — det ger effekten att Statistikraden hamnar direkt under
-          "Hitta din tribe"-rutan istället för under alla hero-slides. */}
-      <HeroSlideText slides={heroSlidesForStack.slice(1, 3)} canEdit={canEditHero} tiltOffset={1} />
-
-      <section id="showroom-stats-row">
-        <StatsRow
-          locale={locale}
-          totalRaised={totalRaised}
-          completedTasks={completedTasksCount}
-          sdgCoveredCount={sdgCoveredCount}
-          sdgTotalCount={SDG_TOTAL_COUNT}
-        />
-      </section>
-
-      <HeroSlideText slides={heroSlidesForStack.slice(3)} canEdit={canEditHero} tiltOffset={3} />
+      {/* Hero-slide-listan delas i tre delar så att både projektlistan och
+          Statistikraden kan sitta mellan specifika slides: "Följ din dröm"
+          (index 1) → Utforska projekt → "Släpp inte taget" (index 2) →
+          Statistikraden → resten av slidesen (t.ex. "Hitta din tribe",
+          "Alla vinner", index 3+). */}
+      <HeroSlideText slides={heroSlidesForStack.slice(1, 2)} canEdit={canEditHero} tiltOffset={1} />
 
       {/* Del 2 — Project Browser */}
       <section id="projects">
@@ -238,6 +227,20 @@ export default async function HomePage({
           </>
         )}
       </section>
+
+      <HeroSlideText slides={heroSlidesForStack.slice(2, 3)} canEdit={canEditHero} tiltOffset={2} />
+
+      <section id="showroom-stats-row">
+        <StatsRow
+          locale={locale}
+          totalRaised={totalRaised}
+          completedTasks={completedTasksCount}
+          sdgCoveredCount={sdgCoveredCount}
+          sdgTotalCount={SDG_TOTAL_COUNT}
+        />
+      </section>
+
+      <HeroSlideText slides={heroSlidesForStack.slice(3)} canEdit={canEditHero} tiltOffset={3} />
 
       <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
         <IdeaBand />
