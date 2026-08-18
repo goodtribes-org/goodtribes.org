@@ -180,6 +180,8 @@ export default async function HomePage({
         <HeroPhotoStack slides={heroSlidesForStack} canEdit={canEditHero} />
       </div>
 
+      <LiveTicker items={tickerItems} />
+
       <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
 
       <HeroSlideText slides={heroSlidesForStack} canEdit={canEditHero} />
@@ -263,8 +265,6 @@ export default async function HomePage({
       </section>
 
       </div>
-
-      <LiveTicker items={tickerItems} />
 
       <ShowroomGrid />
 
