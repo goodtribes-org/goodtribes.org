@@ -219,9 +219,10 @@ export default async function SandboxPage({
     <>
     {/* Träd + rutan (nu med Sandbox-innehållet, flyttat hit från hero-bildens textkort)
         + Leva/Må/Göra Gott/Dröm stort — flyttade hit från startsidan, högst upp på sandboxsidan.
-        Samma bakgrundsfärg (#f6f5f2) som sektionen nedanför, kant-till-kant. */}
+        Samma bakgrundsfärg (#f6f5f2) som sektionen nedanför, kant-till-kant.
+        -mt-8 tar bort main:s pt-8 så det inte blir någon marginal mot toppmenyn. */}
     <div
-      className="relative mb-12 pt-28 sm:pt-48 md:pt-56"
+      className="relative -mt-8 pt-28 sm:pt-40 md:pt-44"
       style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f6f5f2" }}
     >
       <Pillars
@@ -242,9 +243,9 @@ export default async function SandboxPage({
       />
     </div>
 
-    <div className="relative -mt-8 -mb-12 flex-1" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f6f5f2" }}>
+    <div className="relative -mb-12 flex-1" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f6f5f2" }}>
     <div className="max-w-6xl mx-auto px-6 pb-12">
-      <section id="projects" className="mb-10 mt-8">
+      <section id="projects" className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-dark-slate">
             {t("exploreHeading")} <span className="text-dark-slate/40 font-normal">({total})</span>

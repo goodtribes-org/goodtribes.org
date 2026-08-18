@@ -86,16 +86,17 @@ export default function Pillars({
         <img
           src={TREE_LEFT.src}
           alt={TREE_LEFT.alt}
-          className="hidden sm:block absolute left-[-86px] md:left-[-130px] bottom-full mb-[-28px] md:mb-[-43px] w-[230px] md:w-[317px] h-auto z-0 pointer-events-none select-none"
+          className="hidden sm:block absolute left-[-86px] md:left-[-130px] bottom-full mb-[-28px] md:mb-[-43px] w-[230px] md:w-[317px] h-auto z-20 pointer-events-none select-none"
         />
         <img
           src={TREE_RIGHT.src}
           alt={TREE_RIGHT.alt}
-          className="hidden sm:block absolute right-[-86px] md:right-[-130px] bottom-full mb-[-43px] md:mb-[-58px] w-[230px] md:w-[317px] h-auto z-0 pointer-events-none select-none"
+          className="hidden sm:block absolute right-[-86px] md:right-[-130px] bottom-full mb-[-43px] md:mb-[-58px] w-[230px] md:w-[317px] h-auto z-20 pointer-events-none select-none"
         />
 
+        {/* z-0 (istället för z-10) så trädens grenar hamnar framför rutan, inte bakom den. */}
         {heading && (
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-6 md:mb-10 z-10 w-full max-w-lg sm:max-w-xl px-4">
+          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-6 md:mb-10 z-0 w-full max-w-lg sm:max-w-xl px-4">
             <div className={`bg-white p-3 ${CARD_SHADOW}`}>
               <div className="border border-muted-teal/20 px-4 sm:px-6 py-4 sm:py-5 bg-amber-50 text-center">
                 <h2 className="text-lg sm:text-2xl font-bold text-amber-900" style={{ textWrap: "balance" }}>
