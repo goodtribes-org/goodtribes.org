@@ -25,7 +25,6 @@ import IdeaBand from "@/components/showroom/IdeaBand";
 import LiveTicker from "@/components/showroom/LiveTicker";
 import ShowroomGrid from "@/components/showroom/ShowroomGrid";
 import ThreeSteps from "@/components/showroom/ThreeSteps";
-import ProjectExample from "@/components/showroom/ProjectExample";
 import StepsCarousel from "@/components/showroom/StepsCarousel";
 import GoodPyramid from "@/components/showroom/GoodPyramid";
 import ManifestoSection from "@/components/showroom/ManifestoSection";
@@ -263,10 +262,6 @@ export default async function HomePage({
       {/* Del 3–14 — "Showroom"-sektionerna (design_handoff_startsida_showroom),
           medvetet placerade längst ner även där de dubblerar innehåll som redan
           finns högre upp (Pillars, WhyHowWhat, onboarding-steg, projektlistan). */}
-      <section id="showroom-project-example">
-        <ProjectExample locale={locale} />
-      </section>
-
       <section id="showroom-pyramid">
         <GoodPyramid locale={locale} />
       </section>
