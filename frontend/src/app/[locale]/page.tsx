@@ -184,6 +184,8 @@ export default async function HomePage({
 
       <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
 
+      <StepsCarousel />
+
       {/* Hero-slide-listan delas i tre delar så att både projektlistan och
           Statistikraden kan sitta mellan specifika slides: "Följ din dröm"
           (index 1) → Utforska projekt → "Släpp inte taget" (index 2) →
@@ -276,8 +278,6 @@ export default async function HomePage({
       </div>
 
       <ShowroomGrid />
-
-      <StepsCarousel />
 
       <ManifestoSection locale={locale} />
 
