@@ -185,11 +185,11 @@ export default async function HomePage({
 
       <StepsCarousel />
 
-      {/* Hero-slide-listan delas i tre delar så att både projektlistan och
-          Statistikraden kan sitta mellan specifika slides: "Följ din dröm"
+      {/* Hero-slide-listan delas i flera delar så att projektlistan, Statistikraden
+          och ShowroomGrid kan sitta mellan specifika slides: "Följ din dröm"
           (index 1) → Utforska projekt → "Släpp inte taget" (index 2) →
-          Statistikraden → resten av slidesen (t.ex. "Hitta din tribe",
-          "Alla vinner", index 3+). */}
+          Statistikraden → "Testa din dröm"/"Hitta din tribe" (index 3–4) →
+          ShowroomGrid → "Alla vinner" (index 5). */}
       <HeroSlideText slides={heroSlidesForStack.slice(1, 2)} canEdit={canEditHero} tiltOffset={1} />
 
       <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
@@ -245,7 +245,11 @@ export default async function HomePage({
         />
       </section>
 
-      <HeroSlideText slides={heroSlidesForStack.slice(3)} canEdit={canEditHero} tiltOffset={3} />
+      <HeroSlideText slides={heroSlidesForStack.slice(3, 5)} canEdit={canEditHero} tiltOffset={3} />
+
+      <ShowroomGrid />
+
+      <HeroSlideText slides={heroSlidesForStack.slice(5)} canEdit={canEditHero} tiltOffset={5} />
 
       <section id="showroom-three-steps">
         <ThreeSteps locale={locale} />
@@ -271,8 +275,6 @@ export default async function HomePage({
       </section>
 
       </div>
-
-      <ShowroomGrid />
 
       <ManifestoSection locale={locale} />
 
