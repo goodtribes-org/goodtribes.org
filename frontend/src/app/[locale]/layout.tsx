@@ -19,7 +19,6 @@ import NavMenuContainer from "@/components/NavMenuContainer";
 import FooterPageManager from "@/components/FooterPageManager";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
 import ConsentGate from "@/components/ConsentGate";
-import SandboxBetaBadge from "@/components/SandboxBetaBadge";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { SandboxProvider } from "@/components/SandboxIndicator";
@@ -163,7 +162,6 @@ export default async function LocaleLayout({
                     unoptimized
                     className="object-contain"
                   />
-                  <SandboxBetaBadge />
                 </Link>
                 <div className="shrink-0">
                   <NavMenuContainer />
