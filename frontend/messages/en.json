@@ -1398,7 +1398,7 @@
       "calendarCaption": "Sep 18–19 · Planting out bay 2, Grebbestad"
     },
     "stepsCarousel": {
-      "eyebrow": "Four steps",
+      "eyebrow": "Five steps",
       "heading": "From idea to change",
       "step0Label": "Explore",
       "step0Title": "Find the projects that fit you and join the tribe",
@@ -1409,9 +1409,12 @@
       "step2Label": "Change",
       "step2Title": "Change the world through small and large efforts",
       "step2Body": "An hour, a donated computer, a skill traded. Change from below always starts with a small group of people working towards a shared dream.",
-      "step3Label": "Live well",
-      "step3Title": "Live well, feel well, do good — everyone wins",
-      "step3Body": "The base is a secure life, the top is the dream — the platform takes you all the way, together with others. Research shows we thrive when hedonic happiness (living well, feeling well) is balanced with eudaimonic happiness (doing good, following your dreams)."
+      "step3Label": "Impact",
+      "step3Title": "See the impact you're making",
+      "step3Body": "Track the real effect — which Agenda 2030 goals you're contributing to, how much has been raised, and who's been helped. The platform shows in black and white what your efforts actually change.",
+      "step4Label": "Live well",
+      "step4Title": "Live well, feel well, do good — everyone wins",
+      "step4Body": "The base is a secure life, the top is the dream — the platform takes you all the way, together with others. Research shows we thrive when hedonic happiness (living well, feeling well) is balanced with eudaimonic happiness (doing good, following your dreams)."
     },
     "pyramid": {
       "eyebrow": "How we define good",

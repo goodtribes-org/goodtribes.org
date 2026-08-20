@@ -4,19 +4,21 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { displaySerifFont, showroomMonoFont } from "@/lib/fonts";
 
-// Fyra steg (slog ihop de tidigare sex: Hitta+Joina → Utforska, Lev gott+Alla
-// vinner → Lev gott). Bollfärgerna och den streckade linjen mellan dem återger
-// samma gul-till-röd gradient som OnboardingStepsBar:s sex cirklar, bara
-// nedsamplad till fyra stopp. Bilderna är samma runda tonade bilder som redan
-// fanns i sex-stegsversionen, en per kvarvarande steg.
+// Fem steg (ursprungligen sex, slogs ihop till fyra: Hitta+Joina → Utforska,
+// Lev gott+Alla vinner → Lev gott — sedan lades Genomslag till som ett nytt
+// femte steg mellan Förändra och Lev gott). Bollfärgerna och den streckade
+// linjen mellan dem återger samma gul-till-röd gradient som
+// OnboardingStepsBar:s sex cirklar, nedsamplad till fem stopp. Bilderna är
+// samma runda tonade bilder som redan fanns i sex-stegsversionen.
 const STEPS = [
   { img: "f_green_t.png", tint: "rgba(9,120,9,.14)", ball: "#ffb800" },
   { img: "bulb_t.png", tint: "rgba(240,180,41,.16)", ball: "#ff9700" },
-  { img: "f_cart_t.png", tint: "rgba(240,180,41,.14)", ball: "#ff7600" },
+  { img: "f_cart_t.png", tint: "rgba(240,180,41,.14)", ball: "#ff8700" },
+  { img: "f_orange_t.png", tint: "rgba(255,102,0,.12)", ball: "#ff7600" },
   { img: "f_swim_t.png", tint: "rgba(136,213,245,.4)", ball: "var(--color-coral)" },
 ] as const;
 
-const LINE_SEGMENT_COLORS = ["#f9a51d", "#e86903", "#d10505"];
+const LINE_SEGMENT_COLORS = ["#ffcc00", "#e86903", "#dd3704", "#d10505"];
 
 export default function StepsCarousel() {
   const t = useTranslations("Showroom.stepsCarousel");
@@ -30,7 +32,6 @@ export default function StepsCarousel() {
         marginLeft: "calc(50% - 50vw)",
         marginRight: "calc(50% - 50vw)",
         width: "100vw",
-        background: "rgba(9,120,9,.07)",
         borderTop: "1px solid rgba(178,176,155,.35)",
         borderBottom: "1px solid rgba(178,176,155,.35)",
       }}
@@ -46,7 +47,7 @@ export default function StepsCarousel() {
         <div className="relative flex justify-center" style={{ marginBottom: 28 }}>
           <div
             className="hidden sm:flex absolute"
-            style={{ top: 21, left: "18%", right: "18%" }}
+            style={{ top: 32, left: "18%", right: "18%" }}
             aria-hidden="true"
           >
             {LINE_SEGMENT_COLORS.map((color, i) => (
@@ -63,15 +64,15 @@ export default function StepsCarousel() {
                 style={{ gap: 6 }}
               >
                 <span
-                  className={displaySerifFont.className}
+                  className={`${displaySerifFont.className} font-bold`}
                   style={{
-                    width: 44,
-                    height: 44,
+                    width: 64,
+                    height: 64,
                     borderRadius: "50%",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: 17,
+                    fontSize: 24,
                     color: "#fff",
                     background: s.ball,
                     opacity: i === active ? 1 : 0.45,

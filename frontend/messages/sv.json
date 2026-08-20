@@ -1398,7 +1398,7 @@
       "calendarCaption": "18–19 sep · Utplantering vik 2, Grebbestad"
     },
     "stepsCarousel": {
-      "eyebrow": "Fyra steg",
+      "eyebrow": "Fem steg",
       "heading": "Från idé till förändring",
       "step0Label": "Utforska",
       "step0Title": "Hitta projekt som är rätt för dig och joina din Tribe",
@@ -1409,9 +1409,12 @@
       "step2Label": "Förändra",
       "step2Title": "Förändra världen genom små och stora insatser",
       "step2Body": "En timme, en donerad dator, en kunskap som byts. All förändring underifrån börjar med en liten grupp människor som samverkar för sina gemensamma drömmar.",
-      "step3Label": "Lev gott",
-      "step3Title": "Lev gott, må gott, gör gott — alla vinner",
-      "step3Body": "Grunden är ett tryggt liv, toppen är drömmen — plattformen tar er hela vägen, tillsammans med andra. Forskningen visar att vi mår bäst när hedonistisk lycka (leva gott, må gott) balanseras med eudaimonisk lycka (göra gott, följa sina drömmar)."
+      "step3Label": "Genomslag",
+      "step3Title": "Se genomslaget av det ni gör",
+      "step3Body": "Följ effekten på riktigt — vilka Agenda 2030-mål ni bidrar till, hur mycket som samlats in och vilka som fått hjälp. Plattformen visar svart på vitt vad era insatser faktiskt förändrar.",
+      "step4Label": "Lev gott",
+      "step4Title": "Lev gott, må gott, gör gott — alla vinner",
+      "step4Body": "Grunden är ett tryggt liv, toppen är drömmen — plattformen tar er hela vägen, tillsammans med andra. Forskningen visar att vi mår bäst när hedonistisk lycka (leva gott, må gott) balanseras med eudaimonisk lycka (göra gott, följa sina drömmar)."
     },
     "pyramid": {
       "eyebrow": "Så definierar vi gott",
