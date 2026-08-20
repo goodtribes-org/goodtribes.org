@@ -17,7 +17,7 @@ export default function IdeaBand() {
   }
 
   return (
-    <div className="w-full bg-[#FBFAF6] border-b border-muted-teal/25">
+    <div className="w-full bg-[#f6f5f2]">
       <div className="max-w-[1160px] mx-auto px-8 py-[34px] flex flex-wrap items-center gap-8">
         <div className="flex-none w-[158px] rounded-2xl overflow-hidden bg-[#88D5F5]">
           <img src="/img/showroom/scene_papers.png" alt="" className="w-full" />
