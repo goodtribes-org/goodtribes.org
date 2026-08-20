@@ -156,10 +156,11 @@ export default async function HomePage({
       <StepsCarousel />
 
       {/* Hero-slide-listan delas i flera delar så att projektlistan, "Så gör
-          du"-widgeten och ShowroomGrid kan sitta mellan specifika slides:
-          "Följ din dröm" (index 1) → Utforska projekt → "Släpp inte taget"
-          (index 2) → "Så gör du" (tre enkla steg) → "Testa din dröm"/"Hitta
-          din tribe" (index 3–4) → ShowroomGrid → "Alla vinner" (index 5). */}
+          du"-widgeten, "Målet" (WhyHowWhat) och ShowroomGrid kan sitta mellan
+          specifika slides: "Följ din dröm" (index 1) → Utforska projekt →
+          "Släpp inte taget" (index 2) → "Så gör du" (tre enkla steg) →
+          "Testa din dröm" (index 3) → "Målet" → "Hitta din tribe" (index 4)
+          → ShowroomGrid → "Alla vinner" (index 5). */}
       <HeroSlideText slides={heroSlidesForStack.slice(1, 2)} canEdit={canEditHero} tiltOffset={1} />
 
       <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
@@ -209,17 +210,19 @@ export default async function HomePage({
         <ThreeSteps locale={locale} />
       </section>
 
-      <HeroSlideText slides={heroSlidesForStack.slice(3, 5)} canEdit={canEditHero} tiltOffset={3} />
-
-      <ShowroomGrid />
-
-      <HeroSlideText slides={heroSlidesForStack.slice(5)} canEdit={canEditHero} tiltOffset={5} />
+      <HeroSlideText slides={heroSlidesForStack.slice(3, 4)} canEdit={canEditHero} tiltOffset={3} />
 
       <WhyHowWhat
         eyebrow={tWhy("eyebrow")}
         headings={{ why: tWhy("whyHeading"), how: tWhy("howHeading"), what: tWhy("whatHeading") }}
         bodies={{ why: tWhy("whyBody"), how: tWhy("howBody"), what: tWhy("whatBody") }}
       />
+
+      <HeroSlideText slides={heroSlidesForStack.slice(4, 5)} canEdit={canEditHero} tiltOffset={4} />
+
+      <ShowroomGrid />
+
+      <HeroSlideText slides={heroSlidesForStack.slice(5)} canEdit={canEditHero} tiltOffset={5} />
 
       <div className="space-y-16">
 
