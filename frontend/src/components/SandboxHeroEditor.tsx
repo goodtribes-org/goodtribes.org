@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { updateSandboxHero, type SandboxHeroInput } from "@/app/[locale]/sandbox-hero-actions";
+import RichTextEditor from "@/components/RichTextEditor";
 import type { Locale } from "next-intl";
 
 const PILLAR_FIELDS = [
@@ -16,35 +17,41 @@ const PILLAR_FIELDS = [
   bodyKey: keyof SandboxHeroInput;
 }[];
 
-function Field({
+function TextField({
   label,
   value,
   onChange,
-  multiline,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
-  multiline?: boolean;
 }) {
   return (
     <label className="block">
       <span className="block text-xs font-medium text-dark-slate/70 mb-1">{label}</span>
-      {multiline ? (
-        <textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          rows={3}
-          className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass resize-none"
-        />
-      ) : (
-        <input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-seagrass"
-        />
-      )}
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full border border-gray-200 rounded-md px-3 py-2.5 text-base focus:outline-none focus:border-seagrass"
+      />
     </label>
+  );
+}
+
+function RichField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (html: string) => void;
+}) {
+  return (
+    <div>
+      <span className="block text-xs font-medium text-dark-slate/70 mb-1">{label}</span>
+      <RichTextEditor content={value} onChange={onChange} />
+    </div>
   );
 }
 
@@ -87,24 +94,23 @@ export default function SandboxHeroEditor({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="space-y-3">
         <h3 className="text-sm font-semibold text-dark-slate">{t("introSectionTitle")}</h3>
-        <Field label={t("heroKickerLabel")} value={data.heroKicker} onChange={(v) => set("heroKicker", v)} />
-        <Field
+        <TextField label={t("heroKickerLabel")} value={data.heroKicker} onChange={(v) => set("heroKicker", v)} />
+        <RichField
           label={t("heroDescriptionLabel")}
           value={data.heroDescription}
           onChange={(v) => set("heroDescription", v)}
-          multiline
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {PILLAR_FIELDS.map(({ key, headingKey, bodyKey }) => (
-          <div key={key} className="border border-muted-teal/20 rounded-lg p-3 space-y-3">
+          <div key={key} className="border border-muted-teal/20 rounded-lg p-4 space-y-3">
             <h3 className="text-sm font-semibold text-dark-slate">{pillarLabels[key]}</h3>
-            <Field label={t("pillarHeadingLabel")} value={data[headingKey]} onChange={(v) => set(headingKey, v)} />
-            <Field label={t("pillarBodyLabel")} value={data[bodyKey]} onChange={(v) => set(bodyKey, v)} multiline />
+            <TextField label={t("pillarHeadingLabel")} value={data[headingKey]} onChange={(v) => set(headingKey, v)} />
+            <RichField label={t("pillarBodyLabel")} value={data[bodyKey]} onChange={(v) => set(bodyKey, v)} />
           </div>
         ))}
       </div>

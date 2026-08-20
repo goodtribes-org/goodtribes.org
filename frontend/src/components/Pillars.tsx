@@ -1,6 +1,21 @@
 import Link from "next/link";
 import { CARD_SHADOW } from "@/lib/heroCardStyle";
 
+// Content saved through the rich-text editor is HTML; content seeded before
+// it was added is plain text — same detection as HeroSlideRow's RichText.
+function RichText({ html, className }: { html: string; className: string }) {
+  const trimmed = html.trim();
+  if (trimmed.startsWith("<")) {
+    return (
+      <div
+        className={`prose prose-sm max-w-none prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline ${className}`}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    );
+  }
+  return <p className={className}>{html}</p>;
+}
+
 // The two tree illustrations are the original GoodTribe artwork recovered
 // from the old dev-goodtribe.pantheonsite.io site — see
 // /public/img/sandbox-tree-*.png. The pillar icons are simple white-line
@@ -118,9 +133,7 @@ export default function Pillars({
                   {heading}
                 </h2>
                 {body && (
-                  <p className="mt-2 text-amber-800 text-xs sm:text-sm leading-relaxed">
-                    {body}
-                  </p>
+                  <RichText html={body} className="mt-2 text-amber-800 text-xs sm:text-sm leading-relaxed" />
                 )}
               </div>
             </div>
@@ -149,7 +162,7 @@ export default function Pillars({
                 <span>{headings[p.key]}</span>
               </div>
               <div className="p-4">
-                <p className="text-xs text-dark-slate/70 leading-relaxed text-center">{bodies[p.key]}</p>
+                <RichText html={bodies[p.key]} className="text-xs text-dark-slate/70 leading-relaxed text-center" />
               </div>
             </div>
           ))}

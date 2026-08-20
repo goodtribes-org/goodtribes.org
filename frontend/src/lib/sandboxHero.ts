@@ -1,6 +1,7 @@
 import type { SandboxHeroSettings } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { routing } from "@/i18n/routing";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import type { Locale } from "next-intl";
 
 export type SandboxHeroData = {
@@ -10,10 +11,13 @@ export type SandboxHeroData = {
   bodies: { levaGott: string; maGott: string; goraGott: string; dreamGood: string };
 };
 
+// Sanitizes the HTML body fields again at render time (belt-and-suspenders,
+// same as HomeHeroSlide/SitePage) so rows saved before sanitizeHtml was
+// added on write can't still serve stored XSS.
 function toSandboxHeroData(s: SandboxHeroSettings): SandboxHeroData {
   return {
     heroKicker: s.heroKicker,
-    heroDescription: s.heroDescription,
+    heroDescription: sanitizeHtml(s.heroDescription),
     headings: {
       levaGott: s.levaGottHeading,
       maGott: s.maGottHeading,
@@ -21,10 +25,10 @@ function toSandboxHeroData(s: SandboxHeroSettings): SandboxHeroData {
       dreamGood: s.dreamGoodHeading,
     },
     bodies: {
-      levaGott: s.levaGottBody,
-      maGott: s.maGottBody,
-      goraGott: s.goraGottBody,
-      dreamGood: s.dreamGoodBody,
+      levaGott: sanitizeHtml(s.levaGottBody),
+      maGott: sanitizeHtml(s.maGottBody),
+      goraGott: sanitizeHtml(s.goraGottBody),
+      dreamGood: sanitizeHtml(s.dreamGoodBody),
     },
   };
 }

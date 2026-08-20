@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { requireAdminSession } from "@/lib/authz";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import type { Locale } from "next-intl";
 
 type OkOrError = { error: string } | { ok: true };
@@ -33,11 +34,26 @@ const REQUIRED_FIELDS: (keyof SandboxHeroInput)[] = [
   "dreamGoodBody",
 ];
 
+// The four *Body fields (and the intro description) are edited via
+// RichTextEditor now, so they arrive as HTML — sanitize before storing,
+// same rule as HomeHeroSlide's body/outro. Heading/kicker fields stay
+// plain single-line labels.
+const HTML_FIELDS: (keyof SandboxHeroInput)[] = [
+  "heroDescription",
+  "levaGottBody",
+  "maGottBody",
+  "goraGottBody",
+  "dreamGoodBody",
+];
+
 export async function updateSandboxHero(input: SandboxHeroInput, locale: Locale): Promise<OkOrError> {
   await requireAdminSession();
 
   const trimmed = Object.fromEntries(
-    REQUIRED_FIELDS.map((key) => [key, input[key].trim()])
+    REQUIRED_FIELDS.map((key) => [
+      key,
+      HTML_FIELDS.includes(key) ? sanitizeHtml(input[key]).trim() : input[key].trim(),
+    ])
   ) as SandboxHeroInput;
 
   for (const key of REQUIRED_FIELDS) {
