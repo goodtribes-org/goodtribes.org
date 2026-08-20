@@ -19,7 +19,6 @@ import type { Locale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { resolveProjectContent } from "@/lib/contentTranslation";
 import { fetchActivityItems } from "@/lib/activityFeed";
-import { timeAgo } from "@/lib/timeAgo";
 import IdeaBand from "@/components/showroom/IdeaBand";
 import LiveTicker from "@/components/showroom/LiveTicker";
 import ShowroomGrid from "@/components/showroom/ShowroomGrid";
@@ -27,15 +26,6 @@ import ThreeSteps from "@/components/showroom/ThreeSteps";
 import StepsCarousel from "@/components/showroom/StepsCarousel";
 import GoodPyramid from "@/components/showroom/GoodPyramid";
 import ManifestoSection from "@/components/showroom/ManifestoSection";
-import ShowroomActivityFeed, { type ShowroomFeedEvent } from "@/components/showroom/ShowroomActivityFeed";
-
-
-function initialsFromName(name: string | null): string {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  return parts.length === 1 ? parts[0].slice(0, 2).toUpperCase() : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
 const PAGE_SIZE = 12;
 
 export default async function HomePage({
@@ -134,13 +124,6 @@ export default async function HomePage({
   const showroomActivity = await fetchActivityItems(10);
   const recentActivity = showroomActivity.slice(0, 8);
   const tickerItems = recentActivity.map((a) => `${a.projectName} — ${a.action}`);
-  const feedEvents: ShowroomFeedEvent[] = recentActivity.slice(0, 6).map((a) => ({
-    key: a.id,
-    project: a.projectName,
-    action: a.action,
-    meta: timeAgo(a.date),
-    initials: initialsFromName(a.avatarName),
-  }));
 
   return (
     <div>
@@ -231,10 +214,6 @@ export default async function HomePage({
           finns högre upp (Pillars, WhyHowWhat, onboarding-steg, projektlistan). */}
       <section id="showroom-pyramid">
         <GoodPyramid locale={locale} />
-      </section>
-
-      <section id="showroom-activity-feed">
-        <ShowroomActivityFeed locale={locale} events={feedEvents} />
       </section>
 
       </div>
