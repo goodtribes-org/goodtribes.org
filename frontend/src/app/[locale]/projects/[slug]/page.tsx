@@ -22,7 +22,6 @@ import { isLeadRole, isSiteAdmin, isLastFounder } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
 import { computeTaskProgress } from "@/lib/taskProgress";
-import LikeCommentBlock from "@/components/LikeCommentBlock";
 import { getLikeCommentData } from "@/lib/socialInteractions";
 import { toProxyUrl } from "@/lib/storageUrl";
 import ActivityFeed from "@/components/ActivityFeed";
@@ -34,7 +33,7 @@ import MiniCalendar from "./MiniCalendar";
 import PhaseChecklistWidget from "./PhaseChecklistWidget";
 import ProjectQuickActions from "./ProjectQuickActions";
 
-const FEED_PAGE_SIZE = 20;
+const FEED_PREVIEW_SIZE = 10;
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").trim();
@@ -78,13 +77,10 @@ export async function generateMetadata({
 
 export default async function ProjectDetailPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
-  searchParams: Promise<{ page?: string }>;
 }) {
   const { locale, slug } = await params;
-  const { page: feedPageStr } = await searchParams;
   const session = await auth();
   const t = await getTranslations("ProjectDetailPage");
 
@@ -137,14 +133,13 @@ export default async function ProjectDetailPage({
   // everyone else sees it below, after the description/update sections.
   const isRealMember = isMember && userMembership?.role !== "FOLLOWER";
 
-  const { likeCount, liked, comments } = await getLikeCommentData("project", project.id, userId ?? null);
+  const { likeCount, liked } = await getLikeCommentData("project", project.id, userId ?? null);
   const shareUrl = `${APP_URL}/${locale}/projects/${slug}`;
   const shareText = content.description ? stripHtml(content.description) : undefined;
 
-  const feedPage = Math.max(1, parseInt(feedPageStr ?? "1") || 1);
-  const allFeedItems = await fetchActivityItems(feedPage * FEED_PAGE_SIZE, { projectId: project.id, projectSlug: slug });
-  const feedTotal = allFeedItems.length;
-  const feedPageItems = allFeedItems.slice((feedPage - 1) * FEED_PAGE_SIZE, feedPage * FEED_PAGE_SIZE);
+  // On-page preview only — always the 10 most recent, no pagination; the "Se hela
+  // flödet →" link goes to /projects/[slug]/activity for the full paginated history.
+  const feedPageItems = (await fetchActivityItems(FEED_PREVIEW_SIZE, { projectId: project.id, projectSlug: slug })).slice(0, FEED_PREVIEW_SIZE);
   const {
     likeCountByTarget: feedLikeCountByTarget,
     likedByMe: feedLikedByMe,
@@ -493,10 +488,9 @@ export default async function ProjectDetailPage({
               <ActivityFeed
                 pageItems={feedPageItems}
                 isLoggedIn={!!userId}
-                page={feedPage}
-                pageStr={feedPageStr}
-                total={feedTotal}
-                perPage={FEED_PAGE_SIZE}
+                page={1}
+                total={feedPageItems.length}
+                perPage={FEED_PREVIEW_SIZE}
                 basePath={`/projects/${slug}`}
                 likeCountByTarget={feedLikeCountByTarget}
                 likedByMe={feedLikedByMe}
@@ -511,26 +505,28 @@ export default async function ProjectDetailPage({
 
           <section>
             <h2 className="text-base font-semibold text-dark-slate mb-4">{t("aboutProjectHeading")}</h2>
-            {content.description ? (
-              content.description.trimStart().startsWith("<") ? (
-                <article
-                  className="prose max-w-[760px] mx-auto text-dark-slate leading-relaxed
+            <div className="bg-white border border-muted-teal/30 rounded-xl p-6">
+              {content.description ? (
+                content.description.trimStart().startsWith("<") ? (
+                  <article
+                    className="prose max-w-[760px] mx-auto text-dark-slate leading-relaxed
+                      prose-headings:text-dark-slate
+                      prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
+                      prose-strong:text-dark-slate prose-img:rounded-xl prose-img:max-w-full"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(content.description) }}
+                  />
+                ) : (
+                  <article className="prose max-w-[760px] mx-auto text-dark-slate leading-relaxed
                     prose-headings:text-dark-slate
                     prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
-                    prose-strong:text-dark-slate prose-img:rounded-xl prose-img:max-w-full"
-                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(content.description) }}
-                />
+                    prose-strong:text-dark-slate prose-img:rounded-xl">
+                    <ReactMarkdown>{content.description}</ReactMarkdown>
+                  </article>
+                )
               ) : (
-                <article className="prose max-w-[760px] mx-auto text-dark-slate leading-relaxed
-                  prose-headings:text-dark-slate
-                  prose-a:text-seagrass prose-a:no-underline hover:prose-a:underline
-                  prose-strong:text-dark-slate prose-img:rounded-xl">
-                  <ReactMarkdown>{content.description}</ReactMarkdown>
-                </article>
-              )
-            ) : (
-              <p className="text-dark-slate/40 italic text-sm">{t("noDescriptionYet")}</p>
-            )}
+                <p className="text-dark-slate/40 italic text-sm">{t("noDescriptionYet")}</p>
+              )}
+            </div>
           </section>
 
           {latestUpdate && (
@@ -565,10 +561,9 @@ export default async function ProjectDetailPage({
               <ActivityFeed
                 pageItems={feedPageItems}
                 isLoggedIn={!!userId}
-                page={feedPage}
-                pageStr={feedPageStr}
-                total={feedTotal}
-                perPage={FEED_PAGE_SIZE}
+                page={1}
+                total={feedPageItems.length}
+                perPage={FEED_PREVIEW_SIZE}
                 basePath={`/projects/${slug}`}
                 likeCountByTarget={feedLikeCountByTarget}
                 likedByMe={feedLikedByMe}
@@ -978,19 +973,6 @@ export default async function ProjectDetailPage({
             </section>
           )}
         </div>
-      </div>
-
-      <div className="mt-10 border border-muted-teal/30 rounded-lg p-5 bg-white">
-        {/* Like lives in the top-of-sidebar ProjectQuickActions widget now — only comments here */}
-        <LikeCommentBlock
-          targetType="project"
-          targetId={project.id}
-          hideLike
-          isLoggedIn={!!userId}
-          initialLikeCount={likeCount}
-          initialLiked={liked}
-          initialComments={comments}
-        />
       </div>
 
       {userId && !isOwnerOrAdmin && (
