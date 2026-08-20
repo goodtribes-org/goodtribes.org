@@ -28,7 +28,6 @@ import StepsCarousel from "@/components/showroom/StepsCarousel";
 import GoodPyramid from "@/components/showroom/GoodPyramid";
 import ManifestoSection from "@/components/showroom/ManifestoSection";
 import ShowroomActivityFeed, { type ShowroomFeedEvent } from "@/components/showroom/ShowroomActivityFeed";
-import EndCta from "@/components/showroom/EndCta";
 
 
 function initialsFromName(name: string | null): string {
@@ -238,8 +237,6 @@ export default async function HomePage({
       </div>
 
       <ManifestoSection locale={locale} />
-
-      <EndCta locale={locale} />
 
     </div>
   );
