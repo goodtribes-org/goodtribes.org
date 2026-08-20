@@ -560,14 +560,12 @@
     "openCalendarLink": "Open calendar →",
     "costsHeading": "Costs",
     "allExpensesLink": "All expenses →",
-    "wantToContributeHeading": "Want to contribute?",
-    "applyToJoinText": "Apply to join the project.",
-    "loginToJoinText": "Log in to join the project",
-    "loginArrowLink": "Log in →",
     "fundingGoalLabel": "of {goal} {currency}",
     "fundingPercentLabel": "{pct}% funded",
     "daysLeftLabel": "{days} days left",
-    "supportProjectButton": "Support the project"
+    "supportProjectButton": "Support the project",
+    "leaveProjectButton": "Leave project",
+    "leaveProjectConfirm": "Are you sure you want to leave the project? You can apply to join again later."
   },
   "ProjectSideNav": {
     "navHome": "Home",

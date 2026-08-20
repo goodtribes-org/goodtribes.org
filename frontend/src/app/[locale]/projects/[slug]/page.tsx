@@ -18,11 +18,10 @@ import PhaseMenuBar from "./PhaseMenuBar";
 import OwnershipBanner from "@/components/OwnershipBanner";
 import { handwritingFontThin } from "@/lib/fonts";
 import { ProjectSandboxAnnouncer } from "@/components/SandboxIndicator";
-import { isLeadRole, isSiteAdmin } from "@/lib/authz";
+import { isLeadRole, isSiteAdmin, isLastFounder } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
 import { computeTaskProgress } from "@/lib/taskProgress";
-import ShareButton from "@/components/ShareButton";
 import LikeCommentBlock from "@/components/LikeCommentBlock";
 import { getLikeCommentData } from "@/lib/socialInteractions";
 import { toProxyUrl } from "@/lib/storageUrl";
@@ -33,6 +32,7 @@ import { routing } from "@/i18n/routing";
 import type { Locale } from "next-intl";
 import MiniCalendar from "./MiniCalendar";
 import PhaseChecklistWidget from "./PhaseChecklistWidget";
+import ProjectQuickActions from "./ProjectQuickActions";
 
 const FEED_PAGE_SIZE = 20;
 
@@ -125,6 +125,7 @@ export default async function ProjectDetailPage({
   // established precedent, see requireProjectRole's allowSiteAdmin default.
   const isOwnerOrAdmin = isLeadRole(userMembership?.role) || (!!userId && (await isSiteAdmin(userId)));
   const isMember = !!userMembership;
+  const canLeave = isMember && userId ? !(await isLastFounder(project.id, userId)) : false;
 
   // A site-admin-hidden project (suspected criminal activity, see
   // contentModeration.ts) stays visible to its own members and site-admins,
@@ -137,6 +138,8 @@ export default async function ProjectDetailPage({
   const isRealMember = isMember && userMembership?.role !== "FOLLOWER";
 
   const { likeCount, liked, comments } = await getLikeCommentData("project", project.id, userId ?? null);
+  const shareUrl = `${APP_URL}/${locale}/projects/${slug}`;
+  const shareText = content.description ? stripHtml(content.description) : undefined;
 
   const feedPage = Math.max(1, parseInt(feedPageStr ?? "1") || 1);
   const allFeedItems = await fetchActivityItems(feedPage * FEED_PAGE_SIZE, { projectId: project.id, projectSlug: slug });
@@ -582,6 +585,21 @@ export default async function ProjectDetailPage({
         {/* Right sidebar — 320px to align with hero right card */}
         <div className="w-full md:w-[320px] shrink-0 flex flex-col gap-5">
 
+          {/* Share / like / join-leave — the whole-project actions, always first so they're visible without scrolling */}
+          <ProjectQuickActions
+            projectId={project.id}
+            slug={slug}
+            userId={userId ?? null}
+            isMember={isMember}
+            canLeave={canLeave}
+            existingJoinStatus={userJoinRequest?.status ?? null}
+            initialLikeCount={likeCount}
+            initialLiked={liked}
+            shareUrl={shareUrl}
+            shareTitle={content.title}
+            shareText={shareText}
+          />
+
           {/* Phase checklist — same items/toggle as PhaseMenuBar's popover, always visible for the current phase */}
           <PhaseChecklistWidget
             slug={slug}
@@ -928,32 +946,6 @@ export default async function ProjectDetailPage({
             </section>
           )}
 
-          {/* Join CTA */}
-          {!isMember && userId && (
-            <div className="border border-seagrass/40 rounded-xl p-4 bg-seagrass/5">
-              <h2 className="text-sm font-semibold text-dark-slate mb-1">{t("wantToContributeHeading")}</h2>
-              <p className="text-xs text-dark-slate/60 mb-3">{t("applyToJoinText")}</p>
-              <JoinButton
-                projectId={project.id}
-                slug={slug}
-                existingStatus={userJoinRequest?.status ?? null}
-              />
-            </div>
-          )}
-          {!isMember && !userId && (
-            <div className="bg-white border border-muted-teal/30 rounded-xl p-4 text-center">
-              <p className="text-sm text-dark-slate/60 mb-3">
-                {t("loginToJoinText")}
-              </p>
-              <Link
-                href={`/login?callbackUrl=${encodeURIComponent(`/projects/${slug}`)}`}
-                className="text-sm text-coral font-medium hover:underline"
-              >
-                {t("loginArrowLink")}
-              </Link>
-            </div>
-          )}
-
           {/* Funding widget */}
           {fundingCampaign && (
             <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
@@ -989,9 +981,11 @@ export default async function ProjectDetailPage({
       </div>
 
       <div className="mt-10 border border-muted-teal/30 rounded-lg p-5 bg-white">
+        {/* Like lives in the top-of-sidebar ProjectQuickActions widget now — only comments here */}
         <LikeCommentBlock
           targetType="project"
           targetId={project.id}
+          hideLike
           isLoggedIn={!!userId}
           initialLikeCount={likeCount}
           initialLiked={liked}
@@ -999,14 +993,11 @@ export default async function ProjectDetailPage({
         />
       </div>
 
-      <div className="mt-6 pt-6 border-t border-muted-teal/20 flex justify-end items-center gap-3">
-        <ShareButton
-          url={`${APP_URL}/${locale}/projects/${slug}`}
-          title={content.title}
-          text={content.description ? stripHtml(content.description) : undefined}
-        />
-        {userId && !isOwnerOrAdmin && <FlagContentButton targetType="Project" targetId={project.id} />}
-      </div>
+      {userId && !isOwnerOrAdmin && (
+        <div className="mt-6 pt-6 border-t border-muted-teal/20 flex justify-end items-center gap-3">
+          <FlagContentButton targetType="Project" targetId={project.id} />
+        </div>
+      )}
 
       </div>
       </div>

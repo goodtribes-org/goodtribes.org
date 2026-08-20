@@ -560,14 +560,12 @@
     "openCalendarLink": "Öppna kalender →",
     "costsHeading": "Kostnader",
     "allExpensesLink": "Alla utgifter →",
-    "wantToContributeHeading": "Vill du bidra?",
-    "applyToJoinText": "Ansök om att gå med i projektet.",
-    "loginToJoinText": "Logga in för att gå med i projektet",
-    "loginArrowLink": "Logga in →",
     "fundingGoalLabel": "av {goal} {currency}",
     "fundingPercentLabel": "{pct}% finansierat",
     "daysLeftLabel": "{days} dagar kvar",
-    "supportProjectButton": "Stöd projektet"
+    "supportProjectButton": "Stöd projektet",
+    "leaveProjectButton": "Lämna projektet",
+    "leaveProjectConfirm": "Är du säker på att du vill lämna projektet? Du kan ansöka om att gå med igen senare."
   },
   "ProjectSideNav": {
     "navHome": "Startsidan",

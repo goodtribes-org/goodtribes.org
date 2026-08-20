@@ -174,6 +174,26 @@ export async function removeMember(projectId: string, targetUserId: string, slug
   revalidatePath(`/projects/${slug}`);
 }
 
+// Self-service version of removeMember — any member (or the site-admin
+// escape hatch aside) can remove themselves without needing a lead's
+// approval, gated only by the same isLastFounder guard so a project can
+// never end up with no founder at all.
+export async function leaveProject(projectId: string, slug: string) {
+  const session = await auth();
+  if (!session?.user?.id) return;
+
+  const membership = await prisma.projectMember.findUnique({
+    where: { projectId_userId: { projectId, userId: session.user.id } },
+  });
+  if (!membership) return;
+  if (await isLastFounder(projectId, session.user.id)) return;
+
+  await prisma.projectMember.delete({
+    where: { projectId_userId: { projectId, userId: session.user.id } },
+  });
+  revalidatePath(`/projects/${slug}`);
+}
+
 export async function changeMemberRole(
   projectId: string,
   targetUserId: string,
