@@ -12,7 +12,6 @@ import HeroSlideText from "@/components/HeroSlideText";
 import WhyHowWhat from "@/components/WhyHowWhat";
 import { toHeroSlideData } from "@/lib/heroSlides";
 import { isSiteAdmin } from "@/lib/authz";
-import OnboardingStepsBar from "@/components/OnboardingStepsBar";
 import { isValidProjectPhase } from "@/lib/projectPhase";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import { routing } from "@/i18n/routing";
@@ -85,7 +84,6 @@ export default async function HomePage({
     totalFiltered,
     projects,
     heroSlides,
-    onboardingSteps,
   ] = await Promise.all([
     prisma.project.count({ where }),
     prisma.project.findMany({
@@ -100,26 +98,10 @@ export default async function HomePage({
       },
     }),
     prisma.homeHeroSlide.findMany({ where: { locale }, orderBy: { order: "asc" } }),
-    prisma.onboardingStep.findMany({ where: { locale }, orderBy: { order: "asc" } }),
   ]);
-
-  // Onboarding steps fall back to the site's default locale's editorial
-  // content rather than showing a blank bar the first time a non-default
-  // locale hasn't been translated by a site admin yet. The hero heading and
-  // slides do NOT get this cross-locale fallback — unlike the onboarding
-  // bar, the hero already has a locale-correct hardcoded default (below),
-  // so falling back to a different locale's real, admin-authored text would
-  // silently show Swedish copy on the English homepage forever, with no
-  // signal to a site admin that a translation is still needed.
-  let finalOnboardingSteps = onboardingSteps;
-  if (locale !== routing.defaultLocale && finalOnboardingSteps.length === 0) {
-    const fallbackSteps = await prisma.onboardingStep.findMany({ where: { locale: routing.defaultLocale }, orderBy: { order: "asc" } });
-    if (fallbackSteps.length) finalOnboardingSteps = fallbackSteps;
-  }
 
   const heroSlidesForStack = heroSlides.map(toHeroSlideData);
   const canEditHero = userId ? await isSiteAdmin(userId) : false;
-  const onboardingStepsForBar = finalOnboardingSteps.map((s) => ({ id: s.id, order: s.order, label: s.label, href: s.href }));
 
   const [projectLikeCounts, taskProgressCards] = await Promise.all([
     projects.length
@@ -172,14 +154,12 @@ export default async function HomePage({
 
       <LiveTicker items={tickerItems} />
 
-      <OnboardingStepsBar steps={onboardingStepsForBar} canEdit={canEditHero} />
-
       <StepsCarousel />
 
-      {/* Hero-slide-listan delas i flera delar så att projektlistan, Statistikraden
-          och ShowroomGrid kan sitta mellan specifika slides: "Följ din dröm"
+      {/* Hero-slide-listan delas i flera delar så att projektlistan och
+          ShowroomGrid kan sitta mellan specifika slides: "Följ din dröm"
           (index 1) → Utforska projekt → "Släpp inte taget" (index 2) →
-          Statistikraden → "Testa din dröm"/"Hitta din tribe" (index 3–4) →
+          "Testa din dröm"/"Hitta din tribe" (index 3–4) →
           ShowroomGrid → "Alla vinner" (index 5). */}
       <HeroSlideText slides={heroSlidesForStack.slice(1, 2)} canEdit={canEditHero} tiltOffset={1} />
 

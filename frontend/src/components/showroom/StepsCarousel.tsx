@@ -37,14 +37,14 @@ export default function StepsCarousel() {
       }}
     >
       <div className="max-w-[1160px] mx-auto px-8" style={{ padding: "72px 32px" }}>
-        <p className={`${showroomMonoFont.className} text-center`} style={{ fontSize: 11, letterSpacing: ".14em", color: "rgba(37,68,65,.45)" }}>
+        <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "rgba(37,68,65,.45)" }}>
           {t("eyebrow").toUpperCase()}
         </p>
-        <h2 className={`${displaySerifFont.className} text-dark-slate text-center`} style={{ fontSize: "clamp(30px,3vw,40px)", marginBottom: 32 }}>
+        <h2 className={`${displaySerifFont.className} text-dark-slate`} style={{ fontSize: "clamp(30px,3vw,40px)", marginBottom: 32 }}>
           {t("heading")}
         </h2>
 
-        <div className="relative mx-auto" style={{ maxWidth: 640, marginBottom: 28 }}>
+        <div className="relative" style={{ maxWidth: 820, marginBottom: 28 }}>
           {/* Linjen går mellan mittpunkten på boll 1 och mittpunkten på sista bollen
               (100% / (2 * antal steg) från varje kant) — kolumnerna nedan delar exakt
               samma bredd, så bollarna hamnar precis ovanpå linjens ändar och täcker dem
