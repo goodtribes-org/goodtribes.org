@@ -44,7 +44,7 @@ export default function StepsCarousel() {
           {t("heading")}
         </h2>
 
-        <div className="relative" style={{ maxWidth: 820, marginBottom: 28 }}>
+        <div className="relative mx-auto" style={{ maxWidth: 820, marginBottom: 28 }}>
           {/* Linjen går mellan mittpunkten på boll 1 och mittpunkten på sista bollen
               (100% / (2 * antal steg) från varje kant) — kolumnerna nedan delar exakt
               samma bredd, så bollarna hamnar precis ovanpå linjens ändar och täcker dem
