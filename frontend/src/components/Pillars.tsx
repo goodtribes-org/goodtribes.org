@@ -112,7 +112,8 @@ export default function Pillars({
           </div>
         )}
 
-        <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* z-30 — högre än trädens z-20 — så Leva Gott-rutorna ligger framför träden. */}
+        <div className="relative z-30 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {PILLARS.map((p, i) => (
             <div
               key={p.key}
