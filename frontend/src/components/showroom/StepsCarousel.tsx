@@ -2,25 +2,26 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { displaySerifFont, showroomBodyFont, showroomMonoFont } from "@/lib/fonts";
+import { displaySerifFont, showroomMonoFont } from "@/lib/fonts";
 
+// Fyra steg (slog ihop de tidigare sex: Hitta+Joina → Utforska, Lev gott+Alla
+// vinner → Lev gott). Bollfärgerna och den streckade linjen mellan dem återger
+// samma gul-till-röd gradient som OnboardingStepsBar:s sex cirklar, bara
+// nedsamplad till fyra stopp. Bilderna är samma runda tonade bilder som redan
+// fanns i sex-stegsversionen, en per kvarvarande steg.
 const STEPS = [
-  { img: "f_green_t.png", tint: "rgba(9,120,9,.14)" },
-  { img: "f_red_t.png", tint: "rgba(209,5,5,.12)" },
-  { img: "bulb_t.png", tint: "rgba(240,180,41,.16)" },
-  { img: "f_cart_t.png", tint: "rgba(240,180,41,.14)" },
-  { img: "f_swim_t.png", tint: "rgba(136,213,245,.4)" },
-  { img: "f_orange_t.png", tint: "rgba(255,102,0,.12)" },
+  { img: "f_green_t.png", tint: "rgba(9,120,9,.14)", ball: "#ffb800" },
+  { img: "bulb_t.png", tint: "rgba(240,180,41,.16)", ball: "#ff9700" },
+  { img: "f_cart_t.png", tint: "rgba(240,180,41,.14)", ball: "#ff7600" },
+  { img: "f_swim_t.png", tint: "rgba(136,213,245,.4)", ball: "var(--color-coral)" },
 ] as const;
+
+const LINE_SEGMENT_COLORS = ["#f9a51d", "#e86903", "#d10505"];
 
 export default function StepsCarousel() {
   const t = useTranslations("Showroom.stepsCarousel");
-  const [slide, setSlide] = useState(0);
-  const step = STEPS[slide];
-
-  function go(i: number) {
-    setSlide((i + STEPS.length) % STEPS.length);
-  }
+  const [active, setActive] = useState(0);
+  const step = STEPS[active];
 
   return (
     <div
@@ -35,85 +36,83 @@ export default function StepsCarousel() {
       }}
     >
       <div className="max-w-[1160px] mx-auto px-8" style={{ padding: "72px 32px" }}>
-        <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
-          <div>
-            <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "rgba(37,68,65,.45)" }}>
-              {t("eyebrow").toUpperCase()}
-            </p>
-            <h2 className={`${displaySerifFont.className} text-dark-slate`} style={{ fontSize: "clamp(30px,3vw,40px)" }}>
-              {t("heading")}
-            </h2>
-          </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => go(slide - 1)}
-              aria-label={t("prevAria")}
-              className="rounded-full bg-white border border-dark-slate/20 text-dark-slate hover:border-seagrass hover:text-seagrass flex items-center justify-center"
-              style={{ width: 44, height: 44, fontSize: 17 }}
-            >
-              ‹
-            </button>
-            <button
-              type="button"
-              onClick={() => go(slide + 1)}
-              aria-label={t("nextAria")}
-              className="rounded-full bg-white border border-dark-slate/20 text-dark-slate hover:border-seagrass hover:text-seagrass flex items-center justify-center"
-              style={{ width: 44, height: 44, fontSize: 17 }}
-            >
-              ›
-            </button>
-          </div>
-        </div>
+        <p className={`${showroomMonoFont.className} text-center`} style={{ fontSize: 11, letterSpacing: ".14em", color: "rgba(37,68,65,.45)" }}>
+          {t("eyebrow").toUpperCase()}
+        </p>
+        <h2 className={`${displaySerifFont.className} text-dark-slate text-center`} style={{ fontSize: "clamp(30px,3vw,40px)", marginBottom: 32 }}>
+          {t("heading")}
+        </h2>
 
-        <div className="flex flex-wrap gap-2 mb-6">
-          {STEPS.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setSlide(i)}
-              className={`${showroomMonoFont.className} rounded-full transition-colors`}
-              style={{
-                fontSize: 11,
-                letterSpacing: ".12em",
-                padding: "9px 15px",
-                background: i === slide ? "var(--color-dark-slate)" : "#fff",
-                borderWidth: 1,
-                borderStyle: "solid",
-                borderColor: i === slide ? "var(--color-dark-slate)" : "rgba(37,68,65,.2)",
-                color: i === slide ? "#fff" : "rgba(37,68,65,.7)",
-              }}
-            >
-              {i + 1} · {t(`step${i}Label`)}
-            </button>
-          ))}
+        <div className="relative flex justify-center" style={{ marginBottom: 28 }}>
+          <div
+            className="hidden sm:flex absolute"
+            style={{ top: 21, left: "18%", right: "18%" }}
+            aria-hidden="true"
+          >
+            {LINE_SEGMENT_COLORS.map((color, i) => (
+              <div key={i} className="flex-1 border-t-2 border-dashed" style={{ borderColor: color }} />
+            ))}
+          </div>
+          <div className="relative flex" style={{ gap: 48 }}>
+            {STEPS.map((s, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setActive(i)}
+                className="flex flex-col items-center"
+                style={{ gap: 6 }}
+              >
+                <span
+                  className={displaySerifFont.className}
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 17,
+                    color: "#fff",
+                    background: s.ball,
+                    opacity: i === active ? 1 : 0.45,
+                    boxShadow: i === active ? "0 0 0 3px #fff, 0 0 0 4.5px " + s.ball : "none",
+                    transition: "opacity .15s, box-shadow .15s",
+                  }}
+                >
+                  {i + 1}
+                </span>
+                <span
+                  style={{
+                    fontSize: 11.5,
+                    whiteSpace: "nowrap",
+                    color: i === active ? "#254441" : "rgba(37,68,65,.55)",
+                    fontWeight: i === active ? 500 : 400,
+                  }}
+                >
+                  {t(`step${i}Label`)}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="bg-white border border-muted-teal/40 flex flex-wrap items-center gap-8" style={{ borderRadius: 26, padding: "clamp(26px,3vw,44px)" }}>
           <div
             className="rounded-full overflow-hidden flex-shrink-0"
-            style={{ width: "clamp(150px,17vw,215px)", height: "clamp(150px,17vw,215px)", background: step.tint }}
+            style={{ width: "clamp(120px,14vw,170px)", height: "clamp(120px,14vw,170px)", background: step.tint }}
           >
             <img src={`/img/showroom/${step.img}`} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 26%" }} />
           </div>
           <div style={{ flex: "1 1 320px" }}>
             <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
-              {t(`step${slide}Label`).toUpperCase()}
+              {t(`step${active}Label`).toUpperCase()}
             </p>
-            <h3 className={`${displaySerifFont.className} text-dark-slate`} style={{ fontSize: "clamp(28px,3vw,40px)", lineHeight: 1.12, letterSpacing: "-.015em" }}>
-              {t(`step${slide}Title`)}
+            <h3 className={`${displaySerifFont.className} text-dark-slate`} style={{ fontSize: "clamp(24px,2.6vw,32px)", lineHeight: 1.15, letterSpacing: "-.01em" }}>
+              {t(`step${active}Title`)}
             </h3>
-            <p className="text-dark-slate/70 mt-2" style={{ fontSize: 17, lineHeight: 1.65, maxWidth: "52ch" }}>
-              {t(`step${slide}Body`)}
+            <p className="text-dark-slate/70 mt-2" style={{ fontSize: 16, lineHeight: 1.65, maxWidth: "56ch" }}>
+              {t(`step${active}Body`)}
             </p>
-            <div className="flex items-center gap-4 mt-4 flex-wrap">
-              <span className={`${showroomBodyFont.className} inline-block rounded-full bg-dark-slate text-white font-medium`} style={{ padding: "12px 22px", fontSize: 15.5 }}>
-                {t(`step${slide}Cta`)}
-              </span>
-              <span className={showroomMonoFont.className} style={{ fontSize: 11.5, color: "rgba(37,68,65,.45)" }}>
-                {t("slideCounter", { current: slide + 1, total: STEPS.length })}
-              </span>
-            </div>
           </div>
         </div>
       </div>

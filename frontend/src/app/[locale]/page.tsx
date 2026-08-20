@@ -28,11 +28,9 @@ import ThreeSteps from "@/components/showroom/ThreeSteps";
 import StepsCarousel from "@/components/showroom/StepsCarousel";
 import GoodPyramid from "@/components/showroom/GoodPyramid";
 import ManifestoSection from "@/components/showroom/ManifestoSection";
-import StatsRow from "@/components/showroom/StatsRow";
 import ShowroomActivityFeed, { type ShowroomFeedEvent } from "@/components/showroom/ShowroomActivityFeed";
 import EndCta from "@/components/showroom/EndCta";
 
-const SDG_TOTAL_COUNT = 17;
 
 function initialsFromName(name: string | null): string {
   if (!name) return "?";
@@ -151,15 +149,8 @@ export default async function HomePage({
 
   // Del 3-14 — "Showroom"-sektionerna längst ner (design_handoff_startsida_showroom).
   // Ticker/aktivitetsflöde delar samma fetchActivityItems()-källa som /sandbox's
-  // Activity Pulse; statistikraden/projektflödet är egna, riktiga aggregat.
-  const [totalRaisedAgg, completedTasksCount, sdgProjects, showroomActivity] = await Promise.all([
-    prisma.fundingPledge.aggregate({ where: { pledgeStatus: "confirmed" }, _sum: { amount: true } }),
-    prisma.kanbanCardSubtask.count({ where: { done: true } }),
-    prisma.project.findMany({ where: { hiddenAt: null }, select: { sdgGoals: true } }),
-    fetchActivityItems(10),
-  ]);
-  const totalRaised = totalRaisedAgg._sum.amount ?? 0;
-  const sdgCoveredCount = new Set(sdgProjects.flatMap((p) => p.sdgGoals)).size;
+  // Activity Pulse.
+  const showroomActivity = await fetchActivityItems(10);
   const recentActivity = showroomActivity.slice(0, 8);
   const tickerItems = recentActivity.map((a) => `${a.projectName} — ${a.action}`);
   const feedEvents: ShowroomFeedEvent[] = recentActivity.slice(0, 6).map((a) => ({
@@ -234,16 +225,6 @@ export default async function HomePage({
       </section>
 
       <HeroSlideText slides={heroSlidesForStack.slice(2, 3)} canEdit={canEditHero} tiltOffset={2} />
-
-      <section id="showroom-stats-row">
-        <StatsRow
-          locale={locale}
-          totalRaised={totalRaised}
-          completedTasks={completedTasksCount}
-          sdgCoveredCount={sdgCoveredCount}
-          sdgTotalCount={SDG_TOTAL_COUNT}
-        />
-      </section>
 
       <HeroSlideText slides={heroSlidesForStack.slice(3, 5)} canEdit={canEditHero} tiltOffset={3} />
 
