@@ -219,8 +219,8 @@ export default function ProjectSideNav({
             gray fill must start only where the hero's background image ends, not cover the image —
             and the actual nav items should still line up with the phase-journey bar below the hero. */}
         <div
-          className="absolute left-0 right-0 bottom-0 bg-gray-50 border-r border-muted-teal/20"
-          style={{ top: onHome ? "490px" : 0 }}
+          className="absolute left-0 right-0 bottom-0 border-r border-muted-teal/20"
+          style={{ top: onHome ? "490px" : 0, backgroundColor: "#f6f5f2" }}
         />
         {onHome && <div aria-hidden style={{ height: "490px" }} />}
         <div className="relative sm:sticky sm:top-0 max-h-screen overflow-y-auto py-3 scrollbar-none" style={{ scrollbarWidth: "none" }}>
