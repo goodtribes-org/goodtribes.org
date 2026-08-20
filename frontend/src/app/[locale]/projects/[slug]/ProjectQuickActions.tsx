@@ -4,19 +4,23 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { toggleFeedLike } from "@/app/actions";
-import { leaveProject } from "./member-actions";
+import { leaveProject, toggleFollowProject } from "./member-actions";
 import { JoinButton } from "./JoinSection";
 import ShareButton from "@/components/ShareButton";
 
-// Top-of-sidebar widget consolidating the four ways a visitor interacts with
-// a project as a whole (as opposed to any specific piece of its content):
-// share it outside GoodTribes, like it, and join or leave its membership.
+// Top-of-sidebar widget consolidating the ways a visitor interacts with a
+// project as a whole (as opposed to any specific piece of its content):
+// share it outside GoodTribes, like it, follow it, and join or leave its
+// membership. Follow and Join are independent — following is a lightweight
+// step below joining, not a replacement for it, so both show together
+// until the visitor is an actual member.
 export default function ProjectQuickActions({
   projectId,
   slug,
   userId,
-  isMember,
+  isRealMember,
   canLeave,
+  initialIsFollowing,
   existingJoinStatus,
   initialLikeCount,
   initialLiked,
@@ -27,8 +31,9 @@ export default function ProjectQuickActions({
   projectId: string;
   slug: string;
   userId: string | null;
-  isMember: boolean;
+  isRealMember: boolean;
   canLeave: boolean;
+  initialIsFollowing: boolean;
   existingJoinStatus: string | null;
   initialLikeCount: number;
   initialLiked: boolean;
@@ -42,6 +47,7 @@ export default function ProjectQuickActions({
   const [likeCount, setLikeCount] = useState(initialLikeCount);
   const [liked, setLiked] = useState(initialLiked);
   const [left, setLeft] = useState(false);
+  const [following, setFollowing] = useState(initialIsFollowing);
 
   function handleLike() {
     if (!userId) return;
@@ -56,6 +62,17 @@ export default function ProjectQuickActions({
     });
   }
 
+  function handleFollow() {
+    if (!userId) return;
+    setFollowing((v) => !v);
+    startTransition(async () => {
+      const result = await toggleFollowProject(projectId, slug);
+      if ("error" in result) {
+        setFollowing((v) => !v);
+      }
+    });
+  }
+
   function handleLeave() {
     if (!confirm(t("leaveProjectConfirm"))) return;
     startTransition(async () => {
@@ -64,7 +81,7 @@ export default function ProjectQuickActions({
     });
   }
 
-  const effectiveIsMember = isMember && !left;
+  const effectiveIsRealMember = isRealMember && !left;
 
   return (
     <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
@@ -94,8 +111,22 @@ export default function ProjectQuickActions({
         <ShareButton url={shareUrl} title={shareTitle} text={shareText} variant="button" />
       </div>
 
-      <div className="mt-2.5">
-        {effectiveIsMember ? (
+      <div className="mt-2.5 flex flex-col gap-2">
+        {!effectiveIsRealMember && (
+          <button
+            onClick={handleFollow}
+            disabled={!userId || isPending}
+            className={`flex items-center justify-center gap-1.5 text-sm font-medium rounded-lg py-2 border transition-colors ${
+              following
+                ? "text-seagrass border-seagrass/40 bg-seagrass/5"
+                : "text-dark-slate/60 border-muted-teal/40 hover:text-seagrass hover:border-seagrass/40"
+            } ${!userId ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+          >
+            {following ? `✓ ${t("followingButton")}` : t("followButton")}
+          </button>
+        )}
+
+        {effectiveIsRealMember ? (
           canLeave && (
             <button
               onClick={handleLeave}

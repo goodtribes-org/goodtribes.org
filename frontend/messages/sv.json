@@ -565,7 +565,9 @@
     "daysLeftLabel": "{days} dagar kvar",
     "supportProjectButton": "Stöd projektet",
     "leaveProjectButton": "Lämna projektet",
-    "leaveProjectConfirm": "Är du säker på att du vill lämna projektet? Du kan ansöka om att gå med igen senare."
+    "leaveProjectConfirm": "Är du säker på att du vill lämna projektet? Du kan ansöka om att gå med igen senare.",
+    "followButton": "Följ",
+    "followingButton": "Följer"
   },
   "ProjectSideNav": {
     "navHome": "Startsidan",
@@ -1789,7 +1791,8 @@
     "closeAria": "Stäng",
     "copy": "Kopiera",
     "copied": "Kopierad!",
-    "moreOptions": "Fler alternativ…"
+    "moreOptions": "Fler alternativ…",
+    "email": "E-post"
   },
   "LikeCommentBlock": {
     "likeTooltipLoginRequired": "Logga in för att gilla",

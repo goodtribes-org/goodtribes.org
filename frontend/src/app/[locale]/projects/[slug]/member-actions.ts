@@ -194,6 +194,37 @@ export async function leaveProject(projectId: string, slug: string) {
   revalidatePath(`/projects/${slug}`);
 }
 
+// Self-service, lightweight "follow" — creates/removes a FOLLOWER-role
+// ProjectMember row, distinct from actually joining (which needs a request
+// or a direct add). No-ops on an existing real membership rather than
+// downgrading it — following is strictly a step below joining, never a
+// replacement for it.
+export async function toggleFollowProject(
+  projectId: string,
+  slug: string
+): Promise<{ following: boolean } | { error: string }> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+  const userId = session.user.id;
+
+  const existing = await prisma.projectMember.findUnique({
+    where: { projectId_userId: { projectId, userId } },
+  });
+
+  if (existing) {
+    if (existing.role !== "FOLLOWER") return { error: "Already a member" };
+    await prisma.projectMember.delete({ where: { projectId_userId: { projectId, userId } } });
+    revalidatePath(`/projects/${slug}`);
+    return { following: false };
+  }
+
+  if (await isExcludedFromProject(userId, projectId)) return { error: "Forbidden" };
+
+  await prisma.projectMember.create({ data: { projectId, userId, role: "FOLLOWER" } });
+  revalidatePath(`/projects/${slug}`);
+  return { following: true };
+}
+
 export async function changeMemberRole(
   projectId: string,
   targetUserId: string,

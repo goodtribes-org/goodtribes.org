@@ -565,7 +565,9 @@
     "daysLeftLabel": "{days} days left",
     "supportProjectButton": "Support the project",
     "leaveProjectButton": "Leave project",
-    "leaveProjectConfirm": "Are you sure you want to leave the project? You can apply to join again later."
+    "leaveProjectConfirm": "Are you sure you want to leave the project? You can apply to join again later.",
+    "followButton": "Follow",
+    "followingButton": "Following"
   },
   "ProjectSideNav": {
     "navHome": "Home",
@@ -1789,7 +1791,8 @@
     "closeAria": "Close",
     "copy": "Copy",
     "copied": "Copied!",
-    "moreOptions": "More options…"
+    "moreOptions": "More options…",
+    "email": "Email"
   },
   "LikeCommentBlock": {
     "likeTooltipLoginRequired": "Log in to like",

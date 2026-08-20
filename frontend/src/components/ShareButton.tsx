@@ -41,8 +41,16 @@ export default function ShareButton({
     }
   }
 
-  const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
-  const xUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+  const encodedUrl = encodeURIComponent(url);
+  const encodedTitle = encodeURIComponent(title);
+  const destinations = [
+    { label: "LinkedIn", href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}` },
+    { label: "X", href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}` },
+    { label: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}` },
+    { label: "WhatsApp", href: `https://wa.me/?text=${encodedTitle}%20${encodedUrl}` },
+    { label: "Telegram", href: `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}` },
+    { label: t("email"), href: `mailto:?subject=${encodedTitle}&body=${encodedUrl}` },
+  ];
 
   return (
     <div className="relative inline-block">
@@ -65,7 +73,7 @@ export default function ShareButton({
       )}
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-72 border border-muted-teal/40 rounded-lg p-4 bg-white shadow-lg">
+        <div className="absolute right-0 z-20 mt-2 w-80 border border-muted-teal/40 rounded-lg p-4 bg-white shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-dark-slate">{t("shareTitle")}</h3>
             <button
@@ -93,23 +101,18 @@ export default function ShareButton({
               </button>
             </div>
 
-            <div className="flex gap-2">
-              <a
-                href={linkedInUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 text-center px-3 py-1.5 rounded border border-muted-teal/50 text-xs text-dark-slate/70 hover:text-coral hover:border-coral transition-colors"
-              >
-                LinkedIn
-              </a>
-              <a
-                href={xUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 text-center px-3 py-1.5 rounded border border-muted-teal/50 text-xs text-dark-slate/70 hover:text-coral hover:border-coral transition-colors"
-              >
-                X
-              </a>
+            <div className="grid grid-cols-3 gap-2">
+              {destinations.map((d) => (
+                <a
+                  key={d.label}
+                  href={d.href}
+                  target={d.href.startsWith("mailto:") ? undefined : "_blank"}
+                  rel={d.href.startsWith("mailto:") ? undefined : "noopener noreferrer"}
+                  className="text-center px-2 py-1.5 rounded border border-muted-teal/50 text-xs text-dark-slate/70 hover:text-coral hover:border-coral transition-colors"
+                >
+                  {d.label}
+                </a>
+              ))}
             </div>
 
             {canNativeShare && (

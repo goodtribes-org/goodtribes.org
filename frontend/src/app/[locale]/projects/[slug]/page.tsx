@@ -121,7 +121,6 @@ export default async function ProjectDetailPage({
   // established precedent, see requireProjectRole's allowSiteAdmin default.
   const isOwnerOrAdmin = isLeadRole(userMembership?.role) || (!!userId && (await isSiteAdmin(userId)));
   const isMember = !!userMembership;
-  const canLeave = isMember && userId ? !(await isLastFounder(project.id, userId)) : false;
 
   // A site-admin-hidden project (suspected criminal activity, see
   // contentModeration.ts) stays visible to its own members and site-admins,
@@ -132,6 +131,7 @@ export default async function ProjectDetailPage({
   // relationship) see the project's own feed above the project text;
   // everyone else sees it below, after the description/update sections.
   const isRealMember = isMember && userMembership?.role !== "FOLLOWER";
+  const canLeave = isRealMember && userId ? !(await isLastFounder(project.id, userId)) : false;
 
   const { likeCount, liked } = await getLikeCommentData("project", project.id, userId ?? null);
   const shareUrl = `${APP_URL}/${locale}/projects/${slug}`;
@@ -585,8 +585,9 @@ export default async function ProjectDetailPage({
             projectId={project.id}
             slug={slug}
             userId={userId ?? null}
-            isMember={isMember}
+            isRealMember={isRealMember}
             canLeave={canLeave}
+            initialIsFollowing={userMembership?.role === "FOLLOWER"}
             existingJoinStatus={userJoinRequest?.status ?? null}
             initialLikeCount={likeCount}
             initialLiked={liked}
