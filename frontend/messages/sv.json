@@ -1449,8 +1449,6 @@
   },
   "SandboxPage": {
     "metaDescription": "Ett experimentellt område som blandar AI-genererat innehåll med användarbidrag.",
-    "heroKicker": "🧪 Sandbox — experimentell zon",
-    "heroDescription": "Riktiga projekt, men märkta som experimentella — testa en idé fritt innan du (eller någon annan) gör den till ett vanligt projekt. Allt här kan vara AI-genererat, halvfärdigt eller under test — vem som helst kan gaffla ett projekt utan tillstånd.",
     "exploreHeading": "Utforska projekt",
     "emptyProjects": "Inga sandbox-projekt ännu.",
     "startFirstProject": "Starta det första →",
@@ -3090,6 +3088,19 @@
     "defaultHeading": "Välkommen till GoodTribes",
     "carouselSectionTitle": "Hero-karusell",
     "stepsSectionTitle": "Startstegen (de sex cirklarna)"
+  },
+  "SandboxHeroAdminPage": {
+    "heading": "Sandbox ({locale})",
+    "intro": "Introtexten och de fyra pelarrutorna (Leva Gott, Må Gott, Göra Gott, Dröm stort) högst upp på sandbox-sidan."
+  },
+  "SandboxHeroEditor": {
+    "introSectionTitle": "Introtext",
+    "heroKickerLabel": "Kicker",
+    "heroDescriptionLabel": "Beskrivning",
+    "pillarHeadingLabel": "Rubrik",
+    "pillarBodyLabel": "Text",
+    "saveButton": "Spara",
+    "savingButton": "Sparar…"
   },
   "ExclusionCasePage": {
     "pageTitle": "Ärende — Granskningsrådet",

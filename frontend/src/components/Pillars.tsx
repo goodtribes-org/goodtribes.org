@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CARD_SHADOW } from "@/lib/heroCardStyle";
 
 // The two tree illustrations are the original GoodTribe artwork recovered
@@ -70,11 +71,17 @@ export default function Pillars({
   body,
   headings,
   bodies,
+  canEdit,
+  editHref,
+  editLabel,
 }: {
   heading?: string;
   body?: string;
   headings: Record<"levaGott" | "maGott" | "goraGott" | "dreamGood", string>;
   bodies: Record<"levaGott" | "maGott" | "goraGott" | "dreamGood", string>;
+  canEdit?: boolean;
+  editHref?: string;
+  editLabel?: string;
 }) {
   return (
     <div className="pt-0 sm:pt-20">
@@ -97,7 +104,15 @@ export default function Pillars({
         {/* z-0 (istället för z-10) så trädens grenar hamnar framför rutan, inte bakom den. */}
         {heading && (
           <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-6 md:mb-10 z-0 w-full max-w-lg sm:max-w-xl px-4">
-            <div className={`bg-white p-3 ${CARD_SHADOW}`}>
+            <div className={`relative bg-white p-3 ${CARD_SHADOW}`}>
+              {canEdit && editHref && (
+                <Link
+                  href={editHref}
+                  className="absolute top-3 right-3 z-10 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors bg-white/70 rounded-md px-2 py-1"
+                >
+                  ✎ {editLabel}
+                </Link>
+              )}
               <div className="border border-muted-teal/20 px-4 sm:px-6 py-4 sm:py-5 bg-amber-50 text-center">
                 <h2 className="text-lg sm:text-2xl font-bold text-amber-900" style={{ textWrap: "balance" }}>
                   {heading}

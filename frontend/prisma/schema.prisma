@@ -543,6 +543,29 @@ model HomeHeroSettings {
   @@unique([locale])
 }
 
+// Same one-row-per-locale pattern as HomeHeroSettings, for the sandbox
+// page's intro textbox + its four fixed Leva/Må/Göra Gott/Dröm stort pillar
+// cards (see Pillars.tsx) — editable by a site admin via
+// /site-admin/sandbox-hero, same pencil-link-to-editor-page UX as the
+// homepage hero carousel.
+model SandboxHeroSettings {
+  id               String   @id @default(cuid())
+  locale           String   @default("sv")
+  heroKicker       String
+  heroDescription  String
+  levaGottHeading  String
+  levaGottBody     String
+  maGottHeading    String
+  maGottBody       String
+  goraGottHeading  String
+  goraGottBody     String
+  dreamGoodHeading String
+  dreamGoodBody    String
+  updatedAt        DateTime @updatedAt
+
+  @@unique([locale])
+}
+
 // Editorial content for the About/Privacy/Terms pages (replaces Strapi,
 // which only ever owned this same static copy). One row per slug
 // ("about" | "privacy" | "terms"); the page falls back to hardcoded copy

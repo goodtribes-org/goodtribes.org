@@ -20,6 +20,8 @@ import { resolveProjectContent, resolveIdeaContent } from "@/lib/contentTranslat
 import { routing } from "@/i18n/routing";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
+import { isSiteAdmin } from "@/lib/authz";
+import { getSandboxHero } from "@/lib/sandboxHero";
 
 const IDEA_PREVIEW_SIZE = 8;
 const DRAFT_PREVIEW_SIZE = 8;
@@ -80,9 +82,9 @@ export default async function SandboxPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "SandboxPage" });
+  const tHeroPhotoStack = await getTranslations({ locale, namespace: "HeroPhotoStack" });
   const tLeanCanvas = await getTranslations({ locale, namespace: "LeanCanvasDraftPage" });
   const tWhiteboard = await getTranslations({ locale, namespace: "WhiteboardDraftPage" });
-  const tPillars = await getTranslations({ locale, namespace: "SandboxPillars" });
   const { sort: sortParam, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
@@ -95,6 +97,10 @@ export default async function SandboxPage({
   const where = { isSandbox: true };
   const session = await auth();
   const userId = session?.user?.id;
+  const [canEditHero, heroData] = await Promise.all([
+    userId ? isSiteAdmin(userId) : Promise.resolve(false),
+    getSandboxHero(locale),
+  ]);
 
   const [
     total,
@@ -223,24 +229,17 @@ export default async function SandboxPage({
         -mt-8 tar bort main:s pt-8, pt-36/48/52 lägger tillbaka en liten marginal mot
         toppmenyn (utan den skulle trädens grenar överlappa menyn). */}
     <div
-      className="relative -mt-8 pt-36 sm:pt-48 md:pt-52"
+      className="relative -mt-8 pt-36 sm:pt-48 md:pt-52 pb-10 sm:pb-14"
       style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f6f5f2" }}
     >
       <Pillars
-        heading={t("heroKicker")}
-        body={t("heroDescription")}
-        headings={{
-          levaGott: tPillars("levaGottHeading"),
-          maGott: tPillars("maGottHeading"),
-          goraGott: tPillars("goraGottHeading"),
-          dreamGood: tPillars("dreamGoodHeading"),
-        }}
-        bodies={{
-          levaGott: tPillars("levaGottBody"),
-          maGott: tPillars("maGottBody"),
-          goraGott: tPillars("goraGottBody"),
-          dreamGood: tPillars("dreamGoodBody"),
-        }}
+        heading={heroData.heroKicker}
+        body={heroData.heroDescription}
+        headings={heroData.headings}
+        bodies={heroData.bodies}
+        canEdit={canEditHero}
+        editHref="/site-admin/sandbox-hero"
+        editLabel={tHeroPhotoStack("editLink")}
       />
     </div>
 

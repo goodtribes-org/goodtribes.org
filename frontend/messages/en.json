@@ -1449,8 +1449,6 @@
   },
   "SandboxPage": {
     "metaDescription": "An experimental area mixing AI-generated content with user contributions.",
-    "heroKicker": "🧪 Sandbox — experimental zone",
-    "heroDescription": "Real projects, but marked as experimental — try an idea freely before you (or someone else) turn it into a regular project. Anything here can be AI-generated, half-finished, or a work in progress — anyone can fork a project without permission.",
     "exploreHeading": "Explore projects",
     "emptyProjects": "No sandbox projects yet.",
     "startFirstProject": "Start the first one →",
@@ -3090,6 +3088,19 @@
     "defaultHeading": "Welcome to GoodTribes",
     "carouselSectionTitle": "Hero carousel",
     "stepsSectionTitle": "Starting steps (the six circles)"
+  },
+  "SandboxHeroAdminPage": {
+    "heading": "Sandbox ({locale})",
+    "intro": "The intro text and the four pillar cards (Living Well, Feeling Good, Doing Good, Dream Big) at the top of the sandbox page."
+  },
+  "SandboxHeroEditor": {
+    "introSectionTitle": "Intro text",
+    "heroKickerLabel": "Kicker",
+    "heroDescriptionLabel": "Description",
+    "pillarHeadingLabel": "Heading",
+    "pillarBodyLabel": "Body",
+    "saveButton": "Save",
+    "savingButton": "Saving…"
   },
   "ExclusionCasePage": {
     "pageTitle": "Case — Review Council",
