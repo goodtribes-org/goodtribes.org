@@ -19,7 +19,7 @@ export default function NewSprintForm({ projectSlug }: { projectSlug: string }) 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border border-muted-teal/30 rounded-xl p-4 flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="bg-white border border-muted-teal/30 rounded-xl p-4 flex flex-col gap-4">
       <p className="text-sm font-medium text-dark-slate">{t("title")}</p>
 
       <div>

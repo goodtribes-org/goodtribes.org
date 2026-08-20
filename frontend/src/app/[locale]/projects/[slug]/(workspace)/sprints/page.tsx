@@ -46,7 +46,7 @@ export default async function SprintsPage({ params }: { params: Promise<{ locale
       <h1 className="text-xl font-bold text-dark-slate mb-1">{t("heading")}</h1>
       <p className="text-sm text-dark-slate/60 mb-6">{t("intro")}</p>
 
-      <div className="border border-muted-teal/30 rounded-xl divide-y divide-muted-teal/15 mb-8">
+      <div className="bg-white border border-muted-teal/30 rounded-xl divide-y divide-muted-teal/15 mb-8">
         {sprints.map((s) => (
           <div key={s.id} className="flex items-center gap-3 px-4 py-3 hover:bg-seagrass/5 transition-colors">
             <Link href={`/projects/${slug}/sprints/${s.id}`} className="flex items-center justify-between gap-3 flex-1 min-w-0">

@@ -533,7 +533,7 @@ export default async function ProjectDetailPage({
           {latestUpdate && (
             <section>
               <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("latestUpdateHeading")}</h2>
-              <div className="border border-muted-teal/30 rounded-xl p-4">
+              <div className="bg-white border border-muted-teal/30 rounded-xl p-4">
                 <p className="font-semibold text-dark-slate text-sm mb-1">{latestUpdate.title}</p>
                 <p className="text-sm text-dark-slate/60 line-clamp-3">{latestUpdate.body}</p>
                 <div className="flex items-center justify-between mt-3">
@@ -610,7 +610,7 @@ export default async function ProjectDetailPage({
 
           {/* Links */}
           {projectLinks.length > 0 && (
-            <section className="border border-muted-teal/30 rounded-xl p-4">
+            <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
               <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("linksHeading")}</h2>
               <ul className="space-y-2">
                 {projectLinks.map((url, i) => {
@@ -638,7 +638,7 @@ export default async function ProjectDetailPage({
 
           {/* Most active members */}
           {mostActiveMembers.length > 0 && (
-            <section className="border border-muted-teal/30 rounded-xl p-4">
+            <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-dark-slate">{t("mostActiveMembersHeading")}</h2>
                 <Link href={`/projects/${slug}/tokens`} className="text-xs text-seagrass hover:underline">
@@ -704,7 +704,7 @@ export default async function ProjectDetailPage({
             });
             const max = Math.max(...counts, 1);
             return (
-              <section className="border border-muted-teal/30 rounded-xl p-4">
+              <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-sm font-semibold text-dark-slate">{t("tasksHeading")}</h2>
                   <Link href={`/projects/${slug}/tasks`} className="text-xs text-seagrass hover:underline">
@@ -753,7 +753,7 @@ export default async function ProjectDetailPage({
               .sort((a, b) => colOrder.indexOf(a.column) - colOrder.indexOf(b.column));
             if (cardsWithSubtasks.length === 0) return null;
             return (
-              <section className="border border-muted-teal/30 rounded-xl p-4">
+              <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-sm font-semibold text-dark-slate">{t("tasksListHeading")}</h2>
                   <Link href={`/projects/${slug}/tasks`} className="text-xs text-seagrass hover:underline">
@@ -792,7 +792,7 @@ export default async function ProjectDetailPage({
 
           {/* Kanaler preview */}
           {recentChannelMessages.length > 0 && (
-            <section className="border border-muted-teal/30 rounded-xl p-4">
+            <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-dark-slate">{t("channelsHeading")}</h2>
                 <Link href={`/messages?project=${slug}`} className="text-xs text-seagrass hover:underline">
@@ -837,7 +837,7 @@ export default async function ProjectDetailPage({
 
           {/* GitHub — read-only mirror of the mapped project board */}
           {project.githubBoard && (
-            <section className="border border-muted-teal/30 rounded-xl p-4">
+            <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
               <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("githubHeading")}</h2>
               <a
                 href={
@@ -882,7 +882,7 @@ export default async function ProjectDetailPage({
           )}
 
           {/* Calendar widget */}
-          <section className="border border-muted-teal/30 rounded-xl p-4">
+          <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
             <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("calendarHeading")}</h2>
             <MiniCalendar events={monthEvents} t={t} />
             {upcomingEvents.length > 0 && (
@@ -907,7 +907,7 @@ export default async function ProjectDetailPage({
 
           {/* Costs */}
           {fundingCampaign && fundingCampaign.expenses.length > 0 && (
-            <section className="border border-muted-teal/30 rounded-xl p-4">
+            <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
               <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("costsHeading")}</h2>
               <ul className="space-y-2">
                 {fundingCampaign.expenses.map((exp) => (
@@ -941,7 +941,7 @@ export default async function ProjectDetailPage({
             </div>
           )}
           {!isMember && !userId && (
-            <div className="border border-muted-teal/30 rounded-xl p-4 text-center">
+            <div className="bg-white border border-muted-teal/30 rounded-xl p-4 text-center">
               <p className="text-sm text-dark-slate/60 mb-3">
                 {t("loginToJoinText")}
               </p>
@@ -956,7 +956,7 @@ export default async function ProjectDetailPage({
 
           {/* Funding widget */}
           {fundingCampaign && (
-            <section className="border border-muted-teal/30 rounded-xl p-4">
+            <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between items-end">
                   <span className="text-xl font-bold text-dark-slate">

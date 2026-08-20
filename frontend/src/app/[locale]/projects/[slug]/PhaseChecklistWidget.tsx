@@ -43,7 +43,7 @@ export default function PhaseChecklistWidget({ slug, phase, completedKeys, canEd
   }
 
   return (
-    <section className="border border-muted-teal/30 rounded-xl p-4">
+    <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold text-dark-slate">
           {t("checklistWidgetHeading", { phase: tPhase(phase) })}

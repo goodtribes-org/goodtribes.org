@@ -61,7 +61,7 @@ export default function DotVoting({
       {error && <p className="text-xs text-watermelon mb-3">{error}</p>}
       <div className="flex flex-col gap-3">
         {votingBoard.contributions.map((c) => (
-          <div key={c.id} className="border border-muted-teal/30 rounded-xl p-4 flex items-center justify-between gap-4">
+          <div key={c.id} className="bg-white border border-muted-teal/30 rounded-xl p-4 flex items-center justify-between gap-4">
             <div className="min-w-0">
               <span className="text-xs font-medium text-dark-slate/40 uppercase tracking-wide">{TYPE_LABEL[c.type]}</span>
               <p className="text-sm text-dark-slate/80 mt-0.5">{c.content}</p>

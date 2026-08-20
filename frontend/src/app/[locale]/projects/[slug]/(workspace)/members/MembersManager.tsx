@@ -161,7 +161,7 @@ export default function MembersManager({
         <h2 className="text-sm font-semibold text-dark-slate mb-3">
           {t("currentMembersHeading", { count: members.length })}
         </h2>
-        <div className="border border-muted-teal/30 rounded-xl divide-y divide-muted-teal/15">
+        <div className="bg-white border border-muted-teal/30 rounded-xl divide-y divide-muted-teal/15">
           {members.map((m) => {
             const isOwner = m.role === "FOUNDER";
             const isSelf = m.userId === currentUserId;

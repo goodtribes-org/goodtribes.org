@@ -62,7 +62,7 @@ export default function ContributionBoard({
   return (
     <div className="flex flex-col gap-4">
       {canWrite && (
-        <form onSubmit={handleSubmit} className="border border-muted-teal/30 rounded-xl p-4 flex flex-col gap-2">
+        <form onSubmit={handleSubmit} className="bg-white border border-muted-teal/30 rounded-xl p-4 flex flex-col gap-2">
           {options.length > 1 && (
             <div className="flex gap-2">
               {options.map((opt) => (
@@ -106,7 +106,7 @@ export default function ContributionBoard({
 
       <div className="flex flex-col gap-3">
         {contributions.map((c) => (
-          <div key={c.id} className="border border-muted-teal/30 rounded-xl p-4">
+          <div key={c.id} className="bg-white border border-muted-teal/30 rounded-xl p-4">
             <div className="flex items-center justify-between gap-2 mb-1.5">
               <span className="text-xs font-medium text-dark-slate/40 uppercase tracking-wide">{typeLabel[c.type]}</span>
               <span className="text-xs text-dark-slate/40">{c.visibleAuthor ? c.authorName ?? t("unknownAuthor") : t("anonymousContribution")}</span>

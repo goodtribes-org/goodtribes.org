@@ -175,7 +175,7 @@ export default function SprintWorkspace({
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-[220px_1fr] gap-6">
-          <aside className="border border-muted-teal/30 rounded-xl p-4 text-sm text-dark-slate/70 h-fit">
+          <aside className="bg-white border border-muted-teal/30 rounded-xl p-4 text-sm text-dark-slate/70 h-fit">
             <p className="font-medium text-dark-slate mb-2">{t(PHASE_LABEL_KEY[activeTab])}</p>
             <p>{t(GUIDANCE_KEY[activeTab])}</p>
           </aside>
