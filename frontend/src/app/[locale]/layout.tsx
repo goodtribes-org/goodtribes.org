@@ -140,8 +140,8 @@ export default async function LocaleLayout({
   };
 
   return (
-    <html lang={locale} className={`bg-white ${inter.className}`}>
-      <body className="min-h-screen bg-white text-dark-slate flex flex-col">
+    <html lang={locale} className={`bg-[#f6f5f2] ${inter.className}`}>
+      <body className="min-h-screen bg-[#f6f5f2] text-dark-slate flex flex-col">
         {/* Static, locally-constructed object — no user input reaches this __html. */}
         <script
           type="application/ld+json"
