@@ -38,10 +38,12 @@ export default function HeroSlideRow({
   editLinkLabel: string;
 }) {
   return (
-    <div className="grid w-full gap-8 items-center md:grid-cols-2">
-      {/* Bild — till vänster */}
+    <div className="grid w-full gap-4 items-center md:grid-cols-2">
+      {/* Bild — till vänster. z-20 + textrutans negativa marginal (nedan) drar
+          in ett par tior pixlar av textrutan under bildrutans kant, som ett
+          par foton slarvigt lagda ovanpå varandra. */}
       <div
-        className="w-full md:max-w-[620px] md:aspect-[16/10]"
+        className="relative z-20 w-full md:max-w-[620px] md:aspect-[16/10]"
         style={{
           transform: `rotate(${tilt.rotate}deg) translate(${tilt.x}px, ${tilt.y}px)`,
         }}
@@ -55,7 +57,7 @@ export default function HeroSlideRow({
 
       {/* Text — till höger, eget kort */}
       <div
-        className="w-full md:max-w-[620px] md:aspect-[16/10]"
+        className="relative z-10 w-full md:max-w-[620px] md:aspect-[16/10] -mt-10 md:mt-0 md:-ml-16"
         style={{
           transform: `rotate(${-tilt.rotate}deg) translate(${-tilt.x}px, ${-tilt.y}px)`,
         }}
