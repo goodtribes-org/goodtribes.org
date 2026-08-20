@@ -44,17 +44,21 @@ export default function StepsCarousel() {
           {t("heading")}
         </h2>
 
-        <div className="relative flex justify-center" style={{ marginBottom: 28 }}>
+        <div className="relative mx-auto" style={{ maxWidth: 640, marginBottom: 28 }}>
+          {/* Linjen går mellan mittpunkten på boll 1 och mittpunkten på sista bollen
+              (100% / (2 * antal steg) från varje kant) — kolumnerna nedan delar exakt
+              samma bredd, så bollarna hamnar precis ovanpå linjens ändar och täcker dem
+              (bollarna är solida, ingen opacity, så linjen aldrig lyser igenom). */}
           <div
             className="hidden sm:flex absolute"
-            style={{ top: 32, left: "18%", right: "18%" }}
+            style={{ top: 32, left: `${100 / (2 * STEPS.length)}%`, right: `${100 / (2 * STEPS.length)}%` }}
             aria-hidden="true"
           >
             {LINE_SEGMENT_COLORS.map((color, i) => (
               <div key={i} className="flex-1 border-t-2 border-dashed" style={{ borderColor: color }} />
             ))}
           </div>
-          <div className="relative flex" style={{ gap: 48 }}>
+          <div className="relative grid" style={{ gridTemplateColumns: `repeat(${STEPS.length}, 1fr)` }}>
             {STEPS.map((s, i) => (
               <button
                 key={i}
@@ -74,10 +78,9 @@ export default function StepsCarousel() {
                     justifyContent: "center",
                     fontSize: 24,
                     color: "#fff",
-                    background: s.ball,
-                    opacity: i === active ? 1 : 0.45,
+                    background: i === active ? s.ball : `color-mix(in srgb, ${s.ball} 45%, white)`,
                     boxShadow: i === active ? "0 0 0 3px #fff, 0 0 0 4.5px " + s.ball : "none",
-                    transition: "opacity .15s, box-shadow .15s",
+                    transition: "background .15s, box-shadow .15s",
                   }}
                 >
                   {i + 1}
