@@ -220,9 +220,10 @@ export default async function SandboxPage({
     {/* Träd + rutan (nu med Sandbox-innehållet, flyttat hit från hero-bildens textkort)
         + Leva/Må/Göra Gott/Dröm stort — flyttade hit från startsidan, högst upp på sandboxsidan.
         Samma bakgrundsfärg (#f6f5f2) som sektionen nedanför, kant-till-kant.
-        -mt-8 tar bort main:s pt-8 så det inte blir någon marginal mot toppmenyn. */}
+        -mt-8 tar bort main:s pt-8, pt-36/48/52 lägger tillbaka en liten marginal mot
+        toppmenyn (utan den skulle trädens grenar överlappa menyn). */}
     <div
-      className="relative -mt-8 pt-28 sm:pt-40 md:pt-44"
+      className="relative -mt-8 pt-36 sm:pt-48 md:pt-52"
       style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f6f5f2" }}
     >
       <Pillars
