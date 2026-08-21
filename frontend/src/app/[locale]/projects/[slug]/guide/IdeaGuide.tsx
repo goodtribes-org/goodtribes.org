@@ -3,12 +3,14 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import type { LeanCanvas } from "@prisma/client";
+import type { LeanCanvas, ValueProposition } from "@prisma/client";
 import { completeIdeaGuideStep, updateIdeaDetails } from "./actions";
 import { toggleChecklistItem } from "../(workspace)/edit/actions";
 import AddOrInviteMember from "../AddOrInviteMember";
 import LeanCanvasGrid from "../(workspace)/lean-canvas/LeanCanvasGrid";
 import { LEAN_CANVAS_FIELDS } from "../(workspace)/lean-canvas/fields";
+import ValuePropositionGrid from "../(workspace)/value-proposition/ValuePropositionGrid";
+import { VALUE_PROPOSITION_FIELDS } from "../(workspace)/value-proposition/fields";
 import FileUpload from "@/components/FileUpload";
 import RichTextEditor from "@/components/RichTextEditor";
 import GuideStepIndicator from "@/components/GuideStepIndicator";
@@ -38,10 +40,11 @@ interface Props {
   initialSdgGoals: number[];
   completedKeys: string[];
   leanCanvas: LeanCanvas | null;
+  valueProposition: ValueProposition | null;
   hasInvitedSomeone: boolean;
 }
 
-// The full idea-phase guide, all 5 steps navigable in either direction —
+// The full idea-phase guide, all 6 steps navigable in either direction —
 // step 1 ("Beskriv projektet") both creates the Project on /projects/new
 // and can be revisited/edited here afterward via updateIdeaDetails.
 export default function IdeaGuide({
@@ -56,6 +59,7 @@ export default function IdeaGuide({
   initialSdgGoals,
   completedKeys,
   leanCanvas,
+  valueProposition,
   hasInvitedSomeone,
 }: Props) {
   const t = useTranslations("IdeaGuide");
@@ -134,11 +138,20 @@ export default function IdeaGuide({
     });
   }
 
+  function handleValuePropositionNext() {
+    const hasContent = VALUE_PROPOSITION_FIELDS.some((f) => valueProposition?.[f]?.trim());
+    startTransition(async () => {
+      await completeIdeaGuideStep(slug, "value_proposition_created", hasContent);
+      markDone("value_proposition_created", hasContent);
+      setStep(4);
+    });
+  }
+
   function handleFeedbackNext() {
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "peer_feedback_requested", invitedSomeone);
       markDone("peer_feedback_requested", invitedSomeone);
-      setStep(4);
+      setStep(5);
     });
   }
 
@@ -353,8 +366,31 @@ export default function IdeaGuide({
         </div>
       </div>
 
-      {/* Step 4 — Bjud in vänner */}
-      <div className={step === 3 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
+      {/* Step 4 — Värdeerbjudande (kept full-width, like Lean Canvas, so its
+          2-column layout has room to sit side by side) */}
+      <div className={step === 3 ? "flex flex-col gap-5" : "hidden"}>
+        <div className="max-w-3xl">
+          <label className="block text-sm font-medium text-dark-slate mb-1">{t("valuePropositionLabel")}</label>
+          <p className="text-xs text-dark-slate/50 mb-3">
+            {t("valuePropositionHint")}
+          </p>
+        </div>
+        <ValuePropositionGrid projectSlug={slug} canvas={valueProposition} canEdit />
+        <div className="flex justify-between pt-2">
+          <button type="button" onClick={() => setStep(2)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={handleValuePropositionNext}
+            className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            {isPending ? t("saving") : t("next")}
+          </button>
+        </div>
+      </div>
+
+      {/* Step 5 — Bjud in vänner */}
+      <div className={step === 4 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div className="rounded-xl border border-seagrass/20 bg-seagrass/5 p-5">
           <label className="block text-base font-semibold text-dark-slate mb-1">
             {t("inviteFriendsLabel")}
@@ -370,7 +406,7 @@ export default function IdeaGuide({
           />
         </div>
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(2)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button type="button" onClick={() => setStep(3)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
             type="button"
             disabled={isPending}
@@ -382,8 +418,8 @@ export default function IdeaGuide({
         </div>
       </div>
 
-      {/* Step 5 — Sprint */}
-      <div className={step === 4 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
+      {/* Step 6 — Sprint */}
+      <div className={step === 5 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div>
           <label className="block text-sm font-medium text-dark-slate mb-1">{t("sprintLabel")}</label>
           <p className="text-xs text-dark-slate/50 mb-4">
@@ -419,7 +455,7 @@ export default function IdeaGuide({
           </div>
         </div>
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(3)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button type="button" onClick={() => setStep(4)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
             type="button"
             disabled={isPending}

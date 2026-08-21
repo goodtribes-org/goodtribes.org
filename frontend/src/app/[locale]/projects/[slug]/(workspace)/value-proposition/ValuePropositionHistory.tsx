@@ -2,40 +2,33 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { getLeanCanvasHistory } from "./actions";
-import type { LeanCanvasField } from "./fields";
+import { getValuePropositionHistory } from "./actions";
+import type { ValuePropositionField } from "./fields";
 
 type Version = {
   id: string;
   createdAt: Date;
   savedBy: { name: string | null } | null;
-} & Record<LeanCanvasField, string | null>;
+} & Record<ValuePropositionField, string | null>;
 
 function formatDate(d: Date) {
   return new Date(d).toLocaleString("sv-SE", { dateStyle: "medium", timeStyle: "short" });
 }
 
-export default function LeanCanvasHistory({ projectSlug }: { projectSlug: string }) {
-  const t = useTranslations("LeanCanvasHistory");
+export default function ValuePropositionHistory({ projectSlug }: { projectSlug: string }) {
+  const t = useTranslations("ValuePropositionHistory");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [versions, setVersions] = useState<Version[] | null>(null);
   const [selected, setSelected] = useState<Version | null>(null);
 
-  const FIELD_LABELS: Record<LeanCanvasField, string> = {
-    problem: t("fieldProblem"),
-    alternatives: t("fieldAlternatives"),
-    customerSegments: t("fieldCustomerSegments"),
-    earlyAdopters: t("fieldEarlyAdopters"),
-    uniqueValueProposition: t("fieldUniqueValueProposition"),
-    concept: t("fieldConcept"),
-    solution: t("fieldSolution"),
-    channels: t("fieldChannels"),
-    revenueStreams: t("fieldRevenueStreams"),
-    costStructure: t("fieldCostStructure"),
-    impact: t("fieldImpact"),
-    keyMetrics: t("fieldKeyMetrics"),
-    unfairAdvantage: t("fieldUnfairAdvantage"),
+  const FIELD_LABELS: Record<ValuePropositionField, string> = {
+    vpProducts: t("fieldProducts"),
+    vpRelievers: t("fieldRelievers"),
+    vpCreators: t("fieldCreators"),
+    vpJobs: t("fieldJobs"),
+    vpPains: t("fieldPains"),
+    vpGains: t("fieldGains"),
   };
 
   async function handleOpen() {
@@ -43,7 +36,7 @@ export default function LeanCanvasHistory({ projectSlug }: { projectSlug: string
     setSelected(null);
     if (versions) return;
     setLoading(true);
-    const data = await getLeanCanvasHistory(projectSlug);
+    const data = await getValuePropositionHistory(projectSlug);
     setVersions(data as Version[]);
     setLoading(false);
   }
@@ -107,7 +100,7 @@ export default function LeanCanvasHistory({ projectSlug }: { projectSlug: string
                   {t("savedByReadOnly", { name: selected.savedBy?.name ?? t("unknownUser") })}
                 </p>
                 <div className="space-y-3">
-                  {(Object.keys(FIELD_LABELS) as LeanCanvasField[]).map((field) => (
+                  {(Object.keys(FIELD_LABELS) as ValuePropositionField[]).map((field) => (
                     <div key={field}>
                       <h3 className="text-xs font-bold text-dark-slate uppercase tracking-wide">{FIELD_LABELS[field]}</h3>
                       <p className="text-sm text-dark-slate/80 whitespace-pre-wrap mt-0.5">

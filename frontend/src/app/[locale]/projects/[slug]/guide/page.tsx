@@ -20,6 +20,7 @@ export default async function IdeaGuidePage({
       members: { where: { userId: session.user.id } },
       checklistItems: { where: { completedAt: { not: null } }, select: { itemKey: true } },
       leanCanvas: true,
+      valueProposition: true,
     },
   });
   if (!project) redirect("/projects");
@@ -58,6 +59,7 @@ export default async function IdeaGuidePage({
         initialSdgGoals={project.sdgGoals}
         completedKeys={project.checklistItems.map((c) => c.itemKey)}
         leanCanvas={project.leanCanvas}
+        valueProposition={project.valueProposition}
         hasInvitedSomeone={hasInvitedSomeone}
       />
     </div>

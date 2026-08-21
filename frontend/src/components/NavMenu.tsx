@@ -63,6 +63,7 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
               <a href="/projects/new" onClick={navLink("/projects/new", () => setCreate(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createNewProject")}</a>
               <a href="/ideas/new" onClick={navLink("/ideas/new", () => setCreate(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createNewIdea")}</a>
               <a href="/lean-canvas/new" onClick={navLink("/lean-canvas/new", () => setCreate(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createLeanCanvas")}</a>
+              <a href="/value-proposition/new" onClick={navLink("/value-proposition/new", () => setCreate(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createValueProposition")}</a>
               <a href="/whiteboard/new" onClick={navLink("/whiteboard/new", () => setCreate(false))} className="block px-4 py-2 text-dark-slate/70 hover:text-seagrass hover:bg-dry-sage/20">{t("createWhiteboard")}</a>
             </div>
           )}
@@ -134,6 +135,7 @@ export default function NavMenu({ session, onSignOut, onNavigate, t, tAccount }:
             <a href="/projects/new" onClick={navLink("/projects/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewProject")}</a>
             <a href="/ideas/new" onClick={navLink("/ideas/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createNewIdea")}</a>
             <a href="/lean-canvas/new" onClick={navLink("/lean-canvas/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createLeanCanvas")}</a>
+            <a href="/value-proposition/new" onClick={navLink("/value-proposition/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createValueProposition")}</a>
             <a href="/whiteboard/new" onClick={navLink("/whiteboard/new", () => setOpen(false))} className="py-2.5 pl-3 text-dark-slate/70 hover:text-seagrass border-b border-muted-teal/20">{t("createWhiteboard")}</a>
 
             <p className="pt-3 pb-1 text-xs font-semibold text-dark-slate/40 uppercase tracking-widest">{t("discover")}</p>

@@ -85,6 +85,7 @@ export default async function SandboxPage({
   const tHeroPhotoStack = await getTranslations({ locale, namespace: "HeroPhotoStack" });
   const tLeanCanvas = await getTranslations({ locale, namespace: "LeanCanvasDraftPage" });
   const tWhiteboard = await getTranslations({ locale, namespace: "WhiteboardDraftPage" });
+  const tValueProposition = await getTranslations({ locale, namespace: "ValuePropositionDraftPage" });
   const { sort: sortParam, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
@@ -169,7 +170,7 @@ export default async function SandboxPage({
   // anonymous visitors to /login entirely, so previews here only fetch (and
   // only show) for a logged-in session too, rather than leaking draft
   // content to guests who couldn't open the linked page anyway.
-  const [leanCanvasCount, leanCanvasDrafts, whiteboardCount, whiteboardDrafts] = userId
+  const [leanCanvasCount, leanCanvasDrafts, whiteboardCount, whiteboardDrafts, valuePropositionCount, valuePropositionDrafts] = userId
     ? await Promise.all([
         prisma.leanCanvasDraft.count({ where: { promotedToProjectSlug: null } }),
         prisma.leanCanvasDraft.findMany({
@@ -185,8 +186,15 @@ export default async function SandboxPage({
           take: DRAFT_PREVIEW_SIZE,
           include: { owner: { select: { name: true } } },
         }),
+        prisma.valuePropositionDraft.count({ where: { promotedToProjectSlug: null } }),
+        prisma.valuePropositionDraft.findMany({
+          where: { promotedToProjectSlug: null },
+          orderBy: { updatedAt: "desc" },
+          take: DRAFT_PREVIEW_SIZE,
+          include: { owner: { select: { name: true } } },
+        }),
       ])
-    : [0, [], 0, []];
+    : [0, [], 0, [], 0, []];
 
   const totalRaised = pledgeSum._sum.amount ?? 0;
   const completedTasks = completedCards + completedSubtasks;
@@ -310,7 +318,7 @@ export default async function SandboxPage({
       </section>
 
       {userId && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
           <section id="lean-canvas">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-dark-slate">
@@ -386,6 +394,48 @@ export default async function SandboxPage({
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <p className="text-xs text-dark-slate/40 whitespace-nowrap">{tWhiteboard("listStartedBy", { name: d.owner.name ?? tWhiteboard("unknownAuthor") })}</p>
                       <span className="text-[11px] text-dark-slate/40 whitespace-nowrap">{draftTimeAgo(d.updatedAt, tWhiteboard)}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section id="value-proposition">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-dark-slate">
+                {t("exploreValuePropositionHeading")} <span className="text-dark-slate/40 font-normal">({valuePropositionCount})</span>
+              </h2>
+              <Link href="/value-proposition" className="text-xs text-coral hover:underline">
+                {t("seeAllValuePropositionLink")}
+              </Link>
+            </div>
+            {valuePropositionDrafts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <p className="text-dark-slate/50 mb-4">{tValueProposition("listEmptyState")}</p>
+                <Link href="/value-proposition/new" className="text-coral hover:underline text-sm">
+                  {tValueProposition("listStartFirst")}
+                </Link>
+              </div>
+            ) : (
+              <div className="flex flex-col rounded-lg border border-muted-teal/40 bg-white divide-y divide-muted-teal/20 overflow-hidden">
+                {valuePropositionDrafts.map((d) => (
+                  <Link
+                    key={d.id}
+                    href={`/value-proposition/${d.id}`}
+                    className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-muted-teal/5 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="inline-block flex-shrink-0 text-[10px] font-semibold uppercase tracking-wide text-coral bg-coral/10 rounded px-2 py-0.5">
+                        {tValueProposition("cardBadge")}
+                      </span>
+                      <p className="text-sm font-medium text-dark-slate truncate">
+                        {d.name || d.vpJobs?.slice(0, 80) || tValueProposition("listStartedBy", { name: d.owner.name ?? tValueProposition("unknownAuthor") })}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <p className="text-xs text-dark-slate/40 whitespace-nowrap">{tValueProposition("listStartedBy", { name: d.owner.name ?? tValueProposition("unknownAuthor") })}</p>
+                      <span className="text-[11px] text-dark-slate/40 whitespace-nowrap">{draftTimeAgo(d.updatedAt, tValueProposition)}</span>
                     </div>
                   </Link>
                 ))}

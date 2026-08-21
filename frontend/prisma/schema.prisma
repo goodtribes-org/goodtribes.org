@@ -179,6 +179,9 @@ model User {
   leanCanvasComments      LeanCanvasComment[]        @relation("LeanCanvasCommentAuthor")
   leanCanvasVersionsSaved LeanCanvasVersion[]        @relation("LeanCanvasVersionSavedBy")
   leanCanvasDrafts        LeanCanvasDraft[]          @relation("LeanCanvasDraftOwner")
+  valuePropositionEdits         ValueProposition[]        @relation("ValuePropositionUpdatedBy")
+  valuePropositionVersionsSaved ValuePropositionVersion[] @relation("ValuePropositionVersionSavedBy")
+  valuePropositionDrafts        ValuePropositionDraft[]   @relation("ValuePropositionDraftOwner")
   whiteboardDrafts        WhiteboardDraft[]          @relation("WhiteboardDraftOwner")
   contentFlagsRaised     ContentFlag[]               @relation("ContentFlaggedBy")
   contentFlagReviews     ContentFlag[]               @relation("ContentFlagReviewer")
@@ -723,6 +726,9 @@ model Project {
   leanCanvasVersions LeanCanvasVersion[]  @relation("ProjectLeanCanvasVersions")
   promotedFromLeanCanvasDraft LeanCanvasDraft? @relation("LeanCanvasDraftPromotedToProject")
   promotedFromWhiteboardDraft WhiteboardDraft? @relation("WhiteboardDraftPromotedToProject")
+  valueProposition         ValueProposition?         @relation("ProjectValueProposition")
+  valuePropositionVersions ValuePropositionVersion[] @relation("ProjectValuePropositionVersions")
+  promotedFromValuePropositionDraft ValuePropositionDraft? @relation("ValuePropositionDraftPromotedToProject")
   parentInstances    ProjectInstance[]    @relation("ParentInstances")
   childInstance      ProjectInstance?     @relation("ChildInstance")
   alumni             ProjectAlumni[]      @relation("ProjectAlumni")
@@ -1919,15 +1925,6 @@ model LeanCanvas {
   customerSegments       String?   @db.Text
   earlyAdopters          String?   @db.Text
   uniqueValueProposition String?   @db.Text
-  // Value Proposition Canvas (Osterwalder) — replaces uniqueValueProposition's
-  // single free-text field with 6 structured ones. uniqueValueProposition is
-  // kept as a read-only fallback for canvases saved before this existed.
-  vpJobs                 String?   @db.Text
-  vpPains                String?   @db.Text
-  vpGains                String?   @db.Text
-  vpProducts             String?   @db.Text
-  vpRelievers            String?   @db.Text
-  vpCreators             String?   @db.Text
   concept                String?   @db.Text
   solution               String?   @db.Text
   channels               String?   @db.Text
@@ -1954,12 +1951,6 @@ model LeanCanvasVersion {
   customerSegments       String?   @db.Text
   earlyAdopters          String?   @db.Text
   uniqueValueProposition String?   @db.Text
-  vpJobs                 String?   @db.Text
-  vpPains                String?   @db.Text
-  vpGains                String?   @db.Text
-  vpProducts             String?   @db.Text
-  vpRelievers            String?   @db.Text
-  vpCreators             String?   @db.Text
   concept                String?   @db.Text
   solution               String?   @db.Text
   channels               String?   @db.Text
@@ -1991,7 +1982,7 @@ model LeanCanvasComment {
   @@index([projectSlug])
 }
 
-// A project-less scratchpad, same 18 fields as LeanCanvas — lets a user try
+// A project-less scratchpad, same 12 fields as LeanCanvas — lets a user try
 // the tool from Sandbox before any Project exists. No version history or
 // comments (deliberately lighter-weight than the real thing). Once promoted,
 // promotedToProjectSlug is set and the draft becomes read-only; the real
@@ -2006,12 +1997,6 @@ model LeanCanvasDraft {
   customerSegments       String?   @db.Text
   earlyAdopters          String?   @db.Text
   uniqueValueProposition String?   @db.Text
-  vpJobs                 String?   @db.Text
-  vpPains                String?   @db.Text
-  vpGains                String?   @db.Text
-  vpProducts             String?   @db.Text
-  vpRelievers            String?   @db.Text
-  vpCreators             String?   @db.Text
   concept                String?   @db.Text
   solution               String?   @db.Text
   channels               String?   @db.Text
@@ -2024,6 +2009,63 @@ model LeanCanvasDraft {
   promotedToProject      Project?  @relation("LeanCanvasDraftPromotedToProject", fields: [promotedToProjectSlug], references: [slug], onDelete: SetNull)
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
+
+  @@index([ownerId])
+}
+
+// Value Proposition Canvas (Osterwalder) — a standalone tool alongside Lean
+// Canvas and Whiteboard, same 3-model shape (live row + append-only version
+// history + project-less sandbox draft), just 6 fields split into two
+// halves: Value Map (vpProducts/vpRelievers/vpCreators) and Customer Profile
+// (vpJobs/vpPains/vpGains).
+model ValueProposition {
+  id          String    @id @default(cuid())
+  projectSlug String    @unique
+  project     Project   @relation("ProjectValueProposition", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  vpJobs      String?   @db.Text
+  vpPains     String?   @db.Text
+  vpGains     String?   @db.Text
+  vpProducts  String?   @db.Text
+  vpRelievers String?   @db.Text
+  vpCreators  String?   @db.Text
+  updatedById String?
+  updatedBy   User?     @relation("ValuePropositionUpdatedBy", fields: [updatedById], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ValuePropositionVersion {
+  id          String    @id @default(cuid())
+  projectSlug String
+  project     Project   @relation("ProjectValuePropositionVersions", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  vpJobs      String?   @db.Text
+  vpPains     String?   @db.Text
+  vpGains     String?   @db.Text
+  vpProducts  String?   @db.Text
+  vpRelievers String?   @db.Text
+  vpCreators  String?   @db.Text
+  savedById   String?
+  savedBy     User?     @relation("ValuePropositionVersionSavedBy", fields: [savedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+
+  @@index([projectSlug, createdAt])
+}
+
+model ValuePropositionDraft {
+  id                    String    @id @default(cuid())
+  ownerId               String
+  owner                 User      @relation("ValuePropositionDraftOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  name                  String?
+  vpJobs                String?   @db.Text
+  vpPains               String?   @db.Text
+  vpGains               String?   @db.Text
+  vpProducts            String?   @db.Text
+  vpRelievers           String?   @db.Text
+  vpCreators            String?   @db.Text
+  promotedToProjectSlug String?   @unique
+  promotedToProject     Project?  @relation("ValuePropositionDraftPromotedToProject", fields: [promotedToProjectSlug], references: [slug], onDelete: SetNull)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   @@index([ownerId])
 }

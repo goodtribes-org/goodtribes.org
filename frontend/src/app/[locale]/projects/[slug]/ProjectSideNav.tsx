@@ -30,6 +30,7 @@ import {
   Users,
   ChevronDown,
   Rocket,
+  Gem,
   type LucideIcon,
 } from "lucide-react";
 
@@ -46,6 +47,7 @@ function buildMainItems(t: ReturnType<typeof useTranslations>): NavItem[] {
     { label: t("navWiki"),       href: "/wiki",      icon: BookOpen },
     { label: t("navIdeaWorkshop"), href: "/idea-sessions", icon: Lightbulb },
     { label: t("navLeanCanvas"), href: "/lean-canvas",   icon: LayoutGrid },
+    { label: t("navValueProposition"), href: "/value-proposition", icon: Gem },
     { label: t("navDesignSprints"), href: "/sprints",    icon: Rocket },
   ];
 }
