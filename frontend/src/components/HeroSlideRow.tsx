@@ -43,7 +43,7 @@ export default function HeroSlideRow({
           in ett par tior pixlar av textrutan under bildrutans kant, som ett
           par foton slarvigt lagda ovanpå varandra. */}
       <div
-        className="relative z-20 w-full md:max-w-[620px] md:aspect-[16/10]"
+        className="relative z-20 w-full md:max-w-[620px] aspect-[16/10]"
         style={{
           transform: `rotate(${tilt.rotate}deg) translate(${tilt.x}px, ${tilt.y}px)`,
         }}
