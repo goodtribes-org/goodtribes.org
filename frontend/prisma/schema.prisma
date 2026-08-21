@@ -98,131 +98,131 @@ model User {
   accounts      Account[]
   sessions      Session[]
 
-  ownedOrganisations             Organisation[]               @relation("OwnedOrganisations")
-  organisationMemberships        OrganisationMember[]         @relation("OrganisationMemberships")
-  joinRequests                   OrganisationJoinRequest[]    @relation("JoinRequests")
-  skills                         UserSkill[]
-  createdTasks                   WorkspaceTask[]              @relation("CreatedTasks")
-  files                          File[]                       @relation("OwnedFiles")
-  createdKanbanCards             KanbanCard[]                 @relation("CreatedKanbanCards")
-  createdTodoLists               TodoList[]                   @relation("CreatedTodoLists")
-  createdTodoItems               TodoItem[]                   @relation("CreatedTodoItems")
-  ownedProjects                  Project[]                    @relation("OwnedProjects")
-  projectMemberships             ProjectMember[]              @relation("ProjectMemberships")
-  projectJoinRequests            ProjectJoinRequest[]         @relation("ProjectJoinRequests")
-  authoredIdeas                  Idea[]                       @relation("AuthoredIdeas")
-  ideaVotes                      IdeaVote[]                   @relation("IdeaVotes")
-  ideaEndorsements               IdeaEndorsement[]            @relation("IdeaEndorsements")
-  ideaFollowers                  IdeaFollower[]               @relation("IdeaFollowers")
-  authoredIdeaComments           IdeaComment[]                @relation("AuthoredIdeaComments")
-  authoredBlogPosts              BlogPost[]                   @relation("AuthoredBlogPosts")
-  notifications                  Notification[]               @relation("UserNotifications")
-  assignedKanbanCards            KanbanCard[]                 @relation("AssignedKanbanCards")
-  createdMilestones              Milestone[]                  @relation("MilestoneCreatedBy")
-  activityEvents                 ActivityEvent[]              @relation("ActivityEvents")
-  createdProjectInvites          ProjectInvite[]              @relation("CreatedProjectInvites")
-  createdWikiPages               WikiPage[]                   @relation("WikiPageCreatedBy")
-  updatedWikiPages               WikiPage[]                   @relation("WikiPageUpdatedBy")
-  updatedSitePages               SitePage[]                   @relation("SitePageUpdatedBy")
-  createdOrgInvites              OrgInvite[]                  @relation("CreatedOrgInvites")
-  fundingPledges                 FundingPledge[]              @relation("FundingPledges")
-  calendarEvents                 CalendarEvent[]              @relation("CreatedCalendarEvents")
-  completedSubtasks              KanbanCardSubtask[]          @relation("CompletedSubtasks")
-  tokenLedger                    TokenLedger[]                @relation("TokenLedger")
-  aiTaskReviews                  AiTaskReview[]               @relation("AiTaskReviews")
-  createdPolls                   Poll[]                       @relation("CreatedPolls")
-  pollVotes                      PollVote[]                   @relation("UserPollVotes")
-  sprintsCreated                 Sprint[]                     @relation("SprintsCreated")
-  sprintContributions            SprintContribution[]
-  sprintVotes                    SprintVote[]
-  sprintComments                 SprintComment[]
-  impactUpdates                  ImpactUpdate[]               @relation("ImpactUpdates")
-  verifiedImpactReports          ImpactReport[]               @relation("VerifiedImpactReports")
-  proposedIdeaRevisions          IdeaRevision[]               @relation("ProposedIdeaRevisions")
-  decidedIdeaRevisions           IdeaRevision[]               @relation("DecidedIdeaRevisions")
-  ideaContributions              IdeaContributor[]            @relation("IdeaContributions")
-  authoredSuggestions            Suggestion[]                 @relation("AuthoredSuggestions")
-  reviewedSuggestions            Suggestion[]                 @relation("SuggestionReviewer")
-  approvedInstances              ProjectInstance[]            @relation("ApprovedInstances")
-  alumni                         ProjectAlumni[]              @relation("AlumniUsers")
-  mentorProfile                  Mentor?                      @relation("MentorProfile")
-  authoredGuides                 AcademyGuide[]               @relation("GuideAuthor")
-  reviewedGuides                 AcademyGuide[]               @relation("GuideReviewer")
-  guideCompletions               UserGuideCompletion[]        @relation("GuideCompletions")
-  kudosSent                      Kudos[]                      @relation("KudosSent")
-  kudosReceived                  Kudos[]                      @relation("KudosReceived")
-  streaks                        UserStreak[]                 @relation("UserStreaks")
-  dreamPosts                     DreamWallPost[]              @relation("DreamPosts")
-  dreamReactions                 DreamWallReaction[]          @relation("DreamReactions")
-  projectFlags                   ProjectFlag[]                @relation("FlaggedBy")
-  flagReviews                    ProjectFlag[]                @relation("FlagReviewer")
-  ethicsReviews                  EthicsReview[]               @relation("EthicsReviewer")
-  kanbanComments                 KanbanCardComment[]          @relation("KanbanComments")
-  onboardingDone                 Boolean                      @default(false)
-  tourDismissedAt                DateTime?
+  ownedOrganisations      Organisation[]            @relation("OwnedOrganisations")
+  organisationMemberships OrganisationMember[]      @relation("OrganisationMemberships")
+  joinRequests            OrganisationJoinRequest[] @relation("JoinRequests")
+  skills                  UserSkill[]
+  createdTasks            WorkspaceTask[]           @relation("CreatedTasks")
+  files                   File[]                    @relation("OwnedFiles")
+  createdKanbanCards      KanbanCard[]              @relation("CreatedKanbanCards")
+  createdTodoLists        TodoList[]                @relation("CreatedTodoLists")
+  createdTodoItems        TodoItem[]                @relation("CreatedTodoItems")
+  ownedProjects           Project[]                 @relation("OwnedProjects")
+  projectMemberships      ProjectMember[]           @relation("ProjectMemberships")
+  projectJoinRequests     ProjectJoinRequest[]      @relation("ProjectJoinRequests")
+  authoredIdeas           Idea[]                    @relation("AuthoredIdeas")
+  ideaVotes               IdeaVote[]                @relation("IdeaVotes")
+  ideaEndorsements        IdeaEndorsement[]         @relation("IdeaEndorsements")
+  ideaFollowers           IdeaFollower[]            @relation("IdeaFollowers")
+  authoredIdeaComments    IdeaComment[]             @relation("AuthoredIdeaComments")
+  authoredBlogPosts       BlogPost[]                @relation("AuthoredBlogPosts")
+  notifications           Notification[]            @relation("UserNotifications")
+  assignedKanbanCards     KanbanCard[]              @relation("AssignedKanbanCards")
+  createdMilestones       Milestone[]               @relation("MilestoneCreatedBy")
+  activityEvents          ActivityEvent[]           @relation("ActivityEvents")
+  createdProjectInvites   ProjectInvite[]           @relation("CreatedProjectInvites")
+  createdWikiPages        WikiPage[]                @relation("WikiPageCreatedBy")
+  updatedWikiPages        WikiPage[]                @relation("WikiPageUpdatedBy")
+  updatedSitePages        SitePage[]                @relation("SitePageUpdatedBy")
+  createdOrgInvites       OrgInvite[]               @relation("CreatedOrgInvites")
+  fundingPledges          FundingPledge[]           @relation("FundingPledges")
+  calendarEvents          CalendarEvent[]           @relation("CreatedCalendarEvents")
+  completedSubtasks       KanbanCardSubtask[]       @relation("CompletedSubtasks")
+  tokenLedger             TokenLedger[]             @relation("TokenLedger")
+  aiTaskReviews           AiTaskReview[]            @relation("AiTaskReviews")
+  createdPolls            Poll[]                    @relation("CreatedPolls")
+  pollVotes               PollVote[]                @relation("UserPollVotes")
+  sprintsCreated          Sprint[]                  @relation("SprintsCreated")
+  sprintContributions     SprintContribution[]
+  sprintVotes             SprintVote[]
+  sprintComments          SprintComment[]
+  impactUpdates           ImpactUpdate[]            @relation("ImpactUpdates")
+  verifiedImpactReports   ImpactReport[]            @relation("VerifiedImpactReports")
+  proposedIdeaRevisions   IdeaRevision[]            @relation("ProposedIdeaRevisions")
+  decidedIdeaRevisions    IdeaRevision[]            @relation("DecidedIdeaRevisions")
+  ideaContributions       IdeaContributor[]         @relation("IdeaContributions")
+  authoredSuggestions     Suggestion[]              @relation("AuthoredSuggestions")
+  reviewedSuggestions     Suggestion[]              @relation("SuggestionReviewer")
+  approvedInstances       ProjectInstance[]         @relation("ApprovedInstances")
+  alumni                  ProjectAlumni[]           @relation("AlumniUsers")
+  mentorProfile           Mentor?                   @relation("MentorProfile")
+  authoredGuides          AcademyGuide[]            @relation("GuideAuthor")
+  reviewedGuides          AcademyGuide[]            @relation("GuideReviewer")
+  guideCompletions        UserGuideCompletion[]     @relation("GuideCompletions")
+  kudosSent               Kudos[]                   @relation("KudosSent")
+  kudosReceived           Kudos[]                   @relation("KudosReceived")
+  streaks                 UserStreak[]              @relation("UserStreaks")
+  dreamPosts              DreamWallPost[]           @relation("DreamPosts")
+  dreamReactions          DreamWallReaction[]       @relation("DreamReactions")
+  projectFlags            ProjectFlag[]             @relation("FlaggedBy")
+  flagReviews             ProjectFlag[]             @relation("FlagReviewer")
+  ethicsReviews           EthicsReview[]            @relation("EthicsReviewer")
+  kanbanComments          KanbanCardComment[]       @relation("KanbanComments")
+  onboardingDone          Boolean                   @default(false)
+  tourDismissedAt         DateTime?
   // Null means not yet accepted — checked at signup time (see SignupForm.tsx)
   // and, for accounts predating this consent requirement, via a global gate
   // rendered in [locale]/layout.tsx whenever either is still null.
   acceptedParticipantAgreementAt DateTime?
   acceptedCodeOfConductAt        DateTime?
-  feedPosts                      FeedPost[]                   @relation("AuthoredFeedPosts")
-  feedLikes                      FeedLike[]                   @relation("FeedLikes")
-  feedComments                   FeedComment[]                @relation("AuthoredFeedComments")
-  roomParticipations             RoomParticipant[]            @relation("RoomParticipant")
-  sentMessages                   Message[]                    @relation("SentMessages")
-  messageReactions               MessageReaction[]            @relation("MessageReactions")
-  orgFlagsRaised                 OrganisationFlag[]           @relation("OrgFlaggedBy")
-  orgFlagReviews                 OrganisationFlag[]           @relation("OrgFlagReviewer")
-  orgEthicsReviews               OrganisationEthicsReview[]   @relation("OrgEthicsReviewer")
-  orgReviewsAuthored             OrganisationReview[]         @relation("OrgReviewAuthor")
-  leanCanvasEdits                LeanCanvas[]                 @relation("LeanCanvasUpdatedBy")
-  leanCanvasComments             LeanCanvasComment[]          @relation("LeanCanvasCommentAuthor")
-  leanCanvasVersionsSaved        LeanCanvasVersion[]          @relation("LeanCanvasVersionSavedBy")
-  leanCanvasDrafts               LeanCanvasDraft[]            @relation("LeanCanvasDraftOwner")
-  whiteboardDrafts               WhiteboardDraft[]            @relation("WhiteboardDraftOwner")
-  contentFlagsRaised             ContentFlag[]                @relation("ContentFlaggedBy")
-  contentFlagReviews             ContentFlag[]                @relation("ContentFlagReviewer")
-  priorityChanges                KanbanCardPriorityChange[]   @relation("PriorityChanges")
-  gtLedger                       GtLedger[]                   @relation("GtLedger")
-  phaseTransitions               PhaseTransition[]            @relation("PhaseTransitions")
-  completedChecklistItems        InitiativeChecklistItem[]    @relation("CompletedChecklistItems")
-  createdPlatformPolls           PlatformPoll[]               @relation("CreatedPlatformPolls")
-  platformPollCandidacies        PlatformPollOption[]         @relation("PlatformPollCandidacies")
-  platformPollVotes              PlatformPollVote[]           @relation("PlatformPollVotes")
-  reviewCouncilMemberships       ReviewCouncilMember[]        @relation("ReviewCouncilMemberships")
-  exclusionCasesReported         ExclusionCase[]              @relation("ReportedInExclusionCases")
-  exclusionCasesFiled            ExclusionCase[]              @relation("FiledExclusionCases")
-  exclusionCaseVotes             ExclusionCaseVote[]          @relation("ExclusionCaseVotes")
-  requestedLegalTypeChanges      LegalTypeChangeRequest[]     @relation("RequestedLegalTypeChanges")
-  executedLegalTypeChanges       LegalTypeChangeRequest[]     @relation("ExecutedLegalTypeChanges")
-  requestedSandboxGraduations    SandboxGraduationRequest[]   @relation("RequestedSandboxGraduations")
-  executedSandboxGraduations     SandboxGraduationRequest[]   @relation("ExecutedSandboxGraduations")
-  proposedProfitDistributions    ProfitDistributionProposal[] @relation("ProposedProfitDistributions")
-  executedProfitDistributions    ProfitDistributionProposal[] @relation("ExecutedProfitDistributions")
-  personalProfitAllocations      PersonalProfitAllocation[]
-  recordedImpactFundEntries      ImpactFundLedger[]           @relation("RecordedImpactFundEntries")
-  openedImpactFundRounds         ImpactFundAllocationRound[]  @relation("OpenedImpactFundRounds")
-  initiatedPartnerships          Partnership[]                @relation("PartnershipInitiatedBy")
-  respondedPartnerships          Partnership[]                @relation("PartnershipRespondedBy")
-  createdMindMaps                MindMap[]                    @relation("CreatedMindMaps")
-  projectOwnershipInterests      ProjectOwnershipInterest[]   @relation("ProjectOwnershipInterestUser")
-  createdShopItems               ShopItem[]                   @relation("ShopItemCreatedBy")
-  shopRedemptions                ShopRedemption[]             @relation("ShopRedemptions")
-  forkContributorCredits         ForkContributorCredit[]      @relation("ForkContributorCredits")
-  forkProfitSharesAsContributor  ForkProfitShare[]            @relation("ForkProfitShareContributor")
-  forkTokenGrantsAsContributor   ForkTokenGrant[]             @relation("ForkTokenGrantContributor")
-  forkTokenGrantsGiven           ForkTokenGrant[]             @relation("ForkTokenGrantsGivenBy")
+  feedPosts               FeedPost[]                @relation("AuthoredFeedPosts")
+  feedLikes               FeedLike[]                @relation("FeedLikes")
+  feedComments            FeedComment[]             @relation("AuthoredFeedComments")
+  roomParticipations      RoomParticipant[]         @relation("RoomParticipant")
+  sentMessages            Message[]                 @relation("SentMessages")
+  messageReactions        MessageReaction[]         @relation("MessageReactions")
+  orgFlagsRaised          OrganisationFlag[]         @relation("OrgFlaggedBy")
+  orgFlagReviews          OrganisationFlag[]         @relation("OrgFlagReviewer")
+  orgEthicsReviews        OrganisationEthicsReview[] @relation("OrgEthicsReviewer")
+  orgReviewsAuthored      OrganisationReview[]       @relation("OrgReviewAuthor")
+  leanCanvasEdits         LeanCanvas[]               @relation("LeanCanvasUpdatedBy")
+  leanCanvasComments      LeanCanvasComment[]        @relation("LeanCanvasCommentAuthor")
+  leanCanvasVersionsSaved LeanCanvasVersion[]        @relation("LeanCanvasVersionSavedBy")
+  leanCanvasDrafts        LeanCanvasDraft[]          @relation("LeanCanvasDraftOwner")
+  whiteboardDrafts        WhiteboardDraft[]          @relation("WhiteboardDraftOwner")
+  contentFlagsRaised     ContentFlag[]               @relation("ContentFlaggedBy")
+  contentFlagReviews     ContentFlag[]               @relation("ContentFlagReviewer")
+  priorityChanges        KanbanCardPriorityChange[]  @relation("PriorityChanges")
+  gtLedger               GtLedger[]                  @relation("GtLedger")
+  phaseTransitions       PhaseTransition[]           @relation("PhaseTransitions")
+  completedChecklistItems InitiativeChecklistItem[]  @relation("CompletedChecklistItems")
+  createdPlatformPolls   PlatformPoll[]              @relation("CreatedPlatformPolls")
+  platformPollCandidacies PlatformPollOption[]       @relation("PlatformPollCandidacies")
+  platformPollVotes      PlatformPollVote[]          @relation("PlatformPollVotes")
+  reviewCouncilMemberships ReviewCouncilMember[]      @relation("ReviewCouncilMemberships")
+  exclusionCasesReported  ExclusionCase[]             @relation("ReportedInExclusionCases")
+  exclusionCasesFiled     ExclusionCase[]             @relation("FiledExclusionCases")
+  exclusionCaseVotes      ExclusionCaseVote[]         @relation("ExclusionCaseVotes")
+  requestedLegalTypeChanges LegalTypeChangeRequest[]  @relation("RequestedLegalTypeChanges")
+  executedLegalTypeChanges  LegalTypeChangeRequest[]  @relation("ExecutedLegalTypeChanges")
+  requestedSandboxGraduations SandboxGraduationRequest[] @relation("RequestedSandboxGraduations")
+  executedSandboxGraduations SandboxGraduationRequest[] @relation("ExecutedSandboxGraduations")
+  proposedProfitDistributions ProfitDistributionProposal[] @relation("ProposedProfitDistributions")
+  executedProfitDistributions ProfitDistributionProposal[] @relation("ExecutedProfitDistributions")
+  personalProfitAllocations    PersonalProfitAllocation[]
+  recordedImpactFundEntries    ImpactFundLedger[]         @relation("RecordedImpactFundEntries")
+  openedImpactFundRounds       ImpactFundAllocationRound[] @relation("OpenedImpactFundRounds")
+  initiatedPartnerships        Partnership[]               @relation("PartnershipInitiatedBy")
+  respondedPartnerships        Partnership[]               @relation("PartnershipRespondedBy")
+  createdMindMaps              MindMap[]                   @relation("CreatedMindMaps")
+  projectOwnershipInterests    ProjectOwnershipInterest[]  @relation("ProjectOwnershipInterestUser")
+  createdShopItems             ShopItem[]                  @relation("ShopItemCreatedBy")
+  shopRedemptions               ShopRedemption[]           @relation("ShopRedemptions")
+  forkContributorCredits        ForkContributorCredit[]    @relation("ForkContributorCredits")
+  forkProfitSharesAsContributor ForkProfitShare[]          @relation("ForkProfitShareContributor")
+  forkTokenGrantsAsContributor  ForkTokenGrant[]           @relation("ForkTokenGrantContributor")
+  forkTokenGrantsGiven          ForkTokenGrant[]           @relation("ForkTokenGrantsGivenBy")
 }
 
 model Skill {
-  id            String              @id @default(cuid())
-  name          String              @unique
-  tag           String
-  description   String
-  slug          String              @unique
-  createdAt     DateTime            @default(now())
-  users         UserSkill[]
-  projects      ProjectSkill[]
+  id          String         @id @default(cuid())
+  name        String         @unique
+  tag         String
+  description String
+  slug        String         @unique
+  createdAt   DateTime       @default(now())
+  users       UserSkill[]
+  projects    ProjectSkill[]
   organisations OrganisationSkill[]
 }
 
@@ -239,34 +239,34 @@ model UserSkill {
 }
 
 model Organisation {
-  id              String    @id @default(cuid())
-  name            String
-  slug            String    @unique
-  description     String?
-  category        String?
-  country         String? // free text, normalized via lib/geo.ts — real geography signal for partnership matchmaking
-  imageUrl        String?
-  isPublic        Boolean   @default(true)
-  verified        Boolean   @default(false)
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  category    String?
+  country     String?  // free text, normalized via lib/geo.ts — real geography signal for partnership matchmaking
+  imageUrl    String?
+  isPublic    Boolean  @default(true)
+  verified    Boolean  @default(false)
   tourDismissedAt DateTime?
-  ownerId         String
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  owner          User                       @relation("OwnedOrganisations", fields: [ownerId], references: [id], onDelete: Cascade)
+  owner          User                      @relation("OwnedOrganisations", fields: [ownerId], references: [id], onDelete: Cascade)
   members        OrganisationMember[]
   joinRequests   OrganisationJoinRequest[]
-  rooms          Room[]                     @relation("OrgRooms")
-  workspaceTasks WorkspaceTask[]            @relation("OrgTasks")
+  rooms          Room[]                    @relation("OrgRooms")
+  workspaceTasks WorkspaceTask[]           @relation("OrgTasks")
   projects       Project[]
   invites        OrgInvite[]
   neededSkills   OrganisationSkill[]
-  flags          OrganisationFlag[]         @relation("OrganisationFlags")
+  flags          OrganisationFlag[]        @relation("OrganisationFlags")
   ethicsReviews  OrganisationEthicsReview[] @relation("OrganisationEthicsReviews")
-  reviews        OrganisationReview[]       @relation("OrganisationReviews")
-  files          File[]                     @relation("OrganisationFiles")
+  reviews        OrganisationReview[]      @relation("OrganisationReviews")
+  files          File[]                    @relation("OrganisationFiles")
   activityEvents ActivityEvent[]
-  partnerships   Partnership[]              @relation("OrganisationPartnerships")
+  partnerships   Partnership[]             @relation("OrganisationPartnerships")
 }
 
 model OrganisationFlag {
@@ -331,11 +331,11 @@ model OrganisationSkill {
 }
 
 model OrganisationMember {
-  id             String           @id @default(cuid())
+  id             String   @id @default(cuid())
   organisationId String
   userId         String
   role           OrganisationRole @default(MEMBER)
-  joinedAt       DateTime         @default(now())
+  joinedAt       DateTime @default(now())
 
   organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
   user         User         @relation("OrganisationMemberships", fields: [userId], references: [id], onDelete: Cascade)
@@ -426,24 +426,24 @@ model File {
 }
 
 model KanbanCard {
-  id               String    @id @default(cuid())
-  projectSlug      String
-  title            String
-  description      String?
-  dueDate          DateTime?
-  startDate        DateTime?
-  priority         String    @default("normal")
+  id          String    @id @default(cuid())
+  projectSlug String
+  title       String
+  description String?
+  dueDate     DateTime?
+  startDate   DateTime?
+  priority    String    @default("normal")
   priorityLockedAt DateTime?
   lockedTokenValue Float?
-  category         String?
-  assigneeId       String?
-  openToPublic     Boolean   @default(false)
-  claimedAt        DateTime?
-  column           String    @default("BACKLOG")
-  order            Int       @default(0)
-  createdById      String
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  category    String?
+  assigneeId  String?
+  openToPublic Boolean  @default(false)
+  claimedAt   DateTime?
+  column      String    @default("BACKLOG")
+  order       Int       @default(0)
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   // GitHub mirror. source="github" cards are owned by the sync job and are
   // immutable in the app — see assertNotGithubCard() in src/lib/githubSync.ts.
@@ -451,8 +451,8 @@ model KanbanCard {
   // ProjectV2 item node id — the identity key. A board spans repositories, so
   // githubNumber alone collides (deploy#5 vs goodtribes.org#5).
   githubItemId    String?
-  githubRepoName  String? // "owner/repo", null for draft issues
-  githubStatus    String? // raw board Status name, e.g. "apply"
+  githubRepoName  String?   // "owner/repo", null for draft issues
+  githubStatus    String?   // raw board Status name, e.g. "apply"
   githubNumber    Int?
   githubType      String?
   githubUrl       String?
@@ -598,14 +598,14 @@ model OnboardingStep {
 }
 
 model KanbanCardComment {
-  id           String             @id @default(cuid())
+  id           String     @id @default(cuid())
   cardId       String
-  card         KanbanCard         @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  card         KanbanCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
   authorId     String
-  author       User               @relation("KanbanComments", fields: [authorId], references: [id], onDelete: Cascade)
-  body         String             @db.Text
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  author       User       @relation("KanbanComments", fields: [authorId], references: [id], onDelete: Cascade)
+  body         String     @db.Text
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
   hiddenAt     DateTime?
   hiddenById   String?
   hiddenReason ContentHideReason?
@@ -650,103 +650,103 @@ model TodoItem {
 }
 
 model Project {
-  id                         String                    @id @default(cuid())
-  slug                       String                    @unique
-  title                      String
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
   // Short quoted tagline shown next to the title on the Startsidan/mini-hero
   // photo card caption (e.g. Storsjön "Låt odjuret leva" - 5/8-26) — set once
   // at creation via NewProjectGuide, optional, no edit UI yet.
-  slogan                     String?
-  summary                    String?
-  description                String?
-  phase                      ProjectPhase              @default(IDEA)
-  checklistDismissedAt       DateTime?
-  archivedAt                 DateTime?
+  slogan      String?
+  summary     String?
+  description String?
+  phase       ProjectPhase @default(IDEA)
+  checklistDismissedAt DateTime?
+  archivedAt  DateTime?
   // Sandbox — a real, fully-functional project, just flagged as an
   // experimental/playground one (see /sandbox). No separate "lift" step:
   // graduating out of sandbox is just flipping this back to false.
-  isSandbox                  Boolean                   @default(false)
+  isSandbox   Boolean  @default(false)
   // A founder-declared "looking for a new owner" flag — set explicitly by a
   // founder, never inferred from inactivity. While set, anyone logged in can
   // express interest in taking over; a founder/site-admin then picks one to
   // transfer ownership to via transferOwnership (see ownership-actions.ts).
-  abandonedAt                DateTime?
-  hiddenAt                   DateTime?
-  hiddenById                 String?
-  hiddenReason               ContentHideReason?
-  category                   String?
-  tags                       String[]
-  imageUrl                   String?
-  links                      String[]                  @default([])
-  sdgGoals                   Int[]
-  legalType                  LegalType                 @default(NONPROFIT_UMBRELLA)
+  abandonedAt DateTime?
+  hiddenAt    DateTime?
+  hiddenById  String?
+  hiddenReason ContentHideReason?
+  category    String?
+  tags        String[]
+  imageUrl    String?
+  links       String[] @default([])
+  sdgGoals    Int[]
+  legalType   LegalType @default(NONPROFIT_UMBRELLA)
   commercialUmbrellaEntityId String?
   commercialUmbrellaEntity   CommercialUmbrellaEntity? @relation(fields: [commercialUmbrellaEntityId], references: [id], onDelete: SetNull)
   // PRD 4f: a permissionless copy of this project, independent of
   // ProjectInstance's permissioned franchising model.
-  forkedFromProjectId        String?
-  forkedFromProject          Project?                  @relation("ProjectForks", fields: [forkedFromProjectId], references: [id], onDelete: SetNull)
-  forks                      Project[]                 @relation("ProjectForks")
-  ownerId                    String
-  orgId                      String?
-  createdAt                  DateTime                  @default(now())
-  updatedAt                  DateTime                  @updatedAt
+  forkedFromProjectId       String?
+  forkedFromProject         Project?  @relation("ProjectForks", fields: [forkedFromProjectId], references: [id], onDelete: SetNull)
+  forks                     Project[] @relation("ProjectForks")
+  ownerId     String
+  orgId       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  owner                       User                         @relation("OwnedProjects", fields: [ownerId], references: [id], onDelete: Cascade)
-  org                         Organisation?                @relation(fields: [orgId], references: [id])
-  members                     ProjectMember[]
-  joinRequests                ProjectJoinRequest[]
-  kanbanCards                 KanbanCard[]
-  todoLists                   TodoList[]
-  todoItems                   TodoItem[]
-  blogPosts                   BlogPost[]
-  milestones                  Milestone[]
-  activityEvents              ActivityEvent[]
-  invites                     ProjectInvite[]
-  wikiPages                   WikiPage[]
-  neededSkills                ProjectSkill[]
-  files                       File[]                       @relation("ProjectFiles")
-  feedPosts                   FeedPost[]
-  fundingCampaign             FundingCampaign?
-  rooms                       Room[]                       @relation("ProjectRooms")
-  calendarEvents              CalendarEvent[]              @relation("ProjectCalendarEvents")
-  tokenLedger                 TokenLedger[]                @relation("ProjectTokenLedger")
-  polls                       Poll[]                       @relation("ProjectPolls")
-  sprints                     Sprint[]                     @relation("ProjectSprints")
-  impactMetrics               ImpactMetric[]               @relation("ProjectImpactMetrics")
-  impactReports               ImpactReport[]               @relation("ProjectImpactReports")
-  promotedFromIdea            Idea?                        @relation("IdeaPromotedToProject")
-  maturity                    ProjectMaturity?             @relation("ProjectMaturity")
-  githubBoard                 ProjectGithubBoard?          @relation("ProjectGithubBoard")
-  leanCanvas                  LeanCanvas?                  @relation("ProjectLeanCanvas")
-  leanCanvasComments          LeanCanvasComment[]          @relation("ProjectLeanCanvasComments")
-  leanCanvasVersions          LeanCanvasVersion[]          @relation("ProjectLeanCanvasVersions")
-  promotedFromLeanCanvasDraft LeanCanvasDraft?             @relation("LeanCanvasDraftPromotedToProject")
-  promotedFromWhiteboardDraft WhiteboardDraft?             @relation("WhiteboardDraftPromotedToProject")
-  parentInstances             ProjectInstance[]            @relation("ParentInstances")
-  childInstance               ProjectInstance?             @relation("ChildInstance")
-  alumni                      ProjectAlumni[]              @relation("ProjectAlumni")
-  openForReplication          Boolean                      @default(false)
-  mentorships                 MentorshipRequest[]          @relation("ProjectMentorships")
-  kudos                       Kudos[]                      @relation("ProjectKudos")
-  streaks                     UserStreak[]                 @relation("ProjectStreaks")
-  flags                       ProjectFlag[]                @relation("ProjectFlags")
-  exclusionCases              ExclusionCase[]
-  legalTypeChangeRequests     LegalTypeChangeRequest[]
-  sandboxGraduationRequests   SandboxGraduationRequest[]
-  ethicsReviews               EthicsReview[]               @relation("EthicsReviews")
-  phaseTransitions            PhaseTransition[]
-  checklistItems              InitiativeChecklistItem[]
-  convertedFromRoom           Room?                        @relation("RoomConvertedToProject")
+  owner              User                 @relation("OwnedProjects", fields: [ownerId], references: [id], onDelete: Cascade)
+  org                Organisation?        @relation(fields: [orgId], references: [id])
+  members            ProjectMember[]
+  joinRequests       ProjectJoinRequest[]
+  kanbanCards        KanbanCard[]
+  todoLists          TodoList[]
+  todoItems          TodoItem[]
+  blogPosts          BlogPost[]
+  milestones         Milestone[]
+  activityEvents     ActivityEvent[]
+  invites            ProjectInvite[]
+  wikiPages          WikiPage[]
+  neededSkills       ProjectSkill[]
+  files              File[]               @relation("ProjectFiles")
+  feedPosts          FeedPost[]
+  fundingCampaign    FundingCampaign?
+  rooms              Room[]               @relation("ProjectRooms")
+  calendarEvents     CalendarEvent[]      @relation("ProjectCalendarEvents")
+  tokenLedger        TokenLedger[]        @relation("ProjectTokenLedger")
+  polls              Poll[]               @relation("ProjectPolls")
+  sprints            Sprint[]             @relation("ProjectSprints")
+  impactMetrics      ImpactMetric[]       @relation("ProjectImpactMetrics")
+  impactReports      ImpactReport[]       @relation("ProjectImpactReports")
+  promotedFromIdea   Idea?                @relation("IdeaPromotedToProject")
+  maturity           ProjectMaturity?     @relation("ProjectMaturity")
+  githubBoard        ProjectGithubBoard?  @relation("ProjectGithubBoard")
+  leanCanvas         LeanCanvas?          @relation("ProjectLeanCanvas")
+  leanCanvasComments LeanCanvasComment[]  @relation("ProjectLeanCanvasComments")
+  leanCanvasVersions LeanCanvasVersion[]  @relation("ProjectLeanCanvasVersions")
+  promotedFromLeanCanvasDraft LeanCanvasDraft? @relation("LeanCanvasDraftPromotedToProject")
+  promotedFromWhiteboardDraft WhiteboardDraft? @relation("WhiteboardDraftPromotedToProject")
+  parentInstances    ProjectInstance[]    @relation("ParentInstances")
+  childInstance      ProjectInstance?     @relation("ChildInstance")
+  alumni             ProjectAlumni[]      @relation("ProjectAlumni")
+  openForReplication Boolean              @default(false)
+  mentorships        MentorshipRequest[]  @relation("ProjectMentorships")
+  kudos              Kudos[]              @relation("ProjectKudos")
+  streaks            UserStreak[]         @relation("ProjectStreaks")
+  flags              ProjectFlag[]        @relation("ProjectFlags")
+  exclusionCases     ExclusionCase[]
+  legalTypeChangeRequests LegalTypeChangeRequest[]
+  sandboxGraduationRequests SandboxGraduationRequest[]
+  ethicsReviews      EthicsReview[]       @relation("EthicsReviews")
+  phaseTransitions   PhaseTransition[]
+  checklistItems     InitiativeChecklistItem[]
+  convertedFromRoom  Room?                @relation("RoomConvertedToProject")
   profitDistributionProposals ProfitDistributionProposal[]
   profitDistributions         ProfitDistribution[]
-  impactFundPayouts           ImpactFundLedger[]           @relation("ImpactFundPayouts")
-  impactFundPollOptions       PlatformPollOption[]         @relation("ImpactFundPollOptionProjects")
-  partnerships                Partnership[]                @relation("ProjectPartnerships")
-  forkProfitSharesReceived    ForkProfitShare[]            @relation("ForkProfitShareOriginalProject")
-  forkContributorCredits      ForkContributorCredit[]      @relation("ForkContributorCreditForkedProject")
-  forkProfitSharesGiven       ForkProfitShare[]            @relation("ForkProfitShareForkedProject")
-  forkTokenGrantsGiven        ForkTokenGrant[]             @relation("ForkTokenGrantForkedProject")
+  impactFundPayouts           ImpactFundLedger[]          @relation("ImpactFundPayouts")
+  impactFundPollOptions       PlatformPollOption[]        @relation("ImpactFundPollOptionProjects")
+  partnerships                Partnership[]               @relation("ProjectPartnerships")
+  forkProfitSharesReceived    ForkProfitShare[]           @relation("ForkProfitShareOriginalProject")
+  forkContributorCredits      ForkContributorCredit[]     @relation("ForkContributorCreditForkedProject")
+  forkProfitSharesGiven       ForkProfitShare[]           @relation("ForkProfitShareForkedProject")
+  forkTokenGrantsGiven        ForkTokenGrant[]            @relation("ForkTokenGrantForkedProject")
   ownershipInterests          ProjectOwnershipInterest[]
   translations                ProjectTranslation[]
 }
@@ -838,7 +838,7 @@ model InitiativeChecklistItem {
 }
 
 model Idea {
-  id             String             @id @default(cuid())
+  id             String   @id @default(cuid())
   title          String
   description    String?
   problem        String?
@@ -847,31 +847,31 @@ model Idea {
   category       String?
   tags           String[]
   imageUrl       String?
-  targetRegion   String             @default("global")
+  targetRegion   String   @default("global")
   estimatedReach Int?
-  status         String             @default("open")
-  viewCount      Int                @default(0)
+  status         String   @default("open")
+  viewCount      Int      @default(0)
   authorId       String
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
   hiddenAt       DateTime?
   hiddenById     String?
   hiddenReason   ContentHideReason?
 
-  author              User              @relation("AuthoredIdeas", fields: [authorId], references: [id], onDelete: Cascade)
-  votes               IdeaVote[]
-  endorsements        IdeaEndorsement[]
-  followers           IdeaFollower[]
-  comments            IdeaComment[]
-  convertedFromRoom   Room?             @relation("RoomConvertedToIdea")
-  mindMap             MindMap?
-  revisions           IdeaRevision[]
-  contributors        IdeaContributor[]
+  author           User              @relation("AuthoredIdeas", fields: [authorId], references: [id], onDelete: Cascade)
+  votes            IdeaVote[]
+  endorsements     IdeaEndorsement[]
+  followers        IdeaFollower[]
+  comments         IdeaComment[]
+  convertedFromRoom Room?            @relation("RoomConvertedToIdea")
+  mindMap          MindMap?
+  revisions        IdeaRevision[]
+  contributors     IdeaContributor[]
   // PRD 5.16 — one-click idea->project pipeline. Idea holds the unique FK
   // (same role Room plays for convertedToProjectId/convertedToIdeaId).
-  promotedToProjectId String?           @unique
-  promotedToProject   Project?          @relation("IdeaPromotedToProject", fields: [promotedToProjectId], references: [id], onDelete: SetNull)
-  translations        IdeaTranslation[]
+  promotedToProjectId String?  @unique
+  promotedToProject   Project? @relation("IdeaPromotedToProject", fields: [promotedToProjectId], references: [id], onDelete: SetNull)
+  translations         IdeaTranslation[]
 }
 
 // Per-locale override of title/description/problem/solution for an Idea.
@@ -916,13 +916,13 @@ model IdeaRevision {
 // revision was accepted. Endorsements/votes never populate this — only
 // actual accepted contributions do.
 model IdeaContributor {
-  id      String   @id @default(cuid())
-  ideaId  String
-  idea    Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
-  userId  String
-  user    User     @relation("IdeaContributions", fields: [userId], references: [id], onDelete: Cascade)
-  role    String   @default("contributor") // author | co-author
-  addedAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  ideaId    String
+  idea      Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation("IdeaContributions", fields: [userId], references: [id], onDelete: Cascade)
+  role      String   @default("contributor") // author | co-author
+  addedAt   DateTime @default(now())
 
   @@unique([ideaId, userId])
 }
@@ -975,8 +975,8 @@ model MindMap {
   ideaId      String?  @unique
   idea        Idea?    @relation(fields: [ideaId], references: [id], onDelete: Cascade)
   title       String
-  nodes       Json // react-flow Node[] shape: [{id, position: {x,y}, data: {label}}]
-  edges       Json // react-flow Edge[] shape: [{id, source, target, label?}]
+  nodes       Json     // react-flow Node[] shape: [{id, position: {x,y}, data: {label}}]
+  edges       Json     // react-flow Edge[] shape: [{id, source, target, label?}]
   createdById String
   createdBy   User     @relation("CreatedMindMaps", fields: [createdById], references: [id])
   createdAt   DateTime @default(now())
@@ -1027,11 +1027,11 @@ model Notification {
 }
 
 model IdeaComment {
-  id           String             @id @default(cuid())
+  id           String   @id @default(cuid())
   ideaId       String
   authorId     String
   content      String
-  createdAt    DateTime           @default(now())
+  createdAt    DateTime @default(now())
   hiddenAt     DateTime?
   hiddenById   String?
   hiddenReason ContentHideReason?
@@ -1051,8 +1051,8 @@ model Milestone {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  project   Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdBy User             @relation("MilestoneCreatedBy", fields: [createdById], references: [id])
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User    @relation("MilestoneCreatedBy", fields: [createdById], references: [id])
   expenses  FundingExpense[] @relation("ExpenseMilestone")
 }
 
@@ -1072,17 +1072,17 @@ model ProjectInvite {
 }
 
 model WikiPage {
-  id           String             @id @default(cuid())
+  id           String   @id @default(cuid())
   projectSlug  String
   slug         String
   title        String
-  content      String             @default("")
-  order        Int                @default(0)
+  content      String   @default("")
+  order        Int      @default(0)
   parentId     String?
   createdById  String
   updatedById  String?
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   hiddenAt     DateTime?
   hiddenById   String?
   hiddenReason ContentHideReason?
@@ -1099,28 +1099,28 @@ model WikiPage {
 }
 
 model OrgInvite {
-  id          String           @id @default(cuid())
+  id          String    @id @default(cuid())
   orgId       String
   email       String
-  token       String           @unique @default(cuid())
+  token       String    @unique @default(cuid())
   role        OrganisationRole @default(MEMBER)
   createdById String
   expiresAt   DateTime
   usedAt      DateTime?
-  createdAt   DateTime         @default(now())
+  createdAt   DateTime  @default(now())
 
   org       Organisation @relation(fields: [orgId], references: [id], onDelete: Cascade)
   createdBy User         @relation("CreatedOrgInvites", fields: [createdById], references: [id])
 }
 
 model ActivityEvent {
-  id             String   @id @default(cuid())
+  id             String        @id @default(cuid())
   projectId      String?
   organisationId String?
   userId         String
   type           String
   payload        Json?
-  createdAt      DateTime @default(now())
+  createdAt      DateTime      @default(now())
 
   project      Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   organisation Organisation? @relation(fields: [organisationId], references: [id], onDelete: Cascade)
@@ -1139,7 +1139,7 @@ model FundingCampaign {
   currency               String    @default("SEK")
   status                 String    @default("active")
   campaignType           String    @default("donation") // "donation" | "reward" | "token"
-  tokenExchangeRate      Float? // e.g. 100 -> "100 SEK = 1 Tribe Token"; only meaningful when campaignType == "token"
+  tokenExchangeRate      Float?    // e.g. 100 -> "100 SEK = 1 Tribe Token"; only meaningful when campaignType == "token"
   deadline               DateTime?
   platformFee            Float     @default(5)
   stripeAccountId        String?
@@ -1161,7 +1161,7 @@ model FundingPledge {
   stripeSessionId   String?  @unique
   pledgeStatus      String   @default("confirmed")
   rewardTierId      String?
-  paymentMethodType String? // mirrors PaymentIntent.payment_method_types[0], e.g. "card" | "klarna" | "bancontact"
+  paymentMethodType String?  // mirrors PaymentIntent.payment_method_types[0], e.g. "card" | "klarna" | "bancontact"
   tokenLedgerId     String?  @unique
   createdAt         DateTime @default(now())
 
@@ -1201,18 +1201,19 @@ model TaskEstimate {
   createdAt    DateTime   @default(now())
 }
 
+
 model TokenLedger {
-  id           String         @id @default(cuid())
+  id           String      @id @default(cuid())
   userId       String
-  user         User           @relation("TokenLedger", fields: [userId], references: [id])
+  user         User        @relation("TokenLedger", fields: [userId], references: [id])
   projectSlug  String
-  project      Project        @relation("ProjectTokenLedger", fields: [projectSlug], references: [slug])
+  project      Project     @relation("ProjectTokenLedger", fields: [projectSlug], references: [slug])
   kanbanCardId String?
-  kanbanCard   KanbanCard?    @relation("KanbanTokens", fields: [kanbanCardId], references: [id], onDelete: SetNull)
+  kanbanCard   KanbanCard? @relation("KanbanTokens", fields: [kanbanCardId], references: [id], onDelete: SetNull)
   tokens       Float
   reason       String
-  createdAt    DateTime       @default(now())
-  gtMirrors    GtLedger[]     @relation("GtLedgerSource")
+  createdAt    DateTime    @default(now())
+  gtMirrors    GtLedger[]  @relation("GtLedgerSource")
   pledgeMint   FundingPledge? @relation("PledgeTokenMint")
 
   @@index([userId])
@@ -1250,16 +1251,16 @@ model GtLedger {
 // a ShopRedemption row is logged. No fulfillment workflow (shipping, admin
 // approval) — that's a deliberate scope decision, not a gap.
 model ShopItem {
-  id          String           @id @default(cuid())
+  id          String   @id @default(cuid())
   name        String
-  description String?          @db.Text
+  description String?  @db.Text
   imageUrl    String?
   costGt      Float
-  active      Boolean          @default(true)
+  active      Boolean  @default(true)
   createdById String
-  createdBy   User             @relation("ShopItemCreatedBy", fields: [createdById], references: [id])
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdBy   User     @relation("ShopItemCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   redemptions ShopRedemption[]
 }
 
@@ -1409,17 +1410,17 @@ model Sprint {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
-  phases SprintPhase[]
+  phases            SprintPhase[]
 
   @@index([projectSlug])
 }
 
 model SprintPhase {
-  id            String            @id @default(cuid())
+  id            String                @id @default(cuid())
   sprintId      String
-  sprint        Sprint            @relation(fields: [sprintId], references: [id], onDelete: Cascade)
+  sprint        Sprint                @relation(fields: [sprintId], references: [id], onDelete: Cascade)
   phase         SprintPhaseName
-  status        SprintPhaseStatus @default(LOCKED)
+  status        SprintPhaseStatus     @default(LOCKED)
   openedAt      DateTime?
   deadlineAt    DateTime?
   closedAt      DateTime?
@@ -1428,9 +1429,9 @@ model SprintPhase {
   // Optimistic-locking counter for canvas autosave — bumped on every
   // successful write; a stale-version PATCH is rejected instead of
   // silently overwriting a concurrent async edit.
-  version       Int               @default(1)
+  version       Int                   @default(1)
   // Populated later when aiSummaryEnabled is true — see generatePhaseSummary().
-  aiSummary     String?           @db.Text
+  aiSummary     String?               @db.Text
 
   contributions SprintContribution[]
   votes         SprintVote[]
@@ -1454,8 +1455,8 @@ model SprintContribution {
   visibleAuthor Boolean                @default(false)
   createdAt     DateTime               @default(now())
 
-  votes    SprintVote[]
-  comments SprintComment[]
+  votes         SprintVote[]
+  comments      SprintComment[]
 
   @@index([sprintPhaseId])
 }
@@ -1482,16 +1483,16 @@ model SprintVote {
 }
 
 model SprintComment {
-  id             String             @id @default(cuid())
+  id             String              @id @default(cuid())
   contributionId String
-  contribution   SprintContribution @relation(fields: [contributionId], references: [id], onDelete: Cascade)
+  contribution   SprintContribution  @relation(fields: [contributionId], references: [id], onDelete: Cascade)
   authorId       String
-  author         User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author         User                @relation(fields: [authorId], references: [id], onDelete: Cascade)
   parentId       String?
-  parent         SprintComment?     @relation("SprintCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies        SprintComment[]    @relation("SprintCommentReplies")
-  body           String             @db.Text
-  createdAt      DateTime           @default(now())
+  parent         SprintComment?      @relation("SprintCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies        SprintComment[]     @relation("SprintCommentReplies")
+  body           String              @db.Text
+  createdAt      DateTime            @default(now())
 
   @@index([contributionId])
 }
@@ -1584,16 +1585,16 @@ model ProfitDistributionProposal {
 // The executed record of Steg 1 once the Foundation approves a proposal —
 // splits the audited profit into the three shares PRD 4a describes.
 model ProfitDistribution {
-  id                 String                     @id @default(cuid())
-  proposalId         String                     @unique
+  id                 String   @id @default(cuid())
+  proposalId         String   @unique
   proposal           ProfitDistributionProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
   projectId          String
-  project            Project                    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project            Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   auditedProfitSek   Int
   operationsShareSek Int
   impactFundShareSek Int
   remainingShareSek  Int
-  createdAt          DateTime                   @default(now())
+  createdAt          DateTime @default(now())
 
   allocations PersonalProfitAllocation[]
 
@@ -1606,16 +1607,16 @@ model ProfitDistribution {
 // null until the holder picks a recipient project, and stays null if the
 // deadline sweep (see /api/cron/impact-fund-sweep) defaults it to the fund.
 model PersonalProfitAllocation {
-  id                 String             @id @default(cuid())
+  id                 String    @id @default(cuid())
   distributionId     String
   distribution       ProfitDistribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)
   userId             String
-  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   amountAvailableSek Int
   allocationDeadline DateTime
   targetProjectSlug  String?
   processedAt        DateTime?
-  createdAt          DateTime           @default(now())
+  createdAt          DateTime  @default(now())
 
   @@index([userId])
   @@index([distributionId])
@@ -1628,7 +1629,7 @@ model PersonalProfitAllocation {
 // transparency page (PRD 5.51), recorded by whoever attested the movement.
 model ImpactFundLedger {
   id                    String   @id @default(cuid())
-  direction             String // "in" | "out"
+  direction             String   // "in" | "out"
   amountSek             Int
   relatedDistributionId String?
   relatedAllocationId   String?
@@ -1746,7 +1747,6 @@ model ExclusionCase {
   createdAt         DateTime  @default(now())
 
   votes ExclusionCaseVote[]
-
   @@index([reportedUserId])
   @@index([projectId])
 }
@@ -1808,8 +1808,8 @@ model Partnership {
   organisationId String
   type           String    @default("partner") // "sponsor" | "partner" | "supporter"
   description    String?
-  status         String    @default("pending") // "pending" | "active" | "declined" | "revoked"
-  proposedBy     String // "org" | "project" — who initiated, so the initiator can't also accept
+  status         String    @default("pending")  // "pending" | "active" | "declined" | "revoked"
+  proposedBy     String    // "org" | "project" — who initiated, so the initiator can't also accept
   initiatedById  String
   respondedById  String?
   respondedAt    DateTime?
@@ -1890,100 +1890,100 @@ model ProjectMaturity {
 // "Status" field is the source of truth for which column an item lands in — see
 // columnForStatus() in src/lib/githubColumnMap.ts.
 model ProjectGithubBoard {
-  id            String    @id @default(cuid())
-  projectSlug   String    @unique
-  project       Project   @relation("ProjectGithubBoard", fields: [projectSlug], references: [slug], onDelete: Cascade)
-  ownerLogin    String
-  ownerType     String    @default("organization") // "organization" | "user"
-  projectNumber Int
+  id             String    @id @default(cuid())
+  projectSlug    String    @unique
+  project        Project   @relation("ProjectGithubBoard", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  ownerLogin     String
+  ownerType      String    @default("organization") // "organization" | "user"
+  projectNumber  Int
   // Resolved on the first successful sync, so the UI can link out and offer the
   // board's real status list before anyone opens GitHub.
-  projectNodeId String?
-  projectTitle  String?
-  projectUrl    String?
-  statusOptions Json      @default("[]") // [{id,name}] in board order
-  columnMap     Json      @default("{}") // { "<status name>": "<COLUMN>" } — overrides only
-  enabled       Boolean   @default(true)
-  lastSyncedAt  DateTime?
-  lastSyncError String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  projectNodeId  String?
+  projectTitle   String?
+  projectUrl     String?
+  statusOptions  Json      @default("[]") // [{id,name}] in board order
+  columnMap      Json      @default("{}") // { "<status name>": "<COLUMN>" } — overrides only
+  enabled        Boolean   @default(true)
+  lastSyncedAt   DateTime?
+  lastSyncError  String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 model LeanCanvas {
-  id                     String   @id @default(cuid())
-  projectSlug            String   @unique
-  project                Project  @relation("ProjectLeanCanvas", fields: [projectSlug], references: [slug], onDelete: Cascade)
-  problem                String?  @db.Text
-  alternatives           String?  @db.Text
-  customerSegments       String?  @db.Text
-  earlyAdopters          String?  @db.Text
-  uniqueValueProposition String?  @db.Text
+  id                     String    @id @default(cuid())
+  projectSlug            String    @unique
+  project                Project   @relation("ProjectLeanCanvas", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  problem                String?   @db.Text
+  alternatives           String?   @db.Text
+  customerSegments       String?   @db.Text
+  earlyAdopters          String?   @db.Text
+  uniqueValueProposition String?   @db.Text
   // Value Proposition Canvas (Osterwalder) — replaces uniqueValueProposition's
   // single free-text field with 6 structured ones. uniqueValueProposition is
   // kept as a read-only fallback for canvases saved before this existed.
-  vpJobs                 String?  @db.Text
-  vpPains                String?  @db.Text
-  vpGains                String?  @db.Text
-  vpProducts             String?  @db.Text
-  vpRelievers            String?  @db.Text
-  vpCreators             String?  @db.Text
-  concept                String?  @db.Text
-  solution               String?  @db.Text
-  channels               String?  @db.Text
-  revenueStreams         String?  @db.Text
-  costStructure          String?  @db.Text
-  impact                 String?  @db.Text
-  keyMetrics             String?  @db.Text
-  unfairAdvantage        String?  @db.Text
+  vpJobs                 String?   @db.Text
+  vpPains                String?   @db.Text
+  vpGains                String?   @db.Text
+  vpProducts             String?   @db.Text
+  vpRelievers            String?   @db.Text
+  vpCreators             String?   @db.Text
+  concept                String?   @db.Text
+  solution               String?   @db.Text
+  channels               String?   @db.Text
+  revenueStreams         String?   @db.Text
+  costStructure          String?   @db.Text
+  impact                 String?   @db.Text
+  keyMetrics             String?   @db.Text
+  unfairAdvantage        String?   @db.Text
   updatedById            String?
-  updatedBy              User?    @relation("LeanCanvasUpdatedBy", fields: [updatedById], references: [id])
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  updatedBy              User?     @relation("LeanCanvasUpdatedBy", fields: [updatedById], references: [id])
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 }
 
 // A read-only snapshot of the full canvas, written every time any block is
 // saved — linear history alongside the single mutable "current" LeanCanvas
 // row, same shape as e.g. Google Docs version history.
 model LeanCanvasVersion {
-  id                     String   @id @default(cuid())
+  id                     String    @id @default(cuid())
   projectSlug            String
-  project                Project  @relation("ProjectLeanCanvasVersions", fields: [projectSlug], references: [slug], onDelete: Cascade)
-  problem                String?  @db.Text
-  alternatives           String?  @db.Text
-  customerSegments       String?  @db.Text
-  earlyAdopters          String?  @db.Text
-  uniqueValueProposition String?  @db.Text
-  vpJobs                 String?  @db.Text
-  vpPains                String?  @db.Text
-  vpGains                String?  @db.Text
-  vpProducts             String?  @db.Text
-  vpRelievers            String?  @db.Text
-  vpCreators             String?  @db.Text
-  concept                String?  @db.Text
-  solution               String?  @db.Text
-  channels               String?  @db.Text
-  revenueStreams         String?  @db.Text
-  costStructure          String?  @db.Text
-  impact                 String?  @db.Text
-  keyMetrics             String?  @db.Text
-  unfairAdvantage        String?  @db.Text
+  project                Project   @relation("ProjectLeanCanvasVersions", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  problem                String?   @db.Text
+  alternatives           String?   @db.Text
+  customerSegments       String?   @db.Text
+  earlyAdopters          String?   @db.Text
+  uniqueValueProposition String?   @db.Text
+  vpJobs                 String?   @db.Text
+  vpPains                String?   @db.Text
+  vpGains                String?   @db.Text
+  vpProducts             String?   @db.Text
+  vpRelievers            String?   @db.Text
+  vpCreators             String?   @db.Text
+  concept                String?   @db.Text
+  solution               String?   @db.Text
+  channels               String?   @db.Text
+  revenueStreams         String?   @db.Text
+  costStructure          String?   @db.Text
+  impact                 String?   @db.Text
+  keyMetrics             String?   @db.Text
+  unfairAdvantage        String?   @db.Text
   savedById              String?
-  savedBy                User?    @relation("LeanCanvasVersionSavedBy", fields: [savedById], references: [id], onDelete: SetNull)
-  createdAt              DateTime @default(now())
+  savedBy                User?     @relation("LeanCanvasVersionSavedBy", fields: [savedById], references: [id], onDelete: SetNull)
+  createdAt              DateTime  @default(now())
 
   @@index([projectSlug, createdAt])
 }
 
 model LeanCanvasComment {
-  id           String             @id @default(cuid())
+  id           String   @id @default(cuid())
   projectSlug  String
-  project      Project            @relation("ProjectLeanCanvasComments", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  project      Project  @relation("ProjectLeanCanvasComments", fields: [projectSlug], references: [slug], onDelete: Cascade)
   authorId     String
-  author       User               @relation("LeanCanvasCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  body         String             @db.Text
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  author       User     @relation("LeanCanvasCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  body         String   @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   hiddenAt     DateTime?
   hiddenById   String?
   hiddenReason ContentHideReason?
@@ -1997,33 +1997,33 @@ model LeanCanvasComment {
 // promotedToProjectSlug is set and the draft becomes read-only; the real
 // LeanCanvas row for that project gets a copy of the field values.
 model LeanCanvasDraft {
-  id                     String   @id @default(cuid())
+  id                     String    @id @default(cuid())
   ownerId                String
-  owner                  User     @relation("LeanCanvasDraftOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  owner                  User      @relation("LeanCanvasDraftOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   name                   String?
-  problem                String?  @db.Text
-  alternatives           String?  @db.Text
-  customerSegments       String?  @db.Text
-  earlyAdopters          String?  @db.Text
-  uniqueValueProposition String?  @db.Text
-  vpJobs                 String?  @db.Text
-  vpPains                String?  @db.Text
-  vpGains                String?  @db.Text
-  vpProducts             String?  @db.Text
-  vpRelievers            String?  @db.Text
-  vpCreators             String?  @db.Text
-  concept                String?  @db.Text
-  solution               String?  @db.Text
-  channels               String?  @db.Text
-  revenueStreams         String?  @db.Text
-  costStructure          String?  @db.Text
-  impact                 String?  @db.Text
-  keyMetrics             String?  @db.Text
-  unfairAdvantage        String?  @db.Text
-  promotedToProjectSlug  String?  @unique
-  promotedToProject      Project? @relation("LeanCanvasDraftPromotedToProject", fields: [promotedToProjectSlug], references: [slug], onDelete: SetNull)
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  problem                String?   @db.Text
+  alternatives           String?   @db.Text
+  customerSegments       String?   @db.Text
+  earlyAdopters          String?   @db.Text
+  uniqueValueProposition String?   @db.Text
+  vpJobs                 String?   @db.Text
+  vpPains                String?   @db.Text
+  vpGains                String?   @db.Text
+  vpProducts             String?   @db.Text
+  vpRelievers            String?   @db.Text
+  vpCreators             String?   @db.Text
+  concept                String?   @db.Text
+  solution               String?   @db.Text
+  channels               String?   @db.Text
+  revenueStreams         String?   @db.Text
+  costStructure          String?   @db.Text
+  impact                 String?   @db.Text
+  keyMetrics             String?   @db.Text
+  unfairAdvantage        String?   @db.Text
+  promotedToProjectSlug  String?   @unique
+  promotedToProject      Project?  @relation("LeanCanvasDraftPromotedToProject", fields: [promotedToProjectSlug], references: [slug], onDelete: SetNull)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   @@index([ownerId])
 }
@@ -2035,16 +2035,16 @@ model LeanCanvasDraft {
 // version mirrors SprintPhase's optimistic-lock counter. On promotion, the
 // documentState is copied into a real Sprint's first (UNDERSTAND) phase.
 model WhiteboardDraft {
-  id                    String   @id @default(cuid())
-  ownerId               String
-  owner                 User     @relation("WhiteboardDraftOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  name                  String?
-  documentState         Json?
-  version               Int      @default(1)
-  promotedToProjectSlug String?  @unique
-  promotedToProject     Project? @relation("WhiteboardDraftPromotedToProject", fields: [promotedToProjectSlug], references: [slug], onDelete: SetNull)
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id                     String    @id @default(cuid())
+  ownerId                String
+  owner                  User      @relation("WhiteboardDraftOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  name                   String?
+  documentState          Json?
+  version                Int       @default(1)
+  promotedToProjectSlug  String?   @unique
+  promotedToProject      Project?  @relation("WhiteboardDraftPromotedToProject", fields: [promotedToProjectSlug], references: [slug], onDelete: SetNull)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   @@index([ownerId])
 }
@@ -2056,7 +2056,7 @@ model ProjectInstance {
   childSlug    String   @unique
   child        Project  @relation("ChildInstance", fields: [childSlug], references: [slug], onDelete: Cascade)
   region       String
-  country      String? // free text, normalized via lib/geo.ts same as User.country — powers the network dashboard's world map
+  country      String?  // free text, normalized via lib/geo.ts same as User.country — powers the network dashboard's world map
   status       String   @default("pending")
   approvedById String?
   approvedBy   User?    @relation("ApprovedInstances", fields: [approvedById], references: [id])
@@ -2402,20 +2402,20 @@ model RoomParticipant {
 }
 
 model Message {
-  id             String             @id @default(cuid())
+  id             String            @id @default(cuid())
   roomId         String
-  room           Room               @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  room           Room              @relation(fields: [roomId], references: [id], onDelete: Cascade)
   authorId       String
-  author         User               @relation("SentMessages", fields: [authorId], references: [id], onDelete: Cascade)
-  body           String             @db.Text
+  author         User              @relation("SentMessages", fields: [authorId], references: [id], onDelete: Cascade)
+  body           String            @db.Text
   threadParentId String?
-  threadParent   Message?           @relation("MessageThread", fields: [threadParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  threadReplies  Message[]          @relation("MessageThread")
+  threadParent   Message?          @relation("MessageThread", fields: [threadParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  threadReplies  Message[]         @relation("MessageThread")
   reactions      MessageReaction[]
   attachments    File[]
-  isAi           Boolean            @default(false)
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  isAi           Boolean           @default(false)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
   editedAt       DateTime?
   deletedAt      DateTime?
   hiddenAt       DateTime?
@@ -2439,18 +2439,18 @@ model MessageReaction {
 }
 
 model FeedPost {
-  id           String             @id @default(cuid())
+  id           String   @id @default(cuid())
   authorId     String
-  author       User               @relation("AuthoredFeedPosts", fields: [authorId], references: [id], onDelete: Cascade)
+  author       User     @relation("AuthoredFeedPosts", fields: [authorId], references: [id], onDelete: Cascade)
   body         String
   imageUrl     String?
   // Null = a post on the global site-wide feed (today's only behavior).
   // Set = posted from within a project's own scoped feed — never shown on
   // the global feed, see lib/activityFeed.ts's project-scope mode.
   projectId    String?
-  project      Project?           @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  project      Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   hiddenAt     DateTime?
   hiddenById   String?
   hiddenReason ContentHideReason?
@@ -2477,13 +2477,13 @@ model FeedLike {
 
 // Comments on any feed item — same loose targetType/targetId pairing as FeedLike.
 model FeedComment {
-  id           String             @id @default(cuid())
+  id           String   @id @default(cuid())
   authorId     String
-  author       User               @relation("AuthoredFeedComments", fields: [authorId], references: [id], onDelete: Cascade)
+  author       User     @relation("AuthoredFeedComments", fields: [authorId], references: [id], onDelete: Cascade)
   targetType   String
   targetId     String
   body         String
-  createdAt    DateTime           @default(now())
+  createdAt    DateTime @default(now())
   hiddenAt     DateTime?
   hiddenById   String?
   hiddenReason ContentHideReason?
