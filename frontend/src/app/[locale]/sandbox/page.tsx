@@ -310,89 +310,89 @@ export default async function SandboxPage({
       </section>
 
       {userId && (
-        <section id="lean-canvas" className="mb-10">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-dark-slate">
-              {t("exploreLeanCanvasHeading")} <span className="text-dark-slate/40 font-normal">({leanCanvasCount})</span>
-            </h2>
-            <Link href="/lean-canvas" className="text-xs text-coral hover:underline">
-              {t("seeAllLeanCanvasLink")}
-            </Link>
-          </div>
-          {leanCanvasDrafts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 text-center">
-              <p className="text-dark-slate/50 mb-4">{tLeanCanvas("listEmptyState")}</p>
-              <Link href="/lean-canvas/new" className="text-coral hover:underline text-sm">
-                {tLeanCanvas("listStartFirst")}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+          <section id="lean-canvas">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-dark-slate">
+                {t("exploreLeanCanvasHeading")} <span className="text-dark-slate/40 font-normal">({leanCanvasCount})</span>
+              </h2>
+              <Link href="/lean-canvas" className="text-xs text-coral hover:underline">
+                {t("seeAllLeanCanvasLink")}
               </Link>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {leanCanvasDrafts.map((d) => (
-                <Link
-                  key={d.id}
-                  href={`/lean-canvas/${d.id}`}
-                  className="flex flex-col justify-between gap-2 rounded-lg border border-muted-teal/40 bg-white p-4 hover:shadow-md hover:border-muted-teal transition-all"
-                >
-                  <div>
-                    <span className="inline-block text-[10px] font-semibold uppercase tracking-wide text-coral bg-coral/10 rounded px-2 py-0.5 mb-2">
-                      {tLeanCanvas("cardBadge")}
-                    </span>
-                    <p className="text-sm font-medium text-dark-slate line-clamp-2">
-                      {d.name || d.problem?.slice(0, 80) || tLeanCanvas("listStartedBy", { name: d.owner.name ?? tLeanCanvas("unknownAuthor") })}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-dark-slate/40">{tLeanCanvas("listStartedBy", { name: d.owner.name ?? tLeanCanvas("unknownAuthor") })}</p>
-                    <span className="text-[11px] text-dark-slate/40 flex-shrink-0">{draftTimeAgo(d.updatedAt, tLeanCanvas)}</span>
-                  </div>
+            {leanCanvasDrafts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <p className="text-dark-slate/50 mb-4">{tLeanCanvas("listEmptyState")}</p>
+                <Link href="/lean-canvas/new" className="text-coral hover:underline text-sm">
+                  {tLeanCanvas("listStartFirst")}
                 </Link>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
+              </div>
+            ) : (
+              <div className="flex flex-col rounded-lg border border-muted-teal/40 bg-white divide-y divide-muted-teal/20 overflow-hidden">
+                {leanCanvasDrafts.map((d) => (
+                  <Link
+                    key={d.id}
+                    href={`/lean-canvas/${d.id}`}
+                    className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-muted-teal/5 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="inline-block flex-shrink-0 text-[10px] font-semibold uppercase tracking-wide text-coral bg-coral/10 rounded px-2 py-0.5">
+                        {tLeanCanvas("cardBadge")}
+                      </span>
+                      <p className="text-sm font-medium text-dark-slate truncate">
+                        {d.name || d.problem?.slice(0, 80) || tLeanCanvas("listStartedBy", { name: d.owner.name ?? tLeanCanvas("unknownAuthor") })}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <p className="text-xs text-dark-slate/40 whitespace-nowrap">{tLeanCanvas("listStartedBy", { name: d.owner.name ?? tLeanCanvas("unknownAuthor") })}</p>
+                      <span className="text-[11px] text-dark-slate/40 whitespace-nowrap">{draftTimeAgo(d.updatedAt, tLeanCanvas)}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
 
-      {userId && (
-        <section id="whiteboard" className="mb-10">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-dark-slate">
-              {t("exploreWhiteboardHeading")} <span className="text-dark-slate/40 font-normal">({whiteboardCount})</span>
-            </h2>
-            <Link href="/whiteboard" className="text-xs text-coral hover:underline">
-              {t("seeAllWhiteboardLink")}
-            </Link>
-          </div>
-          {whiteboardDrafts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 text-center">
-              <p className="text-dark-slate/50 mb-4">{tWhiteboard("listEmptyState")}</p>
-              <Link href="/whiteboard/new" className="text-coral hover:underline text-sm">
-                {tWhiteboard("listStartFirst")}
+          <section id="whiteboard">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-dark-slate">
+                {t("exploreWhiteboardHeading")} <span className="text-dark-slate/40 font-normal">({whiteboardCount})</span>
+              </h2>
+              <Link href="/whiteboard" className="text-xs text-coral hover:underline">
+                {t("seeAllWhiteboardLink")}
               </Link>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {whiteboardDrafts.map((d) => (
-                <Link
-                  key={d.id}
-                  href={`/whiteboard/${d.id}`}
-                  className="flex flex-col justify-between gap-2 rounded-lg border border-muted-teal/40 bg-white p-4 hover:shadow-md hover:border-muted-teal transition-all aspect-[4/3]"
-                >
-                  <div>
-                    <span className="inline-block text-[10px] font-semibold uppercase tracking-wide text-coral bg-coral/10 rounded px-2 py-0.5 mb-2">
-                      {tWhiteboard("cardBadge")}
-                    </span>
-                    {d.name && <p className="text-sm font-medium text-dark-slate line-clamp-2">{d.name}</p>}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-dark-slate/40">{tWhiteboard("listStartedBy", { name: d.owner.name ?? tWhiteboard("unknownAuthor") })}</p>
-                    <span className="text-[11px] text-dark-slate/40 flex-shrink-0">{draftTimeAgo(d.updatedAt, tWhiteboard)}</span>
-                  </div>
+            {whiteboardDrafts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <p className="text-dark-slate/50 mb-4">{tWhiteboard("listEmptyState")}</p>
+                <Link href="/whiteboard/new" className="text-coral hover:underline text-sm">
+                  {tWhiteboard("listStartFirst")}
                 </Link>
-              ))}
-            </div>
-          )}
-        </section>
+              </div>
+            ) : (
+              <div className="flex flex-col rounded-lg border border-muted-teal/40 bg-white divide-y divide-muted-teal/20 overflow-hidden">
+                {whiteboardDrafts.map((d) => (
+                  <Link
+                    key={d.id}
+                    href={`/whiteboard/${d.id}`}
+                    className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-muted-teal/5 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="inline-block flex-shrink-0 text-[10px] font-semibold uppercase tracking-wide text-coral bg-coral/10 rounded px-2 py-0.5">
+                        {tWhiteboard("cardBadge")}
+                      </span>
+                      {d.name && <p className="text-sm font-medium text-dark-slate truncate">{d.name}</p>}
+                    </div>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <p className="text-xs text-dark-slate/40 whitespace-nowrap">{tWhiteboard("listStartedBy", { name: d.owner.name ?? tWhiteboard("unknownAuthor") })}</p>
+                      <span className="text-[11px] text-dark-slate/40 whitespace-nowrap">{draftTimeAgo(d.updatedAt, tWhiteboard)}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
       )}
 
       <section className="mb-10">
