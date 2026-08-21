@@ -24,6 +24,8 @@ export default function StepsCarousel() {
   const t = useTranslations("Showroom.stepsCarousel");
   const [active, setActive] = useState(0);
   const step = STEPS[active];
+  const goPrev = () => setActive((i) => (i - 1 + STEPS.length) % STEPS.length);
+  const goNext = () => setActive((i) => (i + 1) % STEPS.length);
 
   return (
     <div
@@ -78,7 +80,7 @@ export default function StepsCarousel() {
                     justifyContent: "center",
                     fontSize: 24,
                     color: "#fff",
-                    background: i === active ? s.ball : `color-mix(in srgb, ${s.ball} 45%, white)`,
+                    background: s.ball,
                     boxShadow: i === active ? "0 0 0 3px #fff, 0 0 0 4.5px " + s.ball : "none",
                     transition: "background .15s, box-shadow .15s",
                   }}
@@ -100,24 +102,60 @@ export default function StepsCarousel() {
           </div>
         </div>
 
-        <div className="bg-white border border-muted-teal/40 flex flex-wrap items-center gap-8" style={{ borderRadius: 26, padding: "clamp(26px,3vw,44px)" }}>
-          <div
-            className="rounded-full overflow-hidden flex-shrink-0"
-            style={{ width: "clamp(120px,14vw,170px)", height: "clamp(120px,14vw,170px)", background: step.tint }}
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={goPrev}
+            aria-label={t("prev")}
+            className="hidden sm:flex items-center justify-center flex-shrink-0"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: "50%",
+              background: "#fff",
+              border: "1px solid rgba(37,68,65,.25)",
+              color: "#254441",
+              fontSize: 18,
+            }}
           >
-            <img src={`/img/showroom/${step.img}`} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 26%" }} />
+            ‹
+          </button>
+          <div className="bg-white border border-muted-teal/40 flex flex-wrap items-center gap-8 flex-1" style={{ borderRadius: 26, padding: "clamp(26px,3vw,44px)" }}>
+            <div
+              className="rounded-full overflow-hidden flex-shrink-0"
+              style={{ width: "clamp(120px,14vw,170px)", height: "clamp(120px,14vw,170px)", background: step.tint }}
+            >
+              <img src={`/img/showroom/${step.img}`} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 26%" }} />
+            </div>
+            <div style={{ flex: "1 1 320px" }}>
+              <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
+                {t(`step${active}Label`).toUpperCase()}
+              </p>
+              <h3 className={`${displaySerifFont.className} text-dark-slate`} style={{ fontSize: "clamp(24px,2.6vw,32px)", lineHeight: 1.15, letterSpacing: "-.01em" }}>
+                {t(`step${active}Title`)}
+              </h3>
+              <p className="text-dark-slate/70 mt-2" style={{ fontSize: 16, lineHeight: 1.65, maxWidth: "56ch" }}>
+                {t(`step${active}Body`)}
+              </p>
+            </div>
           </div>
-          <div style={{ flex: "1 1 320px" }}>
-            <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
-              {t(`step${active}Label`).toUpperCase()}
-            </p>
-            <h3 className={`${displaySerifFont.className} text-dark-slate`} style={{ fontSize: "clamp(24px,2.6vw,32px)", lineHeight: 1.15, letterSpacing: "-.01em" }}>
-              {t(`step${active}Title`)}
-            </h3>
-            <p className="text-dark-slate/70 mt-2" style={{ fontSize: 16, lineHeight: 1.65, maxWidth: "56ch" }}>
-              {t(`step${active}Body`)}
-            </p>
-          </div>
+          <button
+            type="button"
+            onClick={goNext}
+            aria-label={t("next")}
+            className="hidden sm:flex items-center justify-center flex-shrink-0"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: "50%",
+              background: "#fff",
+              border: "1px solid rgba(37,68,65,.25)",
+              color: "#254441",
+              fontSize: 18,
+            }}
+          >
+            ›
+          </button>
         </div>
       </div>
     </div>

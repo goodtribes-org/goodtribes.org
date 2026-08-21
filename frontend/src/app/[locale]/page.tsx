@@ -126,7 +126,7 @@ export default async function HomePage({
   const tickerItems = recentActivity.map((a) => `${a.projectName} — ${a.action}`);
 
   return (
-    <div>
+    <div className="space-y-5">
 
       {/* Del 1 — Hero: full-bleed blurred bakgrund (följer bilden som visas i högen) + bilder + textkort.
           -mt-8 tar bort main:s pt-8 så bakgrunden går ända upp mot toppmenyn utan marginal. */}

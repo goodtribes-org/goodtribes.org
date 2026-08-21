@@ -1414,7 +1414,9 @@
       "step3Body": "Följ effekten på riktigt — vilka Agenda 2030-mål ni bidrar till, hur mycket som samlats in och vilka som fått hjälp. Plattformen visar svart på vitt vad era insatser faktiskt förändrar.",
       "step4Label": "Lev gott",
       "step4Title": "Lev gott, må gott, gör gott — alla vinner",
-      "step4Body": "Grunden är ett tryggt liv, toppen är drömmen — plattformen tar er hela vägen, tillsammans med andra. Forskningen visar att vi mår bäst när hedonistisk lycka (leva gott, må gott) balanseras med eudaimonisk lycka (göra gott, följa sina drömmar)."
+      "step4Body": "Grunden är ett tryggt liv, toppen är drömmen — plattformen tar er hela vägen, tillsammans med andra. Forskningen visar att vi mår bäst när hedonistisk lycka (leva gott, må gott) balanseras med eudaimonisk lycka (göra gott, följa sina drömmar).",
+      "prev": "Föregående steg",
+      "next": "Nästa steg"
     },
     "pyramid": {
       "eyebrow": "Så definierar vi gott",

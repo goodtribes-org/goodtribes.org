@@ -1414,7 +1414,9 @@
       "step3Body": "Track the real effect — which Agenda 2030 goals you're contributing to, how much has been raised, and who's been helped. The platform shows in black and white what your efforts actually change.",
       "step4Label": "Live well",
       "step4Title": "Live well, feel well, do good — everyone wins",
-      "step4Body": "The base is a secure life, the top is the dream — the platform takes you all the way, together with others. Research shows we thrive when hedonic happiness (living well, feeling well) is balanced with eudaimonic happiness (doing good, following your dreams)."
+      "step4Body": "The base is a secure life, the top is the dream — the platform takes you all the way, together with others. Research shows we thrive when hedonic happiness (living well, feeling well) is balanced with eudaimonic happiness (doing good, following your dreams).",
+      "prev": "Previous step",
+      "next": "Next step"
     },
     "pyramid": {
       "eyebrow": "How we define good",

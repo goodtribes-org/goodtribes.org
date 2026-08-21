@@ -16,7 +16,7 @@ export default function WhyHowWhat({
   bodies: Record<"why" | "how" | "what", string>;
 }) {
   return (
-    <div className="mb-10">
+    <div>
       <p className="text-center text-xs font-bold uppercase tracking-wider text-coral mb-4">{eyebrow}</p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {ITEMS.map((item) => (
