@@ -2,6 +2,8 @@
 
 import { useTranslations } from "next-intl";
 import LeanCanvasBlock from "./LeanCanvasBlock";
+import ValuePropositionCanvas, { type VpField } from "@/components/leanCanvas/ValuePropositionCanvas";
+import { updateLeanCanvasBlock } from "./actions";
 import { LEAN_CANVAS_BLOCKS } from "./fields";
 import type { LeanCanvasField } from "./fields";
 
@@ -21,9 +23,10 @@ export default function LeanCanvasGrid({ projectSlug, canvas, canEdit }: Props) 
         @media (min-width: 900px) {
           .leancanvas-grid {
             grid-template-columns: repeat(10, 1fr);
-            grid-template-rows: auto auto auto;
+            grid-template-rows: auto auto auto auto;
             grid-template-areas:
-              "problem problem solution solution uvp uvp unfair unfair segments segments"
+              "problem problem problem solution solution unfair unfair segments segments segments"
+              "vp vp vp vp vp vp vp vp vp vp"
               "alt alt metrics metrics concept concept channels channels early early"
               "cost cost cost impact impact impact impact revenue revenue revenue";
           }
@@ -31,7 +34,7 @@ export default function LeanCanvasGrid({ projectSlug, canvas, canEdit }: Props) 
           .leancanvas-grid > [data-area="alt"] { grid-area: alt; }
           .leancanvas-grid > [data-area="solution"] { grid-area: solution; }
           .leancanvas-grid > [data-area="metrics"] { grid-area: metrics; }
-          .leancanvas-grid > [data-area="uvp"] { grid-area: uvp; }
+          .leancanvas-grid > [data-area="vp"] { grid-area: vp; }
           .leancanvas-grid > [data-area="concept"] { grid-area: concept; }
           .leancanvas-grid > [data-area="unfair"] { grid-area: unfair; }
           .leancanvas-grid > [data-area="channels"] { grid-area: channels; }
@@ -56,6 +59,11 @@ export default function LeanCanvasGrid({ projectSlug, canvas, canEdit }: Props) 
             canEdit={canEdit}
           />
         ))}
+        <ValuePropositionCanvas
+          values={canvas ?? {}}
+          canEdit={canEdit}
+          onSaveField={(field: VpField, formData) => updateLeanCanvasBlock(projectSlug, field, formData)}
+        />
       </div>
     </>
   );
