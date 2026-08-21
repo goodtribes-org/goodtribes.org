@@ -57,7 +57,7 @@ export default function HeroSlideRow({
 
       {/* Text — till höger, eget kort */}
       <div
-        className="relative z-10 w-full md:max-w-[620px] md:aspect-[16/10] -mt-10 md:mt-0 md:-ml-16"
+        className="relative z-10 w-full md:max-w-[620px] md:aspect-[16/10] -mt-4 md:mt-0 md:-ml-3"
         style={{
           transform: `rotate(${-tilt.rotate}deg) translate(${-tilt.x}px, ${-tilt.y}px)`,
         }}
@@ -71,7 +71,7 @@ export default function HeroSlideRow({
               ✎ {editLinkLabel}
             </Link>
           )}
-          <div className={`h-full md:overflow-y-auto border border-muted-teal/20 px-6 pt-3 pb-5 flex flex-col justify-start ${heroTintClass(slide.tintColor, slide.tintOpacity)}`}>
+          <div className={`h-full md:overflow-y-auto border border-muted-teal/20 pl-6 md:pl-10 pr-6 pt-8 md:pt-3 pb-5 flex flex-col justify-start ${heroTintClass(slide.tintColor, slide.tintOpacity)}`}>
             <div className="flex flex-col items-start text-left">
               <h2 className={`${handwritingFont.className} text-dark-slate pr-16`} style={{ textWrap: "balance", fontSize: 26 }}>
                 {slide.heading}
