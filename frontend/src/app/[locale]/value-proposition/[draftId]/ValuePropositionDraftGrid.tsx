@@ -35,7 +35,8 @@ export default function ValuePropositionDraftGrid({ draftId, canvas, canEdit }: 
   return (
     <>
       <style>{`
-        .vp-canvas-body { container-type: inline-size; display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .vp-canvas-frame { container-type: inline-size; }
+        .vp-canvas-body { display: grid; grid-template-columns: 1fr; gap: 1rem; }
         .vp-side {
           display: flex; flex-direction: column; gap: 0.5rem; padding: 16px;
         }
@@ -59,6 +60,7 @@ export default function ValuePropositionDraftGrid({ draftId, canvas, canEdit }: 
           .vp-fit-badge { writing-mode: vertical-rl; text-orientation: mixed; padding: 8px 4px; }
         }
       `}</style>
+      <div className="vp-canvas-frame">
       <div className="vp-canvas-body">
         <div className="vp-side value">
           <p className="vp-side-head text-coral">
@@ -86,6 +88,7 @@ export default function ValuePropositionDraftGrid({ draftId, canvas, canEdit }: 
           </p>
           {customerBlocks.map(renderBlock)}
         </div>
+      </div>
       </div>
     </>
   );
