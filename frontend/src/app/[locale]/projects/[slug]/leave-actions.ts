@@ -37,7 +37,7 @@ export async function deleteProject(slug: string): Promise<void> {
   if (!project || project.members.length === 0) return;
 
   await prisma.project.delete({ where: { slug } });
-  await deleteDocument("projects", `project-${slug}`);
+  void deleteDocument("projects", `project-${slug}`);
   invalidateListCache(PROJECTS_LIST_TAG);
 
   redirect("/projects");

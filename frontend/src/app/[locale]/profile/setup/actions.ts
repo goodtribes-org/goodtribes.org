@@ -64,7 +64,7 @@ export async function saveProfile(formData: FormData) {
   invalidateListCache(MEMBERS_LIST_TAG);
 
   if (showProfile) {
-    await indexDocuments("members", [
+    void indexDocuments("members", [
       {
         id: `member-${updated.id}`,
         type: "member",

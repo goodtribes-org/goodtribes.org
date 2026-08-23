@@ -69,7 +69,7 @@ export async function createProjectRecord(params: CreateProjectParams) {
         });
       }
 
-      await indexDocuments("projects", [{
+      void indexDocuments("projects", [{
         id: `project-${project.slug}`,
         type: "project",
         title: project.title,

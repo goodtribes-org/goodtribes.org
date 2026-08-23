@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 const HOST = process.env.NEXT_PUBLIC_MEILI_HOST ?? "http://localhost:7700";
 const KEY =
   process.env.MEILI_MASTER_KEY ?? "changeme-local-dev-key-32chars";
@@ -7,19 +9,40 @@ const headers = {
   Authorization: `Bearer ${KEY}`,
 };
 
-export async function indexDocuments(
+// Callers no longer need to `await` indexDocuments/deleteDocument to get
+// correct ordering — a per-index promise chain runs each index's writes in
+// the order they were enqueued (not the order their network requests happen
+// to land), same guarantee callers previously got by awaiting sequentially.
+// This is what lets call sites drop `await` and stop blocking the user's
+// request on a Meilisearch round-trip; a real durable queue (surviving pod
+// restarts, retrying failures) would need a separate worker deployment this
+// session has no cluster access to build or verify against — deferred, see
+// CLAUDE.md.
+const indexQueues = new Map<string, Promise<void>>();
+
+function enqueue(index: string, task: () => Promise<void>): Promise<void> {
+  const previous = indexQueues.get(index) ?? Promise.resolve();
+  const next = previous.then(task).catch((e: unknown) => {
+    logger.error("meilisearch operation failed", {
+      index,
+      error: e instanceof Error ? e.message : String(e),
+    });
+  });
+  indexQueues.set(index, next);
+  return next;
+}
+
+export function indexDocuments(
   index: string,
   documents: object[]
-) {
-  try {
+): Promise<void> {
+  return enqueue(index, async () => {
     await fetch(`${HOST}/indexes/${index}/documents`, {
       method: "POST",
       headers,
       body: JSON.stringify(documents),
     });
-  } catch {
-    // Best-effort — don't block the main flow if Meilisearch is unavailable
-  }
+  });
 }
 
 export interface SearchResult {
@@ -35,25 +58,23 @@ export interface SearchResult {
 // multiSearch() can filter by it. Settings apply retroactively and PATCHing
 // is idempotent, so this is safe to call on every sync rather than gating it
 // behind a one-time setup step like the messages index below.
-export async function ensureLocaleFilterable(index: "projects" | "ideas") {
-  try {
+export function ensureLocaleFilterable(index: "projects" | "ideas"): Promise<void> {
+  return enqueue(index, async () => {
     await fetch(`${HOST}/indexes/${index}/settings`, {
       method: "PATCH",
       headers,
       body: JSON.stringify({ filterableAttributes: ["locale"] }),
     });
-  } catch {
-    // Best-effort — same fallback stance as indexDocuments
-  }
+  });
 }
 
-export async function deleteDocument(index: string, id: string) {
-  try {
+export function deleteDocument(index: string, id: string): Promise<void> {
+  return enqueue(index, async () => {
     await fetch(`${HOST}/indexes/${index}/documents/${encodeURIComponent(id)}`, {
       method: "DELETE",
       headers,
     });
-  } catch { }
+  });
 }
 
 export interface MessageDoc {

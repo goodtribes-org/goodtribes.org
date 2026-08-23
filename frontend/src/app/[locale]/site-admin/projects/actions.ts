@@ -18,11 +18,11 @@ export async function setProjectHidden(slug: string, hidden: boolean) {
 
   if (hidden) {
     await hideTarget("Project", project.id, { hiddenById: session.user.id, hiddenReason: "ADMIN_ACTION" });
-    await deleteDocument("projects", `project-${slug}`);
-    await deleteDocument("projects", `project-${slug}__en`);
+    void deleteDocument("projects", `project-${slug}`);
+    void deleteDocument("projects", `project-${slug}__en`);
   } else {
     await unhideTarget("Project", project.id);
-    await indexDocuments("projects", [{
+    void indexDocuments("projects", [{
       id: `project-${slug}`,
       type: "project",
       title: project.title,
@@ -43,7 +43,7 @@ export async function deleteProjectAsAdmin(slug: string) {
   await requireSiteAdmin(session.user.id);
 
   await prisma.project.delete({ where: { slug } });
-  await deleteDocument("projects", `project-${slug}`);
+  void deleteDocument("projects", `project-${slug}`);
   invalidateListCache(PROJECTS_LIST_TAG);
   revalidatePath("/site-admin/projects");
 }

@@ -33,7 +33,7 @@ export async function createOrg(formData: FormData) {
       });
       slug = org.slug;
       if (isPublic) {
-        await indexDocuments("orgs", [{
+        void indexDocuments("orgs", [{
           id: `org-${org.slug}`,
           type: "org",
           title: org.name,

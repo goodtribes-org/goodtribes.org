@@ -69,14 +69,14 @@ export async function createIdea(formData: FormData) {
   }
 
   if (status === "open") {
-    await indexDocuments("ideas", [{
+    void indexDocuments("ideas", [{
       id: `idea-${idea.id}`,
       type: "idea",
       title: idea.title,
       description: idea.problem ?? "",
       url: `/ideas/${idea.id}`,
       locale: "sv",
-    }]).catch(() => {});
+    }]);
   }
   invalidateListCache(IDEAS_LIST_TAG);
 

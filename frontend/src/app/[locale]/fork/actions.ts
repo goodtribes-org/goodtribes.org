@@ -154,7 +154,7 @@ export async function forkProject(sourceSlug: string, formData: FormData) {
     }
   }
 
-  await indexDocuments("projects", [{
+  void indexDocuments("projects", [{
     id: `project-${slug}`,
     type: "project",
     title,

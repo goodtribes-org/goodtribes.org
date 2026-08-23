@@ -150,7 +150,7 @@ export async function updateProject(slug: string, formData: FormData) {
 
   // Sync Meilisearch — remove old slug entry if slug changed (slug doesn't change here, but keep in sync)
   if (!project.hiddenAt) {
-    await indexDocuments("projects", [{
+    void indexDocuments("projects", [{
       id: `project-${slug}`,
       type: "project",
       title,
@@ -161,8 +161,8 @@ export async function updateProject(slug: string, formData: FormData) {
       locale: "sv",
     }]);
   } else {
-    await deleteDocument("projects", `project-${slug}`);
-    await deleteDocument("projects", `project-${slug}__en`);
+    void deleteDocument("projects", `project-${slug}`);
+    void deleteDocument("projects", `project-${slug}__en`);
   }
 
   invalidateListCache(PROJECTS_LIST_TAG);
@@ -202,7 +202,7 @@ export async function advanceProjectPhase(slug: string) {
   ]);
 
   if (!project.hiddenAt) {
-    await indexDocuments("projects", [{
+    void indexDocuments("projects", [{
       id: `project-${slug}`,
       type: "project",
       title: project.title,

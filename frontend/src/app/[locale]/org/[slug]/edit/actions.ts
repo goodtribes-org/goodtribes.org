@@ -58,10 +58,10 @@ export async function updateOrg(formData: FormData) {
 
   // Keep Meilisearch in sync — remove old slug entry if slug changed
   if (existing.slug !== slug) {
-    await deleteDocument("orgs", `org-${existing.slug}`);
+    void deleteDocument("orgs", `org-${existing.slug}`);
   }
   if (isPublic) {
-    await indexDocuments("orgs", [{
+    void indexDocuments("orgs", [{
       id: `org-${slug}`,
       type: "org",
       title: name,
@@ -69,7 +69,7 @@ export async function updateOrg(formData: FormData) {
       url: `/org/${slug}`,
     }]);
   } else {
-    await deleteDocument("orgs", `org-${slug}`);
+    void deleteDocument("orgs", `org-${slug}`);
   }
 
   revalidatePath(`/org/${slug}`);
@@ -90,7 +90,7 @@ export async function deleteOrg(formData: FormData) {
   if (!existing || existing.ownerId !== session.user.id) redirect("/org");
 
   await prisma.organisation.delete({ where: { id: orgId } });
-  await deleteDocument("orgs", `org-${existing.slug}`);
+  void deleteDocument("orgs", `org-${existing.slug}`);
 
   redirect("/org");
 }

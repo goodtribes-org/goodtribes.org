@@ -53,7 +53,7 @@ export async function upsertProjectTranslation(
   });
 
   if (locale === "en" && !project.hiddenAt) {
-    await indexDocuments("projects", [{
+    void indexDocuments("projects", [{
       id: `project-${project.slug}__en`,
       type: "project",
       title,

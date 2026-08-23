@@ -89,7 +89,7 @@ export async function createUser(formData: FormData): Promise<{ ok: boolean; err
   });
 
   if (showProfile) {
-    await indexDocuments("members", [
+    void indexDocuments("members", [
       {
         id: `member-${created.id}`,
         type: "member",

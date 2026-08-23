@@ -116,16 +116,16 @@ export async function setIdeaStatus(ideaId: string, newStatus: string) {
   // it was first created, never later transitions (draft -> open, or a
   // moderator reverting something back to draft).
   if (newStatus === "draft" || idea.hiddenAt) {
-    await deleteDocument("ideas", `idea-${ideaId}`);
+    void deleteDocument("ideas", `idea-${ideaId}`);
   } else {
-    await indexDocuments("ideas", [{
+    void indexDocuments("ideas", [{
       id: `idea-${ideaId}`,
       type: "idea",
       title: idea.title,
       description: idea.problem ?? idea.description ?? "",
       url: `/ideas/${ideaId}`,
       locale: "sv",
-    }]).catch(() => {});
+    }]);
   }
 
   // Notify followers when status changes to shortlisted/approved
@@ -257,14 +257,14 @@ export async function decideRevision(revisionId: string, decision: "accept" | "r
     // — without this, an idea's searchable text goes stale after every
     // accepted co-creation edit until the next full /api/meili-sync resync.
     if (revision.idea.status !== "draft" && !revision.idea.hiddenAt) {
-      await indexDocuments("ideas", [{
+      void indexDocuments("ideas", [{
         id: `idea-${revision.idea.id}`,
         type: "idea",
         title: revision.idea.title,
         description: revision.idea.problem ?? revision.proposedDescription ?? "",
         url: `/ideas/${revision.idea.id}`,
         locale: "sv",
-      }]).catch(() => {});
+      }]);
     }
     invalidateListCache(IDEAS_LIST_TAG);
   } else {
@@ -332,14 +332,14 @@ export async function upsertIdeaTranslation(
   });
 
   if (locale === "en" && !idea.hiddenAt && idea.status !== "draft") {
-    await indexDocuments("ideas", [{
+    void indexDocuments("ideas", [{
       id: `idea-${idea.id}__en`,
       type: "idea",
       title,
       description: data.problem?.trim() || data.description?.trim() || "",
       url: `/ideas/${idea.id}`,
       locale: "en",
-    }]).catch(() => {});
+    }]);
   }
 
   revalidatePath(`/ideas/${ideaId}`);
