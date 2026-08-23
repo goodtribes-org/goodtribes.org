@@ -44,15 +44,19 @@ spec:
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
-          # Readiness checks DB+Redis (/api/health) so traffic routes away from
-          # a pod whose dependencies are broken. Liveness deliberately stays on
-          # "/" — a plain process-alive check — because if it also checked
-          # DB/Redis, a downstream outage would get every frontend pod killed
-          # and restarted in a loop, which fixes nothing and adds a restart
-          # storm on top of the outage.
+          # EMERGENCY REVERT 2026-08-23: readiness was pointed at /api/health
+          # (DB+Redis check) for one deploy cycle. That makes ALL frontend
+          # pods NotReady whenever DB/Redis is unreachable for any reason,
+          # which drops the Service to zero endpoints and makes Traefik
+          # return its generic "no route" 404 for every path — indistinguishable
+          # from a routing outage from the outside, and it happened right
+          # after this went live. Reverted to "/" (plain process-alive check)
+          # to restore traffic while the actual DB/Redis reachability issue
+          # is root-caused with real cluster access. Re-apply the DB+Redis
+          # readiness check once that's confirmed fixed — see CLAUDE.md.
           readinessProbe:
             httpGet:
-              path: /api/health
+              path: /
               port: {{ .Values.frontend.service.port }}
             initialDelaySeconds: 5
             periodSeconds: 10
