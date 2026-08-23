@@ -23,7 +23,7 @@ export default function LiveTicker({ items }: { items: string[] }) {
         marginLeft: "calc(50% - 50vw)",
         marginRight: "calc(50% - 50vw)",
         width: "100vw",
-        background: "rgba(9,120,9,.06)",
+        background: "#fafaf8",
         borderTop: "1px solid rgba(178,176,155,.35)",
         borderBottom: "1px solid rgba(178,176,155,.35)",
       }}
