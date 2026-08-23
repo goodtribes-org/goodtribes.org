@@ -1,11 +1,19 @@
-import { getAnthropicClient } from "@/lib/anthropic";
+import { getAnthropicClient, checkAiRateLimit } from "@/lib/anthropic";
 
+// userId rate-limits like every other AI call site (see checkAiRateLimit) —
+// this runs on every kanban card creation, not behind a dedicated "ask AI"
+// button, so a very active team could otherwise rack up one Anthropic call
+// per task with no cap at all. Rate-limited out means "no estimate this
+// time", same graceful degradation as AI being unconfigured — never blocks
+// the card from being created.
 export async function estimateTask(
   title: string,
   description: string | null,
+  userId: string,
 ): Promise<{ hours: number; confidence: "low" | "medium" | "high"; reasoning: string } | null> {
   const client = await getAnthropicClient();
   if (!client) return null;
+  if (!(await checkAiRateLimit(userId))) return null;
   try {
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",

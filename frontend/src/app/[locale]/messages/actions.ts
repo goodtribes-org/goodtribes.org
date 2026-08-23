@@ -149,7 +149,7 @@ export async function sendRoomMessage(
       // above, the AI's reply arrives moments later over the same SSE
       // channel. Safe because this app runs as a persistent Node server,
       // not a serverless function that tears down after the response.
-      void triggerAiThreadReply(access.room);
+      void triggerAiThreadReply(access.room, userId);
     }
   }
 

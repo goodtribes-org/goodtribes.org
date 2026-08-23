@@ -1,4 +1,4 @@
-import { getAnthropicClient } from "@/lib/anthropic";
+import { getAnthropicClient, checkAiRateLimit } from "@/lib/anthropic";
 import { prisma } from "@/lib/prisma";
 import { publishToRoom, publishToUser } from "@/lib/redis";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
@@ -76,13 +76,22 @@ async function persistAiMessage(roomId: string, body: string, aiUserId: string) 
 // root message, PRD 5.10's "brainstorming-rum" framing) and reconstructs it
 // as a multi-turn conversation, matching the PRD's own code sketch (§5.11:
 // `messages: threadMessages // hela tråden inkl. alla användares inlägg`).
-export async function triggerAiThreadReply(room: Room): Promise<void> {
+export async function triggerAiThreadReply(room: Room, triggeredByUserId: string): Promise<void> {
   const aiUser = await getAiParticipantUser();
 
   try {
     const client = await getAnthropicClient();
     if (!client) {
       await persistAiMessage(room.id, "AI är inte konfigurerad just nu.", aiUser.id);
+      return;
+    }
+    // Rate-limited on whoever's message mentioned @AI — same reasoning as
+    // every other AI call site (see checkAiRateLimit): this is a real
+    // Anthropic call triggered by a chat message, not behind a dedicated
+    // "ask AI" button, so an active thread could otherwise generate one
+    // call per @AI mention with no cap.
+    if (!(await checkAiRateLimit(triggeredByUserId))) {
+      await persistAiMessage(room.id, "AI är tillfälligt otillgänglig just nu, försök igen om en stund.", aiUser.id);
       return;
     }
 

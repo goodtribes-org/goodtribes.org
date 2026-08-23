@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
-import { getAnthropicClient, isAiEnabled } from "@/lib/anthropic";
+import { getAnthropicClient, isAiEnabled, checkAiRateLimit } from "@/lib/anthropic";
 import { GITHUB_CARD_LOCKED_MESSAGE } from "@/lib/githubSync";
 
 
@@ -120,6 +120,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (decision === "revision") {
+    if (!(await checkAiRateLimit(session.user.id))) {
+      return NextResponse.json({ error: "Too many AI requests — try again later" }, { status: 429 });
+    }
+
     const newAttemptNumber = aiTaskRun.attemptNumber + 1;
 
     const newRun = await prisma.aiTaskRun.create({

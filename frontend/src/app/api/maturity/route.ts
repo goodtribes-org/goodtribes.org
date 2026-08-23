@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
-import { getAnthropicClient } from "@/lib/anthropic";
+import { getAnthropicClient, checkAiRateLimit } from "@/lib/anthropic";
 import { calculateMaturityScore } from "@/lib/projectMaturity";
 
 
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
   let scalingPlan: string | null = existing?.scalingPlan ?? null;
 
-  if (score >= 70 && !scalingPlan) {
+  if (score >= 70 && !scalingPlan && (await checkAiRateLimit(session.user.id))) {
     const client = await getAnthropicClient();
     if (client) {
       try {

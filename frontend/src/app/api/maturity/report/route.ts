@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
-import { getAnthropicClient } from "@/lib/anthropic";
+import { getAnthropicClient, checkAiRateLimit } from "@/lib/anthropic";
 
 
 export async function POST(req: Request) {
@@ -36,6 +36,10 @@ export async function POST(req: Request) {
 
   if (!project) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  if (!(await checkAiRateLimit(session.user.id))) {
+    return NextResponse.json({ error: "Too many AI requests — try again later" }, { status: 429 });
   }
 
   const client = await getAnthropicClient();

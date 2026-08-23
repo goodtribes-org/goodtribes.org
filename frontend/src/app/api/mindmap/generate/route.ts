@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { computeRadialLayout, toReactFlowEdges, type RawMindMapNode, type RawMindMapEdge } from "@/lib/mindmapLayout";
-import { getAnthropicClient } from "@/lib/anthropic";
+import { getAnthropicClient, checkAiRateLimit } from "@/lib/anthropic";
 import type { Prisma } from "@prisma/client";
 
 function stripHtml(body: string): string {
@@ -65,6 +65,10 @@ export async function POST(req: Request) {
     ]
       .filter(Boolean)
       .join("\n");
+  }
+
+  if (!(await checkAiRateLimit(session.user.id))) {
+    return NextResponse.json({ error: "Too many AI requests — try again later" }, { status: 429 });
   }
 
   const client = await getAnthropicClient();

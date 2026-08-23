@@ -40,3 +40,15 @@ export async function checkRateLimit(key: string, limit: number, windowSeconds: 
     return true;
   }
 }
+
+// Best-effort client IP for rate-limiting endpoints with no logged-in user
+// to key on (magic-link sign-in, public search). Trusts X-Forwarded-For
+// since this app only ever runs behind the Traefik ingress
+// (chart/templates/ingress.yaml), never directly exposed to the internet.
+// Falls back to a shared "unknown" bucket rather than throwing if the
+// header is missing/malformed — degrades to coarser rate limiting, not a
+// crash.
+export function getClientIp(request: Request): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  return forwarded?.split(",")[0]?.trim() || "unknown";
+}

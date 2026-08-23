@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { getNetworkStats } from "@/lib/networkStats";
-import { getAnthropicClient } from "@/lib/anthropic";
+import { getAnthropicClient, checkAiRateLimit } from "@/lib/anthropic";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -19,6 +19,10 @@ export async function POST(req: Request) {
   const project = await prisma.project.findUnique({ where: { slug: parentSlug }, select: { id: true, title: true } });
   if (!project || !(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  if (!(await checkAiRateLimit(session.user.id))) {
+    return NextResponse.json({ error: "Too many AI requests — try again later" }, { status: 429 });
   }
 
   const client = await getAnthropicClient();
