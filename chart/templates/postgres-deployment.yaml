@@ -25,6 +25,8 @@ spec:
           ports:
             - containerPort: 5432
               protocol: TCP
+          resources:
+            {{- toYaml .Values.postgres.resources | nindent 12 }}
           envFrom:
             - secretRef:
                 name: goodtribes-secret

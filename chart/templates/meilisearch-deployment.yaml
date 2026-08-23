@@ -25,6 +25,8 @@ spec:
           ports:
             - containerPort: 7700
               protocol: TCP
+          resources:
+            {{- toYaml .Values.meilisearch.resources | nindent 12 }}
           envFrom:
             - secretRef:
                 name: goodtribes-secret

@@ -32,6 +32,8 @@ spec:
           ports:
             - containerPort: 6379
               protocol: TCP
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
           envFrom:
             - secretRef:
                 name: goodtribes-secret

@@ -28,6 +28,8 @@ spec:
               protocol: TCP
             - containerPort: 9001
               protocol: TCP
+          resources:
+            {{- toYaml .Values.minio.resources | nindent 12 }}
           envFrom:
             - secretRef:
                 name: goodtribes-secret

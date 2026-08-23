@@ -44,9 +44,15 @@ spec:
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
+          # Readiness checks DB+Redis (/api/health) so traffic routes away from
+          # a pod whose dependencies are broken. Liveness deliberately stays on
+          # "/" — a plain process-alive check — because if it also checked
+          # DB/Redis, a downstream outage would get every frontend pod killed
+          # and restarted in a loop, which fixes nothing and adds a restart
+          # storm on top of the outage.
           readinessProbe:
             httpGet:
-              path: /
+              path: /api/health
               port: {{ .Values.frontend.service.port }}
             initialDelaySeconds: 5
             periodSeconds: 10

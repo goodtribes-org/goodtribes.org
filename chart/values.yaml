@@ -34,6 +34,11 @@ frontend:
     S3_PUBLIC_BUCKET: goodtribes-public
     S3_PRIVATE_BUCKET: goodtribes-private
     NEXT_PUBLIC_STORAGE_URL: https://goodtribes.org/storage
+    # Per-pod Prisma pool size (see frontend/src/lib/prisma.ts). Default 10 —
+    # keeps today's HPA ceiling (5 replicas) under 50 total Postgres
+    # connections, well inside the 100 connection default with headroom for
+    # pg_dump/psql/etc. Re-tune if maxReplicas or postgres.resources change.
+    DATABASE_CONNECTION_LIMIT: "10"
   # Sensitive vars from goodtribes-secret:
   #   AUTH_SECRET
   #   RESEND_API_KEY
@@ -75,6 +80,18 @@ postgres:
   env:
     POSTGRES_USER: goodtribes
     POSTGRES_DB: goodtribes
+  # Previously unset entirely, which gives the pod BestEffort QoS — no
+  # scheduling guarantee and first-in-line for OOM-kill under node pressure,
+  # with zero warning before it happens. These are conservative starting
+  # estimates, not a measured baseline — revisit once Grafana/Prometheus
+  # (planned) shows real usage.
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
   persistence:
     size: 5Gi
     storageClass: ""
@@ -103,6 +120,15 @@ meilisearch:
     port: 7700
   env:
     MEILI_ENV: production
+  # See the comment on postgres.resources above — same rationale, same
+  # caveat that these are unmeasured starting estimates.
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
   persistence:
     size: 5Gi
     storageClass: ""
@@ -118,6 +144,16 @@ redis:
   service:
     port: 6379
   env: {}
+  # See the comment on postgres.resources above for rationale. Sized smaller
+  # than postgres/meilisearch — no persistence, and its whole job is small
+  # fixed-size keys (rate-limit counters, presence TTLs, pub/sub).
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
   # No persistence block: Redis here is a pure pub/sub bus + TTL'd presence
   # cache, not a durable store. Postgres remains the sole durable message
   # history; SSE reconnect catch-up reads from Postgres, never Redis.
@@ -152,6 +188,14 @@ minio:
     apiPort: 9000
     consolePort: 9001
   env: {}
+  # See the comment on postgres.resources above for rationale.
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
   persistence:
     size: 20Gi
     storageClass: ""
