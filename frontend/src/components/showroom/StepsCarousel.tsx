@@ -2,20 +2,19 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { displaySerifFont, showroomMonoFont } from "@/lib/fonts";
+import { homeSansFont, showroomMonoFont } from "@/lib/fonts";
 
-// Fem steg (ursprungligen sex, slogs ihop till fyra: Hitta+Joina → Utforska,
-// Lev gott+Alla vinner → Lev gott — sedan lades Genomslag till som ett nytt
-// femte steg mellan Förändra och Lev gott). Bollfärgerna och den streckade
-// linjen mellan dem återger samma gul-till-röd gradient som
-// OnboardingStepsBar:s sex cirklar, nedsamplad till fem stopp. Bilderna är
-// samma runda tonade bilder som redan fanns i sex-stegsversionen.
+// Five steps (Dröm/Utforska/Skapa/Förändra/En bättre värld — 2026-08
+// homepage redesign). Ball colors and the dashed line between them keep the
+// same gul-till-röd gradient as before; the photos are the same five real
+// homepage images used pre-redesign (public/img/, not the showroom/ toned
+// icon set), just reordered to match the new step narrative.
 const STEPS = [
-  { img: "f_green_t.png", tint: "rgba(9,120,9,.14)", ball: "#ffb800" },
-  { img: "bulb_t.png", tint: "rgba(240,180,41,.16)", ball: "#ff9700" },
-  { img: "f_cart_t.png", tint: "rgba(240,180,41,.14)", ball: "#ff8700" },
-  { img: "f_orange_t.png", tint: "rgba(255,102,0,.12)", ball: "#ff7600" },
-  { img: "f_swim_t.png", tint: "rgba(136,213,245,.4)", ball: "var(--color-coral)" },
+  { img: "Slide2.png", tint: "rgba(9,120,9,.14)", ball: "#ffb800" },
+  { img: "want-a-change.png", tint: "rgba(240,180,41,.16)", ball: "#ff9700" },
+  { img: "do-you-have-a-dream.png", tint: "rgba(240,180,41,.14)", ball: "#ff8700" },
+  { img: "what-is-goodtribes.png", tint: "rgba(255,102,0,.12)", ball: "#ff7600" },
+  { img: "want-to-be-a-winner.png", tint: "rgba(136,213,245,.4)", ball: "var(--color-coral)" },
 ] as const;
 
 const LINE_SEGMENT_COLORS = ["#ffcc00", "#e86903", "#dd3704", "#d10505"];
@@ -42,7 +41,7 @@ export default function StepsCarousel() {
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "rgba(37,68,65,.45)" }}>
           {t("eyebrow").toUpperCase()}
         </p>
-        <h2 className={`${displaySerifFont.className} text-dark-slate`} style={{ fontSize: "clamp(30px,3vw,40px)", marginBottom: 32 }}>
+        <h2 className={`${homeSansFont.className} text-dark-slate`} style={{ fontWeight: 600, letterSpacing: "-.01em", fontSize: "clamp(28px,3vw,36px)", marginBottom: 32 }}>
           {t("heading")}
         </h2>
 
@@ -70,7 +69,7 @@ export default function StepsCarousel() {
                 style={{ gap: 6 }}
               >
                 <span
-                  className={`${displaySerifFont.className} font-bold`}
+                  className={`${homeSansFont.className} font-bold`}
                   style={{
                     width: 64,
                     height: 64,
@@ -125,13 +124,13 @@ export default function StepsCarousel() {
               className="rounded-full overflow-hidden flex-shrink-0"
               style={{ width: "clamp(120px,14vw,170px)", height: "clamp(120px,14vw,170px)", background: step.tint }}
             >
-              <img src={`/img/showroom/${step.img}`} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 26%" }} />
+              <img src={`/img/${step.img}`} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 26%" }} />
             </div>
             <div style={{ flex: "1 1 320px" }}>
               <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
                 {t(`step${active}Label`).toUpperCase()}
               </p>
-              <h3 className={`${displaySerifFont.className} text-dark-slate`} style={{ fontSize: "clamp(24px,2.6vw,32px)", lineHeight: 1.15, letterSpacing: "-.01em" }}>
+              <h3 className={`${homeSansFont.className} text-dark-slate`} style={{ fontWeight: 600, fontSize: "clamp(20px,2.2vw,26px)", lineHeight: 1.2, letterSpacing: "-.01em" }}>
                 {t(`step${active}Title`)}
               </h3>
               <p className="text-dark-slate/70 mt-2" style={{ fontSize: 16, lineHeight: 1.65, maxWidth: "56ch" }}>

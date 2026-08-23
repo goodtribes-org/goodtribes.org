@@ -23,6 +23,7 @@ const TOOLS = [
   { key: "calendar", color: "ink", path: <><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></> },
   { key: "files", color: "coral", path: <path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" /> },
   { key: "gantt", color: "seagrass", path: <path d="M4 6h8M4 12h12M4 18h6" /> },
+  { key: "todos", color: "ink", path: <path d="M9 11l2 2 3-4M4 6h16M4 12h16M4 18h16" /> },
 ] as const;
 
 const COLOR_HEX: Record<string, string> = {

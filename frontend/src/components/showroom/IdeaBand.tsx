@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { displaySerifFont, showroomBodyFont } from "@/lib/fonts";
+import { homeSansFont } from "@/lib/fonts";
 
 // Typing a dream here and hitting "Skapa" takes the visitor straight into
 // project creation with the title prefilled — /projects/new already
@@ -22,13 +22,13 @@ export default function IdeaBand() {
   }
 
   return (
-    <div className="w-full bg-[#f6f5f2]">
+    <div className={`${homeSansFont.className} w-full bg-white`}>
       <div className="max-w-[1160px] mx-auto px-8 py-[34px] flex flex-wrap items-center gap-8">
         <div className="flex-none w-[158px] rounded-2xl overflow-hidden bg-[#88D5F5]">
           <img src="/img/showroom/scene_papers.png" alt="" className="w-full" />
         </div>
         <div className="flex-1 min-w-[240px]">
-          <h2 className={`${displaySerifFont.className} text-dark-slate`} style={{ fontSize: 26, lineHeight: 1.2, marginBottom: 4 }}>
+          <h2 className="text-dark-slate" style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-.01em", lineHeight: 1.25 }}>
             {t("heading")}
           </h2>
         </div>
@@ -40,13 +40,13 @@ export default function IdeaBand() {
             if (e.key === "Enter") create();
           }}
           placeholder={t("placeholder")}
-          className={`${showroomBodyFont.className} flex-1 text-dark-slate bg-white border border-muted-teal/50 rounded-xl outline-none`}
+          className="flex-1 text-dark-slate bg-white border border-muted-teal/50 rounded-xl outline-none"
           style={{ fontSize: 15, padding: "13px 15px", minWidth: 220 }}
         />
         <button
           type="button"
           onClick={create}
-          className={`${showroomBodyFont.className} text-white bg-seagrass hover:bg-dark-slate rounded-xl transition-colors font-medium`}
+          className="text-white bg-seagrass hover:bg-dark-slate rounded-xl transition-colors font-medium"
           style={{ fontSize: 15, padding: "14px 24px" }}
         >
           {t("cta")}

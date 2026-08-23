@@ -1920,7 +1920,9 @@
       "filesLabel": "Filarea",
       "filesBody": "Dela dokument och bilder på ett ställe alla i tribe:n kan hitta.",
       "ganttLabel": "Gantt-schema",
-      "ganttBody": "Planera tidslinjer och beroenden mellan uppgifter."
+      "ganttBody": "Planera tidslinjer och beroenden mellan uppgifter.",
+      "todosLabel": "Todo-listor",
+      "todosBody": "Enkla att-göra-listor för de snabba grejerna."
     }
   },
   "SiteAdminProjects": {

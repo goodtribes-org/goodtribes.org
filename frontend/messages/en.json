@@ -1920,7 +1920,9 @@
       "filesLabel": "Files",
       "filesBody": "Share documents and images in one place everyone in the tribe can find.",
       "ganttLabel": "Gantt chart",
-      "ganttBody": "Plan timelines and dependencies between tasks."
+      "ganttBody": "Plan timelines and dependencies between tasks.",
+      "todosLabel": "To-do lists",
+      "todosBody": "Simple to-do lists for the quick stuff."
     }
   },
   "SiteAdminProjects": {
