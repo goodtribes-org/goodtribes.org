@@ -145,7 +145,7 @@ export default async function HomePage({
 
       <VisionMissionGoal locale={locale} />
 
-      <LiveTicker items={tickerItems} />
+      <LiveTicker items={tickerItems} locale={locale} />
 
       <StepsCarousel />
 
