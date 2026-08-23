@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
 import { indexDocuments } from "@/lib/meili";
 import { isCreatableLegalType } from "@/lib/legalType";
+import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 
 export type CreateProjectParams = {
   title: string;
@@ -79,6 +80,7 @@ export async function createProjectRecord(params: CreateProjectParams) {
         locale: "sv",
       }]);
 
+      invalidateListCache(PROJECTS_LIST_TAG);
       return project;
     } catch (e: unknown) {
       const err = e as { code?: string };

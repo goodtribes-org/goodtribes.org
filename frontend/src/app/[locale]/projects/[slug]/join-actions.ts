@@ -8,6 +8,7 @@ import { createNotification } from "@/lib/notify";
 import { logActivity } from "@/lib/activity";
 import { sendEmail } from "@/lib/email";
 import { hasProjectRole, PROJECT_LEAD_ROLES, isExcludedFromProject } from "@/lib/authz";
+import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 
 
 export async function requestToJoin(projectId: string, slug: string, message: string) {
@@ -99,6 +100,7 @@ export async function respondToJoinRequest(
       update: {},
     });
     await logActivity(req.projectId, req.userId, "member_joined");
+    invalidateListCache(PROJECTS_LIST_TAG);
   }
 
   await createNotification({

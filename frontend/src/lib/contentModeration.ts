@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { deleteDocument, indexMessage } from "@/lib/meili";
+import { PROJECTS_LIST_TAG, IDEAS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 import type { ContentHideReason } from "@prisma/client";
 
 export const TARGET_TYPES = [
@@ -119,6 +120,7 @@ export async function hideTarget(
       return;
     case "Project":
       await prisma.project.update({ where: { id: targetId }, data });
+      invalidateListCache(PROJECTS_LIST_TAG);
       return;
     case "WikiPage":
       await prisma.wikiPage.update({ where: { id: targetId }, data });
@@ -128,6 +130,7 @@ export async function hideTarget(
       return;
     case "Idea":
       await prisma.idea.update({ where: { id: targetId }, data });
+      invalidateListCache(IDEAS_LIST_TAG);
       return;
   }
 }
@@ -176,6 +179,7 @@ export async function unhideTarget(targetType: ContentTargetType, targetId: stri
       return;
     case "Project":
       await prisma.project.update({ where: { id: targetId }, data });
+      invalidateListCache(PROJECTS_LIST_TAG);
       return;
     case "WikiPage":
       await prisma.wikiPage.update({ where: { id: targetId }, data });
@@ -185,6 +189,7 @@ export async function unhideTarget(targetType: ContentTargetType, targetId: stri
       return;
     case "Idea":
       await prisma.idea.update({ where: { id: targetId }, data });
+      invalidateListCache(IDEAS_LIST_TAG);
       return;
   }
 }

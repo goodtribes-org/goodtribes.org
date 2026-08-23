@@ -3,14 +3,12 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { getTranslations, getLocale } from "next-intl/server";
 import Pagination from "@/components/Pagination";
 import IdeasFilters from "./IdeasFilters";
 import { SdgIcon } from "@/components/SdgIcon";
-import { resolveIdeaContent } from "@/lib/contentTranslation";
-import { routing } from "@/i18n/routing";
+import { getCachedIdeasPage } from "@/lib/listCache";
 import type { Locale } from "next-intl";
 
 export const metadata: Metadata = {
@@ -33,37 +31,13 @@ export default async function IdeasPage({
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const sdgNum = sdg ? parseInt(sdg) : undefined;
 
-  const where = {
-    hiddenAt: null,
-    ...(status ? { status } : { status: { not: "draft" } }),
-    ...(category ? { category } : {}),
-    ...(sdgNum && !isNaN(sdgNum) ? { sdgGoals: { has: sdgNum } } : {}),
-    ...(region ? { targetRegion: region } : {}),
-  };
-
-  const orderBy =
-    sort === "top" ? { votes: { _count: "desc" as const } }
-    : sort === "trending" ? { updatedAt: "desc" as const }
-    : { createdAt: "desc" as const };
-
   const locale = (await getLocale()) as Locale;
 
-  const [session, t, tCard, total, ideas] = await Promise.all([
+  const [session, t, tCard, { total, ideas }] = await Promise.all([
     auth(),
     getTranslations("IdeasPage"),
     getTranslations("ProjectCard"),
-    prisma.idea.count({ where }),
-    prisma.idea.findMany({
-      where,
-      orderBy,
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-      include: {
-        author: { select: { name: true } },
-        _count: { select: { votes: true, comments: true, endorsements: true, followers: true } },
-        translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
-      },
-    }),
+    getCachedIdeasPage(sort, status, category, sdgNum, region, page, locale),
   ]);
 
   const STATUS_TABS = [
@@ -150,9 +124,7 @@ export default async function IdeasPage({
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
-            {ideas.map((idea) => {
-              const content = resolveIdeaContent(idea, idea.translations, locale);
-              return (
+            {ideas.map((idea) => (
               <Link
                 key={idea.id}
                 href={`/ideas/${idea.id}`}
@@ -162,7 +134,7 @@ export default async function IdeasPage({
                   {idea.imageUrl ? (
                     <Image
                       src={idea.imageUrl}
-                      alt={content.title}
+                      alt={idea.title}
                       fill
                       unoptimized
                       className="object-cover"
@@ -170,7 +142,7 @@ export default async function IdeasPage({
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-dry-sage to-muted-teal/40 flex items-center justify-center p-4">
-                      <p className="text-xs font-semibold text-dark-slate/70 text-center leading-tight line-clamp-3">{content.title}</p>
+                      <p className="text-xs font-semibold text-dark-slate/70 text-center leading-tight line-clamp-3">{idea.title}</p>
                     </div>
                   )}
                   <div className="absolute top-2 left-2">
@@ -179,13 +151,13 @@ export default async function IdeasPage({
                 </div>
                 <div className="p-3 flex flex-col flex-1">
                   <p className="font-bold text-dark-slate text-sm leading-tight mb-0.5">
-                    {content.title}
+                    {idea.title}
                   </p>
                   <p className="text-xs text-dark-slate/50 mb-2">
                     {t("byAuthor")} <span className="text-coral">{idea.author.name ?? t("unknownAuthor")}</span>
                   </p>
                   <p className="text-xs text-dark-slate/70 leading-snug mb-2 line-clamp-3 flex-1">
-                    {content.problem ?? content.description ?? t("noDescriptionYet")}
+                    {idea.problem ?? idea.description ?? t("noDescriptionYet")}
                   </p>
                   {idea.sdgGoals.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1 mb-2">
@@ -211,8 +183,7 @@ export default async function IdeasPage({
                   </div>
                 </div>
               </Link>
-              );
-            })}
+            ))}
           </div>
 
           <div className="mt-6">

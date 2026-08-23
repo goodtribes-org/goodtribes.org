@@ -4,6 +4,7 @@ import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { MEMBERS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 
 
 export async function updateNotifSettings(formData: FormData) {
@@ -25,5 +26,6 @@ export async function deleteAccount() {
   if (!session?.user?.id) redirect("/login");
 
   await prisma.user.delete({ where: { id: session.user.id } });
+  invalidateListCache(MEMBERS_LIST_TAG);
   await signOut({ redirectTo: "/" });
 }

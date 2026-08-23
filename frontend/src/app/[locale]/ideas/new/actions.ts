@@ -7,6 +7,7 @@ import { indexDocuments } from "@/lib/meili";
 import { suggestSdgGoals } from "@/lib/claude";
 import { guardSocialAction } from "@/lib/socialActionGuard";
 import { runProactiveModeration } from "@/lib/proactiveModeration";
+import { IDEAS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 
 export async function getSdgSuggestions(
   description: string
@@ -77,6 +78,7 @@ export async function createIdea(formData: FormData) {
       locale: "sv",
     }]).catch(() => {});
   }
+  invalidateListCache(IDEAS_LIST_TAG);
 
   redirect(`/ideas/${idea.id}`);
 }

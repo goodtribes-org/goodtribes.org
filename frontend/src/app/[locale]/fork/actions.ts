@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { slugify } from "@/lib/slugify";
 import { awardTokens } from "@/lib/tokens";
 import { indexDocuments } from "@/lib/meili";
+import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 
 interface Contributor {
   userId: string;
@@ -163,6 +164,7 @@ export async function forkProject(sourceSlug: string, formData: FormData) {
     sdgGoals: source.sdgGoals,
     locale: "sv",
   }]);
+  invalidateListCache(PROJECTS_LIST_TAG);
 
   redirect(`/projects/${slug}`);
 }

@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { slugify } from "@/lib/slugify";
+import { MEMBERS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 
 
 export async function addSkill(formData: FormData) {
@@ -41,6 +42,7 @@ export async function addSkill(formData: FormData) {
     create: { userId: session.user.id, skillId: skill.id },
     update: {},
   });
+  invalidateListCache(MEMBERS_LIST_TAG);
 
   redirect("/profile");
 }
@@ -52,6 +54,7 @@ export async function removeSkill(skillId: string) {
   await prisma.userSkill.deleteMany({
     where: { userId: session.user.id, skillId },
   });
+  invalidateListCache(MEMBERS_LIST_TAG);
 
   redirect("/profile");
 }

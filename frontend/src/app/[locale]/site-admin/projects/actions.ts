@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { requireSiteAdmin } from "@/lib/authz";
 import { deleteDocument, indexDocuments } from "@/lib/meili";
 import { hideTarget, unhideTarget } from "@/lib/contentModeration";
+import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 
 export async function setProjectHidden(slug: string, hidden: boolean) {
   const session = await auth();
@@ -43,5 +44,6 @@ export async function deleteProjectAsAdmin(slug: string) {
 
   await prisma.project.delete({ where: { slug } });
   await deleteDocument("projects", `project-${slug}`);
+  invalidateListCache(PROJECTS_LIST_TAG);
   revalidatePath("/site-admin/projects");
 }

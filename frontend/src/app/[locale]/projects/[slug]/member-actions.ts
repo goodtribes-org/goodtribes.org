@@ -8,6 +8,7 @@ import { logActivity } from "@/lib/activity";
 import { sendEmail } from "@/lib/email";
 import { escapeHtml } from "@/lib/renderBody";
 import { hasProjectRole, isLastFounder, isSiteAdmin, isExcludedFromProject, PROJECT_LEAD_ROLES, type ProjectRole } from "@/lib/authz";
+import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 
 // Project leads (founder/admin) and site admins can search any user not
 // already on the project and add them directly, bypassing the
@@ -76,6 +77,7 @@ export async function addMemberDirectly(projectId: string, targetUserId: string,
   await prisma.projectMember.create({
     data: { projectId, userId: targetUserId, role: "MEMBER" },
   });
+  invalidateListCache(PROJECTS_LIST_TAG);
   await logActivity(projectId, targetUserId, "member_joined");
 
   await createNotification({
@@ -171,6 +173,7 @@ export async function removeMember(projectId: string, targetUserId: string, slug
   await prisma.projectMember.delete({
     where: { projectId_userId: { projectId, userId: targetUserId } },
   });
+  invalidateListCache(PROJECTS_LIST_TAG);
   revalidatePath(`/projects/${slug}`);
 }
 
@@ -191,6 +194,7 @@ export async function leaveProject(projectId: string, slug: string) {
   await prisma.projectMember.delete({
     where: { projectId_userId: { projectId, userId: session.user.id } },
   });
+  invalidateListCache(PROJECTS_LIST_TAG);
   revalidatePath(`/projects/${slug}`);
 }
 

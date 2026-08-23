@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { MEMBERS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 
 
 export async function setShowProfile(formData: FormData) {
@@ -16,6 +17,7 @@ export async function setShowProfile(formData: FormData) {
     where: { email: session.user.email },
     data: { showProfile: show },
   });
+  invalidateListCache(MEMBERS_LIST_TAG);
 
   revalidatePath("/profile");
   revalidatePath("/members");

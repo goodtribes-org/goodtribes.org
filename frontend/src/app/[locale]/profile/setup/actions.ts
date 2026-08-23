@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { indexDocuments } from "@/lib/meili";
 import { sendEmail } from "@/lib/email";
+import { MEMBERS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 
 
 export async function saveProfile(formData: FormData) {
@@ -60,6 +61,7 @@ export async function saveProfile(formData: FormData) {
       skipDuplicates: true,
     }),
   ]);
+  invalidateListCache(MEMBERS_LIST_TAG);
 
   if (showProfile) {
     await indexDocuments("members", [

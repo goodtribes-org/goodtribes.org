@@ -10,6 +10,7 @@ import { getNextPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 import { parseProjectInput } from "@/lib/github";
 import { syncProjectBoardInBackground } from "@/lib/githubSync";
 import { isColumnKey } from "@/lib/kanbanColumns";
+import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 
 
 /**
@@ -164,6 +165,7 @@ export async function updateProject(slug: string, formData: FormData) {
     await deleteDocument("projects", `project-${slug}__en`);
   }
 
+  invalidateListCache(PROJECTS_LIST_TAG);
   revalidatePath(`/projects/${slug}`);
   redirect(`/projects/${slug}`);
 }
@@ -212,6 +214,7 @@ export async function advanceProjectPhase(slug: string) {
     }]);
   }
 
+  invalidateListCache(PROJECTS_LIST_TAG);
   revalidatePath(`/projects/${slug}`);
   revalidatePath(`/projects/${slug}/edit`);
 }

@@ -8,6 +8,9 @@ metadata:
     app.kubernetes.io/name: minio
 spec:
   replicas: {{ .Values.minio.replicaCount }}
+  # See the comment on the postgres Deployment's strategy — same reasoning:
+  # a single ReadWriteOnce PVC can't be mounted by an old and new pod at
+  # once, so Recreate is the correct choice, not an oversight.
   strategy:
     type: Recreate
   selector:

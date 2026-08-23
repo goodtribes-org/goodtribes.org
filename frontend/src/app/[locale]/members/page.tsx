@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import MembersFilter from "@/components/MembersFilter";
 import Pagination from "@/components/Pagination";
 import { getTranslations } from "next-intl/server";
 import { buildMetadata } from "@/lib/metadata";
+import { getCachedMembersPage } from "@/lib/listCache";
 
 export const dynamic = "force-dynamic";
 
@@ -29,36 +29,7 @@ export default async function MembersPage({
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
   const t = await getTranslations("MembersPage");
 
-  const where = {
-    showProfile: true,
-    name: { not: null as null },
-    ...(skill ? { skills: { some: { skill: { slug: skill } } } } : {}),
-  };
-
-  const [total, members, allSkills] = await Promise.all([
-    prisma.user.count({ where }),
-    prisma.user.findMany({
-      where,
-      orderBy: { name: "asc" },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-      select: {
-        id: true,
-        name: true,
-        bio: true,
-        image: true,
-        skills: {
-          select: { skill: { select: { name: true, tag: true, slug: true } } },
-          take: 3,
-        },
-      },
-    }),
-    prisma.skill.findMany({
-      where: { users: { some: { user: { showProfile: true } } } },
-      orderBy: { name: "asc" },
-      select: { name: true, slug: true },
-    }),
-  ]);
+  const { total, members, allSkills } = await getCachedMembersPage(skill, page);
 
   return (
     <div>

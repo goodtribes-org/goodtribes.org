@@ -10,6 +10,7 @@ import { guardSocialAction } from "@/lib/socialActionGuard";
 import { runProactiveModeration } from "@/lib/proactiveModeration";
 import { indexDocuments, deleteDocument } from "@/lib/meili";
 import { routing } from "@/i18n/routing";
+import { IDEAS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 
 
 export async function toggleVote(ideaId: string) {
@@ -146,6 +147,7 @@ export async function setIdeaStatus(ideaId: string, newStatus: string) {
     );
   }
 
+  invalidateListCache(IDEAS_LIST_TAG);
   revalidatePath(`/ideas/${ideaId}`);
   revalidatePath("/ideas");
 }
@@ -264,6 +266,7 @@ export async function decideRevision(revisionId: string, decision: "accept" | "r
         locale: "sv",
       }]).catch(() => {});
     }
+    invalidateListCache(IDEAS_LIST_TAG);
   } else {
     await prisma.ideaRevision.update({
       where: { id: revisionId },

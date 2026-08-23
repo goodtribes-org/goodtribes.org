@@ -8,6 +8,11 @@ metadata:
     app.kubernetes.io/name: postgres
 spec:
   replicas: {{ .Values.postgres.replicaCount }}
+  # Recreate, not RollingUpdate, is intentional here: a single replica with a
+  # ReadWriteOnce PVC can't have an old and new pod both mount the volume at
+  # once, so a rolling update would just fail to schedule the new pod anyway.
+  # Recreate makes the resulting brief outage on every rollout explicit
+  # instead of surfacing as a confusing stuck deployment.
   strategy:
     type: Recreate
   selector:
