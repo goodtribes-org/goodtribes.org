@@ -7,12 +7,9 @@ import { auth } from "@/auth";
 import ProjectCard from "@/components/ProjectCard";
 import SortToggle from "@/components/SortToggleContainer";
 import Pagination from "@/components/Pagination";
-import HeroPhotoStack from "@/components/HeroPhotoStack";
-import HeroSlideText from "@/components/HeroSlideText";
-import WhyHowWhat from "@/components/WhyHowWhat";
 import { toHeroSlideData } from "@/lib/heroSlides";
 import { isSiteAdmin } from "@/lib/authz";
-import { isValidProjectPhase } from "@/lib/projectPhase";
+import { isValidProjectPhase, DISPLAY_PHASES, PROJECT_PHASE_LABEL, toDisplayPhase } from "@/lib/projectPhase";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "next-intl";
@@ -21,11 +18,13 @@ import { resolveProjectContent } from "@/lib/contentTranslation";
 import { fetchActivityItems } from "@/lib/activityFeed";
 import IdeaBand from "@/components/showroom/IdeaBand";
 import LiveTicker from "@/components/showroom/LiveTicker";
-import ShowroomGrid from "@/components/showroom/ShowroomGrid";
-import ThreeSteps from "@/components/showroom/ThreeSteps";
 import StepsCarousel from "@/components/showroom/StepsCarousel";
-import GoodPyramid from "@/components/showroom/GoodPyramid";
-import ManifestoSection from "@/components/showroom/ManifestoSection";
+import HomeHero from "@/components/showroom/HomeHero";
+import VisionMissionGoal from "@/components/showroom/VisionMissionGoal";
+import PhaseMap, { type PhaseMapStep } from "@/components/showroom/PhaseMap";
+import UsageNow from "@/components/showroom/UsageNow";
+import ToolsGrid from "@/components/showroom/ToolsGrid";
+
 const PAGE_SIZE = 12;
 
 export default async function HomePage({
@@ -44,7 +43,6 @@ export default async function HomePage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "HomePage" });
-  const tWhy = await getTranslations({ locale, namespace: "WhyHowWhat" });
   const { sort: sortParam, q, phase, category, sdg, page: pageStr } = await searchParams;
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const sdgNum = sdg ? parseInt(sdg) : undefined;
@@ -72,7 +70,8 @@ export default async function HomePage({
   const [
     totalFiltered,
     projects,
-    heroSlides,
+    firstHeroSlide,
+    livePhaseProjects,
   ] = await Promise.all([
     prisma.project.count({ where }),
     prisma.project.findMany({
@@ -86,10 +85,18 @@ export default async function HomePage({
         translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
       },
     }),
-    prisma.homeHeroSlide.findMany({ where: { locale }, orderBy: { order: "asc" } }),
+    prisma.homeHeroSlide.findFirst({ where: { locale }, orderBy: { order: "asc" } }),
+    // Feeds the "Just nu i fabriken" phase map below — one unbounded scan is
+    // fine at today's project counts (same assumption fetchActivityItems
+    // already makes); revisit if this ever needs pagination.
+    prisma.project.findMany({
+      where: { hiddenAt: null, archivedAt: null },
+      select: { phase: true, title: true, slug: true },
+      orderBy: { updatedAt: "desc" },
+    }),
   ]);
 
-  const heroSlidesForStack = heroSlides.map(toHeroSlideData);
+  const heroSlide = firstHeroSlide ? toHeroSlideData(firstHeroSlide) : null;
   const canEditHero = userId ? await isSiteAdmin(userId) : false;
 
   const [projectLikeCounts, taskProgressCards] = await Promise.all([
@@ -118,40 +125,35 @@ export default async function HomePage({
 
   const rawParams = { sort: sortParam, q, phase, category, sdg, page: pageStr };
 
-  // Del 3-14 — "Showroom"-sektionerna längst ner (design_handoff_startsida_showroom).
-  // Ticker/aktivitetsflöde delar samma fetchActivityItems()-källa som /sandbox's
-  // Activity Pulse.
   const showroomActivity = await fetchActivityItems(10);
   const recentActivity = showroomActivity.slice(0, 8);
   const tickerItems = recentActivity.map((a) => `${a.projectName} — ${a.action}`);
 
+  const phaseMapSteps: PhaseMapStep[] = DISPLAY_PHASES.map((p) => {
+    const inBucket = livePhaseProjects.filter((proj) => toDisplayPhase(proj.phase) === p.value);
+    return {
+      value: p.value,
+      label: PROJECT_PHASE_LABEL[p.value],
+      count: inBucket.length,
+      chips: inBucket.slice(0, 6).map((proj) => ({ title: proj.title, slug: proj.slug })),
+    };
+  });
+
   return (
     <div>
+      <HomeHero locale={locale} slide={heroSlide} canEdit={canEditHero} />
 
-      {/* Del 1 — Hero: full-bleed blurred bakgrund (följer bilden som visas i högen) + bilder + textkort.
-          -mt-8 tar bort main:s pt-8 så bakgrunden går ända upp mot toppmenyn utan marginal. */}
-      <div className="relative -mt-8" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-        <HeroPhotoStack slides={heroSlidesForStack} canEdit={canEditHero} />
-      </div>
+      <VisionMissionGoal locale={locale} />
 
       <LiveTicker items={tickerItems} />
 
       <StepsCarousel />
 
-      {/* Hero-slide-listan delas i flera delar så att projektlistan, "Så gör
-          du"-widgeten, "Målet" (WhyHowWhat) och ShowroomGrid kan sitta mellan
-          specifika slides: "Följ din dröm" (index 1) → Utforska projekt →
-          "Släpp inte taget" (index 2) → "Så gör du" (tre enkla steg) →
-          "Testa din dröm" (index 3) → "Målet" → "Hitta din tribe" (index 4)
-          → ShowroomGrid → "Alla vinner" (index 5). */}
-      <HeroSlideText slides={heroSlidesForStack.slice(1, 2)} canEdit={canEditHero} tiltOffset={1} />
-
       <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
         <IdeaBand />
       </section>
 
-      {/* Del 2 — Project Browser */}
-      <section id="projects">
+      <section id="projects" className="max-w-[1160px] mx-auto px-8" style={{ padding: "56px 32px" }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-bold text-dark-slate">
@@ -187,39 +189,11 @@ export default async function HomePage({
         )}
       </section>
 
-      <HeroSlideText slides={heroSlidesForStack.slice(2, 3)} canEdit={canEditHero} tiltOffset={2} />
+      <PhaseMap locale={locale} steps={phaseMapSteps} />
 
-      <section id="showroom-three-steps">
-        <ThreeSteps locale={locale} />
-      </section>
+      <UsageNow locale={locale} projects={projectsWithLikes} />
 
-      <HeroSlideText slides={heroSlidesForStack.slice(3, 4)} canEdit={canEditHero} tiltOffset={3} />
-
-      <WhyHowWhat
-        eyebrow={tWhy("eyebrow")}
-        headings={{ why: tWhy("whyHeading"), how: tWhy("howHeading"), what: tWhy("whatHeading") }}
-        bodies={{ why: tWhy("whyBody"), how: tWhy("howBody"), what: tWhy("whatBody") }}
-      />
-
-      <HeroSlideText slides={heroSlidesForStack.slice(4, 5)} canEdit={canEditHero} tiltOffset={4} />
-
-      <ShowroomGrid />
-
-      <HeroSlideText slides={heroSlidesForStack.slice(5)} canEdit={canEditHero} tiltOffset={5} />
-
-      <div className="space-y-16">
-
-      {/* Del 3–14 — "Showroom"-sektionerna (design_handoff_startsida_showroom),
-          medvetet placerade längst ner även där de dubblerar innehåll som redan
-          finns högre upp (Pillars, WhyHowWhat, onboarding-steg, projektlistan). */}
-      <section id="showroom-pyramid">
-        <GoodPyramid locale={locale} />
-      </section>
-
-      </div>
-
-      <ManifestoSection locale={locale} />
-
+      <ToolsGrid locale={locale} />
     </div>
   );
 }
