@@ -6,16 +6,19 @@ import { homeSansFont, showroomMonoFont } from "@/lib/fonts";
 
 // Five steps (Dröm/Utforska/Skapa/Förändra/En bättre värld — 2026-08
 // homepage redesign). Ball colors and the dashed line between them keep the
-// same gul-till-röd gradient as before; the photos are the same five real
-// homepage images used pre-redesign (public/img/, not the showroom/ toned
-// icon set), just reordered to match the new step narrative. The active
-// step's photo now fills half the card (matching the approved mockup)
-// instead of the old small circular icon treatment.
+// same gul-till-röd gradient as before. Each photo is picked to actually
+// match its step's theme (checked by looking at each image, not just its
+// filename): do-you-have-a-dream = the floating dream-balloon illustration
+// (Dröm); Slide2 = stuck-at-a-desk-dreaming-of-more (Utforska, i.e. looking
+// beyond where you are now); what-is-goodtribes = the dream-factory/team
+// building scene (Skapa); want-a-change = breaking away from the crowd
+// toward a new path (Förändra); want-to-be-a-winner = the full Leva/Må/Göra
+// Gott pyramid climb (En bättre värld).
 const STEPS = [
-  { img: "Slide2.png", ball: "#ffb800" },
-  { img: "want-a-change.png", ball: "#ff9700" },
-  { img: "do-you-have-a-dream.png", ball: "#ff8700" },
-  { img: "what-is-goodtribes.png", ball: "#ff7600" },
+  { img: "do-you-have-a-dream.png", ball: "#ffb800" },
+  { img: "Slide2.png", ball: "#ff9700" },
+  { img: "what-is-goodtribes.png", ball: "#ff8700" },
+  { img: "want-a-change.png", ball: "#ff7600" },
   { img: "want-to-be-a-winner.png", ball: "var(--color-coral)" },
 ] as const;
 
