@@ -91,7 +91,7 @@ export default async function HomePage({
     // already makes); revisit if this ever needs pagination.
     prisma.project.findMany({
       where: { hiddenAt: null, archivedAt: null },
-      select: { phase: true, title: true, slug: true },
+      select: { phase: true, title: true, slug: true, isSandbox: true },
       orderBy: { updatedAt: "desc" },
     }),
   ]);
@@ -135,7 +135,7 @@ export default async function HomePage({
       value: p.value,
       label: PROJECT_PHASE_LABEL[p.value],
       count: inBucket.length,
-      chips: inBucket.slice(0, 6).map((proj) => ({ title: proj.title, slug: proj.slug })),
+      chips: inBucket.slice(0, 6).map((proj) => ({ title: proj.title, slug: proj.slug, isSandbox: proj.isSandbox })),
     };
   });
 

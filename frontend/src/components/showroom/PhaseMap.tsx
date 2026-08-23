@@ -7,7 +7,7 @@ export type PhaseMapStep = {
   value: string;
   label: string;
   count: number;
-  chips: { title: string; slug: string }[];
+  chips: { title: string; slug: string; isSandbox: boolean }[];
 };
 
 export default async function PhaseMap({ locale, steps }: { locale: Locale; steps: PhaseMapStep[] }) {
@@ -40,7 +40,11 @@ export default async function PhaseMap({ locale, steps }: { locale: Locale; step
                     <Link
                       key={chip.slug}
                       href={`/projects/${chip.slug}`}
-                      className="rounded-full border border-muted-teal/40 text-dark-slate/70 hover:border-coral hover:text-coral transition-colors truncate"
+                      className={`rounded-full border transition-colors truncate ${
+                        chip.isSandbox
+                          ? "border-orange-500/50 text-orange-600 hover:border-orange-500 hover:bg-orange-50"
+                          : "border-seagrass/50 text-seagrass hover:border-seagrass hover:bg-seagrass/10"
+                      }`}
                       style={{ fontSize: 11.5, padding: "3px 9px", maxWidth: 140 }}
                       title={chip.title}
                     >
