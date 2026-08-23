@@ -5,6 +5,15 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     {{- include "goodtribes.labels" . | nindent 4 }}
+  annotations:
+    # Standard annotation-based scrape discovery — works with a plain
+    # Prometheus kubernetes_sd_configs setup, unlike a ServiceMonitor which
+    # needs the Prometheus Operator CRDs installed. /api/metrics itself
+    # requires a CRON_SECRET bearer token (see its route), so a scrape
+    # config also needs `bearer_token`/`bearer_token_file` set to that value.
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/api/metrics"
+    prometheus.io/port: "{{ .Values.frontend.service.port }}"
 spec:
   selector:
     {{- include "goodtribes.selectorLabels" "frontend" | nindent 4 }}
