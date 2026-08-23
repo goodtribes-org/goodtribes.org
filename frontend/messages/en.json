@@ -1760,27 +1760,9 @@
     "doneButton": "Done"
   },
   "HeroCarouselEditor": {
-    "confirmDeleteSlide": "Delete this slide?",
-    "editButton": "Edit",
-    "removeButton": "Remove",
-    "addSlideButton": "+ Add slide",
-    "altTextPlaceholder": "Alt text (image description)",
     "headingPlaceholder": "Heading",
     "bodyLabel": "Text",
-    "bodyLine2Placeholder": "Extra text line after the text (optional)",
-    "obstaclesLabel": "Bullet list (optional)",
-    "addObstacleButton": "+ Add bullet",
-    "obstacleLeadPlaceholder": "Heading",
-    "obstacleTextPlaceholder": "Text",
-    "outroLabel": "Text after the bullet list (optional)",
-    "pointsLabel": "Percentage list (optional)",
-    "addPointButton": "+ Add row",
-    "pointPctPlaceholder": "10%",
-    "pointTextPlaceholder": "Text",
-    "menuLabelPlaceholder": "Menu label",
-    "tintColorLabel": "Tint color",
-    "tintOpacityLabel": "Intensity",
-    "cancelButton": "Cancel",
+    "savedNotice": "Saved",
     "saveButton": "Save"
   },
   "ResourceLibrary": {
@@ -2573,10 +2555,6 @@
     "cancelLabel": "Cancel",
     "runLabel": "Run backfill"
   },
-  "HeroHeadingEditor": {
-    "headingPlaceholder": "Heading above the hero carousel",
-    "saveButton": "Save"
-  },
   "MaturityWidget": {
     "title": "Maturity",
     "readyToScale": "Ready to scale",
@@ -2584,12 +2562,6 @@
     "calculating": "Calculating...",
     "calculate": "Calculate",
     "scoreLabel": "Score: {score}/100"
-  },
-  "OnboardingStepsEditor": {
-    "textPlaceholder": "Text",
-    "linkPlaceholder": "Link",
-    "saveAllSteps": "Save all steps",
-    "saved": "Saved."
   },
   "TokenPayoutDialog": {
     "title": "Confirm token payout",
@@ -3058,13 +3030,9 @@
   },
   "HeroCarouselAdminPage": {
     "heading": "Homepage ({locale})",
-    "intro": "Heading, image carousel, and the six starting steps shown at the top of the homepage for {localeName} visitors.",
+    "intro": "Heading and text in the hero section at the top of the homepage for {localeName} visitors.",
     "localeSv": "Swedish",
-    "localeEn": "English",
-    "headingSectionTitle": "Heading",
-    "defaultHeading": "Welcome to GoodTribes",
-    "carouselSectionTitle": "Hero carousel",
-    "stepsSectionTitle": "Starting steps (the six circles)"
+    "localeEn": "English"
   },
   "SandboxHeroAdminPage": {
     "heading": "Sandbox ({locale})",

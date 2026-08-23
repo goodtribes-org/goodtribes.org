@@ -78,7 +78,7 @@ export default async function HomeHero({
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)", marginBottom: 18 }}>
           {t("heroEyebrow")}
         </p>
-        <h1 className="text-dark-slate" style={{ fontSize: 56, lineHeight: 1.05, letterSpacing: "-.025em", maxWidth: "15ch", textWrap: "balance" }}>
+        <h1 className="text-dark-slate" style={{ fontWeight: 600, fontSize: 56, lineHeight: 1.05, letterSpacing: "-.025em", maxWidth: "15ch", textWrap: "balance" }}>
           {heading}
         </h1>
         <div style={{ marginTop: 26 }}>

@@ -8,13 +8,15 @@ import { homeSansFont, showroomMonoFont } from "@/lib/fonts";
 // homepage redesign). Ball colors and the dashed line between them keep the
 // same gul-till-röd gradient as before; the photos are the same five real
 // homepage images used pre-redesign (public/img/, not the showroom/ toned
-// icon set), just reordered to match the new step narrative.
+// icon set), just reordered to match the new step narrative. The active
+// step's photo now fills half the card (matching the approved mockup)
+// instead of the old small circular icon treatment.
 const STEPS = [
-  { img: "Slide2.png", tint: "rgba(9,120,9,.14)", ball: "#ffb800" },
-  { img: "want-a-change.png", tint: "rgba(240,180,41,.16)", ball: "#ff9700" },
-  { img: "do-you-have-a-dream.png", tint: "rgba(240,180,41,.14)", ball: "#ff8700" },
-  { img: "what-is-goodtribes.png", tint: "rgba(255,102,0,.12)", ball: "#ff7600" },
-  { img: "want-to-be-a-winner.png", tint: "rgba(136,213,245,.4)", ball: "var(--color-coral)" },
+  { img: "Slide2.png", ball: "#ffb800" },
+  { img: "want-a-change.png", ball: "#ff9700" },
+  { img: "do-you-have-a-dream.png", ball: "#ff8700" },
+  { img: "what-is-goodtribes.png", ball: "#ff7600" },
+  { img: "want-to-be-a-winner.png", ball: "var(--color-coral)" },
 ] as const;
 
 const LINE_SEGMENT_COLORS = ["#ffcc00", "#e86903", "#dd3704", "#d10505"];
@@ -28,7 +30,7 @@ export default function StepsCarousel() {
 
   return (
     <div
-      className="w-full"
+      className={`${homeSansFont.className} w-full`}
       style={{
         marginLeft: "calc(50% - 50vw)",
         marginRight: "calc(50% - 50vw)",
@@ -41,15 +43,11 @@ export default function StepsCarousel() {
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "rgba(37,68,65,.45)" }}>
           {t("eyebrow").toUpperCase()}
         </p>
-        <h2 className={`${homeSansFont.className} text-dark-slate`} style={{ fontWeight: 600, letterSpacing: "-.01em", fontSize: "clamp(28px,3vw,36px)", marginBottom: 32 }}>
+        <h2 className="text-dark-slate" style={{ fontWeight: 600, letterSpacing: "-.01em", fontSize: "clamp(28px,3vw,36px)", marginBottom: 32 }}>
           {t("heading")}
         </h2>
 
         <div className="relative mx-auto" style={{ maxWidth: 820, marginBottom: 28 }}>
-          {/* Linjen går mellan mittpunkten på boll 1 och mittpunkten på sista bollen
-              (100% / (2 * antal steg) från varje kant) — kolumnerna nedan delar exakt
-              samma bredd, så bollarna hamnar precis ovanpå linjens ändar och täcker dem
-              (bollarna är solida, ingen opacity, så linjen aldrig lyser igenom). */}
           <div
             className="hidden sm:flex absolute"
             style={{ top: 32, left: `${100 / (2 * STEPS.length)}%`, right: `${100 / (2 * STEPS.length)}%` }}
@@ -69,7 +67,7 @@ export default function StepsCarousel() {
                 style={{ gap: 6 }}
               >
                 <span
-                  className={`${homeSansFont.className} font-bold`}
+                  className="font-bold"
                   style={{
                     width: 64,
                     height: 64,
@@ -119,21 +117,18 @@ export default function StepsCarousel() {
           >
             ‹
           </button>
-          <div className="bg-white border border-muted-teal/40 flex flex-wrap items-center gap-8 flex-1" style={{ borderRadius: 26, padding: "clamp(26px,3vw,44px)" }}>
-            <div
-              className="rounded-full overflow-hidden flex-shrink-0"
-              style={{ width: "clamp(120px,14vw,170px)", height: "clamp(120px,14vw,170px)", background: step.tint }}
-            >
-              <img src={`/img/${step.img}`} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 26%" }} />
+          <div className="bg-white border border-muted-teal/40 grid flex-1 overflow-hidden" style={{ borderRadius: 26, gridTemplateColumns: "1fr 1fr" }}>
+            <div style={{ position: "relative", aspectRatio: "16/10" }}>
+              <img src={`/img/${step.img}`} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
-            <div style={{ flex: "1 1 320px" }}>
+            <div style={{ padding: "36px 40px 36px 32px", minWidth: 0 }}>
               <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
                 {t(`step${active}Label`).toUpperCase()}
               </p>
-              <h3 className={`${homeSansFont.className} text-dark-slate`} style={{ fontWeight: 600, fontSize: "clamp(20px,2.2vw,26px)", lineHeight: 1.2, letterSpacing: "-.01em" }}>
+              <h3 className="text-dark-slate" style={{ fontWeight: 600, fontSize: "clamp(20px,2.2vw,26px)", lineHeight: 1.2, letterSpacing: "-.01em", marginTop: 8 }}>
                 {t(`step${active}Title`)}
               </h3>
-              <p className="text-dark-slate/70 mt-2" style={{ fontSize: 16, lineHeight: 1.65, maxWidth: "56ch" }}>
+              <p className="text-dark-slate/70" style={{ fontSize: 15, lineHeight: 1.6, marginTop: 10 }}>
                 {t(`step${active}Body`)}
               </p>
             </div>

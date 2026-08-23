@@ -1760,27 +1760,9 @@
     "doneButton": "Klar"
   },
   "HeroCarouselEditor": {
-    "confirmDeleteSlide": "Ta bort den här sliden?",
-    "editButton": "Redigera",
-    "removeButton": "Ta bort",
-    "addSlideButton": "+ Lägg till slide",
-    "altTextPlaceholder": "Alt-text (beskrivning av bilden)",
     "headingPlaceholder": "Rubrik",
     "bodyLabel": "Text",
-    "bodyLine2Placeholder": "Extra textrad efter texten (valfritt)",
-    "obstaclesLabel": "Punktlista (valfritt)",
-    "addObstacleButton": "+ Lägg till punkt",
-    "obstacleLeadPlaceholder": "Rubrik",
-    "obstacleTextPlaceholder": "Text",
-    "outroLabel": "Text efter punktlistan (valfritt)",
-    "pointsLabel": "Procentlista (valfritt)",
-    "addPointButton": "+ Lägg till rad",
-    "pointPctPlaceholder": "10 %",
-    "pointTextPlaceholder": "Text",
-    "menuLabelPlaceholder": "Menyetikett",
-    "tintColorLabel": "Färgton",
-    "tintOpacityLabel": "Intensitet",
-    "cancelButton": "Avbryt",
+    "savedNotice": "Sparat",
     "saveButton": "Spara"
   },
   "ResourceLibrary": {
@@ -2573,10 +2555,6 @@
     "cancelLabel": "Avbryt",
     "runLabel": "Kör bakfyllning"
   },
-  "HeroHeadingEditor": {
-    "headingPlaceholder": "Rubrik ovanför hero-karusellen",
-    "saveButton": "Spara"
-  },
   "MaturityWidget": {
     "title": "Mognad",
     "readyToScale": "Redo att skalas",
@@ -2584,12 +2562,6 @@
     "calculating": "Beräknar...",
     "calculate": "Beräkna",
     "scoreLabel": "Poäng: {score}/100"
-  },
-  "OnboardingStepsEditor": {
-    "textPlaceholder": "Text",
-    "linkPlaceholder": "Länk",
-    "saveAllSteps": "Spara alla steg",
-    "saved": "Sparat."
   },
   "TokenPayoutDialog": {
     "title": "Bekräfta tokenutbetalning",
@@ -3058,13 +3030,9 @@
   },
   "HeroCarouselAdminPage": {
     "heading": "Startsidan ({locale})",
-    "intro": "Rubrik, bildkarusell och de sex startstegen som visas överst på startsidan för {localeName} besökare.",
+    "intro": "Rubrik och text i hero-sektionen högst upp på startsidan för {localeName} besökare.",
     "localeSv": "svenska",
-    "localeEn": "engelska",
-    "headingSectionTitle": "Rubrik",
-    "defaultHeading": "Välkommen till GoodTribes",
-    "carouselSectionTitle": "Hero-karusell",
-    "stepsSectionTitle": "Startstegen (de sex cirklarna)"
+    "localeEn": "engelska"
   },
   "SandboxHeroAdminPage": {
     "heading": "Sandbox ({locale})",
