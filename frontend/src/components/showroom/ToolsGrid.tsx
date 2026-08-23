@@ -36,7 +36,7 @@ export default async function ToolsGrid({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "HomePage.tools" });
 
   return (
-    <div className={`${homeSansFont.className} w-full`} style={{ background: "#fafaf8" }}>
+    <div className={`${homeSansFont.className} w-full`}>
       <div className="max-w-[1160px] mx-auto px-8" style={{ padding: "64px 32px 32px" }}>
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
           {t("eyebrow").toUpperCase()}
