@@ -27,9 +27,9 @@ function LogoMark({ size }: { size: number }) {
 
 function HeroLogoColumn() {
   return (
-    <div aria-hidden="true" className="hidden lg:flex flex-col items-center justify-center flex-shrink-0" style={{ width: 280 }}>
-      <LogoMark size={190} />
-      <p className="text-dark-slate" style={{ fontWeight: 600, fontSize: 32, letterSpacing: "-.01em", marginTop: 18 }}>
+    <div aria-hidden="true" className="hidden lg:flex flex-col items-center justify-center flex-shrink-0" style={{ width: 320, marginRight: 40 }}>
+      <LogoMark size={240} />
+      <p className="text-dark-slate" style={{ fontWeight: 600, fontSize: 44, letterSpacing: "-.01em", marginTop: 22 }}>
         GoodTribes
       </p>
     </div>
