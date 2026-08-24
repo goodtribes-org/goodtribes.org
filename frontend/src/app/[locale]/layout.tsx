@@ -152,7 +152,7 @@ export default async function LocaleLayout({
           <SandboxProvider>
             <ConsentGate needsAgreementConsent={!!session?.user?.needsAgreementConsent} />
             <SiteHeader>
-              <nav className="w-full pl-3 pr-6 py-3 flex items-center gap-6">
+              <nav className="relative w-full pl-3 pr-6 py-3 flex items-center gap-6">
                 <Link href="/" className="shrink-0 flex items-center gap-2.5">
                   <Image
                     src="/img/goodtribes-logo.svg"
