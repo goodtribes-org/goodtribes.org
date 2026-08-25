@@ -1917,8 +1917,24 @@
     "statusPublic": "Public",
     "makeVisible": "Make visible",
     "hide": "Hide",
+    "manage": "Manage",
     "delete": "Delete",
+    "confirmDelete": "Permanently delete \"{title}\"? This cannot be undone.",
     "empty": "No projects found."
+  },
+  "SiteAdminProjectDetail": {
+    "backLink": "All projects",
+    "viewProjectLink": "View project page →",
+    "currentOwnerHeading": "Current owner",
+    "transferHeading": "Transfer ownership",
+    "searchPlaceholder": "Search by name or email…",
+    "noMatches": "No users matched.",
+    "makeOwnerButton": "Make owner",
+    "alreadyOwnerLabel": "Already owner",
+    "transferredMessage": "Ownership transferred.",
+    "confirmTransfer": "Make {name} the new owner of this project?",
+    "genericPerson": "this person",
+    "unknownName": "Unknown name"
   },
   "ShopItemsEditor": {
     "genericError": "Something went wrong",
