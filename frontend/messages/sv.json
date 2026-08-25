@@ -1917,8 +1917,24 @@
     "statusPublic": "Publikt",
     "makeVisible": "Gör synligt",
     "hide": "Dölj",
+    "manage": "Hantera",
     "delete": "Ta bort",
+    "confirmDelete": "Ta bort \"{title}\" permanent? Det går inte att ångra.",
     "empty": "Inga projekt hittades."
+  },
+  "SiteAdminProjectDetail": {
+    "backLink": "Alla projekt",
+    "viewProjectLink": "Visa projektsidan →",
+    "currentOwnerHeading": "Nuvarande ägare",
+    "transferHeading": "Byt ägare",
+    "searchPlaceholder": "Sök på namn eller e-post…",
+    "noMatches": "Inga användare matchade.",
+    "makeOwnerButton": "Gör till ägare",
+    "alreadyOwnerLabel": "Redan ägare",
+    "transferredMessage": "Ägarbytet genomfördes.",
+    "confirmTransfer": "Gör {name} till ny ägare av projektet?",
+    "genericPerson": "den här personen",
+    "unknownName": "Okänt namn"
   },
   "ShopItemsEditor": {
     "genericError": "Något gick fel",

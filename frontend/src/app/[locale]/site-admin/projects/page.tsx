@@ -2,7 +2,8 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
-import { setProjectHidden, deleteProjectAsAdmin } from "./actions";
+import { setProjectHidden } from "./actions";
+import DeleteProjectButton from "./DeleteProjectButton";
 
 export default async function AdminProjectsPage({
   params,
@@ -65,6 +66,12 @@ export default async function AdminProjectsPage({
             <span className="text-xs text-dark-slate/50">
               {p.hiddenAt ? t("statusHidden") : t("statusPublic")}
             </span>
+            <Link
+              href={`/site-admin/projects/${p.slug}`}
+              className="text-xs font-medium px-2 py-1 rounded-md border border-gray-200 text-dark-slate/70 hover:border-seagrass hover:text-seagrass transition-colors"
+            >
+              {t("manage")}
+            </Link>
             <form
               action={async () => {
                 "use server";
@@ -78,19 +85,7 @@ export default async function AdminProjectsPage({
                 {p.hiddenAt ? t("makeVisible") : t("hide")}
               </button>
             </form>
-            <form
-              action={async () => {
-                "use server";
-                await deleteProjectAsAdmin(p.slug);
-              }}
-            >
-              <button
-                type="submit"
-                className="text-xs font-medium px-2 py-1 rounded-md border border-gray-200 text-red-600 hover:border-red-400 hover:bg-red-50 transition-colors"
-              >
-                {t("delete")}
-              </button>
-            </form>
+            <DeleteProjectButton slug={p.slug} title={p.title} />
           </div>
         ))}
         {projects.length === 0 && (
