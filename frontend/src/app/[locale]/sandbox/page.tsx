@@ -68,7 +68,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "SandboxPage" });
-  return { title: "Sandbox — GoodTribes.org", description: t("metaDescription") };
+  return { title: t("metaTitle"), description: t("metaDescription") };
 }
 
 const PAGE_SIZE = 12;

@@ -12,12 +12,12 @@ const NAV = [
   { href: "/site-admin/organisations", label: "Organisationer" },
   { href: "/site-admin/token-backfill", label: "Token-bakfyllning" },
   { href: "/site-admin/council", label: "Granskningsråd" },
-  { href: "/site-admin/sandbox-graduation", label: "Sandbox-ansökningar" },
+  { href: "/site-admin/sandbox-graduation", label: "Drömfabriken-ansökningar" },
   { href: "/site-admin/legal-type", label: "Juridisk form" },
   { href: "/site-admin/profit-distribution", label: "Vinstfördelning" },
   { href: "/site-admin/impact-fund", label: "Impact-fond" },
   { href: "/site-admin/hero-carousel", label: "Startsidan" },
-  { href: "/site-admin/sandbox-hero", label: "Sandbox" },
+  { href: "/site-admin/sandbox-hero", label: "Drömfabriken" },
   { href: "/site-admin/shop", label: "Shop" },
 ];
 

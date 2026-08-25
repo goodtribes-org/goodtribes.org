@@ -47,7 +47,7 @@ export async function getSandboxHero(locale: string): Promise<SandboxHeroData> {
   }
 
   return {
-    heroKicker: "Sandbox",
+    heroKicker: "Drömfabriken",
     heroDescription: "",
     headings: { levaGott: "Leva Gott", maGott: "Må Gott", goraGott: "Göra Gott", dreamGood: "Dröm stort" },
     bodies: { levaGott: "", maGott: "", goraGott: "", dreamGood: "" },
