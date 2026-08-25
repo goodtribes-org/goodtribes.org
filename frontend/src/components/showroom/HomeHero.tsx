@@ -68,7 +68,7 @@ export default async function HomeHero({
 
   return (
     <div className={`${homeSansFont.className} relative`}>
-      <div className="max-w-[1160px] mx-auto px-8 relative flex items-center gap-10" style={{ padding: "76px 32px 26px" }}>
+      <div className="max-w-[1160px] mx-auto px-8 relative flex items-center gap-10" style={{ padding: "32px 32px 26px" }}>
         {canEdit && (
           <Link
             href="/site-admin/hero-carousel"
