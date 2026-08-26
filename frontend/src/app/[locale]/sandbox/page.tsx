@@ -22,6 +22,7 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
 import { isSiteAdmin } from "@/lib/authz";
 import { getSandboxHero } from "@/lib/sandboxHero";
+import { getSiteCopyMap } from "@/lib/siteCopy";
 
 const IDEA_PREVIEW_SIZE = 8;
 const DRAFT_PREVIEW_SIZE = 8;
@@ -98,10 +99,12 @@ export default async function SandboxPage({
   const where = { isSandbox: true };
   const session = await auth();
   const userId = session?.user?.id;
-  const [canEditHero, heroData] = await Promise.all([
+  const [canEditHero, heroData, copy] = await Promise.all([
     userId ? isSiteAdmin(userId) : Promise.resolve(false),
     getSandboxHero(locale),
+    getSiteCopyMap(locale),
   ]);
+  const c = (key: string) => copy[`SandboxPage.${key}`] ?? t(key);
 
   const [
     total,
@@ -256,16 +259,16 @@ export default async function SandboxPage({
       <section id="projects" className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-dark-slate">
-            {t("exploreHeading")} <span className="text-dark-slate/40 font-normal">({total})</span>
+            {c("exploreHeading")} <span className="text-dark-slate/40 font-normal">({total})</span>
           </h2>
           <SortToggleContainer sort={sort} basePath="/sandbox" />
         </div>
 
         {projectsWithLikes.length === 0 ? (
           <div className="border border-dashed border-amber-300 rounded-lg p-16 text-center">
-            <p className="text-dark-slate/40 text-sm mb-3">{t("emptyProjects")}</p>
+            <p className="text-dark-slate/40 text-sm mb-3">{c("emptyProjects")}</p>
             <Link href="/projects/new" className="text-coral hover:underline text-sm">
-              {t("startFirstProject")}
+              {c("startFirstProject")}
             </Link>
           </div>
         ) : (
@@ -277,7 +280,7 @@ export default async function SandboxPage({
                   href="/projects/new"
                   className="rounded-lg border-2 border-dashed border-coral/60 bg-coral/5 hover:bg-coral/10 transition-colors flex items-center justify-center aspect-[4/3] text-coral text-sm font-semibold text-center p-4"
                 >
-                  {t("startNext")}
+                  {c("startNext")}
                 </Link>
               )}
               {Array.from({ length: Math.max(ghostCount - 1, 0) }).map((_, i) => (
@@ -285,7 +288,7 @@ export default async function SandboxPage({
                   key={`ghost-${i}`}
                   className="rounded-lg border-2 border-dashed border-coral/60 bg-coral/5 flex items-center justify-center aspect-[4/3] text-coral text-sm text-center p-4"
                 >
-                  {t("aiSeedingSoon")}
+                  {c("aiSeedingSoon")}
                 </div>
               ))}
             </div>
@@ -297,17 +300,17 @@ export default async function SandboxPage({
       <section id="ideas" className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-dark-slate">
-            {t("exploreIdeasHeading")} <span className="text-dark-slate/40 font-normal">({ideaCount})</span>
+            {c("exploreIdeasHeading")} <span className="text-dark-slate/40 font-normal">({ideaCount})</span>
           </h2>
           <Link href="/ideas" className="text-xs text-coral hover:underline">
-            {t("seeAllIdeasLink")}
+            {c("seeAllIdeasLink")}
           </Link>
         </div>
         {ideas.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p className="text-dark-slate/50 mb-4">{t("noIdeasYet")}</p>
+            <p className="text-dark-slate/50 mb-4">{c("noIdeasYet")}</p>
             <Link href="/ideas/new" className="text-coral hover:underline text-sm">
-              {t("shareFirstIdeaLink")}
+              {c("shareFirstIdeaLink")}
             </Link>
           </div>
         ) : (
@@ -322,10 +325,10 @@ export default async function SandboxPage({
           <section id="lean-canvas">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-dark-slate">
-                {t("exploreLeanCanvasHeading")} <span className="text-dark-slate/40 font-normal">({leanCanvasCount})</span>
+                {c("exploreLeanCanvasHeading")} <span className="text-dark-slate/40 font-normal">({leanCanvasCount})</span>
               </h2>
               <Link href="/lean-canvas" className="text-xs text-coral hover:underline">
-                {t("seeAllLeanCanvasLink")}
+                {c("seeAllLeanCanvasLink")}
               </Link>
             </div>
             {leanCanvasDrafts.length === 0 ? (
@@ -364,10 +367,10 @@ export default async function SandboxPage({
           <section id="whiteboard">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-dark-slate">
-                {t("exploreWhiteboardHeading")} <span className="text-dark-slate/40 font-normal">({whiteboardCount})</span>
+                {c("exploreWhiteboardHeading")} <span className="text-dark-slate/40 font-normal">({whiteboardCount})</span>
               </h2>
               <Link href="/whiteboard" className="text-xs text-coral hover:underline">
-                {t("seeAllWhiteboardLink")}
+                {c("seeAllWhiteboardLink")}
               </Link>
             </div>
             {whiteboardDrafts.length === 0 ? (
@@ -404,10 +407,10 @@ export default async function SandboxPage({
           <section id="value-proposition">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-dark-slate">
-                {t("exploreValuePropositionHeading")} <span className="text-dark-slate/40 font-normal">({valuePropositionCount})</span>
+                {c("exploreValuePropositionHeading")} <span className="text-dark-slate/40 font-normal">({valuePropositionCount})</span>
               </h2>
               <Link href="/value-proposition" className="text-xs text-coral hover:underline">
-                {t("seeAllValuePropositionLink")}
+                {c("seeAllValuePropositionLink")}
               </Link>
             </div>
             {valuePropositionDrafts.length === 0 ? (
@@ -450,11 +453,11 @@ export default async function SandboxPage({
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-lg font-bold text-dark-slate">{t("pulseHeading")}</h2>
-                <p className="text-xs text-dark-slate/50 mt-0.5">{t("pulseSubheading")}</p>
+                <h2 className="text-lg font-bold text-dark-slate">{c("pulseHeading")}</h2>
+                <p className="text-xs text-dark-slate/50 mt-0.5">{c("pulseSubheading")}</p>
               </div>
               <Link href="/feed" className="text-xs text-coral hover:underline">
-                {t("seeAllPulseLink")}
+                {c("seeAllPulseLink")}
               </Link>
             </div>
             <ActivityPulse />

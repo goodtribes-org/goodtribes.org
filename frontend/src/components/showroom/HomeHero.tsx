@@ -57,14 +57,20 @@ export default async function HomeHero({
   locale,
   slide,
   canEdit,
+  copy,
 }: {
   locale: Locale;
   slide: HeroSlideData | null;
   canEdit: boolean;
+  copy: Record<string, string>;
 }) {
   const t = await getTranslations({ locale, namespace: "HomePage" });
   const heading = slide?.heading || t("heroDefaultHeading");
   const body = slide?.body || t("heroDefaultBody");
+  const eyebrow = copy["HomePage.heroEyebrow"] ?? t("heroEyebrow");
+  const editLink = copy["HomePage.heroEditLink"] ?? t("heroEditLink");
+  const ctaPrimary = copy["HomePage.heroCtaPrimary"] ?? t("heroCtaPrimary");
+  const ctaSecondary = copy["HomePage.heroCtaSecondary"] ?? t("heroCtaSecondary");
 
   return (
     <div className={`${homeSansFont.className} relative`}>
@@ -74,12 +80,12 @@ export default async function HomeHero({
             href="/site-admin/hero-carousel"
             className="absolute top-3 right-3 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors"
           >
-            ✎ {t("heroEditLink")}
+            ✎ {editLink}
           </Link>
         )}
         <div className="flex-1 min-w-0">
           <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)", marginBottom: 18 }}>
-            {t("heroEyebrow")}
+            {eyebrow}
           </p>
           <h1 className="text-dark-slate" style={{ fontWeight: 600, fontSize: 56, lineHeight: 1.05, letterSpacing: "-.025em", maxWidth: "15ch", textWrap: "balance" }}>
             {heading}
@@ -88,10 +94,10 @@ export default async function HomeHero({
             <HeroBody html={body} />
             <div className="flex gap-2.5" style={{ marginTop: 24 }}>
               <Link href="/projects/new" className="inline-flex items-center justify-center bg-coral text-white font-semibold rounded-lg hover:bg-dark-slate transition-colors" style={{ padding: "12px 22px", fontSize: 14.5 }}>
-                {t("heroCtaPrimary")}
+                {ctaPrimary}
               </Link>
               <Link href="#projects" className="inline-flex items-center justify-center bg-white border border-muted-teal/40 text-dark-slate font-medium rounded-lg hover:border-coral transition-colors" style={{ padding: "12px 22px", fontSize: 14.5 }}>
-                {t("heroCtaSecondary")}
+                {ctaSecondary}
               </Link>
             </div>
           </div>

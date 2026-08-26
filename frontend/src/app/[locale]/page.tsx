@@ -24,6 +24,7 @@ import VisionMissionGoal from "@/components/showroom/VisionMissionGoal";
 import PhaseMap, { type PhaseMapStep } from "@/components/showroom/PhaseMap";
 import UsageNow from "@/components/showroom/UsageNow";
 import ToolsGrid from "@/components/showroom/ToolsGrid";
+import { getSiteCopyMap } from "@/lib/siteCopy";
 
 const PAGE_SIZE = 12;
 
@@ -72,6 +73,7 @@ export default async function HomePage({
     projects,
     firstHeroSlide,
     livePhaseProjects,
+    copy,
   ] = await Promise.all([
     prisma.project.count({ where }),
     prisma.project.findMany({
@@ -94,6 +96,7 @@ export default async function HomePage({
       select: { phase: true, title: true, slug: true, isSandbox: true },
       orderBy: { updatedAt: "desc" },
     }),
+    getSiteCopyMap(locale),
   ]);
 
   const heroSlide = firstHeroSlide ? toHeroSlideData(firstHeroSlide) : null;
@@ -123,6 +126,8 @@ export default async function HomePage({
     taskProgress: taskProgressBySlug.get(p.slug) ?? { total: 0, done: 0 },
   }));
 
+  const c = (key: string) => copy[`HomePage.${key}`] ?? t(key);
+
   const rawParams = { sort: sortParam, q, phase, category, sdg, page: pageStr };
 
   const showroomActivity = await fetchActivityItems(10);
@@ -141,36 +146,36 @@ export default async function HomePage({
 
   return (
     <div>
-      <HomeHero locale={locale} slide={heroSlide} canEdit={canEditHero} />
+      <HomeHero locale={locale} slide={heroSlide} canEdit={canEditHero} copy={copy} />
 
-      <VisionMissionGoal locale={locale} />
+      <VisionMissionGoal locale={locale} copy={copy} />
 
       <LiveTicker items={tickerItems} locale={locale} />
 
-      <StepsCarousel />
+      <StepsCarousel copy={copy} />
 
       <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-        <IdeaBand />
+        <IdeaBand copy={copy} />
       </section>
 
       <section id="projects" className="max-w-[1160px] mx-auto px-8" style={{ padding: "56px 32px" }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-bold text-dark-slate">
-              {t("exploreProjectsHeading")}{" "}
+              {c("exploreProjectsHeading")}{" "}
               <span className="text-dark-slate/40 font-normal">({totalFiltered})</span>
             </h2>
             <SortToggle sort={sort} q={q} phase={phase} category={category} sdg={sdg} basePath="/" />
           </div>
           <Link href="/projects" className="text-xs text-coral hover:underline">
-            {t("seeAllProjectsLink")}
+            {c("seeAllProjectsLink")}
           </Link>
         </div>
         {projects.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p className="text-dark-slate/50 mb-4">{t("noProjectsMatchFilters")}</p>
+            <p className="text-dark-slate/50 mb-4">{c("noProjectsMatchFilters")}</p>
             <Link href="/" className="text-coral hover:underline text-sm">
-              {t("clearFiltersLink")}
+              {c("clearFiltersLink")}
             </Link>
           </div>
         ) : (
@@ -189,11 +194,11 @@ export default async function HomePage({
         )}
       </section>
 
-      <PhaseMap locale={locale} steps={phaseMapSteps} />
+      <PhaseMap locale={locale} steps={phaseMapSteps} copy={copy} />
 
-      <UsageNow locale={locale} projects={projectsWithLikes} />
+      <UsageNow locale={locale} projects={projectsWithLikes} copy={copy} />
 
-      <ToolsGrid locale={locale} />
+      <ToolsGrid locale={locale} copy={copy} />
     </div>
   );
 }

@@ -32,20 +32,21 @@ const COLOR_HEX: Record<string, string> = {
   ink: "var(--color-dark-slate)",
 };
 
-export default async function ToolsGrid({ locale }: { locale: Locale }) {
+export default async function ToolsGrid({ locale, copy }: { locale: Locale; copy: Record<string, string> }) {
   const t = await getTranslations({ locale, namespace: "HomePage.tools" });
+  const c = (key: string) => copy[`HomePage.tools.${key}`] ?? t(key);
 
   return (
     <div className={`${homeSansFont.className} w-full`}>
       <div className="max-w-[1160px] mx-auto px-8" style={{ padding: "64px 32px 32px" }}>
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
-          {t("eyebrow").toUpperCase()}
+          {c("eyebrow").toUpperCase()}
         </p>
         <h2 className="text-dark-slate" style={{ fontSize: 30, lineHeight: 1.2, letterSpacing: "-.02em", marginTop: 10, maxWidth: "20ch" }}>
-          {t("heading")}
+          {c("heading")}
         </h2>
         <p className="text-dark-slate/70" style={{ fontSize: 15, lineHeight: 1.6, marginTop: 10, maxWidth: "52ch" }}>
-          {t("intro")}
+          {c("intro")}
         </p>
       </div>
 
@@ -58,8 +59,8 @@ export default async function ToolsGrid({ locale }: { locale: Locale }) {
                   {tool.path}
                 </svg>
               </div>
-              <p className="text-dark-slate" style={{ fontWeight: 600, fontSize: 14 }}>{t(`${tool.key}Label`)}</p>
-              <p className="text-dark-slate/65" style={{ fontSize: 12.5, lineHeight: 1.5 }}>{t(`${tool.key}Body`)}</p>
+              <p className="text-dark-slate" style={{ fontWeight: 600, fontSize: 14 }}>{c(`${tool.key}Label`)}</p>
+              <p className="text-dark-slate/65" style={{ fontSize: 12.5, lineHeight: 1.5 }}>{c(`${tool.key}Body`)}</p>
             </div>
           ))}
         </div>
@@ -67,9 +68,9 @@ export default async function ToolsGrid({ locale }: { locale: Locale }) {
 
       <div className="max-w-[1160px] mx-auto px-8 text-center" style={{ padding: "8px 32px 64px" }}>
         <Link href="/sandbox" className="inline-flex items-center justify-center bg-coral text-white font-semibold rounded-lg hover:bg-dark-slate transition-colors" style={{ padding: "13px 28px", fontSize: 15 }}>
-          {t("cta")}
+          {c("cta")}
         </Link>
-        <p className="text-dark-slate/45" style={{ fontSize: 12.5, marginTop: 14 }}>{t("reassurance")}</p>
+        <p className="text-dark-slate/45" style={{ fontSize: 12.5, marginTop: 14 }}>{c("reassurance")}</p>
       </div>
     </div>
   );

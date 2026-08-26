@@ -3076,6 +3076,13 @@
     "saveButton": "Save",
     "savingButton": "Saving…"
   },
+  "SiteCopyAdminPage": {
+    "heading": "Page text ({locale})",
+    "intro": "All static text on the homepage and Dream Factory, grouped by section. An empty field resets it to the default text.",
+    "localeSv": "SV",
+    "localeEn": "EN",
+    "saveButton": "Save all changes"
+  },
   "ExclusionCasePage": {
     "pageTitle": "Case — Review Council",
     "decisionNone": "No action",

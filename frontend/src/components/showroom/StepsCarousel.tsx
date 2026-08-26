@@ -24,8 +24,9 @@ const STEPS = [
 
 const LINE_SEGMENT_COLORS = ["#ffcc00", "#e86903", "#dd3704", "#d10505"];
 
-export default function StepsCarousel() {
+export default function StepsCarousel({ copy }: { copy: Record<string, string> }) {
   const t = useTranslations("Showroom.stepsCarousel");
+  const c = (key: string) => copy[`Showroom.stepsCarousel.${key}`] ?? t(key);
   const [active, setActive] = useState(0);
   const step = STEPS[active];
   const goPrev = () => setActive((i) => (i - 1 + STEPS.length) % STEPS.length);
@@ -44,10 +45,10 @@ export default function StepsCarousel() {
     >
       <div className="max-w-[1160px] mx-auto px-8" style={{ padding: "72px 32px" }}>
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "rgba(37,68,65,.45)" }}>
-          {t("eyebrow").toUpperCase()}
+          {c("eyebrow").toUpperCase()}
         </p>
         <h2 className="text-dark-slate" style={{ fontWeight: 600, letterSpacing: "-.01em", fontSize: "clamp(28px,3vw,36px)", marginBottom: 32 }}>
-          {t("heading")}
+          {c("heading")}
         </h2>
 
         <div className="relative mx-auto" style={{ maxWidth: 820, marginBottom: 28 }}>
@@ -95,7 +96,7 @@ export default function StepsCarousel() {
                     fontWeight: i === active ? 500 : 400,
                   }}
                 >
-                  {t(`step${i}Label`)}
+                  {c(`step${i}Label`)}
                 </span>
               </button>
             ))}
@@ -126,13 +127,13 @@ export default function StepsCarousel() {
             </div>
             <div style={{ padding: "36px 40px 36px 32px", minWidth: 0 }}>
               <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
-                {t(`step${active}Label`).toUpperCase()}
+                {c(`step${active}Label`).toUpperCase()}
               </p>
               <h3 className="text-dark-slate" style={{ fontWeight: 600, fontSize: "clamp(20px,2.2vw,26px)", lineHeight: 1.2, letterSpacing: "-.01em", marginTop: 8 }}>
-                {t(`step${active}Title`)}
+                {c(`step${active}Title`)}
               </h3>
               <p className="text-dark-slate/70" style={{ fontSize: 15, lineHeight: 1.6, marginTop: 10 }}>
-                {t(`step${active}Body`)}
+                {c(`step${active}Body`)}
               </p>
             </div>
           </div>
