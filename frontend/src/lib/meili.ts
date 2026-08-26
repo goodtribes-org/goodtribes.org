@@ -14,35 +14,173 @@ const headers = {
 // the order they were enqueued (not the order their network requests happen
 // to land), same guarantee callers previously got by awaiting sequentially.
 // This is what lets call sites drop `await` and stop blocking the user's
-// request on a Meilisearch round-trip; a real durable queue (surviving pod
-// restarts, retrying failures) would need a separate worker deployment this
-// session has no cluster access to build or verify against — deferred, see
-// CLAUDE.md.
-const indexQueues = new Map<string, Promise<void>>();
+// request on a Meilisearch round-trip.
+type Job =
+  | { id: string; kind: "index"; documents: object[] }
+  | { id: string; kind: "localeFilterable" }
+  | { id: string; kind: "delete"; docId: string };
 
-function enqueue(index: string, task: () => Promise<void>): Promise<void> {
-  const previous = indexQueues.get(index) ?? Promise.resolve();
-  const next = previous.then(task).catch((e: unknown) => {
-    logger.error("meilisearch operation failed", {
+type JobInput =
+  | { kind: "index"; documents: object[] }
+  | { kind: "localeFilterable" }
+  | { kind: "delete"; docId: string };
+
+async function runJob(index: string, job: Job): Promise<void> {
+  if (job.kind === "index") {
+    await fetch(`${HOST}/indexes/${index}/documents`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(job.documents),
+    });
+  } else if (job.kind === "localeFilterable") {
+    await fetch(`${HOST}/indexes/${index}/settings`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ filterableAttributes: ["locale"] }),
+    });
+  } else {
+    await fetch(`${HOST}/indexes/${index}/documents/${encodeURIComponent(job.docId)}`, {
+      method: "DELETE",
+      headers,
+    });
+  }
+}
+
+// --- Crash-recovery WAL (best-effort) ---
+//
+// The per-index promise chain below only lives in this process's memory —
+// a pod crash or restart mid-flight loses whatever was still queued. Redis
+// is a separate, already-deployed service (chat/kanban live-sync already
+// depend on it), so it survives a frontend pod restart and doubles as a
+// crash log here: every index's still-pending jobs are mirrored to a Redis
+// key on each change, and the next process that starts replays whatever it
+// finds there once. No new cluster component needed.
+//
+// Deliberately opt-in on REDIS_URL being set, checked *before* the Redis
+// module is even imported — this keeps meili.ts safe to import with no
+// Redis reachable at all (meiliQueue.test.ts calls indexDocuments directly
+// under Jest; local dev without Redis configured also still works). Matches
+// the lazy-import convention documented in githubSync.ts's sync lock: an
+// earlier version of that fix imported Redis eagerly and hung the Jest
+// suite trying to connect to a Redis that isn't running in test envs.
+//
+// Known limitation: replay only starts on the next call to enqueue() after
+// process start (not automatically at boot) — enqueue() awaits the resume
+// scan before its own job can touch the WAL key, closing the race where a
+// resumed job's entry would otherwise get clobbered by the very job that
+// triggered the resume. Still best-effort, not a guaranteed-once queue: a
+// crash between a successful Meilisearch write and this process clearing
+// the WAL entry replays that write again on the next restart (harmless —
+// indexing and delete-by-id are both idempotent).
+const pendingJobs = new Map<string, Job[]>();
+const WAL_TIMEOUT_MS = 250;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("meili WAL op timed out")), ms);
+    promise.then(
+      (v) => { clearTimeout(timer); resolve(v); },
+      (e) => { clearTimeout(timer); reject(e); }
+    );
+  });
+}
+
+function walKey(index: string) {
+  return `meili-queue:${index}`;
+}
+
+async function persistPending(index: string): Promise<void> {
+  if (!process.env.REDIS_URL) return;
+  try {
+    const { redisPub } = await import("@/lib/redis");
+    const jobs = pendingJobs.get(index) ?? [];
+    await withTimeout<number | "OK">(
+      jobs.length === 0 ? redisPub.del(walKey(index)) : redisPub.set(walKey(index), JSON.stringify(jobs)),
+      WAL_TIMEOUT_MS
+    );
+  } catch (e) {
+    logger.error("meilisearch queue: failed to persist crash-recovery snapshot", {
       index,
       error: e instanceof Error ? e.message : String(e),
     });
-  });
+  }
+}
+
+let resumedPromise: Promise<void> | null = null;
+function ensureResumedFromCrash(): Promise<void> {
+  if (!process.env.REDIS_URL) return Promise.resolve();
+  if (!resumedPromise) {
+    resumedPromise = (async () => {
+      try {
+        const { redisPub } = await import("@/lib/redis");
+        const keys = await redisPub.keys("meili-queue:*");
+        for (const key of keys) {
+          const index = key.slice("meili-queue:".length);
+          const raw = await redisPub.get(key);
+          if (!raw) continue;
+          const jobs = JSON.parse(raw) as Job[];
+          if (jobs.length === 0) continue;
+          logger.info("meilisearch queue: resuming jobs left over from a previous process", {
+            index,
+            count: jobs.length,
+          });
+          for (const job of jobs) track(index, job);
+        }
+      } catch (e) {
+        logger.error("meilisearch queue: failed to resume after restart", {
+          error: e instanceof Error ? e.message : String(e),
+        });
+      }
+    })();
+  }
+  return resumedPromise;
+}
+
+const indexQueues = new Map<string, Promise<void>>();
+
+function track(index: string, job: Job): Promise<void> {
+  const list = pendingJobs.get(index) ?? [];
+  list.push(job);
+  pendingJobs.set(index, list);
+  void persistPending(index);
+
+  const previous = indexQueues.get(index) ?? Promise.resolve();
+  const next = previous
+    .then(() => runJob(index, job))
+    .catch((e: unknown) => {
+      logger.error("meilisearch operation failed", {
+        index,
+        error: e instanceof Error ? e.message : String(e),
+      });
+    })
+    .finally(() => {
+      const current = pendingJobs.get(index) ?? [];
+      pendingJobs.set(index, current.filter((j) => j.id !== job.id));
+      void persistPending(index);
+    });
   indexQueues.set(index, next);
   return next;
+}
+
+async function enqueue(index: string, job: JobInput): Promise<void> {
+  // Awaited, not fire-and-forget: resume must finish reading whatever was
+  // left in this index's WAL key before this job's own persistPending() can
+  // overwrite it — otherwise the very job that triggers resume (the first
+  // one enqueued after a restart) can race its own WAL write ahead of the
+  // resume scan and silently wipe out the leftover entries it was supposed
+  // to recover. Only the first call per process pays the real cost (a Redis
+  // KEYS scan); every call after that resolves immediately since
+  // resumedPromise is memoized.
+  await ensureResumedFromCrash();
+  const withId: Job = { ...job, id: `${Date.now()}-${Math.random().toString(36).slice(2)}` } as Job;
+  return track(index, withId);
 }
 
 export function indexDocuments(
   index: string,
   documents: object[]
 ): Promise<void> {
-  return enqueue(index, async () => {
-    await fetch(`${HOST}/indexes/${index}/documents`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(documents),
-    });
-  });
+  return enqueue(index, { kind: "index", documents });
 }
 
 export interface SearchResult {
@@ -59,22 +197,11 @@ export interface SearchResult {
 // is idempotent, so this is safe to call on every sync rather than gating it
 // behind a one-time setup step like the messages index below.
 export function ensureLocaleFilterable(index: "projects" | "ideas"): Promise<void> {
-  return enqueue(index, async () => {
-    await fetch(`${HOST}/indexes/${index}/settings`, {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify({ filterableAttributes: ["locale"] }),
-    });
-  });
+  return enqueue(index, { kind: "localeFilterable" });
 }
 
 export function deleteDocument(index: string, id: string): Promise<void> {
-  return enqueue(index, async () => {
-    await fetch(`${HOST}/indexes/${index}/documents/${encodeURIComponent(id)}`, {
-      method: "DELETE",
-      headers,
-    });
-  });
+  return enqueue(index, { kind: "delete", docId: id });
 }
 
 export interface MessageDoc {
