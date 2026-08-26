@@ -711,6 +711,18 @@
     "githubColumnMapHint": "Each Status on the board ends up in the column you choose here. Closed issues and merged pull requests always end up in Done.",
     "saveColumnMappingButton": "Save column mapping"
   },
+  "TranslationSuggestPanel": {
+    "heading": "English translation",
+    "hint": "The AI suggests a translation based on the Swedish text above — review and edit before saving.",
+    "generateButton": "Suggest English translation",
+    "regenerateButton": "Suggest again",
+    "generatingButton": "Generating…",
+    "titlePlaceholder": "Title (English)",
+    "summaryPlaceholder": "Summary (English)",
+    "savingButton": "Saving…",
+    "saveButton": "Save as English translation",
+    "savedNotice": "Saved."
+  },
   "InviteForm": {
     "inviteByEmailButton": "+ Invite by email",
     "emailPlaceholder": "colleague@example.com",

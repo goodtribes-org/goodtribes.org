@@ -7,6 +7,8 @@ import { COLUMNS, COLUMN_LABEL_KEYS } from "@/lib/kanbanColumns";
 import { columnForStatus } from "@/lib/githubColumnMap";
 import { markProjectAbandoned, unmarkProjectAbandoned, transferOwnership } from "@/app/[locale]/projects/[slug]/ownership-actions";
 import { getSdgSuggestions } from "@/app/[locale]/projects/new/actions";
+import TranslationSuggestPanel from "./TranslationSuggestPanel";
+import type { TranslationDraft } from "./translation-actions";
 import FileUpload from "@/components/FileUpload";
 import RichTextEditor from "@/components/RichTextEditor";
 import { SdgIcon } from "@/components/SdgIcon";
@@ -16,6 +18,9 @@ import { CATEGORIES } from "@/lib/categories";
 
 interface Props {
   slug: string;
+  projectId: string;
+  showTranslationSuggest: boolean;
+  existingEnTranslation: TranslationDraft | null;
   skills: { id: string; name: string; slug: string }[];
   orgs: { id: string; name: string }[];
   currentSkillIds: string[];
@@ -46,7 +51,7 @@ interface Props {
   graduationRequest: { status: string; decisionNote: string | null } | null;
 }
 
-export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, currentOrgId, github, initial, completedChecklistKeys, ownershipInterests, graduationRequest }: Props) {
+export default function EditProjectForm({ slug, projectId, showTranslationSuggest, existingEnTranslation, skills, orgs, currentSkillIds, currentOrgId, github, initial, completedChecklistKeys, ownershipInterests, graduationRequest }: Props) {
   const t = useTranslations("EditProjectForm");
   const tPhase = useTranslations("ProjectPhase");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
@@ -209,6 +214,10 @@ export default function EditProjectForm({ slug, skills, orgs, currentSkillIds, c
         <input type="hidden" name="description" value={description} />
         <RichTextEditor content={description} onChange={setDescription} />
       </div>
+
+      {showTranslationSuggest && (
+        <TranslationSuggestPanel projectId={projectId} existing={existingEnTranslation} />
+      )}
 
       <div>
         <label htmlFor="category" className="block text-sm font-medium text-dark-slate mb-1">
