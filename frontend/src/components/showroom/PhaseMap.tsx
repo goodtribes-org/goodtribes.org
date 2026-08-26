@@ -10,8 +10,9 @@ export type PhaseMapStep = {
   chips: { title: string; slug: string; isSandbox: boolean }[];
 };
 
-export default async function PhaseMap({ locale, steps }: { locale: Locale; steps: PhaseMapStep[] }) {
+export default async function PhaseMap({ locale, steps, copy }: { locale: Locale; steps: PhaseMapStep[]; copy: Record<string, string> }) {
   const t = await getTranslations({ locale, namespace: "HomePage.phaseMap" });
+  const c = (key: string) => copy[`HomePage.phaseMap.${key}`] ?? t(key);
 
   return (
     <div
@@ -20,10 +21,10 @@ export default async function PhaseMap({ locale, steps }: { locale: Locale; step
     >
       <div className="max-w-[1160px] mx-auto px-8" style={{ padding: "56px 32px" }}>
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
-          {t("eyebrow").toUpperCase()}
+          {c("eyebrow").toUpperCase()}
         </p>
         <h2 className="text-dark-slate" style={{ fontSize: 26, fontWeight: 600, letterSpacing: "-.01em", marginTop: 8, marginBottom: 32 }}>
-          {t("heading")}
+          {c("heading")}
         </h2>
         <div className="grid gap-px bg-muted-teal/20 border border-muted-teal/20 rounded-[10px] overflow-hidden" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))" }}>
           {steps.map((step) => (
@@ -34,7 +35,7 @@ export default async function PhaseMap({ locale, steps }: { locale: Locale; step
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {step.chips.length === 0 ? (
-                  <span className="text-dark-slate/35" style={{ fontSize: 12 }}>{t("emptyState")}</span>
+                  <span className="text-dark-slate/35" style={{ fontSize: 12 }}>{c("emptyState")}</span>
                 ) : (
                   step.chips.map((chip) => (
                     <Link

@@ -2,13 +2,14 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
 import { homeSansFont, showroomMonoFont } from "@/lib/fonts";
 
-export default async function VisionMissionGoal({ locale }: { locale: Locale }) {
+export default async function VisionMissionGoal({ locale, copy }: { locale: Locale; copy: Record<string, string> }) {
   const t = await getTranslations({ locale, namespace: "HomePage.visionMissionGoal" });
+  const c = (key: string) => copy[`HomePage.visionMissionGoal.${key}`] ?? t(key);
 
   const columns = [
-    { label: t("visionLabel"), color: "var(--color-watermelon)", body: t("visionBody") },
-    { label: t("missionLabel"), color: "#12486C", body: t("missionBody") },
-    { label: t("goalLabel"), color: "var(--color-seagrass)", body: t("goalBody") },
+    { label: c("visionLabel"), color: "var(--color-watermelon)", body: c("visionBody") },
+    { label: c("missionLabel"), color: "#12486C", body: c("missionBody") },
+    { label: c("goalLabel"), color: "var(--color-seagrass)", body: c("goalBody") },
   ];
 
   return (
@@ -26,7 +27,7 @@ export default async function VisionMissionGoal({ locale }: { locale: Locale }) 
         ))}
       </div>
       <p className="text-dark-slate/45" style={{ fontSize: 12.5, lineHeight: 1.5, maxWidth: "64ch", marginTop: 24 }}>
-        {t("foundationNote")}
+        {c("foundationNote")}
       </p>
     </div>
   );

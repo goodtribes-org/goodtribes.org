@@ -18,6 +18,7 @@ const NAV = [
   { href: "/site-admin/impact-fund", label: "Impact-fond" },
   { href: "/site-admin/hero-carousel", label: "Startsidan" },
   { href: "/site-admin/sandbox-hero", label: "Drömfabriken" },
+  { href: "/site-admin/site-copy", label: "Sidtexter" },
   { href: "/site-admin/shop", label: "Shop" },
 ];
 

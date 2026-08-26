@@ -569,6 +569,26 @@ model SandboxHeroSettings {
   @@unique([locale])
 }
 
+// Generic per-key text override for the many small static copy fields
+// scattered across the homepage and Drömfabriken (Vision/Mission/Mål, Fem
+// Steg, the idea band, the tools grid, phase-map/usage-now headings, and
+// Drömfabriken's own remaining section headings — everything NOT already
+// covered by a dedicated model like HomeHeroSlide or SandboxHeroSettings).
+// `key` is the exact next-intl message path (e.g.
+// "HomePage.tools.leanCanvasLabel") so the override <-> default mapping is
+// self-documenting; a missing row means "use the shipped translation",
+// same fallback idiom as SitePage/defaultSitePages.ts. See
+// frontend/src/lib/siteCopy.ts.
+model SiteCopy {
+  id        String   @id @default(cuid())
+  key       String
+  locale    String
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@unique([key, locale])
+}
+
 // Editorial content for the About/Privacy/Terms pages (replaces Strapi,
 // which only ever owned this same static copy). One row per slug
 // ("about" | "privacy" | "terms"); the page falls back to hardcoded copy

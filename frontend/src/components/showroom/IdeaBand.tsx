@@ -10,8 +10,9 @@ import { homeSansFont } from "@/lib/fonts";
 // supports ?title=... (see ideas/[id]/page.tsx for the existing pattern),
 // so this needs no new backend work. Anonymous visitors bounce through
 // /login first, same as every other creation entry point in the app.
-export default function IdeaBand() {
+export default function IdeaBand({ copy }: { copy: Record<string, string> }) {
   const t = useTranslations("Showroom.ideaBand");
+  const c = (key: string) => copy[`Showroom.ideaBand.${key}`] ?? t(key);
   const router = useRouter();
   const [dream, setDream] = useState("");
 
@@ -29,7 +30,7 @@ export default function IdeaBand() {
         </div>
         <div className="flex-1 min-w-[240px]">
           <h2 className="text-dark-slate" style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-.01em", lineHeight: 1.25 }}>
-            {t("heading")}
+            {c("heading")}
           </h2>
         </div>
         <input
@@ -39,7 +40,7 @@ export default function IdeaBand() {
           onKeyDown={(e) => {
             if (e.key === "Enter") create();
           }}
-          placeholder={t("placeholder")}
+          placeholder={c("placeholder")}
           className="flex-1 text-dark-slate bg-white border border-muted-teal/50 rounded-xl outline-none"
           style={{ fontSize: 15, padding: "13px 15px", minWidth: 220 }}
         />
@@ -49,7 +50,7 @@ export default function IdeaBand() {
           className="text-white bg-seagrass hover:bg-dark-slate rounded-xl transition-colors font-medium"
           style={{ fontSize: 15, padding: "14px 24px" }}
         >
-          {t("cta")}
+          {c("cta")}
         </button>
       </div>
     </div>

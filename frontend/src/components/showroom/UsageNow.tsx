@@ -12,8 +12,9 @@ export type UsageNowProject = {
   phase: string;
 };
 
-export default async function UsageNow({ locale, projects }: { locale: Locale; projects: UsageNowProject[] }) {
+export default async function UsageNow({ locale, projects, copy }: { locale: Locale; projects: UsageNowProject[]; copy: Record<string, string> }) {
   const t = await getTranslations({ locale, namespace: "HomePage.usageNow" });
+  const c = (key: string) => copy[`HomePage.usageNow.${key}`] ?? t(key);
 
   if (projects.length === 0) return null;
 
@@ -21,10 +22,10 @@ export default async function UsageNow({ locale, projects }: { locale: Locale; p
     <div className={`${homeSansFont.className} max-w-[1160px] mx-auto px-8`} style={{ padding: "56px 32px" }}>
       <div style={{ marginBottom: 24 }}>
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
-          {t("eyebrow").toUpperCase()}
+          {c("eyebrow").toUpperCase()}
         </p>
         <h2 className="text-dark-slate" style={{ fontSize: 26, fontWeight: 600, letterSpacing: "-.01em", marginTop: 8 }}>
-          {t("heading")}
+          {c("heading")}
         </h2>
       </div>
       <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>

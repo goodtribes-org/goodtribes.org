@@ -3076,6 +3076,13 @@
     "saveButton": "Spara",
     "savingButton": "Sparar…"
   },
+  "SiteCopyAdminPage": {
+    "heading": "Sidtexter ({locale})",
+    "intro": "All statisk text på startsidan och Drömfabriken, grupperad per sektion. Ett tomt fält återställer till standardtexten.",
+    "localeSv": "SV",
+    "localeEn": "EN",
+    "saveButton": "Spara alla ändringar"
+  },
   "ExclusionCasePage": {
     "pageTitle": "Ärende — Granskningsrådet",
     "decisionNone": "Ingen åtgärd",
