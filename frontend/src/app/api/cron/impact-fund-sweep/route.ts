@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 
 // Called daily by an external scheduler (GitHub Actions cron, see
 // .github/workflows/impact-fund-sweep.yml). Requires the same
@@ -49,7 +50,10 @@ export async function POST(request: Request) {
       defaulted++;
     } catch (err) {
       failed.push(allocation.id);
-      console.error(`impact-fund-sweep: failed to process allocation ${allocation.id}`, err);
+      logger.error("impact-fund-sweep: failed to process allocation", {
+        allocationId: allocation.id,
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 

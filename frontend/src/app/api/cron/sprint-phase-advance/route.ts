@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { closeAndAdvancePhase } from "@/lib/sprints";
+import { logger } from "@/lib/logger";
 
 // Called periodically by an external scheduler (GitHub Actions cron, see
 // .github/workflows/sprint-phase-advance.yml). Requires the same
@@ -36,7 +37,10 @@ export async function POST(request: Request) {
       advanced++;
     } catch (err) {
       failed.push(phase.id);
-      console.error(`sprint-phase-advance: failed to advance phase ${phase.id}`, err);
+      logger.error("sprint-phase-advance: failed to advance phase", {
+        phaseId: phase.id,
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 

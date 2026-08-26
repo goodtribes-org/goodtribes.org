@@ -7,6 +7,7 @@ import { requireSiteAdmin } from "@/lib/authz";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { slugify } from "@/lib/slugify";
 import { DEFAULT_SITE_PAGES } from "@/lib/defaultSitePages";
+import { logger } from "@/lib/logger";
 import type { Locale } from "next-intl";
 
 // The pages the app has always shipped with fixed routes for
@@ -58,7 +59,11 @@ export async function updateSitePage(slug: string, locale: Locale, title: string
     // Surfaces a real message to the admin instead of a generic 500/"Try
     // again" page, and logs with (slug, locale) context so a bad save can
     // actually be traced in production pod logs.
-    console.error(`updateSitePage failed for slug=${slug} locale=${locale}:`, e);
+    logger.error("updateSitePage failed", {
+      slug,
+      locale,
+      error: e instanceof Error ? e.message : String(e),
+    });
     return { error: e instanceof Error ? e.message : "Något gick fel när sidan skulle sparas." };
   }
 
