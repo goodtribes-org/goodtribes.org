@@ -6,6 +6,7 @@ import EditProjectForm from "./EditProjectForm";
 import DeleteProjectButton from "@/components/DeleteProjectButton";
 import { isLeadRole } from "@/lib/authz";
 import { parseColumnMap, parseStatusOptions } from "@/lib/githubColumnMap";
+import { routing } from "@/i18n/routing";
 import type { Locale } from "next-intl";
 
 
@@ -32,6 +33,7 @@ export default async function EditProjectPage({
           orderBy: { createdAt: "asc" },
           include: { user: { select: { id: true, name: true, image: true } } },
         },
+        translations: { where: { locale: "en" }, select: { title: true, summary: true, description: true } },
       },
     }),
     prisma.skill.findMany({ select: { id: true, name: true, slug: true }, orderBy: { name: "asc" } }),
@@ -74,6 +76,9 @@ export default async function EditProjectPage({
       </div>
       <EditProjectForm
         slug={slug}
+        projectId={project.id}
+        showTranslationSuggest={locale === routing.defaultLocale}
+        existingEnTranslation={project.translations[0] ?? null}
         skills={skills}
         orgs={userOrgs}
         currentSkillIds={project.neededSkills.map((s) => s.skillId)}

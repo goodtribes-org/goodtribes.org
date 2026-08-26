@@ -711,6 +711,18 @@
     "githubColumnMapHint": "Varje Status på tavlan hamnar i den kolumn du väljer här. Stängda issues och mergade pull requests hamnar alltid i Done.",
     "saveColumnMappingButton": "Spara kolumnmappning"
   },
+  "TranslationSuggestPanel": {
+    "heading": "Engelsk översättning",
+    "hint": "AI:n föreslår en översättning baserat på den svenska texten ovan — granska och redigera innan du sparar.",
+    "generateButton": "Föreslå engelsk översättning",
+    "regenerateButton": "Föreslå igen",
+    "generatingButton": "Genererar…",
+    "titlePlaceholder": "Titel (engelska)",
+    "summaryPlaceholder": "Sammanfattning (engelska)",
+    "savingButton": "Sparar…",
+    "saveButton": "Spara som engelsk översättning",
+    "savedNotice": "Sparat."
+  },
   "InviteForm": {
     "inviteByEmailButton": "+ Bjud in via e-post",
     "emailPlaceholder": "kollega@exempel.se",
