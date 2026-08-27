@@ -62,7 +62,7 @@
     "@types/react-simple-maps": "^3.0.6",
     "eslint": "^9",
     "jest": "^30",
-    "jest-environment-jsdom": "^29",
+    "jest-environment-jsdom": "^30",
     "prisma": "^6",
     "tailwindcss": "^4",
     "typescript": "^5",
