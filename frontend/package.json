@@ -60,7 +60,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-simple-maps": "^3.0.6",
-    "eslint": "^9",
+    "eslint": "^10",
     "jest": "^30",
     "jest-environment-jsdom": "^30",
     "prisma": "^6",
