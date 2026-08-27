@@ -21,10 +21,19 @@ spec:
       labels:
         {{- include "goodtribes.selectorLabels" "meilisearch" | nindent 8 }}
     spec:
+      # Nothing here talks to the Kubernetes API.
+      automountServiceAccountToken: false
       containers:
         - name: meilisearch
           image: "{{ .Values.meilisearch.image.repository }}:{{ .Values.meilisearch.image.tag }}"
           imagePullPolicy: {{ .Values.meilisearch.image.pullPolicy }}
+          # See the comment on the postgres Deployment's securityContext —
+          # same reasoning: allowPrivilegeEscalation:false is always safe,
+          # but this image's handling of its mounted PVC on first boot is
+          # unverified without live testing, so runAsNonRoot/capability
+          # drops are left for a human with cluster access.
+          securityContext:
+            allowPrivilegeEscalation: false
           ports:
             - containerPort: 7700
               protocol: TCP

@@ -19,8 +19,9 @@ frontend:
     minReplicas: 1
     maxReplicas: 5
     targetCPUUtilizationPercentage: 70
-  # Only applied to the container when autoscaling.enabled is true — see the
-  # comment on the Deployment template for why.
+  # Always applied (see the Deployment template's comment) — required for
+  # the namespace ResourceQuota below to admit this pod at all, and gives
+  # frontend a real QoS class instead of BestEffort regardless of autoscaling.
   resources:
     requests:
       cpu: 200m
@@ -109,6 +110,17 @@ postgresBackup:
   schedule: "0 3 * * *"
   retentionDays: 14
   bucket: goodtribes-backups
+
+# Mirrors goodtribes-public/goodtribes-private into their own dedicated
+# bucket — NOT goodtribes-backups, deliberately: that bucket's postgres-dump
+# pruning (`mc find ... --older-than ... --exec "mc rm"`) recurses into
+# every prefix under it, which would eventually delete this mirror's content
+# too if it shared the same bucket. See the CronJob's own comment for what
+# this does and doesn't protect against.
+minioBackup:
+  enabled: true
+  schedule: "30 3 * * *"
+  bucket: goodtribes-object-backups
 
 meilisearch:
   replicaCount: 1

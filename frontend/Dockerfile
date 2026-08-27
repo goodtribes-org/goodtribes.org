@@ -1,4 +1,9 @@
-FROM node:20-alpine AS base
+# Pinned to a digest instead of the mutable `20-alpine` tag so a rebuild
+# always gets the exact same base image (supply-chain reproducibility) —
+# kept in sync going forward via Dependabot's docker ecosystem (see
+# .github/dependabot.yml). Bump both the tag comment and the digest
+# together when Dependabot opens a PR for this.
+FROM node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 AS base
 
 # Dependencies
 FROM base AS deps

@@ -18,6 +18,17 @@ spec:
       labels:
         {{- include "goodtribes.selectorLabels" "frontend" | nindent 8 }}
     spec:
+      # Nothing in this pod talks to the Kubernetes API — the auto-mounted
+      # default-ServiceAccount token would be unused attack surface.
+      automountServiceAccountToken: false
+      # Matches the Dockerfile's own `USER nextjs` (uid/gid 1001) exactly —
+      # this is defense-in-depth confirming what the image already does,
+      # not a behavior change: entrypoint.sh only runs `prisma migrate
+      # deploy` then execs node, neither needs root.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -28,14 +39,20 @@ spec:
           imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.frontend.service.port }}
-          {{- if .Values.frontend.autoscaling.enabled }}
-          # Only set when autoscaling is on: the HPA's CPU-utilization target
-          # is meaningless without a request to compute a percentage against,
-          # and setting this unconditionally would silently change every
-          # existing deployment's QoS class even with autoscaling off.
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          # Unconditional as of the ResourceQuota/LimitRange addition below —
+          # a namespace ResourceQuota scoping requests.cpu/requests.memory
+          # rejects any pod that omits a request outright, so this could no
+          # longer stay gated behind autoscaling.enabled without breaking
+          # scheduling entirely. Previously only applied when autoscaling
+          # was on (to avoid silently changing the single-replica
+          # deployment's QoS class) — that concern is now moot since every
+          # pod needs a request either way.
           resources:
             {{- toYaml .Values.frontend.resources | nindent 12 }}
-          {{- end }}
           envFrom:
             - secretRef:
                 name: goodtribes-secret

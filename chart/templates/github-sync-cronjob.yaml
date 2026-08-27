@@ -21,9 +21,12 @@ spec:
             {{- include "goodtribes.labels" . | nindent 12 }}
         spec:
           restartPolicy: OnFailure
+          automountServiceAccountToken: false
           containers:
             - name: github-sync
               image: "{{ .Values.githubSync.image.repository }}:{{ .Values.githubSync.image.tag }}"
+              securityContext:
+                allowPrivilegeEscalation: false
               command:
                 - /bin/sh
                 - -c

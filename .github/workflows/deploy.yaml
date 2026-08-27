@@ -16,10 +16,12 @@ jobs:
     # that was never pushed — ArgoCD/Flux then tries to pull a nonexistent
     # tag with no rollback.
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event != 'pull_request' }}
+    # Neither packages: write nor id-token: write are actually used here —
+    # this job renders the chart and pushes to the goodtribes-org/deploy
+    # repo over SSH (DEPLOY_KEY), it never touches ghcr.io packages or an
+    # OIDC token. Trimmed to just what checkout needs.
     permissions:
       contents: read
-      packages: write
-      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

@@ -13,9 +13,12 @@ spec:
   template:
     spec:
       restartPolicy: OnFailure
+      automountServiceAccountToken: false
       containers:
         - name: minio-init
           image: minio/mc:latest
+          securityContext:
+            allowPrivilegeEscalation: false
           command:
             - /bin/sh
             - -c
@@ -24,6 +27,7 @@ spec:
               mc mb --ignore-existing local/goodtribes-public
               mc mb --ignore-existing local/goodtribes-private
               mc mb --ignore-existing local/{{ .Values.postgresBackup.bucket }}
+              mc mb --ignore-existing local/{{ .Values.minioBackup.bucket }}
               mc anonymous set public local/goodtribes-public
           envFrom:
             - secretRef:

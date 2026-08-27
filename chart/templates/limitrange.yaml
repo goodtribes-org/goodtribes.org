@@ -1,0 +1,23 @@
+# Every Deployment container already sets its own explicit resources, but
+# the various CronJob/Job containers (postgres-backup, minio-backup,
+# minio-init, github-sync) don't — this provides a default so none of them
+# are rejected outright once the ResourceQuota below is active (a
+# ResourceQuota scoping requests.cpu/requests.memory requires every pod to
+# specify a request, with no exception for one-shot Jobs). Sized generously
+# for what a curl/mc/pg_dump client process actually needs.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: goodtribes-default-limits
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "goodtribes.labels" . | nindent 4 }}
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 100m
+        memory: 128Mi
+      default:
+        cpu: 500m
+        memory: 256Mi

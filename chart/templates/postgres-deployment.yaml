@@ -23,6 +23,8 @@ spec:
       labels:
         {{- include "goodtribes.selectorLabels" "postgres" | nindent 8 }}
     spec:
+      # Nothing here talks to the Kubernetes API.
+      automountServiceAccountToken: false
       containers:
         - name: postgres
           image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
@@ -30,6 +32,17 @@ spec:
           ports:
             - containerPort: 5432
               protocol: TCP
+          # Deliberately NOT runAsNonRoot, NOT readOnlyRootFilesystem, and NOT
+          # dropping capabilities: the official postgres image's entrypoint
+          # runs as root on first boot specifically to chown/initdb the
+          # mounted PVC (needs CAP_CHOWN/CAP_DAC_OVERRIDE, which a blanket
+          # capability drop would remove even from root) — untested against
+          # this cluster's actual PVC state, so not safe to guess at blind.
+          # allowPrivilegeEscalation:false is the one hardening flag that's
+          # always safe regardless (it only blocks gaining NEW privileges via
+          # e.g. a setuid binary, never removes what the process already has).
+          securityContext:
+            allowPrivilegeEscalation: false
           resources:
             {{- toYaml .Values.postgres.resources | nindent 12 }}
           envFrom:

@@ -1,0 +1,59 @@
+{{- if .Values.minioBackup.enabled }}
+# Protects goodtribes-public/goodtribes-private (user-uploaded files/images —
+# original, non-derived content, unlike Meilisearch's index which is
+# rebuildable from Postgres) against accidental deletion or bucket
+# corruption. Runs `mc mirror` WITHOUT --remove into a dedicated backup
+# bucket: only new/changed objects are copied each run (cheap, incremental),
+# and an object deleted from the live bucket simply stays behind in the
+# mirror rather than being removed there too — that's the actual protection
+# this buys. No pruning/retention window, unlike the Postgres dump job:
+# there's nothing to prune, since this never grows beyond roughly the live
+# buckets' own size (it doesn't keep dated snapshots).
+#
+# Known limitation, same as the Postgres backup job: this MinIO instance
+# backs up to itself (the mirror bucket lives on the same MinIO/PVC as the
+# buckets it's protecting), so it does NOT protect against total loss of
+# MinIO's own volume — only against accidental deletion/overwrite within the
+# live buckets. True off-cluster redundancy needs a separate destination
+# (e.g. `mc mirror` to an external S3-compatible target), which needs a
+# vendor account/credentials this chart doesn't have configured.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: goodtribes-minio-backup
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "goodtribes.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.minioBackup.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            {{- include "goodtribes.labels" . | nindent 12 }}
+        spec:
+          restartPolicy: OnFailure
+          automountServiceAccountToken: false
+          containers:
+            - name: mirror
+              image: minio/mc:latest
+              securityContext:
+                allowPrivilegeEscalation: false
+              command:
+                - sh
+                - -c
+                - |
+                  set -eu
+                  mc alias set local http://goodtribes-minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+                  mc mirror --quiet local/goodtribes-public "local/{{ .Values.minioBackup.bucket }}/goodtribes-public"
+                  mc mirror --quiet local/goodtribes-private "local/{{ .Values.minioBackup.bucket }}/goodtribes-private"
+              envFrom:
+                - secretRef:
+                    name: goodtribes-secret
+{{- end }}
