@@ -21,11 +21,20 @@ spec:
       labels:
         {{- include "goodtribes.selectorLabels" "minio" | nindent 8 }}
     spec:
+      # Nothing here talks to the Kubernetes API.
+      automountServiceAccountToken: false
       containers:
         - name: minio
           image: "{{ .Values.minio.image.repository }}:{{ .Values.minio.image.tag }}"
           imagePullPolicy: {{ .Values.minio.image.pullPolicy }}
           command: ["minio", "server", "/data", "--console-address", ":9001"]
+          # See the comment on the postgres Deployment's securityContext —
+          # same reasoning: allowPrivilegeEscalation:false is always safe,
+          # but this image's handling of its mounted PVC on first boot is
+          # unverified without live testing, so runAsNonRoot/capability
+          # drops are left for a human with cluster access.
+          securityContext:
+            allowPrivilegeEscalation: false
           ports:
             - containerPort: 9000
               protocol: TCP

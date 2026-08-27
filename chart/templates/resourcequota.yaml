@@ -1,0 +1,33 @@
+# Caps total namespace resource consumption — directly relevant to the
+# 2026-08-23 outage (node-level resource starvation from too much scheduled
+# at once): even with per-workload requests/limits now set correctly, this
+# is the backstop that stops a *future* addition (a new workload, a runaway
+# CronJob, replicaCount bumped without thinking) from silently repeating
+# that failure mode. Sized generously above today's actual steady-state
+# usage, not tightly — its job is to catch genuine runaway growth, not to
+# micromanage day-to-day scheduling (that's what per-workload
+# requests/limits and node capacity are for).
+#
+# Math (steady-state, 1 replica each, current chart/values.yaml):
+#   requests: frontend 200m/256Mi + postgres 250m/512Mi + meilisearch
+#     250m/512Mi + redis 50m/64Mi + minio 100m/256Mi = ~850m / ~1.6Gi
+#   limits:   1000m/512Mi + 1000m/1Gi + 1000m/1Gi + 250m/256Mi + 500m/512Mi
+#     = ~3.75 cores / ~3.25Gi
+#   Plus headroom for the frontend HPA's documented ceiling (5 replicas,
+#   currently disabled) adding up to ~4 more replicas' worth, and a couple
+#   of concurrent transient CronJob/Job pods at the LimitRange defaults
+#   above. The values below leave roughly 1.5-2x margin over that combined
+#   estimate — revisit once real usage is visible via Prometheus/Grafana.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: goodtribes-namespace-quota
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "goodtribes.labels" . | nindent 4 }}
+spec:
+  hard:
+    requests.cpu: "3"
+    requests.memory: 4Gi
+    limits.cpu: "10"
+    limits.memory: 8Gi

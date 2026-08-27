@@ -12,10 +12,14 @@ env:
 jobs:
   build-frontend:
     runs-on: ubuntu-latest
+    # id-token: write was requested but never consumed (no OIDC/keyless-
+    # signing step) — trimmed. packages: write is real: the last step PATCHes
+    # the package's visibility via `gh api`. security-events: write is for
+    # the Trivy scan's SARIF upload to the Security tab.
     permissions:
       contents: read
       packages: write
-      id-token: write
+      security-events: write
 
     steps:
       - name: Checkout repository
@@ -71,6 +75,30 @@ jobs:
           no-cache: true
           build-args: |
             NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+
+      # Report-only for now (exit-code 0): this repo has never been
+      # vulnerability-scanned before, so the current baseline is unknown —
+      # failing the build on day one could block every deploy on
+      # pre-existing findings nobody has triaged yet. Results land in the
+      # Security tab; tightening this to a hard gate (exit-code: 1, maybe
+      # severity-scoped to CRITICAL first) is a follow-up once that baseline
+      # is known. Only runs on the push path (image is pushed to ghcr.io,
+      # not just built) — PR builds aren't loaded locally, so there's
+      # nothing to scan there yet.
+      - name: Scan image for vulnerabilities (Trivy)
+        if: github.event_name != 'pull_request'
+        uses: aquasecurity/trivy-action@v0.35.0
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}
+          format: sarif
+          output: trivy-results.sarif
+          exit-code: "0"
+
+      - name: Upload Trivy scan results
+        if: github.event_name != 'pull_request'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
 
       - name: Make frontend package public
         if: github.event_name != 'pull_request'

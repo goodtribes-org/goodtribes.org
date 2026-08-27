@@ -1,0 +1,31 @@
+version: 2
+updates:
+  # Root of the npm workspace — covers both the root package.json and
+  # frontend/package.json (Dependabot resolves workspaces from the root
+  # manifest automatically).
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      # Patch/minor bumps are low-risk and noisy one-PR-per-package — batch
+      # them; anything major stays its own PR so it gets real review.
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # frontend/Dockerfile's base image (pinned to a digest — see the comment
+  # there). Dependabot opens a PR with the new tag+digest when node:20-alpine
+  # is rebuilt upstream.
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+
+  # This repo's own GitHub Actions workflows.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

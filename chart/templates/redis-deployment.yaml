@@ -16,10 +16,20 @@ spec:
       labels:
         {{- include "goodtribes.selectorLabels" "redis" | nindent 8 }}
     spec:
+      # Nothing here talks to the Kubernetes API.
+      automountServiceAccountToken: false
       containers:
         - name: redis
           image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
           imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+          # allowPrivilegeEscalation:false is always safe. Not runAsNonRoot:
+          # this command bypasses the official image's own entrypoint
+          # (which normally handles dropping to a non-root user), and there's
+          # no PVC here to worry about chown-ing — likely safe to harden
+          # further, but unverified against this specific image tag without
+          # live testing, so left for a human with cluster access to confirm.
+          securityContext:
+            allowPrivilegeEscalation: false
           # Run through a shell so $REDIS_PASSWORD is expanded by sh, not by
           # Kubernetes. K8s only substitutes $(VAR) from the container's `env`
           # list — never from `envFrom` — so the previous $(REDIS_PASSWORD) form

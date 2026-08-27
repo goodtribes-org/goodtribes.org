@@ -21,6 +21,7 @@ spec:
             {{- include "goodtribes.labels" . | nindent 12 }}
         spec:
           restartPolicy: OnFailure
+          automountServiceAccountToken: false
           volumes:
             - name: backup
               emptyDir: {}
@@ -30,6 +31,8 @@ spec:
             # mc installed.
             - name: pg-dump
               image: "{{ .Values.postgres.image.repository }}:{{ .Values.postgres.image.tag }}"
+              securityContext:
+                allowPrivilegeEscalation: false
               # $VAR is expanded by sh, not Kubernetes — envFrom vars are never
               # substituted via the $(VAR) syntax (see redis-deployment.yaml
               # for the incident this convention comes from).
@@ -58,6 +61,8 @@ spec:
           containers:
             - name: upload-and-prune
               image: minio/mc:latest
+              securityContext:
+                allowPrivilegeEscalation: false
               command:
                 - sh
                 - -c
