@@ -7,6 +7,7 @@ import { indexDocuments } from "@/lib/meili";
 import { requireProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { routing } from "@/i18n/routing";
 import { getAnthropicClient, checkAiRateLimit } from "@/lib/anthropic";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 
 export type TranslationDraft = { title: string; summary: string | null; description: string | null };
 
@@ -107,6 +108,8 @@ export async function upsertProjectTranslation(
     return { error: "Not authorised" };
   }
 
+  const description = data.description?.trim() ? sanitizeHtml(data.description.trim()) : null;
+
   await prisma.projectTranslation.upsert({
     where: { projectId_locale: { projectId, locale } },
     create: {
@@ -114,12 +117,12 @@ export async function upsertProjectTranslation(
       locale,
       title,
       summary: data.summary?.trim() || null,
-      description: data.description?.trim() || null,
+      description,
     },
     update: {
       title,
       summary: data.summary?.trim() || null,
-      description: data.description?.trim() || null,
+      description,
     },
   });
 
@@ -128,7 +131,7 @@ export async function upsertProjectTranslation(
       id: `project-${project.slug}__en`,
       type: "project",
       title,
-      description: data.description?.trim() || "",
+      description: description ?? "",
       url: `/projects/${project.slug}`,
       phase: project.phase,
       sdgGoals: project.sdgGoals,

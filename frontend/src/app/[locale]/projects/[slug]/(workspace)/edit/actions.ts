@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { indexDocuments, deleteDocument } from "@/lib/meili";
 import { hasProjectRole, isSiteAdmin, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { getNextPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 import { parseProjectInput } from "@/lib/github";
 import { syncProjectBoardInBackground } from "@/lib/githubSync";
@@ -122,7 +123,8 @@ export async function updateProject(slug: string, formData: FormData) {
 
   const slogan = (formData.get("slogan") as string | null)?.trim() || null;
   const summary = (formData.get("summary") as string | null)?.trim() || null;
-  const description = (formData.get("description") as string | null)?.trim() || null;
+  const descriptionRaw = (formData.get("description") as string | null)?.trim() || null;
+  const description = descriptionRaw ? sanitizeHtml(descriptionRaw) : null;
   const category = (formData.get("category") as string | null)?.trim() || null;
   const tagsRaw = (formData.get("tags") as string | null)?.trim() || "";
   const tags = tagsRaw.split(",").map((t) => t.trim()).filter(Boolean);
