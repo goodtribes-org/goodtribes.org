@@ -580,6 +580,7 @@
     "navWiki": "Wiki",
     "navIdeaWorkshop": "Idea Workshop",
     "navLeanCanvas": "Lean Canvas",
+    "navProjectPlan": "Project Plan",
     "navValueProposition": "Value Proposition",
     "navDesignSprints": "Design Sprints",
     "toolsGroupLabel": "Community",
@@ -2626,7 +2627,7 @@
     "decide_plan": "Decide & plan",
     "build_prototype": "Build prototype",
     "test_with_users": "Test with users",
-    "sprint_lean_canvas": "Write a simple lean canvas / project description",
+    "sprint_lean_canvas": "Write a simple project plan (goal, milestones, resources, risks)",
     "core_team_formed": "Define roles and form a core team",
     "kanban_seeded": "Set up the Kanban board with initial tasks",
     "pilot_success_criteria": "Define success criteria for the pilot phase",
@@ -2902,6 +2903,25 @@
   },
   "LeanCanvasPage": {
     "helpLink": "Help"
+  },
+  "ProjectPlanPage": {
+    "title": "Project Plan"
+  },
+  "ProjectPlanForm": {
+    "goalLabel": "Goal",
+    "goalHint": "What do you want to achieve with this project?",
+    "milestonesLabel": "Milestones",
+    "milestonesHint": "What milestones will you reach along the way, and when?",
+    "resourcesLabel": "Resources",
+    "resourcesHint": "What people, tools, or money are needed?",
+    "risksLabel": "Risks",
+    "risksHint": "What could go wrong, and how will you handle it?",
+    "edit": "Edit",
+    "saving": "Saving…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "emptyEditable": "Empty — click Edit to fill in.",
+    "emptyReadOnly": "Not filled in yet."
   },
   "IdeaSessionsPage": {
     "heading": "Idea Workshop",

@@ -580,6 +580,7 @@
     "navWiki": "Wiki",
     "navIdeaWorkshop": "Idéverkstad",
     "navLeanCanvas": "Lean Canvas",
+    "navProjectPlan": "Projektplan",
     "navValueProposition": "Värdeerbjudande",
     "navDesignSprints": "Designsprints",
     "toolsGroupLabel": "Gemenskap",
@@ -2626,7 +2627,7 @@
     "decide_plan": "Beslut & planera",
     "build_prototype": "Bygga prototyp",
     "test_with_users": "Testa med användare",
-    "sprint_lean_canvas": "Skriva ett enkelt lean canvas / projektbeskrivning",
+    "sprint_lean_canvas": "Skriva en enkel projektplan (mål, delmål, resurser, risker)",
     "core_team_formed": "Definiera roller och bilda kärnteam",
     "kanban_seeded": "Sätta upp Kanban-board med första uppgifterna",
     "pilot_success_criteria": "Definiera framgångskriterier för pilotfasen",
@@ -2902,6 +2903,25 @@
   },
   "LeanCanvasPage": {
     "helpLink": "Hjälp"
+  },
+  "ProjectPlanPage": {
+    "title": "Projektplan"
+  },
+  "ProjectPlanForm": {
+    "goalLabel": "Mål",
+    "goalHint": "Vad vill ni uppnå med det här projektet?",
+    "milestonesLabel": "Delmål / milstolpar",
+    "milestonesHint": "Vilka delmål ska ni nå på vägen, och när?",
+    "resourcesLabel": "Resurser",
+    "resourcesHint": "Vilka personer, verktyg eller pengar behövs?",
+    "risksLabel": "Risker",
+    "risksHint": "Vad kan gå fel, och hur hanterar ni det?",
+    "edit": "Redigera",
+    "saving": "Sparar…",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "emptyEditable": "Tomt — klicka Redigera för att fylla i.",
+    "emptyReadOnly": "Inte ifyllt än."
   },
   "IdeaSessionsPage": {
     "heading": "Idéverkstad",

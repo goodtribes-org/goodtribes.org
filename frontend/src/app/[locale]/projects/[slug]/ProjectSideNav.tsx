@@ -13,6 +13,7 @@ import {
   Megaphone,
   Lightbulb,
   LayoutGrid,
+  ClipboardList,
   BookOpen,
   Folder,
   HandCoins,
@@ -47,6 +48,7 @@ function buildMainItems(t: ReturnType<typeof useTranslations>): NavItem[] {
     { label: t("navWiki"),       href: "/wiki",      icon: BookOpen },
     { label: t("navIdeaWorkshop"), href: "/idea-sessions", icon: Lightbulb },
     { label: t("navLeanCanvas"), href: "/lean-canvas",   icon: LayoutGrid },
+    { label: t("navProjectPlan"), href: "/project-plan", icon: ClipboardList },
     { label: t("navValueProposition"), href: "/value-proposition", icon: Gem },
     { label: t("navDesignSprints"), href: "/sprints",    icon: Rocket },
   ];

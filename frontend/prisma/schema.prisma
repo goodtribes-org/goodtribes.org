@@ -179,6 +179,7 @@ model User {
   leanCanvasComments      LeanCanvasComment[]        @relation("LeanCanvasCommentAuthor")
   leanCanvasVersionsSaved LeanCanvasVersion[]        @relation("LeanCanvasVersionSavedBy")
   leanCanvasDrafts        LeanCanvasDraft[]          @relation("LeanCanvasDraftOwner")
+  projectPlanEdits        ProjectPlan[]              @relation("ProjectPlanUpdatedBy")
   valuePropositionEdits         ValueProposition[]        @relation("ValuePropositionUpdatedBy")
   valuePropositionVersionsSaved ValuePropositionVersion[] @relation("ValuePropositionVersionSavedBy")
   valuePropositionDrafts        ValuePropositionDraft[]   @relation("ValuePropositionDraftOwner")
@@ -744,6 +745,7 @@ model Project {
   leanCanvas         LeanCanvas?          @relation("ProjectLeanCanvas")
   leanCanvasComments LeanCanvasComment[]  @relation("ProjectLeanCanvasComments")
   leanCanvasVersions LeanCanvasVersion[]  @relation("ProjectLeanCanvasVersions")
+  projectPlan        ProjectPlan?         @relation("ProjectPlan")
   promotedFromLeanCanvasDraft LeanCanvasDraft? @relation("LeanCanvasDraftPromotedToProject")
   promotedFromWhiteboardDraft WhiteboardDraft? @relation("WhiteboardDraftPromotedToProject")
   valueProposition         ValueProposition?         @relation("ProjectValueProposition")
@@ -1957,6 +1959,23 @@ model LeanCanvas {
   updatedBy              User?     @relation("LeanCanvasUpdatedBy", fields: [updatedById], references: [id])
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
+}
+
+// A simpler alternative to LeanCanvas — one goal/milestones/resources/risks
+// form, no version history or comments. Linked from the PILOT-phase
+// checklist's "sprint_lean_canvas" item (see projectPhase.ts).
+model ProjectPlan {
+  id          String   @id @default(cuid())
+  projectSlug String   @unique
+  project     Project  @relation("ProjectPlan", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  goal        String?  @db.Text
+  milestones  String?  @db.Text
+  resources   String?  @db.Text
+  risks       String?  @db.Text
+  updatedById String?
+  updatedBy   User?    @relation("ProjectPlanUpdatedBy", fields: [updatedById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // A read-only snapshot of the full canvas, written every time any block is
