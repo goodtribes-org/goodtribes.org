@@ -1,9 +1,15 @@
-# Pinned to a digest instead of the mutable `20-alpine` tag so a rebuild
+# Node 22 (Active LTS), not the 25 Dependabot proposed in #37 — 25 is a
+# non-LTS "Current" release with no long-term support window, while 22 is
+# the actual minimum this app's dependencies need: isomorphic-dompurify
+# 3.22+ (see its "engines" field) dropped Node 20 support entirely,
+# requiring ^22.22.2 at minimum.
+#
+# Pinned to a digest instead of the mutable `22-alpine` tag so a rebuild
 # always gets the exact same base image (supply-chain reproducibility) —
 # kept in sync going forward via Dependabot's docker ecosystem (see
 # .github/dependabot.yml). Bump both the tag comment and the digest
 # together when Dependabot opens a PR for this.
-FROM node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 AS base
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS base
 
 # Dependencies
 FROM base AS deps
