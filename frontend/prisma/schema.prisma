@@ -1584,6 +1584,20 @@ model SandboxGraduationRequest {
   @@index([projectId])
 }
 
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing ProfitDistributionProposal row and application code already uses,
+// so converting from String avoids both a data rewrite and touching any call
+// site. Money-moving: this proposal governs a real distribution of audited
+// SEK profit to Tribe Token holders once executed.
+enum ProfitDistributionProposalStatus {
+  pending
+  approved_by_members
+  rejected_by_members
+  vetoed_by_foundation
+  executed
+}
+
 // PRD 4a Intäktsström 2 / Utvecklingsfas 2.96, Steg 1: the board's ("styrelsen",
 // represented by site-admin) proposed split of a commercial project's audited
 // profit between Stiftelsens drift and the Impact-fond, decided by a
@@ -1598,7 +1612,7 @@ model ProfitDistributionProposal {
   proposedOperationsPct Float
   proposedImpactFundPct Float
   pollId                String?
-  status                String    @default("pending") // pending | approved_by_members | rejected_by_members | vetoed_by_foundation | executed
+  status                ProfitDistributionProposalStatus @default(pending)
   proposedById          String
   proposedBy            User      @relation("ProposedProfitDistributions", fields: [proposedById], references: [id])
   decisionNote          String?   @db.Text
@@ -1672,6 +1686,18 @@ model ImpactFundLedger {
   createdAt             DateTime @default(now())
 }
 
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing ImpactFundAllocationRound row and application code already uses,
+// so converting from String avoids both a data rewrite and touching any call
+// site. Money-moving: executing a round records real SEK outflows from the
+// Impact-fond to candidate projects.
+enum ImpactFundAllocationRoundStatus {
+  open
+  closed
+  executed
+}
+
 // PRD 5.50.4: a round of the Impact-fond's outbound allocation to new
 // projects, decided by a platform-wide GT-weighted vote (PlatformPoll, type
 // "impact_fund_allocation") over site-admin-nominated candidate projects —
@@ -1679,7 +1705,7 @@ model ImpactFundLedger {
 model ImpactFundAllocationRound {
   id         String    @id @default(cuid())
   pollId     String    @unique
-  status     String    @default("open") // open | closed | executed
+  status     ImpactFundAllocationRoundStatus @default(open)
   openedById String
   openedBy   User      @relation("OpenedImpactFundRounds", fields: [openedById], references: [id])
   executedAt DateTime?
