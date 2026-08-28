@@ -1,0 +1,109 @@
+# Prometheus alerting rules for the frontend pod's process metrics
+# (exposed at /api/metrics via prom-client's collectDefaultMetrics() —
+# see frontend/src/lib/metrics.ts and frontend/src/app/api/metrics/route.ts).
+#
+# Plain Prometheus rule-file format (`groups: [...]`), not a PrometheusRule
+# CRD — this repo has no way to confirm from a sandboxed session whether the
+# Prometheus Operator is installed in the cluster (same reasoning already
+# applied to the ServiceMonitor-vs-annotation decision for scraping, see
+# CLAUDE.md's Fas 2 entry). This file works two ways depending on what's
+# actually running:
+#
+#   1. Plain Prometheus (no Operator): add this file's path to
+#      `rule_files:` in prometheus.yml (or mount it into the Prometheus
+#      pod and reference it there).
+#   2. Prometheus Operator: wrap the same `groups:` list below in a
+#      PrometheusRule custom resource (apiVersion
+#      monitoring.coreos.com/v1, kind PrometheusRule) — the `groups` field
+#      is byte-for-byte compatible, just needs the CR envelope added.
+#
+# `{{JOB_LABEL}}` below is a placeholder for whatever `job` label your
+# Prometheus scrape config assigns to the frontend target (e.g. via the
+# annotation-based scrape config on chart/templates/frontend-service.yaml,
+# or a relabel rule) — replace every occurrence before loading this file.
+# Left as a placeholder rather than guessed at, since this repo doesn't
+# control the scrape config itself and different setups name jobs
+# differently (e.g. "goodtribes-frontend", "kubernetes-pods", etc.).
+#
+# Thresholds are derived from chart/values.yaml's frontend.resources block
+# (200m/256Mi request, 1000m/512Mi limit) — revisit if those values change,
+# per the same "revisit once real metrics exist" caveat already documented
+# throughout this repo's Known Issues log.
+
+groups:
+  - name: goodtribes-frontend-process
+    rules:
+      - alert: FrontendTargetDown
+        expr: up{job="{{JOB_LABEL}}"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Frontend metrics target down for {{ $labels.instance }}"
+          description: >-
+            Prometheus hasn't been able to scrape /api/metrics from this
+            frontend pod for 2+ minutes. This is the same failure shape as
+            the 2026-08-23 outage (pods NotReady / crash-looping, zero
+            healthy endpoints) — check `kubectl get pods -n goodtribes` and
+            recent pod events immediately.
+
+      - alert: FrontendFrequentRestarts
+        expr: changes(process_start_time_seconds{job="{{JOB_LABEL}}"}[30m]) > 2
+        labels:
+          severity: warning
+        annotations:
+          summary: "Frontend pod {{ $labels.instance }} restarting repeatedly"
+          description: >-
+            process_start_time_seconds has changed more than twice in 30
+            minutes, meaning the process has restarted that many times —
+            a crash-loop signature. Check `kubectl logs --previous` for the
+            crash reason (e.g. a failed `prisma migrate deploy` at
+            entrypoint.sh, per the PR #61 migration-ordering risk documented
+            in MATTIAS_TODO.md).
+
+      - alert: FrontendHighMemory
+        expr: process_resident_memory_bytes{job="{{JOB_LABEL}}"} > 0.85 * 512 * 1024 * 1024
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Frontend pod {{ $labels.instance }} near its memory limit"
+          description: >-
+            RSS has been above 85% of the 512Mi container limit
+            (chart/values.yaml frontend.resources.limits.memory) for 10+
+            minutes. Sustained pressure here risks an OOM-kill. If this
+            fires often under normal load, the limit itself may need
+            raising rather than just watching it — revisit once this has
+            enough real-traffic history to judge.
+
+      - alert: FrontendHighCPU
+        expr: rate(process_cpu_seconds_total{job="{{JOB_LABEL}}"}[5m]) > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Frontend pod {{ $labels.instance }} sustained high CPU"
+          description: >-
+            CPU usage has been above 90% of the 1000m container limit
+            (chart/values.yaml frontend.resources.limits.cpu) for 10+
+            minutes. Worth checking whether this is the trigger to finally
+            turn on frontend.autoscaling (currently disabled by default,
+            see the values.yaml comment) rather than just raising the
+            limit further.
+
+      - alert: FrontendHighEventLoopLag
+        expr: nodejs_eventloop_lag_p99_seconds{job="{{JOB_LABEL}}"} > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Frontend pod {{ $labels.instance }} event loop lag > 100ms (p99)"
+          description: >-
+            The Node.js event loop is spending 100ms+ waiting to process
+            the next tick at p99, sustained for 5+ minutes — a sign of
+            long synchronous work blocking the main thread (e.g. a heavy
+            request handler, a large JSON serialization, or something CPU-
+            bound running without yielding). Under this condition every
+            request on that pod queues behind the blocking work, including
+            health checks — a plausible precursor to readiness-probe
+            failures.
