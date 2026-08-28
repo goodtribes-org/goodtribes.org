@@ -3,8 +3,13 @@
 // prisma/seed.mjs — run manually against a local dev DATABASE_URL, safe to
 // re-run (clears its own previously-seeded rows by a slug prefix first).
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-const prisma = new PrismaClient();
+// Prisma 7 requires an explicit driver adapter (the schema no longer carries
+// a `url`, see prisma.config.ts) — run this against a local dev DATABASE_URL,
+// e.g. `DATABASE_URL="postgresql://..." node prisma/seed-sandbox-demo.mjs`.
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL ?? "" });
+const prisma = new PrismaClient({ adapter });
 
 const DEMO_USERS = [
   { email: "sandbox-demo-alva@example.com", name: "Alva Lindqvist" },
