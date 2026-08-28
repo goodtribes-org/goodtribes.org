@@ -6,5 +6,9 @@
     "dev:frontend": "npm run dev --workspace=frontend",
     "build:frontend": "npm run build --workspace=frontend",
     "dev:services": "docker compose up -d postgres meilisearch"
+  },
+  "overrides": {
+    "dompurify": "^3.4.14",
+    "brace-expansion": "^5.0.9"
   }
 }
