@@ -1386,16 +1386,28 @@ model ShopRedemption {
   @@index([itemId])
 }
 
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing AiTaskRun row and application code already uses, so converting
+// from String avoids both a data rewrite and touching any call site.
+enum AiTaskRunStatus {
+  running
+  awaiting_review
+  approved
+  rejected
+  escalated
+}
+
 model AiTaskRun {
-  id             String         @id @default(cuid())
+  id             String          @id @default(cuid())
   kanbanCardId   String
-  kanbanCard     KanbanCard     @relation("KanbanAiRuns", fields: [kanbanCardId], references: [id], onDelete: Cascade)
+  kanbanCard     KanbanCard      @relation("KanbanAiRuns", fields: [kanbanCardId], references: [id], onDelete: Cascade)
   agentType      String
-  status         String         @default("running")
-  outputMarkdown String?        @db.Text
-  attemptNumber  Int            @default(1)
-  feedback       String?        @db.Text
-  createdAt      DateTime       @default(now())
+  status         AiTaskRunStatus @default(running)
+  outputMarkdown String?         @db.Text
+  attemptNumber  Int             @default(1)
+  feedback       String?         @db.Text
+  createdAt      DateTime        @default(now())
   completedAt    DateTime?
   reviews        AiTaskReview[]
 
@@ -1414,6 +1426,15 @@ model AiTaskReview {
   createdAt     DateTime  @default(now())
 }
 
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing Poll row and application code already uses, so converting from
+// String avoids both a data rewrite and touching any call site.
+enum PollStatus {
+  open
+  closed
+}
+
 model Poll {
   id            String       @id @default(cuid())
   projectSlug   String
@@ -1423,7 +1444,7 @@ model Poll {
   title         String
   description   String?      @db.Text
   type          String       @default("yes_no")
-  status        String       @default("open")
+  status        PollStatus   @default(open)
   visibility    String       @default("live")
   isBinding     Boolean      @default(false)
   quorumPercent Float?
@@ -1911,13 +1932,24 @@ model FundingExpense {
 // matchmaking exclusion (see proposePartnership/respondToPartnership in
 // lib/actions/partnerships.ts). Either side can revoke unilaterally once
 // active — same leave-anytime spirit as OrganisationMember/ProjectMember.
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing Partnership row and application code already uses, so converting
+// from String avoids both a data rewrite and touching any call site.
+enum PartnershipStatus {
+  pending
+  active
+  declined
+  revoked
+}
+
 model Partnership {
-  id             String    @id @default(cuid())
+  id             String            @id @default(cuid())
   projectId      String
   organisationId String
-  type           String    @default("partner") // "sponsor" | "partner" | "supporter"
+  type           String            @default("partner") // "sponsor" | "partner" | "supporter"
   description    String?
-  status         String    @default("pending")  // "pending" | "active" | "declined" | "revoked"
+  status         PartnershipStatus @default(pending)
   proposedBy     String    // "org" | "project" — who initiated, so the initiator can't also accept
   initiatedById  String
   respondedById  String?
