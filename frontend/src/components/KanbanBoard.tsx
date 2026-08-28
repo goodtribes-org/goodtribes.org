@@ -31,10 +31,10 @@ import {
   type Subtask,
 } from "./kanbanShared";
 import { CATEGORY_LABEL_KEYS } from "@/lib/kanbanCategories";
-import { COLUMN_LABEL_KEYS } from "@/lib/kanbanColumns";
 import { CardDetailModal } from "./KanbanCardModal";
 import { KanbanColumn } from "./KanbanColumn";
 import { TokenPayoutDialog } from "./TokenPayoutDialog";
+import { HiddenColumnsMenu } from "./HiddenColumnsMenu";
 import type { MoveOverrides } from "@/lib/kanbanMove";
 
 export type { Member };
@@ -87,7 +87,6 @@ export default function KanbanBoard({
   // "hidden" and "narrow" at once.
   type ColumnMode = "normal" | "narrow" | "hidden";
   const [columnModes, setColumnModes] = useState<Record<string, ColumnMode>>({ DONE: "narrow" });
-  const [hiddenColumnsMenuOpen, setHiddenColumnsMenuOpen] = useState(false);
 
   const columnModesStorageKey = `kanban-column-modes-${projectSlug}`;
 
@@ -510,34 +509,10 @@ export default function KanbanBoard({
           </label>
         </div>
 
-        {hiddenColumnKeys.length > 0 && (
-          <div className="relative shrink-0">
-            <button
-              type="button"
-              onClick={() => setHiddenColumnsMenuOpen((v) => !v)}
-              className="text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 bg-white text-gray-700 hover:border-gray-400 transition-colors"
-            >
-              {t("hiddenColumnsButton", { count: hiddenColumnKeys.length })}
-            </button>
-            {hiddenColumnsMenuOpen && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setHiddenColumnsMenuOpen(false)} />
-                <div className="absolute right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-[160px]">
-                  {COLUMNS.filter((col) => hiddenColumnKeys.includes(col.key)).map((col) => (
-                    <button
-                      key={col.key}
-                      type="button"
-                      onClick={() => setColumnMode(col.key, "normal")}
-                      className="w-full text-left text-sm px-3 py-1.5 text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      {t("showColumn", { column: tShared(COLUMN_LABEL_KEYS[col.key]) })}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        )}
+        <HiddenColumnsMenu
+          hiddenColumnKeys={hiddenColumnKeys}
+          onShowColumn={(colKey) => setColumnMode(colKey, "normal")}
+        />
 
         {viewToggle && <div className="shrink-0">{viewToggle}</div>}
       </div>
