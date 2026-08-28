@@ -1686,23 +1686,35 @@ model ImpactFundAllocationRound {
   createdAt  DateTime  @default(now())
 }
 
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing PlatformPoll row and application code already uses (council
+// elections in site-admin/council/actions.ts + granskningsradet/actions.ts,
+// impact-fund allocation rounds in site-admin/impact-fund/actions.ts +
+// impact-fond/actions.ts), so converting from String avoids both a data
+// rewrite and touching any call site.
+enum PlatformPollStatus {
+  open
+  closed
+}
+
 // Platform-wide, GT-weighted polls (Granskningsrådet elections, PRD 5.53;
 // room for future platform-level votes e.g. Impact-fund priority, Fas 2.96).
 // Deliberately separate from Poll/PollOption/PollVote, which are always
 // project-scoped (Poll.projectSlug is a required FK) — see PRD 4d note.
 model PlatformPoll {
-  id          String    @id @default(cuid())
+  id          String             @id @default(cuid())
   title       String
-  description String?   @db.Text
-  type        String    @default("council_election")
-  status      String    @default("open")
+  description String?            @db.Text
+  type        String             @default("council_election")
+  status      PlatformPollStatus @default(open)
   seatCount   Int?
   termMonths  Int?
   deadline    DateTime?
   closedAt    DateTime?
   createdById String
-  createdBy   User      @relation("CreatedPlatformPolls", fields: [createdById], references: [id])
-  createdAt   DateTime  @default(now())
+  createdBy   User               @relation("CreatedPlatformPolls", fields: [createdById], references: [id])
+  createdAt   DateTime           @default(now())
 
   options PlatformPollOption[]
   votes   PlatformPollVote[]
@@ -1753,28 +1765,40 @@ model ReviewCouncilMember {
   @@index([userId])
 }
 
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing ExclusionCase row and application code already uses
+// (granskningsradet/actions.ts's createExclusionCase/proposeDecision/
+// castExclusionVote, authz.ts's isProjectBanned check), so converting from
+// String avoids both a data rewrite and touching any call site.
+enum ExclusionCaseStatus {
+  open
+  under_review
+  resolved
+}
+
 // Granskningsrådet's uteslutningsärenden (PRD 5.53-5.55) — deliberately
 // separate from ContentFlag/EthicsReview (which stay reviewer=site-admin/
 // council for flagged *projects*, see canReviewEthicsFlags): reporting a
 // *user* for misconduct needs richer state (project scope, response window,
 // proposed decision, council votes) than the generic flag pipeline has.
 model ExclusionCase {
-  id                String    @id @default(cuid())
+  id                String              @id @default(cuid())
   reportedUserId    String
-  reportedUser      User      @relation("ReportedInExclusionCases", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  reportedUser      User                @relation("ReportedInExclusionCases", fields: [reportedUserId], references: [id], onDelete: Cascade)
   reportedById      String
-  reportedBy        User      @relation("FiledExclusionCases", fields: [reportedById], references: [id])
+  reportedBy        User                @relation("FiledExclusionCases", fields: [reportedById], references: [id])
   projectId         String?
-  project           Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  reason            String    @db.Text
-  responseText      String?   @db.Text
+  project           Project?            @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  reason            String              @db.Text
+  responseText      String?             @db.Text
   respondedAt       DateTime?
-  status            String    @default("open")
+  status            ExclusionCaseStatus @default(open)
   proposedDecision  String?
   decision          String?
   decidedAt         DateTime?
-  decisionReasoning String?   @db.Text
-  createdAt         DateTime  @default(now())
+  decisionReasoning String?             @db.Text
+  createdAt         DateTime            @default(now())
 
   votes ExclusionCaseVote[]
   @@index([reportedUserId])
