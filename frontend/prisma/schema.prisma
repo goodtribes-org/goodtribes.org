@@ -275,6 +275,17 @@ model Organisation {
   partnerships   Partnership[]             @relation("OrganisationPartnerships")
 }
 
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing OrganisationFlag row and application code already uses, so
+// converting from String avoids both a data rewrite and touching any call
+// site.
+enum OrganisationFlagStatus {
+  pending
+  dismissed
+  resolved
+}
+
 model OrganisationFlag {
   id             String                    @id @default(cuid())
   organisationId String
@@ -282,7 +293,7 @@ model OrganisationFlag {
   flaggedById    String
   flaggedBy      User                      @relation("OrgFlaggedBy", fields: [flaggedById], references: [id])
   reason         String
-  status         String                    @default("pending")
+  status         OrganisationFlagStatus    @default(pending)
   reviewedById   String?
   reviewedBy     User?                     @relation("OrgFlagReviewer", fields: [reviewedById], references: [id])
   decisionNote   String?
@@ -349,12 +360,23 @@ model OrganisationMember {
   @@unique([organisationId, userId])
 }
 
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing OrganisationJoinRequest row and application code already uses,
+// so converting from String avoids both a data rewrite and touching any
+// call site.
+enum OrganisationJoinRequestStatus {
+  pending
+  approved
+  rejected
+}
+
 model OrganisationJoinRequest {
-  id             String   @id @default(cuid())
+  id             String                        @id @default(cuid())
   organisationId String
   userId         String
-  status         String   @default("pending")
-  createdAt      DateTime @default(now())
+  status         OrganisationJoinRequestStatus @default(pending)
+  createdAt      DateTime                      @default(now())
 
   organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
   user         User         @relation("JoinRequests", fields: [userId], references: [id], onDelete: Cascade)
@@ -1037,14 +1059,25 @@ model MindMap {
   updatedAt   DateTime @updatedAt
 }
 
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing ProjectJoinRequest row and application code already uses, so
+// converting from String avoids both a data rewrite and touching any call
+// site.
+enum ProjectJoinRequestStatus {
+  pending
+  approved
+  rejected
+}
+
 model ProjectJoinRequest {
-  id        String   @id @default(cuid())
+  id        String                   @id @default(cuid())
   projectId String
   userId    String
   message   String?
-  status    String   @default("pending")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  status    ProjectJoinRequestStatus @default(pending)
+  createdAt DateTime                 @default(now())
+  updatedAt DateTime                 @updatedAt
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user    User    @relation("ProjectJoinRequests", fields: [userId], references: [id], onDelete: Cascade)
@@ -2351,19 +2384,30 @@ model DreamWallReaction {
   @@unique([dreamWallPostId, userId, emoji])
 }
 
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing ProjectFlag row and application code already uses, so
+// converting from String avoids both a data rewrite and touching any call
+// site.
+enum ProjectFlagStatus {
+  pending
+  dismissed
+  resolved
+}
+
 model ProjectFlag {
-  id           String        @id @default(cuid())
+  id           String            @id @default(cuid())
   projectId    String
-  project      Project       @relation("ProjectFlags", fields: [projectId], references: [id], onDelete: Cascade)
+  project      Project           @relation("ProjectFlags", fields: [projectId], references: [id], onDelete: Cascade)
   flaggedById  String
-  flaggedBy    User          @relation("FlaggedBy", fields: [flaggedById], references: [id])
+  flaggedBy    User              @relation("FlaggedBy", fields: [flaggedById], references: [id])
   reason       String
-  status       String        @default("pending")
+  status       ProjectFlagStatus @default(pending)
   reviewedById String?
-  reviewedBy   User?         @relation("FlagReviewer", fields: [reviewedById], references: [id])
+  reviewedBy   User?             @relation("FlagReviewer", fields: [reviewedById], references: [id])
   decisionNote String?
   ethicsReview EthicsReview?
-  createdAt    DateTime      @default(now())
+  createdAt    DateTime          @default(now())
 
   @@index([projectId])
 }
