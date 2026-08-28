@@ -1160,21 +1160,34 @@ model ActivityEvent {
   @@index([projectId])
 }
 
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing FundingCampaign row and application code already uses (see
+// app/[locale]/projects/[slug]/(workspace)/funding/actions.ts's closeCampaign
+// and funding/page.tsx), so converting from String avoids both a data
+// rewrite and touching any call site. Distinct from this same model's
+// campaignType/stripeOnboardingStatus String fields, which are out of scope
+// here and left untouched.
+enum FundingCampaignStatus {
+  active
+  closed
+}
+
 model FundingCampaign {
-  id                     String    @id @default(cuid())
-  projectId              String    @unique
+  id                     String                @id @default(cuid())
+  projectId              String                @unique
   title                  String
   description            String?
   goal                   Int
-  currency               String    @default("SEK")
-  status                 String    @default("active")
-  campaignType           String    @default("donation") // "donation" | "reward" | "token"
-  tokenExchangeRate      Float?    // e.g. 100 -> "100 SEK = 1 Tribe Token"; only meaningful when campaignType == "token"
+  currency               String                @default("SEK")
+  status                 FundingCampaignStatus @default(active)
+  campaignType           String                @default("donation") // "donation" | "reward" | "token"
+  tokenExchangeRate      Float?                // e.g. 100 -> "100 SEK = 1 Tribe Token"; only meaningful when campaignType == "token"
   deadline               DateTime?
-  platformFee            Float     @default(5)
+  platformFee            Float                 @default(5)
   stripeAccountId        String?
-  stripeOnboardingStatus String    @default("not_started") // "not_started" | "pending" | "complete", driven by the account.updated webhook
-  createdAt              DateTime  @default(now())
+  stripeOnboardingStatus String                @default("not_started") // "not_started" | "pending" | "complete", driven by the account.updated webhook
+  createdAt              DateTime              @default(now())
 
   project     Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   pledges     FundingPledge[]
@@ -2132,18 +2145,29 @@ model WhiteboardDraft {
   @@index([ownerId])
 }
 
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing ProjectInstance row and application code already uses (review
+// decision values from /api/projects/instances/review/route.ts), so
+// converting from String avoids both a data rewrite and touching any call site.
+enum ProjectInstanceStatus {
+  pending
+  approved
+  rejected
+}
+
 model ProjectInstance {
-  id           String   @id @default(cuid())
+  id           String                @id @default(cuid())
   parentSlug   String
-  parent       Project  @relation("ParentInstances", fields: [parentSlug], references: [slug], onDelete: Cascade)
-  childSlug    String   @unique
-  child        Project  @relation("ChildInstance", fields: [childSlug], references: [slug], onDelete: Cascade)
+  parent       Project               @relation("ParentInstances", fields: [parentSlug], references: [slug], onDelete: Cascade)
+  childSlug    String                @unique
+  child        Project               @relation("ChildInstance", fields: [childSlug], references: [slug], onDelete: Cascade)
   region       String
-  country      String?  // free text, normalized via lib/geo.ts same as User.country — powers the network dashboard's world map
-  status       String   @default("pending")
+  country      String?               // free text, normalized via lib/geo.ts same as User.country — powers the network dashboard's world map
+  status       ProjectInstanceStatus @default(pending)
   approvedById String?
-  approvedBy   User?    @relation("ApprovedInstances", fields: [approvedById], references: [id])
-  createdAt    DateTime @default(now())
+  approvedBy   User?                 @relation("ApprovedInstances", fields: [approvedById], references: [id])
+  createdAt    DateTime              @default(now())
 
   @@unique([parentSlug, childSlug])
 }
@@ -2173,18 +2197,29 @@ model Mentor {
   createdAt  DateTime            @default(now())
 }
 
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing MentorshipRequest row and application code already uses (see
+// app/[locale]/mentors/actions.ts), so converting from String avoids both a
+// data rewrite and touching any call site.
+enum MentorshipRequestStatus {
+  pending
+  accepted
+  completed
+}
+
 model MentorshipRequest {
-  id            String              @id @default(cuid())
+  id            String                  @id @default(cuid())
   projectId     String
-  project       Project             @relation("ProjectMentorships", fields: [projectId], references: [id], onDelete: Cascade)
+  project       Project                 @relation("ProjectMentorships", fields: [projectId], references: [id], onDelete: Cascade)
   mentorId      String
-  mentor        Mentor              @relation(fields: [mentorId], references: [id], onDelete: Cascade)
-  status        String              @default("pending")
+  mentor        Mentor                  @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  status        MentorshipRequestStatus @default(pending)
   message       String?
   sessionAt     DateTime?
   tokensAwarded Float?
   feedback      MentorshipFeedback?
-  createdAt     DateTime            @default(now())
+  createdAt     DateTime                @default(now())
 
   @@index([projectId])
   @@index([mentorId])
