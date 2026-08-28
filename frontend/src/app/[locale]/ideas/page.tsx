@@ -10,6 +10,16 @@ import IdeasFilters from "./IdeasFilters";
 import { SdgIcon } from "@/components/SdgIcon";
 import { getCachedIdeasPage } from "@/lib/listCache";
 import type { Locale } from "next-intl";
+import type { IdeaStatus } from "@prisma/client";
+
+// Matches the tab values below (all valid IdeaStatus members except "draft"
+// and "converted" -- there's no tab for either since drafts aren't publicly
+// listed and a converted idea's page is meant to be reached via its linked
+// project instead of this filter bar). status comes straight off the URL's
+// query string, so it's validated against this whitelist rather than cast
+// directly -- an arbitrary/stale query value now falls back to "no filter"
+// instead of Prisma throwing on an invalid enum value.
+const FILTERABLE_IDEA_STATUSES: readonly IdeaStatus[] = ["open", "review", "shortlisted", "approved"];
 
 export const metadata: Metadata = {
   title: "Ideas — GoodTribes.org",
@@ -30,6 +40,7 @@ export default async function IdeasPage({
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
   const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
   const sdgNum = sdg ? parseInt(sdg) : undefined;
+  const statusFilter = FILTERABLE_IDEA_STATUSES.includes(status as IdeaStatus) ? (status as IdeaStatus) : undefined;
 
   const locale = (await getLocale()) as Locale;
 
@@ -37,7 +48,7 @@ export default async function IdeasPage({
     auth(),
     getTranslations("IdeasPage"),
     getTranslations("ProjectCard"),
-    getCachedIdeasPage(sort, status, category, sdgNum, region, page, locale),
+    getCachedIdeasPage(sort, statusFilter, category, sdgNum, region, page, locale),
   ]);
 
   const STATUS_TABS = [

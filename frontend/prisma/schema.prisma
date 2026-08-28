@@ -867,6 +867,19 @@ model InitiativeChecklistItem {
   @@index([projectId])
 }
 
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing Idea row and application code already uses, so converting from
+// String avoids both a data rewrite and touching any call site.
+enum IdeaStatus {
+  draft
+  open
+  review
+  shortlisted
+  approved
+  converted
+}
+
 model Idea {
   id             String   @id @default(cuid())
   title          String
@@ -879,7 +892,7 @@ model Idea {
   imageUrl       String?
   targetRegion   String   @default("global")
   estimatedReach Int?
-  status         String   @default("open")
+  status         IdeaStatus @default(open)
   viewCount      Int      @default(0)
   authorId       String
   createdAt      DateTime @default(now())
@@ -924,13 +937,24 @@ model IdeaTranslation {
 // PRD 5.15 co-creation — a pull-request-style proposed edit to an idea's
 // description. No diff format: full proposed value + a snapshot of what it
 // replaced, matching every other content model in this schema.
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing IdeaRevision row and application code already uses, so
+// converting from String avoids both a data rewrite and touching any call
+// site.
+enum IdeaRevisionStatus {
+  pending
+  accepted
+  rejected
+}
+
 model IdeaRevision {
   id                  String    @id @default(cuid())
   ideaId              String
   idea                Idea      @relation(fields: [ideaId], references: [id], onDelete: Cascade)
   proposedDescription String    @db.Text
   previousDescription String?   @db.Text
-  status              String    @default("pending") // pending | accepted | rejected
+  status              IdeaRevisionStatus @default(pending)
   proposedById        String
   proposedBy          User      @relation("ProposedIdeaRevisions", fields: [proposedById], references: [id], onDelete: Cascade)
   decisionNote        String?   @db.Text
@@ -1070,13 +1094,22 @@ model IdeaComment {
   author User @relation("AuthoredIdeaComments", fields: [authorId], references: [id], onDelete: Cascade)
 }
 
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing Milestone row and application code already uses, so converting
+// from String avoids both a data rewrite and touching any call site.
+enum MilestoneStatus {
+  pending
+  done
+}
+
 model Milestone {
   id          String    @id @default(cuid())
   projectId   String
   title       String
   description String?
   dueDate     DateTime?
-  status      String    @default("pending")
+  status      MilestoneStatus @default(pending)
   createdById String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

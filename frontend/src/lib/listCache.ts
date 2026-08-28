@@ -1,5 +1,5 @@
 import { unstable_cache, revalidateTag } from "next/cache"
-import type { Prisma, ProjectPhase } from "@prisma/client"
+import type { Prisma, ProjectPhase, IdeaStatus } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { countByCountry } from "@/lib/geo"
 import { computeTaskProgressByProject } from "@/lib/taskProgress"
@@ -114,14 +114,14 @@ export const getCachedProjectsPage = unstable_cache(
 export const getCachedIdeasPage = unstable_cache(
   async (
     sort: "top" | "trending" | "new",
-    status: string | undefined,
+    status: IdeaStatus | undefined,
     category: string | undefined,
     sdgNum: number | undefined,
     region: string | undefined,
     page: number,
     locale: Locale,
   ) => {
-    const where = {
+    const where: Prisma.IdeaWhereInput = {
       hiddenAt: null,
       ...(status ? { status } : { status: { not: "draft" } }),
       ...(category ? { category } : {}),
