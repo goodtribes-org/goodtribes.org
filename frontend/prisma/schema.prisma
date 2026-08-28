@@ -1429,7 +1429,7 @@ model Sprint {
   projectSlug       String
   project           Project         @relation("ProjectSprints", fields: [projectSlug], references: [slug], onDelete: Cascade)
   createdById       String
-  createdBy         User            @relation("SprintsCreated", fields: [createdById], references: [id])
+  createdBy         User            @relation("SprintsCreated", fields: [createdById], references: [id], onDelete: Cascade)
   name              String
   status            SprintStatus    @default(ACTIVE)
   pace              SprintPace      @default(SPREAD_OUT)
