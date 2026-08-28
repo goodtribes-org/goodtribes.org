@@ -1642,20 +1642,36 @@ model CommercialUmbrellaEntity {
 // decided by a Tribe-Token-weighted Poll (see closePoll's legal_type_change
 // branch in polls/actions.ts), but only ever executed by the Foundation
 // (site-admin) — an approved vote is a request, never an automatic change.
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing LegalTypeChangeRequest row and application code already uses, so
+// converting from String avoids both a data rewrite and touching any call
+// site. All five values confirmed by reading every consuming call site
+// (site-admin/legal-type/actions.ts, projects/[slug]/legal-type/actions.ts,
+// projects/[slug]/polls/actions.ts) -- no additional/cancellation state
+// exists in code.
+enum LegalTypeChangeRequestStatus {
+  pending
+  approved_by_members
+  rejected_by_members
+  executed
+  rejected_by_foundation
+}
+
 model LegalTypeChangeRequest {
-  id            String    @id @default(cuid())
+  id            String                       @id @default(cuid())
   projectId     String
-  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project       Project                      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   requestedType LegalType
   pollId        String?
-  status        String    @default("pending") // pending | approved_by_members | rejected_by_members | executed | rejected_by_foundation
+  status        LegalTypeChangeRequestStatus @default(pending)
   requestedById String
-  requestedBy   User      @relation("RequestedLegalTypeChanges", fields: [requestedById], references: [id])
-  decisionNote  String?   @db.Text
+  requestedBy   User                         @relation("RequestedLegalTypeChanges", fields: [requestedById], references: [id])
+  decisionNote  String?                      @db.Text
   executedById  String?
-  executedBy    User?     @relation("ExecutedLegalTypeChanges", fields: [executedById], references: [id], onDelete: SetNull)
+  executedBy    User?                        @relation("ExecutedLegalTypeChanges", fields: [executedById], references: [id], onDelete: SetNull)
   executedAt    DateTime?
-  createdAt     DateTime  @default(now())
+  createdAt     DateTime                     @default(now())
 
   @@index([projectId])
 }
@@ -1668,18 +1684,33 @@ model LegalTypeChangeRequest {
 // approveSandboxGraduation) — landing under the paraply-AB and becoming
 // GoodTribes-approved happen together, not as separate steps.
 // Replaces the old one-click toggleSandbox self-serve flip.
+//
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing SandboxGraduationRequest row and application code already uses,
+// so converting from String avoids both a data rewrite and touching any
+// call site. All three values confirmed by reading every consuming call
+// site (site-admin/sandbox-graduation/actions.ts, projects/[slug]/edit/
+// actions.ts, EditProjectForm.tsx) -- no additional/cancellation state
+// exists in code.
+enum SandboxGraduationRequestStatus {
+  pending
+  approved
+  rejected
+}
+
 model SandboxGraduationRequest {
-  id            String    @id @default(cuid())
+  id            String                         @id @default(cuid())
   projectId     String
-  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  status        String    @default("pending") // pending | approved | rejected
+  project       Project                        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status        SandboxGraduationRequestStatus @default(pending)
   requestedById String
-  requestedBy   User      @relation("RequestedSandboxGraduations", fields: [requestedById], references: [id])
-  decisionNote  String?   @db.Text
+  requestedBy   User                           @relation("RequestedSandboxGraduations", fields: [requestedById], references: [id])
+  decisionNote  String?                        @db.Text
   executedById  String?
-  executedBy    User?     @relation("ExecutedSandboxGraduations", fields: [executedById], references: [id], onDelete: SetNull)
+  executedBy    User?                          @relation("ExecutedSandboxGraduations", fields: [executedById], references: [id], onDelete: SetNull)
   executedAt    DateTime?
-  createdAt     DateTime  @default(now())
+  createdAt     DateTime                       @default(now())
 
   @@index([projectId])
 }
