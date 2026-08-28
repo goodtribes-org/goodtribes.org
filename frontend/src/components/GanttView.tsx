@@ -10,35 +10,17 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
-  useDraggable,
   useDroppable,
 } from "@dnd-kit/core";
 import Tooltip from "@/components/Tooltip";
-
-type GanttCard = {
-  id: string;
-  title: string;
-  column: string;
-  priority: string;
-  startDate: Date | string | null;
-  dueDate: Date | string | null;
-  description?: string | null;
-  assignee?: { name: string | null } | null;
-  dependsOnIds?: string[];
-};
+import GanttUnscheduledSection from "./GanttUnscheduledSection";
+import { toDate, COLUMN_LABEL_KEYS, COLUMN_COLORS, type GanttCard, type GanttTodo } from "./ganttShared";
 
 type GanttMilestone = {
   id: string;
   title: string;
   dueDate: Date | string | null;
   status: string;
-};
-
-type GanttTodo = {
-  id: string;
-  title: string;
-  dueDate: Date | string | null;
-  done: boolean;
 };
 
 interface GanttViewProps {
@@ -58,20 +40,6 @@ const LABEL_WIDTH = 220;
 const ROW_H = 36;
 
 const COLUMN_ORDER = ["BACKLOG", "TODO", "DOING", "REVIEW", "DONE"];
-const COLUMN_LABEL_KEYS: Record<string, string> = {
-  BACKLOG: "columnBacklog",
-  TODO: "columnTodo",
-  DOING: "columnDoing",
-  REVIEW: "columnReview",
-  DONE: "columnDone",
-};
-const COLUMN_COLORS: Record<string, string> = {
-  BACKLOG: "bg-gray-400",
-  TODO: "bg-sky-500",
-  DOING: "bg-amber-500",
-  REVIEW: "bg-purple-500",
-  DONE: "bg-green-500",
-};
 
 const MONTH_KEYS = [
   "monthJan",
@@ -87,11 +55,6 @@ const MONTH_KEYS = [
   "monthNov",
   "monthDec",
 ];
-
-function toDate(d: Date | string | null): Date | null {
-  if (!d) return null;
-  return d instanceof Date ? d : new Date(d);
-}
 
 function toISODate(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -122,32 +85,6 @@ function ColumnDropZone({ col }: { col: string }) {
   );
 }
 
-function UnscheduledCardRow({
-  card,
-  colorClass,
-  columnLabel,
-}: {
-  card: { id: string; title: string };
-  colorClass: string;
-  columnLabel: string;
-}) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: card.id });
-  return (
-    <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      className={`flex items-center gap-2 px-3 py-2 rounded border border-muted-teal/20 bg-white cursor-grab active:cursor-grabbing touch-none ${
-        isDragging ? "opacity-40" : ""
-      }`}
-    >
-      <span className={`w-2 h-2 rounded-full shrink-0 ${colorClass}`} />
-      <span className="text-sm text-dark-slate">{card.title}</span>
-      <span className="text-xs text-dark-slate/30 ml-auto">{columnLabel}</span>
-    </div>
-  );
-}
-
 export default function GanttView({
   cards,
   todos = [],
@@ -160,7 +97,6 @@ export default function GanttView({
 }: GanttViewProps) {
   const t = useTranslations("GanttView");
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const [unscheduledOpen, setUnscheduledOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<string | null>(null);
   const [editStart, setEditStart] = useState("");
   const [editEnd, setEditEnd] = useState("");
@@ -193,7 +129,6 @@ export default function GanttView({
   allDates.push(now);
 
   const scheduledTodos = todos.filter((t) => toDate(t.dueDate));
-  const unscheduledTodos = todos.filter((t) => !toDate(t.dueDate));
 
   let rangeStart = addDays(new Date(Math.min(...allDates.map((d) => d.getTime()))), -7);
   let rangeEnd = addDays(new Date(Math.max(...allDates.map((d) => d.getTime()))), 14);
@@ -210,9 +145,9 @@ export default function GanttView({
 
   const totalDays = diffDays(rangeStart, rangeEnd) + 1;
 
-  // Separate scheduled vs unscheduled
+  // Separate scheduled vs unscheduled (the unscheduled list itself is derived
+  // again, from the same `cards`/`todos` props, inside GanttUnscheduledSection)
   const scheduled = cards.filter((c) => toDate(c.startDate) || toDate(c.dueDate));
-  const unscheduled = cards.filter((c) => !toDate(c.startDate) && !toDate(c.dueDate));
 
   // Group scheduled by column
   const byColumn: Record<string, GanttCard[]> = {};
@@ -680,49 +615,7 @@ export default function GanttView({
       </div>
 
       {/* Ej schemalagda — collapsible, collapsed by default */}
-      <div className="mt-4">
-        {(unscheduled.length > 0 || unscheduledTodos.length > 0) && (
-          <div>
-            <button
-              onClick={() => setUnscheduledOpen((o) => !o)}
-              className="flex items-center gap-1.5 text-sm font-semibold text-dark-slate/50 hover:text-dark-slate transition-colors"
-            >
-              <svg
-                className={`w-4 h-4 transition-transform ${unscheduledOpen ? "rotate-180" : ""}`}
-                fill="none" stroke="currentColor" viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-              {t("unscheduledSectionToggle", { count: unscheduled.length + unscheduledTodos.length })}
-            </button>
-            {unscheduledOpen && unscheduled.length > 0 && (
-              <p className="text-xs text-dark-slate/40 mt-1 mb-2">{t("unscheduledDragHint")}</p>
-            )}
-            {unscheduledOpen && (
-              <div className="space-y-1 mt-2">
-                {unscheduled.map((card) => (
-                  <UnscheduledCardRow
-                    key={card.id}
-                    card={card}
-                    colorClass={COLUMN_COLORS[card.column]}
-                    columnLabel={t(COLUMN_LABEL_KEYS[card.column])}
-                  />
-                ))}
-                {unscheduledTodos.map((todo) => (
-                  <div
-                    key={todo.id}
-                    className="flex items-center gap-2 px-3 py-2 rounded border border-amber-100 bg-amber-50/40"
-                  >
-                    <span className={`w-2 h-2 rounded-full shrink-0 ${todo.done ? "bg-green-400" : "bg-amber-400"}`} />
-                    <span className={`text-sm ${todo.done ? "line-through text-dark-slate/40" : "text-dark-slate"}`}>{todo.title}</span>
-                    <span className="text-xs text-amber-400/70 ml-auto">{t("unscheduledTodoBadge")}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      <GanttUnscheduledSection cards={cards} todos={todos} />
     </div>
     </DndContext>
   );
