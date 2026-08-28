@@ -21,9 +21,7 @@ import { ProjectSandboxAnnouncer } from "@/components/SandboxIndicator";
 import { isLeadRole, isSiteAdmin, isLastFounder } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
-import { computeTaskProgress } from "@/lib/taskProgress";
 import { getLikeCommentData } from "@/lib/socialInteractions";
-import { toProxyUrl } from "@/lib/storageUrl";
 import ActivityFeed from "@/components/ActivityFeed";
 import { fetchActivityItems, getFeedInteractionData } from "@/lib/activityFeed";
 import { resolveProjectContent } from "@/lib/contentTranslation";
@@ -32,6 +30,10 @@ import type { Locale } from "next-intl";
 import MiniCalendar from "./MiniCalendar";
 import PhaseChecklistWidget from "./PhaseChecklistWidget";
 import ProjectQuickActions from "./ProjectQuickActions";
+import MostActiveMembersWidget from "./MostActiveMembersWidget";
+import KanbanSummaryWidget from "./KanbanSummaryWidget";
+import TasksWithSubtasksWidget from "./TasksWithSubtasksWidget";
+import RecentChannelMessagesWidget from "./RecentChannelMessagesWidget";
 
 const FEED_PREVIEW_SIZE = 10;
 
@@ -650,204 +652,23 @@ export default async function ProjectDetailPage({
             </section>
           )}
 
-          {/* Most active members */}
-          {mostActiveMembers.length > 0 && (
-            <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-dark-slate">{t("mostActiveMembersHeading")}</h2>
-                <Link href={`/projects/${slug}/tokens`} className="text-xs text-seagrass hover:underline">
-                  {t("viewAllTokensLink")}
-                </Link>
-              </div>
-              <ol className="space-y-2">
-                {mostActiveMembers.map((m, i) => {
-                  const initials = m.name
-                    .split(" ")
-                    .map((w) => w[0])
-                    .join("")
-                    .slice(0, 2)
-                    .toUpperCase();
-                  const avatarContent = m.image ? (
-                    <Image src={toProxyUrl(m.image)} alt={m.name} fill unoptimized className="object-cover" />
-                  ) : (
-                    initials
-                  );
-                  const row = (
-                    <div className="flex items-center gap-3">
-                      <span className="w-5 text-center text-xs font-bold text-dark-slate/40">{i + 1}</span>
-                      <div className="w-8 h-8 rounded-full bg-dry-sage flex-shrink-0 flex items-center justify-center text-xs font-semibold text-dark-slate overflow-hidden relative">
-                        {avatarContent}
-                      </div>
-                      <span className="flex-1 min-w-0 text-sm text-dark-slate truncate">{m.name}</span>
-                      <span className="text-xs font-semibold text-coral">{Math.round(m.tokens)} {t("pointsAbbreviation")}</span>
-                    </div>
-                  );
-                  return (
-                    <li key={m.id}>
-                      {m.showProfile ? (
-                        <Link
-                          href={`/members/${m.id}`}
-                          className="block hover:bg-dry-sage/20 rounded-lg px-1.5 py-1 -mx-1.5 transition-colors"
-                        >
-                          {row}
-                        </Link>
-                      ) : (
-                        <div className="px-1.5 py-1 -mx-1.5">{row}</div>
-                      )}
-                    </li>
-                  );
-                })}
-              </ol>
-            </section>
-          )}
+          <MostActiveMembersWidget members={mostActiveMembers} slug={slug} t={t} />
 
-          {/* Kanban summary — bar chart */}
-          {kanbanCards.length > 0 && (() => {
-            const cols = [
-              { key: "BACKLOG", label: t("columnBacklog"), bg: "#b2b09b" },
-              { key: "TODO",    label: t("columnTodo"),    bg: "#7bad93" },
-              { key: "DOING",   label: t("columnDoing"),   bg: "#ff6f59" },
-              { key: "REVIEW",  label: t("columnReview"),  bg: "#f59e0b" },
-              { key: "DONE",    label: t("columnDone"),    bg: "#43aa8b" },
-            ];
-            const { total, done } = computeTaskProgress(kanbanCards);
-            const counts = cols.map(c => {
-              if (c.key === "DONE") return done;
-              const cardsInCol = kanbanCards.filter(k => k.column === c.key);
-              return cardsInCol.length + cardsInCol.reduce((sum, k) => sum + (k.subtasks?.length ?? 0), 0);
-            });
-            const max = Math.max(...counts, 1);
-            return (
-              <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-sm font-semibold text-dark-slate">{t("tasksHeading")}</h2>
-                  <Link href={`/projects/${slug}/tasks`} className="text-xs text-seagrass hover:underline">
-                    {t("openArrowLink")}
-                  </Link>
-                </div>
+          <KanbanSummaryWidget cards={kanbanCards} slug={slug} t={t} />
 
-                {/* Vertical bar chart */}
-                <div className="flex items-end justify-between gap-1.5 mb-2">
-                  {cols.map(({ key, label, bg }, i) => {
-                    const count = counts[i];
-                    const barH = count === 0 ? 4 : Math.max(8, Math.round((count / max) * 80));
-                    return (
-                      <div key={key} className="flex flex-col items-center gap-1 flex-1" title={`${label}: ${count}`}>
-                        <span className="text-[10px] font-semibold text-dark-slate tabular-nums">{count}</span>
-                        <div
-                          className="w-full rounded-t-sm"
-                          style={{ height: `${barH}px`, backgroundColor: bg }}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
+          <TasksWithSubtasksWidget cards={kanbanCards} slug={slug} t={t} />
 
-                {/* Labels */}
-                <div className="flex justify-between gap-1.5">
-                  {cols.map(({ key, label }) => (
-                    <div key={key} className="flex-1 text-center">
-                      <span className="text-[9px] text-dark-slate/50 leading-tight block truncate">{label}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <p className="text-xs text-dark-slate/40 mt-3 text-center">
-                  {t("tasksProgressLabel", { done, total })}
-                </p>
-              </section>
-            );
-          })()}
-
-          {/* Uppgifter widget */}
-          {(() => {
-            const colOrder = ["TODO", "DOING", "REVIEW"];
-            const cardsWithSubtasks = [...kanbanCards]
-              .filter(c => colOrder.includes(c.column) && c.subtasks && c.subtasks.length > 0)
-              .sort((a, b) => colOrder.indexOf(a.column) - colOrder.indexOf(b.column));
-            if (cardsWithSubtasks.length === 0) return null;
-            return (
-              <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-sm font-semibold text-dark-slate">{t("tasksListHeading")}</h2>
-                  <Link href={`/projects/${slug}/tasks`} className="text-xs text-seagrass hover:underline">
-                    {t("openArrowLink")}
-                  </Link>
-                </div>
-                <div className="max-h-64 overflow-y-auto space-y-3">
-                  {cardsWithSubtasks.map(card => {
-                    const doneCount = card.subtasks!.filter(s => s.done).length;
-                    const totalCount = card.subtasks!.length;
-                    return (
-                      <div key={card.id}>
-                        <div className="flex items-center justify-between gap-1 mb-1">
-                          <span className="text-[11px] font-semibold text-dark-slate truncate">{card.title}</span>
-                          <span className="text-[10px] text-dark-slate/40 shrink-0">{doneCount}/{totalCount}</span>
-                        </div>
-                        <ul className="space-y-0.5">
-                          {card.subtasks!.map(s => (
-                            <li key={s.id} className="flex items-start gap-1.5">
-                              <span className="text-[10px] shrink-0 mt-px" style={{ color: s.done ? "#43aa8b" : "#b2b09b" }}>
-                                {s.done ? "✓" : "○"}
-                              </span>
-                              <span className={`text-[10px] leading-snug ${s.done ? "line-through text-dark-slate/30" : "text-dark-slate/60"}`}>
-                                {s.title}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            );
-          })()}
-
-          {/* Kanaler preview */}
-          {recentChannelMessages.length > 0 && (
-            <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-dark-slate">{t("channelsHeading")}</h2>
-                <Link href={`/messages?project=${slug}`} className="text-xs text-seagrass hover:underline">
-                  {t("openArrowLink")}
-                </Link>
-              </div>
-              <ul className="space-y-3">
-                {[...recentChannelMessages].reverse().map((msg) => {
-                  const initials = (msg.author.name ?? "?").charAt(0).toUpperCase();
-                  return (
-                    <li key={msg.id} className="flex gap-2 items-start">
-                      <div className="w-6 h-6 rounded-full bg-dry-sage shrink-0 flex items-center justify-center text-[10px] font-bold text-dark-slate overflow-hidden relative mt-0.5">
-                        {msg.author.image ? (
-                          <Image src={msg.author.image} alt={msg.author.name ?? ""} fill className="object-cover" unoptimized />
-                        ) : initials}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="text-xs font-semibold text-dark-slate truncate">
-                            {msg.author.name?.split(" ")[0] ?? "?"}
-                          </span>
-                          <span className="text-[10px] text-dark-slate/40 shrink-0">
-                            #{msg.room.name} · {relativeTime(msg.createdAt, t)}
-                          </span>
-                        </div>
-                        <p className="text-xs text-dark-slate/70 leading-snug line-clamp-2">
-                          {msg.body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()}
-                        </p>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-              <Link
-                href={`/messages?project=${slug}`}
-                className="mt-3 block text-center text-xs text-white bg-seagrass hover:bg-seagrass/90 rounded-lg py-1.5 transition-colors"
-              >
-                {t("openChannelsButton")}
-              </Link>
-            </section>
-          )}
+          <RecentChannelMessagesWidget
+            messages={recentChannelMessages.map((msg) => ({
+              id: msg.id,
+              body: msg.body,
+              timeLabel: relativeTime(msg.createdAt, t),
+              author: msg.author,
+              room: msg.room,
+            }))}
+            slug={slug}
+            t={t}
+          />
 
           {/* GitHub — read-only mirror of the mapped project board */}
           {project.githubBoard && (
