@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
+import type { IdeaStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notify";
 import { isSiteAdmin } from "@/lib/authz";
@@ -11,6 +12,12 @@ import { runProactiveModeration } from "@/lib/proactiveModeration";
 import { indexDocuments, deleteDocument } from "@/lib/meili";
 import { routing } from "@/i18n/routing";
 import { IDEAS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
+
+// Same six values as IdeaInteractions.tsx's STATUS_VALUES (the dropdown this
+// is called from) -- kept as a runtime whitelist here too since a Server
+// Action's arguments are just as reachable as any other input a client can
+// send, regardless of what a <select> on the calling page restricts to.
+const IDEA_STATUS_VALUES: readonly IdeaStatus[] = ["draft", "open", "review", "shortlisted", "approved", "converted"];
 
 
 export async function toggleVote(ideaId: string) {
@@ -89,9 +96,14 @@ export async function toggleFollow(ideaId: string) {
   revalidatePath(`/ideas/${ideaId}`);
 }
 
-export async function setIdeaStatus(ideaId: string, newStatus: string) {
+export async function setIdeaStatus(ideaId: string, newStatusRaw: string) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
+
+  if (!IDEA_STATUS_VALUES.includes(newStatusRaw as IdeaStatus)) {
+    return { error: "Invalid status" };
+  }
+  const newStatus = newStatusRaw as IdeaStatus;
 
   const idea = await prisma.idea.findUnique({
     where: { id: ideaId },
@@ -103,7 +115,7 @@ export async function setIdeaStatus(ideaId: string, newStatus: string) {
   const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { email: true } });
   const isModerator = user?.email?.endsWith("@goodtribes.org") ?? false;
 
-  const authorAllowed = ["draft", "open"];
+  const authorAllowed: readonly IdeaStatus[] = ["draft", "open"];
   if (!isModerator && (!isAuthor || !authorAllowed.includes(newStatus))) {
     return { error: "Not authorised" };
   }
