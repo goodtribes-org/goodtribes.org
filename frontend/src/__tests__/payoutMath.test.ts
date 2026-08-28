@@ -96,12 +96,32 @@ describe("payoutMath", () => {
       ]);
     });
 
-    // Documented current behavior, not a fix: division doesn't always land
-    // on a whole number (e.g. 3-way split of a 10-token pool), and the
-    // function performs no rounding at all — it returns the raw floating
-    // point quotient. Whatever calls this (token minting on the server,
-    // the preview dialog on the client) is responsible for any rounding
-    // before persisting/displaying it.
+    // Investigated as a possible money-adjacent bug, concluded no fix
+    // needed -- documenting the reasoning here rather than silently
+    // leaving this as an unexplained gap:
+    //   - TokenLedger.tokens and GtLedger.tokens are both `Float` in
+    //     schema.prisma (Postgres `double precision`), so a raw fractional
+    //     quotient like 10/3 persists exactly as-is -- no truncation, no
+    //     write-time error, nothing to guard against at the storage layer.
+    //   - The *total* payout for a card is mathematically conserved
+    //     regardless of how unevenly it splits: summing
+    //     (tokenValue * count / attributed.length) over every payee always
+    //     equals tokenValue exactly, since the counts sum to
+    //     attributed.length. Only the per-person share carries a repeating
+    //     fraction, not the aggregate the ledger is meant to reconcile.
+    //   - Display already rounds independently of this function:
+    //     TokenPayoutDialog.tsx's formatTokens does
+    //     `Math.round(tokens * 10) / 10`, and WorkplaceTokensTab.tsx
+    //     formats to 0 or 1 decimal place depending on whether the value
+    //     is a whole number. A user never sees a long raw float.
+    //   - This is a gamification token system, not audited legal-tender
+    //     currency (contrast with ProfitDistributionProposal's real SEK
+    //     amounts) -- sub-cent-equivalent float drift has no accounting
+    //     reconciliation depending on it.
+    // Net: rounding here would just move the rounding point earlier for no
+    // behavioral benefit, and would make computeCardPayees lossy for any
+    // caller that might legitimately want the exact share. Left as pure,
+    // unrounded division on purpose.
     it("does not round an uneven split — returns the raw fractional token amount", () => {
       const result = computeCardPayees({
         tokenValue: 10,
@@ -116,10 +136,22 @@ describe("payoutMath", () => {
       expect(Number.isInteger(byUser["a"])).toBe(false);
     });
 
-    // Documented current behavior, not a fix: a negative tokenValue is not
-    // rejected or clamped — it flows straight through into the payout
-    // amounts. Nothing in this pure function guards against a caller
-    // passing a bad value.
+    // Investigated as a possible money-adjacent bug, concluded no fix
+    // needed: a negative tokenValue is genuinely unreachable from any real
+    // call site, not just untested. Every caller of computeCardPayees
+    // (kanbanMove.ts's mintCardCompletion path, TokenPayoutDialog.tsx's
+    // preview, and site-admin/token-backfill/actions.ts's admin backfill
+    // tool) derives tokenValue from either a KanbanCard's
+    // `lockedTokenValue` or `getPriorityTokenValue(priority)`
+    // (priorityTokens.ts) -- and every single write site for
+    // `lockedTokenValue` across the codebase sets it from
+    // `getPriorityTokenValue(...)` too (grepped every occurrence). That
+    // function returns one of a fixed table of positive values
+    // (10/20/30/40/50) or falls back to 20 for an unrecognized priority --
+    // there is no code path that ever produces a negative or arbitrary
+    // tokenValue. This test documents the function's actual behavior
+    // (pure passthrough, no guard) so it stays correct if that changes,
+    // not because the missing guard is considered a live risk today.
     it("passes a negative tokenValue straight through with no validation", () => {
       const result = computeCardPayees({ tokenValue: -10, subtasks: [], assigneeId: "user-1" });
       expect(result).toEqual([{ userId: "user-1", tokens: -10 }]);
