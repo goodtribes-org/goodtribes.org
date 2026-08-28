@@ -42,13 +42,31 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Install prisma CLI v6 for running migrations at startup
-RUN npm install -g prisma@6
+# Install prisma CLI v7 locally (NOT globally) for running migrations at
+# startup — must match the @prisma/client/prisma versions pinned in
+# package.json (7.9.1), since a mismatched CLI/client major version is
+# exactly the kind of drift Prisma warns against.
+#
+# A global `npm install -g` (Prisma 6's approach here) breaks in Prisma 7:
+# prisma.config.ts does `import { defineConfig } from "prisma/config"`, and
+# when the CLI loads that file, Node resolves that bare specifier relative
+# to prisma.config.ts's own location (/app), not the CLI's install
+# location — a global install never lands on /app's module resolution path,
+# so the config load fails with "Cannot find module 'prisma/config'". A
+# plain local install puts `prisma` in /app/node_modules, which both fixes
+# that resolution and is what `npx prisma migrate deploy` in entrypoint.sh
+# picks up automatically (npx checks ./node_modules/.bin first).
+RUN npm install prisma@7.9.1 --no-save
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+# Prisma 7 moved the datasource URL out of schema.prisma and into
+# prisma.config.ts (see that file's own comments) — entrypoint.sh's
+# `prisma migrate deploy` needs this file present at /app (the CLI resolves
+# the schema/migrations paths relative to it) or it fails to load any config.
+COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder --chown=nextjs:nodejs /app/entrypoint.sh ./entrypoint.sh
 
 RUN chmod +x /app/entrypoint.sh

@@ -3,9 +3,11 @@ generator client {
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
+// Connection URL moved to prisma.config.ts's `datasource.url` — Prisma 7 no
+// longer allows `url` in the schema file for Migrate (see that file's
+// comment, and the PR that upgraded this repo from Prisma 6).
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum SiteRole {

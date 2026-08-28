@@ -22,7 +22,21 @@ const MAGIC_LINK_WINDOW_SECONDS = 10 * 60;
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
-  adapter: PrismaAdapter(prisma),
+  // `@auth/prisma-adapter@2.11.3`'s bundled types (last published before
+  // Prisma 7 shipped) expect `PrismaClient | ReturnType<PrismaClient["$extends"]>`
+  // computed against Prisma's own PrismaClient generics, and fail to
+  // structurally match a Prisma 7 client constructed with a driver adapter
+  // (`new PrismaClient({ adapter })`, see @/lib/prisma.ts) even though the
+  // printed type names look identical — a known upstream gap, longstanding
+  // even pre-Prisma-7 for extended clients (e.g. nextauthjs/next-auth#6078,
+  // #9413) and not yet fixed for Prisma 7's driver-adapter clients specifically.
+  // No newer @auth/prisma-adapter version exists yet (2.11.3 is latest as of
+  // this migration). PrismaAdapter only ever calls plain `prisma.<model>.*`
+  // methods that exist on any PrismaClient regardless of this type mismatch —
+  // verified against a real local Postgres (read/write/migrate all succeeded,
+  // see PR description) — so this is a type-only escape hatch, not a runtime
+  // risk. Revisit/remove once @auth/prisma-adapter ships Prisma-7-aware types.
+  adapter: PrismaAdapter(prisma as unknown as Parameters<typeof PrismaAdapter>[0]),
   providers: [
     Resend({
       apiKey: process.env.RESEND_API_KEY,

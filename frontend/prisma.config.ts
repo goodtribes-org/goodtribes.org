@@ -1,0 +1,34 @@
+// Prisma 7 config for the CLI (generate/migrate/studio). Replaces the
+// `datasource.url` that used to live directly in prisma/schema.prisma — see
+// the CLAUDE.md migration-safety workflow for how schema changes are applied
+// (never `prisma migrate dev` against the real DB).
+//
+// Deliberately does NOT import "dotenv/config": every command in this repo's
+// docs/CLAUDE.md/skills already passes DATABASE_URL explicitly on the command
+// line (e.g. `DATABASE_URL="postgresql://..." npx prisma migrate deploy`),
+// and in Kubernetes/Docker Compose the var is injected directly into the
+// process environment. Adding a dotenv dependency here would only matter if
+// this project actually relied on Node loading a local .env file for CLI
+// invocations, which it doesn't — and it would need to ship inside the
+// production runner image (see Dockerfile) purely for the `prisma migrate
+// deploy` step, which isn't otherwise needed.
+//
+// Uses plain `process.env.DATABASE_URL` rather than the `env()` helper:
+// `env()` resolves eagerly at config-load time and throws if the var is
+// unset, but `prisma generate` doesn't need a live DATABASE_URL at all (it
+// only reads the schema) and Docker's builder stage runs it with no DB
+// available (see Dockerfile — DATABASE_URL is only ever real at container
+// startup, for `prisma migrate deploy` in entrypoint.sh). An unresolved
+// `env()` call broke `docker compose build frontend` outright, which is
+// exactly the failure this migration needs to not reproduce.
+import { defineConfig } from "prisma/config"
+
+export default defineConfig({
+  schema: "prisma/schema.prisma",
+  migrations: {
+    path: "prisma/migrations",
+  },
+  datasource: {
+    url: process.env.DATABASE_URL,
+  },
+})
