@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint src && node scripts/lint-schema-status-enums.mjs",
     "test": "jest",
-    "test:integration": "jest --config jest.integration.config.js",
+    "test:integration": "jest --config jest.integration.config.js --forceExit",
     "test:e2e": "playwright test"
   },
   "dependencies": {

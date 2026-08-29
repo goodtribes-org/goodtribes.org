@@ -1,0 +1,19 @@
+name: Process Outbox
+
+on:
+  schedule:
+    # Every 5 minutes -- catches anything the immediate best-effort attempt
+    # in enqueueOutboxEvent missed (a transient failure, or an event
+    # enqueued from inside a transaction that skipped immediate processing).
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger process-outbox endpoint
+        run: |
+          curl -sf --max-time 120 -X POST "${{ vars.APP_URL }}/api/cron/process-outbox" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json"
