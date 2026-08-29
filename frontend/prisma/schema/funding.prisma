@@ -7,28 +7,39 @@
 // app/[locale]/projects/[slug]/(workspace)/funding/actions.ts's closeCampaign
 // and funding/page.tsx), so converting from String avoids both a data
 // rewrite and touching any call site. Distinct from this same model's
-// campaignType/stripeOnboardingStatus String fields, which are out of scope
-// here and left untouched.
+// campaignType String field, which isn't a status field by name (the
+// lint-schema-status-enums.mjs convention only matches *Status fields) and
+// stays out of scope here.
 enum FundingCampaignStatus {
   active
   closed
 }
 
+// Lowercase for the same reason as FundingCampaignStatus above -- matches
+// the exact "not_started"/"pending"/"complete" strings the account.updated
+// Stripe webhook and the connect route already write, so no code call site
+// needed to change when this was converted from String.
+enum StripeOnboardingStatus {
+  not_started
+  pending
+  complete
+}
+
 model FundingCampaign {
-  id                     String                @id @default(cuid())
-  projectId              String                @unique
+  id                     String                 @id @default(cuid())
+  projectId              String                 @unique
   title                  String
   description            String?
   goal                   Int
-  currency               String                @default("SEK")
-  status                 FundingCampaignStatus @default(active)
-  campaignType           String                @default("donation") // "donation" | "reward" | "token"
-  tokenExchangeRate      Float?                // e.g. 100 -> "100 SEK = 1 Tribe Token"; only meaningful when campaignType == "token"
+  currency               String                 @default("SEK")
+  status                 FundingCampaignStatus  @default(active)
+  campaignType           String                 @default("donation") // "donation" | "reward" | "token"
+  tokenExchangeRate      Float?                 // e.g. 100 -> "100 SEK = 1 Tribe Token"; only meaningful when campaignType == "token"
   deadline               DateTime?
-  platformFee            Float                 @default(5)
+  platformFee            Float                  @default(5)
   stripeAccountId        String?
-  stripeOnboardingStatus String                @default("not_started") // "not_started" | "pending" | "complete", driven by the account.updated webhook
-  createdAt              DateTime              @default(now())
+  stripeOnboardingStatus StripeOnboardingStatus @default(not_started) // driven by the account.updated webhook
+  createdAt              DateTime               @default(now())
 
   project     Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   pledges     FundingPledge[]
@@ -36,18 +47,27 @@ model FundingCampaign {
   expenses    FundingExpense[]
 }
 
+// Single member today (every pledge is written as "confirmed" -- see
+// stripe/webhook/route.ts) -- kept as a real enum anyway rather than a
+// String default, same as every other status field in this schema, so a
+// future pledge state (refunded, disputed, ...) is additive instead of
+// needing this exact conversion done again.
+enum FundingPledgeStatus {
+  confirmed
+}
+
 model FundingPledge {
-  id                String   @id @default(cuid())
+  id                String              @id @default(cuid())
   campaignId        String
   userId            String
   amount            Int
   message           String?
-  stripeSessionId   String?  @unique
-  pledgeStatus      String   @default("confirmed")
+  stripeSessionId   String?             @unique
+  pledgeStatus      FundingPledgeStatus @default(confirmed)
   rewardTierId      String?
-  paymentMethodType String?  // mirrors PaymentIntent.payment_method_types[0], e.g. "card" | "klarna" | "bancontact"
-  tokenLedgerId     String?  @unique
-  createdAt         DateTime @default(now())
+  paymentMethodType String?             // mirrors PaymentIntent.payment_method_types[0], e.g. "card" | "klarna" | "bancontact"
+  tokenLedgerId     String?             @unique
+  createdAt         DateTime            @default(now())
 
   campaign    FundingCampaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   user        User               @relation("FundingPledges", fields: [userId], references: [id], onDelete: Cascade)

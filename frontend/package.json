@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint src",
+    "lint": "eslint src && node scripts/lint-schema-status-enums.mjs",
     "test": "jest",
     "test:integration": "jest --config jest.integration.config.js"
   },

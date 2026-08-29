@@ -63,7 +63,7 @@ model KanbanCard {
   // githubNumber alone collides (deploy#5 vs goodtribes.org#5).
   githubItemId    String?
   githubRepoName  String?   // "owner/repo", null for draft issues
-  githubStatus    String?   // raw board Status name, e.g. "apply"
+  githubStatus    String?   // @allow-string-status -- raw GitHub board column name (external system's own free text, not a set this app controls), e.g. "apply"
   githubNumber    Int?
   githubType      String?
   githubUrl       String?
