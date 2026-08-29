@@ -91,6 +91,12 @@ export async function POST(request: NextRequest) {
             projectSlug: campaign.project.slug,
             tokens,
             reason: `Token-baserad finansiering: ${campaign.title}`,
+            // Belt-and-suspenders alongside the stripeSessionId unique
+            // constraint on FundingPledge below: that one only protects
+            // *this* transaction from a redelivered webhook, but the ledger
+            // shouldn't have to depend on some other table's constraint to
+            // stay correct on its own.
+            idempotencyKey: session.id,
           });
           await tx.fundingPledge.update({
             where: { id: pledge.id },
