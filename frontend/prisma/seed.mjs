@@ -362,7 +362,7 @@ async function main() {
   for (const p of projectDefs) {
     projects[p.key] = await prisma.project.create({ data: {
       slug: p.slug, title: p.title, summary: p.summary, description: p.description,
-      phase: p.phase, ...(p.archived ? { archivedAt: new Date() } : {}), visibility: "public", category: p.category, tags: p.tags, sdgGoals: p.sdgGoals,
+      phase: p.phase, ...(p.archived ? { archivedAt: new Date() } : {}), category: p.category, tags: p.tags, sdgGoals: p.sdgGoals,
       legalType: p.legalType, ownerId: p.owner.id, orgId: p.org?.id ?? null,
     } });
     await prisma.projectMember.create({ data: { projectId: projects[p.key].id, userId: p.owner.id, role: "FOUNDER" } });
@@ -426,11 +426,15 @@ async function main() {
   ] });
 
   await prisma.milestone.createMany({ data: [
-    { projectId: projects.renkust.id, title: "Genomför 10 strandstädningar", description: "Nå tio genomförda städdagar under året.", status: "in_progress", createdById: u.elin.id },
+    // MilestoneStatus only has two members (pending/done, see
+    // milestones-and-sprints.prisma) -- "in_progress" was never a real
+    // value, just stale ad-hoc seed data predating the enum conversion.
+    // Mapped to "pending" (not yet done), matching the binary model.
+    { projectId: projects.renkust.id, title: "Genomför 10 strandstädningar", description: "Nå tio genomförda städdagar under året.", status: "pending", createdById: u.elin.id },
     { projectId: projects.matsvinnapp.id, title: "Lansera i 10 butiker", description: "Utöka prototypen från 3 till 10 butiker.", status: "pending", createdById: u.marcus.id },
     { projectId: projects.kladbytardagen.id, title: "Nå 10 orter", description: "Klädbytardagen arrangerad på minst tio orter.", status: "done", createdById: u.marcus.id },
-    { projectId: projects.gigplattformen.id, title: "1000 genomförda uppdrag", description: "Dubbla antalet förmedlade uppdrag sedan lansering.", status: "in_progress", createdById: u.klara.id },
-    { projectId: projects.samtalsjouren.id, title: "300 aktiva samtalspar", description: "Utöka från 200 till 300 aktiva samtalspar per vecka.", status: "in_progress", createdById: u.ingrid.id },
+    { projectId: projects.gigplattformen.id, title: "1000 genomförda uppdrag", description: "Dubbla antalet förmedlade uppdrag sedan lansering.", status: "pending", createdById: u.klara.id },
+    { projectId: projects.samtalsjouren.id, title: "300 aktiva samtalspar", description: "Utöka från 200 till 300 aktiva samtalspar per vecka.", status: "pending", createdById: u.ingrid.id },
   ] });
 
   console.log("Skapar idéer...");
