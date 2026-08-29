@@ -1,4 +1,4 @@
-// Tribe Token (project-scoped) and GT Token (platform-wide) ledgers — see src/lib/tokens.ts's awardTokens as the single mint choke point. Candidate for the hardened boundary described in the architecture memo (idempotency keys, audit trail) — not yet built, this file only isolates the schema surface.
+// Tribe Token (project-scoped) and GT Token (platform-wide) ledgers — see src/lib/tokens.ts's awardTokens as the single mint choke point. Part of the hardened-boundary work from the architecture memo: TokenLedger.idempotencyKey (PR #83) lets awardTokens refuse a duplicate mint for the same real-world event. Double-entry bookkeeping and a structured audit trail are tracked as separate follow-ups (see CLAUDE.md).
 
 
 model TokenLedger {
@@ -11,6 +11,13 @@ model TokenLedger {
   kanbanCard   KanbanCard? @relation("KanbanTokens", fields: [kanbanCardId], references: [id], onDelete: SetNull)
   tokens       Float
   reason       String
+  // Optional caller-supplied dedup key for awardTokens (e.g. a Stripe session
+  // id) — lets the mint chokepoint itself refuse a second award for the same
+  // real-world event, instead of every caller having to invent its own
+  // protection (see the architecture memo's point on hardening the ledger
+  // boundary). Nullable+unique: Postgres allows multiple NULLs, so callers
+  // with no natural key are unaffected.
+  idempotencyKey String?  @unique
   createdAt    DateTime    @default(now())
   gtMirrors    GtLedger[]  @relation("GtLedgerSource")
   pledgeMint   FundingPledge? @relation("PledgeTokenMint")
