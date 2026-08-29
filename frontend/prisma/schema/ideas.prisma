@@ -1,0 +1,186 @@
+// Idéflödet (PRD 1.2) — the public idea feed, co-creation, and one-click promotion to a Project.
+
+
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing Idea row and application code already uses, so converting from
+// String avoids both a data rewrite and touching any call site.
+enum IdeaStatus {
+  draft
+  open
+  review
+  shortlisted
+  approved
+  converted
+}
+
+model Idea {
+  id             String   @id @default(cuid())
+  title          String
+  description    String?
+  problem        String?
+  solution       String?
+  sdgGoals       Int[]
+  category       String?
+  tags           String[]
+  imageUrl       String?
+  targetRegion   String   @default("global")
+  estimatedReach Int?
+  status         IdeaStatus @default(open)
+  viewCount      Int      @default(0)
+  authorId       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  hiddenAt       DateTime?
+  hiddenById     String?
+  hiddenReason   ContentHideReason?
+
+  author           User              @relation("AuthoredIdeas", fields: [authorId], references: [id], onDelete: Cascade)
+  votes            IdeaVote[]
+  endorsements     IdeaEndorsement[]
+  followers        IdeaFollower[]
+  comments         IdeaComment[]
+  convertedFromRoom Room?            @relation("RoomConvertedToIdea")
+  mindMap          MindMap?
+  revisions        IdeaRevision[]
+  contributors     IdeaContributor[]
+  // PRD 5.16 — one-click idea->project pipeline. Idea holds the unique FK
+  // (same role Room plays for convertedToProjectId/convertedToIdeaId).
+  promotedToProjectId String?  @unique
+  promotedToProject   Project? @relation("IdeaPromotedToProject", fields: [promotedToProjectId], references: [id], onDelete: SetNull)
+  translations         IdeaTranslation[]
+}
+
+// Per-locale override of title/description/problem/solution for an Idea.
+// Same fallback idiom as ProjectTranslation — base columns stay canonical sv.
+model IdeaTranslation {
+  id          String   @id @default(cuid())
+  ideaId      String
+  idea        Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  locale      String
+  title       String
+  description String?
+  problem     String?
+  solution    String?
+  updatedAt   DateTime @updatedAt
+
+  @@unique([ideaId, locale])
+  @@index([ideaId])
+}
+
+// PRD 5.15 co-creation — a pull-request-style proposed edit to an idea's
+// description. No diff format: full proposed value + a snapshot of what it
+// replaced, matching every other content model in this schema.
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing IdeaRevision row and application code already uses, so
+// converting from String avoids both a data rewrite and touching any call
+// site.
+enum IdeaRevisionStatus {
+  pending
+  accepted
+  rejected
+}
+
+model IdeaRevision {
+  id                  String    @id @default(cuid())
+  ideaId              String
+  idea                Idea      @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  proposedDescription String    @db.Text
+  previousDescription String?   @db.Text
+  status              IdeaRevisionStatus @default(pending)
+  proposedById        String
+  proposedBy          User      @relation("ProposedIdeaRevisions", fields: [proposedById], references: [id], onDelete: Cascade)
+  decisionNote        String?   @db.Text
+  decidedById         String?
+  decidedBy           User?     @relation("DecidedIdeaRevisions", fields: [decidedById], references: [id], onDelete: SetNull)
+  decidedAt           DateTime?
+  createdAt           DateTime  @default(now())
+
+  @@index([ideaId])
+}
+
+// PRD 5.15 — the author (from idea creation) plus anyone whose proposed
+// revision was accepted. Endorsements/votes never populate this — only
+// actual accepted contributions do.
+model IdeaContributor {
+  id        String   @id @default(cuid())
+  ideaId    String
+  idea      Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation("IdeaContributions", fields: [userId], references: [id], onDelete: Cascade)
+  role      String   @default("contributor") // author | co-author
+  addedAt   DateTime @default(now())
+
+  @@unique([ideaId, userId])
+}
+
+model IdeaVote {
+  id     String @id @default(cuid())
+  ideaId String
+  userId String
+
+  idea Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  user User @relation("IdeaVotes", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([ideaId, userId])
+}
+
+model IdeaEndorsement {
+  id        String   @id @default(cuid())
+  ideaId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  idea Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  user User @relation("IdeaEndorsements", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([ideaId, userId])
+}
+
+model IdeaFollower {
+  id        String   @id @default(cuid())
+  ideaId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  idea Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  user User @relation("IdeaFollowers", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([ideaId, userId])
+}
+
+// An AI-drafted, user-editable mind map attached to either an Idéverkstad
+// brainstorm thread (Room, type IDEA_THREAD) or a published Idea — exactly
+// one of roomId/ideaId is set, checked at the application layer (same loose
+// nullable-pair convention as ActivityEvent.projectId?/organisationId?).
+// One map per source for now — regenerating overwrites rather than
+// versioning, keeping the MVP schema/UI simple.
+model MindMap {
+  id          String   @id @default(cuid())
+  roomId      String?  @unique
+  room        Room?    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  ideaId      String?  @unique
+  idea        Idea?    @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  title       String
+  nodes       Json     // react-flow Node[] shape: [{id, position: {x,y}, data: {label}}]
+  edges       Json     // react-flow Edge[] shape: [{id, source, target, label?}]
+  createdById String
+  createdBy   User     @relation("CreatedMindMaps", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model IdeaComment {
+  id           String   @id @default(cuid())
+  ideaId       String
+  authorId     String
+  content      String
+  createdAt    DateTime @default(now())
+  hiddenAt     DateTime?
+  hiddenById   String?
+  hiddenReason ContentHideReason?
+
+  idea   Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  author User @relation("AuthoredIdeaComments", fields: [authorId], references: [id], onDelete: Cascade)
+}

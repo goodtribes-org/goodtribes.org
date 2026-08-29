@@ -1,0 +1,171 @@
+// Milestone tracking and the Sprint phase-advance flow.
+
+
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing Milestone row and application code already uses, so converting
+// from String avoids both a data rewrite and touching any call site.
+enum MilestoneStatus {
+  pending
+  done
+}
+
+model Milestone {
+  id          String    @id @default(cuid())
+  projectId   String
+  title       String
+  description String?
+  dueDate     DateTime?
+  status      MilestoneStatus @default(pending)
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User    @relation("MilestoneCreatedBy", fields: [createdById], references: [id])
+  expenses  FundingExpense[] @relation("ExpenseMilestone")
+}
+
+enum SprintStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+// Chosen once at sprint creation. TOGETHER = no deadlines, a lead manually
+// advances each phase via advancePhase() once the group is ready. SPREAD_OUT
+// = deadline-driven auto-advance via the sprint-phase-advance cron. Both are
+// equally async (no live cursors/multiplayer either way) — this only
+// controls whether a phase closes on a timer or on a lead's say-so.
+enum SprintPace {
+  TOGETHER
+  SPREAD_OUT
+}
+
+// Named SprintPhaseName (not SprintPhase) to avoid colliding with the
+// SprintPhase model — Prisma's type namespace is flat. Distinct from
+// ProjectPhase's unrelated SPRINT value (project lifecycle, not this
+// feature).
+enum SprintPhaseName {
+  UNDERSTAND
+  DIVERGE
+  DECIDE
+  PROTOTYPE
+  VALIDATE
+}
+
+enum SprintPhaseStatus {
+  OPEN
+  CLOSED
+  LOCKED
+}
+
+enum SprintContributionType {
+  HMW
+  SKETCH
+  PROTOTYPE_LINK
+  FEEDBACK
+}
+
+model Sprint {
+  id                String          @id @default(cuid())
+  projectSlug       String
+  project           Project         @relation("ProjectSprints", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  createdById       String
+  createdBy         User            @relation("SprintsCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  name              String
+  status            SprintStatus    @default(ACTIVE)
+  pace              SprintPace      @default(SPREAD_OUT)
+  phaseDurationDays Int?
+  currentPhase      SprintPhaseName @default(UNDERSTAND)
+  // Feature flag — not wired up yet, see generatePhaseSummary() stub.
+  aiSummaryEnabled  Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  phases            SprintPhase[]
+
+  @@index([projectSlug])
+}
+
+model SprintPhase {
+  id            String                @id @default(cuid())
+  sprintId      String
+  sprint        Sprint                @relation(fields: [sprintId], references: [id], onDelete: Cascade)
+  phase         SprintPhaseName
+  status        SprintPhaseStatus     @default(LOCKED)
+  openedAt      DateTime?
+  deadlineAt    DateTime?
+  closedAt      DateTime?
+  // Excalidraw scene data — only ever populated for understand/diverge.
+  documentState Json?
+  // Optimistic-locking counter for canvas autosave — bumped on every
+  // successful write; a stale-version PATCH is rejected instead of
+  // silently overwriting a concurrent async edit.
+  version       Int                   @default(1)
+  // Populated later when aiSummaryEnabled is true — see generatePhaseSummary().
+  aiSummary     String?               @db.Text
+
+  contributions SprintContribution[]
+  votes         SprintVote[]
+
+  @@unique([sprintId, phase])
+  @@index([sprintId])
+}
+
+model SprintContribution {
+  id            String                 @id @default(cuid())
+  sprintPhaseId String
+  sprintPhase   SprintPhase            @relation(fields: [sprintPhaseId], references: [id], onDelete: Cascade)
+  authorId      String
+  author        User                   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  type          SprintContributionType
+  content       String                 @db.Text
+  // Author is always stored (for moderation) but only shown in the UI once
+  // this is true — false during understand/diverge by design (a deliberate
+  // anonymity exception to the platform's default full-disclosure
+  // principle). Do not "fix" this to always show the author.
+  visibleAuthor Boolean                @default(false)
+  createdAt     DateTime               @default(now())
+
+  votes         SprintVote[]
+  comments      SprintComment[]
+
+  @@index([sprintPhaseId])
+}
+
+model SprintVote {
+  id             String             @id @default(cuid())
+  sprintPhaseId  String
+  sprintPhase    SprintPhase        @relation(fields: [sprintPhaseId], references: [id], onDelete: Cascade)
+  voterId        String
+  voter          User               @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  contributionId String
+  contribution   SprintContribution @relation(fields: [contributionId], references: [id], onDelete: Cascade)
+  createdAt      DateTime           @default(now())
+
+  // Max 3 votes per voter per phase is enforced at the application layer
+  // (see castVote in sprints/[sprintId]/actions.ts) — this unique constraint
+  // is just the DB-level backstop against double-voting the same
+  // contribution twice, not the vote-count cap itself. Voter identity is
+  // stored here but every UI surface shows aggregate counts only, never
+  // who voted for what.
+  @@unique([sprintPhaseId, voterId, contributionId])
+  @@index([sprintPhaseId])
+  @@index([voterId])
+}
+
+model SprintComment {
+  id             String              @id @default(cuid())
+  contributionId String
+  contribution   SprintContribution  @relation(fields: [contributionId], references: [id], onDelete: Cascade)
+  authorId       String
+  author         User                @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parentId       String?
+  parent         SprintComment?      @relation("SprintCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies        SprintComment[]     @relation("SprintCommentReplies")
+  body           String              @db.Text
+  createdAt      DateTime            @default(now())
+
+  @@index([contributionId])
+}

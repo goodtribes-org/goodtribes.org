@@ -23,8 +23,13 @@
 // exactly the failure this migration needs to not reproduce.
 import { defineConfig } from "prisma/config"
 
+// `schema` points at a directory, not a single file: Prisma 7's multi-file
+// schema support (stable, no preview flag needed) merges every *.prisma file
+// in prisma/schema/ order-independently for validation/generate/migrate.
+// Introduced to split the single ~2800-line schema.prisma into per-domain
+// files (see that directory) — purely organizational, no schema/DB change.
 export default defineConfig({
-  schema: "prisma/schema.prisma",
+  schema: "prisma/schema",
   migrations: {
     path: "prisma/migrations",
   },

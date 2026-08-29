@@ -1,0 +1,107 @@
+// Real-time chat rooms, including Idéverkstaden's IDEA_THREAD type (PRD 1.5) and general project rooms.
+
+
+enum RoomType {
+  DM
+  GROUP
+  PROJECT_CHANNEL
+  ORG_CHANNEL
+  IDEA_THREAD
+}
+
+enum RoomPostingPolicy {
+  ALL_MEMBERS
+  LEADS_ONLY
+}
+
+enum RoomParticipantRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model Room {
+  id             String            @id @default(cuid())
+  type           RoomType
+  name           String?
+  description    String?
+  // Cover image for the thread's topic (e.g. an idea-thread's subject
+  // matter) — never a participant's photo, see IDEA_THREAD card display.
+  imageUrl       String?
+  pairKey        String?           @unique
+  projectId      String?
+  project        Project?          @relation("ProjectRooms", fields: [projectId], references: [id], onDelete: Cascade)
+  organisationId String?
+  organisation   Organisation?     @relation("OrgRooms", fields: [organisationId], references: [id], onDelete: Cascade)
+  postingPolicy  RoomPostingPolicy @default(ALL_MEMBERS)
+  order          Int               @default(0)
+  pinned         Boolean           @default(false)
+  createdAt      DateTime          @default(now())
+  lastMessageAt  DateTime          @default(now())
+
+  convertedToIdeaId    String?  @unique
+  convertedToIdea      Idea?    @relation("RoomConvertedToIdea", fields: [convertedToIdeaId], references: [id], onDelete: SetNull)
+  convertedToProjectId String?  @unique
+  convertedToProject   Project? @relation("RoomConvertedToProject", fields: [convertedToProjectId], references: [id], onDelete: SetNull)
+
+  participants RoomParticipant[]
+  messages     Message[]
+  mindMap      MindMap?
+
+  @@unique([projectId, name])
+  @@unique([organisationId, name])
+  @@index([projectId])
+  @@index([organisationId])
+  @@index([lastMessageAt])
+}
+
+model RoomParticipant {
+  id         String              @id @default(cuid())
+  roomId     String
+  room       Room                @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User                @relation("RoomParticipant", fields: [userId], references: [id], onDelete: Cascade)
+  role       RoomParticipantRole @default(MEMBER)
+  lastReadAt DateTime            @default(now())
+  createdAt  DateTime            @default(now())
+
+  @@unique([roomId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String            @id @default(cuid())
+  roomId         String
+  room           Room              @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  authorId       String
+  author         User              @relation("SentMessages", fields: [authorId], references: [id], onDelete: Cascade)
+  body           String            @db.Text
+  threadParentId String?
+  threadParent   Message?          @relation("MessageThread", fields: [threadParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  threadReplies  Message[]         @relation("MessageThread")
+  reactions      MessageReaction[]
+  attachments    File[]
+  isAi           Boolean           @default(false)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  editedAt       DateTime?
+  deletedAt      DateTime?
+  hiddenAt       DateTime?
+  hiddenById     String?
+  hiddenReason   ContentHideReason?
+
+  @@index([roomId, createdAt])
+  @@index([threadParentId])
+}
+
+model MessageReaction {
+  id        String   @id @default(cuid())
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation("MessageReactions", fields: [userId], references: [id], onDelete: Cascade)
+  emoji     String
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, userId, emoji])
+}
