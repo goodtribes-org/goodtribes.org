@@ -1321,6 +1321,13 @@ model TokenLedger {
   kanbanCard   KanbanCard? @relation("KanbanTokens", fields: [kanbanCardId], references: [id], onDelete: SetNull)
   tokens       Float
   reason       String
+  // Optional caller-supplied dedup key for awardTokens (e.g. a Stripe session
+  // id) — lets the mint chokepoint itself refuse a second award for the same
+  // real-world event, instead of every caller having to invent its own
+  // protection (see the architecture memo's point on hardening the ledger
+  // boundary). Nullable+unique: Postgres allows multiple NULLs, so callers
+  // with no natural key are unaffected.
+  idempotencyKey String?  @unique
   createdAt    DateTime    @default(now())
   gtMirrors    GtLedger[]  @relation("GtLedgerSource")
   pledgeMint   FundingPledge? @relation("PledgeTokenMint")

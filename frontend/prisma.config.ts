@@ -30,5 +30,12 @@ export default defineConfig({
   },
   datasource: {
     url: process.env.DATABASE_URL,
+    // Prisma 7's CLI dropped the `migrate diff --shadow-database-url` flag —
+    // it now reads this field instead (see CLAUDE.md's migration-safety
+    // workflow). Left undefined by default so it's a no-op for `generate`/
+    // `migrate deploy`; export SHADOW_DATABASE_URL pointed at a throwaway
+    // container only when running `migrate diff` against the migrations
+    // directory, same discipline as DATABASE_URL above — never the real DB.
+    shadowDatabaseUrl: process.env.SHADOW_DATABASE_URL,
   },
 })

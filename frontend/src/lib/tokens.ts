@@ -21,10 +21,34 @@ export async function getGtBalance(userId: string): Promise<number> {
 // Single place that mints a project-scoped Tribe Token and its 10% platform-level
 // GT mirror together — every token award (time-log approval, admin backfills, …)
 // should go through this so the two ledgers never drift apart.
+//
+// `idempotencyKey` is optional: pass a stable, caller-chosen key derived from
+// the real-world event being paid out for (e.g. a Stripe session id) when
+// that event could plausibly fire more than once (webhook redelivery, a
+// double-submitted form, a retried job). If a TokenLedger row with that key
+// already exists, it's returned as-is with no new award or GT mirror created
+// — the mint chokepoint itself refuses the duplicate, instead of every caller
+// having to invent its own protection. Omit it for awards with no natural
+// replay risk (nothing changes from before). Two concurrent calls with the
+// same new key race on the column's unique constraint; the loser gets a
+// Prisma P2002 from this create and should treat that as "already awarded,
+// no-op" (see the Stripe webhook's existing P2002-catch for the pattern).
 export async function awardTokens(
   tx: Prisma.TransactionClient,
-  params: { userId: string; projectSlug: string; kanbanCardId?: string | null; tokens: number; reason: string }
+  params: {
+    userId: string;
+    projectSlug: string;
+    kanbanCardId?: string | null;
+    tokens: number;
+    reason: string;
+    idempotencyKey?: string | null;
+  }
 ) {
+  if (params.idempotencyKey) {
+    const existing = await tx.tokenLedger.findUnique({ where: { idempotencyKey: params.idempotencyKey } });
+    if (existing) return existing;
+  }
+
   const ledgerRow = await tx.tokenLedger.create({
     data: {
       userId: params.userId,
@@ -32,6 +56,7 @@ export async function awardTokens(
       kanbanCardId: params.kanbanCardId ?? null,
       tokens: params.tokens,
       reason: params.reason,
+      idempotencyKey: params.idempotencyKey ?? null,
     },
   });
   await tx.gtLedger.create({
