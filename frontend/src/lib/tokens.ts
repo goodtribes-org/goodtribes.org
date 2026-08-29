@@ -59,15 +59,85 @@ export async function awardTokens(
       idempotencyKey: params.idempotencyKey ?? null,
     },
   });
-  await tx.gtLedger.create({
+  const gtTokens = params.tokens * GT_MIRROR_RATE;
+  const gtRow = await tx.gtLedger.create({
     data: {
       userId: params.userId,
-      tokens: params.tokens * GT_MIRROR_RATE,
+      tokens: gtTokens,
       sourceTokenLedgerId: ledgerRow.id,
       reason: `GT-spegling: ${params.reason}`,
     },
   });
+  // Double-entry journal (LedgerJournalEntry, see its schema comment): one
+  // MINT leg + one USER leg per currency, sharing this award's transactionId
+  // (the TokenLedger row's own id -- already unique and scoped to exactly
+  // this one economic event). Always sums to 0 per currency.
+  await writeMintJournalLegs(tx, {
+    transactionId: ledgerRow.id,
+    userId: params.userId,
+    projectSlug: params.projectSlug,
+    tokenLedgerId: ledgerRow.id,
+    gtLedgerId: gtRow.id,
+    tribeTokens: params.tokens,
+    gtTokens,
+    reason: params.reason,
+  });
   return ledgerRow;
+}
+
+async function writeMintJournalLegs(
+  tx: Prisma.TransactionClient,
+  params: {
+    transactionId: string;
+    userId: string;
+    projectSlug: string;
+    tokenLedgerId: string;
+    gtLedgerId: string;
+    tribeTokens: number;
+    gtTokens: number;
+    reason: string;
+  }
+) {
+  await tx.ledgerJournalEntry.createMany({
+    data: [
+      {
+        transactionId: params.transactionId,
+        currency: "TRIBE_TOKEN",
+        account: "MINT",
+        amount: -params.tribeTokens,
+        projectSlug: params.projectSlug,
+        tokenLedgerId: params.tokenLedgerId,
+        reason: params.reason,
+      },
+      {
+        transactionId: params.transactionId,
+        currency: "TRIBE_TOKEN",
+        account: "USER",
+        amount: params.tribeTokens,
+        userId: params.userId,
+        projectSlug: params.projectSlug,
+        tokenLedgerId: params.tokenLedgerId,
+        reason: params.reason,
+      },
+      {
+        transactionId: params.transactionId,
+        currency: "GT",
+        account: "MINT",
+        amount: -params.gtTokens,
+        gtLedgerId: params.gtLedgerId,
+        reason: `GT-spegling: ${params.reason}`,
+      },
+      {
+        transactionId: params.transactionId,
+        currency: "GT",
+        account: "USER",
+        amount: params.gtTokens,
+        userId: params.userId,
+        gtLedgerId: params.gtLedgerId,
+        reason: `GT-spegling: ${params.reason}`,
+      },
+    ],
+  });
 }
 
 // The full payout for a card reaching Done through the normal flow: subtask/
@@ -120,11 +190,40 @@ export async function mintCardCompletion(
 export async function reverseCardTokens(tx: Prisma.TransactionClient, cardId: string): Promise<string[]> {
   const ledgerRows = await tx.tokenLedger.findMany({
     where: { kanbanCardId: cardId },
-    select: { id: true, userId: true },
+    select: { id: true, userId: true, projectSlug: true, tokens: true, reason: true },
   });
   if (ledgerRows.length === 0) return [];
 
   const ledgerIds = ledgerRows.map((r) => r.id);
+  const gtRows = await tx.gtLedger.findMany({
+    where: { sourceTokenLedgerId: { in: ledgerIds } },
+    select: { id: true, sourceTokenLedgerId: true, tokens: true },
+  });
+  const gtRowByTokenLedgerId = new Map(gtRows.map((r) => [r.sourceTokenLedgerId, r]));
+
+  // Reversal journal legs first, while the TokenLedger/GtLedger rows being
+  // reversed still exist to reference (their FK on this table is
+  // onDelete: SetNull — see LedgerJournalEntry's schema comment: a reversal
+  // writes NEW opposite-signed legs, it never deletes the original mint
+  // legs, so the audit trail always shows what actually happened). Each
+  // original award gets its own reversal transactionId, derived
+  // deterministically from the award being reversed rather than randomly
+  // generated, so it's traceable without needing a lookup.
+  for (const row of ledgerRows) {
+    const gtRow = gtRowByTokenLedgerId.get(row.id);
+    if (!gtRow) continue; // shouldn't happen (awardTokens always mints both together), but nothing to reverse if it did
+    await writeMintJournalLegs(tx, {
+      transactionId: `reverse:${row.id}`,
+      userId: row.userId,
+      projectSlug: row.projectSlug,
+      tokenLedgerId: row.id,
+      gtLedgerId: gtRow.id,
+      tribeTokens: -row.tokens,
+      gtTokens: -gtRow.tokens,
+      reason: `Återförd: ${row.reason}`,
+    });
+  }
+
   await tx.gtLedger.deleteMany({ where: { sourceTokenLedgerId: { in: ledgerIds } } });
   await tx.tokenLedger.deleteMany({ where: { id: { in: ledgerIds } } });
 
