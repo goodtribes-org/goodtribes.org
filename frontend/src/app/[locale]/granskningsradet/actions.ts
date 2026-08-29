@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { isCouncilMember } from "@/lib/authz";
 import { getGtBalance } from "@/lib/tokens";
-import { publishToUser } from "@/lib/redis";
+import { createNotification } from "@/lib/notify";
 
 const RESPONSE_WINDOW_HOURS = 72;
 
@@ -140,16 +140,16 @@ async function executeDecision(exclusionCase: { id: string; reportedUserId: stri
       where: { projectId: exclusionCase.projectId, userId: exclusionCase.reportedUserId },
     });
   } else if (exclusionCase.decision === "warning") {
-    const notification = await prisma.notification.create({
-      data: {
-        userId: exclusionCase.reportedUserId,
-        type: "exclusion_case_warning",
-        title: "Du har fått en varning från Granskningsrådet",
-        body: "Se ärendet för mer information.",
-        url: `/granskningsradet/arenden/${exclusionCase.id}`,
-      },
-    }).catch(() => null);
-    if (notification) publishToUser(exclusionCase.reportedUserId, { type: "notification", notification });
+    // Was a hand-rolled duplicate of createNotification's create+publish
+    // pair (its own .catch(() => null) swallow, no retry) -- now goes
+    // through the same outbox-backed path as every other notification.
+    await createNotification({
+      userId: exclusionCase.reportedUserId,
+      type: "exclusion_case_warning",
+      title: "Du har fått en varning från Granskningsrådet",
+      body: "Se ärendet för mer information.",
+      url: `/granskningsradet/arenden/${exclusionCase.id}`,
+    });
   }
 }
 

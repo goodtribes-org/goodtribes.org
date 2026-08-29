@@ -1,0 +1,38 @@
+// Generic transactional outbox — point 06 of the "Blueprint for GoodTribes"
+// architecture memo (see CLAUDE.md): a single, shared mechanism for
+// "eventually consistent side effects that happen after a main database
+// write" (notifications, activity feed, ...), instead of each feature
+// inventing its own ad hoc retry/ordering logic. See src/lib/outbox.ts for
+// the actual enqueue/process functions and the handler registry.
+//
+// Deliberately NOT used for Meilisearch indexing (meili.ts already has its
+// own durable mechanism -- an in-process per-index queue plus a Redis
+// write-ahead-log, see meiliQueue.test.ts/meiliWal.test.ts) or for live chat
+// delivery (Room/Message + Redis pub/sub -- the message row is already
+// durably written the moment it's created; the pub/sub push is a pure UX
+// nicety for already-open tabs, not a record of truth an outbox would
+// protect). First real consumer: notifications (src/lib/notify.ts).
+
+enum OutboxEventStatus {
+  pending
+  processed
+}
+
+model OutboxEvent {
+  id        String            @id @default(cuid())
+  // A short, stable string a handler is registered against (e.g.
+  // "notification.create") -- not a Prisma relation, since the point of
+  // this table is to describe an *action to take*, not a specific row.
+  type      String
+  payload   Json
+  status    OutboxEventStatus @default(pending)
+  // Capped at MAX_ATTEMPTS in outbox.ts's processPendingOutboxEvents --
+  // past that, a pending event is left alone (not retried forever) but
+  // never deleted, so a human can see it and its lastError.
+  attempts  Int               @default(0)
+  lastError String?
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+
+  @@index([status, createdAt])
+}
