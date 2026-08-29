@@ -1,0 +1,194 @@
+// Lean Canvas, project plans, and value-proposition drafting tools.
+
+
+model LeanCanvas {
+  id                     String    @id @default(cuid())
+  projectSlug            String    @unique
+  project                Project   @relation("ProjectLeanCanvas", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  problem                String?   @db.Text
+  alternatives           String?   @db.Text
+  customerSegments       String?   @db.Text
+  earlyAdopters          String?   @db.Text
+  uniqueValueProposition String?   @db.Text
+  concept                String?   @db.Text
+  solution               String?   @db.Text
+  channels               String?   @db.Text
+  revenueStreams         String?   @db.Text
+  costStructure          String?   @db.Text
+  impact                 String?   @db.Text
+  keyMetrics             String?   @db.Text
+  unfairAdvantage        String?   @db.Text
+  updatedById            String?
+  updatedBy              User?     @relation("LeanCanvasUpdatedBy", fields: [updatedById], references: [id])
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+}
+
+// A simpler alternative to LeanCanvas — one goal/milestones/resources/risks
+// form, no version history or comments. Linked from the PILOT-phase
+// checklist's "sprint_lean_canvas" item (see projectPhase.ts).
+model ProjectPlan {
+  id          String   @id @default(cuid())
+  projectSlug String   @unique
+  project     Project  @relation("ProjectPlan", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  goal        String?  @db.Text
+  milestones  String?  @db.Text
+  resources   String?  @db.Text
+  risks       String?  @db.Text
+  updatedById String?
+  updatedBy   User?    @relation("ProjectPlanUpdatedBy", fields: [updatedById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// A read-only snapshot of the full canvas, written every time any block is
+// saved — linear history alongside the single mutable "current" LeanCanvas
+// row, same shape as e.g. Google Docs version history.
+model LeanCanvasVersion {
+  id                     String    @id @default(cuid())
+  projectSlug            String
+  project                Project   @relation("ProjectLeanCanvasVersions", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  problem                String?   @db.Text
+  alternatives           String?   @db.Text
+  customerSegments       String?   @db.Text
+  earlyAdopters          String?   @db.Text
+  uniqueValueProposition String?   @db.Text
+  concept                String?   @db.Text
+  solution               String?   @db.Text
+  channels               String?   @db.Text
+  revenueStreams         String?   @db.Text
+  costStructure          String?   @db.Text
+  impact                 String?   @db.Text
+  keyMetrics             String?   @db.Text
+  unfairAdvantage        String?   @db.Text
+  savedById              String?
+  savedBy                User?     @relation("LeanCanvasVersionSavedBy", fields: [savedById], references: [id], onDelete: SetNull)
+  createdAt              DateTime  @default(now())
+
+  @@index([projectSlug, createdAt])
+}
+
+model LeanCanvasComment {
+  id           String   @id @default(cuid())
+  projectSlug  String
+  project      Project  @relation("ProjectLeanCanvasComments", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  authorId     String
+  author       User     @relation("LeanCanvasCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  body         String   @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  hiddenAt     DateTime?
+  hiddenById   String?
+  hiddenReason ContentHideReason?
+
+  @@index([projectSlug])
+}
+
+// A project-less scratchpad, same 12 fields as LeanCanvas — lets a user try
+// the tool from Sandbox before any Project exists. No version history or
+// comments (deliberately lighter-weight than the real thing). Once promoted,
+// promotedToProjectSlug is set and the draft becomes read-only; the real
+// LeanCanvas row for that project gets a copy of the field values.
+model LeanCanvasDraft {
+  id                     String    @id @default(cuid())
+  ownerId                String
+  owner                  User      @relation("LeanCanvasDraftOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  name                   String?
+  problem                String?   @db.Text
+  alternatives           String?   @db.Text
+  customerSegments       String?   @db.Text
+  earlyAdopters          String?   @db.Text
+  uniqueValueProposition String?   @db.Text
+  concept                String?   @db.Text
+  solution               String?   @db.Text
+  channels               String?   @db.Text
+  revenueStreams         String?   @db.Text
+  costStructure          String?   @db.Text
+  impact                 String?   @db.Text
+  keyMetrics             String?   @db.Text
+  unfairAdvantage        String?   @db.Text
+  promotedToProjectSlug  String?   @unique
+  promotedToProject      Project?  @relation("LeanCanvasDraftPromotedToProject", fields: [promotedToProjectSlug], references: [slug], onDelete: SetNull)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([ownerId])
+}
+
+// Value Proposition Canvas (Osterwalder) — a standalone tool alongside Lean
+// Canvas and Whiteboard, same 3-model shape (live row + append-only version
+// history + project-less sandbox draft), just 6 fields split into two
+// halves: Value Map (vpProducts/vpRelievers/vpCreators) and Customer Profile
+// (vpJobs/vpPains/vpGains).
+model ValueProposition {
+  id          String    @id @default(cuid())
+  projectSlug String    @unique
+  project     Project   @relation("ProjectValueProposition", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  vpJobs      String?   @db.Text
+  vpPains     String?   @db.Text
+  vpGains     String?   @db.Text
+  vpProducts  String?   @db.Text
+  vpRelievers String?   @db.Text
+  vpCreators  String?   @db.Text
+  updatedById String?
+  updatedBy   User?     @relation("ValuePropositionUpdatedBy", fields: [updatedById], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ValuePropositionVersion {
+  id          String    @id @default(cuid())
+  projectSlug String
+  project     Project   @relation("ProjectValuePropositionVersions", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  vpJobs      String?   @db.Text
+  vpPains     String?   @db.Text
+  vpGains     String?   @db.Text
+  vpProducts  String?   @db.Text
+  vpRelievers String?   @db.Text
+  vpCreators  String?   @db.Text
+  savedById   String?
+  savedBy     User?     @relation("ValuePropositionVersionSavedBy", fields: [savedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+
+  @@index([projectSlug, createdAt])
+}
+
+model ValuePropositionDraft {
+  id                    String    @id @default(cuid())
+  ownerId               String
+  owner                 User      @relation("ValuePropositionDraftOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  name                  String?
+  vpJobs                String?   @db.Text
+  vpPains               String?   @db.Text
+  vpGains               String?   @db.Text
+  vpProducts            String?   @db.Text
+  vpRelievers           String?   @db.Text
+  vpCreators            String?   @db.Text
+  promotedToProjectSlug String?   @unique
+  promotedToProject     Project?  @relation("ValuePropositionDraftPromotedToProject", fields: [promotedToProjectSlug], references: [slug], onDelete: SetNull)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([ownerId])
+}
+
+// A project-less Excalidraw scratchpad — same idea as LeanCanvasDraft, for
+// the "try the whiteboard before starting a project" Sandbox tool. Single
+// owner only (no live collaborators, unlike SprintPhase.documentState —
+// there's no team to collaborate with before a Project/Sprint exists).
+// version mirrors SprintPhase's optimistic-lock counter. On promotion, the
+// documentState is copied into a real Sprint's first (UNDERSTAND) phase.
+model WhiteboardDraft {
+  id                     String    @id @default(cuid())
+  ownerId                String
+  owner                  User      @relation("WhiteboardDraftOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  name                   String?
+  documentState          Json?
+  version                Int       @default(1)
+  promotedToProjectSlug  String?   @unique
+  promotedToProject      Project?  @relation("WhiteboardDraftPromotedToProject", fields: [promotedToProjectSlug], references: [slug], onDelete: SetNull)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([ownerId])
+}

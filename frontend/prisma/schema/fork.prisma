@@ -1,0 +1,53 @@
+// PRD 4f — permissionless project forks crediting/compensating the original's Tribe Token holders.
+
+
+// PRD 4f: lineage record for a fork — every original contributor (project
+// TokenLedger holders, or a sandbox Room's message authors) is credited here
+// regardless of whether they also received a profit share or token grant.
+model ForkContributorCredit {
+  id                String   @id @default(cuid())
+  forkedProjectId   String
+  forkedProject     Project  @relation("ForkContributorCreditForkedProject", fields: [forkedProjectId], references: [id], onDelete: Cascade)
+  originalProjectId String?
+  creditedUserId    String
+  creditedUser      User     @relation("ForkContributorCredits", fields: [creditedUserId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+
+  @@index([forkedProjectId])
+}
+
+// PRD 4f: the mandatory compensation floor — proportional to the
+// contributor's Tribe Token stake in the original project at fork time.
+// Consumed by executeProfitDistribution (site-admin/profit-distribution)
+// before the fork's own TokenLedger holders get their split.
+model ForkProfitShare {
+  id                        String   @id @default(cuid())
+  forkedProjectId           String
+  forkedProject             Project  @relation("ForkProfitShareForkedProject", fields: [forkedProjectId], references: [id], onDelete: Cascade)
+  originalProjectId         String
+  originalProject           Project  @relation("ForkProfitShareOriginalProject", fields: [originalProjectId], references: [id], onDelete: Cascade)
+  originalContributorUserId String
+  originalContributor       User     @relation("ForkProfitShareContributor", fields: [originalContributorUserId], references: [id], onDelete: Cascade)
+  sharePercent              Float
+  createdAt                 DateTime @default(now())
+
+  @@index([forkedProjectId])
+}
+
+// PRD 4f: the forker's entirely optional, self-chosen top-up — real, newly
+// minted Tribe Tokens in the forked project (see awardTokens in lib/tokens.ts),
+// never a transfer of the contributor's original tokens.
+model ForkTokenGrant {
+  id                        String   @id @default(cuid())
+  forkedProjectId           String
+  forkedProject             Project  @relation("ForkTokenGrantForkedProject", fields: [forkedProjectId], references: [id], onDelete: Cascade)
+  originalProjectId         String
+  originalContributorUserId String
+  originalContributor       User     @relation("ForkTokenGrantContributor", fields: [originalContributorUserId], references: [id], onDelete: Cascade)
+  tribeTokensGranted        Float
+  grantedById               String
+  grantedBy                 User     @relation("ForkTokenGrantsGivenBy", fields: [grantedById], references: [id], onDelete: Cascade)
+  createdAt                 DateTime @default(now())
+
+  @@index([forkedProjectId])
+}

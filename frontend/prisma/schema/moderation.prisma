@@ -1,0 +1,127 @@
+// Cross-cutting moderation: shared flag/hide enums, ProjectFlag, ContentFlag, Suggestion feedback triage.
+
+
+enum FlagReason {
+  SPAM
+  HARASSMENT
+  OFFENSIVE
+  OFF_TOPIC
+  FRAUD
+  ETHICS_VIOLATION
+  OTHER
+}
+
+enum FlagStatus {
+  PENDING
+  ACTIONED
+  DISMISSED
+}
+
+enum ContentHideReason {
+  AUTO_FLAG_THRESHOLD
+  ADMIN_ACTION
+  AUTO_SPAM_DETECTED
+}
+
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing ProjectFlag row and application code already uses, so
+// converting from String avoids both a data rewrite and touching any call
+// site.
+enum ProjectFlagStatus {
+  pending
+  dismissed
+  resolved
+}
+
+model ProjectFlag {
+  id           String            @id @default(cuid())
+  projectId    String
+  project      Project           @relation("ProjectFlags", fields: [projectId], references: [id], onDelete: Cascade)
+  flaggedById  String
+  flaggedBy    User              @relation("FlaggedBy", fields: [flaggedById], references: [id])
+  reason       String
+  status       ProjectFlagStatus @default(pending)
+  reviewedById String?
+  reviewedBy   User?             @relation("FlagReviewer", fields: [reviewedById], references: [id])
+  decisionNote String?
+  ethicsReview EthicsReview?
+  createdAt    DateTime          @default(now())
+
+  @@index([projectId])
+}
+
+model EthicsReview {
+  id            String       @id @default(cuid())
+  projectId     String
+  project       Project      @relation("EthicsReviews", fields: [projectId], references: [id], onDelete: Cascade)
+  reviewerId    String
+  reviewer      User         @relation("EthicsReviewer", fields: [reviewerId], references: [id])
+  projectFlagId String?      @unique
+  projectFlag   ProjectFlag? @relation(fields: [projectFlagId], references: [id])
+  contentFlagId String?      @unique
+  contentFlag   ContentFlag? @relation("ProjectContentFlagEthicsReview", fields: [contentFlagId], references: [id])
+  outcome       String
+  note          String?
+  createdAt     DateTime     @default(now())
+
+  @@index([projectId])
+}
+
+// Generic moderation flag for individual comments/posts/messages, as opposed
+// to ProjectFlag/OrganisationFlag which flag an entire project/org and drive
+// a dedicated ethics-review workflow. targetType/targetId is the same loose
+// union pairing FeedComment/FeedLike already use.
+model ContentFlag {
+  id           String     @id @default(cuid())
+  targetType   String
+  targetId     String
+  // Nullable: a system-generated flag (source "AUTO", see proactiveModeration.ts)
+  // has no human reporter.
+  flaggedById  String?
+  flaggedBy    User?      @relation("ContentFlaggedBy", fields: [flaggedById], references: [id], onDelete: Cascade)
+  source       String     @default("USER") // USER | AUTO
+  reason       FlagReason
+  note         String?
+  status       FlagStatus @default(PENDING)
+  reviewedById String?
+  reviewedBy   User?      @relation("ContentFlagReviewer", fields: [reviewedById], references: [id])
+  decisionNote String?
+  createdAt    DateTime   @default(now())
+  reviewedAt   DateTime?
+
+  ethicsReview    EthicsReview?             @relation("ProjectContentFlagEthicsReview")
+  orgEthicsReview OrganisationEthicsReview? @relation("OrgContentFlagEthicsReview")
+
+  @@unique([targetType, targetId, flaggedById])
+  @@index([targetType, targetId])
+  @@index([status])
+}
+
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing Suggestion row and application code already uses, so converting
+// from String avoids both a data rewrite and touching any call site.
+enum SuggestionStatus {
+  pending
+  reviewed
+  dismissed
+}
+
+// Platform-wide improvement suggestions ("Ge förslag på förbättringar") —
+// a private author<->admin channel, never shown to other users, unlike the
+// public Ideas feed. Any logged-in user, not project-membership-gated.
+model Suggestion {
+  id           String           @id @default(cuid())
+  authorId     String
+  author       User             @relation("AuthoredSuggestions", fields: [authorId], references: [id], onDelete: Cascade)
+  body         String           @db.Text
+  status       SuggestionStatus @default(pending)
+  reviewedById String?
+  reviewedBy   User?            @relation("SuggestionReviewer", fields: [reviewedById], references: [id])
+  decisionNote String?          @db.Text
+  reviewedAt   DateTime?
+  createdAt    DateTime         @default(now())
+
+  @@index([status])
+}

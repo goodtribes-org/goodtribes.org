@@ -1,0 +1,42 @@
+// AI kanban agent task runs — gated on ANTHROPIC_API_KEY, see src/lib/anthropic.ts.
+
+
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing AiTaskRun row and application code already uses, so converting
+// from String avoids both a data rewrite and touching any call site.
+enum AiTaskRunStatus {
+  running
+  awaiting_review
+  approved
+  rejected
+  escalated
+}
+
+model AiTaskRun {
+  id             String          @id @default(cuid())
+  kanbanCardId   String
+  kanbanCard     KanbanCard      @relation("KanbanAiRuns", fields: [kanbanCardId], references: [id], onDelete: Cascade)
+  agentType      String
+  status         AiTaskRunStatus @default(running)
+  outputMarkdown String?         @db.Text
+  attemptNumber  Int             @default(1)
+  feedback       String?         @db.Text
+  createdAt      DateTime        @default(now())
+  completedAt    DateTime?
+  reviews        AiTaskReview[]
+
+  @@index([kanbanCardId])
+}
+
+model AiTaskReview {
+  id            String    @id @default(cuid())
+  aiTaskRunId   String
+  aiTaskRun     AiTaskRun @relation(fields: [aiTaskRunId], references: [id], onDelete: Cascade)
+  reviewerId    String
+  reviewer      User      @relation("AiTaskReviews", fields: [reviewerId], references: [id])
+  decision      String
+  feedback      String?   @db.Text
+  tokensAwarded Float?
+  createdAt     DateTime  @default(now())
+}

@@ -1,0 +1,64 @@
+// Tribe Token (project-scoped) and GT Token (platform-wide) ledgers — see src/lib/tokens.ts's awardTokens as the single mint choke point. Candidate for the hardened boundary described in the architecture memo (idempotency keys, audit trail) — not yet built, this file only isolates the schema surface.
+
+
+model TokenLedger {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation("TokenLedger", fields: [userId], references: [id])
+  projectSlug  String
+  project      Project     @relation("ProjectTokenLedger", fields: [projectSlug], references: [slug])
+  kanbanCardId String?
+  kanbanCard   KanbanCard? @relation("KanbanTokens", fields: [kanbanCardId], references: [id], onDelete: SetNull)
+  tokens       Float
+  reason       String
+  createdAt    DateTime    @default(now())
+  gtMirrors    GtLedger[]  @relation("GtLedgerSource")
+  pledgeMint   FundingPledge? @relation("PledgeTokenMint")
+
+  @@index([userId])
+  @@index([projectSlug])
+}
+
+model GtLedger {
+  id                  String       @id @default(cuid())
+  userId              String
+  user                User         @relation("GtLedger", fields: [userId], references: [id])
+  tokens              Float
+  sourceTokenLedgerId String?
+  sourceTokenLedger   TokenLedger? @relation("GtLedgerSource", fields: [sourceTokenLedgerId], references: [id], onDelete: SetNull)
+  reason              String
+  createdAt           DateTime     @default(now())
+
+  @@index([userId])
+}
+
+// Platform-wide shop, spends GT (not project-scoped Tribe Tokens) — a
+// symbolic redemption: costGt is deducted via a negative GtLedger entry and
+// a ShopRedemption row is logged. No fulfillment workflow (shipping, admin
+// approval) — that's a deliberate scope decision, not a gap.
+model ShopItem {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  imageUrl    String?
+  costGt      Float
+  active      Boolean  @default(true)
+  createdById String
+  createdBy   User     @relation("ShopItemCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  redemptions ShopRedemption[]
+}
+
+model ShopRedemption {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      ShopItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation("ShopRedemptions", fields: [userId], references: [id], onDelete: Cascade)
+  gtSpent   Float
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([itemId])
+}

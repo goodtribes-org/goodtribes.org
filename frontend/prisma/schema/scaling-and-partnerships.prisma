@@ -1,0 +1,192 @@
+// PRD Fas 4 — regional franchise instances, org partnerships, maturity scoring, mentorship.
+
+
+// PRD 5.68 — a project<->organisation sponsor/partner/supporter link. Requires
+// symmetric consent: whichever side didn't propose it must accept before
+// status flips to "active" and it becomes publicly visible / usable for
+// matchmaking exclusion (see proposePartnership/respondToPartnership in
+// lib/actions/partnerships.ts). Either side can revoke unilaterally once
+// active — same leave-anytime spirit as OrganisationMember/ProjectMember.
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing Partnership row and application code already uses, so converting
+// from String avoids both a data rewrite and touching any call site.
+enum PartnershipStatus {
+  pending
+  active
+  declined
+  revoked
+}
+
+model Partnership {
+  id             String            @id @default(cuid())
+  projectId      String
+  organisationId String
+  type           String            @default("partner") // "sponsor" | "partner" | "supporter"
+  description    String?
+  status         PartnershipStatus @default(pending)
+  proposedBy     String    // "org" | "project" — who initiated, so the initiator can't also accept
+  initiatedById  String
+  respondedById  String?
+  respondedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  project      Project      @relation("ProjectPartnerships", fields: [projectId], references: [id], onDelete: Cascade)
+  organisation Organisation @relation("OrganisationPartnerships", fields: [organisationId], references: [id], onDelete: Cascade)
+  initiatedBy  User         @relation("PartnershipInitiatedBy", fields: [initiatedById], references: [id])
+  respondedBy  User?        @relation("PartnershipRespondedBy", fields: [respondedById], references: [id])
+
+  @@unique([projectId, organisationId])
+  @@index([organisationId])
+  @@index([projectId])
+}
+
+model ImpactMetric {
+  id           String         @id @default(cuid())
+  projectSlug  String
+  project      Project        @relation("ProjectImpactMetrics", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  label        String
+  unit         String
+  targetValue  Float?
+  currentValue Float          @default(0)
+  description  String?
+  updates      ImpactUpdate[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([projectSlug])
+}
+
+model ImpactUpdate {
+  id             String       @id @default(cuid())
+  impactMetricId String
+  impactMetric   ImpactMetric @relation(fields: [impactMetricId], references: [id], onDelete: Cascade)
+  value          Float
+  note           String?
+  updatedById    String
+  updatedBy      User         @relation("ImpactUpdates", fields: [updatedById], references: [id])
+  createdAt      DateTime     @default(now())
+
+  @@index([impactMetricId])
+}
+
+// PRD 4d — verified SDG outcome reports a fork must produce to unlock the
+// `scale` -> `impact` phase transition. Distinct from ImpactMetric/ImpactUpdate
+// (self-reported, ongoing progress tracking): a report is a discrete,
+// externally verified claim of impact.
+model ImpactReport {
+  id                String    @id @default(cuid())
+  projectId         String
+  project           Project   @relation("ProjectImpactReports", fields: [projectId], references: [id], onDelete: Cascade)
+  sdgGoals          Int[]
+  metricDescription String
+  metricValue       Float
+  verifiedById      String?
+  verifiedBy        User?     @relation("VerifiedImpactReports", fields: [verifiedById], references: [id])
+  verifiedAt        DateTime?
+  createdAt         DateTime  @default(now())
+
+  @@index([projectId])
+}
+
+model ProjectMaturity {
+  id               String    @id @default(cuid())
+  projectSlug      String    @unique
+  project          Project   @relation("ProjectMaturity", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  score            Int       @default(0)
+  scoreBreakdown   Json?
+  scaleInitiatedAt DateTime?
+  scalingPlan      String?   @db.Text
+  finalReport      String?   @db.Text
+  calculatedAt     DateTime  @default(now())
+}
+
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing ProjectInstance row and application code already uses (review
+// decision values from /api/projects/instances/review/route.ts), so
+// converting from String avoids both a data rewrite and touching any call site.
+enum ProjectInstanceStatus {
+  pending
+  approved
+  rejected
+}
+
+model ProjectInstance {
+  id           String                @id @default(cuid())
+  parentSlug   String
+  parent       Project               @relation("ParentInstances", fields: [parentSlug], references: [slug], onDelete: Cascade)
+  childSlug    String                @unique
+  child        Project               @relation("ChildInstance", fields: [childSlug], references: [slug], onDelete: Cascade)
+  region       String
+  country      String?               // free text, normalized via lib/geo.ts same as User.country — powers the network dashboard's world map
+  status       ProjectInstanceStatus @default(pending)
+  approvedById String?
+  approvedBy   User?                 @relation("ApprovedInstances", fields: [approvedById], references: [id])
+  createdAt    DateTime              @default(now())
+
+  @@unique([parentSlug, childSlug])
+}
+
+model ProjectAlumni {
+  id            String   @id @default(cuid())
+  projectSlug   String
+  project       Project  @relation("ProjectAlumni", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  userId        String
+  user          User     @relation("AlumniUsers", fields: [userId], references: [id])
+  tokensEarned  Float    @default(0)
+  badgeIssuedAt DateTime @default(now())
+  finalReport   String?  @db.Text
+
+  @@unique([projectSlug, userId])
+  @@index([projectSlug])
+}
+
+model Mentor {
+  id         String              @id @default(cuid())
+  userId     String              @unique
+  user       User                @relation("MentorProfile", fields: [userId], references: [id], onDelete: Cascade)
+  categories String[]
+  bio        String?
+  verified   Boolean             @default(false)
+  requests   MentorshipRequest[]
+  createdAt  DateTime            @default(now())
+}
+
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing MentorshipRequest row and application code already uses (see
+// app/[locale]/mentors/actions.ts), so converting from String avoids both a
+// data rewrite and touching any call site.
+enum MentorshipRequestStatus {
+  pending
+  accepted
+  completed
+}
+
+model MentorshipRequest {
+  id            String                  @id @default(cuid())
+  projectId     String
+  project       Project                 @relation("ProjectMentorships", fields: [projectId], references: [id], onDelete: Cascade)
+  mentorId      String
+  mentor        Mentor                  @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  status        MentorshipRequestStatus @default(pending)
+  message       String?
+  sessionAt     DateTime?
+  tokensAwarded Float?
+  feedback      MentorshipFeedback?
+  createdAt     DateTime                @default(now())
+
+  @@index([projectId])
+  @@index([mentorId])
+}
+
+model MentorshipFeedback {
+  id                  String            @id @default(cuid())
+  mentorshipRequestId String            @unique
+  mentorshipRequest   MentorshipRequest @relation(fields: [mentorshipRequestId], references: [id], onDelete: Cascade)
+  rating              Int
+  comment             String?
+  createdAt           DateTime          @default(now())
+}

@@ -1,0 +1,208 @@
+// Auth (NextAuth) + core user/skill identity — see CLAUDE.md's auth-flow section.
+
+
+enum SiteRole {
+  USER
+  ADMIN
+  OWNER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  // Prisma's cuid() is CUID2 (@paralleldrive/cuid2), which is deliberately
+  // non-sortable — unlike classic CUID1, it can't stand in for "when was
+  // this row created" (see the homepage's "Nya medlemmar" bug this fixed).
+  createdAt     DateTime  @default(now())
+  country       String?
+  bio           String?
+  socialLinks   Json?     @default("{}")
+  interests     Int[]     @default([])
+  availability  String?
+  showProfile   Boolean   @default(false)
+  digestOptIn   Boolean   @default(true)
+  siteRole      SiteRole  @default(USER)
+  suspendedAt   DateTime?
+  accounts      Account[]
+  sessions      Session[]
+
+  ownedOrganisations      Organisation[]            @relation("OwnedOrganisations")
+  organisationMemberships OrganisationMember[]      @relation("OrganisationMemberships")
+  joinRequests            OrganisationJoinRequest[] @relation("JoinRequests")
+  skills                  UserSkill[]
+  createdTasks            WorkspaceTask[]           @relation("CreatedTasks")
+  files                   File[]                    @relation("OwnedFiles")
+  createdKanbanCards      KanbanCard[]              @relation("CreatedKanbanCards")
+  createdTodoLists        TodoList[]                @relation("CreatedTodoLists")
+  createdTodoItems        TodoItem[]                @relation("CreatedTodoItems")
+  ownedProjects           Project[]                 @relation("OwnedProjects")
+  projectMemberships      ProjectMember[]           @relation("ProjectMemberships")
+  projectJoinRequests     ProjectJoinRequest[]      @relation("ProjectJoinRequests")
+  authoredIdeas           Idea[]                    @relation("AuthoredIdeas")
+  ideaVotes               IdeaVote[]                @relation("IdeaVotes")
+  ideaEndorsements        IdeaEndorsement[]         @relation("IdeaEndorsements")
+  ideaFollowers           IdeaFollower[]            @relation("IdeaFollowers")
+  authoredIdeaComments    IdeaComment[]             @relation("AuthoredIdeaComments")
+  authoredBlogPosts       BlogPost[]                @relation("AuthoredBlogPosts")
+  notifications           Notification[]            @relation("UserNotifications")
+  assignedKanbanCards     KanbanCard[]              @relation("AssignedKanbanCards")
+  createdMilestones       Milestone[]               @relation("MilestoneCreatedBy")
+  activityEvents          ActivityEvent[]           @relation("ActivityEvents")
+  createdProjectInvites   ProjectInvite[]           @relation("CreatedProjectInvites")
+  createdWikiPages        WikiPage[]                @relation("WikiPageCreatedBy")
+  updatedWikiPages        WikiPage[]                @relation("WikiPageUpdatedBy")
+  updatedSitePages        SitePage[]                @relation("SitePageUpdatedBy")
+  createdOrgInvites       OrgInvite[]               @relation("CreatedOrgInvites")
+  fundingPledges          FundingPledge[]           @relation("FundingPledges")
+  calendarEvents          CalendarEvent[]           @relation("CreatedCalendarEvents")
+  completedSubtasks       KanbanCardSubtask[]       @relation("CompletedSubtasks")
+  tokenLedger             TokenLedger[]             @relation("TokenLedger")
+  aiTaskReviews           AiTaskReview[]            @relation("AiTaskReviews")
+  createdPolls            Poll[]                    @relation("CreatedPolls")
+  pollVotes               PollVote[]                @relation("UserPollVotes")
+  sprintsCreated          Sprint[]                  @relation("SprintsCreated")
+  sprintContributions     SprintContribution[]
+  sprintVotes             SprintVote[]
+  sprintComments          SprintComment[]
+  impactUpdates           ImpactUpdate[]            @relation("ImpactUpdates")
+  verifiedImpactReports   ImpactReport[]            @relation("VerifiedImpactReports")
+  proposedIdeaRevisions   IdeaRevision[]            @relation("ProposedIdeaRevisions")
+  decidedIdeaRevisions    IdeaRevision[]            @relation("DecidedIdeaRevisions")
+  ideaContributions       IdeaContributor[]         @relation("IdeaContributions")
+  authoredSuggestions     Suggestion[]              @relation("AuthoredSuggestions")
+  reviewedSuggestions     Suggestion[]              @relation("SuggestionReviewer")
+  approvedInstances       ProjectInstance[]         @relation("ApprovedInstances")
+  alumni                  ProjectAlumni[]           @relation("AlumniUsers")
+  mentorProfile           Mentor?                   @relation("MentorProfile")
+  authoredGuides          AcademyGuide[]            @relation("GuideAuthor")
+  reviewedGuides          AcademyGuide[]            @relation("GuideReviewer")
+  guideCompletions        UserGuideCompletion[]     @relation("GuideCompletions")
+  kudosSent               Kudos[]                   @relation("KudosSent")
+  kudosReceived           Kudos[]                   @relation("KudosReceived")
+  streaks                 UserStreak[]              @relation("UserStreaks")
+  dreamPosts              DreamWallPost[]           @relation("DreamPosts")
+  dreamReactions          DreamWallReaction[]       @relation("DreamReactions")
+  projectFlags            ProjectFlag[]             @relation("FlaggedBy")
+  flagReviews             ProjectFlag[]             @relation("FlagReviewer")
+  ethicsReviews           EthicsReview[]            @relation("EthicsReviewer")
+  kanbanComments          KanbanCardComment[]       @relation("KanbanComments")
+  onboardingDone          Boolean                   @default(false)
+  tourDismissedAt         DateTime?
+  // Null means not yet accepted — checked at signup time (see SignupForm.tsx)
+  // and, for accounts predating this consent requirement, via a global gate
+  // rendered in [locale]/layout.tsx whenever either is still null.
+  acceptedParticipantAgreementAt DateTime?
+  acceptedCodeOfConductAt        DateTime?
+  feedPosts               FeedPost[]                @relation("AuthoredFeedPosts")
+  feedLikes               FeedLike[]                @relation("FeedLikes")
+  feedComments            FeedComment[]             @relation("AuthoredFeedComments")
+  roomParticipations      RoomParticipant[]         @relation("RoomParticipant")
+  sentMessages            Message[]                 @relation("SentMessages")
+  messageReactions        MessageReaction[]         @relation("MessageReactions")
+  orgFlagsRaised          OrganisationFlag[]         @relation("OrgFlaggedBy")
+  orgFlagReviews          OrganisationFlag[]         @relation("OrgFlagReviewer")
+  orgEthicsReviews        OrganisationEthicsReview[] @relation("OrgEthicsReviewer")
+  orgReviewsAuthored      OrganisationReview[]       @relation("OrgReviewAuthor")
+  leanCanvasEdits         LeanCanvas[]               @relation("LeanCanvasUpdatedBy")
+  leanCanvasComments      LeanCanvasComment[]        @relation("LeanCanvasCommentAuthor")
+  leanCanvasVersionsSaved LeanCanvasVersion[]        @relation("LeanCanvasVersionSavedBy")
+  leanCanvasDrafts        LeanCanvasDraft[]          @relation("LeanCanvasDraftOwner")
+  projectPlanEdits        ProjectPlan[]              @relation("ProjectPlanUpdatedBy")
+  valuePropositionEdits         ValueProposition[]        @relation("ValuePropositionUpdatedBy")
+  valuePropositionVersionsSaved ValuePropositionVersion[] @relation("ValuePropositionVersionSavedBy")
+  valuePropositionDrafts        ValuePropositionDraft[]   @relation("ValuePropositionDraftOwner")
+  whiteboardDrafts        WhiteboardDraft[]          @relation("WhiteboardDraftOwner")
+  contentFlagsRaised     ContentFlag[]               @relation("ContentFlaggedBy")
+  contentFlagReviews     ContentFlag[]               @relation("ContentFlagReviewer")
+  priorityChanges        KanbanCardPriorityChange[]  @relation("PriorityChanges")
+  gtLedger               GtLedger[]                  @relation("GtLedger")
+  phaseTransitions       PhaseTransition[]           @relation("PhaseTransitions")
+  completedChecklistItems InitiativeChecklistItem[]  @relation("CompletedChecklistItems")
+  createdPlatformPolls   PlatformPoll[]              @relation("CreatedPlatformPolls")
+  platformPollCandidacies PlatformPollOption[]       @relation("PlatformPollCandidacies")
+  platformPollVotes      PlatformPollVote[]          @relation("PlatformPollVotes")
+  reviewCouncilMemberships ReviewCouncilMember[]      @relation("ReviewCouncilMemberships")
+  exclusionCasesReported  ExclusionCase[]             @relation("ReportedInExclusionCases")
+  exclusionCasesFiled     ExclusionCase[]             @relation("FiledExclusionCases")
+  exclusionCaseVotes      ExclusionCaseVote[]         @relation("ExclusionCaseVotes")
+  requestedLegalTypeChanges LegalTypeChangeRequest[]  @relation("RequestedLegalTypeChanges")
+  executedLegalTypeChanges  LegalTypeChangeRequest[]  @relation("ExecutedLegalTypeChanges")
+  requestedSandboxGraduations SandboxGraduationRequest[] @relation("RequestedSandboxGraduations")
+  executedSandboxGraduations SandboxGraduationRequest[] @relation("ExecutedSandboxGraduations")
+  proposedProfitDistributions ProfitDistributionProposal[] @relation("ProposedProfitDistributions")
+  executedProfitDistributions ProfitDistributionProposal[] @relation("ExecutedProfitDistributions")
+  personalProfitAllocations    PersonalProfitAllocation[]
+  recordedImpactFundEntries    ImpactFundLedger[]         @relation("RecordedImpactFundEntries")
+  openedImpactFundRounds       ImpactFundAllocationRound[] @relation("OpenedImpactFundRounds")
+  initiatedPartnerships        Partnership[]               @relation("PartnershipInitiatedBy")
+  respondedPartnerships        Partnership[]               @relation("PartnershipRespondedBy")
+  createdMindMaps              MindMap[]                   @relation("CreatedMindMaps")
+  projectOwnershipInterests    ProjectOwnershipInterest[]  @relation("ProjectOwnershipInterestUser")
+  createdShopItems             ShopItem[]                  @relation("ShopItemCreatedBy")
+  shopRedemptions               ShopRedemption[]           @relation("ShopRedemptions")
+  forkContributorCredits        ForkContributorCredit[]    @relation("ForkContributorCredits")
+  forkProfitSharesAsContributor ForkProfitShare[]          @relation("ForkProfitShareContributor")
+  forkTokenGrantsAsContributor  ForkTokenGrant[]           @relation("ForkTokenGrantContributor")
+  forkTokenGrantsGiven          ForkTokenGrant[]           @relation("ForkTokenGrantsGivenBy")
+}
+
+model Skill {
+  id          String         @id @default(cuid())
+  name        String         @unique
+  tag         String
+  description String
+  slug        String         @unique
+  createdAt   DateTime       @default(now())
+  users       UserSkill[]
+  projects    ProjectSkill[]
+  organisations OrganisationSkill[]
+}
+
+model UserSkill {
+  id      String   @id @default(cuid())
+  userId  String
+  skillId String
+  addedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

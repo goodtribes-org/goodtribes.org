@@ -1,0 +1,163 @@
+// Organisation entities, membership, and org-level moderation/join-requests.
+
+
+enum OrganisationRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model Organisation {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  category    String?
+  country     String?  // free text, normalized via lib/geo.ts — real geography signal for partnership matchmaking
+  imageUrl    String?
+  isPublic    Boolean  @default(true)
+  verified    Boolean  @default(false)
+  tourDismissedAt DateTime?
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner          User                      @relation("OwnedOrganisations", fields: [ownerId], references: [id], onDelete: Cascade)
+  members        OrganisationMember[]
+  joinRequests   OrganisationJoinRequest[]
+  rooms          Room[]                    @relation("OrgRooms")
+  workspaceTasks WorkspaceTask[]           @relation("OrgTasks")
+  projects       Project[]
+  invites        OrgInvite[]
+  neededSkills   OrganisationSkill[]
+  flags          OrganisationFlag[]        @relation("OrganisationFlags")
+  ethicsReviews  OrganisationEthicsReview[] @relation("OrganisationEthicsReviews")
+  reviews        OrganisationReview[]      @relation("OrganisationReviews")
+  files          File[]                    @relation("OrganisationFiles")
+  activityEvents ActivityEvent[]
+  partnerships   Partnership[]             @relation("OrganisationPartnerships")
+}
+
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing OrganisationFlag row and application code already uses, so
+// converting from String avoids both a data rewrite and touching any call
+// site.
+enum OrganisationFlagStatus {
+  pending
+  dismissed
+  resolved
+}
+
+model OrganisationFlag {
+  id             String                    @id @default(cuid())
+  organisationId String
+  organisation   Organisation              @relation("OrganisationFlags", fields: [organisationId], references: [id], onDelete: Cascade)
+  flaggedById    String
+  flaggedBy      User                      @relation("OrgFlaggedBy", fields: [flaggedById], references: [id])
+  reason         String
+  status         OrganisationFlagStatus    @default(pending)
+  reviewedById   String?
+  reviewedBy     User?                     @relation("OrgFlagReviewer", fields: [reviewedById], references: [id])
+  decisionNote   String?
+  ethicsReview   OrganisationEthicsReview?
+  createdAt      DateTime                  @default(now())
+
+  @@index([organisationId])
+}
+
+model OrganisationEthicsReview {
+  id                 String            @id @default(cuid())
+  organisationId     String
+  organisation       Organisation      @relation("OrganisationEthicsReviews", fields: [organisationId], references: [id], onDelete: Cascade)
+  reviewerId         String
+  reviewer           User              @relation("OrgEthicsReviewer", fields: [reviewerId], references: [id])
+  organisationFlagId String?           @unique
+  organisationFlag   OrganisationFlag? @relation(fields: [organisationFlagId], references: [id])
+  contentFlagId      String?           @unique
+  contentFlag        ContentFlag?      @relation("OrgContentFlagEthicsReview", fields: [contentFlagId], references: [id])
+  outcome            String
+  note               String?
+  createdAt          DateTime          @default(now())
+
+  @@index([organisationId])
+}
+
+model OrganisationReview {
+  id             String       @id @default(cuid())
+  organisationId String
+  organisation   Organisation @relation("OrganisationReviews", fields: [organisationId], references: [id], onDelete: Cascade)
+  authorId       String
+  author         User         @relation("OrgReviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  rating         Int
+  comment        String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organisationId, authorId])
+  @@index([organisationId])
+}
+
+model OrganisationSkill {
+  id             String   @id @default(cuid())
+  organisationId String
+  skillId        String
+  addedAt        DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  skill        Skill        @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([organisationId, skillId])
+}
+
+model OrganisationMember {
+  id             String   @id @default(cuid())
+  organisationId String
+  userId         String
+  role           OrganisationRole @default(MEMBER)
+  joinedAt       DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  user         User         @relation("OrganisationMemberships", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organisationId, userId])
+}
+
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing OrganisationJoinRequest row and application code already uses,
+// so converting from String avoids both a data rewrite and touching any
+// call site.
+enum OrganisationJoinRequestStatus {
+  pending
+  approved
+  rejected
+}
+
+model OrganisationJoinRequest {
+  id             String                        @id @default(cuid())
+  organisationId String
+  userId         String
+  status         OrganisationJoinRequestStatus @default(pending)
+  createdAt      DateTime                      @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  user         User         @relation("JoinRequests", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organisationId, userId])
+}
+
+model OrgInvite {
+  id          String    @id @default(cuid())
+  orgId       String
+  email       String
+  token       String    @unique @default(cuid())
+  role        OrganisationRole @default(MEMBER)
+  createdById String
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  org       Organisation @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdBy User         @relation("CreatedOrgInvites", fields: [createdById], references: [id])
+}

@@ -1,0 +1,139 @@
+// Academy guides, kudos/streaks, dream wall, and the project feed.
+
+
+model AcademyGuide {
+  id              String                @id @default(cuid())
+  title           String
+  bodyMarkdown    String                @db.Text
+  category        String
+  authorId        String
+  author          User                  @relation("GuideAuthor", fields: [authorId], references: [id])
+  reviewedById    String?
+  reviewedBy      User?                 @relation("GuideReviewer", fields: [reviewedById], references: [id])
+  difficulty      String                @default("beginner")
+  readTimeMinutes Int                   @default(5)
+  published       Boolean               @default(false)
+  completions     UserGuideCompletion[]
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  hiddenAt        DateTime?
+  hiddenById      String?
+  hiddenReason    ContentHideReason?
+
+  @@index([category])
+}
+
+model UserGuideCompletion {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation("GuideCompletions", fields: [userId], references: [id], onDelete: Cascade)
+  guideId     String
+  guide       AcademyGuide @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  completedAt DateTime     @default(now())
+
+  @@unique([userId, guideId])
+}
+
+model Kudos {
+  id         String   @id @default(cuid())
+  fromUserId String
+  fromUser   User     @relation("KudosSent", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId   String
+  toUser     User     @relation("KudosReceived", fields: [toUserId], references: [id], onDelete: Cascade)
+  projectId  String?
+  project    Project? @relation("ProjectKudos", fields: [projectId], references: [id], onDelete: SetNull)
+  message    String
+  createdAt  DateTime @default(now())
+
+  @@index([toUserId])
+}
+
+model UserStreak {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation("UserStreaks", fields: [userId], references: [id], onDelete: Cascade)
+  projectId      String
+  project        Project  @relation("ProjectStreaks", fields: [projectId], references: [id], onDelete: Cascade)
+  currentWeeks   Int      @default(0)
+  longestWeeks   Int      @default(0)
+  lastActivityAt DateTime @default(now())
+
+  @@unique([userId, projectId])
+}
+
+model DreamWallPost {
+  id           String              @id @default(cuid())
+  userId       String
+  user         User                @relation("DreamPosts", fields: [userId], references: [id], onDelete: Cascade)
+  dreamText    String
+  reactions    DreamWallReaction[]
+  createdAt    DateTime            @default(now())
+  hiddenAt     DateTime?
+  hiddenById   String?
+  hiddenReason ContentHideReason?
+}
+
+model DreamWallReaction {
+  id              String        @id @default(cuid())
+  dreamWallPostId String
+  dreamWallPost   DreamWallPost @relation(fields: [dreamWallPostId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation("DreamReactions", fields: [userId], references: [id], onDelete: Cascade)
+  emoji           String
+  createdAt       DateTime      @default(now())
+
+  @@unique([dreamWallPostId, userId, emoji])
+}
+
+model FeedPost {
+  id           String   @id @default(cuid())
+  authorId     String
+  author       User     @relation("AuthoredFeedPosts", fields: [authorId], references: [id], onDelete: Cascade)
+  body         String
+  imageUrl     String?
+  // Null = a post on the global site-wide feed (today's only behavior).
+  // Set = posted from within a project's own scoped feed — never shown on
+  // the global feed, see lib/activityFeed.ts's project-scope mode.
+  projectId    String?
+  project      Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  hiddenAt     DateTime?
+  hiddenById   String?
+  hiddenReason ContentHideReason?
+
+  @@index([createdAt])
+  @@index([projectId])
+}
+
+// Likes on any feed item (FeedPost, BlogPost, Milestone, Project, Idea,
+// ActivityEvent, Message, KanbanCardComment, IdeaComment). Not a
+// Prisma relation to the target — targetType/targetId is looked up by the
+// app layer, matching how the feed already treats these as a loose union.
+model FeedLike {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation("FeedLikes", fields: [userId], references: [id], onDelete: Cascade)
+  targetType String
+  targetId   String
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, targetType, targetId])
+  @@index([targetType, targetId])
+}
+
+// Comments on any feed item — same loose targetType/targetId pairing as FeedLike.
+model FeedComment {
+  id           String   @id @default(cuid())
+  authorId     String
+  author       User     @relation("AuthoredFeedComments", fields: [authorId], references: [id], onDelete: Cascade)
+  targetType   String
+  targetId     String
+  body         String
+  createdAt    DateTime @default(now())
+  hiddenAt     DateTime?
+  hiddenById   String?
+  hiddenReason ContentHideReason?
+
+  @@index([targetType, targetId])
+}

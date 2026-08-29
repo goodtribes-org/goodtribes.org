@@ -1,0 +1,272 @@
+// Project lifecycle, phase, legal type, and core membership — see CLAUDE.md's Product domain model.
+
+
+enum ProjectRole {
+  FOUNDER
+  ADMIN
+  MEMBER
+  FOLLOWER
+}
+
+enum ProjectPhase {
+  IDEA
+  SPRINT
+  PILOT
+  PRODUCTION
+  ESTABLISH
+  SCALE
+  IMPACT
+}
+
+// PRD 4c — replaces the dead Project.commercial Boolean (added
+// 20260715220000_project_commercial, never actually written anywhere).
+enum LegalType {
+  COMMERCIAL_UMBRELLA
+  COMMERCIAL_AB
+  NONPROFIT_UMBRELLA
+  NONPROFIT_OWN_ASSOC
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  // Short quoted tagline shown next to the title on the Startsidan/mini-hero
+  // photo card caption (e.g. Storsjön "Låt odjuret leva" - 5/8-26) — set once
+  // at creation via NewProjectGuide, optional, no edit UI yet.
+  slogan      String?
+  summary     String?
+  description String?
+  phase       ProjectPhase @default(IDEA)
+  checklistDismissedAt DateTime?
+  archivedAt  DateTime?
+  // Sandbox — a real, fully-functional project, just flagged as an
+  // experimental/playground one (see /sandbox). No separate "lift" step:
+  // graduating out of sandbox is just flipping this back to false.
+  isSandbox   Boolean  @default(false)
+  // A founder-declared "looking for a new owner" flag — set explicitly by a
+  // founder, never inferred from inactivity. While set, anyone logged in can
+  // express interest in taking over; a founder/site-admin then picks one to
+  // transfer ownership to via transferOwnership (see ownership-actions.ts).
+  abandonedAt DateTime?
+  hiddenAt    DateTime?
+  hiddenById  String?
+  hiddenReason ContentHideReason?
+  category    String?
+  tags        String[]
+  imageUrl    String?
+  links       String[] @default([])
+  sdgGoals    Int[]
+  legalType   LegalType @default(NONPROFIT_UMBRELLA)
+  commercialUmbrellaEntityId String?
+  commercialUmbrellaEntity   CommercialUmbrellaEntity? @relation(fields: [commercialUmbrellaEntityId], references: [id], onDelete: SetNull)
+  // PRD 4f: a permissionless copy of this project, independent of
+  // ProjectInstance's permissioned franchising model.
+  forkedFromProjectId       String?
+  forkedFromProject         Project?  @relation("ProjectForks", fields: [forkedFromProjectId], references: [id], onDelete: SetNull)
+  forks                     Project[] @relation("ProjectForks")
+  ownerId     String
+  orgId       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner              User                 @relation("OwnedProjects", fields: [ownerId], references: [id], onDelete: Cascade)
+  org                Organisation?        @relation(fields: [orgId], references: [id])
+  members            ProjectMember[]
+  joinRequests       ProjectJoinRequest[]
+  kanbanCards        KanbanCard[]
+  todoLists          TodoList[]
+  todoItems          TodoItem[]
+  blogPosts          BlogPost[]
+  milestones         Milestone[]
+  activityEvents     ActivityEvent[]
+  invites            ProjectInvite[]
+  wikiPages          WikiPage[]
+  neededSkills       ProjectSkill[]
+  files              File[]               @relation("ProjectFiles")
+  feedPosts          FeedPost[]
+  fundingCampaign    FundingCampaign?
+  rooms              Room[]               @relation("ProjectRooms")
+  calendarEvents     CalendarEvent[]      @relation("ProjectCalendarEvents")
+  tokenLedger        TokenLedger[]        @relation("ProjectTokenLedger")
+  polls              Poll[]               @relation("ProjectPolls")
+  sprints            Sprint[]             @relation("ProjectSprints")
+  impactMetrics      ImpactMetric[]       @relation("ProjectImpactMetrics")
+  impactReports      ImpactReport[]       @relation("ProjectImpactReports")
+  promotedFromIdea   Idea?                @relation("IdeaPromotedToProject")
+  maturity           ProjectMaturity?     @relation("ProjectMaturity")
+  githubBoard        ProjectGithubBoard?  @relation("ProjectGithubBoard")
+  leanCanvas         LeanCanvas?          @relation("ProjectLeanCanvas")
+  leanCanvasComments LeanCanvasComment[]  @relation("ProjectLeanCanvasComments")
+  leanCanvasVersions LeanCanvasVersion[]  @relation("ProjectLeanCanvasVersions")
+  projectPlan        ProjectPlan?         @relation("ProjectPlan")
+  promotedFromLeanCanvasDraft LeanCanvasDraft? @relation("LeanCanvasDraftPromotedToProject")
+  promotedFromWhiteboardDraft WhiteboardDraft? @relation("WhiteboardDraftPromotedToProject")
+  valueProposition         ValueProposition?         @relation("ProjectValueProposition")
+  valuePropositionVersions ValuePropositionVersion[] @relation("ProjectValuePropositionVersions")
+  promotedFromValuePropositionDraft ValuePropositionDraft? @relation("ValuePropositionDraftPromotedToProject")
+  parentInstances    ProjectInstance[]    @relation("ParentInstances")
+  childInstance      ProjectInstance?     @relation("ChildInstance")
+  alumni             ProjectAlumni[]      @relation("ProjectAlumni")
+  openForReplication Boolean              @default(false)
+  mentorships        MentorshipRequest[]  @relation("ProjectMentorships")
+  kudos              Kudos[]              @relation("ProjectKudos")
+  streaks            UserStreak[]         @relation("ProjectStreaks")
+  flags              ProjectFlag[]        @relation("ProjectFlags")
+  exclusionCases     ExclusionCase[]
+  legalTypeChangeRequests LegalTypeChangeRequest[]
+  sandboxGraduationRequests SandboxGraduationRequest[]
+  ethicsReviews      EthicsReview[]       @relation("EthicsReviews")
+  phaseTransitions   PhaseTransition[]
+  checklistItems     InitiativeChecklistItem[]
+  convertedFromRoom  Room?                @relation("RoomConvertedToProject")
+  profitDistributionProposals ProfitDistributionProposal[]
+  profitDistributions         ProfitDistribution[]
+  impactFundPayouts           ImpactFundLedger[]          @relation("ImpactFundPayouts")
+  impactFundPollOptions       PlatformPollOption[]        @relation("ImpactFundPollOptionProjects")
+  partnerships                Partnership[]               @relation("ProjectPartnerships")
+  forkProfitSharesReceived    ForkProfitShare[]           @relation("ForkProfitShareOriginalProject")
+  forkContributorCredits      ForkContributorCredit[]     @relation("ForkContributorCreditForkedProject")
+  forkProfitSharesGiven       ForkProfitShare[]           @relation("ForkProfitShareForkedProject")
+  forkTokenGrantsGiven        ForkTokenGrant[]            @relation("ForkTokenGrantForkedProject")
+  ownershipInterests          ProjectOwnershipInterest[]
+  translations                ProjectTranslation[]
+}
+
+// Per-locale override of title/summary/description for a Project. The base
+// columns on Project stay the canonical sv content and are never removed —
+// a row here only exists for additional locales (today: en). Callers fall
+// back to the base columns when no row exists, same idiom as getSitePage().
+model ProjectTranslation {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  locale      String
+  title       String
+  summary     String?
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@unique([projectId, locale])
+  @@index([projectId])
+}
+
+// Expressions of interest in taking over a project a founder has marked
+// abandonedAt on (see Project.abandonedAt) — resolved by transferOwnership
+// picking one, which deletes all rows for the project.
+model ProjectOwnershipInterest {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation("ProjectOwnershipInterestUser", fields: [userId], references: [id], onDelete: Cascade)
+  message   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+}
+
+model ProjectSkill {
+  id        String   @id @default(cuid())
+  projectId String
+  skillId   String
+  addedAt   DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  skill   Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, skillId])
+}
+
+model ProjectMember {
+  id        String      @id @default(cuid())
+  projectId String
+  userId    String
+  role      ProjectRole @default(MEMBER)
+  joinedAt  DateTime    @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation("ProjectMemberships", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model PhaseTransition {
+  id          String        @id @default(cuid())
+  projectId   String
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fromPhase   ProjectPhase?
+  toPhase     ProjectPhase
+  changedById String
+  changedBy   User          @relation("PhaseTransitions", fields: [changedById], references: [id])
+  changedAt   DateTime      @default(now())
+
+  @@index([projectId])
+}
+
+model InitiativeChecklistItem {
+  id            String       @id @default(cuid())
+  projectId     String
+  project       Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  phase         ProjectPhase
+  itemKey       String
+  completedAt   DateTime?
+  completedById String?
+  completedBy   User?        @relation("CompletedChecklistItems", fields: [completedById], references: [id], onDelete: SetNull)
+
+  @@unique([projectId, itemKey])
+  @@index([projectId])
+}
+
+// Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,
+// e.g. FlagStatus) deliberately -- matches the exact string values every
+// existing ProjectJoinRequest row and application code already uses, so
+// converting from String avoids both a data rewrite and touching any call
+// site.
+enum ProjectJoinRequestStatus {
+  pending
+  approved
+  rejected
+}
+
+model ProjectJoinRequest {
+  id        String                   @id @default(cuid())
+  projectId String
+  userId    String
+  message   String?
+  status    ProjectJoinRequestStatus @default(pending)
+  createdAt DateTime                 @default(now())
+  updatedAt DateTime                 @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation("ProjectJoinRequests", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model ProjectInvite {
+  id          String      @id @default(cuid())
+  projectId   String
+  email       String?
+  token       String      @unique @default(cuid())
+  role        ProjectRole @default(MEMBER)
+  createdById String
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime    @default(now())
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User    @relation("CreatedProjectInvites", fields: [createdById], references: [id])
+}
+
+// The Foundation-owned umbrella AB(s) a commercial_umbrella project's
+// product line sits under (PRD 4c), e.g. "GoodTribes Ventures AB".
+model CommercialUmbrellaEntity {
+  id                    String   @id @default(cuid())
+  name                  String
+  foundationAbOrgNumber String?
+  createdAt             DateTime @default(now())
+
+  projects Project[]
+}
