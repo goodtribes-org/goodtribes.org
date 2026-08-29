@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { getAnthropicClient, isAiEnabled, checkAiRateLimit } from "@/lib/anthropic";
 import { GITHUB_CARD_LOCKED_MESSAGE } from "@/lib/githubSync";
+import { awardTokens } from "@/lib/tokens";
 
 
 function buildSystemPrompt(projectTitle: string, projectDescription: string | null, agentType: string): string {
@@ -88,14 +89,14 @@ export async function POST(req: NextRequest) {
     const estimatedHours = aiTaskRun.kanbanCard.estimate?.aiHours ?? 0;
     const tokensAwarded = Math.max(estimatedHours * 0.2, 0.5);
 
-    await prisma.tokenLedger.create({
-      data: {
+    await prisma.$transaction(async (tx) => {
+      await awardTokens(tx, {
         userId: session.user.id,
         projectSlug: aiTaskRun.kanbanCard.project.slug,
         kanbanCardId: aiTaskRun.kanbanCardId,
         tokens: tokensAwarded,
         reason: "AI task review: approved",
-      },
+      });
     });
 
     return NextResponse.json({ success: true });
