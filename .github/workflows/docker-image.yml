@@ -104,6 +104,46 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/goodtribes_test
         run: npm run test:integration
 
+      # Third test layer, point 05 of the "Blueprint for GoodTribes"
+      # architecture memo (see CLAUDE.md): real browser E2E, not mocked and
+      # not just hitting the database directly. Runs `next dev` against the
+      # same Postgres service container the integration tests just used
+      # (already schema-synced by the db push step above) -- this is a
+      # smoke suite (frontend/e2e/), not full production-parity E2E: no
+      # Redis service (the app fails open on a Redis outage by design, see
+      # CLAUDE.md's rate-limiting notes) and no Meilisearch (search-execution
+      # is client-side against Meilisearch directly, not exercised by these
+      # tests' initial page loads). A real deployed preview environment,
+      # which the memo's own phrasing gestures at, doesn't exist in this
+      # repo's infra yet -- this is the closest achievable approximation.
+      - name: Install Playwright Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Start dev server for E2E
+        working-directory: frontend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/goodtribes_test
+          AUTH_SECRET: e2e-ci-secret
+          NEXTAUTH_URL: http://localhost:3000
+          PORT: 3000
+        run: |
+          npm run dev > /tmp/e2e-dev-server.log 2>&1 &
+          echo $! > /tmp/e2e-dev-server.pid
+          timeout 60 bash -c 'until curl -sf http://localhost:3000 >/dev/null; do sleep 1; done'
+
+      - name: E2E tests
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+        run: npm run test:e2e
+
+      - name: Stop dev server
+        if: always()
+        run: |
+          kill "$(cat /tmp/e2e-dev-server.pid)" 2>/dev/null || true
+          cat /tmp/e2e-dev-server.log || true
+
       - name: Set image name
         run: echo "IMAGE_NAME=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
