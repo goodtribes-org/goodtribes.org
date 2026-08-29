@@ -21,6 +21,23 @@ jobs:
       packages: write
       security-events: write
 
+    # Ephemeral Postgres for the integration-test step below — separate from
+    # the deployed database entirely, torn down with the runner at job end.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: goodtribes_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -42,6 +59,50 @@ jobs:
 
       - name: Test
         run: npm test --workspace=frontend --if-present
+
+      # Applies every migration to the fresh service-container Postgres
+      # above — this is the same replay mechanism production's entrypoint.sh
+      # runs on every pod restart, so it's what actually catches a real
+      # migration-ordering bug automatically (not just #61 — any future one).
+      # Deliberately non-blocking (continue-on-error): known issue, this
+      # fails today on a fresh database on PR #61's home-hero ordering bug
+      # (held pending Mattias running `migrate resolve` against production —
+      # see CLAUDE.md's "Known issues" and MATTIAS_TODO.md), and that one
+      # already-tracked, already-blocked bug shouldn't gate every other
+      # integration test in this suite. The next step reports it loudly as a
+      # warning instead of silently swallowing it.
+      - name: Apply migrations (integration test database)
+        id: migrate_deploy
+        continue-on-error: true
+        working-directory: frontend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/goodtribes_test
+        run: npx prisma migrate deploy
+
+      - name: Warn if the real migration history didn't replay cleanly
+        if: steps.migrate_deploy.outcome == 'failure'
+        run: |
+          echo "::warning::prisma migrate deploy failed on a fresh database. Likely PR 61's known home-hero migration-ordering bug (see CLAUDE.md Known Issues), or a NEW migration-ordering regression if PR 61 has already merged. Falling back to prisma db push so integration tests can still run, but the real migration history is NOT verified this run. Treat this warning as a real signal, not noise."
+
+      # Whether or not the real migration history above replayed cleanly,
+      # guarantee the test database matches the current schema before running
+      # the suite. `db push` diffs schema.prisma directly onto the database
+      # with no history replay at all, so it's unaffected by any ordering bug
+      # — --force-reset makes it deterministic regardless of how far the
+      # (possibly failed) migrate deploy above got. This step is what makes
+      # the integration tests always runnable; it is NOT a substitute for the
+      # migration-history check above, which stays the real regression test.
+      - name: Sync test database schema (db push fallback)
+        working-directory: frontend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/goodtribes_test
+        run: npx prisma db push --force-reset
+
+      - name: Integration tests
+        working-directory: frontend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/goodtribes_test
+        run: npm run test:integration
 
       - name: Set image name
         run: echo "IMAGE_NAME=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
