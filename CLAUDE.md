@@ -39,21 +39,36 @@ To add a schema change safely, use this workflow instead of `migrate dev`:
 ```bash
 # 1. Edit prisma/schema.prisma
 
-# 2. Generate the SQL diff against a throwaway shadow DB (never touches the real target)
+# 2. Start a throwaway, empty Postgres container to act as the shadow DB
+#    (never point this at the real dev/prod DATABASE_URL)
+docker run -d --name shadow-pg -e POSTGRES_USER=shadow -e POSTGRES_PASSWORD=shadow \
+  -e POSTGRES_DB=shadow -p 15499:5432 postgres:16-alpine
+
+# 3. Generate the SQL diff against it. Prisma 7 (see PR #60) dropped the old
+#    `--to-schema-datamodel`/`--shadow-database-url` CLI flags — the shadow
+#    URL is now read from prisma.config.ts's `datasource.shadowDatabaseUrl`
+#    (wired to the SHADOW_DATABASE_URL env var, unset by default so it's a
+#    no-op for `generate`/`migrate deploy`), and the target schema flag is
+#    just `--to-schema`.
+SHADOW_DATABASE_URL="postgresql://shadow:shadow@localhost:15499/shadow" \
 npx prisma migrate diff \
   --from-migrations ./prisma/migrations \
-  --to-schema-datamodel ./prisma/schema.prisma \
-  --shadow-database-url "$DATABASE_URL" \
+  --to-schema ./prisma/schema.prisma \
   --script > /tmp/migration.sql
 
-# 3. Review /tmp/migration.sql by hand — strip out anything unrelated to your change
-#    (pre-existing drift can show up here too; don't apply what you didn't intend)
+# 4. Review /tmp/migration.sql by hand — strip out anything unrelated to your change
+#    (pre-existing drift can show up here too; don't apply what you didn't intend —
+#    e.g. the TimeLog table drop always shows up here, see Known Issues, and
+#    should never be included)
 
-# 4. Hand-create prisma/migrations/<YYYYMMDDHHMMSS>_<name>/migration.sql with the reviewed SQL
+# 5. Hand-create prisma/migrations/<YYYYMMDDHHMMSS>_<name>/migration.sql with the reviewed SQL
 #    (several migrations in this repo are already hand-crafted this way)
 
-# 5. Apply it — history-based, no destructive drift/reset check
+# 6. Apply it — history-based, no destructive drift/reset check
 npx prisma migrate deploy
+
+# 7. Remove the throwaway container
+docker rm -f shadow-pg
 ```
 
 Local Postgres isn't exposed on `localhost:5432` by default — port-forward it first, e.g. a throwaway `alpine/socat` container on the `goodtribesorg_goodtribes` docker network, or run the commands from inside a container on that network.
@@ -237,3 +252,13 @@ The Helm chart deploys: frontend, postgres, meilisearch, redis, minio, ingress f
   - **`console.*` → structured logger sweep, completed** (superseding the "deliberately limited" scope note on this from Fas 0/Fas 2 above). Turned out to be a 4-file sweep, not the large one those notes were bracing for: `impact-fund-sweep`/`sprint-phase-advance` cron routes and `site-pages-actions.ts`'s `updateSitePage` now log via `logger.error` with structured fields instead of a raw `console.error(...)` string. Deliberately left `app/[locale]/error.tsx` alone — it's a **client** component (the React error-boundary page), so its `console.error(error)` runs in the visitor's browser devtools, never reaches any server-side log aggregator, and swapping it for the JSON-lines logger would only make browser debugging worse (loses the native devtools stack trace rendering) for zero server-side benefit.
   - **Meilisearch indexing durability, fixed** — see the updated Fas 4 entry above (`meili.ts`'s crash-recovery WAL).
   - **Explicitly not attempted this pass, and why:** dropping the orphaned Strapi tables (needs production DB access — this session only had the local dev DB); the ~19 `status String` → Prisma enum conversion (CLAUDE.md's own migration-safety workflow requires review of a real shadow-database diff before hand-writing migration SQL for governance/money-adjacent columns — judged too large and too risky to do blind in one pass, deserves its own dedicated session rather than being bundled in here — **done 2026-08-28, see the updated note above**); Grafana dashboards/alerting (still needs a live Prometheus to build against); a CDN in front of `/storage` (still needs a DNS/CDN-vendor account). Strapi-table-drop, Grafana, and the CDN are unchanged from their existing entries elsewhere in this file.
+
+- **"Blueprint for GoodTribes" architecture memo (2026-08-29)** — a discussion-draft retrospective ("if we redesigned this from scratch") published as an Artifact, not a binding plan. It names six structural choices an architect would make differently plus one explicit "keep as-is" section; several of its six were already substantially underway or complete by the time it was written (point 03, status-as-enums, was literally already done — see above). Tracking status per point, so a future session doesn't have to re-read the whole artifact to know what's left:
+  1. **Split the domain model into bounded contexts early** — in progress, PR #81 (`schema-domain-split`), file-layout only, not merged as of 2026-08-29.
+  2. **Give money/governance (Tokens/GT, profit distribution, impact fund) a hardened boundary** — first slice done 2026-08-29: `TokenLedger` gained an optional, unique `idempotencyKey` column, and `awardTokens()` (`src/lib/tokens.ts`, the existing single mint chokepoint) now accepts an `idempotencyKey` param — if a row with that key already exists, it's returned as-is instead of minting a duplicate. Wired into the Stripe webhook's token-purchase path (`idempotencyKey: session.id`) as a second, independent layer of protection alongside the pre-existing `stripeSessionId` unique constraint on `FundingPledge` (that one only protects the pledge row; this one protects the ledger itself, which is the actual point the memo raises — the ledger's safety shouldn't depend on some other table's constraint). Backward compatible: the param is optional, every existing caller and the pre-existing unit test suite (109/109) pass unmodified. Verified against a real throwaway Postgres (not mocked): same key called twice → one `TokenLedger` row, one `GtLedger` mirror, no error; no key → unchanged behavior (still mints independently); a different key → mints normally. **Not done**, deliberately deferred as separate, larger follow-ups: real double-entry bookkeeping (the memo's other concrete ask) and a structured audit-trail (actor/correlation-id fields beyond the existing free-text `reason`) — both are a materially bigger schema/logic change than an additive nullable column, and shouldn't be bundled into the same PR as the idempotency-key fix.
+  3. **Status fields as enums from day one** — already done before the memo was written (see the corrected note above); the memo's ask here is really "add a lint rule/schema convention so this can't regress," which hasn't been built.
+  4. **Real redundancy (managed Postgres/Redis/object storage with replication/failover)** — not actionable from a sandboxed session; needs a cluster-access holder (Mattias) and a real budget decision, consistent with this file's existing "arkitektoniskt single-instance" framing elsewhere.
+  5. **A real test strategy (unit + integration + Playwright E2E)** — in progress, PR #80 (`ci-integration-tests`), blocked: a fresh database's `prisma migrate deploy` fails on the pre-existing home-hero migration-ordering bug that PR #61 fixes, and #61 itself is held pending Mattias confirming a `migrate resolve` against production (see the PR #61/Mattias note elsewhere in this file) — so #80 can't go green until #61 lands.
+  6. **A unified event/outbox pattern for eventually-consistent side effects** (search indexing, activity feed, notifications) — not started; lowest priority per discussion, opportunistic only.
+  - Point 07 ("what I would keep") is explicitly not an action item — the memo itself says the current foundation and security discipline are the right level.
+  - **Also found and fixed while doing point 2's work, unrelated to the memo itself:** PR #60's Prisma 6→7 migration silently broke this file's own documented `migrate diff` shadow-database workflow — the CLI dropped the `--shadow-database-url`/`--to-schema-datamodel` flags Prisma 6 used, and `prisma.config.ts` had no replacement wired up. Fixed by adding `datasource.shadowDatabaseUrl: process.env.SHADOW_DATABASE_URL` to `prisma.config.ts` (unset by default, so `generate`/`migrate deploy` are unaffected) and updating the workflow section above to the Prisma 7 syntax. Anyone who tried to follow this file's own migration instructions after PR #60 merged would have hit this wall — worth flagging to whoever reviews PR #81/#80 too, since both touch schema/migrations.
