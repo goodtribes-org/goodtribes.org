@@ -81,7 +81,8 @@ jobs:
 
       - name: Warn if the real migration history didn't replay cleanly
         if: steps.migrate_deploy.outcome == 'failure'
-        run: echo "::warning::prisma migrate deploy failed on a fresh database — likely PR #61's known home-hero migration-ordering bug (see CLAUDE.md's Known Issues), or a NEW migration-ordering regression if #61 has already merged. Falling back to 'prisma db push' so integration tests can still run, but the real migration history is NOT verified this run — treat this warning as a real signal, not noise."
+        run: |
+          echo "::warning::prisma migrate deploy failed on a fresh database. Likely PR 61's known home-hero migration-ordering bug (see CLAUDE.md Known Issues), or a NEW migration-ordering regression if PR 61 has already merged. Falling back to prisma db push so integration tests can still run, but the real migration history is NOT verified this run. Treat this warning as a real signal, not noise."
 
       # Whether or not the real migration history above replayed cleanly,
       # guarantee the test database matches the current schema before running
