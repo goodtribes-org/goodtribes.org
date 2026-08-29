@@ -21,6 +21,23 @@ jobs:
       packages: write
       security-events: write
 
+    # Ephemeral Postgres for the integration-test step below — separate from
+    # the deployed database entirely, torn down with the runner at job end.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: goodtribes_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -42,6 +59,25 @@ jobs:
 
       - name: Test
         run: npm test --workspace=frontend --if-present
+
+      # Applies every migration to the fresh service-container Postgres
+      # above, then runs the real-database integration suite (see
+      # frontend/src/__tests__/integration/README.md) against it. Known
+      # blocker: this fails on a fresh database until PR #61 (migration
+      # ordering fix, held pending Mattias) merges — see that README's "CI
+      # dependency" section, and CLAUDE.md's "Known issues" entry for the
+      # underlying bug. Not worked around here on purpose.
+      - name: Apply migrations (integration test database)
+        working-directory: frontend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/goodtribes_test
+        run: npx prisma migrate deploy
+
+      - name: Integration tests
+        working-directory: frontend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/goodtribes_test
+        run: npm run test:integration
 
       - name: Set image name
         run: echo "IMAGE_NAME=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV

@@ -4,6 +4,10 @@ const createJestConfig = nextJest({ dir: "./" });
 const baseJestConfig = createJestConfig({
   testEnvironment: "node",
   testMatch: ["**/__tests__/**/*.test.ts?(x)"],
+  // Integration tests (see jest.integration.config.js) need a real Postgres
+  // and run via their own `test:integration` script — excluded here so plain
+  // `npm test` stays a fast, dependency-free unit run.
+  testPathIgnorePatterns: ["<rootDir>/.next/", "\\.integration\\.test\\.ts$"],
   modulePathIgnorePatterns: ["<rootDir>/.next/"],
 });
 
