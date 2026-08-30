@@ -8,12 +8,6 @@
       "port": 3000
     },
     {
-      "name": "backend",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "develop", "--workspace=backend"],
-      "port": 1337
-    },
-    {
       "name": "services",
       "runtimeExecutable": "docker",
       "runtimeArgs": ["compose", "up", "postgres", "meilisearch"],
