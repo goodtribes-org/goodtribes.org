@@ -39,15 +39,14 @@ export default function StepsCarousel({ copy }: { copy: Record<string, string> }
         marginLeft: "calc(50% - 50vw)",
         marginRight: "calc(50% - 50vw)",
         width: "100vw",
-        borderTop: "1px solid rgba(178,176,155,.35)",
         borderBottom: "1px solid rgba(178,176,155,.35)",
       }}
     >
-      <div className="max-w-[1160px] mx-auto px-8" style={{ padding: "72px 32px" }}>
-        <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "rgba(37,68,65,.45)" }}>
+      <div className="max-w-[1160px] mx-auto px-8" style={{ padding: "44px 32px" }}>
+        <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
           {c("eyebrow").toUpperCase()}
         </p>
-        <h2 className="text-dark-slate" style={{ fontWeight: 600, letterSpacing: "-.01em", fontSize: "clamp(28px,3vw,36px)", marginBottom: 32 }}>
+        <h2 className="text-dark-slate" style={{ fontWeight: 600, letterSpacing: "-.01em", fontSize: "clamp(28px,3vw,36px)", marginBottom: 27 }}>
           {c("heading")}
         </h2>
 

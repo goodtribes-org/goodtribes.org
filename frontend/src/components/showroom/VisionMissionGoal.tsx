@@ -13,7 +13,7 @@ export default async function VisionMissionGoal({ locale, copy }: { locale: Loca
   ];
 
   return (
-    <div className={`${homeSansFont.className} max-w-[1160px] mx-auto px-8`} style={{ padding: "0 32px 44px" }}>
+    <div className={`${homeSansFont.className} max-w-[1160px] mx-auto px-8`} style={{ padding: "0 32px 26px" }}>
       <div className="grid gap-px bg-muted-teal/20 border border-muted-teal/20 rounded-[10px] overflow-hidden" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
         {columns.map((col) => (
           <div key={col.label} className="bg-white" style={{ padding: 26 }}>
@@ -26,7 +26,7 @@ export default async function VisionMissionGoal({ locale, copy }: { locale: Loca
           </div>
         ))}
       </div>
-      <p className="text-dark-slate/45" style={{ fontSize: 12.5, lineHeight: 1.5, marginTop: 24, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "center" }}>
+      <p className="text-dark-slate/45" style={{ fontSize: 12.5, lineHeight: 1.5, marginTop: 10, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "center" }}>
         {c("foundationNote")}
       </p>
     </div>

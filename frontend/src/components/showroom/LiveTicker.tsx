@@ -50,7 +50,7 @@ export default async function LiveTicker({ items, locale }: { items: string[]; l
             ))}
           </div>
         </div>
-        <a href="#showroom-flode" className="text-dark-slate/55 ml-auto flex-shrink-0 hover:underline" style={{ fontSize: 13.5 }}>
+        <a href="#showroom-flode" className="text-coral ml-auto flex-shrink-0 hover:underline" style={{ fontSize: 13.5 }}>
           {t("allLink")}
         </a>
       </div>
