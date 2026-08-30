@@ -165,9 +165,9 @@ export default async function HomePage({
       <section id="projects" className="max-w-[1160px] mx-auto px-8" style={{ padding: "40px 32px" }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <h2 className="text-lg font-bold text-dark-slate">
+            <h2 className="text-dark-slate" style={{ fontSize: 26, fontWeight: 600, letterSpacing: "-.01em" }}>
               {c("exploreProjectsHeading")}{" "}
-              <span className="text-dark-slate/40 font-normal">({totalFiltered})</span>
+              <span className="text-dark-slate/40" style={{ fontSize: 16, fontWeight: 400 }}>({totalFiltered})</span>
             </h2>
             <SortToggle sort={sort} q={q} phase={phase} category={category} sdg={sdg} basePath="/" />
           </div>

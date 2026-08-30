@@ -37,7 +37,7 @@ export default async function ImpactSnapshot({ locale, stats, copy }: { locale: 
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
           {c("eyebrow").toUpperCase()}
         </p>
-        <h2 className="text-dark-slate" style={{ fontSize: 24, fontWeight: 600, letterSpacing: "-.01em", marginTop: 8, marginBottom: 28 }}>
+        <h2 className="text-dark-slate" style={{ fontSize: 26, fontWeight: 600, letterSpacing: "-.01em", marginTop: 8, marginBottom: 28 }}>
           {c("heading")}
         </h2>
 

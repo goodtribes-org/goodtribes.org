@@ -46,7 +46,7 @@ export default function StepsCarousel({ copy }: { copy: Record<string, string> }
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
           {c("eyebrow").toUpperCase()}
         </p>
-        <h2 className="text-dark-slate" style={{ fontWeight: 600, letterSpacing: "-.01em", fontSize: "clamp(28px,3vw,36px)", marginBottom: 27 }}>
+        <h2 className="text-dark-slate" style={{ fontWeight: 600, letterSpacing: "-.01em", fontSize: 26, marginBottom: 27 }}>
           {c("heading")}
         </h2>
 

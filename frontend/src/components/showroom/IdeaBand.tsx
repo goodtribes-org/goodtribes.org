@@ -29,7 +29,7 @@ export default function IdeaBand({ copy }: { copy: Record<string, string> }) {
           <img src="/img/showroom/scene_papers.png" alt="" className="w-full" />
         </div>
         <div className="flex-1 min-w-[240px]">
-          <h2 className="text-dark-slate" style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-.01em", lineHeight: 1.25 }}>
+          <h2 className="text-dark-slate" style={{ fontSize: 26, fontWeight: 600, letterSpacing: "-.01em", lineHeight: 1.25 }}>
             {c("heading")}
           </h2>
         </div>

@@ -38,11 +38,11 @@ export default async function ToolsGrid({ locale, copy }: { locale: Locale; copy
 
   return (
     <div className={`${homeSansFont.className} w-full`}>
-      <div className="max-w-[1160px] mx-auto px-8" style={{ padding: "64px 32px 32px" }}>
+      <div className="max-w-[1160px] mx-auto px-8" style={{ padding: "40px 32px 32px" }}>
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
           {c("eyebrow").toUpperCase()}
         </p>
-        <h2 className="text-dark-slate" style={{ fontSize: 30, lineHeight: 1.2, letterSpacing: "-.02em", marginTop: 10, maxWidth: "20ch" }}>
+        <h2 className="text-dark-slate" style={{ fontSize: 26, fontWeight: 600, lineHeight: 1.2, letterSpacing: "-.02em", marginTop: 10, maxWidth: "20ch" }}>
           {c("heading")}
         </h2>
         <p className="text-dark-slate/70" style={{ fontSize: 15, lineHeight: 1.6, marginTop: 10, maxWidth: "52ch" }}>
@@ -66,11 +66,10 @@ export default async function ToolsGrid({ locale, copy }: { locale: Locale; copy
         </div>
       </div>
 
-      <div className="max-w-[1160px] mx-auto px-8 text-center" style={{ padding: "8px 32px 64px" }}>
+      <div className="max-w-[1160px] mx-auto px-8 text-center" style={{ padding: "8px 32px 40px" }}>
         <Link href="/sandbox" className="inline-flex items-center justify-center bg-coral text-white font-semibold rounded-lg hover:bg-dark-slate transition-colors" style={{ padding: "13px 28px", fontSize: 15 }}>
           {c("cta")}
         </Link>
-        <p className="text-dark-slate/45" style={{ fontSize: 12.5, marginTop: 14 }}>{c("reassurance")}</p>
       </div>
     </div>
   );
