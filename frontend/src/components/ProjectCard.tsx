@@ -57,7 +57,7 @@ export default function ProjectCard({
     <a
       href={`/projects/${project.slug}`}
       className={`rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-white flex flex-col ${
-        effectiveVariant === "sandbox" ? "border border-orange-500 hover:border-orange-600" : "border border-seagrass/40 hover:border-seagrass"
+        effectiveVariant === "sandbox" ? "border border-orange-500 hover:border-orange-600" : "border border-seagrass hover:border-dark-slate"
       }`}
     >
       <div className="relative aspect-[4/3] w-full">

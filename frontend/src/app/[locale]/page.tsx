@@ -158,7 +158,7 @@ export default async function HomePage({
         <IdeaBand copy={copy} />
       </section>
 
-      <section id="projects" className="max-w-[1160px] mx-auto px-8" style={{ padding: "56px 32px" }}>
+      <section id="projects" className="max-w-[1160px] mx-auto px-8" style={{ padding: "40px 32px" }}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-bold text-dark-slate">
