@@ -49,7 +49,10 @@
     "servicesTitle": "Services",
     "servicesBlurb": "Explore the platform's features and ways to get involved.",
     "organisationTitle": "Organisation",
-    "organisationBlurb": "Everything you need to know about the foundation behind GoodTribes.org."
+    "organisationBlurb": "Everything you need to know about the foundation behind GoodTribes.org.",
+    "footerCta": "Make a dream real",
+    "backToTop": "Back to top",
+    "contactDetailsTitle": "Contact details"
   },
   "Install": {
     "prompt": "Install GoodTribes for quicker access, even offline.",
@@ -1878,8 +1881,26 @@
       "emptyState": "None yet"
     },
     "usageNow": {
-      "eyebrow": "How the platform is used right now",
-      "heading": "Real initiatives, not made-up examples"
+      "eyebrow": "The tools in practice",
+      "heading": "A tool for every goal",
+      "leanCanvasTool": "Lean Canvas",
+      "leanCanvasGoal": "Sharpen the business model before you build",
+      "leanCanvasBody": "Problem, solution, audience and revenue — the whole idea on one page, ready to pitch or challenge.",
+      "crowdfundingTool": "Crowdfunding",
+      "crowdfundingGoal": "Raise money for the project",
+      "crowdfundingBody": "Launch a campaign and let your tribe chip in, with full visibility into every krona that comes in.",
+      "pollsTool": "Polls",
+      "pollsGoal": "Make big decisions together",
+      "pollsBody": "Weight votes by everyone's share of Tribe Tokens — not by who shouts loudest.",
+      "kanbanTool": "Kanban board",
+      "kanbanGoal": "Break the idea into concrete steps",
+      "kanbanBody": "Split the work into tasks, keep track of who's doing what, and watch it all move forward.",
+      "tokensTool": "Rewards",
+      "tokensGoal": "Reward the work that actually matters",
+      "tokensBody": "Hand out Tribe Tokens and GT for work that genuinely moves the project forward.",
+      "ideaSessionsTool": "Idea generation",
+      "ideaSessionsGoal": "Structure a brainstorm with others",
+      "ideaSessionsBody": "Bounce ideas around in the Idea Workshop, with an AI that helps sort the thinking into a mindmap."
     },
     "tools": {
       "eyebrow": "The tools",

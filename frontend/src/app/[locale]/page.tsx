@@ -196,7 +196,7 @@ export default async function HomePage({
 
       <PhaseMap locale={locale} steps={phaseMapSteps} copy={copy} />
 
-      <UsageNow locale={locale} projects={projectsWithLikes} copy={copy} />
+      <UsageNow locale={locale} copy={copy} />
 
       <ToolsGrid locale={locale} copy={copy} />
     </div>

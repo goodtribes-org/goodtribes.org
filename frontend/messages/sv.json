@@ -49,7 +49,10 @@
     "servicesTitle": "Tjänster",
     "servicesBlurb": "Utforska plattformens funktioner och sätt att bidra.",
     "organisationTitle": "Organisation",
-    "organisationBlurb": "Allt du behöver veta om stiftelsen bakom GoodTribes.org."
+    "organisationBlurb": "Allt du behöver veta om stiftelsen bakom GoodTribes.org.",
+    "footerCta": "Förverkliga en dröm",
+    "backToTop": "Tillbaka till toppen",
+    "contactDetailsTitle": "Kontaktuppgifter"
   },
   "Install": {
     "prompt": "Installera GoodTribes för snabbare åtkomst, även offline.",
@@ -1878,8 +1881,26 @@
       "emptyState": "Inga ännu"
     },
     "usageNow": {
-      "eyebrow": "Så används plattformen just nu",
-      "heading": "Riktiga initiativ, inte påhittade exempel"
+      "eyebrow": "Verktygen i praktiken",
+      "heading": "Ett verktyg för varje mål",
+      "leanCanvasTool": "Lean Canvas",
+      "leanCanvasGoal": "Förtydliga affärsmodellen innan du bygger",
+      "leanCanvasBody": "Problem, lösning, målgrupp och intäkter — hela idén på en sida, redo att pitchas eller ifrågasättas.",
+      "crowdfundingTool": "Crowdfunding",
+      "crowdfundingGoal": "Samla in pengar till projektet",
+      "crowdfundingBody": "Starta en kampanj och låt din tribe bidra, med full insyn i varje krona som kommer in.",
+      "pollsTool": "Omröstningar",
+      "pollsGoal": "Fatta tunga beslut tillsammans",
+      "pollsBody": "Väg röster efter allas andel Tribe Tokens — inte efter vem som skriker högst.",
+      "kanbanTool": "Kanban-board",
+      "kanbanGoal": "Bryt ner idén i konkreta steg",
+      "kanbanBody": "Dela upp arbetet i uppgifter, håll koll på vem gör vad och se allt röra sig framåt.",
+      "tokensTool": "Belöningar",
+      "tokensGoal": "Belöna insatser som gör skillnad",
+      "tokensBody": "Dela ut Tribe Tokens och GT för arbete som faktiskt flyttar projektet framåt.",
+      "ideaSessionsTool": "Idégenerering",
+      "ideaSessionsGoal": "Strukturera en brainstorm med andra",
+      "ideaSessionsBody": "Bolla idéer i Idéverkstaden, med en AI som hjälper sortera tankarna till en mindmap."
     },
     "tools": {
       "eyebrow": "Verktygen",
