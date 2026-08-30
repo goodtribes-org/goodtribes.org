@@ -29,7 +29,7 @@ export default async function UsageNow({ locale, copy }: { locale: Locale; copy:
   const c = (key: string) => copy[`HomePage.usageNow.${key}`] ?? t(key);
 
   return (
-    <div className={`${homeSansFont.className} max-w-[1160px] mx-auto px-8`} style={{ padding: "56px 32px" }}>
+    <div className={`${homeSansFont.className} w-full`} style={{ paddingTop: 40, paddingBottom: 40 }}>
       <div style={{ marginBottom: 32 }}>
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
           {c("eyebrow").toUpperCase()}

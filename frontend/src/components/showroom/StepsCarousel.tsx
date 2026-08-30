@@ -42,7 +42,7 @@ export default function StepsCarousel({ copy }: { copy: Record<string, string> }
         borderBottom: "1px solid rgba(178,176,155,.35)",
       }}
     >
-      <div className="max-w-[1160px] mx-auto px-8" style={{ padding: "44px 32px" }}>
+      <div className="max-w-6xl mx-auto px-6" style={{ paddingTop: 40, paddingBottom: 40 }}>
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
           {c("eyebrow").toUpperCase()}
         </p>

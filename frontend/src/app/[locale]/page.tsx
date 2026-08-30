@@ -26,9 +26,10 @@ import UsageNow from "@/components/showroom/UsageNow";
 import ImpactSnapshot from "@/components/showroom/ImpactSnapshot";
 import ToolsGrid from "@/components/showroom/ToolsGrid";
 import { getSiteCopyMap } from "@/lib/siteCopy";
+import { homeSansFont, showroomMonoFont } from "@/lib/fonts";
 import { getPlatformImpactStats } from "@/lib/platformStats";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 8;
 
 export default async function HomePage({
   params,
@@ -47,7 +48,7 @@ export default async function HomePage({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "HomePage" });
   const { sort: sortParam, q, phase, category, sdg, page: pageStr } = await searchParams;
-  const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
+  const sort = sortParam === "new" ? "new" : sortParam === "trending" ? "trending" : "top";
   const sdgNum = sdg ? parseInt(sdg) : undefined;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
 
@@ -156,14 +157,11 @@ export default async function HomePage({
 
       <LiveTicker items={tickerItems} locale={locale} />
 
-      <StepsCarousel copy={copy} />
-
-      <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-        <IdeaBand copy={copy} />
-      </section>
-
-      <section id="projects" className="max-w-[1160px] mx-auto px-8" style={{ padding: "40px 32px" }}>
-        <div className="flex items-center justify-between mb-4">
+      <section id="projects" className={homeSansFont.className} style={{ paddingTop: 40, paddingBottom: 40 }}>
+        <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
+          {c("exploreProjectsEyebrow").toUpperCase()}
+        </p>
+        <div className="flex items-center justify-between mb-4" style={{ marginTop: 8 }}>
           <div className="flex items-center gap-3">
             <h2 className="text-dark-slate" style={{ fontSize: 26, fontWeight: 600, letterSpacing: "-.01em" }}>
               {c("exploreProjectsHeading")}{" "}
@@ -197,6 +195,12 @@ export default async function HomePage({
           </>
         )}
       </section>
+
+      <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+        <IdeaBand copy={copy} />
+      </section>
+
+      <StepsCarousel copy={copy} />
 
       <PhaseMap locale={locale} steps={phaseMapSteps} copy={copy} />
 

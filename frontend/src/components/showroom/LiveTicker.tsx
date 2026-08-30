@@ -29,7 +29,7 @@ export default async function LiveTicker({ items, locale }: { items: string[]; l
         .home-live-ticker-track { animation: home-live-ticker-scroll 40s linear infinite; }
         @media (prefers-reduced-motion: reduce) { .home-live-ticker-track { animation: none; } }
       `}</style>
-      <div className="max-w-[1160px] mx-auto px-8 flex items-center gap-3.5" style={{ padding: "13px 32px" }}>
+      <div className="max-w-6xl mx-auto px-6 flex items-center gap-3.5" style={{ paddingTop: 13, paddingBottom: 13 }}>
         <span className="inline-block rounded-full bg-seagrass flex-shrink-0" style={{ width: 9, height: 9 }} />
         <span className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)", flexShrink: 0 }}>
           {t("label").toUpperCase()}

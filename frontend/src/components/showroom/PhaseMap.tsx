@@ -41,7 +41,7 @@ export default async function PhaseMap({ locale, steps, copy }: { locale: Locale
       className={`${homeSansFont.className} w-full`}
       style={{ marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)", width: "100vw", background: "#fafaf8", borderTop: "1px solid rgba(178,176,155,.35)", borderBottom: "1px solid rgba(178,176,155,.35)" }}
     >
-      <div className="max-w-[1160px] mx-auto px-8" style={{ padding: "56px 32px" }}>
+      <div className="max-w-6xl mx-auto px-6" style={{ paddingTop: 40, paddingBottom: 40 }}>
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
           {c("eyebrow").toUpperCase()}
         </p>

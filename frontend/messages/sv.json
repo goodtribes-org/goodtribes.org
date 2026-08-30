@@ -1856,6 +1856,7 @@
     "noProjectYetTitle": "Inget projekt ännu"
   },
   "HomePage": {
+    "exploreProjectsEyebrow": "Projekten",
     "exploreProjectsHeading": "Utforska projekt",
     "seeAllProjectsLink": "Se alla projekt →",
     "noProjectsMatchFilters": "Inga projekt matchar dina filter.",
