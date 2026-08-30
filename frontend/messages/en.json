@@ -1902,6 +1902,13 @@
       "ideaSessionsGoal": "Structure a brainstorm with others",
       "ideaSessionsBody": "Bounce ideas around in the Idea Workshop, with an AI that helps sort the thinking into a mindmap."
     },
+    "impactSnapshot": {
+      "eyebrow": "The platform in numbers",
+      "heading": "What the tribe has achieved together",
+      "raisedLabel": "Raised",
+      "donatedLabel": "Donated",
+      "tasksDoneLabel": "Tasks completed"
+    },
     "tools": {
       "eyebrow": "The tools",
       "heading": "Professional tools that follow you all the way",

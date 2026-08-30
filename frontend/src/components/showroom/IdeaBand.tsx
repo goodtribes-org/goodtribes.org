@@ -23,7 +23,7 @@ export default function IdeaBand({ copy }: { copy: Record<string, string> }) {
   }
 
   return (
-    <div className={`${homeSansFont.className} w-full bg-white`} style={{ borderBottom: "1px solid rgba(178,176,155,.35)" }}>
+    <div className={`${homeSansFont.className} w-full`} style={{ background: "#fafaf8", borderBottom: "1px solid rgba(178,176,155,.35)" }}>
       <div className="max-w-[1160px] mx-auto px-8 py-[18px] flex flex-wrap items-center gap-8">
         <div className="flex-none w-[158px] rounded-2xl overflow-hidden bg-[#88D5F5]">
           <img src="/img/showroom/scene_papers.png" alt="" className="w-full" />

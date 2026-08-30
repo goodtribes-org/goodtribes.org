@@ -23,8 +23,10 @@ import HomeHero from "@/components/showroom/HomeHero";
 import VisionMissionGoal from "@/components/showroom/VisionMissionGoal";
 import PhaseMap, { type PhaseMapStep } from "@/components/showroom/PhaseMap";
 import UsageNow from "@/components/showroom/UsageNow";
+import ImpactSnapshot from "@/components/showroom/ImpactSnapshot";
 import ToolsGrid from "@/components/showroom/ToolsGrid";
 import { getSiteCopyMap } from "@/lib/siteCopy";
+import { getPlatformImpactStats } from "@/lib/platformStats";
 
 const PAGE_SIZE = 12;
 
@@ -74,6 +76,7 @@ export default async function HomePage({
     firstHeroSlide,
     livePhaseProjects,
     copy,
+    impactStats,
   ] = await Promise.all([
     prisma.project.count({ where }),
     prisma.project.findMany({
@@ -97,6 +100,7 @@ export default async function HomePage({
       orderBy: { updatedAt: "desc" },
     }),
     getSiteCopyMap(locale),
+    getPlatformImpactStats(),
   ]);
 
   const heroSlide = firstHeroSlide ? toHeroSlideData(firstHeroSlide) : null;
@@ -197,6 +201,8 @@ export default async function HomePage({
       <PhaseMap locale={locale} steps={phaseMapSteps} copy={copy} />
 
       <UsageNow locale={locale} copy={copy} />
+
+      <ImpactSnapshot locale={locale} stats={impactStats} copy={copy} />
 
       <ToolsGrid locale={locale} copy={copy} />
     </div>
