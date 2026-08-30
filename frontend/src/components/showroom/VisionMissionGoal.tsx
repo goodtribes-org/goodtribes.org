@@ -17,7 +17,7 @@ export default async function VisionMissionGoal({ locale, copy }: { locale: Loca
       <div className="grid gap-px bg-muted-teal/20 border border-muted-teal/20 rounded-[10px] overflow-hidden" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
         {columns.map((col) => (
           <div key={col.label} className="bg-white" style={{ padding: 26 }}>
-            <p className={showroomMonoFont.className} style={{ fontSize: 10.5, letterSpacing: ".12em", color: col.color, fontWeight: 600 }}>
+            <p className={showroomMonoFont.className} style={{ fontSize: 16, letterSpacing: ".07em", color: col.color, fontWeight: 600 }}>
               {col.label}
             </p>
             <p className="text-dark-slate" style={{ fontSize: 14, lineHeight: 1.55, marginTop: 10 }}>
@@ -26,7 +26,7 @@ export default async function VisionMissionGoal({ locale, copy }: { locale: Loca
           </div>
         ))}
       </div>
-      <p className="text-dark-slate/45" style={{ fontSize: 12.5, lineHeight: 1.5, maxWidth: "64ch", marginTop: 24 }}>
+      <p className="text-dark-slate/45" style={{ fontSize: 12.5, lineHeight: 1.5, marginTop: 24, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "center" }}>
         {c("foundationNote")}
       </p>
     </div>

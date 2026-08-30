@@ -29,7 +29,7 @@ function HeroLogoColumn() {
   return (
     <div aria-hidden="true" className="hidden lg:flex flex-col items-center justify-center flex-shrink-0" style={{ width: 380, marginRight: 100 }}>
       <LogoMark size={270} />
-      <p className="text-dark-slate" style={{ fontWeight: 600, fontSize: 32, letterSpacing: "-.01em", marginTop: 8 }}>
+      <p className="text-dark-slate" style={{ fontWeight: 600, fontSize: 36, letterSpacing: "-.01em", marginTop: 8 }}>
         GoodTribes
       </p>
     </div>
