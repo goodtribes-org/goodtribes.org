@@ -12,7 +12,6 @@ import ActivityPulse from "@/components/ActivityPulse";
 import LeaderboardWidget from "@/components/LeaderboardWidget";
 import NewMembersWidget from "@/components/NewMembersWidget";
 import ImpactStatsWidget from "@/components/ImpactStatsWidget";
-import SdgCoverageWidget from "@/components/SdgCoverageWidget";
 import HomeStatsWidget from "@/components/HomeStatsWidget";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import Pillars from "@/components/Pillars";
@@ -120,7 +119,6 @@ export default async function SandboxPage({
     completedSubtasks,
     leaderboard,
     newMembers,
-    sdgProjects,
   ] = await Promise.all([
     prisma.project.count({ where }),
     prisma.project.findMany({
@@ -160,7 +158,6 @@ export default async function SandboxPage({
       take: 6,
       select: { id: true, name: true, image: true, showProfile: true },
     }),
-    prisma.project.findMany({ where: { hiddenAt: null }, select: { sdgGoals: true } }),
   ]);
 
   const ideasWithVote = ideas.map((idea) => ({
@@ -202,7 +199,6 @@ export default async function SandboxPage({
   const totalRaised = pledgeSum._sum.amount ?? 0;
   const completedTasks = completedCards + completedSubtasks;
   const totalTokens = Math.round(tokenSum._sum.tokens ?? 0);
-  const coveredGoals = Array.from(new Set(sdgProjects.flatMap((p) => p.sdgGoals)));
 
   const [projectLikeCounts, taskProgressCards] = await Promise.all([
     projects.length
@@ -472,7 +468,6 @@ export default async function SandboxPage({
               totalTokens={totalTokens}
               completedTasks={completedTasks}
             />
-            <SdgCoverageWidget coveredGoals={coveredGoals} />
             <HomeStatsWidget
               projectCount={siteProjectCount}
               orgCount={orgCount}

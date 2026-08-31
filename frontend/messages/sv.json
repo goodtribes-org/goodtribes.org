@@ -1850,11 +1850,6 @@
     "allMembersLink": "Alla medlemmar →",
     "emptyState": "Inga medlemmar ännu."
   },
-  "SdgCoverageWidget": {
-    "heading": "Agenda 2030",
-    "goalsCovered": "{count} av 17 mål",
-    "noProjectYetTitle": "Inget projekt ännu"
-  },
   "HomePage": {
     "exploreProjectsEyebrow": "Projekten",
     "exploreProjectsHeading": "Utforska projekt",

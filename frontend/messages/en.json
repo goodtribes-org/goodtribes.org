@@ -1850,11 +1850,6 @@
     "allMembersLink": "All members →",
     "emptyState": "No members yet."
   },
-  "SdgCoverageWidget": {
-    "heading": "2030 Agenda",
-    "goalsCovered": "{count} of 17 goals",
-    "noProjectYetTitle": "No project yet"
-  },
   "HomePage": {
     "exploreProjectsEyebrow": "The projects",
     "exploreProjectsHeading": "Explore projects",
