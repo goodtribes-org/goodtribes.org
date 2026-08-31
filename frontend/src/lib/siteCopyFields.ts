@@ -67,7 +67,6 @@ export const SITE_COPY_SECTIONS: SiteCopySection[] = [
     fields: [
       { key: "HomePage.phaseMap.eyebrow", label: "Kicker" },
       { key: "HomePage.phaseMap.heading", label: "Rubrik" },
-      { key: "HomePage.phaseMap.emptyState", label: "Text när en fas är tom" },
     ],
   },
   {

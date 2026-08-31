@@ -192,9 +192,9 @@ export default async function LocaleLayout({
                   </h2>
                 </div>
 
-                <div className="grid gap-10 md:grid-cols-4 text-sm">
+                <div className="grid gap-10 md:grid-cols-4 text-sm text-center">
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center justify-center gap-2 mb-1">
                       <div className="rounded-full flex items-center justify-center flex-shrink-0" style={{ width: 26, height: 26, background: "var(--color-leaf)" }}>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                           <path d="M12 20s-7-4.4-9-9a5 5 0 019-3 5 5 0 019 3c-2 4.6-9 9-9 9z" />
@@ -208,8 +208,8 @@ export default async function LocaleLayout({
                   {/* Organisational transparency info (Google for Nonprofits requirement) —
                       locale-invariant facts, hardcoded like the mailto link above rather
                       than run through t(), same as this file's existing convention. */}
-                  <div className="flex flex-col gap-2 text-xs text-dark-slate/60">
-                    <div className="flex items-center gap-2 mb-1">
+                  <div className="flex flex-col items-center gap-2 text-xs text-dark-slate/60">
+                    <div className="flex items-center justify-center gap-2 mb-1">
                       <div className="rounded-full flex items-center justify-center flex-shrink-0" style={{ width: 26, height: 26, background: "var(--color-navy)" }}>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                           <path d="M4 21V9l8-6 8 6v12M9 21v-7h6v7" />
@@ -227,8 +227,8 @@ export default async function LocaleLayout({
                     </a>
                   </div>
 
-                  <nav className="flex flex-col gap-2 text-xs text-dark-slate/60">
-                    <div className="flex items-center gap-2 mb-1">
+                  <nav className="flex flex-col items-center gap-2 text-xs text-dark-slate/60">
+                    <div className="flex items-center justify-center gap-2 mb-1">
                       <div className="rounded-full flex items-center justify-center flex-shrink-0" style={{ width: 26, height: 26, background: "var(--color-coral)" }}>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                           <rect x="4" y="4" width="16" height="16" rx="1" /><path d="M8 9h8M8 13h8M8 17h5" />
@@ -242,8 +242,8 @@ export default async function LocaleLayout({
                     <a href="mailto:Info@goodtribes.org" className="hover:text-coral transition-colors">{t("contact")}</a>
                   </nav>
 
-                  <nav className="flex flex-col gap-2 text-xs text-dark-slate/60">
-                    <div className="flex items-center gap-2 mb-1">
+                  <nav className="flex flex-col items-center gap-2 text-xs text-dark-slate/60">
+                    <div className="flex items-center justify-center gap-2 mb-1">
                       <div className="rounded-full flex items-center justify-center flex-shrink-0" style={{ width: 26, height: 26, background: "var(--color-seagrass)" }}>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                           <path d="M12 2l2.7 6.6 7.1.6-5.4 4.6 1.7 6.9-6.1-3.8-6.1 3.8 1.7-6.9-5.4-4.6 7.1-.6z" />

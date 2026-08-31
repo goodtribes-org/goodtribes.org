@@ -24,9 +24,11 @@ export type ProjectCardData = {
 export default function ProjectCard({
   project,
   variant,
+  showStats = true,
 }: {
   project: ProjectCardData;
   variant?: "default" | "sandbox";
+  showStats?: boolean;
 }) {
   const t = useTranslations("ProjectCard");
 
@@ -115,22 +117,24 @@ export default function ProjectCard({
             ))}
           </div>
         )}
-        <div className="grid grid-cols-3 divide-x divide-muted-teal/30 text-center border-t border-muted-teal/20 pt-2 mt-auto">
-          <div className="px-1">
-            <p className="text-xs font-semibold text-dark-slate">{project.members.length}</p>
-            <p className="text-[10px] text-dark-slate/50 leading-tight">{t("members")}</p>
+        {showStats && (
+          <div className="grid grid-cols-3 divide-x divide-muted-teal/30 text-center border-t border-muted-teal/20 pt-2 mt-auto">
+            <div className="px-1">
+              <p className="text-xs font-semibold text-dark-slate">{project.members.length}</p>
+              <p className="text-[10px] text-dark-slate/50 leading-tight">{t("members")}</p>
+            </div>
+            <div className="px-1">
+              <p className="text-xs font-semibold text-dark-slate">
+                {project.taskProgress.done}/{project.taskProgress.total}
+              </p>
+              <p className="text-[10px] text-dark-slate/50 leading-tight">{t("tasks")}</p>
+            </div>
+            <div className="px-1">
+              <p className="text-xs font-semibold text-dark-slate">{stageLabel}</p>
+              <p className="text-[10px] text-dark-slate/50 leading-tight">{t("stage")}</p>
+            </div>
           </div>
-          <div className="px-1">
-            <p className="text-xs font-semibold text-dark-slate">
-              {project.taskProgress.done}/{project.taskProgress.total}
-            </p>
-            <p className="text-[10px] text-dark-slate/50 leading-tight">{t("tasks")}</p>
-          </div>
-          <div className="px-1">
-            <p className="text-xs font-semibold text-dark-slate">{stageLabel}</p>
-            <p className="text-[10px] text-dark-slate/50 leading-tight">{t("stage")}</p>
-          </div>
-        </div>
+        )}
       </div>
     </a>
   );

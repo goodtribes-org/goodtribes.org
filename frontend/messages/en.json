@@ -1878,8 +1878,7 @@
     },
     "phaseMap": {
       "eyebrow": "Right now in the factory",
-      "heading": "Where projects are on their journey",
-      "emptyState": "None yet"
+      "heading": "Where projects are on their journey"
     },
     "usageNow": {
       "eyebrow": "The tools in practice",

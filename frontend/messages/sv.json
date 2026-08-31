@@ -1878,8 +1878,7 @@
     },
     "phaseMap": {
       "eyebrow": "Just nu i fabriken",
-      "heading": "Var i resan projekten befinner sig",
-      "emptyState": "Inga ännu"
+      "heading": "Var i resan projekten befinner sig"
     },
     "usageNow": {
       "eyebrow": "Verktygen i praktiken",

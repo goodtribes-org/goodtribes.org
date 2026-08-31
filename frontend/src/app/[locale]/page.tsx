@@ -183,7 +183,7 @@ export default async function HomePage({
         ) : (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
-              {projectsWithLikes.map((p) => <ProjectCard key={p.slug} project={p} />)}
+              {projectsWithLikes.map((p) => <ProjectCard key={p.slug} project={p} showStats={false} />)}
             </div>
             <Pagination
               page={page}

@@ -73,21 +73,16 @@ export default async function PhaseMap({ locale, steps, copy }: { locale: Locale
                   </svg>
                 </div>
                 <div className="text-center">
-                  <p className="text-dark-slate" style={{ fontSize: 13.5, fontWeight: 600 }}>{step.label}</p>
-                  <p className="text-dark-slate/40" style={{ fontSize: 11, marginTop: 1 }}>{step.count}</p>
+                  <p className="text-dark-slate" style={{ fontSize: 13.5, fontWeight: 600 }}>
+                    {step.label} <span className="text-dark-slate/40" style={{ fontWeight: 400 }}>({step.count})</span>
+                  </p>
                 </div>
-                <div
-                  className="rounded-xl flex flex-wrap items-center justify-center gap-1.5 w-full"
-                  style={
-                    step.chips.length === 0
-                      ? { padding: "10px 8px", minHeight: 52, background: "#fff", boxShadow: "0 1px 3px rgba(37,68,65,.06)" }
-                      : { padding: "10px 8px", minHeight: 52 }
-                  }
-                >
-                  {step.chips.length === 0 ? (
-                    <span className="text-dark-slate/35" style={{ fontSize: 11.5 }}>{c("emptyState")}</span>
-                  ) : (
-                    step.chips.map((chip) => (
+                {step.chips.length > 0 && (
+                  <div
+                    className="rounded-xl flex flex-wrap items-center justify-center gap-1.5 w-full"
+                    style={{ padding: "10px 8px", minHeight: 52 }}
+                  >
+                    {step.chips.map((chip) => (
                       <Link
                         key={chip.slug}
                         href={`/projects/${chip.slug}`}
@@ -101,9 +96,9 @@ export default async function PhaseMap({ locale, steps, copy }: { locale: Locale
                       >
                         {chip.title}
                       </Link>
-                    ))
-                  )}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}
