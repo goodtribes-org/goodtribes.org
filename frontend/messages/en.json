@@ -529,7 +529,30 @@
     "submit": "Submit for review",
     "sdgRequired": "Pick at least one global goal",
     "withdraw": "Withdraw",
-    "withdrawing": "Withdrawing…"
+    "withdrawing": "Withdrawing…",
+    "kindField": "What does the figure represent? *",
+    "kind": {
+      "DELIVERED": {
+        "label": "Delivered result",
+        "hint": "Something the project itself achieved — e.g. computers donated, people trained."
+      },
+      "SUPPORT_RECEIVED": {
+        "label": "Support received",
+        "hint": "Grants, sponsorship or resources that made the work possible. Shown separately, never as impact of its own."
+      }
+    },
+    "qualifierField": "Precision",
+    "qualifier": {
+      "EXACT": "Exact",
+      "AT_LEAST": "At least",
+      "APPROXIMATE": "Approx."
+    },
+    "sourceFieldDelivered": "Where the resources came from",
+    "sourcePlaceholderDelivered": "e.g. private and public sector",
+    "sourceFieldSupport": "Who provided the support?",
+    "sourcePlaceholderSupport": "e.g. City of Stockholm",
+    "cumulativeField": "Total since the operation started",
+    "cumulativeHint": "Tick this if the figure counts everything since inception. It then overlaps your per-period reports and must never be added to them."
   },
   "ImpactReportCard": {
     "status": {
@@ -542,7 +565,18 @@
     "noEvidence": "No evidence attached",
     "verifiedBy": "Verified by {name} {date}",
     "theFoundation": "the Foundation",
-    "reviewNote": "Reason: {note}"
+    "reviewNote": "Reason: {note}",
+    "qualifier": {
+      "AT_LEAST": "at least",
+      "APPROXIMATE": "approx."
+    },
+    "kindSupportBadge": "Support received",
+    "cumulativeBadge": "Total since inception",
+    "cumulativeHint": "This figure counts everything since inception and overlaps the per-period reports — don't add them together.",
+    "sourceDelivered": "Source: {source}",
+    "sourceSupport": "From: {source}",
+    "periodSince": "Since {period}",
+    "periodUntil": "Up to {period}"
   },
   "ImpactReportsAdminPage": {
     "heading": "Impact reports",
@@ -561,7 +595,13 @@
     "heading": "Verified impact",
     "subtitle": "Results GoodTribes has reviewed against the project's evidence.",
     "verifiedOn": "Verified {date}",
-    "evidenceLink": "Evidence ↗"
+    "evidenceLink": "Evidence ↗",
+    "qualifier": {
+      "AT_LEAST": "at least",
+      "APPROXIMATE": "approx."
+    },
+    "supportHeading": "Support that made the work possible",
+    "cumulativeNote": "total since inception"
   },
   "ProjectDetailPage": {
     "defaultProjectDescription": "A project on GoodTribes.org",

@@ -1,6 +1,11 @@
 import { getTranslations } from "next-intl/server";
 import { SdgIcon } from "@/components/SdgIcon";
-import { impactReportStatus, safeExternalUrl } from "@/lib/impactReports";
+import {
+  impactReportStatus,
+  safeExternalUrl,
+  type ImpactReportKind,
+  type ImpactValueQualifier,
+} from "@/lib/impactReports";
 
 export interface ImpactReportCardData {
   id: string;
@@ -8,6 +13,10 @@ export interface ImpactReportCardData {
   metricDescription: string;
   metricValue: number;
   metricUnit: string | null;
+  kind: ImpactReportKind;
+  valueQualifier: ImpactValueQualifier;
+  isCumulative: boolean;
+  sourceName: string | null;
   periodStart: Date | null;
   periodEnd: Date | null;
   evidenceUrl: string | null;
@@ -23,10 +32,19 @@ const BADGE_CLASSES: Record<string, string> = {
   pending: "bg-dry-sage/40 text-dark-slate/60 border-muted-teal/40",
 };
 
-function formatPeriod(locale: string, start: Date | null, end: Date | null): string | null {
-  const fmt = (d: Date) => d.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
-  if (start && end) return `${fmt(start)} – ${fmt(end)}`;
-  return start ? fmt(start) : end ? fmt(end) : null;
+// An open-ended period ("since 2005", typical of a total-since-inception
+// figure) must not render as a bare start date — that reads as a single day.
+function formatPeriod(
+  locale: string,
+  start: Date | null,
+  end: Date | null
+): { key: "period" | "periodSince" | "periodUntil"; value: string } | null {
+  const fmt = (d: Date) =>
+    d.toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
+  if (start && end) return { key: "period", value: `${fmt(start)} – ${fmt(end)}` };
+  if (start) return { key: "periodSince", value: fmt(start) };
+  if (end) return { key: "periodUntil", value: fmt(end) };
+  return null;
 }
 
 // Shared between the project's own impact page, the public project panel and
@@ -55,14 +73,37 @@ export async function ImpactReportCard({
             <SdgIcon key={n} n={n} size={26} />
           ))}
         </div>
-        <span
-          className={`shrink-0 text-[10px] font-semibold uppercase tracking-wide border rounded-full px-2 py-0.5 ${BADGE_CLASSES[status]}`}
-        >
-          {t(`status.${status}`)}
-        </span>
+        <div className="shrink-0 flex flex-wrap justify-end gap-1">
+          {report.kind === "SUPPORT_RECEIVED" && (
+            <span className="text-[10px] font-semibold uppercase tracking-wide border border-muted-teal/40 bg-dry-sage/30 text-dark-slate/60 rounded-full px-2 py-0.5">
+              {t("kindSupportBadge")}
+            </span>
+          )}
+          {report.isCumulative && (
+            <span
+              className="text-[10px] font-semibold uppercase tracking-wide border border-muted-teal/40 bg-white text-dark-slate/60 rounded-full px-2 py-0.5"
+              title={t("cumulativeHint")}
+            >
+              {t("cumulativeBadge")}
+            </span>
+          )}
+          <span
+            className={`text-[10px] font-semibold uppercase tracking-wide border rounded-full px-2 py-0.5 ${BADGE_CLASSES[status]}`}
+          >
+            {t(`status.${status}`)}
+          </span>
+        </div>
       </div>
 
       <p className="text-2xl font-bold text-dark-slate leading-none">
+        {/* The qualifier is part of the number, not a footnote — rendering
+            "över 25 000" as a bare "25 000" is the overstatement the field
+            exists to prevent. */}
+        {report.valueQualifier !== "EXACT" && (
+          <span className="text-sm font-normal text-dark-slate/50 mr-1">
+            {t(`qualifier.${report.valueQualifier}`)}
+          </span>
+        )}
         {report.metricValue.toLocaleString(locale)}
         {report.metricUnit && (
           <span className="text-sm font-normal text-dark-slate/40 ml-1">{report.metricUnit}</span>
@@ -71,7 +112,15 @@ export async function ImpactReportCard({
       <p className="text-sm text-dark-slate/70 mt-1">{report.metricDescription}</p>
 
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-dark-slate/40">
-        {period && <span>{t("period", { period })}</span>}
+        {report.sourceName && (
+          <span>
+            {t(
+              report.kind === "SUPPORT_RECEIVED" ? "sourceSupport" : "sourceDelivered",
+              { source: report.sourceName }
+            )}
+          </span>
+        )}
+        {period && <span>{t(period.key, { period: period.value })}</span>}
         {evidence ? (
           <a
             href={evidence}

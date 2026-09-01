@@ -71,18 +71,48 @@ model ImpactUpdate {
   @@index([impactMetricId])
 }
 
+// Whether a figure is what the project *delivered* or what it *received* to
+// make that delivery possible. Without the distinction a project page shows
+// "50 000 000 kr donerad utrustning" next to "1 658 000 kr i kommunalt stöd"
+// as two equivalent green numbers, which misrepresents both.
+enum ImpactReportKind {
+  DELIVERED
+  SUPPORT_RECEIVED
+}
+
+// Real historical figures are often bounded rather than exact ("över 25 000
+// datorenheter", "till ett värde av 50+ miljoner"). Storing those as a plain
+// Float silently promotes a lower bound to a precise claim — which is exactly
+// the kind of overstatement verification is supposed to prevent.
+enum ImpactValueQualifier {
+  EXACT
+  AT_LEAST
+  APPROXIMATE
+}
+
 // PRD 4d — verified SDG outcome reports a fork must produce to unlock the
 // `scale` -> `impact` phase transition. Distinct from ImpactMetric/ImpactUpdate
 // (self-reported, ongoing progress tracking): a report is a discrete,
 // externally verified claim of impact.
 model ImpactReport {
-  id                String    @id @default(cuid())
+  id                String               @id @default(cuid())
   projectId         String
-  project           Project   @relation("ProjectImpactReports", fields: [projectId], references: [id], onDelete: Cascade)
+  project           Project              @relation("ProjectImpactReports", fields: [projectId], references: [id], onDelete: Cascade)
   sdgGoals          Int[]
   metricDescription String
   metricValue       Float
   metricUnit        String?
+  kind              ImpactReportKind     @default(DELIVERED)
+  valueQualifier    ImpactValueQualifier @default(EXACT)
+  // True for "total sedan start"-style figures, which overlap the per-period
+  // reports rather than adding to them. Nothing in the UI sums reports today
+  // precisely because this distinction exists — a cumulative row and a period
+  // row for the same programme must never be added together.
+  isCumulative      Boolean              @default(false)
+  // Who provided the support (a municipality, a sponsor) or, for a delivered
+  // figure, where the donated resources came from. Free text: real funders
+  // are not a closed set this app controls.
+  sourceName        String?
   // The period the claimed result was achieved over. Optional because older
   // rows predate these columns, but the create form asks for both — an impact
   // claim without a timeframe isn't something a funder can act on.
@@ -93,16 +123,16 @@ model ImpactReport {
   // read the same self-reported number the project typed in.
   evidenceUrl       String?
   createdById       String?
-  createdBy         User?     @relation("CreatedImpactReports", fields: [createdById], references: [id])
+  createdBy         User?                @relation("CreatedImpactReports", fields: [createdById], references: [id])
   verifiedById      String?
-  verifiedBy        User?     @relation("VerifiedImpactReports", fields: [verifiedById], references: [id])
+  verifiedBy        User?                @relation("VerifiedImpactReports", fields: [verifiedById], references: [id])
   verifiedAt        DateTime?
   // Rejection is a real outcome, not just "never verified" — a project needs
   // to know its claim was reviewed and why it didn't hold, and a rejected row
   // must stay out of the pending queue.
   rejectedAt        DateTime?
   reviewNote        String?
-  createdAt         DateTime  @default(now())
+  createdAt         DateTime             @default(now())
 
   @@index([projectId])
   @@index([verifiedAt])

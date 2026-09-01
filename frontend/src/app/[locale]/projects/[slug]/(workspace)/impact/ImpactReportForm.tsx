@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { SDG_NUMBERS } from "@/lib/sdg";
 import { SdgIcon } from "@/components/SdgIcon";
+import type { ImpactReportKind } from "@/lib/impactReports";
 import { createImpactReport, deleteImpactReport } from "./actions";
 
 // ---------------------------------------------------------------------------
@@ -15,6 +16,7 @@ export function ImpactReportForm({ projectSlug }: { projectSlug: string }) {
   const t = useTranslations("ImpactReportForm");
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<number[]>([]);
+  const [kind, setKind] = useState<ImpactReportKind>("DELIVERED");
   const [pending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -29,6 +31,7 @@ export function ImpactReportForm({ projectSlug }: { projectSlug: string }) {
       await createImpactReport(projectSlug, fd);
       formRef.current?.reset();
       setSelected([]);
+      setKind("DELIVERED");
       setOpen(false);
     });
   }
@@ -59,6 +62,40 @@ export function ImpactReportForm({ projectSlug }: { projectSlug: string }) {
       <p className="text-xs text-dark-slate/50 mb-3 leading-relaxed">{t("intro")}</p>
 
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-3">
+        {/* Kind — first, because it changes what the rest of the form means:
+            a delivered result and support received are both real figures, but
+            only the first is this project's own impact. */}
+        <div>
+          <label className="block text-xs text-dark-slate/60 mb-1.5">{t("kindField")}</label>
+          <div className="flex flex-col sm:flex-row gap-2">
+            {(["DELIVERED", "SUPPORT_RECEIVED"] as const).map((k) => (
+              <label
+                key={k}
+                className={`flex-1 flex items-start gap-2 border rounded px-3 py-2 cursor-pointer transition-colors ${
+                  kind === k ? "border-coral bg-coral/5" : "border-muted-teal hover:border-muted-teal/80"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="kind"
+                  value={k}
+                  checked={kind === k}
+                  onChange={() => setKind(k)}
+                  className="mt-0.5 accent-coral"
+                />
+                <span>
+                  <span className="block text-xs font-medium text-dark-slate">
+                    {t(`kind.${k}.label`)}
+                  </span>
+                  <span className="block text-[11px] text-dark-slate/50 leading-snug">
+                    {t(`kind.${k}.hint`)}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+
         {/* SDG picker */}
         <div>
           <label className="block text-xs text-dark-slate/60 mb-1.5">{t("sdgField")}</label>
@@ -97,7 +134,19 @@ export function ImpactReportForm({ projectSlug }: { projectSlug: string }) {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
+          <div>
+            <label className="block text-xs text-dark-slate/60 mb-1">{t("qualifierField")}</label>
+            <select
+              name="valueQualifier"
+              defaultValue="EXACT"
+              className="w-full border border-muted-teal rounded px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-coral"
+            >
+              <option value="EXACT">{t("qualifier.EXACT")}</option>
+              <option value="AT_LEAST">{t("qualifier.AT_LEAST")}</option>
+              <option value="APPROXIMATE">{t("qualifier.APPROXIMATE")}</option>
+            </select>
+          </div>
           <div>
             <label className="block text-xs text-dark-slate/60 mb-1">{t("valueField")}</label>
             <input
@@ -138,6 +187,32 @@ export function ImpactReportForm({ projectSlug }: { projectSlug: string }) {
             />
           </div>
         </div>
+
+        <div>
+          <label className="block text-xs text-dark-slate/60 mb-1">
+            {kind === "SUPPORT_RECEIVED" ? t("sourceFieldSupport") : t("sourceFieldDelivered")}
+          </label>
+          <input
+            name="sourceName"
+            type="text"
+            placeholder={
+              kind === "SUPPORT_RECEIVED"
+                ? t("sourcePlaceholderSupport")
+                : t("sourcePlaceholderDelivered")
+            }
+            className="w-full border border-muted-teal rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
+          />
+        </div>
+
+        <label className="flex items-start gap-2 cursor-pointer">
+          <input type="checkbox" name="isCumulative" className="mt-0.5 accent-coral" />
+          <span>
+            <span className="block text-xs font-medium text-dark-slate">{t("cumulativeField")}</span>
+            <span className="block text-[11px] text-dark-slate/50 leading-snug">
+              {t("cumulativeHint")}
+            </span>
+          </span>
+        </label>
 
         <div>
           <label className="block text-xs text-dark-slate/60 mb-1">{t("evidenceField")}</label>

@@ -529,7 +529,30 @@
     "submit": "Skicka för granskning",
     "sdgRequired": "Välj minst ett globalt mål",
     "withdraw": "Dra tillbaka",
-    "withdrawing": "Drar tillbaka…"
+    "withdrawing": "Drar tillbaka…",
+    "kindField": "Vad gäller siffran? *",
+    "kind": {
+      "DELIVERED": {
+        "label": "Levererat resultat",
+        "hint": "Något projektet självt åstadkommit — t.ex. donerade datorer, utbildade personer."
+      },
+      "SUPPORT_RECEIVED": {
+        "label": "Mottaget stöd",
+        "hint": "Bidrag, sponsring eller resurser som möjliggjort arbetet. Visas separat, aldrig som egen effekt."
+      }
+    },
+    "qualifierField": "Precision",
+    "qualifier": {
+      "EXACT": "Exakt",
+      "AT_LEAST": "Minst",
+      "APPROXIMATE": "Cirka"
+    },
+    "sourceFieldDelivered": "Källa till resurserna",
+    "sourcePlaceholderDelivered": "t.ex. näringsliv och offentlig sektor",
+    "sourceFieldSupport": "Vem gav stödet?",
+    "sourcePlaceholderSupport": "t.ex. Stockholms stad",
+    "cumulativeField": "Totalsiffra sedan verksamhetens start",
+    "cumulativeHint": "Kryssa i om siffran räknar allt sedan start. Den överlappar då era periodrapporter och får aldrig läggas ihop med dem."
   },
   "ImpactReportCard": {
     "status": {
@@ -542,7 +565,18 @@
     "noEvidence": "Inget underlag bifogat",
     "verifiedBy": "Verifierad av {name} {date}",
     "theFoundation": "Stiftelsen",
-    "reviewNote": "Motivering: {note}"
+    "reviewNote": "Motivering: {note}",
+    "qualifier": {
+      "AT_LEAST": "minst",
+      "APPROXIMATE": "ca"
+    },
+    "kindSupportBadge": "Mottaget stöd",
+    "cumulativeBadge": "Totalt sedan start",
+    "cumulativeHint": "Siffran räknar allt sedan start och överlappar periodrapporterna — lägg inte ihop dem.",
+    "sourceDelivered": "Källa: {source}",
+    "sourceSupport": "Från: {source}",
+    "periodSince": "Sedan {period}",
+    "periodUntil": "Fram till {period}"
   },
   "ImpactReportsAdminPage": {
     "heading": "Impact-rapporter",
@@ -561,7 +595,13 @@
     "heading": "Verifierad impact",
     "subtitle": "Resultat som GoodTribes granskat mot projektets underlag.",
     "verifiedOn": "Verifierad {date}",
-    "evidenceLink": "Underlag ↗"
+    "evidenceLink": "Underlag ↗",
+    "qualifier": {
+      "AT_LEAST": "minst",
+      "APPROXIMATE": "ca"
+    },
+    "supportHeading": "Stöd som möjliggjort arbetet",
+    "cumulativeNote": "totalt sedan start"
   },
   "ProjectDetailPage": {
     "defaultProjectDescription": "Ett projekt på GoodTribes.org",

@@ -228,6 +228,63 @@ describe("impact report submission (integration)", () => {
     }
   });
 
+  it("stores kind, qualifier, cumulative flag and source, and falls back to the pre-existing meaning on bogus enum input", async () => {
+    const { founder, reviewer, project } = await seedScenario();
+    await prisma.projectMember.create({
+      data: { projectId: project.id, userId: founder.id, role: "FOUNDER" },
+    });
+    mockAuth.mockResolvedValue({ user: { id: founder.id } });
+
+    try {
+      // Modelled on the real INFOS history: a municipal grant, which is
+      // support received rather than impact delivered.
+      await createImpactReport(
+        project.slug,
+        form({
+          metricDescription: "Verksamhetsstöd",
+          metricValue: "1658000",
+          metricUnit: "kr",
+          sdgGoals: ["17"],
+          kind: "SUPPORT_RECEIVED",
+          valueQualifier: "AT_LEAST",
+          sourceName: "  Stockholms stad  ",
+          isCumulative: "on",
+        })
+      );
+      // A hand-crafted POST with values that aren't in either enum must not
+      // land a half-valid row — it degrades to what every pre-migration row
+      // already meant.
+      await createImpactReport(
+        project.slug,
+        form({
+          metricDescription: "Skräpvärden",
+          metricValue: "1",
+          sdgGoals: ["4"],
+          kind: "NOT_A_KIND",
+          valueQualifier: "NOT_A_QUALIFIER",
+        })
+      );
+
+      const grant = await prisma.impactReport.findFirstOrThrow({
+        where: { projectId: project.id, metricDescription: "Verksamhetsstöd" },
+      });
+      expect(grant.kind).toBe("SUPPORT_RECEIVED");
+      expect(grant.valueQualifier).toBe("AT_LEAST");
+      expect(grant.isCumulative).toBe(true);
+      expect(grant.sourceName).toBe("Stockholms stad");
+
+      const junk = await prisma.impactReport.findFirstOrThrow({
+        where: { projectId: project.id, metricDescription: "Skräpvärden" },
+      });
+      expect(junk.kind).toBe("DELIVERED");
+      expect(junk.valueQualifier).toBe("EXACT");
+      expect(junk.isCumulative).toBe(false);
+      expect(junk.sourceName).toBeNull();
+    } finally {
+      await cleanup({ founderId: founder.id, reviewerId: reviewer.id, projectId: project.id });
+    }
+  });
+
   it("a logged-in non-member cannot submit a report for someone else's project", async () => {
     // A plain logged-in user with no ProjectMember row and no site role, so
     // the refusal can only be coming from the project-membership check.

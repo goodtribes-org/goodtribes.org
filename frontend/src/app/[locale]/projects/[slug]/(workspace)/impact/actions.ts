@@ -5,7 +5,12 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
-import { PENDING_REPORT_WHERE, safeExternalUrl } from "@/lib/impactReports";
+import {
+  PENDING_REPORT_WHERE,
+  isImpactReportKind,
+  isImpactValueQualifier,
+  safeExternalUrl,
+} from "@/lib/impactReports";
 
 
 // Returns the project id so callers that need it (impact reports) don't have
@@ -98,6 +103,16 @@ export async function createImpactReport(projectSlug: string, formData: FormData
   const metricValue = parseFloat((formData.get("metricValue") as string) ?? "");
   const metricUnit = ((formData.get("metricUnit") as string | null) ?? "").trim() || null;
   const evidenceUrl = safeExternalUrl(formData.get("evidenceUrl") as string | null);
+  const sourceName = ((formData.get("sourceName") as string | null) ?? "").trim() || null;
+  const isCumulative = formData.get("isCumulative") === "on";
+
+  // Unknown values fall back to the pre-existing meaning of a report
+  // (a delivered, exact figure) rather than being rejected — the same
+  // defaults the migration gave every existing row.
+  const rawKind = formData.get("kind");
+  const kind = isImpactReportKind(rawKind) ? rawKind : "DELIVERED";
+  const rawQualifier = formData.get("valueQualifier");
+  const valueQualifier = isImpactValueQualifier(rawQualifier) ? rawQualifier : "EXACT";
 
   // Only real SDG numbers (1-17) are accepted — the form sends checkbox
   // values, but a hand-crafted POST could send anything.
@@ -123,6 +138,10 @@ export async function createImpactReport(projectSlug: string, formData: FormData
       metricDescription,
       metricValue,
       metricUnit,
+      kind,
+      valueQualifier,
+      isCumulative,
+      sourceName,
       evidenceUrl,
       periodStart,
       periodEnd,

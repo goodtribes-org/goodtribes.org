@@ -1,4 +1,11 @@
-import { impactReportStatus, safeExternalUrl, verifiedSdgGoals } from "@/lib/impactReports";
+import {
+  groupReportsByKind,
+  impactReportStatus,
+  isImpactReportKind,
+  isImpactValueQualifier,
+  safeExternalUrl,
+  verifiedSdgGoals,
+} from "@/lib/impactReports";
 
 describe("impactReportStatus", () => {
   it("reads verified before rejected before pending", () => {
@@ -41,5 +48,40 @@ describe("verifiedSdgGoals", () => {
 
   it("returns an empty list when there is nothing verified", () => {
     expect(verifiedSdgGoals([])).toEqual([]);
+  });
+});
+
+describe("groupReportsByKind", () => {
+  // The INFOS history is the case this exists for: donated equipment worth
+  // 50 MSEK and a 1 658 000 kr municipal grant are both real figures, but
+  // listing them together would present money received as impact delivered.
+  const reports = [
+    { id: "units", kind: "DELIVERED" as const },
+    { id: "value", kind: "DELIVERED" as const },
+    { id: "stockholm-stad", kind: "SUPPORT_RECEIVED" as const },
+  ];
+
+  it("separates delivered impact from support received", () => {
+    const { delivered, supportReceived } = groupReportsByKind(reports);
+    expect(delivered.map((r) => r.id)).toEqual(["units", "value"]);
+    expect(supportReceived.map((r) => r.id)).toEqual(["stockholm-stad"]);
+  });
+
+  it("returns empty groups rather than undefined when a kind is absent", () => {
+    const { delivered, supportReceived } = groupReportsByKind([]);
+    expect(delivered).toEqual([]);
+    expect(supportReceived).toEqual([]);
+  });
+});
+
+describe("enum guards", () => {
+  it("accepts only real kind and qualifier values", () => {
+    expect(isImpactReportKind("DELIVERED")).toBe(true);
+    expect(isImpactReportKind("SUPPORT_RECEIVED")).toBe(true);
+    expect(isImpactReportKind("delivered")).toBe(false);
+    expect(isImpactReportKind(undefined)).toBe(false);
+
+    expect(isImpactValueQualifier("AT_LEAST")).toBe(true);
+    expect(isImpactValueQualifier("MADE_UP")).toBe(false);
   });
 });
