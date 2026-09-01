@@ -68,6 +68,7 @@ model User {
   sprintVotes             SprintVote[]
   sprintComments          SprintComment[]
   impactUpdates           ImpactUpdate[]            @relation("ImpactUpdates")
+  createdImpactReports    ImpactReport[]            @relation("CreatedImpactReports")
   verifiedImpactReports   ImpactReport[]            @relation("VerifiedImpactReports")
   proposedIdeaRevisions   IdeaRevision[]            @relation("ProposedIdeaRevisions")
   decidedIdeaRevisions    IdeaRevision[]            @relation("DecidedIdeaRevisions")

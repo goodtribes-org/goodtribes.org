@@ -715,7 +715,9 @@ initiative_checklist_items
   id, project_id, phase (idea | sprint), item_key, completed_at, completed_by
 
 impact_reports
-  id, project_id, sdg_goals[], metric_description, metric_value, verified_by, verified_at, created_at
+  id, project_id, sdg_goals[], metric_description, metric_value, metric_unit
+  period_start, period_end, evidence_url, created_by
+  verified_by, verified_at, rejected_at, review_note, created_at
 ```
 
 ---
@@ -2377,7 +2379,7 @@ Genomgående i alla faser:
 *(Uppdaterad v4.11 — se ändringslogg. Kodbasen har redan byggt MVP:n och merparten av Utvecklingsfas 1–5; listan nedan är de gap som återstår, inte en startlista.)*
 
 1. **Formalisera gating-villkoren i 4d** — de tre övergångarna `pilot`→`production`, `production`→`establish` och `scale`→`impact` är fortfarande bara "Föreslaget", inte styrelsebeslutade. Blockerar inget kodarbete i sig (gatingfunktionerna är byggda som ett konfigurerbart regelverk, se 4d), men bör beslutas innan projekt i praktiken börjar nå de faserna.
-2. ~~Bygg `impact_reports`-tabellen~~ **Klart (v4.12)** — `ImpactReport`-modellen finns nu i schemat. Kvarstår: UI för att skapa och verifiera rapporter, samt att koppla den till den faktiska `scale`→`impact`-gatinglogiken när den beslutas (se punkt 1).
+2. ~~Bygg `impact_reports`-tabellen~~ **Klart (v4.12)** — `ImpactReport`-modellen finns nu i schemat. ~~Kvarstår: UI för att skapa och verifiera rapporter~~ **Klart (2026-09-01)** — hela kedjan är byggd: projektledare skickar in ett resultat med SDG-koppling, period och länk till underlag från projektets impact-sida, site-admin verifierar eller avslår (med obligatorisk motivering) i en granskningskö på `/site-admin/impact-reports`, och verifierade resultat visas publikt på projektsidan. Modellen utökades additivt med `metric_unit`, `period_start`/`period_end`, `evidence_url`, `created_by`, `rejected_at` och `review_note` — utan underlag och motivering vore "verifierad" bara samma självrapporterade siffra en gång till. Verifieringsrätten lades på site-admin (Stiftelsen), inte Granskningsrådet, eftersom rådets mandat enligt 5.54 är reaktivt (anmälningar om regelbrott) medan detta är proaktiv kvalitetsgranskning — flytten dit är dock ett enradsbyte i `site-admin/impact-reports/actions.ts` om styrelsen beslutar annat. Kvarstår fortfarande: att koppla rapporterna till den faktiska `scale`→`impact`-gatinglogiken när den beslutas (se punkt 1).
 3. **Låt jurist granska avtalsmallarna** för kommersiella och ideella projekt (se 4c) samt gränsdragningen för tokensystemet (Utvecklingsfas 2.8) — fortfarande inte gjort.
 4. ~~Proaktiv innehållsmoderering~~ **Klart (v4.14)** — heuristiskt spamfilter (länkflödning/spamfraser/upprepade tecken) auto-döljer träffar via befintlig `hideTarget`/`ContentFlag`-infrastruktur, plus rate limiting på fyra tidigare oskyddade skapande-vägar. Avgränsat: ingen LLM-baserad klassificering (se motivering i kod), ingen admin-redigerbar blocklista. Avslöjade och fixade en separat, allvarlig `checkRateLimit`-timeout-brist (se ändringslogg).
 5. ~~Idéflödets co-creation & idé→projekt-pipeline~~ **Klart (v4.13)** — förslag/versionshistorik (`IdeaRevision`), bidragsgivarlista (`IdeaContributor`) och en-klicks-befordran till projekt (`promoteIdeaToProject`) är byggda och verifierade end-to-end. Kvarstår som medvetet avgränsat: ingen trådning av kommentarer, ingen "konstruktivt förslag"-flagga (5.14), inget diff-format (fulla textsnapshots istället).

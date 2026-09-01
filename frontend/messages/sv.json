@@ -508,6 +508,61 @@
     "notePlaceholder": "Valfri kommentar",
     "save": "Spara"
   },
+  "ImpactReportForm": {
+    "addReport": "+ Skicka in resultat",
+    "newReportHeading": "Nytt impact-resultat",
+    "intro": "Beskriv ett uppnått resultat och länka till underlaget. GoodTribes granskar rapporten innan den visas publikt.",
+    "cancel": "Avbryt",
+    "sdgField": "Globala mål * (välj minst ett)",
+    "descriptionField": "Vad uppnåddes? *",
+    "descriptionPlaceholder": "t.ex. Elever som fullföljt läsprogrammet",
+    "valueField": "Värde *",
+    "valuePlaceholder": "t.ex. 480",
+    "unitField": "Enhet",
+    "unitPlaceholder": "t.ex. elever",
+    "periodStartField": "Period från",
+    "periodEndField": "Period till",
+    "evidenceField": "Länk till underlag",
+    "evidencePlaceholder": "https://…",
+    "evidenceHint": "Årsredovisning, utvärdering, dataset eller annan källa som styrker siffran.",
+    "saving": "Skickar…",
+    "submit": "Skicka för granskning",
+    "sdgRequired": "Välj minst ett globalt mål",
+    "withdraw": "Dra tillbaka",
+    "withdrawing": "Drar tillbaka…"
+  },
+  "ImpactReportCard": {
+    "status": {
+      "pending": "Väntar på granskning",
+      "verified": "Verifierad",
+      "rejected": "Ej godkänd"
+    },
+    "period": "Period: {period}",
+    "evidenceLink": "Underlag ↗",
+    "noEvidence": "Inget underlag bifogat",
+    "verifiedBy": "Verifierad av {name} {date}",
+    "theFoundation": "Stiftelsen",
+    "reviewNote": "Motivering: {note}"
+  },
+  "ImpactReportsAdminPage": {
+    "heading": "Impact-rapporter",
+    "intro": "Granska projektens inrapporterade SDG-resultat mot deras underlag. Verifierade rapporter visas publikt på projektsidan.",
+    "pendingHeading": "Väntar på granskning ({count})",
+    "emptyState": "Inga rapporter väntar på granskning.",
+    "submittedBy": "Inskickad av {name} {date}",
+    "verifyNotePlaceholder": "Kommentar (valfri)",
+    "verifyButton": "Verifiera",
+    "rejectNotePlaceholder": "Motivering till avslag (obligatorisk)",
+    "rejectButton": "Avslå",
+    "reviewedHeading": "Senast granskade",
+    "reviewedEmptyState": "Inga rapporter har granskats ännu."
+  },
+  "VerifiedImpactPanel": {
+    "heading": "Verifierad impact",
+    "subtitle": "Resultat som GoodTribes granskat mot projektets underlag.",
+    "verifiedOn": "Verifierad {date}",
+    "evidenceLink": "Underlag ↗"
+  },
   "ProjectDetailPage": {
     "defaultProjectDescription": "Ett projekt på GoodTribes.org",
     "justNow": "Just nu",
@@ -2408,7 +2463,12 @@
     "justNow": "just nu",
     "minutesAgo": "{minutes} min sedan",
     "hoursAgo": "{hours} tim sedan",
-    "daysAgo": "{days, plural, one {# dag sedan} other {# dagar sedan}}"
+    "daysAgo": "{days, plural, one {# dag sedan} other {# dagar sedan}}",
+    "reportsHeading": "Verifierade resultat",
+    "reportsIntro": "En impact-rapport är ett avgränsat resultat som GoodTribes granskar mot ert underlag. Till skillnad från mätvärdena ovan visas verifierade rapporter publikt på projektsidan.",
+    "verifiedCount": "{count, plural, one {# verifierad rapport} other {# verifierade rapporter}}",
+    "reportsEmptyTitle": "Inga impact-rapporter ännu",
+    "reportsEmptyDescription": "Skicka in ett uppnått resultat med underlag så granskar GoodTribes det. Verifierade resultat är det finansiärer, kommuner och partners kan lita på."
   },
   "LeanCanvasBlock": {
     "edit": "Redigera",

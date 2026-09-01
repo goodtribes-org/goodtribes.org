@@ -8,6 +8,9 @@ import type { useTranslations } from "next-intl";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { AddMetricForm, UpdateMetricForm } from "./ImpactForms";
+import { ImpactReportForm, WithdrawReportButton } from "./ImpactReportForm";
+import { ImpactReportCard } from "@/components/ImpactReportCard";
+import { impactReportStatus } from "@/lib/impactReports";
 import { isLeadRole } from "@/lib/authz";
 
 
@@ -117,6 +120,10 @@ export default async function ImpactPage({
           },
         },
       },
+      impactReports: {
+        orderBy: { createdAt: "desc" },
+        include: { verifiedBy: { select: { name: true } } },
+      },
     },
   });
   if (!project) notFound();
@@ -126,6 +133,8 @@ export default async function ImpactPage({
 
   const metrics = project.impactMetrics;
   const totalMetrics = metrics.length;
+  const reports = project.impactReports;
+  const verifiedCount = reports.filter((r) => r.verifiedAt !== null).length;
 
   // Find most recent update across all metrics
   const allUpdates = metrics.flatMap((m) => m.updates);
@@ -282,6 +291,58 @@ export default async function ImpactPage({
           );
         })}
       </div>
+
+      {/* Verified impact reports (PRD 4d) — the reviewable counterpart to the
+          self-reported metrics above. Kept in the same page because they're
+          the same concept to a project lead, but visually separated because
+          only these ever reach a funder or the public project page. */}
+      <section className="mt-10 border-t border-muted-teal/30 pt-8">
+        <div className="flex items-start justify-between gap-4 mb-2">
+          <div>
+            <h2 className="text-lg font-bold text-dark-slate">{t("reportsHeading")}</h2>
+            <p className="text-xs text-dark-slate/50 mt-0.5 max-w-lg leading-relaxed">
+              {t("reportsIntro")}
+            </p>
+          </div>
+          {isOwnerOrAdmin && reports.length > 0 && <ImpactReportForm projectSlug={slug} />}
+        </div>
+
+        {verifiedCount > 0 && (
+          <p className="text-xs text-seagrass font-medium mb-4">
+            {t("verifiedCount", { count: verifiedCount })}
+          </p>
+        )}
+
+        {reports.length === 0 ? (
+          <div className="text-center py-12 border border-dashed border-muted-teal/40 rounded-xl mt-3">
+            <p className="text-4xl mb-3">🎖️</p>
+            <p className="text-sm font-semibold text-dark-slate mb-1">{t("reportsEmptyTitle")}</p>
+            <p className="text-xs text-dark-slate/50 max-w-sm mx-auto leading-relaxed">
+              {t("reportsEmptyDescription")}
+            </p>
+            {isOwnerOrAdmin && (
+              <div className="mt-4 flex justify-center">
+                <ImpactReportForm projectSlug={slug} />
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-3 mt-4">
+            {reports.map((report) => (
+              <ImpactReportCard
+                key={report.id}
+                report={report}
+                locale={locale}
+                actions={
+                  isOwnerOrAdmin && impactReportStatus(report) === "pending" ? (
+                    <WithdrawReportButton projectSlug={slug} reportId={report.id} />
+                  ) : undefined
+                }
+              />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

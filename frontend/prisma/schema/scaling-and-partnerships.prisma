@@ -82,12 +82,30 @@ model ImpactReport {
   sdgGoals          Int[]
   metricDescription String
   metricValue       Float
+  metricUnit        String?
+  // The period the claimed result was achieved over. Optional because older
+  // rows predate these columns, but the create form asks for both — an impact
+  // claim without a timeframe isn't something a funder can act on.
+  periodStart       DateTime?
+  periodEnd         DateTime?
+  // What a reviewer actually checks the claim against (an annual report, an
+  // evaluation, a dataset). Without it "verified" would only mean a reviewer
+  // read the same self-reported number the project typed in.
+  evidenceUrl       String?
+  createdById       String?
+  createdBy         User?     @relation("CreatedImpactReports", fields: [createdById], references: [id])
   verifiedById      String?
   verifiedBy        User?     @relation("VerifiedImpactReports", fields: [verifiedById], references: [id])
   verifiedAt        DateTime?
+  // Rejection is a real outcome, not just "never verified" — a project needs
+  // to know its claim was reviewed and why it didn't hold, and a rejected row
+  // must stay out of the pending queue.
+  rejectedAt        DateTime?
+  reviewNote        String?
   createdAt         DateTime  @default(now())
 
   @@index([projectId])
+  @@index([verifiedAt])
 }
 
 model ProjectMaturity {

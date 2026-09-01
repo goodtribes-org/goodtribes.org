@@ -508,6 +508,61 @@
     "notePlaceholder": "Optional comment",
     "save": "Save"
   },
+  "ImpactReportForm": {
+    "addReport": "+ Submit a result",
+    "newReportHeading": "New impact result",
+    "intro": "Describe an achieved result and link to your evidence. GoodTribes reviews the report before it is shown publicly.",
+    "cancel": "Cancel",
+    "sdgField": "Global goals * (pick at least one)",
+    "descriptionField": "What was achieved? *",
+    "descriptionPlaceholder": "e.g. Pupils who completed the reading programme",
+    "valueField": "Value *",
+    "valuePlaceholder": "e.g. 480",
+    "unitField": "Unit",
+    "unitPlaceholder": "e.g. pupils",
+    "periodStartField": "Period from",
+    "periodEndField": "Period to",
+    "evidenceField": "Link to evidence",
+    "evidencePlaceholder": "https://…",
+    "evidenceHint": "Annual report, evaluation, dataset or another source backing the number.",
+    "saving": "Submitting…",
+    "submit": "Submit for review",
+    "sdgRequired": "Pick at least one global goal",
+    "withdraw": "Withdraw",
+    "withdrawing": "Withdrawing…"
+  },
+  "ImpactReportCard": {
+    "status": {
+      "pending": "Awaiting review",
+      "verified": "Verified",
+      "rejected": "Not approved"
+    },
+    "period": "Period: {period}",
+    "evidenceLink": "Evidence ↗",
+    "noEvidence": "No evidence attached",
+    "verifiedBy": "Verified by {name} {date}",
+    "theFoundation": "the Foundation",
+    "reviewNote": "Reason: {note}"
+  },
+  "ImpactReportsAdminPage": {
+    "heading": "Impact reports",
+    "intro": "Review projects' reported SDG results against their evidence. Verified reports are shown publicly on the project page.",
+    "pendingHeading": "Awaiting review ({count})",
+    "emptyState": "No reports are awaiting review.",
+    "submittedBy": "Submitted by {name} {date}",
+    "verifyNotePlaceholder": "Comment (optional)",
+    "verifyButton": "Verify",
+    "rejectNotePlaceholder": "Reason for rejection (required)",
+    "rejectButton": "Reject",
+    "reviewedHeading": "Recently reviewed",
+    "reviewedEmptyState": "No reports have been reviewed yet."
+  },
+  "VerifiedImpactPanel": {
+    "heading": "Verified impact",
+    "subtitle": "Results GoodTribes has reviewed against the project's evidence.",
+    "verifiedOn": "Verified {date}",
+    "evidenceLink": "Evidence ↗"
+  },
   "ProjectDetailPage": {
     "defaultProjectDescription": "A project on GoodTribes.org",
     "justNow": "Just now",
@@ -2408,7 +2463,12 @@
     "justNow": "just now",
     "minutesAgo": "{minutes} min ago",
     "hoursAgo": "{hours} h ago",
-    "daysAgo": "{days, plural, one {# day ago} other {# days ago}}"
+    "daysAgo": "{days, plural, one {# day ago} other {# days ago}}",
+    "reportsHeading": "Verified results",
+    "reportsIntro": "An impact report is a discrete result that GoodTribes reviews against your evidence. Unlike the metrics above, verified reports are shown publicly on the project page.",
+    "verifiedCount": "{count, plural, one {# verified report} other {# verified reports}}",
+    "reportsEmptyTitle": "No impact reports yet",
+    "reportsEmptyDescription": "Submit an achieved result with supporting evidence and GoodTribes will review it. Verified results are what funders, municipalities and partners can rely on."
   },
   "LeanCanvasBlock": {
     "edit": "Edit",

@@ -5,9 +5,12 @@ import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { PENDING_REPORT_WHERE, safeExternalUrl } from "@/lib/impactReports";
 
 
-async function assertOwnerOrAdmin(projectSlug: string, userId: string) {
+// Returns the project id so callers that need it (impact reports) don't have
+// to re-fetch the project they just authorized against.
+async function assertOwnerOrAdmin(projectSlug: string, userId: string): Promise<string> {
   const project = await prisma.project.findUnique({
     where: { slug: projectSlug },
     select: { id: true },
@@ -15,6 +18,7 @@ async function assertOwnerOrAdmin(projectSlug: string, userId: string) {
   if (!project || !(await hasProjectRole(project.id, userId, PROJECT_LEAD_ROLES))) {
     redirect(`/projects/${projectSlug}/impact`);
   }
+  return project.id;
 }
 
 export async function addImpactMetric(projectSlug: string, formData: FormData) {
@@ -76,4 +80,80 @@ export async function updateImpactMetric(
   ]);
 
   revalidatePath(`/projects/${projectSlug}/impact`);
+}
+
+// ---------------------------------------------------------------------------
+// Impact reports (PRD 4d) — a discrete, reviewable claim of achieved SDG
+// outcome, submitted by the project and verified by the Foundation. Separate
+// from the metrics above, which stay self-reported by design.
+// ---------------------------------------------------------------------------
+
+export async function createImpactReport(projectSlug: string, formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const projectId = await assertOwnerOrAdmin(projectSlug, session.user.id);
+
+  const metricDescription = ((formData.get("metricDescription") as string) ?? "").trim();
+  const metricValue = parseFloat((formData.get("metricValue") as string) ?? "");
+  const metricUnit = ((formData.get("metricUnit") as string | null) ?? "").trim() || null;
+  const evidenceUrl = safeExternalUrl(formData.get("evidenceUrl") as string | null);
+
+  // Only real SDG numbers (1-17) are accepted — the form sends checkbox
+  // values, but a hand-crafted POST could send anything.
+  const sdgGoals = [
+    ...new Set(
+      formData
+        .getAll("sdgGoals")
+        .map((v) => parseInt(String(v), 10))
+        .filter((n) => Number.isInteger(n) && n >= 1 && n <= 17)
+    ),
+  ].sort((a, b) => a - b);
+
+  const periodStart = parseDateInput(formData.get("periodStart"));
+  const periodEnd = parseDateInput(formData.get("periodEnd"));
+
+  if (!metricDescription || !Number.isFinite(metricValue) || sdgGoals.length === 0) return;
+  if (periodStart && periodEnd && periodEnd < periodStart) return;
+
+  await prisma.impactReport.create({
+    data: {
+      projectId,
+      sdgGoals,
+      metricDescription,
+      metricValue,
+      metricUnit,
+      evidenceUrl,
+      periodStart,
+      periodEnd,
+      createdById: session.user.id,
+    },
+  });
+
+  revalidatePath(`/projects/${projectSlug}/impact`);
+  revalidatePath("/site-admin/impact-reports");
+}
+
+// Withdrawing a submission is only allowed while it's still pending — once
+// the Foundation has verified or rejected it, the row is a decision record
+// and the project can't delete it out from under the reviewer.
+export async function deleteImpactReport(projectSlug: string, reportId: string) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const projectId = await assertOwnerOrAdmin(projectSlug, session.user.id);
+
+  await prisma.impactReport.deleteMany({
+    where: { id: reportId, projectId, ...PENDING_REPORT_WHERE },
+  });
+
+  revalidatePath(`/projects/${projectSlug}/impact`);
+  revalidatePath("/site-admin/impact-reports");
+}
+
+function parseDateInput(raw: FormDataEntryValue | null): Date | null {
+  const value = typeof raw === "string" ? raw.trim() : "";
+  if (!value) return null;
+  const parsed = new Date(value);
+  return isNaN(parsed.getTime()) ? null : parsed;
 }
