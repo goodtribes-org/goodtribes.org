@@ -1999,6 +1999,21 @@
       "donatedLabel": "Donerat",
       "tasksDoneLabel": "Uppgifter lösta"
     },
+    "foundingStory": {
+      "eyebrow": "Så långt kan en idé nå",
+      "heading": "Det började med datorer som skulle skrotas.",
+      "body1": "Fullt fungerande datorer byts ut efter tre, fyra år. Samtidigt sitter förskolor, skolor och ideella organisationer med utrustning som är långt äldre — eller ingen alls. Infos: datordonation såg båda sakerna samtidigt, och gjorde något åt det.",
+      "body2": "De hämtade datorerna hos företag och myndigheter, raderade dem säkert, installerade ny programvara och förmedlade dem vidare. Till skolor i Tensta, Rinkeby och Skärholmen. Till Amnesty, Greenpeace och Stockholms stads enhet för hemlösa. Arbetet gav samtidigt arbetslösa och funktionshindrade en meningsfull sysselsättning.",
+      "body3": "Infos grundade sedan Stiftelsen GoodTribes. Plattformen du är på nu finns för att fler idéer ska kunna gå samma väg — från något någon lägger märke till, till något som räknas i tiotusental.",
+      "cta": "Följ hela projektet",
+      "statsLabel": "Verifierade resultat",
+      "statsFootnote": "Siffrorna hämtas från projektets granskade impact-rapporter.",
+      "projectSlug": "infos-datordonation",
+      "qualifier": {
+        "AT_LEAST": "minst",
+        "APPROXIMATE": "ca"
+      }
+    },
     "tools": {
       "eyebrow": "Verktygen",
       "heading": "Professionella verktyg som följer dig hela vägen",

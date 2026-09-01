@@ -86,6 +86,27 @@ export const SITE_COPY_SECTIONS: SiteCopySection[] = [
     ],
   },
   {
+    // Deliberately no fields for the numbers themselves — those are read live
+    // from the featured project's verified impact reports (see
+    // FoundingStory.tsx), so an admin can't edit the homepage into disagreeing
+    // with the project page.
+    title: "Grundarberättelsen",
+    fields: [
+      { key: "HomePage.foundingStory.eyebrow", label: "Kicker" },
+      { key: "HomePage.foundingStory.heading", label: "Rubrik" },
+      { key: "HomePage.foundingStory.body1", label: "Stycke 1", multiline: true },
+      { key: "HomePage.foundingStory.body2", label: "Stycke 2", multiline: true },
+      { key: "HomePage.foundingStory.body3", label: "Stycke 3", multiline: true },
+      { key: "HomePage.foundingStory.cta", label: "Länk till projektet" },
+      { key: "HomePage.foundingStory.statsLabel", label: "Rubrik över nyckeltalen" },
+      { key: "HomePage.foundingStory.statsFootnote", label: "Fotnot under nyckeltalen", multiline: true },
+      {
+        key: "HomePage.foundingStory.projectSlug",
+        label: "Projektets slug (hela sektionen döljs om projektet saknas)",
+      },
+    ],
+  },
+  {
     title: "Verktygen — sektion",
     fields: [
       { key: "HomePage.tools.eyebrow", label: "Kicker" },

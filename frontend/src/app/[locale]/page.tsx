@@ -24,6 +24,7 @@ import VisionMissionGoal from "@/components/showroom/VisionMissionGoal";
 import PhaseMap, { type PhaseMapStep } from "@/components/showroom/PhaseMap";
 import UsageNow from "@/components/showroom/UsageNow";
 import ImpactSnapshot from "@/components/showroom/ImpactSnapshot";
+import FoundingStory from "@/components/showroom/FoundingStory";
 import ToolsGrid from "@/components/showroom/ToolsGrid";
 import { getSiteCopyMap } from "@/lib/siteCopy";
 import { homeSansFont, showroomMonoFont } from "@/lib/fonts";
@@ -207,6 +208,11 @@ export default async function HomePage({
       <UsageNow locale={locale} copy={copy} />
 
       <ImpactSnapshot locale={locale} stats={impactStats} copy={copy} />
+
+      {/* Platform-wide numbers, then one project that shows what they add up
+          to in practice, then the tools. Hides itself when the configured
+          project doesn't exist in this environment. */}
+      <FoundingStory locale={locale} copy={copy} />
 
       <ToolsGrid locale={locale} copy={copy} />
     </div>

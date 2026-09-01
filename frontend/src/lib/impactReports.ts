@@ -67,6 +67,34 @@ export async function getVerifiedImpactReports(projectId: string) {
   });
 }
 
+// The homepage founding-story section (FoundingStory.tsx). Returns null when
+// the configured project doesn't exist or is hidden, so the section can hide
+// itself entirely rather than render a heading over a dead link — the INFOS
+// project is seeded data, not something the schema guarantees is present in
+// any given environment.
+export async function getFoundingStoryData(slug: string, limit = 3) {
+  const project = await prisma.project.findFirst({
+    where: { slug, hiddenAt: null },
+    select: { id: true, slug: true, title: true },
+  });
+  if (!project) return null;
+
+  const reports = await prisma.impactReport.findMany({
+    where: { projectId: project.id, verifiedAt: { not: null }, kind: "DELIVERED" },
+    // Cumulative totals first — they're the headline "since inception"
+    // figures, and a period figure shown above its own total reads oddly.
+    // Then creation order, with id as a final tiebreak so the homepage can't
+    // silently reshuffle between requests. Deliberately NOT ordered by
+    // metricValue: ranking 50 000 000 kr above 25 000 datorenheter compares
+    // two different units and would bury whichever figure happens to use the
+    // smaller-numbered one.
+    orderBy: [{ isCumulative: "desc" }, { createdAt: "asc" }, { id: "asc" }],
+    take: limit,
+  });
+
+  return { project, reports };
+}
+
 export async function countPendingImpactReports(): Promise<number> {
   return prisma.impactReport.count({ where: PENDING_REPORT_WHERE });
 }

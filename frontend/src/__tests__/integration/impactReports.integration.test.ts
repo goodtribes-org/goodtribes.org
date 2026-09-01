@@ -12,7 +12,7 @@
 // `finally`, the same pattern outbox.integration.test.ts uses.
 
 import { prisma } from "@/lib/prisma";
-import { impactReportStatus } from "@/lib/impactReports";
+import { getFoundingStoryData, impactReportStatus } from "@/lib/impactReports";
 
 // jest.mock's module string is a plain literal, so next/jest's SWC transform
 // never applies the tsconfig `@/*` path mapping to it the way it does to real
@@ -157,6 +157,54 @@ describe("impact report review (integration)", () => {
       expect(impactReportStatus(stored)).toBe("verified");
       expect(stored.reviewNote).toBe("ok");
     } finally {
+      await cleanup({ founderId: founder.id, reviewerId: reviewer.id, projectId: project.id });
+    }
+  });
+});
+
+describe("getFoundingStoryData (integration)", () => {
+  it("returns nothing when the featured project doesn't exist in this environment", async () => {
+    expect(await getFoundingStoryData("no-such-project-slug")).toBeNull();
+  });
+
+  it("returns only verified delivered reports, cumulative first, and never support received", async () => {
+    const { founder, reviewer, project } = await seedScenario();
+    try {
+      await prisma.impactReport.createMany({
+        data: [
+          // Deliberately inserted in an order that doesn't match the expected
+          // output, so a passing test can't be an accident of insertion order.
+          {
+            projectId: project.id, sdgGoals: [4], metricDescription: "Period figure",
+            metricValue: 16100, kind: "DELIVERED", isCumulative: false,
+            createdAt: new Date("2005-01-03"), verifiedAt: new Date(),
+          },
+          {
+            projectId: project.id, sdgGoals: [17], metricDescription: "Grant received",
+            metricValue: 1658000, kind: "SUPPORT_RECEIVED", isCumulative: true,
+            createdAt: new Date("2005-01-01"), verifiedAt: new Date(),
+          },
+          {
+            projectId: project.id, sdgGoals: [4], metricDescription: "Total units",
+            metricValue: 25000, kind: "DELIVERED", isCumulative: true,
+            createdAt: new Date("2005-01-01"), verifiedAt: new Date(),
+          },
+          {
+            projectId: project.id, sdgGoals: [4], metricDescription: "Not yet reviewed",
+            metricValue: 999, kind: "DELIVERED", isCumulative: true,
+            createdAt: new Date("2005-01-02"),
+          },
+        ],
+      });
+
+      const data = await getFoundingStoryData(project.slug);
+      expect(data).not.toBeNull();
+      expect(data!.reports.map((r) => r.metricDescription)).toEqual([
+        "Total units",
+        "Period figure",
+      ]);
+    } finally {
+      // seedScenario's own report is cleaned up with the project cascade
       await cleanup({ founderId: founder.id, reviewerId: reviewer.id, projectId: project.id });
     }
   });

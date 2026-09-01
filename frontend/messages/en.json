@@ -1999,6 +1999,21 @@
       "donatedLabel": "Donated",
       "tasksDoneLabel": "Tasks completed"
     },
+    "foundingStory": {
+      "eyebrow": "How far an idea can reach",
+      "heading": "It started with computers headed for the scrap heap.",
+      "body1": "Perfectly working computers get replaced after three or four years. Meanwhile preschools, schools and nonprofits make do with far older equipment — or none at all. Infos: datordonation saw both at once, and did something about it.",
+      "body2": "They collected the machines from companies and public authorities, securely wiped them, installed fresh software and passed them on. To schools in Tensta, Rinkeby and Skärholmen. To Amnesty, Greenpeace and the City of Stockholm's homelessness unit. The work itself gave unemployed and disabled people meaningful occupation.",
+      "body3": "Infos went on to found the GoodTribes Foundation. This platform exists so more ideas can travel the same road — from something someone notices, to something counted in the tens of thousands.",
+      "cta": "Follow the whole project",
+      "statsLabel": "Verified results",
+      "statsFootnote": "Figures are read from the project's reviewed impact reports.",
+      "projectSlug": "infos-datordonation",
+      "qualifier": {
+        "AT_LEAST": "at least",
+        "APPROXIMATE": "approx."
+      }
+    },
     "tools": {
       "eyebrow": "The tools",
       "heading": "Professional tools that follow you all the way",
