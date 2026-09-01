@@ -167,7 +167,7 @@ describe("getFoundingStoryData (integration)", () => {
     expect(await getFoundingStoryData("no-such-project-slug")).toBeNull();
   });
 
-  it("returns only verified delivered reports, cumulative first, and never support received", async () => {
+  it("splits verified reports into delivered and support, cumulative first, and excludes unreviewed ones", async () => {
     const { founder, reviewer, project } = await seedScenario();
     try {
       await prisma.impactReport.createMany({
@@ -199,10 +199,17 @@ describe("getFoundingStoryData (integration)", () => {
 
       const data = await getFoundingStoryData(project.slug);
       expect(data).not.toBeNull();
-      expect(data!.reports.map((r) => r.metricDescription)).toEqual([
+      expect(data!.delivered.map((r) => r.metricDescription)).toEqual([
         "Total units",
         "Period figure",
       ]);
+      // Support received is returned, but separately — never mixed into the
+      // delivered list, which is what would let money in read as impact out.
+      expect(data!.supportReceived.map((r) => r.metricDescription)).toEqual([
+        "Grant received",
+      ]);
+      // "Not yet reviewed" appears in neither group.
+      expect([...data!.delivered, ...data!.supportReceived]).toHaveLength(3);
     } finally {
       // seedScenario's own report is cleaned up with the project cascade
       await cleanup({ founderId: founder.id, reviewerId: reviewer.id, projectId: project.id });

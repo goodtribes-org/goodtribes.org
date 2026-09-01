@@ -72,7 +72,7 @@ export async function getVerifiedImpactReports(projectId: string) {
 // itself entirely rather than render a heading over a dead link — the INFOS
 // project is seeded data, not something the schema guarantees is present in
 // any given environment.
-export async function getFoundingStoryData(slug: string, limit = 3) {
+export async function getFoundingStoryData(slug: string) {
   const project = await prisma.project.findFirst({
     where: { slug, hiddenAt: null },
     select: { id: true, slug: true, title: true },
@@ -80,7 +80,7 @@ export async function getFoundingStoryData(slug: string, limit = 3) {
   if (!project) return null;
 
   const reports = await prisma.impactReport.findMany({
-    where: { projectId: project.id, verifiedAt: { not: null }, kind: "DELIVERED" },
+    where: { projectId: project.id, verifiedAt: { not: null } },
     // Cumulative totals first — they're the headline "since inception"
     // figures, and a period figure shown above its own total reads oddly.
     // Then creation order, with id as a final tiebreak so the homepage can't
@@ -89,10 +89,12 @@ export async function getFoundingStoryData(slug: string, limit = 3) {
     // two different units and would bury whichever figure happens to use the
     // smaller-numbered one.
     orderBy: [{ isCumulative: "desc" }, { createdAt: "asc" }, { id: "asc" }],
-    take: limit,
   });
 
-  return { project, reports };
+  // Split rather than filtered-to-delivered: the homepage shows both, but in
+  // the same hierarchy the project page uses — delivered impact as headline
+  // tiles, support received as a subordinate line. Never interleaved.
+  return { project, ...groupReportsByKind(reports) };
 }
 
 export async function countPendingImpactReports(): Promise<number> {

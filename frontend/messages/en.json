@@ -2006,13 +2006,16 @@
       "body2": "They collected the machines from companies and public authorities, securely wiped them, installed fresh software and passed them on. To schools in Tensta, Rinkeby and Skärholmen. To Amnesty, Greenpeace and the City of Stockholm's homelessness unit. The work itself gave unemployed and disabled people meaningful occupation.",
       "body3": "Infos went on to found the GoodTribes Foundation. This platform exists so more ideas can travel the same road — from something someone notices, to something counted in the tens of thousands.",
       "cta": "Follow the whole project",
-      "statsLabel": "Verified results",
       "statsFootnote": "Figures are read from the project's reviewed impact reports.",
       "projectSlug": "infos-datordonation",
       "qualifier": {
         "AT_LEAST": "at least",
         "APPROXIMATE": "approx."
-      }
+      },
+      "sdgLabel": "Global goals",
+      "supportLabel": "Made possible by",
+      "cumulativeNote": "Total since inception",
+      "since": "Since {year}"
     },
     "tools": {
       "eyebrow": "The tools",

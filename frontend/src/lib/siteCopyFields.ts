@@ -98,8 +98,10 @@ export const SITE_COPY_SECTIONS: SiteCopySection[] = [
       { key: "HomePage.foundingStory.body2", label: "Stycke 2", multiline: true },
       { key: "HomePage.foundingStory.body3", label: "Stycke 3", multiline: true },
       { key: "HomePage.foundingStory.cta", label: "Länk till projektet" },
-      { key: "HomePage.foundingStory.statsLabel", label: "Rubrik över nyckeltalen" },
-      { key: "HomePage.foundingStory.statsFootnote", label: "Fotnot under nyckeltalen", multiline: true },
+      { key: "HomePage.foundingStory.sdgLabel", label: "Etikett före SDG-ikonerna" },
+      { key: "HomePage.foundingStory.supportLabel", label: "Etikett före mottaget stöd" },
+      { key: "HomePage.foundingStory.cumulativeNote", label: "Notis på totalsiffror" },
+      { key: "HomePage.foundingStory.statsFootnote", label: "Fotnot efter länken", multiline: true },
       {
         key: "HomePage.foundingStory.projectSlug",
         label: "Projektets slug (hela sektionen döljs om projektet saknas)",
