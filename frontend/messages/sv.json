@@ -1177,7 +1177,7 @@
     "interviewsLabel": "Målgruppsintervjuer",
     "interviewsHint": "Valfritt — prata med några personer ur din tänkta målgrupp och logga vad du hör i intervjuloggen.",
     "openInterviewLog": "Öppna intervjuloggen →",
-    "marketScanLabel": "Omvärldsbevakning & Partners",
+    "marketScanLabel": "Omvärldsbevakning",
     "marketScanHint": "Valfritt — notera konkurrenter, trender och möjliga partners du vill hålla koll på.",
     "openMarketScan": "Öppna omvärldsbevakningen →",
     "inviteFriendsLabel": "🎉 Dela idén med vänner",
@@ -2771,7 +2771,7 @@
     "lean_canvas_created": "Lean Canvas",
     "value_proposition_created": "Värdeerbjudande",
     "target_audience_interviews": "Målgruppsintervjuer",
-    "market_scan_partners": "Omvärldsbevakning & Partners",
+    "market_scan_partners": "Omvärldsbevakning",
     "peer_feedback_requested": "Bjud in vänner / Bygg teamet",
     "pilot_guide_read": "Uppstart guiden",
     "core_team_formed": "Definiera roller och bilda kärnteam",
@@ -2839,7 +2839,7 @@
     "emptyState": "Inga intervjuer loggade än."
   },
   "MarketScanPage": {
-    "heading": "Omvärldsbevakning & Partners",
+    "heading": "Omvärldsbevakning",
     "addButton": "Lägg till",
     "cancelButton": "Avbryt",
     "saveButton": "Spara",

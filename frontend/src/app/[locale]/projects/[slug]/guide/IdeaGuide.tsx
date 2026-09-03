@@ -438,7 +438,7 @@ export default function IdeaGuide({
         </div>
       </div>
 
-      {/* Step 6 — Omvärldsbevakning & Partners */}
+      {/* Step 6 — Omvärldsbevakning */}
       <div className={step === 5 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div className="rounded-xl border border-seagrass/20 bg-seagrass/5 p-5">
           <label className="block text-base font-semibold text-dark-slate mb-1">

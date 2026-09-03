@@ -94,7 +94,7 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
     { key: "lean_canvas_created", label: "Lean Canvas", href: "lean-canvas" },
     { key: "value_proposition_created", label: "Värdeerbjudande", href: "value-proposition" },
     { key: "target_audience_interviews", label: "Målgruppsintervjuer", href: "interviews" },
-    { key: "market_scan_partners", label: "Omvärldsbevakning & Partners", href: "market-scan" },
+    { key: "market_scan_partners", label: "Omvärldsbevakning", href: "market-scan" },
     { key: "peer_feedback_requested", label: "Bjud in vänner / Bygg teamet" },
   ],
   SPRINT: [],

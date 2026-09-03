@@ -1177,7 +1177,7 @@
     "interviewsLabel": "Target audience interviews",
     "interviewsHint": "Optional — talk to a few people from your intended target audience and log what you hear in the interview log.",
     "openInterviewLog": "Open the interview log →",
-    "marketScanLabel": "Market scan & partners",
+    "marketScanLabel": "Market scan",
     "marketScanHint": "Optional — note competitors, trends, and possible partners you want to keep an eye on.",
     "openMarketScan": "Open the market scan →",
     "inviteFriendsLabel": "🎉 Share the idea with friends",
@@ -2771,7 +2771,7 @@
     "lean_canvas_created": "Lean Canvas",
     "value_proposition_created": "Value Proposition",
     "target_audience_interviews": "Target audience interviews",
-    "market_scan_partners": "Market scan & partners",
+    "market_scan_partners": "Market scan",
     "peer_feedback_requested": "Invite friends / build the team",
     "pilot_guide_read": "Uppstart guide",
     "core_team_formed": "Define roles and form a core team",
@@ -2839,7 +2839,7 @@
     "emptyState": "No interviews logged yet."
   },
   "MarketScanPage": {
-    "heading": "Market scan & partners",
+    "heading": "Market scan",
     "addButton": "Add",
     "cancelButton": "Cancel",
     "saveButton": "Save",
