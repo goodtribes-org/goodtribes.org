@@ -44,6 +44,10 @@ interface Props {
   hasInterviews: boolean;
   hasMarketScan: boolean;
   hasInvitedSomeone: boolean;
+  // Set from the phase-menu checklist's `?step=<itemKey>` deep link (see
+  // PhaseMenuBar.tsx) so clicking a checklist item's text lands directly on
+  // that step instead of always step 0.
+  initialStep?: number;
 }
 
 // The full idea-phase guide, all 8 steps navigable in either direction —
@@ -65,11 +69,12 @@ export default function IdeaGuide({
   hasInterviews,
   hasMarketScan,
   hasInvitedSomeone,
+  initialStep,
 }: Props) {
   const t = useTranslations("IdeaGuide");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
   const router = useRouter();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(initialStep ?? 0);
   const [done, setDone] = useState<Set<string>>(new Set(completedKeys));
   const [invitedSomeone, setInvitedSomeone] = useState(hasInvitedSomeone);
   const [title, setTitle] = useState(initialTitle);

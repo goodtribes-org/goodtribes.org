@@ -20,6 +20,10 @@ interface Props {
   projectTitle: string;
   items: ChecklistItemDef[];
   completedKeys: string[];
+  // Set from the phase-menu checklist's `?step=<itemKey>` deep link (see
+  // PhaseMenuBar.tsx) so clicking a checklist item's text lands directly on
+  // that step instead of always step 0.
+  initialStepIndex?: number;
 }
 
 // A generic, checklist-driven guide for every phase after Idé (which has
@@ -28,11 +32,11 @@ interface Props {
 // that toggles it done via the same action the project's edit page and
 // phase-menu checklist popover already use — so ticking it here is the
 // exact same thing as ticking it anywhere else in the app.
-export default function PhaseGuide({ slug, phase, phaseLabel, projectTitle, items, completedKeys }: Props) {
+export default function PhaseGuide({ slug, phase, phaseLabel, projectTitle, items, completedKeys, initialStepIndex }: Props) {
   const t = useTranslations("PhaseGuide");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
   const router = useRouter();
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(initialStepIndex ?? 0);
   const [done, setDone] = useState<Set<string>>(new Set(completedKeys));
   const [isPending, startTransition] = useTransition();
 

@@ -211,18 +211,18 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
                             <span className="text-dark-slate/40 font-medium">
                               {itemNumbers[j]}
                             </span>{" "}
-                            {item.href ? (
-                              <a href={`/projects/${slug}/${item.href}`} className="hover:underline">{tChecklist(item.key)}</a>
-                            ) : (
-                              <button
-                                type="button"
-                                disabled={isPending || !canEditThis}
-                                onClick={() => handleToggle(p.value, item.key, !done)}
-                                className={`text-left ${canEditThis ? "hover:underline" : "cursor-default"}`}
-                              >
-                                {tChecklist(item.key)}
-                              </button>
-                            )}
+                            <a
+                              href={
+                                item.href
+                                  ? `/projects/${slug}/${item.href}`
+                                  : p.value === "IDEA"
+                                    ? `/projects/${slug}/guide?step=${item.key}`
+                                    : `/projects/${slug}/guide/${p.value.toLowerCase()}?step=${item.key}`
+                              }
+                              className="hover:underline"
+                            >
+                              {tChecklist(item.key)}
+                            </a>
                           </span>
                         </div>
                       );

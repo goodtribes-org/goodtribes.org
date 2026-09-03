@@ -4,13 +4,17 @@ import { redirect } from "next/navigation";
 import { isLeadRole } from "@/lib/authz";
 import IdeaGuide from "./IdeaGuide";
 import PhaseMenuBar from "../PhaseMenuBar";
+import { IDEA_GUIDE_STEPS } from "@/lib/ideaGuideSteps";
 
 export default async function IdeaGuidePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ step?: string }>;
 }) {
   const { slug } = await params;
+  const { step } = await searchParams;
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
@@ -65,6 +69,7 @@ export default async function IdeaGuidePage({
         hasInterviews={interviewCount > 0}
         hasMarketScan={marketScanCount > 0}
         hasInvitedSomeone={hasInvitedSomeone}
+        initialStep={Math.max(0, IDEA_GUIDE_STEPS.findIndex((i) => i.key === step))}
       />
     </div>
   );

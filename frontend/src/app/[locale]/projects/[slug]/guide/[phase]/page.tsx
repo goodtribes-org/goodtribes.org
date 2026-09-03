@@ -13,10 +13,13 @@ const GUIDE_PHASES: ProjectPhaseValue[] = ["PILOT", "PRODUCTION", "ESTABLISH", "
 
 export default async function PhaseGuidePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; slug: string; phase: string }>;
+  searchParams: Promise<{ step?: string }>;
 }) {
   const { locale, slug, phase: phaseParam } = await params;
+  const { step } = await searchParams;
   const phase = phaseParam.toUpperCase() as ProjectPhaseValue;
   if (!GUIDE_PHASES.includes(phase)) notFound();
   const tPhase = await getTranslations({ locale, namespace: "ProjectPhase" });
@@ -53,6 +56,7 @@ export default async function PhaseGuidePage({
           projectTitle={project.title}
           items={INITIATIVE_CHECKLIST_ITEMS[phase]}
           completedKeys={project.checklistItems.map((c) => c.itemKey)}
+          initialStepIndex={Math.max(0, INITIATIVE_CHECKLIST_ITEMS[phase].findIndex((i) => i.key === step))}
         />
       </div>
     </div>
