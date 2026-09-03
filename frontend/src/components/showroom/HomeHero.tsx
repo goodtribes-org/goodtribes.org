@@ -39,7 +39,7 @@ function LogoMark({ size }: { size: number }) {
 // completely.
 function HeroLogoColumn() {
   return (
-    <div aria-hidden="true" className="hidden xl:flex flex-col items-center absolute" style={{ top: -57, right: 48 }}>
+    <div aria-hidden="true" className="hidden xl:flex flex-col items-center absolute" style={{ top: -57, right: 128 }}>
       <LogoMark size={480} />
     </div>
   );
