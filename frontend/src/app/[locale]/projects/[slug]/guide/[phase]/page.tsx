@@ -38,7 +38,7 @@ export default async function PhaseGuidePage({
   if (!isLeadRole(project.members[0]?.role)) redirect(`/projects/${slug}`);
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto min-w-0 w-full">
       <div className="mb-8">
         <PhaseMenuBar
           slug={slug}

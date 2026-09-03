@@ -161,7 +161,14 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
                   aria-hidden="true"
                 />
               )}
-              <div className="relative z-10 flex items-center shrink-0">
+              {/* z-30 while open, not just on the inner dropdown: the phase
+                  bar wraps onto two rows on narrow viewports (flex-wrap
+                  below sm), and a nested z-20 on the dropdown alone is
+                  scoped to this wrapper's own stacking context — it still
+                  loses to a later sibling phase's z-10 wrapper on the row
+                  below, which paints on top by DOM order on a z-index tie.
+                  Elevating the whole wrapper while open fixes that. */}
+              <div className={`relative flex items-center shrink-0 ${isOpen ? "z-30" : "z-10"}`}>
                 {checklist ? (
                   <button
                     type="button"
