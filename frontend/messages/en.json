@@ -698,7 +698,9 @@
     "navPartnerships": "Partnerships",
     "navAiReview": "AI review",
     "navLegalType": "Legal form",
-    "navFork": "Fork"
+    "navFork": "Fork",
+    "toggleMenuExpand": "Show menu labels",
+    "toggleMenuCollapse": "Show icons only"
   },
   "MembersManager": {
     "pageTitle": "Project members",

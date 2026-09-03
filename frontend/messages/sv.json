@@ -698,7 +698,9 @@
     "navPartnerships": "Partnerskap",
     "navAiReview": "AI-granskning",
     "navLegalType": "Juridisk form",
-    "navFork": "Gaffling"
+    "navFork": "Gaffling",
+    "toggleMenuExpand": "Visa menytext",
+    "toggleMenuCollapse": "Visa endast ikoner"
   },
   "MembersManager": {
     "pageTitle": "Projektmedlemmar",

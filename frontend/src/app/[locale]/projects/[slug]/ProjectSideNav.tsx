@@ -1,7 +1,7 @@
 "use client";
 
 import { Link, usePathname } from "@/i18n/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   Home,
@@ -35,8 +35,11 @@ import {
   Mic,
   Radar,
   Flag,
+  Menu,
   type LucideIcon,
 } from "lucide-react";
+
+const SIDENAV_COLLAPSED_STORAGE_KEY = "projectSideNavCollapsed";
 
 type NavItem = { label: string; href: string; icon: LucideIcon; getHref?: (slug: string) => string; commercialOnly?: boolean };
 
@@ -182,7 +185,22 @@ export default function ProjectSideNav({
   }
 
   const onHome = pathname === base;
-  const iconOnly = !onHome;
+  const [collapsedOverride, setCollapsedOverride] = useState<boolean | null>(null);
+  useEffect(() => {
+    const stored = window.localStorage.getItem(SIDENAV_COLLAPSED_STORAGE_KEY);
+    if (stored === "true" || stored === "false") setCollapsedOverride(stored === "true");
+  }, []);
+  const iconOnly = collapsedOverride !== null ? collapsedOverride : !onHome;
+
+  function toggleIconOnly() {
+    const next = !iconOnly;
+    setCollapsedOverride(next);
+    try {
+      window.localStorage.setItem(SIDENAV_COLLAPSED_STORAGE_KEY, String(next));
+    } catch {
+      // ignore storage errors (e.g. private browsing)
+    }
+  }
 
   const visibleToolsItems = TOOLS_ITEMS.filter((item) => !item.commercialOnly || isCommercial);
   const toolsActive = visibleToolsItems.some((item) => isActive(item.href));
@@ -234,6 +252,17 @@ export default function ProjectSideNav({
         />
         {onHome && <div aria-hidden style={{ height: "490px" }} />}
         <div className="relative sm:sticky sm:top-0 max-h-screen overflow-y-auto py-3 scrollbar-none" style={{ scrollbarWidth: "none" }}>
+        <button
+          type="button"
+          onClick={toggleIconOnly}
+          title={iconOnly ? t("toggleMenuExpand") : t("toggleMenuCollapse")}
+          aria-label={iconOnly ? t("toggleMenuExpand") : t("toggleMenuCollapse")}
+          className={`group flex items-center gap-3 rounded-lg py-2 mx-2 mb-2 pl-2 pr-2 transition-colors justify-center ${
+            iconOnly ? "" : "lg:justify-start"
+          } text-dark-slate/60 hover:bg-white hover:text-dark-slate`}
+        >
+          <Menu className="w-5 h-5 shrink-0" strokeWidth={2} />
+        </button>
         <div className="space-y-0.5">
           {MAIN_ITEMS.map((item) => (
             <Row
