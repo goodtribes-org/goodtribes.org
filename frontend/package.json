@@ -50,7 +50,7 @@
     "react-dom": "^19.2.8",
     "react-markdown": "^10.1.0",
     "react-simple-maps": "^3.0.0",
-    "resend": "^4",
+    "resend": "^6",
     "serwist": "^9.5.11",
     "sharp": "^0.35.3",
     "stripe": "^22.5.0"
