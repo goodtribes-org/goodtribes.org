@@ -13,10 +13,10 @@ export default async function VisionMissionGoal({ locale, copy }: { locale: Loca
   ];
 
   return (
-    <div className={`${homeSansFont.className} w-full`} style={{ paddingTop: 20, paddingBottom: 40 }}>
+    <div className={`${homeSansFont.className} relative z-10 w-full`} style={{ paddingTop: 20, paddingBottom: 40 }}>
       <div className="grid gap-px bg-muted-teal/20 border border-muted-teal/20 rounded-[10px] overflow-hidden" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
         {columns.map((col) => (
-          <div key={col.label} className="bg-white" style={{ padding: 26 }}>
+          <div key={col.label} className="bg-white/90" style={{ padding: 26 }}>
             <p className={showroomMonoFont.className} style={{ fontSize: 16, letterSpacing: ".07em", color: col.color, fontWeight: 600 }}>
               {col.label}
             </p>
