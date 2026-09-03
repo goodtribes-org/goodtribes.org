@@ -9,7 +9,7 @@
 # kept in sync going forward via Dependabot's docker ecosystem (see
 # .github/dependabot.yml). Bump both the tag comment and the digest
 # together when Dependabot opens a PR for this.
-FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS base
+FROM node:26-alpine@sha256:2d984a15c9b54fd0aeb608b8e0d0d83529eb34d2966db27a1fb4f1edc3d298a3 AS base
 
 # Dependencies
 FROM base AS deps
