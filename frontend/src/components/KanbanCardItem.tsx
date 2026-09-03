@@ -286,7 +286,7 @@ function KanbanCardItemImpl({
                       {editingSubtaskId === s.id ? (
                         <input
                           autoFocus
-                          className="flex-1 text-xs border-b border-blue-400 outline-none bg-transparent text-gray-700 py-0"
+                          className="flex-1 text-xs border-b border-blue-400 outline-none bg-white text-gray-700 py-0"
                           value={editingSubtaskTitle}
                           onChange={(e) => setEditingSubtaskTitle(e.target.value)}
                           onKeyDown={(e) => { e.stopPropagation(); if (e.key === "Enter") handleCardSaveSubtaskEdit(s); if (e.key === "Escape") setEditingSubtaskId(null); }}
@@ -340,7 +340,7 @@ function KanbanCardItemImpl({
                     }}
                     onBlur={() => { if (!newSubtaskInput.trim()) setAddingSubtask(false); else handleQuickAddSubtask().then(() => setAddingSubtask(false)); }}
                     placeholder={t("newSubtaskPlaceholder")}
-                    className="flex-1 text-xs border-b border-blue-400 outline-none py-0.5 placeholder-gray-300 bg-transparent text-gray-700"
+                    className="flex-1 text-xs border-b border-blue-400 outline-none py-0.5 placeholder-gray-300 bg-white text-gray-700"
                   />
                   <button
                     type="button"
@@ -388,7 +388,7 @@ function KanbanCardItemImpl({
                         onChange={(e) => setAdditionalContext(e.target.value)}
                         placeholder={t("aiContextPlaceholder")}
                         rows={2}
-                        className="w-full text-xs border border-gray-200 rounded px-1.5 py-1 placeholder-gray-300 bg-transparent text-gray-700 resize-none"
+                        className="w-full text-xs border border-gray-200 rounded px-1.5 py-1 placeholder-gray-300 bg-white text-gray-700 resize-none"
                       />
                       <div className="flex items-center gap-1.5">
                         <button

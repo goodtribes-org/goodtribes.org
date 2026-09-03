@@ -40,7 +40,7 @@ export default function EditableSitePage({ slug, locale, canEdit, title, body, t
           value={draftTitle}
           onChange={(e) => setDraftTitle(e.target.value)}
           maxLength={200}
-          className={`w-full font-bold border-b border-muted-teal focus:outline-none focus:border-coral pb-1 bg-transparent ${titleClassName ?? "text-3xl"}`}
+          className={`w-full font-bold border-b border-muted-teal focus:outline-none focus:border-coral pb-1 bg-white ${titleClassName ?? "text-3xl"}`}
         />
         <RichTextEditor content={draftBody} onChange={setDraftBody} />
         {error && <p className="text-sm text-watermelon">{error}</p>}

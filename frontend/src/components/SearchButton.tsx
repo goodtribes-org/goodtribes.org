@@ -101,7 +101,7 @@ export default function SearchButton() {
                 }
               }}
               placeholder={t("placeholder")}
-              className="w-full text-sm text-dark-slate/70 bg-transparent outline-none placeholder-dark-slate/30"
+              className="w-full text-sm text-dark-slate/70 bg-white outline-none placeholder-dark-slate/30"
             />
           </div>
 

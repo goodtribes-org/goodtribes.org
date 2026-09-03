@@ -56,7 +56,7 @@ export default function WikiEditor({ page, projectSlug, canEdit, canDelete, rend
           required
           maxLength={200}
           defaultValue={page.title}
-          className="w-full text-xl font-bold border-b border-muted-teal focus:outline-none focus:border-coral pb-1 bg-transparent"
+          className="w-full text-xl font-bold border-b border-muted-teal focus:outline-none focus:border-coral pb-1 bg-white"
         />
         <input type="hidden" name="content" value={content} />
         <RichTextEditor content={content} onChange={setContent} />

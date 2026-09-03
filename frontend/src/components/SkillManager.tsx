@@ -69,7 +69,7 @@ export default function SkillManager({ skills }: Props) {
               name="name"
               required
               placeholder={t("namePlaceholder")}
-              className="w-full border border-muted-teal rounded px-3 py-2 text-sm bg-yellow-50 focus:outline-none focus:border-seagrass"
+              className="w-full border border-muted-teal rounded px-3 py-2 text-sm bg-white focus:outline-none focus:border-seagrass"
             />
           </div>
           <div>
@@ -78,7 +78,7 @@ export default function SkillManager({ skills }: Props) {
               name="tag"
               required
               placeholder={t("tagPlaceholder")}
-              className="w-full border border-muted-teal rounded px-3 py-2 text-sm bg-yellow-50 focus:outline-none focus:border-seagrass"
+              className="w-full border border-muted-teal rounded px-3 py-2 text-sm bg-white focus:outline-none focus:border-seagrass"
             />
           </div>
           <div>
@@ -88,7 +88,7 @@ export default function SkillManager({ skills }: Props) {
               required
               rows={2}
               placeholder={t("descriptionPlaceholder")}
-              className="w-full border border-muted-teal rounded px-3 py-2 text-sm bg-yellow-50 focus:outline-none focus:border-seagrass resize-none"
+              className="w-full border border-muted-teal rounded px-3 py-2 text-sm bg-white focus:outline-none focus:border-seagrass resize-none"
             />
           </div>
           <button

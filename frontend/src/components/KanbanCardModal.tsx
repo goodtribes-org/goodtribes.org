@@ -308,7 +308,7 @@ function CardDetailModalImpl({
             onChange={(e) => setTitle(e.target.value)}
             disabled={!canEdit}
             rows={1}
-            className="w-full text-lg font-semibold text-gray-900 resize-none border-0 border-b border-transparent hover:border-gray-200 focus:border-blue-400 outline-none bg-transparent placeholder-gray-300 focus:ring-0 leading-tight transition-colors"
+            className="w-full text-lg font-semibold text-gray-900 resize-none border-0 border-b border-transparent hover:border-gray-200 focus:border-blue-400 outline-none bg-white placeholder-gray-300 focus:ring-0 leading-tight transition-colors"
             placeholder={tCard("titlePlaceholder")}
           />
 
@@ -531,7 +531,7 @@ function CardDetailModalImpl({
                       {editingSubtaskId === s.id ? (
                         <input
                           autoFocus
-                          className="flex-1 text-sm border-b border-blue-400 outline-none py-0.5 text-gray-700 bg-transparent"
+                          className="flex-1 text-sm border-b border-blue-400 outline-none py-0.5 text-gray-700 bg-white"
                           value={editingSubtaskTitle}
                           onChange={(e) => setEditingSubtaskTitle(e.target.value)}
                           onKeyDown={(e) => {

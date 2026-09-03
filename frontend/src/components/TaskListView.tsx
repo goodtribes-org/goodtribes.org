@@ -545,7 +545,7 @@ function InlineAddRow({
             if (e.key === "Escape") onClose();
           }}
           placeholder={t("taskNamePlaceholder")}
-          className="flex-1 text-sm bg-transparent border-0 outline-none placeholder-gray-400 text-gray-800"
+          className="flex-1 text-sm bg-white border-0 outline-none placeholder-gray-400 text-gray-800"
         />
         <select
           value={category}
@@ -585,7 +585,7 @@ function InlineAddRow({
             if (e.key === "Escape") onClose();
           }}
           placeholder={t("addSubtaskPlaceholder")}
-          className="flex-1 text-xs bg-transparent border-0 border-b border-gray-200 focus:border-blue-400 outline-none placeholder-gray-400 text-gray-700 py-0.5"
+          className="flex-1 text-xs bg-white border-0 border-b border-gray-200 focus:border-blue-400 outline-none placeholder-gray-400 text-gray-700 py-0.5"
         />
         <button type="button" onClick={addSubtask} disabled={!subtaskInput.trim()} className="text-blue-500 hover:text-blue-700 disabled:opacity-30 text-xs font-bold px-1">+</button>
       </div>
