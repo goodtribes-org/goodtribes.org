@@ -24,10 +24,10 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Check out Manifest
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: goodtribes-org/deploy
           ref: main
