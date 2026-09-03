@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
-import { homeSansFont, showroomMonoFont } from "@/lib/fonts";
+import { siteSansFont, showroomMonoFont } from "@/lib/fonts";
 
 // Goal-first examples of the platform's own tools (see ToolsGrid.tsx for
 // the full catalog) -- deliberately NOT real project data. This section
@@ -29,7 +29,7 @@ export default async function UsageNow({ locale, copy }: { locale: Locale; copy:
   const c = (key: string) => copy[`HomePage.usageNow.${key}`] ?? t(key);
 
   return (
-    <div className={`${homeSansFont.className} w-full`} style={{ paddingTop: 40, paddingBottom: 40 }}>
+    <div className={`${siteSansFont.className} w-full`} style={{ paddingTop: 40, paddingBottom: 40 }}>
       <div style={{ marginBottom: 32 }}>
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
           {c("eyebrow").toUpperCase()}
