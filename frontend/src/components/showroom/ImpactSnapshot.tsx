@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
-import { homeSansFont, showroomMonoFont } from "@/lib/fonts";
+import { siteSansFont, showroomMonoFont } from "@/lib/fonts";
 import type { PlatformImpactStats } from "@/lib/platformStats";
 
 const TILES = [
@@ -30,7 +30,7 @@ export default async function ImpactSnapshot({ locale, stats, copy }: { locale: 
 
   return (
     <div
-      className={`${homeSansFont.className} w-full`}
+      className={`${siteSansFont.className} w-full`}
       style={{ marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)", width: "100vw", background: "#fafaf8", borderTop: "1px solid rgba(178,176,155,.35)", borderBottom: "1px solid rgba(178,176,155,.35)" }}
     >
       <div className="max-w-6xl mx-auto px-6" style={{ paddingTop: 40, paddingBottom: 40 }}>

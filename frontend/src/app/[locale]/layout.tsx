@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { siteSansFont } from "@/lib/fonts";
 import { hasLocale, type Locale } from "next-intl";
 import { NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -25,8 +25,6 @@ import { SandboxProvider } from "@/components/SandboxIndicator";
 import { auth } from "@/auth";
 import { isSiteAdmin } from "@/lib/authz";
 import { getFooterPages } from "@/lib/sitePages";
-
-const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 
 const APP_URL = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
 
@@ -139,7 +137,7 @@ export default async function LocaleLayout({
   };
 
   return (
-    <html lang={locale} className={`bg-[#f6f5f2] ${inter.className}`}>
+    <html lang={locale} className={`bg-[#f6f5f2] ${siteSansFont.className}`}>
       <body className="min-h-screen bg-[#f6f5f2] text-dark-slate flex flex-col">
         {/* Static, locally-constructed object — no user input reaches this __html. */}
         <script

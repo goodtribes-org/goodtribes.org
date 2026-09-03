@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { homeSansFont } from "@/lib/fonts";
+import { siteSansFont } from "@/lib/fonts";
 
 // Typing a dream here and hitting "Skapa" takes the visitor straight into
 // project creation with the title prefilled — /projects/new already
@@ -23,7 +23,7 @@ export default function IdeaBand({ copy }: { copy: Record<string, string> }) {
   }
 
   return (
-    <div className={`${homeSansFont.className} w-full`} style={{ background: "#fafaf8", borderBottom: "1px solid rgba(178,176,155,.35)" }}>
+    <div className={`${siteSansFont.className} w-full`} style={{ background: "#fafaf8", borderBottom: "1px solid rgba(178,176,155,.35)" }}>
       <div className="max-w-6xl mx-auto px-6 py-[18px] flex flex-wrap items-center gap-8">
         <div className="flex-none w-[158px] rounded-2xl overflow-hidden bg-[#88D5F5]">
           <img src="/img/showroom/scene_papers.png" alt="" className="w-full" />

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
-import { homeSansFont, showroomMonoFont } from "@/lib/fonts";
+import { siteSansFont, showroomMonoFont } from "@/lib/fonts";
 import { SdgIcon } from "@/components/SdgIcon";
 import { getFoundingStoryData, verifiedSdgGoals } from "@/lib/impactReports";
 
@@ -48,7 +48,7 @@ export default async function FoundingStory({
   };
 
   return (
-    <section className={homeSansFont.className} style={{ paddingTop: 40, paddingBottom: 40 }}>
+    <section className={siteSansFont.className} style={{ paddingTop: 40, paddingBottom: 40 }}>
       <p
         className={showroomMonoFont.className}
         style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}

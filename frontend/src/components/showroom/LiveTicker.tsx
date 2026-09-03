@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
-import { showroomMonoFont, homeSansFont } from "@/lib/fonts";
+import { showroomMonoFont, siteSansFont } from "@/lib/fonts";
 
 // A continuously scrolling ticker (CSS-only marquee) rather than a
 // swap-every-few-seconds line, so all recent activity is visible in one
@@ -14,7 +14,7 @@ export default async function LiveTicker({ items, locale }: { items: string[]; l
 
   return (
     <div
-      className={`${homeSansFont.className} w-full`}
+      className={`${siteSansFont.className} w-full`}
       style={{
         marginLeft: "calc(50% - 50vw)",
         marginRight: "calc(50% - 50vw)",

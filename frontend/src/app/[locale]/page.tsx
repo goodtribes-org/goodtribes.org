@@ -27,7 +27,7 @@ import ImpactSnapshot from "@/components/showroom/ImpactSnapshot";
 import FoundingStory from "@/components/showroom/FoundingStory";
 import ToolsGrid from "@/components/showroom/ToolsGrid";
 import { getSiteCopyMap } from "@/lib/siteCopy";
-import { homeSansFont, showroomMonoFont } from "@/lib/fonts";
+import { siteSansFont, showroomMonoFont } from "@/lib/fonts";
 import { getPlatformImpactStats } from "@/lib/platformStats";
 
 const PAGE_SIZE = 8;
@@ -158,7 +158,7 @@ export default async function HomePage({
 
       <LiveTicker items={tickerItems} locale={locale} />
 
-      <section id="projects" className={homeSansFont.className} style={{ paddingTop: 40, paddingBottom: 40 }}>
+      <section id="projects" className={siteSansFont.className} style={{ paddingTop: 40, paddingBottom: 40 }}>
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
           {c("exploreProjectsEyebrow").toUpperCase()}
         </p>

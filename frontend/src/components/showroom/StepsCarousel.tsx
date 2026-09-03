@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { homeSansFont, showroomMonoFont } from "@/lib/fonts";
+import { siteSansFont, showroomMonoFont } from "@/lib/fonts";
 
 // Five steps (Dröm/Utforska/Skapa/Förändra/En bättre värld — 2026-08
 // homepage redesign). Ball colors and the dashed line between them keep the
@@ -34,7 +34,7 @@ export default function StepsCarousel({ copy }: { copy: Record<string, string> }
 
   return (
     <div
-      className={`${homeSansFont.className} w-full`}
+      className={`${siteSansFont.className} w-full`}
       style={{
         marginLeft: "calc(50% - 50vw)",
         marginRight: "calc(50% - 50vw)",

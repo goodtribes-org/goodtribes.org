@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
-import { homeSansFont, showroomMonoFont } from "@/lib/fonts";
+import { siteSansFont, showroomMonoFont, heroTaglineFont } from "@/lib/fonts";
 import type { HeroSlideData } from "@/lib/heroSlides";
 
 // Same mark as /public/img/goodtribes-mark.svg, inlined so it can render at
@@ -103,7 +103,7 @@ export default async function HomeHero({
   const ctaSecondary = copy["HomePage.heroCtaSecondary"] ?? t("heroCtaSecondary");
 
   return (
-    <div className={`${homeSansFont.className} relative`}>
+    <div className={`${siteSansFont.className} relative`}>
       <div className="relative flex items-center gap-10" style={{ paddingTop: 32, paddingBottom: 12 }}>
         {canEdit && (
           <Link
@@ -117,7 +117,7 @@ export default async function HomeHero({
           <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)", marginBottom: 18 }}>
             {eyebrow}
           </p>
-          <h1 className="text-dark-slate" style={{ fontWeight: 600, fontSize: 56, lineHeight: 1.05, letterSpacing: "-.025em", maxWidth: "15ch", textWrap: "balance" }}>
+          <h1 className={`text-dark-slate ${heroTaglineFont.className}`} style={{ fontWeight: 400, fontSize: 56, lineHeight: 1.15, maxWidth: "15ch", textWrap: "balance" }}>
             <HeroHeading text={heading} />
           </h1>
           <div style={{ marginTop: 26 }}>

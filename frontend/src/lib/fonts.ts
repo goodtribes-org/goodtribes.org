@@ -1,4 +1,14 @@
-import { Kalam, Instrument_Serif, Instrument_Sans, DM_Sans, JetBrains_Mono } from "next/font/google";
+import { Kalam, Instrument_Serif, DM_Sans, JetBrains_Mono, Inter, Satisfy } from "next/font/google";
+
+// The site's base sans font (also applied to <html> in the root layout) —
+// shared here so the homepage "showroom" sections use the exact same Inter
+// instance instead of loading a second copy of it.
+export const siteSansFont = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
+
+// Script font for the homepage hero's main tagline only ("Vi gör goda
+// drömmar verkliga.") — picked for a softer, more flowing/curly feel than
+// the plain sans used for the rest of the hero and showroom sections.
+export const heroTaglineFont = Satisfy({ subsets: ["latin"], weight: ["400"] });
 
 // Shared handwriting-style display font for hero headings (homepage +
 // per-project), so both stay in sync instead of loading separate instances.
@@ -14,9 +24,3 @@ export const handwritingFontThin = Kalam({ subsets: ["latin"], weight: ["400"] }
 export const displaySerifFont = Instrument_Serif({ subsets: ["latin"], weight: ["400"] });
 export const showroomBodyFont = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "700"] });
 export const showroomMonoFont = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500"] });
-
-// The redesigned homepage (2026-08 "systematic showroom" direction) pairs
-// with this instead of the serif/handwriting fonts above — a plainer,
-// github.com-inspired sans used for the new hero, Vision/Mission/Mål,
-// phase map, usage, and tools-grid sections.
-export const homeSansFont = Instrument_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });

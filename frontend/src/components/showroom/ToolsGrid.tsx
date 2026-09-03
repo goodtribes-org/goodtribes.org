@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
 import Link from "next/link";
-import { homeSansFont, showroomMonoFont } from "@/lib/fonts";
+import { siteSansFont, showroomMonoFont } from "@/lib/fonts";
 
 // Every tool listed here is a real, shipped feature (verified against the
 // actual project-workspace routes and models) — this grid is a marketing
@@ -37,7 +37,7 @@ export default async function ToolsGrid({ locale, copy }: { locale: Locale; copy
   const c = (key: string) => copy[`HomePage.tools.${key}`] ?? t(key);
 
   return (
-    <div className={`${homeSansFont.className} w-full`}>
+    <div className={`${siteSansFont.className} w-full`}>
       <div style={{ paddingTop: 40, paddingBottom: 32 }}>
         <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
           {c("eyebrow").toUpperCase()}

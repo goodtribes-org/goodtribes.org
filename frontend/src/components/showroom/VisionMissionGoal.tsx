@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
-import { homeSansFont, showroomMonoFont } from "@/lib/fonts";
+import { siteSansFont, showroomMonoFont } from "@/lib/fonts";
 
 export default async function VisionMissionGoal({ locale, copy }: { locale: Locale; copy: Record<string, string> }) {
   const t = await getTranslations({ locale, namespace: "HomePage.visionMissionGoal" });
@@ -13,7 +13,7 @@ export default async function VisionMissionGoal({ locale, copy }: { locale: Loca
   ];
 
   return (
-    <div className={`${homeSansFont.className} relative z-10 w-full`} style={{ paddingTop: 20, paddingBottom: 40 }}>
+    <div className={`${siteSansFont.className} relative z-10 w-full`} style={{ paddingTop: 20, paddingBottom: 40 }}>
       <div className="grid gap-px bg-muted-teal/20 border border-muted-teal/20 rounded-[10px] overflow-hidden" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
         {columns.map((col) => (
           <div key={col.label} className="bg-white/90" style={{ padding: 26 }}>
