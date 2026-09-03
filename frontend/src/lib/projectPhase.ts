@@ -84,6 +84,12 @@ export function getNextPhase(current: ProjectPhaseValue): ProjectPhaseValue | nu
 // team_formed, resources_secured, pilot_model_adjusted, quality_assured.
 // Their InitiativeChecklistItem rows are left in place, unread — same
 // intentional-orphan pattern as the TimeLog table (see root CLAUDE.md).
+//
+// The same restructuring briefly added a checkable "X guiden" item as each
+// phase's first step (pilot_guide_read etc.) — removed again the same day:
+// every phase's dropdown already has a guide link above the checklist (see
+// PhaseMenuBar's guideLinkLabel), so the checklist item was redundant and
+// did nothing a click couldn't already do.
 export const INITIATIVE_CHECKLIST_ITEMS: Record<
   ProjectPhaseValue,
   { key: string; label: string; href?: string; parentKey?: string }[]
@@ -99,7 +105,6 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
   ],
   SPRINT: [],
   PILOT: [
-    { key: "pilot_guide_read", label: "Uppstart guiden" },
     { key: "core_team_formed", label: "Definiera roller och bilda kärnteam" },
     { key: "sprint_prepped", label: "Design Sprint (5 steg)", href: "sprints" },
     { key: "map_understand", label: "Kartlägga & förstå", parentKey: "sprint_prepped" },
@@ -112,7 +117,6 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
     { key: "pilot_scope_defined", label: "Planera och avgränsa piloten" },
   ],
   PRODUCTION: [
-    { key: "production_guide_read", label: "Lansering guiden" },
     { key: "pilot_success_criteria", label: "Definiera framgångskriterier för pilotfasen" },
     { key: "pilot_executed_documented", label: "Genomföra piloten och dokumentera lärdomar löpande" },
     { key: "pilot_results_collected", label: "Samla in kvantitativa/kvalitativa resultat" },
@@ -122,7 +126,6 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
     { key: "impact_measurement_setup", label: "Sätta upp mätning/rapportering av impact", href: "impact" },
   ],
   ESTABLISH: [
-    { key: "establish_guide_read", label: "Etablera guiden" },
     { key: "process_scaled_up", label: "Skala upp processen som fungerade i piloten" },
     { key: "stable_operations_funding", label: "Bygga stabil drift och återkommande finansiering" },
     { key: "funding_secured", label: "Säkra finansiering", parentKey: "stable_operations_funding" },
@@ -132,7 +135,6 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
     { key: "review_council_deep_review", label: "Granskningsråd gör en djupare granskning inför skalning" },
   ],
   SCALE: [
-    { key: "scale_guide_read", label: "Skala guiden" },
     { key: "scale_vs_fork_decided", label: "Bestämma Skalning vs. Fork (samma projekt växer vs. nytt oberoende initiativ)", href: "scale" },
     { key: "scaling_goals_set", label: "Sätta upp mätbara skalningsmål" },
     { key: "new_geographies_identified", label: "Identifiera nya geografier/målgrupper" },
@@ -140,7 +142,6 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
     { key: "local_teams_or_license", label: "Bygga lokala team eller licensiera modellen" },
   ],
   IMPACT: [
-    { key: "impact_guide_read", label: "Impact guiden" },
     { key: "sdg_impact_measured", label: "Mäta och rapportera faktisk SDG-påverkan", href: "impact" },
     { key: "impact_externally_verified", label: "Extern verifiering/impact-rapport" },
     { key: "results_celebrated", label: "Fira och synliggöra resultat för community och finansiärer" },
