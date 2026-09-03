@@ -32,6 +32,9 @@ import {
   ChevronDown,
   Rocket,
   Gem,
+  Mic,
+  Radar,
+  Flag,
   type LucideIcon,
 } from "lucide-react";
 
@@ -50,7 +53,10 @@ function buildMainItems(t: ReturnType<typeof useTranslations>): NavItem[] {
     { label: t("navLeanCanvas"), href: "/lean-canvas",   icon: LayoutGrid },
     { label: t("navProjectPlan"), href: "/project-plan", icon: ClipboardList },
     { label: t("navValueProposition"), href: "/value-proposition", icon: Gem },
+    { label: t("navInterviews"), href: "/interviews", icon: Mic },
+    { label: t("navMarketScan"), href: "/market-scan", icon: Radar },
     { label: t("navDesignSprints"), href: "/sprints",    icon: Rocket },
+    { label: t("navLaunchPlan"), href: "/launch-plan", icon: Flag },
   ];
 }
 

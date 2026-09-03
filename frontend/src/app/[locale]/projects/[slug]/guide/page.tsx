@@ -30,9 +30,11 @@ export default async function IdeaGuidePage({
   // it — unlike SDG selection or the Lean Canvas, there's no other field to
   // check this against, so it's computed here rather than trusted from
   // completedKeys (which older guide versions marked unconditionally).
-  const [memberCount, pendingInviteCount] = await Promise.all([
+  const [memberCount, pendingInviteCount, interviewCount, marketScanCount] = await Promise.all([
     prisma.projectMember.count({ where: { projectId: project.id } }),
     prisma.projectInvite.count({ where: { projectId: project.id, usedAt: null } }),
+    prisma.interviewLogEntry.count({ where: { projectSlug: slug } }),
+    prisma.marketScanEntry.count({ where: { projectSlug: slug } }),
   ]);
   const hasInvitedSomeone = memberCount > 1 || pendingInviteCount > 0;
 
@@ -60,6 +62,8 @@ export default async function IdeaGuidePage({
         completedKeys={project.checklistItems.map((c) => c.itemKey)}
         leanCanvas={project.leanCanvas}
         valueProposition={project.valueProposition}
+        hasInterviews={interviewCount > 0}
+        hasMarketScan={marketScanCount > 0}
         hasInvitedSomeone={hasInvitedSomeone}
       />
     </div>

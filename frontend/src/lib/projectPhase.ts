@@ -63,60 +63,84 @@ export function getNextPhase(current: ProjectPhaseValue): ProjectPhaseValue | nu
 // Checklist sub-steps within every phase (PRD 4d) — a UI progress checklist,
 // not separate phase values. peer_feedback_requested is informative only,
 // never a gate (idea -> sprint is always the initiator's own call).
-export const INITIATIVE_CHECKLIST_ITEMS: Record<ProjectPhaseValue, { key: string; label: string; href?: string }[]> = {
+//
+// An item with `parentKey` set is a sub-step of the item with that key —
+// PhaseMenuBar numbers it as a sub-number (e.g. 2.3.1) of its parent's
+// top-level number instead of getting its own, and it must sit immediately
+// after its parent in the array (source order defines the grouping). This
+// replaced a one-off hardcoded "SPRINT's items are IDEA item 5's sub-steps"
+// special case in PhaseMenuBar with a reusable mechanism — used below both
+// for the Design Sprint's 5 steps (2.3.x) and for 4.3's two funding items.
+//
+// SPRINT's own items now live inline inside PILOT (moved there so Design
+// Sprint shows under Fas 2/Uppstart, not Fas 1/Idé); the SPRINT array here
+// is kept empty only so this stays a complete Record<ProjectPhaseValue, ...>
+// for type purposes and so getChecklistForPhase(SPRINT) — called for
+// projects whose stored raw phase is still literally "SPRINT" — can keep
+// returning IDEA's list, the same visible step per toDisplayPhase.
+//
+// 2026-09-03 restructuring also dropped 7 itemKeys with no home in the new
+// structure: sprint_lean_canvas, todo_created, collaborators_invited,
+// team_formed, resources_secured, pilot_model_adjusted, quality_assured.
+// Their InitiativeChecklistItem rows are left in place, unread — same
+// intentional-orphan pattern as the TimeLog table (see root CLAUDE.md).
+export const INITIATIVE_CHECKLIST_ITEMS: Record<
+  ProjectPhaseValue,
+  { key: string; label: string; href?: string; parentKey?: string }[]
+> = {
   IDEA: [
     { key: "dream_defined", label: "Beskriv projektet" },
     { key: "ai_reviewed", label: "Välj SDG" },
     { key: "lean_canvas_created", label: "Lean Canvas", href: "lean-canvas" },
     { key: "value_proposition_created", label: "Värdeerbjudande", href: "value-proposition" },
-    { key: "peer_feedback_requested", label: "Bjud in vänner" },
-    { key: "sprint_prepped", label: "Sprint", href: "sprints" },
+    { key: "target_audience_interviews", label: "Målgruppsintervjuer", href: "interviews" },
+    { key: "market_scan_partners", label: "Omvärldsbevakning & Partners", href: "market-scan" },
+    { key: "peer_feedback_requested", label: "Bjud in vänner / Bygg teamet" },
   ],
-  SPRINT: [
-    { key: "map_understand", label: "Kartlägga & förstå" },
-    { key: "sketch_solutions", label: "Skissa lösningar" },
-    { key: "decide_plan", label: "Beslut & planera" },
-    { key: "build_prototype", label: "Bygga prototyp" },
-    { key: "test_with_users", label: "Testa med användare" },
-  ],
+  SPRINT: [],
   PILOT: [
-    { key: "sprint_lean_canvas", label: "Skriva en enkel projektplan (mål, delmål, resurser, risker)", href: "project-plan" },
+    { key: "pilot_guide_read", label: "Uppstart guiden" },
     { key: "core_team_formed", label: "Definiera roller och bilda kärnteam" },
+    { key: "sprint_prepped", label: "Design Sprint (5 steg)", href: "sprints" },
+    { key: "map_understand", label: "Kartlägga & förstå", parentKey: "sprint_prepped" },
+    { key: "sketch_solutions", label: "Skissa lösningar", parentKey: "sprint_prepped" },
+    { key: "decide_plan", label: "Beslut & planera", parentKey: "sprint_prepped" },
+    { key: "build_prototype", label: "Bygga prototyp", parentKey: "sprint_prepped" },
+    { key: "test_with_users", label: "Testa med användare", parentKey: "sprint_prepped" },
     { key: "kanban_seeded", label: "Sätta upp Kanban-board med första uppgifterna", href: "kanban" },
-    { key: "pilot_success_criteria", label: "Definiera framgångskriterier för pilotfasen" },
     { key: "rough_budget_estimated", label: "Ta fram grov budget/resursbehov" },
-    { key: "todo_created", label: "Fyll på med arbetsuppgifter" },
-    { key: "collaborators_invited", label: "Bjud in medskapare" },
-    { key: "team_formed", label: "Formera team" },
-    { key: "resources_secured", label: "Säkra resurser" },
-    { key: "pilot_scope_defined", label: "Avgränsa ett litet, konkret test (tid, plats, målgrupp)" },
-    { key: "pilot_executed_documented", label: "Genomföra piloten och dokumentera lärdomar löpande" },
-    { key: "pilot_results_collected", label: "Samla in kvantitativa/kvalitativa resultat" },
-    { key: "pilot_model_adjusted", label: "Justera modellen baserat på feedback" },
-    { key: "pilot_go_no_go", label: "Utvärdera mot framgångskriterierna → go/no-go beslut" },
+    { key: "pilot_scope_defined", label: "Planera och avgränsa piloten" },
   ],
   PRODUCTION: [
-    { key: "process_scaled_up", label: "Skala upp processen som fungerade i piloten" },
+    { key: "production_guide_read", label: "Lansering guiden" },
+    { key: "pilot_success_criteria", label: "Definiera framgångskriterier för pilotfasen" },
+    { key: "pilot_executed_documented", label: "Genomföra piloten och dokumentera lärdomar löpande" },
+    { key: "pilot_results_collected", label: "Samla in kvantitativa/kvalitativa resultat" },
+    { key: "pilot_go_no_go", label: "Utvärdera piloten mot framgångskriterierna → go/no-go beslut" },
+    { key: "launch_marketing_plan_created", label: "Lanserings- och marknadsplan", href: "launch-plan" },
     { key: "workflows_formalized", label: "Formalisera arbetsflöden och ansvar" },
-    { key: "funding_secured", label: "Säkra finansiering" },
     { key: "impact_measurement_setup", label: "Sätta upp mätning/rapportering av impact", href: "impact" },
-    { key: "quality_assured", label: "Kvalitetssäkring" },
   ],
   ESTABLISH: [
+    { key: "establish_guide_read", label: "Etablera guiden" },
+    { key: "process_scaled_up", label: "Skala upp processen som fungerade i piloten" },
     { key: "stable_operations_funding", label: "Bygga stabil drift och återkommande finansiering" },
+    { key: "funding_secured", label: "Säkra finansiering", parentKey: "stable_operations_funding" },
     { key: "partnerships_formalized", label: "Formalisera partnerskap och samarbeten", href: "partnerships" },
-    { key: "playbook_documented", label: "Dokumentera \"playbook\" så andra kan replikera", href: "wiki" },
     { key: "supporter_base_built", label: "Bygga upp en stabil community/supporterbas" },
+    { key: "playbook_documented", label: "Dokumentera \"playbook\" så andra kan replikera", href: "wiki" },
     { key: "review_council_deep_review", label: "Granskningsråd gör en djupare granskning inför skalning" },
   ],
   SCALE: [
+    { key: "scale_guide_read", label: "Skala guiden" },
     { key: "scale_vs_fork_decided", label: "Bestämma Skalning vs. Fork (samma projekt växer vs. nytt oberoende initiativ)", href: "scale" },
-    { key: "new_geographies_identified", label: "Identifiera nya geografier/målgrupper" },
-    { key: "local_teams_or_license", label: "Bygga lokala team eller licensiera modellen" },
     { key: "scaling_goals_set", label: "Sätta upp mätbara skalningsmål" },
+    { key: "new_geographies_identified", label: "Identifiera nya geografier/målgrupper" },
     { key: "expansion_capital_secured", label: "Säkra kapital för expansion" },
+    { key: "local_teams_or_license", label: "Bygga lokala team eller licensiera modellen" },
   ],
   IMPACT: [
+    { key: "impact_guide_read", label: "Impact guiden" },
     { key: "sdg_impact_measured", label: "Mäta och rapportera faktisk SDG-påverkan", href: "impact" },
     { key: "impact_externally_verified", label: "Extern verifiering/impact-rapport" },
     { key: "results_celebrated", label: "Fira och synliggöra resultat för community och finansiärer" },
@@ -124,12 +148,11 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<ProjectPhaseValue, { key: string
   ],
 };
 
-// The checklist for a project's stored phase — IDEA and SPRINT return the
-// combined list (both are the same visible "Idé" step), any other phase
-// returns its own list unchanged. Item keys never collide across phases.
+// The checklist for a project's stored phase. SPRINT (a project's raw
+// stored phase can still literally be this, pre-existing data) returns
+// IDEA's list — same visible "Idé" step per toDisplayPhase. Design Sprint's
+// own steps now render under PILOT (Fas 2/Uppstart), not here.
 export function getChecklistForPhase(phase: ProjectPhaseValue) {
-  if (phase === "IDEA" || phase === "SPRINT") {
-    return [...INITIATIVE_CHECKLIST_ITEMS.IDEA, ...INITIATIVE_CHECKLIST_ITEMS.SPRINT];
-  }
+  if (phase === "SPRINT") return INITIATIVE_CHECKLIST_ITEMS.IDEA;
   return INITIATIVE_CHECKLIST_ITEMS[phase];
 }

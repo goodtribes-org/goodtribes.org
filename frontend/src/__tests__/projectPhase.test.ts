@@ -106,10 +106,9 @@ describe("projectPhase", () => {
   });
 
   describe("getChecklistForPhase", () => {
-    it("returns the combined IDEA+SPRINT checklist for both IDEA and SPRINT", () => {
-      const combined = [...INITIATIVE_CHECKLIST_ITEMS.IDEA, ...INITIATIVE_CHECKLIST_ITEMS.SPRINT];
-      expect(getChecklistForPhase("IDEA")).toEqual(combined);
-      expect(getChecklistForPhase("SPRINT")).toEqual(combined);
+    it("returns IDEA's own checklist for both IDEA and SPRINT (same visible 'Idé' step)", () => {
+      expect(getChecklistForPhase("IDEA")).toEqual(INITIATIVE_CHECKLIST_ITEMS.IDEA);
+      expect(getChecklistForPhase("SPRINT")).toEqual(INITIATIVE_CHECKLIST_ITEMS.IDEA);
     });
 
     it("returns each other phase's own checklist unchanged", () => {
@@ -118,8 +117,8 @@ describe("projectPhase", () => {
       }
     });
 
-    it("has no duplicate item keys within the combined IDEA+SPRINT checklist", () => {
-      const keys = getChecklistForPhase("IDEA").map((item) => item.key);
+    it("has no duplicate item keys across the whole checklist (item keys never collide across phases)", () => {
+      const keys = PROJECT_PHASES.flatMap((p) => INITIATIVE_CHECKLIST_ITEMS[p.value].map((item) => item.key));
       expect(new Set(keys).size).toBe(keys.length);
     });
 
@@ -130,6 +129,19 @@ describe("projectPhase", () => {
           expect(item.key.length).toBeGreaterThan(0);
           expect(item.label.length).toBeGreaterThan(0);
         }
+      }
+    });
+
+    it("every item with a parentKey resolves to a real top-level item earlier in the same phase array (walking back through sibling sub-items)", () => {
+      for (const phase of PROJECT_PHASES) {
+        const items = INITIATIVE_CHECKLIST_ITEMS[phase.value];
+        items.forEach((item, i) => {
+          if (!item.parentKey) return;
+          let j = i - 1;
+          while (j >= 0 && items[j].parentKey) j -= 1;
+          expect(j).toBeGreaterThanOrEqual(0);
+          expect(items[j].key).toBe(item.parentKey);
+        });
       }
     });
   });

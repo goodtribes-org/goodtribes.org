@@ -23,10 +23,10 @@ import { INITIATIVE_CHECKLIST_ITEMS } from "@/lib/projectPhase";
 // The sprint step doesn't move the project's actual phase forward (IDEA and
 // SPRINT are merged into one visible "Idé" step everywhere — see
 // projectPhase.ts) — it just lets founders get a head start on sprint prep
-// while still in Idé. Reuses SPRINT's own first 5 checklist keys/labels so
-// ticking them here already counts if the project later really enters
-// SPRINT phase.
-const SPRINT_PREP_ITEMS = INITIATIVE_CHECKLIST_ITEMS.SPRINT.slice(0, 5);
+// while still in Idé. Reuses Design Sprint's own 5 sub-items (now nested
+// under PILOT's sprint_prepped item — see projectPhase.ts) so ticking them
+// here already counts if the project later really enters PILOT phase.
+const SPRINT_PREP_ITEMS = INITIATIVE_CHECKLIST_ITEMS.PILOT.filter((item) => item.parentKey === "sprint_prepped");
 
 interface Props {
   projectId: string;
@@ -41,10 +41,12 @@ interface Props {
   completedKeys: string[];
   leanCanvas: LeanCanvas | null;
   valueProposition: ValueProposition | null;
+  hasInterviews: boolean;
+  hasMarketScan: boolean;
   hasInvitedSomeone: boolean;
 }
 
-// The full idea-phase guide, all 6 steps navigable in either direction —
+// The full idea-phase guide, all 8 steps navigable in either direction —
 // step 1 ("Beskriv projektet") both creates the Project on /projects/new
 // and can be revisited/edited here afterward via updateIdeaDetails.
 export default function IdeaGuide({
@@ -60,6 +62,8 @@ export default function IdeaGuide({
   completedKeys,
   leanCanvas,
   valueProposition,
+  hasInterviews,
+  hasMarketScan,
   hasInvitedSomeone,
 }: Props) {
   const t = useTranslations("IdeaGuide");
@@ -147,18 +151,34 @@ export default function IdeaGuide({
     });
   }
 
+  function handleInterviewsNext() {
+    startTransition(async () => {
+      await completeIdeaGuideStep(slug, "target_audience_interviews", hasInterviews);
+      markDone("target_audience_interviews", hasInterviews);
+      setStep(5);
+    });
+  }
+
+  function handleMarketScanNext() {
+    startTransition(async () => {
+      await completeIdeaGuideStep(slug, "market_scan_partners", hasMarketScan);
+      markDone("market_scan_partners", hasMarketScan);
+      setStep(6);
+    });
+  }
+
   function handleFeedbackNext() {
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "peer_feedback_requested", invitedSomeone);
       markDone("peer_feedback_requested", invitedSomeone);
-      setStep(5);
+      setStep(7);
     });
   }
 
   function toggleSprintTask(itemKey: string) {
     const wasDone = done.has(itemKey);
     startTransition(async () => {
-      await toggleChecklistItem(slug, "IDEA", itemKey, !wasDone);
+      await toggleChecklistItem(slug, "PILOT", itemKey, !wasDone);
       setDone((prev) => {
         const next = new Set(prev);
         if (wasDone) next.delete(itemKey); else next.add(itemKey);
@@ -389,8 +409,66 @@ export default function IdeaGuide({
         </div>
       </div>
 
-      {/* Step 5 — Bjud in vänner */}
+      {/* Step 5 — Målgruppsintervjuer */}
       <div className={step === 4 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
+        <div className="rounded-xl border border-seagrass/20 bg-seagrass/5 p-5">
+          <label className="block text-base font-semibold text-dark-slate mb-1">
+            {t("interviewsLabel")}
+          </label>
+          <p className="text-sm text-dark-slate/60 mb-4">
+            {t("interviewsHint")}
+          </p>
+          <a
+            href={`/projects/${slug}/interviews`}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors"
+          >
+            {t("openInterviewLog")}
+          </a>
+        </div>
+        <div className="flex justify-between pt-2">
+          <button type="button" onClick={() => setStep(3)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={handleInterviewsNext}
+            className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            {isPending ? t("saving") : t("next")}
+          </button>
+        </div>
+      </div>
+
+      {/* Step 6 — Omvärldsbevakning & Partners */}
+      <div className={step === 5 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
+        <div className="rounded-xl border border-seagrass/20 bg-seagrass/5 p-5">
+          <label className="block text-base font-semibold text-dark-slate mb-1">
+            {t("marketScanLabel")}
+          </label>
+          <p className="text-sm text-dark-slate/60 mb-4">
+            {t("marketScanHint")}
+          </p>
+          <a
+            href={`/projects/${slug}/market-scan`}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors"
+          >
+            {t("openMarketScan")}
+          </a>
+        </div>
+        <div className="flex justify-between pt-2">
+          <button type="button" onClick={() => setStep(4)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={handleMarketScanNext}
+            className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            {isPending ? t("saving") : t("next")}
+          </button>
+        </div>
+      </div>
+
+      {/* Step 7 — Bjud in vänner */}
+      <div className={step === 6 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div className="rounded-xl border border-seagrass/20 bg-seagrass/5 p-5">
           <label className="block text-base font-semibold text-dark-slate mb-1">
             {t("inviteFriendsLabel")}
@@ -406,7 +484,7 @@ export default function IdeaGuide({
           />
         </div>
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(3)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button type="button" onClick={() => setStep(5)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
             type="button"
             disabled={isPending}
@@ -418,8 +496,8 @@ export default function IdeaGuide({
         </div>
       </div>
 
-      {/* Step 6 — Sprint */}
-      <div className={step === 5 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
+      {/* Step 8 — Sprint */}
+      <div className={step === 7 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div>
           <label className="block text-sm font-medium text-dark-slate mb-1">{t("sprintLabel")}</label>
           <p className="text-xs text-dark-slate/50 mb-4">
@@ -455,7 +533,7 @@ export default function IdeaGuide({
           </div>
         </div>
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(4)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button type="button" onClick={() => setStep(6)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
             type="button"
             disabled={isPending}

@@ -172,6 +172,109 @@ model ValuePropositionDraft {
   @@index([ownerId])
 }
 
+// Target-audience interview log (checklist item target_audience_interviews,
+// Fas 1/Idé, see lib/projectPhase.ts) — one row per interview conducted.
+// Plain free-text fields, no sanitizeHtml() — same plain-text discipline as
+// LeanCanvasComment.body (React's default escaping, no HTML authored here).
+model InterviewLogEntry {
+  id          String   @id @default(cuid())
+  projectSlug String
+  project     Project  @relation("ProjectInterviewLogEntries", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  date        DateTime
+  personaName String
+  painPoint   String   @db.Text
+  validated   Boolean
+  quotes      String?  @db.Text
+  createdById String
+  createdBy   User     @relation("InterviewLogEntryCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@index([projectSlug])
+}
+
+enum MarketScanEntryType {
+  COMPETITOR
+  TREND
+  PARTNER_PROSPECT
+  REGULATION
+}
+
+// Lightweight competitive/market-environment scan and early partner
+// prospecting (checklist item market_scan_partners, Fas 1/Idé) — a running,
+// informal list. Not the same thing as Partnership (scaling-and-partnerships.prisma),
+// which is the later, formal, consent-based org<->project relationship —
+// this module is deliberately upstream of and separate from that model.
+model MarketScanEntry {
+  id            String              @id @default(cuid())
+  projectSlug   String
+  project       Project             @relation("ProjectMarketScanEntries", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  type          MarketScanEntryType
+  name          String
+  description   String              @db.Text
+  relevanceNote String?             @db.Text
+  sourceUrl     String?
+  createdById   String
+  createdBy     User                @relation("MarketScanEntryCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@index([projectSlug])
+}
+
+enum ChannelPlanStatus {
+  PLANNED
+  ACTIVE
+  DONE
+}
+
+// Launch & marketing plan (checklist item launch_marketing_plan_created,
+// Fas 3/Lansering) — one per project: narrative fields plus two repeatable
+// child lists (channels, milestones). Deliberately no version history
+// (unlike LeanCanvas) — this is a formalization document edited
+// occasionally around launch, not an iterative ideation tool.
+model LaunchPlan {
+  id             String                @id @default(cuid())
+  projectSlug    String                @unique
+  project        Project               @relation("ProjectLaunchPlan", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  targetAudience String?               @db.Text
+  positioning    String?               @db.Text
+  budgetOverview String?               @db.Text
+  successMetrics String?               @db.Text
+  updatedById    String?
+  updatedBy      User?                 @relation("LaunchPlanUpdatedBy", fields: [updatedById], references: [id])
+  channels       LaunchPlanChannel[]
+  milestones     LaunchPlanMilestone[]
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+}
+
+model LaunchPlanChannel {
+  id           String            @id @default(cuid())
+  launchPlanId String
+  launchPlan   LaunchPlan        @relation(fields: [launchPlanId], references: [id], onDelete: Cascade)
+  name         String
+  tactic       String?           @db.Text
+  owner        String?
+  budget       String?
+  plannedDate  DateTime?
+  status       ChannelPlanStatus @default(PLANNED)
+  createdAt    DateTime          @default(now())
+
+  @@index([launchPlanId])
+}
+
+model LaunchPlanMilestone {
+  id           String     @id @default(cuid())
+  launchPlanId String
+  launchPlan   LaunchPlan @relation(fields: [launchPlanId], references: [id], onDelete: Cascade)
+  date         DateTime
+  description  String
+  done         Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+
+  @@index([launchPlanId])
+}
+
 // A project-less Excalidraw scratchpad — same idea as LeanCanvasDraft, for
 // the "try the whiteboard before starting a project" Sandbox tool. Single
 // owner only (no live collaborators, unlike SprintPhase.documentState —

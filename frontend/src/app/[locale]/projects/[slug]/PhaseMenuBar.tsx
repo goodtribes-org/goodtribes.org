@@ -3,13 +3,27 @@
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
-import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, INITIATIVE_CHECKLIST_ITEMS, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 
-// getChecklistForPhase("IDEA") appends SPRINT's items after IDEA's own —
-// those SPRINT items are the same 5 sub-tasks shown inside item 1.5
-// ("Sprint") in the guide, so they're numbered as its sub-steps (1.5.1…)
-// instead of continuing the flat 1.6, 1.7… sequence.
-const IDEA_TOP_LEVEL_COUNT = INITIATIVE_CHECKLIST_ITEMS.IDEA.length;
+// Numbers a phase's checklist ("2.3", "2.3.1", "4.3", "4.3.2", …) from a
+// running top-level/sub-level counter. An item with `parentKey` set is a
+// sub-step of the item immediately before it that lacks one — it gets the
+// parent's top-level number with a sub-number appended, instead of its own
+// top-level number. Source order defines the grouping, same as the data in
+// INITIATIVE_CHECKLIST_ITEMS itself (see lib/projectPhase.ts).
+function numberChecklist(items: { key: string; parentKey?: string }[], phaseNumber: number): string[] {
+  let topLevel = 0;
+  let sub = 0;
+  return items.map((item) => {
+    if (item.parentKey) {
+      sub += 1;
+      return `${phaseNumber}.${topLevel}.${sub}`;
+    }
+    topLevel += 1;
+    sub = 0;
+    return `${phaseNumber}.${topLevel}`;
+  });
+}
 
 interface Props {
   slug: string;
@@ -85,6 +99,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
           const isReached = i <= currentIndex;
           const isViewing = p.value === viewingDisplayPhase;
           const checklist = getChecklistForPhase(p.value);
+          const itemNumbers = checklist ? numberChecklist(checklist, i + 1) : [];
           const isOpen = openPhase === p.value;
           const canEditThis = canEdit;
 
@@ -194,9 +209,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
                           </button>
                           <span className={`text-sm ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/80"}`}>
                             <span className="text-dark-slate/40 font-medium">
-                              {p.value === "IDEA" && j >= IDEA_TOP_LEVEL_COUNT
-                                ? `${i + 1}.${IDEA_TOP_LEVEL_COUNT}.${j - IDEA_TOP_LEVEL_COUNT + 1}`
-                                : `${i + 1}.${j + 1}`}
+                              {itemNumbers[j]}
                             </span>{" "}
                             {item.href ? (
                               <a href={`/projects/${slug}/${item.href}`} className="hover:underline">{tChecklist(item.key)}</a>
