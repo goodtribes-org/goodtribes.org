@@ -208,7 +208,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
                             )}
                           </button>
                           <span className={`text-sm ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/80"}`}>
-                            <span className="text-dark-slate/40 font-medium">
+                            <span className={`font-medium ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/40"}`}>
                               {itemNumbers[j]}
                             </span>{" "}
                             <a
@@ -219,7 +219,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
                                     ? `/projects/${slug}/guide?step=${item.key}`
                                     : `/projects/${slug}/guide/${p.value.toLowerCase()}?step=${item.key}`
                               }
-                              className="hover:underline"
+                              className={`hover:underline ${done ? "text-dark-slate/30 line-through" : ""}`}
                             >
                               {tChecklist(item.key)}
                             </a>
