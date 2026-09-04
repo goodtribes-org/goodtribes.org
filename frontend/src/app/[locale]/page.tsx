@@ -205,14 +205,14 @@ export default async function HomePage({
 
       <PhaseMap locale={locale} steps={phaseMapSteps} copy={copy} />
 
-      <UsageNow locale={locale} copy={copy} />
+      {/* One concrete project first, then the platform-wide numbers, then
+          the tools. Hides itself when the configured project doesn't exist
+          in this environment. */}
+      <FoundingStory locale={locale} copy={copy} />
 
       <ImpactSnapshot locale={locale} stats={impactStats} copy={copy} />
 
-      {/* Platform-wide numbers, then one project that shows what they add up
-          to in practice, then the tools. Hides itself when the configured
-          project doesn't exist in this environment. */}
-      <FoundingStory locale={locale} copy={copy} />
+      <UsageNow locale={locale} copy={copy} />
 
       <ToolsGrid locale={locale} copy={copy} />
     </div>
