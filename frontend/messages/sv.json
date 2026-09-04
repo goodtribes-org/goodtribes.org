@@ -2019,14 +2019,8 @@
       "cta": "Följ hela projektet",
       "statsFootnote": "Siffrorna hämtas från projektets granskade impact-rapporter.",
       "projectSlug": "infos-datordonation",
-      "qualifier": {
-        "AT_LEAST": "minst",
-        "APPROXIMATE": "ca"
-      },
       "sdgLabel": "Globala mål",
-      "supportLabel": "Möjliggjort av",
-      "cumulativeNote": "Totalt sedan start",
-      "since": "Sedan {year}"
+      "supportLabel": "Möjliggjort av"
     },
     "tools": {
       "eyebrow": "Verktygen",

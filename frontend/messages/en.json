@@ -2019,14 +2019,8 @@
       "cta": "Follow the whole project",
       "statsFootnote": "Figures are read from the project's reviewed impact reports.",
       "projectSlug": "infos-datordonation",
-      "qualifier": {
-        "AT_LEAST": "at least",
-        "APPROXIMATE": "approx."
-      },
       "sdgLabel": "Global goals",
-      "supportLabel": "Made possible by",
-      "cumulativeNote": "Total since inception",
-      "since": "Since {year}"
+      "supportLabel": "Made possible by"
     },
     "tools": {
       "eyebrow": "The tools",
