@@ -90,6 +90,23 @@ export function getNextPhase(current: ProjectPhaseValue): ProjectPhaseValue | nu
 // every phase's dropdown already has a guide link above the checklist (see
 // PhaseMenuBar's guideLinkLabel), so the checklist item was redundant and
 // did nothing a click couldn't already do.
+//
+// 2026-09-04 audit: every item from PILOT onward used to fall back to the
+// generic PhaseGuide's bare checkbox (no `href`) unless it happened to have
+// a dedicated tool — unlike IDEA, whose bespoke IdeaGuide embeds a real tool
+// per step. Given every item an `href` this pass: some point at existing
+// tools that were built but never linked from the checklist (core_team_formed
+// -> members' role manager, rough_budget_estimated/pilot_scope_defined ->
+// project-plan, stable_operations_funding/funding_secured -> funding, the
+// Design Sprint's 5 sub-steps -> sprints), and four brand-new single-row
+// "formalization document" tools were added (same shape as ProjectPlan/
+// LaunchPlan — see planning-tools.prisma) for items that had no home at all:
+// PilotEvaluation (pilot-evaluation), EstablishmentPlan (establishment-plan),
+// ScalingPlan (scaling-plan), ImpactFollowup (impact-followup). The one
+// exception left without an href is review_council_deep_review — there is no
+// existing per-project "request a review" flow into Granskningsrådet (which
+// today is platform-wide, not project-scoped); building one is a governance
+// design decision, not a linking fix, and is intentionally left open.
 export const INITIATIVE_CHECKLIST_ITEMS: Record<
   ProjectPhaseValue,
   { key: string; label: string; href?: string; parentKey?: string }[]
@@ -105,47 +122,47 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
   ],
   SPRINT: [],
   PILOT: [
-    { key: "core_team_formed", label: "Definiera roller och bilda kärnteam" },
+    { key: "core_team_formed", label: "Definiera roller och bilda kärnteam", href: "members" },
     { key: "sprint_prepped", label: "Design Sprint (5 steg)", href: "sprints" },
-    { key: "map_understand", label: "Kartlägga & förstå", parentKey: "sprint_prepped" },
-    { key: "sketch_solutions", label: "Skissa lösningar", parentKey: "sprint_prepped" },
-    { key: "decide_plan", label: "Beslut & planera", parentKey: "sprint_prepped" },
-    { key: "build_prototype", label: "Bygga prototyp", parentKey: "sprint_prepped" },
-    { key: "test_with_users", label: "Testa med användare", parentKey: "sprint_prepped" },
+    { key: "map_understand", label: "Kartlägga & förstå", href: "sprints", parentKey: "sprint_prepped" },
+    { key: "sketch_solutions", label: "Skissa lösningar", href: "sprints", parentKey: "sprint_prepped" },
+    { key: "decide_plan", label: "Beslut & planera", href: "sprints", parentKey: "sprint_prepped" },
+    { key: "build_prototype", label: "Bygga prototyp", href: "sprints", parentKey: "sprint_prepped" },
+    { key: "test_with_users", label: "Testa med användare", href: "sprints", parentKey: "sprint_prepped" },
     { key: "kanban_seeded", label: "Sätta upp Kanban-board med första uppgifterna", href: "kanban" },
-    { key: "rough_budget_estimated", label: "Ta fram grov budget/resursbehov" },
-    { key: "pilot_scope_defined", label: "Planera och avgränsa piloten" },
+    { key: "rough_budget_estimated", label: "Ta fram grov budget/resursbehov", href: "project-plan" },
+    { key: "pilot_scope_defined", label: "Planera och avgränsa piloten", href: "project-plan" },
   ],
   PRODUCTION: [
-    { key: "pilot_success_criteria", label: "Definiera framgångskriterier för pilotfasen" },
-    { key: "pilot_executed_documented", label: "Genomföra piloten och dokumentera lärdomar löpande" },
-    { key: "pilot_results_collected", label: "Samla in kvantitativa/kvalitativa resultat" },
-    { key: "pilot_go_no_go", label: "Utvärdera piloten mot framgångskriterierna → go/no-go beslut" },
+    { key: "pilot_success_criteria", label: "Definiera framgångskriterier för pilotfasen", href: "pilot-evaluation" },
+    { key: "pilot_executed_documented", label: "Genomföra piloten och dokumentera lärdomar löpande", href: "pilot-evaluation" },
+    { key: "pilot_results_collected", label: "Samla in kvantitativa/kvalitativa resultat", href: "pilot-evaluation" },
+    { key: "pilot_go_no_go", label: "Utvärdera piloten mot framgångskriterierna → go/no-go beslut", href: "pilot-evaluation" },
     { key: "launch_marketing_plan_created", label: "Lanserings- och marknadsplan", href: "launch-plan" },
-    { key: "workflows_formalized", label: "Formalisera arbetsflöden och ansvar" },
+    { key: "workflows_formalized", label: "Formalisera arbetsflöden och ansvar", href: "wiki" },
     { key: "impact_measurement_setup", label: "Sätta upp mätning/rapportering av impact", href: "impact" },
   ],
   ESTABLISH: [
-    { key: "process_scaled_up", label: "Skala upp processen som fungerade i piloten" },
-    { key: "stable_operations_funding", label: "Bygga stabil drift och återkommande finansiering" },
-    { key: "funding_secured", label: "Säkra finansiering", parentKey: "stable_operations_funding" },
+    { key: "process_scaled_up", label: "Skala upp processen som fungerade i piloten", href: "establishment-plan" },
+    { key: "stable_operations_funding", label: "Bygga stabil drift och återkommande finansiering", href: "funding" },
+    { key: "funding_secured", label: "Säkra finansiering", href: "funding", parentKey: "stable_operations_funding" },
     { key: "partnerships_formalized", label: "Formalisera partnerskap och samarbeten", href: "partnerships" },
-    { key: "supporter_base_built", label: "Bygga upp en stabil community/supporterbas" },
+    { key: "supporter_base_built", label: "Bygga upp en stabil community/supporterbas", href: "establishment-plan" },
     { key: "playbook_documented", label: "Dokumentera \"playbook\" så andra kan replikera", href: "wiki" },
     { key: "review_council_deep_review", label: "Granskningsråd gör en djupare granskning inför skalning" },
   ],
   SCALE: [
     { key: "scale_vs_fork_decided", label: "Bestämma Skalning vs. Fork (samma projekt växer vs. nytt oberoende initiativ)", href: "scale" },
-    { key: "scaling_goals_set", label: "Sätta upp mätbara skalningsmål" },
-    { key: "new_geographies_identified", label: "Identifiera nya geografier/målgrupper" },
-    { key: "expansion_capital_secured", label: "Säkra kapital för expansion" },
-    { key: "local_teams_or_license", label: "Bygga lokala team eller licensiera modellen" },
+    { key: "scaling_goals_set", label: "Sätta upp mätbara skalningsmål", href: "scaling-plan" },
+    { key: "new_geographies_identified", label: "Identifiera nya geografier/målgrupper", href: "scaling-plan" },
+    { key: "expansion_capital_secured", label: "Säkra kapital för expansion", href: "scaling-plan" },
+    { key: "local_teams_or_license", label: "Bygga lokala team eller licensiera modellen", href: "scaling-plan" },
   ],
   IMPACT: [
     { key: "sdg_impact_measured", label: "Mäta och rapportera faktisk SDG-påverkan", href: "impact" },
-    { key: "impact_externally_verified", label: "Extern verifiering/impact-rapport" },
-    { key: "results_celebrated", label: "Fira och synliggöra resultat för community och finansiärer" },
-    { key: "next_step_decided", label: "Besluta om nästa steg: fortsätta, replikera, eller avsluta ansvarsfullt" },
+    { key: "impact_externally_verified", label: "Extern verifiering/impact-rapport", href: "impact-followup" },
+    { key: "results_celebrated", label: "Fira och synliggöra resultat för community och finansiärer", href: "impact-followup" },
+    { key: "next_step_decided", label: "Besluta om nästa steg: fortsätta, replikera, eller avsluta ansvarsfullt", href: "impact-followup" },
   ],
 };
 

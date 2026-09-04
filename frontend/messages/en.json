@@ -3151,6 +3151,81 @@
     "emptyEditable": "Empty — click Edit to fill in.",
     "emptyReadOnly": "Not filled in yet."
   },
+  "PilotEvaluationPage": {
+    "title": "Pilot Evaluation"
+  },
+  "PilotEvaluationForm": {
+    "successCriteriaLabel": "Success criteria",
+    "successCriteriaHint": "What has to be true for you to call the pilot a success?",
+    "executionNotesLabel": "Execution",
+    "executionNotesHint": "Document learnings as the pilot runs.",
+    "resultsSummaryLabel": "Results",
+    "resultsSummaryHint": "Summarize the quantitative/qualitative results.",
+    "decisionLabel": "Go/no-go decision",
+    "decisionPending": "Not decided yet",
+    "decisionGo": "Go — the pilot moved forward",
+    "decisionNoGo": "No-go — the pilot did not move forward",
+    "edit": "Edit",
+    "saving": "Saving…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "emptyEditable": "Empty — click Edit to fill in.",
+    "emptyReadOnly": "Not filled in yet."
+  },
+  "EstablishmentPlanPage": {
+    "title": "Establishment Plan"
+  },
+  "EstablishmentPlanForm": {
+    "scaledProcessNotesLabel": "Scaled-up process",
+    "scaledProcessNotesHint": "How are you scaling up what worked in the pilot?",
+    "supporterBaseNotesLabel": "Community/supporter base",
+    "supporterBaseNotesHint": "How are you building a stable community/supporter base?",
+    "edit": "Edit",
+    "saving": "Saving…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "emptyEditable": "Empty — click Edit to fill in.",
+    "emptyReadOnly": "Not filled in yet."
+  },
+  "ScalingPlanPage": {
+    "title": "Scaling Plan"
+  },
+  "ScalingPlanForm": {
+    "goalsLabel": "Scaling goals",
+    "goalsHint": "What measurable goals apply to the scaling effort?",
+    "geographiesLabel": "New geographies/audiences",
+    "geographiesHint": "What new geographies or target audiences are you aiming for?",
+    "capitalPlanLabel": "Capital for expansion",
+    "capitalPlanHint": "How are you securing the capital needed for expansion?",
+    "teamOrLicenseModelLabel": "Local teams or licensing",
+    "teamOrLicenseModelHint": "Are you building local teams, or licensing the model?",
+    "edit": "Edit",
+    "saving": "Saving…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "emptyEditable": "Empty — click Edit to fill in.",
+    "emptyReadOnly": "Not filled in yet."
+  },
+  "ImpactFollowupPage": {
+    "title": "Impact Follow-up"
+  },
+  "ImpactFollowupForm": {
+    "externalVerificationNotesLabel": "External verification",
+    "externalVerificationNotesHint": "How, and by whom, is your impact reporting verified externally?",
+    "celebrationNotesLabel": "Celebrate and showcase results",
+    "celebrationNotesHint": "How are you celebrating and showcasing the results for your community and funders?",
+    "nextStepDecisionLabel": "Next step",
+    "decisionUndecided": "Not decided yet",
+    "decisionContinue": "Continue",
+    "decisionReplicate": "Replicate",
+    "decisionCloseResponsibly": "Close responsibly",
+    "edit": "Edit",
+    "saving": "Saving…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "emptyEditable": "Empty — click Edit to fill in.",
+    "emptyReadOnly": "Not filled in yet."
+  },
   "IdeaSessionsPage": {
     "heading": "Idea Workshop",
     "intro": "Bounce new approaches off the project's members — write @AI to invite the AI, which has access to the project's description, milestones, tasks, and wiki.",

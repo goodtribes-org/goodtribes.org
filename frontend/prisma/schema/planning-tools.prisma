@@ -275,6 +275,89 @@ model LaunchPlanMilestone {
   @@index([launchPlanId])
 }
 
+enum PilotDecision {
+  PENDING
+  GO
+  NO_GO
+}
+
+// Pilot evaluation (checklist items pilot_success_criteria/
+// pilot_executed_documented/pilot_results_collected/pilot_go_no_go, Fas 3/
+// Lansering) — one per project, same "formalization document, no version
+// history" shape as ProjectPlan/LaunchPlan above.
+model PilotEvaluation {
+  id                String        @id @default(cuid())
+  projectSlug       String        @unique
+  project           Project       @relation("ProjectPilotEvaluation", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  successCriteria   String?       @db.Text
+  executionNotes    String?       @db.Text
+  resultsSummary    String?       @db.Text
+  decision          PilotDecision @default(PENDING)
+  updatedById       String?
+  updatedBy         User?         @relation("PilotEvaluationUpdatedBy", fields: [updatedById], references: [id])
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+// Establishment notes (checklist items process_scaled_up/supporter_base_built,
+// Fas 4/Etablera) — the two ESTABLISH items with no other existing tool to
+// link to (partnerships/wiki/funding already cover the rest of that phase).
+model EstablishmentPlan {
+  id                  String   @id @default(cuid())
+  projectSlug         String   @unique
+  project             Project  @relation("ProjectEstablishmentPlan", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  scaledProcessNotes  String?  @db.Text
+  supporterBaseNotes  String?  @db.Text
+  updatedById         String?
+  updatedBy           User?    @relation("EstablishmentPlanUpdatedBy", fields: [updatedById], references: [id])
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+// Scaling plan (checklist items scaling_goals_set/new_geographies_identified/
+// expansion_capital_secured/local_teams_or_license, Fas 5/Skala) — separate
+// from the scale_vs_fork_decided decision itself (Project.openForReplication/
+// ProjectInstance, see the scale/ workspace page), this is the planning
+// document for once that decision is made.
+model ScalingPlan {
+  id                 String   @id @default(cuid())
+  projectSlug        String   @unique
+  project            Project  @relation("ProjectScalingPlan", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  goals              String?  @db.Text
+  geographies        String?  @db.Text
+  capitalPlan        String?  @db.Text
+  teamOrLicenseModel String?  @db.Text
+  updatedById        String?
+  updatedBy          User?    @relation("ScalingPlanUpdatedBy", fields: [updatedById], references: [id])
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+enum NextStepDecision {
+  UNDECIDED
+  CONTINUE
+  REPLICATE
+  CLOSE_RESPONSIBLY
+}
+
+// Impact follow-up (checklist items impact_externally_verified/
+// results_celebrated/next_step_decided, Fas 6/Impact) — separate from
+// ImpactReport (scaling-and-partnerships.prisma), which is the discrete,
+// site-admin-verified SDG-outcome claims; this is the founder's own
+// closing-the-loop notes once those reports exist.
+model ImpactFollowup {
+  id                         String           @id @default(cuid())
+  projectSlug                String           @unique
+  project                    Project          @relation("ProjectImpactFollowup", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  externalVerificationNotes  String?          @db.Text
+  celebrationNotes           String?          @db.Text
+  nextStepDecision           NextStepDecision @default(UNDECIDED)
+  updatedById                String?
+  updatedBy                  User?            @relation("ImpactFollowupUpdatedBy", fields: [updatedById], references: [id])
+  createdAt                  DateTime         @default(now())
+  updatedAt                  DateTime         @updatedAt
+}
+
 // A project-less Excalidraw scratchpad — same idea as LeanCanvasDraft, for
 // the "try the whiteboard before starting a project" Sandbox tool. Single
 // owner only (no live collaborators, unlike SprintPhase.documentState —

@@ -3151,6 +3151,81 @@
     "emptyEditable": "Tomt — klicka Redigera för att fylla i.",
     "emptyReadOnly": "Inte ifyllt än."
   },
+  "PilotEvaluationPage": {
+    "title": "Pilotutvärdering"
+  },
+  "PilotEvaluationForm": {
+    "successCriteriaLabel": "Framgångskriterier",
+    "successCriteriaHint": "Vad ska vara sant för att ni ska kalla piloten lyckad?",
+    "executionNotesLabel": "Genomförande",
+    "executionNotesHint": "Dokumentera lärdomar löpande medan piloten pågår.",
+    "resultsSummaryLabel": "Resultat",
+    "resultsSummaryHint": "Sammanfatta de kvantitativa/kvalitativa resultaten.",
+    "decisionLabel": "Go/no-go-beslut",
+    "decisionPending": "Ej beslutat än",
+    "decisionGo": "Go — piloten gick vidare",
+    "decisionNoGo": "No-go — piloten gick inte vidare",
+    "edit": "Redigera",
+    "saving": "Sparar…",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "emptyEditable": "Tomt — klicka Redigera för att fylla i.",
+    "emptyReadOnly": "Inte ifyllt än."
+  },
+  "EstablishmentPlanPage": {
+    "title": "Etableringsplan"
+  },
+  "EstablishmentPlanForm": {
+    "scaledProcessNotesLabel": "Uppskalad process",
+    "scaledProcessNotesHint": "Hur skalar ni upp det som fungerade i piloten?",
+    "supporterBaseNotesLabel": "Community/supporterbas",
+    "supporterBaseNotesHint": "Hur bygger ni en stabil community/supporterbas?",
+    "edit": "Redigera",
+    "saving": "Sparar…",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "emptyEditable": "Tomt — klicka Redigera för att fylla i.",
+    "emptyReadOnly": "Inte ifyllt än."
+  },
+  "ScalingPlanPage": {
+    "title": "Skalningsplan"
+  },
+  "ScalingPlanForm": {
+    "goalsLabel": "Skalningsmål",
+    "goalsHint": "Vilka mätbara mål gäller för skalningen?",
+    "geographiesLabel": "Nya geografier/målgrupper",
+    "geographiesHint": "Vilka nya geografier eller målgrupper siktar ni på?",
+    "capitalPlanLabel": "Kapital för expansion",
+    "capitalPlanHint": "Hur säkrar ni kapitalet som behövs för expansionen?",
+    "teamOrLicenseModelLabel": "Lokala team eller licensiering",
+    "teamOrLicenseModelHint": "Bygger ni lokala team eller licensierar ni modellen?",
+    "edit": "Redigera",
+    "saving": "Sparar…",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "emptyEditable": "Tomt — klicka Redigera för att fylla i.",
+    "emptyReadOnly": "Inte ifyllt än."
+  },
+  "ImpactFollowupPage": {
+    "title": "Impact-uppföljning"
+  },
+  "ImpactFollowupForm": {
+    "externalVerificationNotesLabel": "Extern verifiering",
+    "externalVerificationNotesHint": "Hur och av vem verifieras er impact-rapportering externt?",
+    "celebrationNotesLabel": "Fira och synliggör resultat",
+    "celebrationNotesHint": "Hur firar och synliggör ni resultaten för community och finansiärer?",
+    "nextStepDecisionLabel": "Nästa steg",
+    "decisionUndecided": "Ej beslutat än",
+    "decisionContinue": "Fortsätta",
+    "decisionReplicate": "Replikera",
+    "decisionCloseResponsibly": "Avsluta ansvarsfullt",
+    "edit": "Redigera",
+    "saving": "Sparar…",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "emptyEditable": "Tomt — klicka Redigera för att fylla i.",
+    "emptyReadOnly": "Inte ifyllt än."
+  },
   "IdeaSessionsPage": {
     "heading": "Idéverkstad",
     "intro": "Bolla nya angreppssätt med projektets medlemmar — skriv @AI för att bjuda in AI, som har tillgång till projektets beskrivning, milstolpar, uppgifter och wiki.",
