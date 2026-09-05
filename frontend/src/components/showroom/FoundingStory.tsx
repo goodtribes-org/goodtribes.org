@@ -3,6 +3,8 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
 import { siteSansFont, showroomMonoFont } from "@/lib/fonts";
 import { SdgIcon } from "@/components/SdgIcon";
+import Tooltip from "@/components/Tooltip";
+import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import { getFoundingStoryData, verifiedSdgGoals } from "@/lib/impactReports";
 
 type Report = NonNullable<Awaited<ReturnType<typeof getFoundingStoryData>>>["delivered"][number];
@@ -26,6 +28,14 @@ const STAT_CIRCLE_LABELS: Record<string, string> = {
   "infos-co2-total": "Utsläppsminskning",
   "infos-fulltime-staff": "Heltidare",
   "infos-volunteers": "Frivilliga eldsjälar",
+};
+
+// Folds one report's circle into another's instead of giving it its own —
+// per explicit direction, staff count reads as a footnote on the volunteer
+// count rather than a peer circle. The merged-in report is dropped from the
+// main circle list entirely and rendered as a small second line instead.
+const STAT_CIRCLE_MERGE_INTO: Record<string, string> = {
+  "infos-fulltime-staff": "infos-volunteers",
 };
 
 // Overrides the plain metricUnit ("kr") with a fuller phrase for circles
@@ -174,33 +184,41 @@ export default async function FoundingStory({
               anyone who wants the detail behind a figure. */}
           {delivered.length > 0 && (
             <div className="flex flex-wrap gap-6" style={{ marginTop: 4 }}>
-              {delivered.map((r, i) => {
-                const label = STAT_CIRCLE_LABELS[r.id];
-                const unit = STAT_CIRCLE_UNIT_OVERRIDES[r.id] ?? r.metricUnit;
-                const millionsInUnit = r.id in STAT_CIRCLE_UNIT_OVERRIDES && r.metricValue >= 1_000_000;
-                return (
-                  <div
-                    key={r.id}
-                    className="rounded-full flex flex-col items-center justify-center flex-shrink-0 text-center"
-                    style={{ width: 152, height: 152, background: STAT_CIRCLE_COLORS[i % STAT_CIRCLE_COLORS.length] }}
-                  >
-                    {label && (
-                      <p className="text-white" style={{ fontSize: 12, fontWeight: 600, letterSpacing: ".01em", marginBottom: 2 }}>
-                        {label}
+              {delivered
+                .filter((r) => !(r.id in STAT_CIRCLE_MERGE_INTO))
+                .map((r, i) => {
+                  const label = STAT_CIRCLE_LABELS[r.id];
+                  const unit = STAT_CIRCLE_UNIT_OVERRIDES[r.id] ?? r.metricUnit;
+                  const millionsInUnit = r.id in STAT_CIRCLE_UNIT_OVERRIDES && r.metricValue >= 1_000_000;
+                  const merged = delivered.find((other) => STAT_CIRCLE_MERGE_INTO[other.id] === r.id);
+                  return (
+                    <div
+                      key={r.id}
+                      className="rounded-full flex flex-col items-center justify-center flex-shrink-0 text-center"
+                      style={{ width: 152, height: 152, background: STAT_CIRCLE_COLORS[i % STAT_CIRCLE_COLORS.length] }}
+                    >
+                      {label && (
+                        <p className="text-white" style={{ fontSize: 12, fontWeight: 600, letterSpacing: ".01em", marginBottom: 2 }}>
+                          {label}
+                        </p>
+                      )}
+                      <p className="text-white font-bold" style={{ fontSize: 23, letterSpacing: "-.01em", lineHeight: 1.15, padding: "0 10px" }}>
+                        {formatStatNumber(r.metricValue, r.valueQualifier, locale, {
+                          hideApprox: STAT_CIRCLE_HIDE_APPROX_SYMBOL.has(r.id),
+                          millionsInUnit,
+                        })}
                       </p>
-                    )}
-                    <p className="text-white font-bold" style={{ fontSize: 23, letterSpacing: "-.01em", lineHeight: 1.15, padding: "0 10px" }}>
-                      {formatStatNumber(r.metricValue, r.valueQualifier, locale, {
-                        hideApprox: STAT_CIRCLE_HIDE_APPROX_SYMBOL.has(r.id),
-                        millionsInUnit,
-                      })}
-                    </p>
-                    {unit && (
-                      <p style={{ color: "rgba(255,255,255,.8)", fontSize: 12, lineHeight: 1.2, marginTop: 2 }}>{unit}</p>
-                    )}
-                  </div>
-                );
-              })}
+                      {unit && (
+                        <p style={{ color: "rgba(255,255,255,.8)", fontSize: 12, lineHeight: 1.2, marginTop: 2 }}>{unit}</p>
+                      )}
+                      {merged && (
+                        <p style={{ color: "rgba(255,255,255,.8)", fontSize: 11, lineHeight: 1.2, marginTop: 6 }}>
+                          {formatStatNumber(merged.metricValue, merged.valueQualifier, locale)} {STAT_CIRCLE_LABELS[merged.id]?.toLowerCase()}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           )}
 
@@ -235,13 +253,27 @@ export default async function FoundingStory({
                 <p className={showroomMonoFont.className} style={{ fontSize: 10, letterSpacing: ".12em", color: "var(--color-dark-slate)", opacity: .4, marginBottom: 12 }}>
                   {c("sdgLabel").toUpperCase()}
                 </p>
-                {/* Same size/spacing as the SDG row on the project's own
-                    impact panel (VerifiedImpactPanel), for visual parity
-                    between the two places these goals show up. */}
-                <div className="flex flex-wrap gap-1">
-                  {goals.map((n) => (
-                    <SdgIcon key={n} n={n} size={24} />
-                  ))}
+                {/* Same full 18-tile grid (all goals, achieved ones lit up,
+                    the rest dimmed) as the "Agenda 2030" box next to the
+                    project's own photo on its own page — per explicit
+                    direction that this should match that treatment, not the
+                    shorter achieved-only row VerifiedImpactPanel uses. */}
+                <div className="grid grid-cols-6 gap-1">
+                  {[...Array.from({ length: 17 }, (_, i) => i + 1), 18].map((n) => {
+                    const isSelected = goals.includes(n) || n === 18;
+                    return (
+                      <Tooltip key={n} lines={[`SDG ${n}`, SDG_LABELS_SV[n] ?? ""]}>
+                        <a
+                          href={SDG_UN_URLS[n] ?? "https://www.un.org/sustainabledevelopment/sustainable-development-goals/"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg block cursor-pointer"
+                        >
+                          <SdgIcon n={n} size={32} dark={!isSelected} />
+                        </a>
+                      </Tooltip>
+                    );
+                  })}
                 </div>
               </div>
             )}
