@@ -143,7 +143,7 @@ export default function IdeaGuide({
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "lean_canvas_created", hasContent);
       markDone("lean_canvas_created", hasContent);
-      setStep(3);
+      setStep(4);
     });
   }
 
@@ -152,7 +152,7 @@ export default function IdeaGuide({
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "value_proposition_created", hasContent);
       markDone("value_proposition_created", hasContent);
-      setStep(4);
+      setStep(5);
     });
   }
 
@@ -160,7 +160,7 @@ export default function IdeaGuide({
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "target_audience_interviews", hasInterviews);
       markDone("target_audience_interviews", hasInterviews);
-      setStep(5);
+      setStep(6);
     });
   }
 
@@ -168,7 +168,7 @@ export default function IdeaGuide({
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "market_scan_partners", hasMarketScan);
       markDone("market_scan_partners", hasMarketScan);
-      setStep(6);
+      setStep(7);
     });
   }
 
@@ -176,7 +176,7 @@ export default function IdeaGuide({
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "peer_feedback_requested", invitedSomeone);
       markDone("peer_feedback_requested", invitedSomeone);
-      setStep(7);
+      setStep(3);
     });
   }
 
@@ -368,112 +368,10 @@ export default function IdeaGuide({
         </div>
       </div>
 
-      {/* Step 3 — Lean Canvas (kept full-width, unlike the other steps, so
-          its 10-column grid has room at the 900px+ breakpoint) */}
-      <div className={step === 2 ? "flex flex-col gap-5" : "hidden"}>
-        <div className="max-w-3xl">
-          <label className="block text-sm font-medium text-dark-slate mb-1">{t("leanCanvasLabel")}</label>
-          <p className="text-xs text-dark-slate/50 mb-3">
-            {t("leanCanvasHint")}
-          </p>
-        </div>
-        <LeanCanvasGrid projectSlug={slug} canvas={leanCanvas} canEdit />
-        <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(1)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={handleLeanCanvasNext}
-            className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
-          >
-            {isPending ? t("saving") : t("next")}
-          </button>
-        </div>
-      </div>
-
-      {/* Step 4 — Värdeerbjudande (kept full-width, like Lean Canvas, so its
-          2-column layout has room to sit side by side) */}
-      <div className={step === 3 ? "flex flex-col gap-5" : "hidden"}>
-        <div className="max-w-3xl">
-          <label className="block text-sm font-medium text-dark-slate mb-1">{t("valuePropositionLabel")}</label>
-          <p className="text-xs text-dark-slate/50 mb-3">
-            {t("valuePropositionHint")}
-          </p>
-        </div>
-        <ValuePropositionGrid projectSlug={slug} canvas={valueProposition} canEdit />
-        <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(2)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={handleValuePropositionNext}
-            className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
-          >
-            {isPending ? t("saving") : t("next")}
-          </button>
-        </div>
-      </div>
-
-      {/* Step 5 — Målgruppsintervjuer */}
-      <div className={step === 4 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
-        <div className="rounded-xl border border-seagrass/20 bg-seagrass/5 p-5">
-          <label className="block text-base font-semibold text-dark-slate mb-1">
-            {t("interviewsLabel")}
-          </label>
-          <p className="text-sm text-dark-slate/60 mb-4">
-            {t("interviewsHint")}
-          </p>
-          <a
-            href={`/projects/${slug}/interviews`}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors"
-          >
-            {t("openInterviewLog")}
-          </a>
-        </div>
-        <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(3)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={handleInterviewsNext}
-            className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
-          >
-            {isPending ? t("saving") : t("next")}
-          </button>
-        </div>
-      </div>
-
-      {/* Step 6 — Omvärldsbevakning */}
-      <div className={step === 5 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
-        <div className="rounded-xl border border-seagrass/20 bg-seagrass/5 p-5">
-          <label className="block text-base font-semibold text-dark-slate mb-1">
-            {t("marketScanLabel")}
-          </label>
-          <p className="text-sm text-dark-slate/60 mb-4">
-            {t("marketScanHint")}
-          </p>
-          <a
-            href={`/projects/${slug}/market-scan`}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors"
-          >
-            {t("openMarketScan")}
-          </a>
-        </div>
-        <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(4)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={handleMarketScanNext}
-            className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
-          >
-            {isPending ? t("saving") : t("next")}
-          </button>
-        </div>
-      </div>
-
-      {/* Step 7 — Bjud in vänner */}
-      <div className={step === 6 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
+      {/* Step 3 — Bjud in vänner (moved to right after SDG, so a founder
+          brings in collaborators before sinking time into Lean Canvas etc. —
+          see projectPhase.ts's IDEA order) */}
+      <div className={step === 2 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div className="rounded-xl border border-seagrass/20 bg-seagrass/5 p-5">
           <label className="block text-base font-semibold text-dark-slate mb-1">
             {t("inviteFriendsLabel")}
@@ -489,11 +387,115 @@ export default function IdeaGuide({
           />
         </div>
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(5)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button type="button" onClick={() => setStep(1)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
             type="button"
             disabled={isPending}
             onClick={handleFeedbackNext}
+            className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            {isPending ? t("saving") : t("next")}
+          </button>
+        </div>
+      </div>
+
+      {/* Step 4 — Lean Canvas (kept full-width, unlike the other steps, so
+          its 10-column grid has room at the 900px+ breakpoint) */}
+      <div className={step === 3 ? "flex flex-col gap-5" : "hidden"}>
+        <div className="max-w-3xl">
+          <label className="block text-sm font-medium text-dark-slate mb-1">{t("leanCanvasLabel")}</label>
+          <p className="text-xs text-dark-slate/50 mb-3">
+            {t("leanCanvasHint")}
+          </p>
+        </div>
+        <LeanCanvasGrid projectSlug={slug} canvas={leanCanvas} canEdit />
+        <div className="flex justify-between pt-2">
+          <button type="button" onClick={() => setStep(2)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={handleLeanCanvasNext}
+            className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            {isPending ? t("saving") : t("next")}
+          </button>
+        </div>
+      </div>
+
+      {/* Step 5 — Värdeerbjudande (kept full-width, like Lean Canvas, so its
+          2-column layout has room to sit side by side) */}
+      <div className={step === 4 ? "flex flex-col gap-5" : "hidden"}>
+        <div className="max-w-3xl">
+          <label className="block text-sm font-medium text-dark-slate mb-1">{t("valuePropositionLabel")}</label>
+          <p className="text-xs text-dark-slate/50 mb-3">
+            {t("valuePropositionHint")}
+          </p>
+        </div>
+        <ValuePropositionGrid projectSlug={slug} canvas={valueProposition} canEdit />
+        <div className="flex justify-between pt-2">
+          <button type="button" onClick={() => setStep(3)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={handleValuePropositionNext}
+            className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            {isPending ? t("saving") : t("next")}
+          </button>
+        </div>
+      </div>
+
+      {/* Step 6 — Målgruppsintervjuer */}
+      <div className={step === 5 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
+        <div className="rounded-xl border border-seagrass/20 bg-seagrass/5 p-5">
+          <label className="block text-base font-semibold text-dark-slate mb-1">
+            {t("interviewsLabel")}
+          </label>
+          <p className="text-sm text-dark-slate/60 mb-4">
+            {t("interviewsHint")}
+          </p>
+          <a
+            href={`/projects/${slug}/interviews`}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors"
+          >
+            {t("openInterviewLog")}
+          </a>
+        </div>
+        <div className="flex justify-between pt-2">
+          <button type="button" onClick={() => setStep(4)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={handleInterviewsNext}
+            className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            {isPending ? t("saving") : t("next")}
+          </button>
+        </div>
+      </div>
+
+      {/* Step 7 — Omvärldsbevakning */}
+      <div className={step === 6 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
+        <div className="rounded-xl border border-seagrass/20 bg-seagrass/5 p-5">
+          <label className="block text-base font-semibold text-dark-slate mb-1">
+            {t("marketScanLabel")}
+          </label>
+          <p className="text-sm text-dark-slate/60 mb-4">
+            {t("marketScanHint")}
+          </p>
+          <a
+            href={`/projects/${slug}/market-scan`}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors"
+          >
+            {t("openMarketScan")}
+          </a>
+        </div>
+        <div className="flex justify-between pt-2">
+          <button type="button" onClick={() => setStep(5)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={handleMarketScanNext}
             className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
           >
             {isPending ? t("saving") : t("next")}
