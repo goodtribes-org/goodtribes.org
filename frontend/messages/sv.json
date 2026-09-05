@@ -2003,13 +2003,6 @@
       "ideaSessionsGoal": "Strukturera en brainstorm med andra",
       "ideaSessionsBody": "Bolla idéer i Idéverkstaden, med en AI som hjälper sortera tankarna till en mindmap."
     },
-    "impactSnapshot": {
-      "eyebrow": "Plattformen i siffror",
-      "heading": "Vad tribe:n har åstadkommit tillsammans",
-      "raisedLabel": "Insamlat",
-      "donatedLabel": "Donerat",
-      "tasksDoneLabel": "Uppgifter lösta"
-    },
     "foundingStory": {
       "eyebrow": "Så långt kan en idé nå",
       "heading": "Det började med datorer som skulle skrotas.",

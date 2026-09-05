@@ -23,12 +23,10 @@ import HomeHero from "@/components/showroom/HomeHero";
 import VisionMissionGoal from "@/components/showroom/VisionMissionGoal";
 import PhaseMap, { type PhaseMapStep } from "@/components/showroom/PhaseMap";
 import UsageNow from "@/components/showroom/UsageNow";
-import ImpactSnapshot from "@/components/showroom/ImpactSnapshot";
 import FoundingStory from "@/components/showroom/FoundingStory";
 import ToolsGrid from "@/components/showroom/ToolsGrid";
 import { getSiteCopyMap } from "@/lib/siteCopy";
 import { siteSansFont, showroomMonoFont } from "@/lib/fonts";
-import { getPlatformImpactStats } from "@/lib/platformStats";
 
 const PAGE_SIZE = 8;
 
@@ -78,7 +76,6 @@ export default async function HomePage({
     firstHeroSlide,
     livePhaseProjects,
     copy,
-    impactStats,
   ] = await Promise.all([
     prisma.project.count({ where }),
     prisma.project.findMany({
@@ -102,7 +99,6 @@ export default async function HomePage({
       orderBy: { updatedAt: "desc" },
     }),
     getSiteCopyMap(locale),
-    getPlatformImpactStats(),
   ]);
 
   const heroSlide = firstHeroSlide ? toHeroSlideData(firstHeroSlide) : null;
@@ -205,12 +201,10 @@ export default async function HomePage({
 
       <PhaseMap locale={locale} steps={phaseMapSteps} copy={copy} />
 
-      {/* One concrete project first, then the platform-wide numbers, then
-          the tools. Hides itself when the configured project doesn't exist
-          in this environment. */}
+      {/* One concrete project first, then the tools in practice. Hides
+          itself when the configured project doesn't exist in this
+          environment. */}
       <FoundingStory locale={locale} copy={copy} />
-
-      <ImpactSnapshot locale={locale} stats={impactStats} copy={copy} />
 
       <UsageNow locale={locale} copy={copy} />
 
