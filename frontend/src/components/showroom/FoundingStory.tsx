@@ -24,6 +24,8 @@ const STAT_CIRCLE_LABELS: Record<string, string> = {
   "infos-units-total": "Donerat",
   "infos-equipment-purchase-value": "Inköpsvärde",
   "infos-co2-total": "Utsläppsminskning",
+  "infos-fulltime-staff": "Heltidare",
+  "infos-volunteers": "Frivilliga eldsjälar",
 };
 
 // Overrides the plain metricUnit ("kr") with a fuller phrase for circles

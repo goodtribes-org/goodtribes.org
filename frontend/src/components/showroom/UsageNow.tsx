@@ -29,34 +29,44 @@ export default async function UsageNow({ locale, copy }: { locale: Locale; copy:
   const c = (key: string) => copy[`HomePage.usageNow.${key}`] ?? t(key);
 
   return (
-    <div className={`${siteSansFont.className} w-full`} style={{ paddingTop: 40, paddingBottom: 40 }}>
-      <div style={{ marginBottom: 32 }}>
-        <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
-          {c("eyebrow").toUpperCase()}
-        </p>
-        <h2 className="text-dark-slate" style={{ fontSize: 26, fontWeight: 600, letterSpacing: "-.01em", marginTop: 8 }}>
-          {c("heading")}
-        </h2>
-      </div>
-      <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
-        {EXAMPLES.map((ex) => (
-          <div
-            key={ex.key}
-            className="bg-white border border-muted-teal/35 rounded-xl flex flex-col"
-            style={{ padding: 20, gap: 8 }}
-          >
-            <div className="flex items-center" style={{ gap: 8 }}>
-              <div className="rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: 26, height: 26, background: `color-mix(in oklab, ${COLOR_HEX[ex.color]} 12%, white)` }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={COLOR_HEX[ex.color]} strokeWidth={2}>
-                  {ex.path}
-                </svg>
+    // Same full-bleed light band + top/bottom rule as PhaseMap ("Just nu i
+    // fabriken"), per explicit direction that the two should match. Unlike
+    // PhaseMap, this one owns both its own borders rather than relying on a
+    // neighboring section's border for the top line, since its neighbors
+    // here don't reliably provide one.
+    <div
+      className={`${siteSansFont.className} w-full`}
+      style={{ marginLeft: "calc(50% - 50vw)", marginRight: "calc(50% - 50vw)", width: "100vw", background: "#fafaf8", borderTop: "1px solid rgba(178,176,155,.35)", borderBottom: "1px solid rgba(178,176,155,.35)" }}
+    >
+      <div className="max-w-6xl mx-auto px-6" style={{ paddingTop: 40, paddingBottom: 40 }}>
+        <div style={{ marginBottom: 32 }}>
+          <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
+            {c("eyebrow").toUpperCase()}
+          </p>
+          <h2 className="text-dark-slate" style={{ fontSize: 26, fontWeight: 600, letterSpacing: "-.01em", marginTop: 8 }}>
+            {c("heading")}
+          </h2>
+        </div>
+        <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+          {EXAMPLES.map((ex) => (
+            <div
+              key={ex.key}
+              className="bg-white border border-muted-teal/35 rounded-xl flex flex-col"
+              style={{ padding: 20, gap: 8 }}
+            >
+              <div className="flex items-center" style={{ gap: 8 }}>
+                <div className="rounded-lg flex items-center justify-center flex-shrink-0" style={{ width: 26, height: 26, background: `color-mix(in oklab, ${COLOR_HEX[ex.color]} 12%, white)` }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={COLOR_HEX[ex.color]} strokeWidth={2}>
+                    {ex.path}
+                  </svg>
+                </div>
+                <p style={{ fontSize: 12, fontWeight: 600, color: COLOR_HEX[ex.color] }}>{c(`${ex.key}Tool`)}</p>
               </div>
-              <p style={{ fontSize: 12, fontWeight: 600, color: COLOR_HEX[ex.color] }}>{c(`${ex.key}Tool`)}</p>
+              <p className="text-dark-slate" style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.35 }}>{c(`${ex.key}Goal`)}</p>
+              <p className="text-dark-slate/65" style={{ fontSize: 13, lineHeight: 1.5 }}>{c(`${ex.key}Body`)}</p>
             </div>
-            <p className="text-dark-slate" style={{ fontSize: 15, fontWeight: 600, lineHeight: 1.35 }}>{c(`${ex.key}Goal`)}</p>
-            <p className="text-dark-slate/65" style={{ fontSize: 13, lineHeight: 1.5 }}>{c(`${ex.key}Body`)}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
