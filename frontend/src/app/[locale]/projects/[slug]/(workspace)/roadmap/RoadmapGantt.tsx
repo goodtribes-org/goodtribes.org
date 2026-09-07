@@ -6,6 +6,7 @@ import Tooltip from "@/components/Tooltip";
 import { getChecklistForPhase, numberChecklist, type ProjectPhaseValue } from "@/lib/projectPhase";
 import type { PhaseTimelineStatus } from "@/lib/roadmap";
 import { upsertPhaseTarget } from "./actions";
+import { upsertChecklistItemDates } from "../edit/actions";
 
 export type GanttPhaseRow = {
   value: ProjectPhaseValue;
@@ -22,10 +23,17 @@ export type GanttMilestoneRow = {
   timelineStatus: "done" | "overdue" | "upcoming";
 };
 
+export type GanttChecklistItemRow = {
+  itemKey: string;
+  done: boolean;
+  startDate: Date | null;
+  dueDate: Date | null;
+};
+
 interface RoadmapGanttProps {
   phases: GanttPhaseRow[];
   milestones: GanttMilestoneRow[];
-  completedChecklistKeys: string[];
+  checklistItems: GanttChecklistItemRow[];
   isOwnerOrAdmin: boolean;
   projectId: string;
   slug: string;
@@ -82,15 +90,18 @@ function formatDateSv(date: Date | null) {
   return date.toLocaleDateString("sv-SE", { day: "numeric", month: "short", year: "numeric" });
 }
 
-export default function RoadmapGantt({ phases, milestones, completedChecklistKeys, isOwnerOrAdmin, projectId, slug }: RoadmapGanttProps) {
+export default function RoadmapGantt({ phases, milestones, checklistItems, isOwnerOrAdmin, projectId, slug }: RoadmapGanttProps) {
   const t = useTranslations("RoadmapPage");
   const tGantt = useTranslations("GanttView");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
-  const doneKeys = new Set(completedChecklistKeys);
+  const checklistByKey = new Map(checklistItems.map((c) => [c.itemKey, c]));
   const [expanded, setExpanded] = useState<Set<ProjectPhaseValue>>(new Set());
   const [editingPhase, setEditingPhase] = useState<ProjectPhaseValue | null>(null);
   const [editStart, setEditStart] = useState("");
   const [editEnd, setEditEnd] = useState("");
+  const [editingItem, setEditingItem] = useState<string | null>(null);
+  const [editItemStart, setEditItemStart] = useState("");
+  const [editItemEnd, setEditItemEnd] = useState("");
   const [, startTransition] = useTransition();
 
   const now = new Date();
@@ -102,6 +113,10 @@ export default function RoadmapGantt({ phases, milestones, completedChecklistKey
   }
   for (const m of milestones) {
     if (m.dueDate) allDates.push(m.dueDate);
+  }
+  for (const c of checklistItems) {
+    if (c.startDate) allDates.push(c.startDate);
+    if (c.dueDate) allDates.push(c.dueDate);
   }
 
   let rangeStart = addDays(new Date(Math.min(...allDates.map((d) => d.getTime()))), -7);
@@ -130,16 +145,20 @@ export default function RoadmapGantt({ phases, milestones, completedChecklistKey
 
   type Bar = { kind: "bar"; left: number; width: number } | { kind: "marker"; left: number } | null;
 
-  function phaseBar(p: GanttPhaseRow): Bar {
-    if (p.startDate && p.targetDate) {
-      return { kind: "bar", left: dayOffset(p.startDate), width: Math.max(diffDays(p.startDate, p.targetDate) + 1, 1) * DAY_WIDTH };
+  // Shared by phase rows (start/targetDate) and checklist-item rows
+  // (start/dueDate) — a range with only one end sees an open-ended bar
+  // drawn out to "today" (still ongoing) unless it's already done, in which
+  // case it gets a short fixed-length bar instead of stretching indefinitely.
+  function computeBar(start: Date | null, end: Date | null, isDone: boolean): Bar {
+    if (start && end) {
+      return { kind: "bar", left: dayOffset(start), width: Math.max(diffDays(start, end) + 1, 1) * DAY_WIDTH };
     }
-    if (p.targetDate) {
-      return { kind: "marker", left: dayOffset(p.targetDate) };
+    if (end) {
+      return { kind: "marker", left: dayOffset(end) };
     }
-    if (p.startDate) {
-      const end = p.status === "completed" ? addDays(p.startDate, 14) : now > p.startDate ? now : addDays(p.startDate, 1);
-      return { kind: "bar", left: dayOffset(p.startDate), width: Math.max(diffDays(p.startDate, end) + 1, 1) * DAY_WIDTH };
+    if (start) {
+      const closeEnd = isDone ? addDays(start, 14) : now > start ? now : addDays(start, 1);
+      return { kind: "bar", left: dayOffset(start), width: Math.max(diffDays(start, closeEnd) + 1, 1) * DAY_WIDTH };
     }
     return null;
   }
@@ -166,6 +185,19 @@ export default function RoadmapGantt({ phases, milestones, completedChecklistKey
     setEditingPhase(null);
   }
 
+  function openEditItem(item: GanttChecklistItemRow | undefined, itemKey: string) {
+    setEditingItem(itemKey);
+    setEditItemStart(toISODate(item?.startDate ?? null));
+    setEditItemEnd(toISODate(item?.dueDate ?? null));
+  }
+
+  function saveEditItem(phase: ProjectPhaseValue, itemKey: string) {
+    startTransition(async () => {
+      await upsertChecklistItemDates(projectId, slug, phase, itemKey, editItemStart || null, editItemEnd || null);
+    });
+    setEditingItem(null);
+  }
+
   return (
     <div>
       <div className="rounded-lg border border-muted-teal/20 overflow-hidden">
@@ -187,7 +219,7 @@ export default function RoadmapGantt({ phases, milestones, completedChecklistKey
 
             {/* Phase rows (+ expanded task rows) */}
             {phases.map((p, phaseIndex) => {
-              const bar = phaseBar(p);
+              const bar = computeBar(p.startDate, p.targetDate, p.status === "completed");
               const isEditing = editingPhase === p.value;
               const checklist = getChecklistForPhase(p.value);
               const itemNumbers = numberChecklist(checklist, phaseIndex + 1);
@@ -305,7 +337,18 @@ export default function RoadmapGantt({ phases, milestones, completedChecklistKey
 
                   {isExpanded &&
                     checklist.map((item, itemIndex) => {
-                      const done = doneKeys.has(item.key);
+                      const itemData = checklistByKey.get(item.key);
+                      const done = itemData?.done ?? false;
+                      const itemBar = computeBar(itemData?.startDate ?? null, itemData?.dueDate ?? null, done);
+                      const isEditingItem = editingItem === item.key;
+                      const itemDateText =
+                        itemData?.startDate && itemData?.dueDate
+                          ? `${formatDateSv(itemData.startDate)} – ${formatDateSv(itemData.dueDate)}`
+                          : itemData?.dueDate
+                          ? `${t("targetDateLabel")}: ${formatDateSv(itemData.dueDate)}`
+                          : itemData?.startDate
+                          ? `${t("startDateLabel")}: ${formatDateSv(itemData.startDate)}`
+                          : t("noTargetDateSet");
                       // Same fallback PhaseMenuBar's own checklist popover uses: an item
                       // with no dedicated tool page still links somewhere, to that phase's
                       // guide anchored at this step, instead of being unclickable.
@@ -318,23 +361,85 @@ export default function RoadmapGantt({ phases, milestones, completedChecklistKey
                         <div key={item.key} className="flex border-b border-muted-teal/10 bg-gray-50/40" style={{ minHeight: ROW_H }}>
                           <div
                             style={{ width: LABEL_WIDTH, minWidth: LABEL_WIDTH }}
-                            className={`shrink-0 sticky left-0 bg-gray-50/60 z-10 border-r border-muted-teal/20 flex items-center gap-2 pr-3 ${
+                            className={`shrink-0 sticky left-0 bg-gray-50/60 z-10 border-r border-muted-teal/20 flex flex-col justify-center gap-0.5 pr-3 py-1 ${
                               item.parentKey ? "pl-10" : "pl-7"
                             }`}
                           >
-                            <span className={`text-xs shrink-0 ${done ? "text-seagrass" : "text-dark-slate/20"}`}>{done ? "✓" : "○"}</span>
-                            <a
-                              href={href}
-                              className={`text-xs truncate hover:underline ${done ? "text-dark-slate/40 line-through" : "text-dark-slate/80"}`}
-                              title={tChecklist(item.key)}
-                            >
-                              <span className={done ? "text-dark-slate/30" : "text-dark-slate/40"}>{itemNumbers[itemIndex]}</span>{" "}
-                              {tChecklist(item.key)}
-                            </a>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs shrink-0 ${done ? "text-seagrass" : "text-dark-slate/20"}`}>{done ? "✓" : "○"}</span>
+                              <a
+                                href={href}
+                                className={`text-xs truncate hover:underline ${done ? "text-dark-slate/40 line-through" : "text-dark-slate/80"}`}
+                                title={tChecklist(item.key)}
+                              >
+                                <span className={done ? "text-dark-slate/30" : "text-dark-slate/40"}>{itemNumbers[itemIndex]}</span>{" "}
+                                {tChecklist(item.key)}
+                              </a>
+                            </div>
+                            {isEditingItem ? (
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-1">
+                                  <input
+                                    type="date"
+                                    value={editItemStart}
+                                    onChange={(e) => setEditItemStart(e.target.value)}
+                                    title={t("startDateLabel")}
+                                    className="w-[92px] border border-muted-teal/40 rounded px-1 py-0.5 text-[10px] focus:outline-none focus:ring-1 focus:ring-coral"
+                                  />
+                                  <input
+                                    type="date"
+                                    value={editItemEnd}
+                                    onChange={(e) => setEditItemEnd(e.target.value)}
+                                    title={t("targetDateLabel")}
+                                    className="w-[92px] border border-muted-teal/40 rounded px-1 py-0.5 text-[10px] focus:outline-none focus:ring-1 focus:ring-coral"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => saveEditItem(p.value, item.key)}
+                                    className="text-[10px] bg-coral text-white font-medium px-1.5 py-0.5 rounded hover:bg-watermelon transition-colors"
+                                  >
+                                    {t("saveDatesButton")}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingItem(null)}
+                                    className="text-[10px] text-dark-slate/40 hover:text-dark-slate"
+                                  >
+                                    {t("cancelButton")}
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-[10px] text-dark-slate/40 truncate">{itemDateText}</span>
+                            )}
                           </div>
-                          <div className="relative flex-1" style={{ minHeight: ROW_H }}>
+                          <div
+                            className={`relative flex-1 ${isOwnerOrAdmin ? "cursor-pointer" : ""}`}
+                            style={{ minHeight: ROW_H }}
+                            onClick={() => isOwnerOrAdmin && openEditItem(itemData, item.key)}
+                          >
                             {todayOffset >= 0 && (
                               <div className="absolute top-0 bottom-0 w-px bg-coral/50 z-10 pointer-events-none" style={{ left: todayOffset }} />
+                            )}
+                            {itemBar?.kind === "bar" && (
+                              <Tooltip
+                                lines={[tChecklist(item.key), itemDateText]}
+                                className="absolute top-1/2 -translate-y-1/2"
+                                style={{ left: itemBar.left, width: itemBar.width }}
+                              >
+                                <div className={`w-full h-5 rounded ${done ? "bg-seagrass" : "bg-blue-400"} opacity-80`} />
+                              </Tooltip>
+                            )}
+                            {itemBar?.kind === "marker" && (
+                              <Tooltip
+                                lines={[tChecklist(item.key), itemDateText]}
+                                className="absolute flex items-center justify-center"
+                                style={{ left: itemBar.left - 7, top: "50%", transform: "translateY(-50%)", width: 14 }}
+                              >
+                                <span className={`text-base leading-none select-none ${done ? "text-seagrass" : "text-blue-600"}`}>◆</span>
+                              </Tooltip>
                             )}
                           </div>
                         </div>

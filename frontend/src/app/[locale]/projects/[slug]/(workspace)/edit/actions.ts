@@ -268,9 +268,44 @@ export async function toggleChecklistItem(slug: string, phase: ProjectPhaseValue
       update: { completedAt: new Date(), completedById: session.user.id },
     });
   } else {
-    await prisma.initiativeChecklistItem.deleteMany({ where: { projectId: project.id, itemKey } });
+    // Clears completion only (updateMany is a no-op if the row doesn't
+    // exist) rather than deleting the row — it may now also carry a
+    // startDate/dueDate (see the Roadmap page's Gantt chart), which
+    // shouldn't be lost just because the step was unchecked.
+    await prisma.initiativeChecklistItem.updateMany({
+      where: { projectId: project.id, itemKey },
+      data: { completedAt: null, completedById: null },
+    });
   }
 
   revalidatePath(`/projects/${slug}`);
   revalidatePath(`/projects/${slug}/edit`);
+  revalidatePath(`/projects/${slug}/roadmap`);
+}
+
+export async function upsertChecklistItemDates(
+  projectId: string,
+  slug: string,
+  phase: ProjectPhaseValue,
+  itemKey: string,
+  startDateRaw: string | null,
+  dueDateRaw: string | null
+): Promise<void> {
+  const session = await auth();
+  if (!session?.user?.id) return;
+  const allowed =
+    (await hasProjectRole(projectId, session.user.id, PROJECT_LEAD_ROLES)) ||
+    (await isSiteAdmin(session.user.id));
+  if (!allowed) return;
+
+  const startDate = startDateRaw ? new Date(startDateRaw) : null;
+  const dueDate = dueDateRaw ? new Date(dueDateRaw) : null;
+
+  await prisma.initiativeChecklistItem.upsert({
+    where: { projectId_itemKey: { projectId, itemKey } },
+    create: { projectId, phase, itemKey, startDate, dueDate },
+    update: { startDate, dueDate },
+  });
+
+  revalidatePath(`/projects/${slug}/roadmap`);
 }

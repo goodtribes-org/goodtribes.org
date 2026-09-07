@@ -219,6 +219,12 @@ model InitiativeChecklistItem {
   project       Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   phase         ProjectPhase
   itemKey       String
+  // Per-item scheduling for the Roadmap page's Gantt chart — independent of
+  // completedAt/completedById below, so setting a date doesn't require (or
+  // imply) marking the step done, and unchecking a step no longer deletes
+  // the row (see toggleChecklistItem), only clears completion.
+  startDate     DateTime?
+  dueDate       DateTime?
   completedAt   DateTime?
   completedById String?
   completedBy   User?        @relation("CompletedChecklistItems", fields: [completedById], references: [id], onDelete: SetNull)

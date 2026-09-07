@@ -55,15 +55,15 @@ export default async function RoadmapPage({
     : null;
   const isOwnerOrAdmin = isLeadRole(memberRow?.role);
 
-  const [phaseTargets, milestones, completedChecklistItems, maturityScore] = await Promise.all([
+  const [phaseTargets, milestones, checklistItems, maturityScore] = await Promise.all([
     prisma.phaseTarget.findMany({ where: { projectId: project.id } }),
     prisma.milestone.findMany({
       where: { projectId: project.id },
       orderBy: [{ status: "asc" }, { dueDate: "asc" }, { createdAt: "asc" }],
     }),
     prisma.initiativeChecklistItem.findMany({
-      where: { projectId: project.id, completedAt: { not: null } },
-      select: { itemKey: true },
+      where: { projectId: project.id },
+      select: { itemKey: true, completedAt: true, startDate: true, dueDate: true },
     }),
     calculateMaturityScore(slug),
   ]);
@@ -108,7 +108,12 @@ export default async function RoadmapPage({
         <RoadmapGantt
           phases={ganttPhases}
           milestones={ganttMilestones}
-          completedChecklistKeys={completedChecklistItems.map((c) => c.itemKey)}
+          checklistItems={checklistItems.map((c) => ({
+            itemKey: c.itemKey,
+            done: c.completedAt !== null,
+            startDate: c.startDate,
+            dueDate: c.dueDate,
+          }))}
           isOwnerOrAdmin={isOwnerOrAdmin}
           projectId={project.id}
           slug={slug}
