@@ -55,19 +55,15 @@ export default async function RoadmapPage({
     : null;
   const isOwnerOrAdmin = isLeadRole(memberRow?.role);
 
-  const [phaseTargets, milestones, kanbanCards, maturityScore] = await Promise.all([
+  const [phaseTargets, milestones, completedChecklistItems, maturityScore] = await Promise.all([
     prisma.phaseTarget.findMany({ where: { projectId: project.id } }),
     prisma.milestone.findMany({
       where: { projectId: project.id },
       orderBy: [{ status: "asc" }, { dueDate: "asc" }, { createdAt: "asc" }],
     }),
-    prisma.kanbanCard.findMany({
-      where: { projectSlug: slug },
-      select: {
-        id: true, title: true, column: true, priority: true, startDate: true, dueDate: true, description: true,
-        assignee: { select: { name: true } },
-      },
-      orderBy: [{ column: "asc" }, { order: "asc" }],
+    prisma.initiativeChecklistItem.findMany({
+      where: { projectId: project.id, completedAt: { not: null } },
+      select: { itemKey: true },
     }),
     calculateMaturityScore(slug),
   ]);
@@ -97,7 +93,7 @@ export default async function RoadmapPage({
   }));
 
   return (
-    <div className="max-w-5xl">
+    <div>
       <h1 className="text-lg font-bold text-dark-slate mb-1">{t("pageTitle", { projectTitle: project.title })}</h1>
 
       {/* ── Maturity score ─────────────────────────────────────────────── */}
@@ -112,7 +108,7 @@ export default async function RoadmapPage({
         <RoadmapGantt
           phases={ganttPhases}
           milestones={ganttMilestones}
-          cards={kanbanCards}
+          completedChecklistKeys={completedChecklistItems.map((c) => c.itemKey)}
           isOwnerOrAdmin={isOwnerOrAdmin}
           projectId={project.id}
           slug={slug}

@@ -3,8 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import Tooltip from "@/components/Tooltip";
-import { toDate, COLUMN_LABEL_KEYS, COLUMN_COLORS, type GanttCard } from "@/components/ganttShared";
-import type { ProjectPhaseValue } from "@/lib/projectPhase";
+import { getChecklistForPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 import type { PhaseTimelineStatus } from "@/lib/roadmap";
 import { upsertPhaseTarget } from "./actions";
 
@@ -26,7 +25,7 @@ export type GanttMilestoneRow = {
 interface RoadmapGanttProps {
   phases: GanttPhaseRow[];
   milestones: GanttMilestoneRow[];
-  cards: GanttCard[];
+  completedChecklistKeys: string[];
   isOwnerOrAdmin: boolean;
   projectId: string;
   slug: string;
@@ -83,24 +82,11 @@ function formatDateSv(date: Date | null) {
   return date.toLocaleDateString("sv-SE", { day: "numeric", month: "short", year: "numeric" });
 }
 
-// A kanban card "belongs to" a phase when its scheduled range overlaps the
-// phase's start/target window. Only computed when both phase dates are set —
-// an open-ended window would sweep in every future task, which isn't useful.
-function tasksForPhase(phase: GanttPhaseRow, cards: GanttCard[]): GanttCard[] {
-  if (!phase.startDate || !phase.targetDate) return [];
-  return cards.filter((c) => {
-    const s = toDate(c.startDate);
-    const e = toDate(c.dueDate);
-    const cardStart = s ?? e;
-    const cardEnd = e ?? s;
-    if (!cardStart || !cardEnd) return false;
-    return cardStart <= phase.targetDate! && cardEnd >= phase.startDate!;
-  });
-}
-
-export default function RoadmapGantt({ phases, milestones, cards, isOwnerOrAdmin, projectId, slug }: RoadmapGanttProps) {
+export default function RoadmapGantt({ phases, milestones, completedChecklistKeys, isOwnerOrAdmin, projectId, slug }: RoadmapGanttProps) {
   const t = useTranslations("RoadmapPage");
   const tGantt = useTranslations("GanttView");
+  const tChecklist = useTranslations("ProjectPhaseChecklist");
+  const doneKeys = new Set(completedChecklistKeys);
   const [expanded, setExpanded] = useState<Set<ProjectPhaseValue>>(new Set());
   const [editingPhase, setEditingPhase] = useState<ProjectPhaseValue | null>(null);
   const [editStart, setEditStart] = useState("");
@@ -116,12 +102,6 @@ export default function RoadmapGantt({ phases, milestones, cards, isOwnerOrAdmin
   }
   for (const m of milestones) {
     if (m.dueDate) allDates.push(m.dueDate);
-  }
-  for (const c of cards) {
-    const s = toDate(c.startDate);
-    const e = toDate(c.dueDate);
-    if (s) allDates.push(s);
-    if (e) allDates.push(e);
   }
 
   let rangeStart = addDays(new Date(Math.min(...allDates.map((d) => d.getTime()))), -7);
@@ -162,21 +142,6 @@ export default function RoadmapGantt({ phases, milestones, cards, isOwnerOrAdmin
       return { kind: "bar", left: dayOffset(p.startDate), width: Math.max(diffDays(p.startDate, end) + 1, 1) * DAY_WIDTH };
     }
     return null;
-  }
-
-  function cardBarLeft(card: GanttCard): number | null {
-    const s = toDate(card.startDate);
-    const e = toDate(card.dueDate);
-    if (s) return dayOffset(s);
-    if (e) return dayOffset(e);
-    return null;
-  }
-
-  function cardBarWidth(card: GanttCard): number {
-    const s = toDate(card.startDate);
-    const e = toDate(card.dueDate);
-    if (s && e) return Math.max(diffDays(s, e) + 1, 1) * DAY_WIDTH;
-    return DAY_WIDTH;
   }
 
   function toggleExpand(phase: ProjectPhaseValue) {
@@ -224,9 +189,9 @@ export default function RoadmapGantt({ phases, milestones, cards, isOwnerOrAdmin
             {phases.map((p) => {
               const bar = phaseBar(p);
               const isEditing = editingPhase === p.value;
-              const canExpand = Boolean(p.startDate && p.targetDate);
+              const checklist = getChecklistForPhase(p.value);
+              const canExpand = checklist.length > 0;
               const isExpanded = expanded.has(p.value);
-              const tasks = canExpand ? tasksForPhase(p, cards) : [];
               const dateRangeText =
                 p.startDate && p.targetDate
                   ? `${formatDateSv(p.startDate)} – ${formatDateSv(p.targetDate)}`
@@ -337,45 +302,28 @@ export default function RoadmapGantt({ phases, milestones, cards, isOwnerOrAdmin
                     </div>
                   </div>
 
-                  {isExpanded && tasks.length === 0 && (
-                    <div className="flex border-b border-muted-teal/10 bg-gray-50/40" style={{ minHeight: ROW_H }}>
-                      <div
-                        style={{ width: LABEL_WIDTH, minWidth: LABEL_WIDTH }}
-                        className="shrink-0 sticky left-0 bg-gray-50/60 z-10 border-r border-muted-teal/20 flex items-center pl-7 pr-3"
-                      >
-                        <span className="text-[11px] text-dark-slate/30">{t("noTasksInPhase")}</span>
-                      </div>
-                      <div className="flex-1" style={{ minHeight: ROW_H }} />
-                    </div>
-                  )}
-
                   {isExpanded &&
-                    tasks.map((card) => {
-                      const left = cardBarLeft(card);
-                      const width = cardBarWidth(card);
+                    checklist.map((item) => {
+                      const done = doneKeys.has(item.key);
                       return (
-                        <div key={card.id} className="flex border-b border-muted-teal/10 bg-gray-50/40" style={{ minHeight: ROW_H }}>
+                        <div key={item.key} className="flex border-b border-muted-teal/10 bg-gray-50/40" style={{ minHeight: ROW_H }}>
                           <div
                             style={{ width: LABEL_WIDTH, minWidth: LABEL_WIDTH }}
-                            className="shrink-0 sticky left-0 bg-gray-50/60 z-10 border-r border-muted-teal/20 flex items-center pl-7 pr-3 gap-2"
+                            className={`shrink-0 sticky left-0 bg-gray-50/60 z-10 border-r border-muted-teal/20 flex items-center gap-2 pr-3 ${
+                              item.parentKey ? "pl-10" : "pl-7"
+                            }`}
                           >
-                            <span className={`w-2 h-2 rounded-full shrink-0 ${COLUMN_COLORS[card.column]}`} />
-                            <span className="text-xs truncate text-dark-slate/80" title={card.title}>
-                              {card.title}
+                            <span className={`text-xs shrink-0 ${done ? "text-seagrass" : "text-dark-slate/20"}`}>{done ? "✓" : "○"}</span>
+                            <span
+                              className={`text-xs truncate ${done ? "text-dark-slate/40 line-through" : "text-dark-slate/80"}`}
+                              title={tChecklist(item.key)}
+                            >
+                              {tChecklist(item.key)}
                             </span>
                           </div>
                           <div className="relative flex-1" style={{ minHeight: ROW_H }}>
                             {todayOffset >= 0 && (
                               <div className="absolute top-0 bottom-0 w-px bg-coral/50 z-10 pointer-events-none" style={{ left: todayOffset }} />
-                            )}
-                            {left !== null && (
-                              <Tooltip
-                                lines={[card.title, tGantt(COLUMN_LABEL_KEYS[card.column])]}
-                                className="absolute top-1/2 -translate-y-1/2"
-                                style={{ left, width }}
-                              >
-                                <div className={`w-full h-5 rounded ${COLUMN_COLORS[card.column]} opacity-80`} />
-                              </Tooltip>
                             )}
                           </div>
                         </div>
