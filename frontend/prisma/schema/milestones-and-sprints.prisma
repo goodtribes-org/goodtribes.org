@@ -16,6 +16,8 @@ model Milestone {
   title       String
   description String?
   dueDate     DateTime?
+  startDate   DateTime?
+  completedAt DateTime?
   status      MilestoneStatus @default(pending)
   createdById String
   createdAt   DateTime  @default(now())
@@ -24,6 +26,26 @@ model Milestone {
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdBy User    @relation("MilestoneCreatedBy", fields: [createdById], references: [id])
   expenses  FundingExpense[] @relation("ExpenseMilestone")
+}
+
+// Per-project, per-phase start/target dates for the Roadmap page (see
+// frontend/src/app/[locale]/projects/[slug]/(workspace)/roadmap). No
+// completedAt here deliberately -- phase completion is derived from
+// Project.phase having advanced past this phase (see getPhaseTimelineStatus
+// in lib/roadmap.ts), so a separately stored flag would just risk desyncing.
+model PhaseTarget {
+  id         String       @id @default(cuid())
+  projectId  String
+  phase      ProjectPhase
+  startDate  DateTime?
+  targetDate DateTime?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  project    Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, phase])
+  @@index([projectId])
 }
 
 enum SprintStatus {

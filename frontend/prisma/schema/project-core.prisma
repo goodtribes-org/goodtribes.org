@@ -79,6 +79,7 @@ model Project {
   todoItems          TodoItem[]
   blogPosts          BlogPost[]
   milestones         Milestone[]
+  phaseTargets       PhaseTarget[]
   activityEvents     ActivityEvent[]
   invites            ProjectInvite[]
   wikiPages          WikiPage[]

@@ -611,6 +611,12 @@ export default async function ProjectDetailPage({
             completedKeys={checklistItems.map((c) => c.itemKey)}
             canEdit={isOwnerOrAdmin}
           />
+          <Link
+            href={`/projects/${slug}/roadmap`}
+            className="text-xs text-coral hover:text-watermelon font-medium transition-colors -mt-2"
+          >
+            {t("seeRoadmapLink")}
+          </Link>
 
           {/* Skills needed */}
           {project.neededSkills.length > 0 && (

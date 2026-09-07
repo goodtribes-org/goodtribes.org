@@ -36,6 +36,7 @@ import {
   Radar,
   Flag,
   Menu,
+  Route,
   type LucideIcon,
 } from "lucide-react";
 
@@ -48,6 +49,7 @@ function buildMainItems(t: ReturnType<typeof useTranslations>): NavItem[] {
     { label: t("navHome"), href: "",          icon: Home },
     { label: t("navTasks"),   href: "/tasks",     icon: ListChecks },
     { label: t("navCalendar"),   href: "/calendar",  icon: Calendar },
+    { label: t("navRoadmap"),   href: "/roadmap",   icon: Route },
     { label: t("navChat"),       href: "/kanaler",   icon: MessageCircle, getHref: (slug) => `/messages?project=${slug}` },
     { label: t("navBlog"),      href: "/updates",   icon: Megaphone },
     { label: t("navFiles"),      href: "/files",     icon: Folder },

@@ -4,10 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
 import { logActivity } from "@/lib/activity";
-import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
-
-const requireOwnerOrAdmin = (projectId: string, userId: string) =>
-  hasProjectRole(projectId, userId, PROJECT_LEAD_ROLES);
+import { requireOwnerOrAdmin } from "@/lib/authz";
 
 export async function createMilestone(projectId: string, slug: string, formData: FormData): Promise<void> {
   const session = await auth();
@@ -19,9 +16,11 @@ export async function createMilestone(projectId: string, slug: string, formData:
   const description = (formData.get("description") as string | null)?.trim() || null;
   const dueDateRaw = formData.get("dueDate") as string | null;
   const dueDate = dueDateRaw ? new Date(dueDateRaw) : null;
+  const startDateRaw = formData.get("startDate") as string | null;
+  const startDate = startDateRaw ? new Date(startDateRaw) : null;
 
   const milestone = await prisma.milestone.create({
-    data: { projectId, title, description, dueDate, createdById: session.user.id },
+    data: { projectId, title, description, dueDate, startDate, createdById: session.user.id },
   });
 
   await logActivity(projectId, session.user.id, "milestone_added", { title: milestone.title });
@@ -38,7 +37,10 @@ export async function toggleMilestone(id: string, slug: string): Promise<void> {
   if (!(await requireOwnerOrAdmin(milestone.projectId, session.user.id))) return;
 
   const newStatus = milestone.status === "done" ? "pending" : "done";
-  await prisma.milestone.update({ where: { id }, data: { status: newStatus } });
+  await prisma.milestone.update({
+    where: { id },
+    data: { status: newStatus, completedAt: newStatus === "done" ? new Date() : null },
+  });
 
   if (newStatus === "done") {
     await logActivity(milestone.projectId, session.user.id, "milestone_completed", { title: milestone.title });

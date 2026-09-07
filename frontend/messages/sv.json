@@ -604,6 +604,7 @@
     "cumulativeNote": "totalt sedan start"
   },
   "ProjectDetailPage": {
+    "seeRoadmapLink": "Se färdplan →",
     "defaultProjectDescription": "Ett projekt på GoodTribes.org",
     "justNow": "Just nu",
     "minutesAgo": "{minutes} min sedan",
@@ -672,6 +673,7 @@
     "navHome": "Startsidan",
     "navTasks": "Att göra",
     "navCalendar": "Kalender",
+    "navRoadmap": "Färdplan",
     "navChat": "Chatt",
     "navBlog": "Blogg",
     "navFiles": "Filer",
@@ -1130,6 +1132,23 @@
     "overdueLabel": "Försenad — ",
     "dueLabel": "Förfaller ",
     "noTasksYet": "Inga uppgifter ännu."
+  },
+  "RoadmapPage": {
+    "pageTitle": "{projectTitle} — Färdplan — GoodTribes.org",
+    "phaseTimelineHeading": "Fastidslinje",
+    "milestonesHeading": "Milstolpar",
+    "maturityScoreHeading": "Mognadspoäng",
+    "statusCompleted": "Klar",
+    "statusInProgress": "Pågår",
+    "statusAtRisk": "Försenad",
+    "statusUpcoming": "Kommande",
+    "startDateLabel": "Startdatum",
+    "targetDateLabel": "Måldatum",
+    "saveDatesButton": "Spara datum",
+    "overdueLabel": "Försenad — ",
+    "dueLabel": "Förfaller ",
+    "noTargetDateSet": "Inget datum satt",
+    "noMilestonesYet": "Inga milstolpar ännu."
   },
   "NewEventForm": {
     "titleLabel": "Titel",

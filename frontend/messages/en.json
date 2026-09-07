@@ -604,6 +604,7 @@
     "cumulativeNote": "total since inception"
   },
   "ProjectDetailPage": {
+    "seeRoadmapLink": "See roadmap →",
     "defaultProjectDescription": "A project on GoodTribes.org",
     "justNow": "Just now",
     "minutesAgo": "{minutes} min ago",
@@ -672,6 +673,7 @@
     "navHome": "Home",
     "navTasks": "Tasks",
     "navCalendar": "Calendar",
+    "navRoadmap": "Roadmap",
     "navChat": "Chat",
     "navBlog": "Blog",
     "navFiles": "Files",
@@ -1130,6 +1132,23 @@
     "overdueLabel": "Overdue — ",
     "dueLabel": "Due ",
     "noTasksYet": "No tasks yet."
+  },
+  "RoadmapPage": {
+    "pageTitle": "{projectTitle} — Roadmap — GoodTribes.org",
+    "phaseTimelineHeading": "Phase timeline",
+    "milestonesHeading": "Milestones",
+    "maturityScoreHeading": "Maturity score",
+    "statusCompleted": "Done",
+    "statusInProgress": "In progress",
+    "statusAtRisk": "At risk",
+    "statusUpcoming": "Upcoming",
+    "startDateLabel": "Start date",
+    "targetDateLabel": "Target date",
+    "saveDatesButton": "Save dates",
+    "overdueLabel": "Overdue — ",
+    "dueLabel": "Due ",
+    "noTargetDateSet": "No date set",
+    "noMilestonesYet": "No milestones yet."
   },
   "NewEventForm": {
     "titleLabel": "Title",

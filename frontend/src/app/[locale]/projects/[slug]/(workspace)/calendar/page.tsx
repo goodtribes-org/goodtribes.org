@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import GanttView from "@/components/GanttView";
 import { isLeadRole } from "@/lib/authz";
+import { isOverdue } from "@/lib/roadmap";
 import Tooltip from "@/components/Tooltip";
 import { toggleMilestone, deleteMilestone } from "../milestones/actions";
 import { updateCard, moveCard, addCardDependency, removeCardDependency } from "../kanban/actions";
@@ -71,11 +72,6 @@ function nextMonth(year: number, month: number): { year: number; month: number }
 function formatDateSv(date: Date | null) {
   if (!date) return null;
   return date.toLocaleDateString("sv-SE", { day: "numeric", month: "short", year: "numeric" });
-}
-
-function isOverdue(date: Date | null, status: string) {
-  if (!date || status === "done") return false;
-  return date < new Date();
 }
 
 const MONTH_KEYS = [

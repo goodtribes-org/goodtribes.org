@@ -6,6 +6,9 @@ export type { ProjectRole };
 
 export const PROJECT_LEAD_ROLES: ProjectRole[] = ["FOUNDER", "ADMIN"];
 
+export const requireOwnerOrAdmin = (projectId: string, userId: string) =>
+  hasProjectRole(projectId, userId, PROJECT_LEAD_ROLES);
+
 // Plain-string convenience for display-only checks against a role value
 // already fetched from Prisma (typed `string`, not the ProjectRole union).
 export function isLeadRole(role: string | null | undefined): boolean {
