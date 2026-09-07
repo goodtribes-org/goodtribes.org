@@ -10,7 +10,6 @@ import { calculateMaturityScore } from "@/lib/projectMaturity";
 import { DISPLAY_PHASES } from "@/lib/projectPhase";
 import { getPhaseTimelineStatus, getMilestoneTimelineStatus } from "@/lib/roadmap";
 import RoadmapGantt, { type GanttPhaseRow, type GanttMilestoneRow } from "./RoadmapGantt";
-import { upsertPhaseTarget } from "./actions";
 
 export async function generateMetadata({
   params,
@@ -31,21 +30,13 @@ function formatDateSv(date: Date | null) {
   return date.toLocaleDateString("sv-SE", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function toDateInputValue(date: Date | null) {
-  if (!date) return "";
-  return date.toISOString().slice(0, 10);
-}
-
 export default async function RoadmapPage({
   params,
 }: {
   params: Promise<{ slug: string; locale: string }>;
 }) {
   const { slug, locale } = await params;
-  const [t, tMonth] = await Promise.all([
-    getTranslations({ locale, namespace: "RoadmapPage" }),
-    getTranslations({ locale, namespace: "GanttView" }),
-  ]);
+  const t = await getTranslations({ locale, namespace: "RoadmapPage" });
 
   const [session, project] = await Promise.all([
     auth(),
@@ -64,11 +55,19 @@ export default async function RoadmapPage({
     : null;
   const isOwnerOrAdmin = isLeadRole(memberRow?.role);
 
-  const [phaseTargets, milestones, maturityScore] = await Promise.all([
+  const [phaseTargets, milestones, kanbanCards, maturityScore] = await Promise.all([
     prisma.phaseTarget.findMany({ where: { projectId: project.id } }),
     prisma.milestone.findMany({
       where: { projectId: project.id },
       orderBy: [{ status: "asc" }, { dueDate: "asc" }, { createdAt: "asc" }],
+    }),
+    prisma.kanbanCard.findMany({
+      where: { projectSlug: slug },
+      select: {
+        id: true, title: true, column: true, priority: true, startDate: true, dueDate: true, description: true,
+        assignee: { select: { name: true } },
+      },
+      orderBy: [{ column: "asc" }, { order: "asc" }],
     }),
     calculateMaturityScore(slug),
   ]);
@@ -108,52 +107,17 @@ export default async function RoadmapPage({
       </section>
 
       {/* ── Phase + milestone Gantt chart ──────────────────────────────── */}
-      <section className="mb-4">
+      <section className="mb-8">
         <h2 className="text-base font-bold text-dark-slate mb-3">{t("phaseTimelineHeading")}</h2>
-        <RoadmapGantt phases={ganttPhases} milestones={ganttMilestones} t={t} tMonth={tMonth} />
+        <RoadmapGantt
+          phases={ganttPhases}
+          milestones={ganttMilestones}
+          cards={kanbanCards}
+          isOwnerOrAdmin={isOwnerOrAdmin}
+          projectId={project.id}
+          slug={slug}
+        />
       </section>
-
-      {/* ── Edit target dates (leads/admins only) ──────────────────────── */}
-      {isOwnerOrAdmin && (
-        <section className="mb-8 max-w-3xl">
-          <h3 className="text-sm font-semibold text-dark-slate/70 mb-2">{t("editDatesHeading")}</h3>
-          <div className="space-y-1.5">
-            {ganttPhases.map((p) => (
-              <form
-                key={p.value}
-                action={upsertPhaseTarget.bind(null, project.id, slug, p.value)}
-                className="flex flex-wrap items-center gap-2 p-2 rounded-lg border border-muted-teal/20 bg-white"
-              >
-                <span className="text-xs font-medium text-dark-slate w-24 shrink-0">{p.label}</span>
-                <label className="flex items-center gap-1 text-xs text-dark-slate/60">
-                  {t("startDateLabel")}
-                  <input
-                    type="date"
-                    name="startDate"
-                    defaultValue={toDateInputValue(p.startDate)}
-                    className="border border-muted-teal/30 rounded px-1.5 py-0.5 text-xs"
-                  />
-                </label>
-                <label className="flex items-center gap-1 text-xs text-dark-slate/60">
-                  {t("targetDateLabel")}
-                  <input
-                    type="date"
-                    name="targetDate"
-                    defaultValue={toDateInputValue(p.targetDate)}
-                    className="border border-muted-teal/30 rounded px-1.5 py-0.5 text-xs"
-                  />
-                </label>
-                <button
-                  type="submit"
-                  className="bg-coral text-white text-xs font-medium px-3 py-1 rounded hover:bg-watermelon transition-colors ml-auto"
-                >
-                  {t("saveDatesButton")}
-                </button>
-              </form>
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* ── Milestones ──────────────────────────────────────────────────── */}
       <section className="max-w-3xl">

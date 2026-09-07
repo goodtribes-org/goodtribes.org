@@ -1136,7 +1136,6 @@
   "RoadmapPage": {
     "pageTitle": "{projectTitle} — Färdplan — GoodTribes.org",
     "phaseTimelineHeading": "Fastidslinje",
-    "editDatesHeading": "Redigera datum",
     "milestonesHeading": "Milstolpar",
     "maturityScoreHeading": "Mognadspoäng",
     "statusCompleted": "Klar",
@@ -1146,6 +1145,10 @@
     "startDateLabel": "Startdatum",
     "targetDateLabel": "Måldatum",
     "saveDatesButton": "Spara datum",
+    "cancelButton": "Avbryt",
+    "expandPhaseAriaLabel": "Visa uppgifter i fasen",
+    "collapsePhaseAriaLabel": "Dölj uppgifter i fasen",
+    "noTasksInPhase": "Inga uppgifter i denna period",
     "overdueLabel": "Försenad — ",
     "dueLabel": "Förfaller ",
     "noTargetDateSet": "Inget datum satt",

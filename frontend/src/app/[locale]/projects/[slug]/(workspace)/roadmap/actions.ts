@@ -10,14 +10,13 @@ export async function upsertPhaseTarget(
   projectId: string,
   slug: string,
   phase: ProjectPhase,
-  formData: FormData
+  startDateRaw: string | null,
+  targetDateRaw: string | null
 ): Promise<void> {
   const session = await auth();
   if (!session?.user?.id) return;
   if (!(await requireOwnerOrAdmin(projectId, session.user.id))) return;
 
-  const startDateRaw = formData.get("startDate") as string | null;
-  const targetDateRaw = formData.get("targetDate") as string | null;
   const startDate = startDateRaw ? new Date(startDateRaw) : null;
   const targetDate = targetDateRaw ? new Date(targetDateRaw) : null;
 

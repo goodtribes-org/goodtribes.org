@@ -1136,7 +1136,6 @@
   "RoadmapPage": {
     "pageTitle": "{projectTitle} — Roadmap — GoodTribes.org",
     "phaseTimelineHeading": "Phase timeline",
-    "editDatesHeading": "Edit dates",
     "milestonesHeading": "Milestones",
     "maturityScoreHeading": "Maturity score",
     "statusCompleted": "Done",
@@ -1146,6 +1145,10 @@
     "startDateLabel": "Start date",
     "targetDateLabel": "Target date",
     "saveDatesButton": "Save dates",
+    "cancelButton": "Cancel",
+    "expandPhaseAriaLabel": "Show tasks in this phase",
+    "collapsePhaseAriaLabel": "Hide tasks in this phase",
+    "noTasksInPhase": "No tasks in this period",
     "overdueLabel": "Overdue — ",
     "dueLabel": "Due ",
     "noTargetDateSet": "No date set",
