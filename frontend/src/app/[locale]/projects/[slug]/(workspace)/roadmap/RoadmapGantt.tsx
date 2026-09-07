@@ -185,10 +185,10 @@ export default function RoadmapGantt({ phases, milestones, checklistItems, isOwn
     setEditingPhase(null);
   }
 
-  function openEditItem(item: GanttChecklistItemRow | undefined, itemKey: string) {
+  function openEditItem(itemKey: string, start: Date | null, end: Date | null) {
     setEditingItem(itemKey);
-    setEditItemStart(toISODate(item?.startDate ?? null));
-    setEditItemEnd(toISODate(item?.dueDate ?? null));
+    setEditItemStart(toISODate(start));
+    setEditItemEnd(toISODate(end));
   }
 
   function saveEditItem(phase: ProjectPhaseValue, itemKey: string) {
@@ -339,15 +339,21 @@ export default function RoadmapGantt({ phases, milestones, checklistItems, isOwn
                     checklist.map((item, itemIndex) => {
                       const itemData = checklistByKey.get(item.key);
                       const done = itemData?.done ?? false;
-                      const itemBar = computeBar(itemData?.startDate ?? null, itemData?.dueDate ?? null, done);
+                      // An item with no date of its own follows the phase's date —
+                      // "inherited" rather than stored — so it keeps tracking the
+                      // phase until the user schedules this specific item, at which
+                      // point its own saved date takes over.
+                      const effectiveStart = itemData?.startDate ?? p.startDate;
+                      const effectiveEnd = itemData?.dueDate ?? p.targetDate;
+                      const itemBar = computeBar(effectiveStart, effectiveEnd, done);
                       const isEditingItem = editingItem === item.key;
                       const itemDateText =
-                        itemData?.startDate && itemData?.dueDate
-                          ? `${formatDateSv(itemData.startDate)} – ${formatDateSv(itemData.dueDate)}`
-                          : itemData?.dueDate
-                          ? `${t("targetDateLabel")}: ${formatDateSv(itemData.dueDate)}`
-                          : itemData?.startDate
-                          ? `${t("startDateLabel")}: ${formatDateSv(itemData.startDate)}`
+                        effectiveStart && effectiveEnd
+                          ? `${formatDateSv(effectiveStart)} – ${formatDateSv(effectiveEnd)}`
+                          : effectiveEnd
+                          ? `${t("targetDateLabel")}: ${formatDateSv(effectiveEnd)}`
+                          : effectiveStart
+                          ? `${t("startDateLabel")}: ${formatDateSv(effectiveStart)}`
                           : t("noTargetDateSet");
                       // Same fallback PhaseMenuBar's own checklist popover uses: an item
                       // with no dedicated tool page still links somewhere, to that phase's
@@ -418,7 +424,7 @@ export default function RoadmapGantt({ phases, milestones, checklistItems, isOwn
                           <div
                             className={`relative flex-1 ${isOwnerOrAdmin ? "cursor-pointer" : ""}`}
                             style={{ minHeight: ROW_H }}
-                            onClick={() => isOwnerOrAdmin && openEditItem(itemData, item.key)}
+                            onClick={() => isOwnerOrAdmin && openEditItem(item.key, effectiveStart, effectiveEnd)}
                           >
                             {todayOffset >= 0 && (
                               <div className="absolute top-0 bottom-0 w-px bg-coral/50 z-10 pointer-events-none" style={{ left: todayOffset }} />
