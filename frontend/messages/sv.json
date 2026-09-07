@@ -1136,6 +1136,7 @@
   "RoadmapPage": {
     "pageTitle": "{projectTitle} — Färdplan — GoodTribes.org",
     "phaseTimelineHeading": "Fastidslinje",
+    "editDatesHeading": "Redigera datum",
     "milestonesHeading": "Milstolpar",
     "maturityScoreHeading": "Mognadspoäng",
     "statusCompleted": "Klar",

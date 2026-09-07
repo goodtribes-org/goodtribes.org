@@ -7,8 +7,9 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { isLeadRole } from "@/lib/authz";
 import { calculateMaturityScore } from "@/lib/projectMaturity";
-import { DISPLAY_PHASES, toDisplayPhase } from "@/lib/projectPhase";
-import { getPhaseTimelineStatus, getMilestoneTimelineStatus, type PhaseTimelineStatus } from "@/lib/roadmap";
+import { DISPLAY_PHASES } from "@/lib/projectPhase";
+import { getPhaseTimelineStatus, getMilestoneTimelineStatus } from "@/lib/roadmap";
+import RoadmapGantt, { type GanttPhaseRow, type GanttMilestoneRow } from "./RoadmapGantt";
 import { upsertPhaseTarget } from "./actions";
 
 export async function generateMetadata({
@@ -35,20 +36,16 @@ function toDateInputValue(date: Date | null) {
   return date.toISOString().slice(0, 10);
 }
 
-const STATUS_STYLES: Record<PhaseTimelineStatus, string> = {
-  completed: "border-seagrass/30 bg-seagrass/5 text-seagrass",
-  in_progress: "border-muted-teal/30 bg-white text-dark-slate",
-  at_risk: "border-watermelon/30 bg-watermelon/5 text-watermelon",
-  upcoming: "border-muted-teal/20 bg-gray-50 text-dark-slate/40",
-};
-
 export default async function RoadmapPage({
   params,
 }: {
   params: Promise<{ slug: string; locale: string }>;
 }) {
   const { slug, locale } = await params;
-  const t = await getTranslations({ locale, namespace: "RoadmapPage" });
+  const [t, tMonth] = await Promise.all([
+    getTranslations({ locale, namespace: "RoadmapPage" }),
+    getTranslations({ locale, namespace: "GanttView" }),
+  ]);
 
   const [session, project] = await Promise.all([
     auth(),
@@ -77,92 +74,89 @@ export default async function RoadmapPage({
   ]);
 
   const targetsByPhase = new Map(phaseTargets.map((pt) => [pt.phase, pt]));
-  const currentDisplayPhase = toDisplayPhase(project.phase);
 
-  const STATUS_LABEL_KEYS: Record<PhaseTimelineStatus, string> = {
-    completed: "statusCompleted",
-    in_progress: "statusInProgress",
-    at_risk: "statusAtRisk",
-    upcoming: "statusUpcoming",
-  };
+  const ganttPhases: GanttPhaseRow[] = DISPLAY_PHASES.map((phaseDef) => {
+    const target = targetsByPhase.get(phaseDef.value);
+    return {
+      value: phaseDef.value,
+      label: phaseDef.label,
+      status: getPhaseTimelineStatus({
+        phaseValue: phaseDef.value,
+        currentPhase: project.phase,
+        targetDate: target?.targetDate ?? null,
+      }),
+      startDate: target?.startDate ?? null,
+      targetDate: target?.targetDate ?? null,
+    };
+  });
+
+  const ganttMilestones: GanttMilestoneRow[] = milestones.map((m) => ({
+    id: m.id,
+    title: m.title,
+    dueDate: m.dueDate,
+    timelineStatus: getMilestoneTimelineStatus(m.dueDate, m.status),
+  }));
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-5xl">
       <h1 className="text-lg font-bold text-dark-slate mb-1">{t("pageTitle", { projectTitle: project.title })}</h1>
 
       {/* ── Maturity score ─────────────────────────────────────────────── */}
-      <section className="bg-white border border-muted-teal/30 rounded-xl p-4 mb-6 flex items-center justify-between">
+      <section className="bg-white border border-muted-teal/30 rounded-xl p-4 mb-6 flex items-center justify-between max-w-3xl">
         <h2 className="text-sm font-semibold text-dark-slate">{t("maturityScoreHeading")}</h2>
         <span className="text-2xl font-bold text-coral">{maturityScore}</span>
       </section>
 
-      {/* ── Phase timeline ─────────────────────────────────────────────── */}
-      <section className="mb-8">
+      {/* ── Phase + milestone Gantt chart ──────────────────────────────── */}
+      <section className="mb-4">
         <h2 className="text-base font-bold text-dark-slate mb-3">{t("phaseTimelineHeading")}</h2>
-        <div className="space-y-2">
-          {DISPLAY_PHASES.map((phaseDef) => {
-            const target = targetsByPhase.get(phaseDef.value);
-            const status = getPhaseTimelineStatus({
-              phaseValue: phaseDef.value,
-              currentPhase: project.phase,
-              targetDate: target?.targetDate ?? null,
-            });
-            return (
-              <div
-                key={phaseDef.value}
-                className={`p-3 rounded-lg border ${STATUS_STYLES[status]}`}
-              >
-                <div className="flex items-center justify-between gap-3 flex-wrap">
-                  <span className={`text-sm font-medium ${phaseDef.value === currentDisplayPhase ? "text-dark-slate" : ""}`}>
-                    {phaseDef.label}
-                  </span>
-                  <span className="text-xs font-semibold uppercase tracking-wide">{t(STATUS_LABEL_KEYS[status])}</span>
-                </div>
-
-                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-dark-slate/60">
-                  <span>{t("startDateLabel")}: {formatDateSv(target?.startDate ?? null) ?? t("noTargetDateSet")}</span>
-                  <span>{t("targetDateLabel")}: {formatDateSv(target?.targetDate ?? null) ?? t("noTargetDateSet")}</span>
-                </div>
-
-                {isOwnerOrAdmin && (
-                  <form
-                    action={upsertPhaseTarget.bind(null, project.id, slug, phaseDef.value)}
-                    className="flex flex-wrap items-end gap-2 mt-2"
-                  >
-                    <label className="flex flex-col text-xs text-dark-slate/60">
-                      {t("startDateLabel")}
-                      <input
-                        type="date"
-                        name="startDate"
-                        defaultValue={toDateInputValue(target?.startDate ?? null)}
-                        className="border border-muted-teal/30 rounded px-2 py-1 text-sm"
-                      />
-                    </label>
-                    <label className="flex flex-col text-xs text-dark-slate/60">
-                      {t("targetDateLabel")}
-                      <input
-                        type="date"
-                        name="targetDate"
-                        defaultValue={toDateInputValue(target?.targetDate ?? null)}
-                        className="border border-muted-teal/30 rounded px-2 py-1 text-sm"
-                      />
-                    </label>
-                    <button
-                      type="submit"
-                      className="bg-coral text-white text-xs font-medium px-3 py-1.5 rounded hover:bg-watermelon transition-colors"
-                    >
-                      {t("saveDatesButton")}
-                    </button>
-                  </form>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <RoadmapGantt phases={ganttPhases} milestones={ganttMilestones} t={t} tMonth={tMonth} />
       </section>
 
+      {/* ── Edit target dates (leads/admins only) ──────────────────────── */}
+      {isOwnerOrAdmin && (
+        <section className="mb-8 max-w-3xl">
+          <h3 className="text-sm font-semibold text-dark-slate/70 mb-2">{t("editDatesHeading")}</h3>
+          <div className="space-y-1.5">
+            {ganttPhases.map((p) => (
+              <form
+                key={p.value}
+                action={upsertPhaseTarget.bind(null, project.id, slug, p.value)}
+                className="flex flex-wrap items-center gap-2 p-2 rounded-lg border border-muted-teal/20 bg-white"
+              >
+                <span className="text-xs font-medium text-dark-slate w-24 shrink-0">{p.label}</span>
+                <label className="flex items-center gap-1 text-xs text-dark-slate/60">
+                  {t("startDateLabel")}
+                  <input
+                    type="date"
+                    name="startDate"
+                    defaultValue={toDateInputValue(p.startDate)}
+                    className="border border-muted-teal/30 rounded px-1.5 py-0.5 text-xs"
+                  />
+                </label>
+                <label className="flex items-center gap-1 text-xs text-dark-slate/60">
+                  {t("targetDateLabel")}
+                  <input
+                    type="date"
+                    name="targetDate"
+                    defaultValue={toDateInputValue(p.targetDate)}
+                    className="border border-muted-teal/30 rounded px-1.5 py-0.5 text-xs"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="bg-coral text-white text-xs font-medium px-3 py-1 rounded hover:bg-watermelon transition-colors ml-auto"
+                >
+                  {t("saveDatesButton")}
+                </button>
+              </form>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ── Milestones ──────────────────────────────────────────────────── */}
-      <section>
+      <section className="max-w-3xl">
         <h2 className="text-base font-bold text-dark-slate mb-3">{t("milestonesHeading")}</h2>
         <div className="space-y-2">
           {milestones.length === 0 && (

@@ -1136,6 +1136,7 @@
   "RoadmapPage": {
     "pageTitle": "{projectTitle} — Roadmap — GoodTribes.org",
     "phaseTimelineHeading": "Phase timeline",
+    "editDatesHeading": "Edit dates",
     "milestonesHeading": "Milestones",
     "maturityScoreHeading": "Maturity score",
     "statusCompleted": "Done",
