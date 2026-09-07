@@ -3,27 +3,7 @@
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
-import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
-
-// Numbers a phase's checklist ("2.3", "2.3.1", "4.3", "4.3.2", …) from a
-// running top-level/sub-level counter. An item with `parentKey` set is a
-// sub-step of the item immediately before it that lacks one — it gets the
-// parent's top-level number with a sub-number appended, instead of its own
-// top-level number. Source order defines the grouping, same as the data in
-// INITIATIVE_CHECKLIST_ITEMS itself (see lib/projectPhase.ts).
-function numberChecklist(items: { key: string; parentKey?: string }[], phaseNumber: number): string[] {
-  let topLevel = 0;
-  let sub = 0;
-  return items.map((item) => {
-    if (item.parentKey) {
-      sub += 1;
-      return `${phaseNumber}.${topLevel}.${sub}`;
-    }
-    topLevel += 1;
-    sub = 0;
-    return `${phaseNumber}.${topLevel}`;
-  });
-}
+import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, numberChecklist, type ProjectPhaseValue } from "@/lib/projectPhase";
 
 interface Props {
   slug: string;

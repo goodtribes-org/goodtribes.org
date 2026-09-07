@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import Tooltip from "@/components/Tooltip";
-import { getChecklistForPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { getChecklistForPhase, numberChecklist, type ProjectPhaseValue } from "@/lib/projectPhase";
 import type { PhaseTimelineStatus } from "@/lib/roadmap";
 import { upsertPhaseTarget } from "./actions";
 
@@ -186,10 +186,11 @@ export default function RoadmapGantt({ phases, milestones, completedChecklistKey
             </div>
 
             {/* Phase rows (+ expanded task rows) */}
-            {phases.map((p) => {
+            {phases.map((p, phaseIndex) => {
               const bar = phaseBar(p);
               const isEditing = editingPhase === p.value;
               const checklist = getChecklistForPhase(p.value);
+              const itemNumbers = numberChecklist(checklist, phaseIndex + 1);
               const canExpand = checklist.length > 0;
               const isExpanded = expanded.has(p.value);
               const dateRangeText =
@@ -303,8 +304,16 @@ export default function RoadmapGantt({ phases, milestones, completedChecklistKey
                   </div>
 
                   {isExpanded &&
-                    checklist.map((item) => {
+                    checklist.map((item, itemIndex) => {
                       const done = doneKeys.has(item.key);
+                      // Same fallback PhaseMenuBar's own checklist popover uses: an item
+                      // with no dedicated tool page still links somewhere, to that phase's
+                      // guide anchored at this step, instead of being unclickable.
+                      const href = item.href
+                        ? `/projects/${slug}/${item.href}`
+                        : p.value === "IDEA"
+                        ? `/projects/${slug}/guide?step=${item.key}`
+                        : `/projects/${slug}/guide/${p.value.toLowerCase()}?step=${item.key}`;
                       return (
                         <div key={item.key} className="flex border-b border-muted-teal/10 bg-gray-50/40" style={{ minHeight: ROW_H }}>
                           <div
@@ -314,12 +323,14 @@ export default function RoadmapGantt({ phases, milestones, completedChecklistKey
                             }`}
                           >
                             <span className={`text-xs shrink-0 ${done ? "text-seagrass" : "text-dark-slate/20"}`}>{done ? "✓" : "○"}</span>
-                            <span
-                              className={`text-xs truncate ${done ? "text-dark-slate/40 line-through" : "text-dark-slate/80"}`}
+                            <a
+                              href={href}
+                              className={`text-xs truncate hover:underline ${done ? "text-dark-slate/40 line-through" : "text-dark-slate/80"}`}
                               title={tChecklist(item.key)}
                             >
+                              <span className={done ? "text-dark-slate/30" : "text-dark-slate/40"}>{itemNumbers[itemIndex]}</span>{" "}
                               {tChecklist(item.key)}
-                            </span>
+                            </a>
                           </div>
                           <div className="relative flex-1" style={{ minHeight: ROW_H }}>
                             {todayOffset >= 0 && (
