@@ -39,6 +39,11 @@ import type { MoveOverrides } from "@/lib/kanbanMove";
 
 export type { Member };
 
+// Swimlanes group cards by category into one row per category (plus "none"
+// for uncategorized) — module-level since it only depends on the static
+// CATEGORY_ORDER import, not anything from the component.
+const LANE_ORDER = [...CATEGORY_ORDER, "none"];
+
 export default function KanbanBoard({
   projectSlug,
   initialColumns,
@@ -140,13 +145,24 @@ export default function KanbanBoard({
     setIsNewCard(true);
   }
 
+  // Deliberately keyed only on requestAddColumn, not on openNewCard/
+  // onRequestAddDone — both get a fresh identity every render (neither is
+  // memoized), so including them would re-fire this on every render for as
+  // long as requestAddColumn stays truthy, reopening the new-card modal
+  // repeatedly instead of once per request.
   useEffect(() => {
     if (requestAddColumn) {
       openNewCard(requestAddColumn);
       onRequestAddDone?.();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requestAddColumn]);
 
+  // Deliberately keyed only on requestOpenCardId — columns changes on every
+  // SSE update, and router/pathname aren't meant to re-trigger this. Adding
+  // them would re-run the effect (and re-open the modal / re-replace the
+  // URL) on every subsequent columns update while requestOpenCardId is still
+  // set, fighting whatever the user is doing in the meantime.
   useEffect(() => {
     if (!requestOpenCardId) return;
     const found = Object.values(columns).flat().find((c) => c.id === requestOpenCardId);
@@ -154,6 +170,7 @@ export default function KanbanBoard({
     // Strip the ?card= param once handled — otherwise a reload (or reopening
     // a bookmarked/notification link) re-triggers this effect forever.
     router.replace(pathname, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requestOpenCardId]);
 
   // Live sync: other users' card create/update/move/delete actions get
@@ -230,11 +247,9 @@ export default function KanbanBoard({
     : null;
   const totalCards = Object.values(columns).reduce((s, c) => s + c.length, 0);
 
-  // Swimlanes group the already-filtered columns by category into one row
-  // per category (plus "none" for uncategorized) — only categories that
-  // actually have a matching card get a row, same principle as columns
-  // never hiding themselves but empty ones just not adding clutter here.
-  const LANE_ORDER = [...CATEGORY_ORDER, "none"];
+  // Only categories that actually have a matching card get a swimlane row,
+  // same principle as columns never hiding themselves but empty ones just
+  // not adding clutter here.
   const swimlanes = useMemo(() => {
     if (!swimlanesOn) return null;
     const lanes: Record<string, Columns> = {};

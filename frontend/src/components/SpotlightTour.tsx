@@ -64,6 +64,7 @@ export default function SpotlightTour({
     };
     // Deliberately keyed on primitives (target string, index, count) rather
     // than the steps/onDismiss references, which callers may pass inline.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step?.target, stepIndex, steps.length]);
 
   if (!mounted || !step || !rect) return null;

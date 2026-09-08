@@ -104,13 +104,20 @@ export default function RichTextEditor({
     return () => document.removeEventListener("mousedown", handleClick);
   }, [showEmoji]);
 
+  // mentionables presence (not contents) decides whether the extension is
+  // wired up at all; the live list is read via mentionablesRef instead so
+  // it doesn't force the editor to be recreated when it changes. Extracted
+  // to a plain boolean (rather than inlining !!mentionables in the deps
+  // array below) so react-hooks/exhaustive-deps can statically verify it.
+  const hasMentionables = !!mentionables;
+
   const extensions = useMemo(() => {
     const base = [
       StarterKit,
       TiptapImage.configure({ inline: false, allowBase64: false }),
       TiptapLink.configure({ openOnClick: false }),
     ];
-    if (!mentionables) return base;
+    if (!hasMentionables) return base;
     return [
       ...base,
       Mention.configure({
@@ -122,10 +129,7 @@ export default function RichTextEditor({
         ),
       }),
     ];
-    // mentionables presence (not contents) decides whether the extension is
-    // wired up at all; the live list is read via mentionablesRef instead so
-    // it doesn't force the editor to be recreated when it changes.
-  }, [!!mentionables]);
+  }, [hasMentionables]);
 
   const isPillMode = !!collapsibleToolbar && !showToolbar;
 

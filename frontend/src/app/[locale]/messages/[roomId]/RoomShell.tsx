@@ -178,12 +178,18 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
     });
     const timeout = setTimeout(() => setHighlightId(null), 2500);
     return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    // Captured once per effect run so the cleanup below always clears the
+    // same Map instance it just populated, rather than re-reading
+    // typingTimeoutsRef.current (which react-hooks/exhaustive-deps flags
+    // as possibly stale by the time cleanup runs).
+    const timeouts = typingTimeoutsRef.current;
     if (esRef.current) esRef.current.close();
-    typingTimeoutsRef.current.forEach(clearTimeout);
-    typingTimeoutsRef.current.clear();
+    timeouts.forEach(clearTimeout);
+    timeouts.clear();
     setTypingUsers(new Map());
     const es = new EventSource(`/api/rooms/${room.id}/sse`);
     esRef.current = es;
@@ -199,8 +205,8 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
       if (data.type === "typing") {
         if (data.userId === currentUserId) return;
         setTypingUsers((prev) => new Map(prev).set(data.userId, data.name ?? tRoom("someoneFallback")));
-        clearTimeout(typingTimeoutsRef.current.get(data.userId));
-        typingTimeoutsRef.current.set(
+        clearTimeout(timeouts.get(data.userId));
+        timeouts.set(
           data.userId,
           setTimeout(() => {
             setTypingUsers((prev) => {
@@ -222,8 +228,8 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
         return;
       }
 
-      clearTimeout(typingTimeoutsRef.current.get(msg.authorId));
-      typingTimeoutsRef.current.delete(msg.authorId);
+      clearTimeout(timeouts.get(msg.authorId));
+      timeouts.delete(msg.authorId);
       setTypingUsers((prev) => {
         if (!prev.has(msg.authorId)) return prev;
         const next = new Map(prev);
@@ -253,10 +259,10 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
     return () => {
       es.close();
       esRef.current = null;
-      typingTimeoutsRef.current.forEach(clearTimeout);
-      typingTimeoutsRef.current.clear();
+      timeouts.forEach(clearTimeout);
+      timeouts.clear();
     };
-  }, [room.id, currentUserId]);
+  }, [room.id, currentUserId, tRoom]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: "end" });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { searchUsersToAdd, addMemberDirectly, inviteMemberByEmail, getPendingInvites } from "./member-actions";
@@ -50,13 +50,13 @@ export default function AddOrInviteMember({
   const [inviteMessage, setInviteMessage] = useState("");
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
 
-  function refreshPendingInvites() {
+  const refreshPendingInvites = useCallback(() => {
     getPendingInvites(projectId).then(setPendingInvites).catch(() => {});
-  }
+  }, [projectId]);
 
   useEffect(() => {
     refreshPendingInvites();
-  }, [projectId]);
+  }, [refreshPendingInvites]);
 
   useEffect(() => {
     const q = addQuery.trim();
