@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
-import { siteSansFont, showroomMonoFont, heroTaglineFont } from "@/lib/fonts";
+import { siteSansFont, heroTaglineFont } from "@/lib/fonts";
 import type { HeroSlideData } from "@/lib/heroSlides";
 
 // Same mark as /public/img/goodtribes-mark.svg, inlined so it can render at
@@ -114,7 +114,7 @@ export default async function HomeHero({
           </Link>
         )}
         <div className="flex-1 min-w-0">
-          <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)", marginBottom: 18 }}>
+          <p className={heroTaglineFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)", marginBottom: 18 }}>
             {eyebrow}
           </p>
           <h1 className={`text-dark-slate ${heroTaglineFont.className}`} style={{ fontWeight: 400, fontSize: 56, lineHeight: 1.15, maxWidth: "15ch", textWrap: "balance" }}>
