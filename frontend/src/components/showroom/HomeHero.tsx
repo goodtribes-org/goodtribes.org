@@ -114,10 +114,7 @@ export default async function HomeHero({
           </Link>
         )}
         <div className="flex-1 min-w-0">
-          {/* TEMP deploy-pipeline probe (2026-09-08) — bright red is intentional,
-              revert to var(--color-seagrass) once a live check confirms this
-              rollout reached production. */}
-          <p className={heroTaglineFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "red", marginBottom: 18 }}>
+          <p className={heroTaglineFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)", marginBottom: 18 }}>
             {eyebrow}
           </p>
           <h1 className={`text-dark-slate ${heroTaglineFont.className}`} style={{ fontWeight: 400, fontSize: 56, lineHeight: 1.15, maxWidth: "15ch", textWrap: "balance" }}>
