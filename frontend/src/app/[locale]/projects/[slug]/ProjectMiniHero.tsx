@@ -1,7 +1,9 @@
 import Image from "next/image";
+import { handwritingFont } from "@/lib/fonts";
 
 // Reduced hero shown on workspace subpages (Uppgifter, Kalender, Verktyg-sidorna, ...) —
-// just the project's blurred background image with its name straight and large on top.
+// just the project's blurred background image with its name straight and large on top,
+// in the same handwriting font used for the title on the project's own page.
 export default function ProjectMiniHero({
   title,
   imageUrl,
@@ -20,7 +22,10 @@ export default function ProjectMiniHero({
         <div className="absolute inset-0 bg-gradient-to-br from-dark-slate to-dark-slate/70" />
       )}
       <div className="absolute inset-0 bg-black/30" />
-      <h1 className="relative z-10 truncate px-4 text-center text-4xl font-extrabold text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)] sm:text-5xl">
+      <h1
+        className={`${handwritingFont.className} relative z-10 truncate px-4 text-center text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]`}
+        style={{ fontSize: 48, lineHeight: "60px" }}
+      >
         {title}
       </h1>
     </div>
