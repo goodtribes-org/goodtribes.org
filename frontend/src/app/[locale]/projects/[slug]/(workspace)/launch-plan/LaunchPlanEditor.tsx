@@ -152,7 +152,7 @@ export default function LaunchPlanEditor({ projectSlug, canEdit, initial, channe
                 value={fields[field]}
                 onChange={(e) => handleFieldChange(field, e.target.value)}
                 placeholder={t(`${field}Placeholder`)}
-                className="w-full border border-muted-teal rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-coral resize-none disabled:bg-muted-teal/5"
+                className="w-full border border-muted-teal rounded px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-coral resize-none disabled:bg-muted-teal/5"
               />
             </div>
           ))}
