@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -10,6 +9,7 @@ import { hasProjectRole, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import LeanCanvasGrid from "./LeanCanvasGrid";
 import LeanCanvasComments from "./LeanCanvasComments";
 import LeanCanvasHistory from "./LeanCanvasHistory";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { Locale } from "next-intl";
 
 export async function generateMetadata({
@@ -64,19 +64,13 @@ export default async function LeanCanvasPage({
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-dark-slate">Lean Canvas</h1>
-        <div className="flex items-center gap-4">
-          <LeanCanvasHistory projectSlug={slug} />
-          <Link
-            href={helpHref}
-            className="flex items-center gap-1 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors"
-          >
-            <span className="flex items-center justify-center w-4 h-4 rounded-full border border-current text-[10px]">?</span>
-            {t("helpLink")}
-          </Link>
-        </div>
-      </div>
+      <WorkspacePageHeader
+        title={t("pageHeading")}
+        help={t("helpText")}
+        helpMoreHref={helpHref}
+        helpMoreLabel={t("helpGuideLink")}
+        action={<LeanCanvasHistory projectSlug={slug} />}
+      />
 
       <LeanCanvasGrid projectSlug={slug} canvas={canvas} canEdit={canEdit} />
 

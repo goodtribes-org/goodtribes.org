@@ -8,6 +8,7 @@ import { removeMember, changeMemberRole } from "../../member-actions";
 import type { ProjectRole } from "@/lib/authz";
 import MessageButton from "@/components/MessageButton";
 import AddOrInviteMember from "../../AddOrInviteMember";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 
 type Member = {
   userId: string;
@@ -91,7 +92,7 @@ export default function MembersManager({
 
   return (
     <div className="max-w-3xl space-y-8">
-      <h1 className="text-2xl font-bold text-dark-slate">{t("pageTitle")}</h1>
+      <WorkspacePageHeader title={t("pageTitle")} help={t("helpText")} />
 
       {/* Add an existing user directly, no invite/approval needed — or,
           for an email with no matching account, send an invite link

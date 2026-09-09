@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { addMarketScanEntry, deleteMarketScanEntry } from "./actions";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { MarketScanEntryType } from "@prisma/client";
 
 const TYPES: MarketScanEntryType[] = ["COMPETITOR", "TREND", "PARTNER_PROSPECT", "REGULATION"];
@@ -78,18 +79,21 @@ export default function MarketScanList({ projectSlug, entries: initialEntries, c
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold text-dark-slate">{t("heading")}</h1>
-        {canAdd && (
-          <button
-            type="button"
-            onClick={() => setShowForm((s) => !s)}
-            className="bg-coral text-white text-xs font-medium px-3 py-1.5 rounded hover:bg-watermelon transition-colors"
-          >
-            {showForm ? t("cancelButton") : t("addButton")}
-          </button>
-        )}
-      </div>
+      <WorkspacePageHeader
+        title={t("heading")}
+        help={t("helpText")}
+        action={
+          canAdd && (
+            <button
+              type="button"
+              onClick={() => setShowForm((s) => !s)}
+              className="bg-coral text-white text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-watermelon transition-colors"
+            >
+              {showForm ? t("cancelButton") : t("addButton")}
+            </button>
+          )
+        }
+      />
 
       <div className="flex flex-wrap gap-1.5 mb-4">
         <button

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import ScrollToHash from "@/components/ScrollToHash";
 import { isLeadRole } from "@/lib/authz";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 
 
 function timeAgo(date: Date, t: Awaited<ReturnType<typeof getTranslations>>): string {
@@ -47,27 +48,23 @@ export default async function UpdatesPage({
   return (
     <div className="max-w-2xl mx-auto">
       <ScrollToHash />
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <Link href={`/projects/${slug}`} className="text-sm text-dark-slate/50 hover:text-seagrass">
-            {t("backToProject", { title: project.title })}
-          </Link>
-          <h1 className="text-2xl font-bold mt-1">{t("heading")}</h1>
-        </div>
-        <div className="flex items-center gap-2">
-          {canPost && (
+      <WorkspacePageHeader
+        title={t("heading")}
+        help={t("helpText")}
+        action={
+          canPost && (
             <Link
               href={`/projects/${slug}/updates/new`}
-              className="bg-coral text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-watermelon transition-colors"
+              className="bg-coral text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-watermelon transition-colors"
             >
               {t("postUpdateButton")}
             </Link>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
 
       {project.blogPosts.length === 0 ? (
-        <div className="border border-dashed border-muted-teal rounded-lg p-10 text-center">
+        <div className="border border-dashed border-muted-teal/40 rounded-lg p-10 text-center">
           <p className="text-dark-slate/50">{t("emptyState")}</p>
           {canPost && (
             <Link href={`/projects/${slug}/updates/new`} className="text-seagrass hover:underline text-sm mt-2 inline-block">
@@ -78,7 +75,7 @@ export default async function UpdatesPage({
       ) : (
         <div className="space-y-8">
           {project.blogPosts.map((post) => (
-            <article key={post.id} id={`post-${post.id}`} className="border border-muted-teal rounded-lg p-6">
+            <article key={post.id} id={`post-${post.id}`} className="border border-muted-teal/30 rounded-lg p-6">
               <div className="flex items-center gap-2 mb-3 text-sm text-dark-slate/50">
                 {post.author.image && (
                   <img src={post.author.image} alt="" className="w-6 h-6 rounded-full" />

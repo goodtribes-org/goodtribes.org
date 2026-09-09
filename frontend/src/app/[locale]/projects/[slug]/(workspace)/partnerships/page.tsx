@@ -8,6 +8,7 @@ import ProposePartnershipForm from "./ProposePartnershipForm";
 import PartnershipActions from "@/components/PartnershipActions";
 import ProposeMatchButton from "@/components/ProposeMatchButton";
 import { findMatchingOrgsForProject } from "@/lib/partnershipMatching";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { Locale } from "next-intl";
 
 export default async function ProjectPartnershipsPage({ params }: { params: Promise<{ locale: Locale; slug: string }> }) {
@@ -42,7 +43,7 @@ export default async function ProjectPartnershipsPage({ params }: { params: Prom
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-xl font-bold text-dark-slate mb-6">{t("heading")}</h1>
+      <WorkspacePageHeader title={t("heading")} help={t("helpText")} />
 
       <div className="border border-dashed border-muted-teal/50 rounded-xl p-6 mb-8">
         <h2 className="font-semibold text-dark-slate mb-1">{t("proposeHeading")}</h2>

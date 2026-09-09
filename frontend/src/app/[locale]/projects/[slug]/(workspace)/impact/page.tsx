@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import type { useTranslations } from "next-intl";
@@ -12,6 +11,7 @@ import { ImpactReportForm, WithdrawReportButton } from "./ImpactReportForm";
 import { ImpactReportCard } from "@/components/ImpactReportCard";
 import { impactReportStatus } from "@/lib/impactReports";
 import { isLeadRole } from "@/lib/authz";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 
 
 export async function generateMetadata({
@@ -104,7 +104,6 @@ export default async function ImpactPage({
   const project = await prisma.project.findUnique({
     where: { slug },
     select: {
-      title: true,
       members: session?.user?.id
         ? { where: { userId: session.user.id }, select: { role: true } }
         : false,
@@ -145,33 +144,16 @@ export default async function ImpactPage({
 
   return (
     <div>
-      {/* Back nav */}
-      <div className="mb-4">
-        <Link
-          href={`/projects/${slug}`}
-          className="text-xs text-dark-slate/40 hover:text-dark-slate transition-colors"
-        >
-          ← {project.title}
-        </Link>
-      </div>
-
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-xl font-bold text-dark-slate">{t("heading")}</h1>
-          {totalMetrics > 0 && (
-            <p className="text-xs text-dark-slate/50 mt-0.5">
-              {t("metricsCount", { count: totalMetrics })}
-              {lastUpdated && (
-                <> &middot; {t("lastUpdatedAt", { time: formatRelative(lastUpdated, t) })}</>
-              )}
-            </p>
-          )}
-        </div>
-        {isOwnerOrAdmin && (
-          <AddMetricForm projectSlug={slug} />
-        )}
-      </div>
+      <WorkspacePageHeader
+        title={t("heading")}
+        help={t("helpText")}
+        description={
+          totalMetrics > 0
+            ? `${t("metricsCount", { count: totalMetrics })}${lastUpdated ? ` · ${t("lastUpdatedAt", { time: formatRelative(lastUpdated, t) })}` : ""}`
+            : undefined
+        }
+        action={isOwnerOrAdmin && <AddMetricForm projectSlug={slug} />}
+      />
 
       {/* Summary stats */}
       {totalMetrics > 0 && (

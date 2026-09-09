@@ -282,7 +282,7 @@ export default function GanttView({
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
     <div>
-      <div className="rounded-lg border border-muted-teal/20 overflow-hidden">
+      <div className="rounded-lg border border-muted-teal/20 overflow-hidden bg-white">
         <div className="overflow-x-auto" ref={scrollRef}>
           <div className="relative" style={{ minWidth: LABEL_WIDTH + totalDays * DAY_WIDTH }}>
 

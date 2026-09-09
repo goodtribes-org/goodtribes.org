@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { getTranslations } from "next-intl/server";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import ProjectPlanForm from "./ProjectPlanForm";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { Locale } from "next-intl";
 
 export async function generateMetadata({
@@ -35,7 +36,6 @@ export default async function ProjectPlanPage({
     where: { slug },
     select: {
       id: true,
-      title: true,
       projectPlan: { include: { updatedBy: { select: { name: true } } } },
     },
   });
@@ -47,9 +47,7 @@ export default async function ProjectPlanPage({
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-dark-slate">{t("title")}</h1>
-      </div>
+      <WorkspacePageHeader title={t("title")} help={t("helpText")} />
 
       <ProjectPlanForm projectSlug={slug} plan={project.projectPlan} canEdit={canEdit} />
     </div>

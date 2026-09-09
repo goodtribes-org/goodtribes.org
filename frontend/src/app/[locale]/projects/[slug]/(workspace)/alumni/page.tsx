@@ -9,6 +9,7 @@ import { auth } from "@/auth";
 import { getTranslations } from "next-intl/server";
 import { PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { archiveProject } from "./actions";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
@@ -26,7 +27,7 @@ export default async function AlumniPage({ params }: { params: Promise<{ slug: s
   const [project, alumni, maturity] = await Promise.all([
     prisma.project.findUnique({
       where: { slug },
-      select: { title: true, slug: true, archivedAt: true },
+      select: { archivedAt: true },
     }),
     prisma.projectAlumni.findMany({
       where: { projectSlug: slug },
@@ -50,25 +51,12 @@ export default async function AlumniPage({ params }: { params: Promise<{ slug: s
 
   return (
     <div className="max-w-3xl space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <nav className="text-sm text-dark-slate/50 mb-2">
-            <Link href="/projects" className="hover:text-dark-slate">{t("breadcrumbProjects")}</Link>
-            <span className="mx-2">/</span>
-            <Link href={`/projects/${slug}`} className="hover:text-dark-slate">{project.title}</Link>
-            <span className="mx-2">/</span>
-            <span className="text-dark-slate">{t("breadcrumbAlumni")}</span>
-          </nav>
-          <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
-          <p className="text-sm text-dark-slate/50 mt-1">
-            {t("subtitle")}
-          </p>
-        </div>
-
-        {isOwnerOrAdmin && !project.archivedAt && (
-          <ArchiveButton projectSlug={slug} t={t} />
-        )}
-      </div>
+      <WorkspacePageHeader
+        title={t("heading")}
+        description={t("subtitle")}
+        help={t("helpText")}
+        action={isOwnerOrAdmin && !project.archivedAt && <ArchiveButton projectSlug={slug} t={t} />}
+      />
 
       {/* Final report */}
       {maturity?.finalReport && (

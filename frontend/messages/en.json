@@ -318,6 +318,7 @@
   },
   "PollsPage": {
     "heading": "Polls",
+    "helpText": "Project members vote on decisions here. A vote's weight depends on how many Tribe Tokens the voter holds in the project. A binding poll counts as an actual decision, a non-binding one is advisory. A poll closes automatically at a set deadline, or its creator can close it manually.",
     "newPoll": "+ New poll",
     "emptyState": "No polls yet.",
     "createFirst": "Create the first one! →",
@@ -465,6 +466,7 @@
   "AIReviewPage": {
     "metaTitle": "{projectTitle} — AI Review — GoodTribes.org",
     "heading": "AI Review",
+    "helpText": "When an AI agent (Writer, Analyst, or Researcher) finishes a kanban card, its deliverable lands here for a human to review before it's approved or rejected. The number next to the heading shows how many are waiting.",
     "emptyState": "No AI deliverables awaiting review.",
     "agentTitle": "Agent: {agentType}",
     "agentWriter": "Writer",
@@ -706,6 +708,7 @@
   },
   "MembersManager": {
     "pageTitle": "Project members",
+    "helpText": "Manage who's part of the project here. You can add an existing user directly or invite someone by email, approve or reject pending join requests, and change the role of existing members (Founder, Admin, Contributor, Follower).",
     "addMemberHeading": "Add member directly",
     "requestsHeading": "Requests",
     "noRequestsEmpty": "No pending requests.",
@@ -1028,6 +1031,7 @@
   "FundingPage": {
     "pageTitle": "{projectTitle} — Funding — GoodTribes.org",
     "heading": "Funding",
+    "helpText": "The project can raise money here through a campaign — donation-based, reward-based crowdfunding, or against Tribe Tokens. Owners and admins start and close the campaign, log expenses, and can export a report. If Stripe isn't configured, pledges are recorded manually instead of being charged automatically.",
     "noCampaignYet": "No funding campaign has been started for this project yet.",
     "startCampaignHeading": "Start a campaign",
     "startCampaignSubtitle": "Set a goal and gather support from backers.",
@@ -1091,6 +1095,9 @@
   },
   "CalendarPage": {
     "pageTitle": "{projectTitle} — Planning — GoodTribes.org",
+    "pageHeading": "Calendar",
+    "pageDescription": "Milestones, tasks, and events for the project — switch to Gantt for the timeline.",
+    "helpText": "The calendar shows milestones, tasks with due dates, and scheduled events for the selected month — each entry's color shows its type (see the legend below the calendar). Switch months with the arrows, or switch to the Gantt view for a timeline of every task and its dependencies.\n\nThe list below the calendar shows every milestone in the project regardless of month, with a checklist and a progress bar for how much is done.",
     "monthJanuary": "January",
     "monthFebruary": "February",
     "monthMarch": "March",
@@ -1135,6 +1142,8 @@
   },
   "RoadmapPage": {
     "pageTitle": "{projectTitle} — Roadmap — GoodTribes.org",
+    "pageHeading": "Roadmap",
+    "helpText": "The phase timeline shows the project's journey through the phases Idea → Launch → Release → Establish → Scale → Impact, with the maturity score showing how ready the project is for the next step. The milestone list below shows the project's milestones and flags the ones that are overdue.",
     "phaseTimelineHeading": "Phase timeline",
     "milestonesHeading": "Milestones",
     "maturityScoreHeading": "Maturity score",
@@ -1231,6 +1240,7 @@
     "backToProject": "← {title}",
     "heading": "Legal structure",
     "subtitle": "See PRD 4c for what each structure means legally.",
+    "helpText": "Changing legal structure needs a member vote to approve it before a site admin carries it out. A pending proposal shows here with its status and a link to the poll until it's decided.",
     "currentTypeLabel": "Current structure",
     "productLineUnder": "Product line under {name}",
     "changeRequestTitle": "Request to change to {type}",
@@ -1247,6 +1257,7 @@
     "breadcrumbAlumni": "Alumni",
     "heading": "Alumni",
     "subtitle": "Contributors who shaped this project",
+    "helpText": "When a project is archived, the contributors who earned tokens on it become alumni and get a digital badge. Owners and admins can archive the project from here and, once archived, generate an AI-written final report.",
     "finalReportHeading": "📋 AI final report",
     "emptyAlumni": "No alumni yet.",
     "emptyAlumniArchiveHint": "Archive the project to create alumni badges.",
@@ -1264,6 +1275,7 @@
     "breadcrumbTribeTokens": "Tribe Tokens",
     "heading": "Tribe Tokens",
     "subtitle": "Token distribution among contributors in {title}",
+    "helpText": "Tribe Tokens are the project's own reward currency — you earn them by completing subtasks on cards in Tasks. Ten percent of every award is automatically mirrored into GT, the platform-wide currency. The list shows how tokens are distributed among this project's contributors.",
     "sectionHeading": "Token distribution",
     "emptyState": "No tokens have been awarded yet. Check off subtasks and move cards to Done to earn tokens.",
     "firstPlaceTitle": "First place",
@@ -1273,6 +1285,7 @@
   "ProfitDistributionPage": {
     "heading": "Profit distribution",
     "subtitle": "See PRD 4a for the full flow: the board's proposal, the members' vote, and the Foundation's execution.",
+    "helpText": "A proposal sets how an audited profit should be split between operations and the Impact Fund — the rest goes to Tribe Token holders as a personal share. Members vote on the proposal, and a site admin carries out whichever is approved.",
     "emptyState": "No profit distribution proposal has been made for {title} yet.",
     "statusPending": "Awaiting vote",
     "statusApprovedByMembers": "Approved by members — awaiting the Foundation",
@@ -1294,12 +1307,14 @@
   "FilesPage": {
     "pageTitle": "{title} — Files — GoodTribes.org",
     "heading": "Files",
+    "helpText": "Project members upload and share files with each other here — images, documents, and anything else that belongs to the project. Only members can see and upload files.",
     "backToProject": "← {title}",
     "membersOnlyNotice": "Only project members can see files."
   },
   "UpdatesPage": {
     "backToProject": "← {title}",
     "heading": "Updates",
+    "helpText": "Project leads and admins post updates about the project's progress here — a simple project blog that any visitor to the project page can read.",
     "postUpdateButton": "+ Post update",
     "emptyState": "No updates yet.",
     "postFirstUpdate": "Post the first update →",
@@ -1672,6 +1687,9 @@
   },
   "TasksPage": {
     "pageTitle": "{projectTitle} — Tasks — GoodTribes.org",
+    "pageHeading": "Tasks",
+    "helpText": "Tasks is the project's task board. Drag cards between columns (Backlog, To do, Doing, Review, Done) to update their status — or switch to List or Gantt for other views of the same tasks. Each card can have an assignee, a due date, subtasks, and dependencies on other cards, and completed subtasks can earn tokens for whoever did them.",
+    "helpGuideLink": "Read the full guide",
     "boardLabel": "Board",
     "listLabel": "List",
     "ganttLabel": "Gantt",
@@ -1705,6 +1723,7 @@
   "WikiPageDetail": {
     "pageTitle": "{pageTitle} — {projectTitle} Wiki",
     "sidebarHeading": "Wiki",
+    "helpText": "The wiki is the project's shared documentation, organized as pages in a tree — click the arrows in the sidebar to expand sub-pages. Any project member can edit a page via the Edit button. Owners and admins can create and delete pages, and can move a page under a different parent page while editing it.",
     "lastEditedBy": "Last edited by {name}",
     "unknownUser": "Unknown",
     "backToProject": "← {title}"
@@ -2530,6 +2549,7 @@
   "ImpactPage": {
     "pageTitle": "{title} — Impact — GoodTribes.org",
     "heading": "Impact",
+    "helpText": "Two separate ways to show impact on this page. The metrics at the top are self-reported — the project lead adds and updates them on an ongoing basis with no review. Verified reports (further down) are scoped claims that a site admin approves or rejects, and only those show up publicly on the project page.",
     "metricsCount": "{count, plural, one {# metric} other {# metrics}}",
     "lastUpdatedAt": "Last updated {time}",
     "metricsLabel": "Metrics",
@@ -2573,6 +2593,8 @@
   },
   "ValuePropositionPage": {
     "heading": "Value Proposition",
+    "helpText": "The canvas sets the customer's reality (jobs, pains, desired gains) against what the project actually offers (products, pain relievers, gain creators). Owners and admins can edit the fields directly in the grid, and every change is saved to a history.",
+    "helpGuideLink": "Read the full guide",
     "helpLink": "Help"
   },
   "ValuePropositionHistory": {
@@ -2638,6 +2660,7 @@
     "breadcrumbProjects": "Projects",
     "breadcrumbScaling": "Scaling",
     "scalingPlanHeading": "Scaling plan",
+    "helpText": "This page only shows up once the project's maturity score reaches 70 or higher. From here, owners and admins can set a scaling plan, open the project up for replication into new regions, review applications for new instances, and see stats across the whole network of instances.",
     "maturityBadge": "Maturity {score}/100",
     "noScalingPlan": "No scaling plan generated yet. Go back to the project page and click \"Calculate\" to generate one.",
     "replicationSettingsHeading": "Replication settings",
@@ -2823,6 +2846,7 @@
   },
   "InterviewLogPage": {
     "heading": "Target audience interviews",
+    "helpText": "Log customer interviews here — who you talked to, what problem they described, whether the problem was validated, and any quotes. A record of what you actually learned from your audience, not just assumptions.",
     "addButton": "Log interview",
     "cancelButton": "Cancel",
     "saveButton": "Save",
@@ -2846,6 +2870,7 @@
   },
   "MarketScanPage": {
     "heading": "Market scan",
+    "helpText": "Log what you observe in the market — competitors, trends, possible partners, and relevant regulations — with a short note on why it matters for the project and a link to the source.",
     "addButton": "Add",
     "cancelButton": "Cancel",
     "saveButton": "Save",
@@ -2868,6 +2893,7 @@
   },
   "LaunchPlanPage": {
     "heading": "Launch & marketing plan",
+    "helpText": "Plan the launch here — target audience, positioning, budget, and success metrics in free text, a table of marketing channels (tactic, owner, budget, and status), and a timeline of launch milestones.",
     "targetAudienceLabel": "Target audience",
     "targetAudiencePlaceholder": "Who is the launch aimed at?",
     "positioningLabel": "Positioning",
@@ -3117,12 +3143,14 @@
   },
   "EditProjectPage": {
     "heading": "Edit project",
+    "helpText": "Edit the project's basic info here — title, slogan, description, image, tags, SDG goals, and which skills it's looking for. Owners can also connect a GitHub project for syncing and, in the danger zone below, delete the project permanently.",
     "dangerZoneHeading": "Danger zone",
     "dangerZoneWarning": "Deleting a project permanently removes all kanban cards, todos, wiki pages, milestones, and activity. This cannot be undone."
   },
   "SprintsPage": {
     "heading": "Design Sprints",
     "intro": "An asynchronous, step-by-step way to explore, sketch, and test ideas together — without everyone needing to be online at the same time.",
+    "helpText": "A sprint moves through five phases in order — Understand → Diverge → Decide → Prototype → Validate — and can run together in real time or spread out over time at your own pace. Owners and admins can start new sprints and delete them.",
     "statusActive": "Active",
     "statusPaused": "Paused",
     "statusCompleted": "Completed",
@@ -3139,10 +3167,14 @@
     "anonymousUser": "Anonymous"
   },
   "LeanCanvasPage": {
+    "pageHeading": "Lean Canvas",
+    "helpText": "Lean Canvas is a one-page business plan for the project — problem, solution, customer segments, channels, revenue, and costs all on one page. Owners and admins can edit the fields directly in the grid. Every change is saved to a history you can browse via the button in the top right.",
+    "helpGuideLink": "Read the full guide",
     "helpLink": "Help"
   },
   "ProjectPlanPage": {
-    "title": "Project Plan"
+    "title": "Project Plan",
+    "helpText": "Write down the project's overall plan here in four free-text fields: Goal, Milestones, Resources, and Risks. Owners and admins can edit the text, which saves as you go."
   },
   "ProjectPlanForm": {
     "goalLabel": "Goal",
@@ -3238,6 +3270,7 @@
   "IdeaSessionsPage": {
     "heading": "Idea Workshop",
     "intro": "Bounce new approaches off the project's members — write @AI to invite the AI, which has access to the project's description, milestones, tasks, and wiki.",
+    "helpText": "Each idea session is its own chat thread that any project member can join, asynchronously or in real time. Write @AI in the thread to invite the AI, which answers based on the project's own description, milestones, tasks, and wiki — and can summarize the session as a mind map.",
     "startSessionButton": "+ Start idea session",
     "emptyState": "No idea sessions yet for this project.",
     "unnamedSession": "Unnamed idea session",
@@ -3249,6 +3282,7 @@
   },
   "PartnershipsPage": {
     "heading": "Partnerships",
+    "helpText": "Propose a partnership with an organisation, or match with one of the suggested organisations below. A partnership needs both sides to accept before it becomes active, and can be revoked at any time.",
     "proposeHeading": "Propose a partnership",
     "proposeIntro": "Enter the slug of the organisation you want to partner with.",
     "matchesHeading": "Organisations that could be partners",

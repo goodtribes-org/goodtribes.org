@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getTranslations } from "next-intl/server";
 import { createProjectIdeaThread } from "@/app/[locale]/ideaverkstad/actions";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { Locale } from "next-intl";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -55,23 +56,21 @@ export default async function ProjectIdeaSessionsPage({
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <Link href={`/projects/${slug}`} className="text-xs text-dark-slate/40 hover:text-dark-slate">
-            ← {project.title}
-          </Link>
-          <h1 className="text-xl font-bold text-dark-slate mt-0.5">{t("heading")}</h1>
-          <p className="text-sm text-dark-slate/50 mt-1">{t("intro")}</p>
-        </div>
-        <form action={startIdeaSession}>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors flex-shrink-0"
-          >
-            {t("startSessionButton")}
-          </button>
-        </form>
-      </div>
+      <WorkspacePageHeader
+        title={t("heading")}
+        description={t("intro")}
+        help={t("helpText")}
+        action={
+          <form action={startIdeaSession}>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-coral text-white text-sm font-medium rounded-lg hover:bg-watermelon transition-colors flex-shrink-0"
+            >
+              {t("startSessionButton")}
+            </button>
+          </form>
+        }
+      />
 
       {rooms.length === 0 ? (
         <div className="border border-dashed border-muted-teal/40 rounded-lg p-16 text-center">

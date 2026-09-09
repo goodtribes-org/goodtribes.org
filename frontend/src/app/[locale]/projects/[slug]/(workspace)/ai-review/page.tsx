@@ -1,5 +1,4 @@
 import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import type { Metadata } from "next";
@@ -7,6 +6,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import AIReviewActions from "./AIReviewActions";
 import { resolveProjectContent } from "@/lib/contentTranslation";
 import { routing } from "@/i18n/routing";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { Locale } from "next-intl";
 
 
@@ -38,7 +38,6 @@ export default async function AiReviewPage({ params }: { params: Promise<{ slug:
   }
 
   const t = await getTranslations("AIReviewPage");
-  const locale = (await getLocale()) as Locale;
 
   const AGENT_LABELS: Record<string, string> = {
     writer: t("agentWriter"),
@@ -46,12 +45,8 @@ export default async function AiReviewPage({ params }: { params: Promise<{ slug:
     researcher: t("agentResearcher"),
   };
 
-  const project = await prisma.project.findUnique({
-    where: { slug },
-    select: { title: true, summary: true, description: true, translations: locale !== routing.defaultLocale ? { where: { locale } } : false },
-  });
+  const project = await prisma.project.findUnique({ where: { slug }, select: { id: true } });
   if (!project) notFound();
-  const content = resolveProjectContent(project, project.translations, locale);
 
   const runs = await prisma.aiTaskRun.findMany({
     where: {
@@ -73,22 +68,17 @@ export default async function AiReviewPage({ params }: { params: Promise<{ slug:
 
   return (
     <div className="max-w-4xl">
-      <div className="mb-6">
-        <Link
-          href={`/projects/${slug}`}
-          className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          &larr; {content.title}
-        </Link>
-        <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
-          {runs.length > 0 && (
+      <WorkspacePageHeader
+        title={t("heading")}
+        help={t("helpText")}
+        action={
+          runs.length > 0 && (
             <span className="px-2.5 py-0.5 rounded-full bg-coral text-white text-xs font-bold">
               {runs.length}
             </span>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
 
       {runs.length === 0 ? (
         <p className="text-dark-slate/50 text-sm">{t("emptyState")}</p>

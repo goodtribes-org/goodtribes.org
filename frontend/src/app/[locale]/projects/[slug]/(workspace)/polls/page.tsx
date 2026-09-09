@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 
 
 function timeAgo(date: Date): string {
@@ -51,30 +52,24 @@ export default async function PollsPage({
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <Link
-            href={`/projects/${slug}`}
-            className="text-sm text-dark-slate/50 hover:text-seagrass"
-          >
-            ← {project.title}
-          </Link>
-          <h1 className="text-2xl font-bold mt-1">{t("heading")}</h1>
-        </div>
-        {session && (
-          <Link
-            href={`/projects/${slug}/polls/new`}
-            className="bg-coral text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-watermelon transition-colors"
-          >
-            {t("newPoll")}
-          </Link>
-        )}
-      </div>
+      <WorkspacePageHeader
+        title={t("heading")}
+        help={t("helpText")}
+        action={
+          session && (
+            <Link
+              href={`/projects/${slug}/polls/new`}
+              className="bg-coral text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-watermelon transition-colors"
+            >
+              {t("newPoll")}
+            </Link>
+          )
+        }
+      />
 
       {/* Poll list */}
       {polls.length === 0 ? (
-        <div className="border border-dashed border-muted-teal rounded-lg p-10 text-center">
+        <div className="border border-dashed border-muted-teal/40 rounded-lg p-10 text-center">
           <p className="text-dark-slate/50">{t("emptyState")}</p>
           {session && (
             <Link
@@ -91,7 +86,7 @@ export default async function PollsPage({
             <Link
               key={poll.id}
               href={`/projects/${slug}/polls/${poll.id}`}
-              className="block border border-muted-teal rounded-lg p-4 hover:border-seagrass hover:bg-white/50 transition-all group"
+              className="block border border-muted-teal/30 rounded-lg p-4 hover:border-seagrass hover:bg-white/50 transition-all group"
             >
               <div className="flex items-start gap-3">
                 {/* Left: badges + title + meta */}

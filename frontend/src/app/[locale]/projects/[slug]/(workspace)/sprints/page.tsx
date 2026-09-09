@@ -7,6 +7,7 @@ import { listSprintsForProject } from "@/lib/sprints";
 import { Link } from "@/i18n/navigation";
 import NewSprintForm from "./NewSprintForm";
 import DeleteSprintButton from "./DeleteSprintButton";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { Locale } from "next-intl";
 
 export default async function SprintsPage({ params }: { params: Promise<{ locale: Locale; slug: string }> }) {
@@ -43,8 +44,7 @@ export default async function SprintsPage({ params }: { params: Promise<{ locale
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-xl font-bold text-dark-slate mb-1">{t("heading")}</h1>
-      <p className="text-sm text-dark-slate/60 mb-6">{t("intro")}</p>
+      <WorkspacePageHeader title={t("heading")} description={t("intro")} help={t("helpText")} />
 
       <div className="bg-white border border-muted-teal/30 rounded-xl divide-y divide-muted-teal/15 mb-8">
         {sprints.map((s) => (

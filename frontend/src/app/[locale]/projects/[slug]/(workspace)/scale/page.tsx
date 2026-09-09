@@ -9,6 +9,7 @@ import InstanceReviewPanel from "./InstanceReviewPanel";
 import NetworkDashboard from "./NetworkDashboard";
 import { isLeadRole } from "@/lib/authz";
 import { getNetworkStats } from "@/lib/networkStats";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 
 
 export default async function ScalePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -80,20 +81,15 @@ export default async function ScalePage({ params }: { params: Promise<{ slug: st
 
   return (
     <div className="max-w-3xl">
-      <nav className="mb-6 text-sm text-dark-slate/50">
-        <Link href="/projects" className="hover:text-dark-slate transition-colors">{t("breadcrumbProjects")}</Link>
-        <span className="mx-2">/</span>
-        <Link href={`/projects/${slug}`} className="hover:text-dark-slate transition-colors">{project.title}</Link>
-        <span className="mx-2">/</span>
-        <span className="text-dark-slate">{t("breadcrumbScaling")}</span>
-      </nav>
-
-      <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-2xl font-bold text-dark-slate">{t("scalingPlanHeading")}</h1>
-        <span className="text-xs font-semibold text-white bg-green-500 px-2 py-0.5 rounded-full">
-          {t("maturityBadge", { score: maturity.score })}
-        </span>
-      </div>
+      <WorkspacePageHeader
+        title={t("scalingPlanHeading")}
+        help={t("helpText")}
+        action={
+          <span className="text-xs font-semibold text-white bg-green-500 px-2 py-0.5 rounded-full">
+            {t("maturityBadge", { score: maturity.score })}
+          </span>
+        }
+      />
 
       {maturity.scalingPlan ? (
         <div className="border border-muted-teal/30 rounded p-6 mb-8 prose-like">

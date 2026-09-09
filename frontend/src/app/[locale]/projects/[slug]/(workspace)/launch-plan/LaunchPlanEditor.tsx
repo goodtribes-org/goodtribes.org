@@ -10,6 +10,7 @@ import {
   toggleLaunchPlanMilestone,
   deleteLaunchPlanMilestone,
 } from "./actions";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { ChannelPlanStatus } from "@prisma/client";
 
 const STATUSES: ChannelPlanStatus[] = ["PLANNED", "ACTIVE", "DONE"];
@@ -140,7 +141,7 @@ export default function LaunchPlanEditor({ projectSlug, canEdit, initial, channe
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-xl font-bold text-dark-slate mb-4">{t("heading")}</h1>
+        <WorkspacePageHeader title={t("heading")} help={t("helpText")} />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {(["targetAudience", "positioning", "budgetOverview", "successMetrics"] as const).map((field) => (
             <div key={field}>

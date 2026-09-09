@@ -55,6 +55,7 @@ export default function KanbanBoard({
   requestAddColumn,
   onRequestAddDone,
   requestOpenCardId,
+  leading,
   viewToggle,
 }: {
   projectSlug: string;
@@ -67,6 +68,7 @@ export default function KanbanBoard({
   requestAddColumn?: string | null;
   onRequestAddDone?: () => void;
   requestOpenCardId?: string | null;
+  leading?: ReactNode;
   viewToggle?: ReactNode;
 }) {
   const router = useRouter();
@@ -439,8 +441,9 @@ export default function KanbanBoard({
 
   return (
     <div>
-      {/* Toolbar: add button left, filters centered */}
-      <div className="flex items-center gap-3 mb-4">
+      {/* Toolbar: title+help, add button, filters centered, view toggle */}
+      <div className="flex items-center gap-3 mb-2 flex-wrap">
+        {leading}
         {isLoggedIn && (
           <button
             type="button"
@@ -529,7 +532,7 @@ export default function KanbanBoard({
           onShowColumn={(colKey) => setColumnMode(colKey, "normal")}
         />
 
-        {viewToggle && <div className="shrink-0">{viewToggle}</div>}
+        {viewToggle}
       </div>
 
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>

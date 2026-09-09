@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 
 export default async function ProfitDistributionPage({
   params,
@@ -38,12 +39,7 @@ export default async function ProfitDistributionPage({
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
-        <p className="text-sm text-dark-slate/60 mt-1">
-          {t("subtitle")}
-        </p>
-      </div>
+      <WorkspacePageHeader title={t("heading")} description={t("subtitle")} help={t("helpText")} />
 
       {proposals.length === 0 ? (
         <p className="text-sm text-dark-slate/40">

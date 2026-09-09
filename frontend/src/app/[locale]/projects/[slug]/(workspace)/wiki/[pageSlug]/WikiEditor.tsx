@@ -118,16 +118,18 @@ export default function WikiEditor({ page, projectSlug, canEdit, canDelete, rend
         )}
       </div>
 
-      {page.content ? (
-        <div
-          className="prose prose-sm max-w-none"
-          dangerouslySetInnerHTML={{ __html: renderedHtml }}
-        />
-      ) : (
-        <p className="text-sm text-dark-slate/40 italic">
-          {canEdit ? "This page is empty. Click Edit to add content." : "No content yet."}
-        </p>
-      )}
+      <div className="bg-white border border-muted-teal/30 rounded-xl p-6">
+        {page.content ? (
+          <div
+            className="prose prose-sm max-w-none"
+            dangerouslySetInnerHTML={{ __html: renderedHtml }}
+          />
+        ) : (
+          <p className="text-sm text-dark-slate/40 italic">
+            {canEdit ? "This page is empty. Click Edit to add content." : "No content yet."}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

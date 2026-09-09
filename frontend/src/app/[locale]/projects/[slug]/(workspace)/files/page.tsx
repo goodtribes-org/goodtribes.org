@@ -1,11 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import ResourceLibrary from "@/components/ResourceLibrary";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import { getTranslations } from "next-intl/server";
 
 
@@ -26,7 +26,6 @@ export default async function ProjectFilesPage({ params }: { params: Promise<{ s
     where: { slug },
     select: {
       id: true,
-      title: true,
       members: { where: { userId: session?.user?.id ?? "" } },
     },
   });
@@ -44,12 +43,7 @@ export default async function ProjectFilesPage({ params }: { params: Promise<{ s
 
   return (
     <div className="max-w-2xl">
-      <div className="mb-6">
-        <Link href={`/projects/${slug}`} className="text-xs text-dark-slate/40 hover:text-dark-slate">
-          {t("backToProject", { title: project.title })}
-        </Link>
-        <h1 className="text-xl font-bold text-dark-slate mt-0.5">{t("heading")}</h1>
-      </div>
+      <WorkspacePageHeader title={t("heading")} help={t("helpText")} />
 
       {isMember ? (
         <ResourceLibrary

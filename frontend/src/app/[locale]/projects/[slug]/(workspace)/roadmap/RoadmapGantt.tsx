@@ -200,7 +200,7 @@ export default function RoadmapGantt({ phases, milestones, checklistItems, isOwn
 
   return (
     <div>
-      <div className="rounded-lg border border-muted-teal/20 overflow-hidden">
+      <div className="rounded-lg border border-muted-teal/20 overflow-hidden bg-white">
         <div className="overflow-x-auto">
           <div className="relative" style={{ minWidth: LABEL_WIDTH + totalDays * DAY_WIDTH }}>
             {/* Month header */}

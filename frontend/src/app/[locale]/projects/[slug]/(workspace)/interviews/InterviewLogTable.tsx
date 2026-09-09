@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { addInterviewLogEntry, deleteInterviewLogEntry } from "./actions";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 
 interface EntryItem {
   id: string;
@@ -66,18 +67,21 @@ export default function InterviewLogTable({ projectSlug, entries: initialEntries
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold text-dark-slate">{t("heading")}</h1>
-        {canLog && (
-          <button
-            type="button"
-            onClick={() => setShowForm((s) => !s)}
-            className="bg-coral text-white text-xs font-medium px-3 py-1.5 rounded hover:bg-watermelon transition-colors"
-          >
-            {showForm ? t("cancelButton") : t("addButton")}
-          </button>
-        )}
-      </div>
+      <WorkspacePageHeader
+        title={t("heading")}
+        help={t("helpText")}
+        action={
+          canLog && (
+            <button
+              type="button"
+              onClick={() => setShowForm((s) => !s)}
+              className="bg-coral text-white text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-watermelon transition-colors"
+            >
+              {showForm ? t("cancelButton") : t("addButton")}
+            </button>
+          )
+        }
+      />
 
       {showForm && canLog && (
         <form onSubmit={handleSubmit} className="border border-muted-teal/30 rounded-lg bg-white p-4 mb-4 flex flex-col gap-3">

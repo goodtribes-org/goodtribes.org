@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { getTranslations } from "next-intl/server";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 
 export async function generateMetadata({
   params,
@@ -59,25 +59,11 @@ export default async function TokensPage({
 
   return (
     <div className="max-w-3xl space-y-10">
-      {/* Breadcrumb */}
-      <nav className="text-sm text-dark-slate/50">
-        <Link href="/projects" className="hover:text-dark-slate transition-colors">
-          {t("breadcrumbProjects")}
-        </Link>
-        <span className="mx-2">/</span>
-        <Link href={`/projects/${slug}`} className="hover:text-dark-slate transition-colors">
-          {project.title}
-        </Link>
-        <span className="mx-2">/</span>
-        <span className="text-dark-slate">{t("breadcrumbTribeTokens")}</span>
-      </nav>
-
-      <div>
-        <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
-        <p className="text-dark-slate/60 text-sm mt-1">
-          {t("subtitle", { title: project.title })}
-        </p>
-      </div>
+      <WorkspacePageHeader
+        title={t("heading")}
+        description={t("subtitle", { title: project.title })}
+        help={t("helpText")}
+      />
 
       {/* Leaderboard */}
       <section>

@@ -10,6 +10,7 @@ import { isRealMember } from "@/lib/authz";
 import { LEGAL_TYPES, LEGAL_TYPE_LABEL, isCommercialLegalType } from "@/lib/legalType";
 import { canInvoice } from "@/lib/projectApproval";
 import { proposeLegalTypeChange } from "./actions";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -34,7 +35,6 @@ export default async function LegalTypePage({ params }: { params: Promise<{ slug
     where: { slug },
     select: {
       id: true,
-      title: true,
       legalType: true,
       isSandbox: true,
       commercialUmbrellaEntityId: true,
@@ -58,13 +58,7 @@ export default async function LegalTypePage({ params }: { params: Promise<{ slug
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="mb-8">
-        <Link href={`/projects/${slug}`} className="text-sm text-dark-slate/50 hover:text-seagrass">
-          {t("backToProject", { title: project.title })}
-        </Link>
-        <h1 className="text-2xl font-bold text-dark-slate mt-1">{t("heading")}</h1>
-        <p className="text-sm text-dark-slate/50 mt-1">{t("subtitle")}</p>
-      </div>
+      <WorkspacePageHeader title={t("heading")} description={t("subtitle")} help={t("helpText")} />
 
       <section className="border border-muted-teal/40 rounded-lg p-5 bg-white mb-6">
         <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-wide mb-1">{t("currentTypeLabel")}</p>

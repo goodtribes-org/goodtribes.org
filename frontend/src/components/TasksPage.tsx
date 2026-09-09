@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import KanbanBoard, { type Member } from "@/components/KanbanBoard";
 import TaskListView from "@/components/TaskListView";
 import GanttView from "@/components/GanttView";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
+import HelpButton from "@/components/HelpButton";
 import { updateCard, moveCard, addCardDependency, removeCardDependency } from "@/app/[locale]/projects/[slug]/(workspace)/kanban/actions";
 
 type Milestone = { id: string; title: string; dueDate: Date | string | null; status: string };
@@ -92,51 +93,61 @@ export default function TasksPage({
   }
 
   const viewToggle = (
-    <div className="flex items-center gap-3">
-      <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-        <button
-          onClick={() => switchView("board")}
-          className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            view === "board"
-              ? "bg-white text-dark-slate shadow-sm"
-              : "text-dark-slate/50 hover:text-dark-slate"
-          }`}
-        >
-          {t("boardLabel")}
-        </button>
-        <button
-          onClick={() => switchView("list")}
-          className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            view === "list"
-              ? "bg-white text-dark-slate shadow-sm"
-              : "text-dark-slate/50 hover:text-dark-slate"
-          }`}
-        >
-          {t("listLabel")}
-        </button>
-        <button
-          onClick={() => switchView("gantt")}
-          className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-            view === "gantt"
-              ? "bg-white text-dark-slate shadow-sm"
-              : "text-dark-slate/50 hover:text-dark-slate"
-          }`}
-        >
-          {t("ganttLabel")}
-        </button>
-      </div>
-      <Link
-        href={helpHref}
-        className="flex items-center gap-1 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors"
+    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+      <button
+        onClick={() => switchView("board")}
+        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+          view === "board"
+            ? "bg-white text-dark-slate shadow-sm"
+            : "text-dark-slate/50 hover:text-dark-slate"
+        }`}
       >
-        <span className="flex items-center justify-center w-4 h-4 rounded-full border border-current text-[10px]">?</span>
-        {t("helpLabel")}
-      </Link>
+        {t("boardLabel")}
+      </button>
+      <button
+        onClick={() => switchView("list")}
+        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+          view === "list"
+            ? "bg-white text-dark-slate shadow-sm"
+            : "text-dark-slate/50 hover:text-dark-slate"
+        }`}
+      >
+        {t("listLabel")}
+      </button>
+      <button
+        onClick={() => switchView("gantt")}
+        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+          view === "gantt"
+            ? "bg-white text-dark-slate shadow-sm"
+            : "text-dark-slate/50 hover:text-dark-slate"
+        }`}
+      >
+        {t("ganttLabel")}
+      </button>
+    </div>
+  );
+
+  const titleAndHelp = (
+    <div className="flex items-center gap-2 shrink-0">
+      <h1 className="text-xl font-bold text-dark-slate">{t("pageHeading")}</h1>
+      <HelpButton text={t("helpText")} moreHref={helpHref} moreLabel={t("helpGuideLink")} />
     </div>
   );
 
   return (
     <div>
+      {/* Board view puts the title, help, filters and view toggle all on one
+          row (inside KanbanBoard's own toolbar) — list/gantt have no filters,
+          so they keep the plain shared header instead. */}
+      {view !== "board" && (
+        <WorkspacePageHeader
+          title={t("pageHeading")}
+          help={t("helpText")}
+          helpMoreHref={helpHref}
+          helpMoreLabel={t("helpGuideLink")}
+          action={viewToggle}
+        />
+      )}
       {view === "board" && (
         <KanbanBoard
           projectSlug={projectSlug}
@@ -149,12 +160,12 @@ export default function TasksPage({
           requestAddColumn={addColKey}
           onRequestAddDone={() => setAddColKey(null)}
           requestOpenCardId={openCardId}
+          leading={titleAndHelp}
           viewToggle={viewToggle}
         />
       )}
       {view === "list" && (
         <div>
-          <div className="flex justify-end mb-4">{viewToggle}</div>
           <TaskListView
             projectSlug={projectSlug}
             initialColumns={initialColumns}
@@ -167,7 +178,6 @@ export default function TasksPage({
       )}
       {view === "gantt" && (
         <div>
-          <div className="flex justify-end mb-4">{viewToggle}</div>
           <GanttView
             cards={Object.values(initialColumns).flat().map(c => ({
               ...c,

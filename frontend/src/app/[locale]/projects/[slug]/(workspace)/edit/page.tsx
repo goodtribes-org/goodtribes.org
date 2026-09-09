@@ -7,6 +7,7 @@ import DeleteProjectButton from "@/components/DeleteProjectButton";
 import { isLeadRole } from "@/lib/authz";
 import { parseColumnMap, parseStatusOptions } from "@/lib/githubColumnMap";
 import { routing } from "@/i18n/routing";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { Locale } from "next-intl";
 
 
@@ -68,12 +69,7 @@ export default async function EditProjectPage({
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="mb-8">
-        <a href={`/projects/${slug}`} className="text-sm text-dark-slate/50 hover:text-seagrass">
-          ← {project.title}
-        </a>
-        <h1 className="text-2xl font-bold mt-1">{t("heading")}</h1>
-      </div>
+      <WorkspacePageHeader title={t("heading")} help={t("helpText")} />
       <EditProjectForm
         slug={slug}
         projectId={project.id}

@@ -10,6 +10,7 @@ import { calculateMaturityScore } from "@/lib/projectMaturity";
 import { DISPLAY_PHASES } from "@/lib/projectPhase";
 import { getPhaseTimelineStatus, getMilestoneTimelineStatus } from "@/lib/roadmap";
 import RoadmapGantt, { type GanttPhaseRow, type GanttMilestoneRow } from "./RoadmapGantt";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 
 export async function generateMetadata({
   params,
@@ -42,7 +43,7 @@ export default async function RoadmapPage({
     auth(),
     prisma.project.findUnique({
       where: { slug },
-      select: { id: true, title: true, phase: true },
+      select: { id: true, phase: true },
     }),
   ]);
   if (!project) notFound();
@@ -94,7 +95,7 @@ export default async function RoadmapPage({
 
   return (
     <div>
-      <h1 className="text-lg font-bold text-dark-slate mb-1">{t("pageTitle", { projectTitle: project.title })}</h1>
+      <WorkspacePageHeader title={t("pageHeading")} help={t("helpText")} />
 
       {/* ── Maturity score ─────────────────────────────────────────────── */}
       <section className="bg-white border border-muted-teal/30 rounded-xl p-4 mb-6 flex items-center justify-between max-w-3xl">

@@ -14,7 +14,7 @@ export default function ProjectMiniHero({
   return (
     <div
       className="relative -mt-8 flex items-center justify-center overflow-hidden border-b border-muted-teal/20"
-      style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", height: 90 }}
+      style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", height: 60 }}
     >
       {imageUrl ? (
         <Image src={imageUrl} alt="" fill unoptimized className="object-cover blur-2xl scale-110" sizes="100vw" />
@@ -24,7 +24,7 @@ export default function ProjectMiniHero({
       <div className="absolute inset-0 bg-black/30" />
       <h1
         className={`${handwritingFont.className} relative z-10 truncate px-4 text-center text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]`}
-        style={{ fontSize: 48, lineHeight: "60px" }}
+        style={{ fontSize: 32, lineHeight: "40px" }}
       >
         {title}
       </h1>

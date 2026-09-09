@@ -11,6 +11,7 @@ import { formatCurrency, formatSecondaryConversion, suggestCurrencyForCountry } 
 import { createCampaign, pledge, closeCampaign, addExpense } from "./actions";
 import PledgeForm from "./PledgeForm";
 import ConnectStripeButton from "./ConnectStripeButton";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
@@ -73,7 +74,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
     if (!isOwnerOrAdmin) {
       return (
         <div className="max-w-xl">
-          <h1 className="text-xl font-bold text-dark-slate mb-4">{t("heading")}</h1>
+          <WorkspacePageHeader title={t("heading")} help={t("helpText")} />
           <p className="text-dark-slate/40 text-sm">
             {t("noCampaignYet")}
           </p>
@@ -88,7 +89,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
 
     return (
       <div className="max-w-2xl">
-        <h1 className="text-xl font-bold text-dark-slate mb-6">{t("heading")}</h1>
+        <WorkspacePageHeader title={t("heading")} help={t("helpText")} />
         <div className="border border-dashed border-muted-teal/50 rounded-xl p-8">
           <h2 className="font-semibold text-dark-slate mb-1">{t("startCampaignHeading")}</h2>
           <p className="text-sm text-dark-slate/50 mb-6">
@@ -266,7 +267,7 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
 
   return (
     <div className="max-w-4xl">
-      <h1 className="text-xl font-bold text-dark-slate mb-6">{t("heading")}</h1>
+      <WorkspacePageHeader title={t("heading")} help={t("helpText")} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* LEFT: main campaign info + pledge */}

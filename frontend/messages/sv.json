@@ -318,6 +318,7 @@
   },
   "PollsPage": {
     "heading": "Omröstningar",
+    "helpText": "Här röstar projektets medlemmar om beslut. Röstens vikt beror på hur många Tribe Tokens man har i projektet. En bindande omröstning räknas som ett faktiskt beslut, en icke-bindande är rådgivande. Omröstningen stängs automatiskt vid en satt deadline, annars kan skaparen stänga den manuellt.",
     "newPoll": "+ Ny omröstning",
     "emptyState": "Inga omröstningar ännu.",
     "createFirst": "Skapa den första! →",
@@ -465,6 +466,7 @@
   "AIReviewPage": {
     "metaTitle": "{projectTitle} — AI Granskning — GoodTribes.org",
     "heading": "AI Granskning",
+    "helpText": "När en AI-agent (Skribent, Analytiker eller Researcher) slutför ett kanban-kort hamnar leveransen här för mänsklig granskning innan den godkänns eller avvisas. Siffran bredvid rubriken visar hur många leveranser som väntar.",
     "emptyState": "Inga AI-leveranser väntar på granskning.",
     "agentTitle": "Agent: {agentType}",
     "agentWriter": "Skribent",
@@ -706,6 +708,7 @@
   },
   "MembersManager": {
     "pageTitle": "Projektmedlemmar",
+    "helpText": "Här hanterar du vilka som är med i projektet. Du kan lägga till en befintlig användare direkt eller bjuda in någon via e-post, godkänna eller avvisa väntande ansökningar, och ändra rollen för befintliga medlemmar (Grundare, Admin, Bidragsgivare, Följare).",
     "addMemberHeading": "Lägg till medlem direkt",
     "requestsHeading": "Ansökningar",
     "noRequestsEmpty": "Inga väntande ansökningar.",
@@ -1028,6 +1031,7 @@
   "FundingPage": {
     "pageTitle": "{projectTitle} — Finansiering — GoodTribes.org",
     "heading": "Finansiering",
+    "helpText": "Här kan projektet samla in pengar via en kampanj — donation, belöningsbaserad crowdfunding eller mot Tribe Tokens. Ägare och admin startar och stänger kampanjen, loggar utgifter och kan exportera en rapport. Är Stripe inte konfigurerat registreras löften manuellt istället för att dras automatiskt.",
     "noCampaignYet": "Ingen finansieringskampanj har startats för det här projektet ännu.",
     "startCampaignHeading": "Starta en kampanj",
     "startCampaignSubtitle": "Sätt ett mål och samla in stöd från finansiärer.",
@@ -1091,6 +1095,9 @@
   },
   "CalendarPage": {
     "pageTitle": "{projectTitle} — Planering — GoodTribes.org",
+    "pageHeading": "Kalender",
+    "pageDescription": "Milstolpar, uppgifter och händelser för projektet — växla till Gantt för tidslinjen.",
+    "helpText": "Kalendern visar milstolpar, uppgifter med förfallodatum och inbokade händelser för den valda månaden — färgen på varje post visar vilken typ det är (se förklaringen under kalendern). Byt månad med pilarna, eller växla till Gantt-vyn för en tidslinje över alla uppgifter och beroenden.\n\nListan under kalendern visar alla projektets milstolpar oavsett månad, med en avbockningsbar checklista och en progressbar för hur stor andel som är klara.",
     "monthJanuary": "Januari",
     "monthFebruary": "Februari",
     "monthMarch": "Mars",
@@ -1135,6 +1142,8 @@
   },
   "RoadmapPage": {
     "pageTitle": "{projectTitle} — Färdplan — GoodTribes.org",
+    "pageHeading": "Färdplan",
+    "helpText": "Fastidslinjen visar projektets resa genom faserna Idé → Uppstart → Lansering → Etablera → Skala → Impact, med mognadspoängen som visar hur redo projektet är för nästa steg. Milstolpelistan nedanför visar projektets milstolpar och flaggar dem som är försenade.",
     "phaseTimelineHeading": "Fastidslinje",
     "milestonesHeading": "Milstolpar",
     "maturityScoreHeading": "Mognadspoäng",
@@ -1231,6 +1240,7 @@
     "backToProject": "← {title}",
     "heading": "Juridisk form",
     "subtitle": "Se PRD 4c för vad varje form innebär juridiskt.",
+    "helpText": "Byte av juridisk form måste godkännas genom en medlemsomröstning innan en site-admin verkställer den. Ett väntande förslag visas här med sin status och en länk till omröstningen tills det är avgjort.",
     "currentTypeLabel": "Nuvarande form",
     "productLineUnder": "Produktlinje under {name}",
     "changeRequestTitle": "Begäran om byte till {type}",
@@ -1247,6 +1257,7 @@
     "breadcrumbAlumni": "Alumni",
     "heading": "Alumni",
     "subtitle": "Bidragsgivare som formade detta projekt",
+    "helpText": "När ett projekt arkiveras räknas de bidragsgivare som tjänat tokens som alumni och får ett digitalt märke. Ägare och admin kan arkivera projektet härifrån och, efter arkivering, generera en AI-sammanfattande slutrapport.",
     "finalReportHeading": "📋 AI Slutrapport",
     "emptyAlumni": "Inga alumni ännu.",
     "emptyAlumniArchiveHint": "Arkivera projektet för att skapa alumni-badges.",
@@ -1264,6 +1275,7 @@
     "breadcrumbTribeTokens": "Tribe Tokens",
     "heading": "Tribe Tokens",
     "subtitle": "Token-fördelning bland bidragsgivare i {title}",
+    "helpText": "Tribe Tokens är projektets egen belöningsvaluta — man tjänar dem genom att slutföra delmoment på kort i Att göra. Tio procent av varje utdelning speglas automatiskt till GT, plattformens egen valuta. Listan visar hur tokens fördelats mellan bidragsgivarna i det här projektet.",
     "sectionHeading": "Token-fördelning",
     "emptyState": "Inga tokens har delats ut ännu. Bocka av deluppgifter och flytta kort till Klart för att tjäna tokens.",
     "firstPlaceTitle": "Förstaplacerad",
@@ -1273,6 +1285,7 @@
   "ProfitDistributionPage": {
     "heading": "Vinstfördelning",
     "subtitle": "Se PRD 4a för hela flödet: styrelsens förslag, medlemmarnas röstning och Stiftelsens genomförande.",
+    "helpText": "Ett förslag anger hur en granskad vinst ska fördelas mellan drift och Impact-fonden — resten går till Tribe Token-innehavarna som en personlig andel. Medlemmarna röstar om förslaget, och en site-admin verkställer det som godkänns.",
     "emptyState": "Inget vinstfördelningsförslag har lagts fram för {title} ännu.",
     "statusPending": "Väntar på röstning",
     "statusApprovedByMembers": "Godkänt av medlemmarna — väntar på Stiftelsen",
@@ -1294,12 +1307,14 @@
   "FilesPage": {
     "pageTitle": "{title} — Filer — GoodTribes.org",
     "heading": "Filer",
+    "helpText": "Här laddar projektmedlemmar upp och delar filer med varandra — bilder, dokument och annat som hör till projektet. Bara medlemmar kan se och ladda upp filer.",
     "backToProject": "← {title}",
     "membersOnlyNotice": "Endast projektmedlemmar kan se filer."
   },
   "UpdatesPage": {
     "backToProject": "← {title}",
     "heading": "Uppdateringar",
+    "helpText": "Här publicerar projektledare och admin uppdateringar om projektets framsteg — en enkel projektblogg som alla besökare på projektsidan kan läsa.",
     "postUpdateButton": "+ Publicera uppdatering",
     "emptyState": "Inga uppdateringar än.",
     "postFirstUpdate": "Publicera den första uppdateringen →",
@@ -1672,6 +1687,9 @@
   },
   "TasksPage": {
     "pageTitle": "{projectTitle} — Uppgifter — GoodTribes.org",
+    "pageHeading": "Att göra",
+    "helpText": "Att göra är projektets uppgiftstavla. Dra kort mellan kolumnerna (Backlog, Att göra, Pågår, Granskning, Klart) för att uppdatera status — eller växla till Lista eller Gantt för andra vyer av samma uppgifter. Varje kort kan ha en ansvarig, förfallodatum, delmoment och beroenden till andra kort, och avklarade delmoment kan ge tokens till den som utförde dem.",
+    "helpGuideLink": "Läs hela guiden",
     "boardLabel": "Tavla",
     "listLabel": "Lista",
     "ganttLabel": "Gantt",
@@ -1705,6 +1723,7 @@
   "WikiPageDetail": {
     "pageTitle": "{pageTitle} — {projectTitle} Wiki",
     "sidebarHeading": "Wiki",
+    "helpText": "Wikin är projektets samlade dokumentation, organiserad som sidor i en trädstruktur — klicka på pilarna i sidopanelen för att fälla ut undersidor. Alla projektmedlemmar kan redigera en sida via Edit-knappen. Ägare och admin kan skapa nya sidor och ta bort dem, och kan flytta en sida under en annan överordnad sida i redigeringsläget.",
     "lastEditedBy": "Senast redigerad av {name}",
     "unknownUser": "Okänd",
     "backToProject": "← {title}"
@@ -2530,6 +2549,7 @@
   "ImpactPage": {
     "pageTitle": "{title} — Impact — GoodTribes.org",
     "heading": "Impact",
+    "helpText": "Två separata sätt att visa effekt på den här sidan. Mätvärdena överst är självrapporterade — projektledningen lägger till och uppdaterar dem löpande utan granskning. Verifierade resultat (längre ner) är avgränsade påståenden som en site-admin godkänner eller avslår, och bara de visas publikt på projektsidan.",
     "metricsCount": "{count, plural, one {# mätvärde} other {# mätvärden}}",
     "lastUpdatedAt": "Senast uppdaterat {time}",
     "metricsLabel": "Mätvärden",
@@ -2573,6 +2593,8 @@
   },
   "ValuePropositionPage": {
     "heading": "Värdeerbjudande",
+    "helpText": "Canvasen ställer kundens verklighet (behov, problem, önskade utfall) mot vad projektet faktiskt erbjuder (produkter, lösningar på problemen, sätt att skapa de önskade utfallen). Ägare och admin kan redigera fälten direkt i rutnätet, och alla ändringar sparas i en historik.",
+    "helpGuideLink": "Läs hela guiden",
     "helpLink": "Hjälp"
   },
   "ValuePropositionHistory": {
@@ -2638,6 +2660,7 @@
     "breadcrumbProjects": "Projekt",
     "breadcrumbScaling": "Skalning",
     "scalingPlanHeading": "Skalningsplan",
+    "helpText": "Den här sidan visas bara när projektets mognadspoäng når minst 70. Härifrån kan ägare och admin sätta en skalningsplan, öppna projektet för replikering till nya regioner, granska ansökningar om nya instanser och se statistik över hela nätverket av instanser.",
     "maturityBadge": "Mognad {score}/100",
     "noScalingPlan": "Ingen skalningsplan genererad. Gå tillbaka till projektsidan och klicka \"Beräkna\" för att generera en.",
     "replicationSettingsHeading": "Replikeringsinställningar",
@@ -2823,6 +2846,7 @@
   },
   "InterviewLogPage": {
     "heading": "Målgruppsintervjuer",
+    "helpText": "Logga kundintervjuer här — vem ni pratade med, vilket problem de beskrev, om problemet validerades och eventuella citat. En logg över vad ni faktiskt lärt er från målgruppen, inte bara antaganden.",
     "addButton": "Logga intervju",
     "cancelButton": "Avbryt",
     "saveButton": "Spara",
@@ -2846,6 +2870,7 @@
   },
   "MarketScanPage": {
     "heading": "Omvärldsbevakning",
+    "helpText": "Logga vad ni observerar i omvärlden — konkurrenter, trender, möjliga partners och relevanta regelverk — med en kort beskrivning av varför det spelar roll för projektet och en länk till källan.",
     "addButton": "Lägg till",
     "cancelButton": "Avbryt",
     "saveButton": "Spara",
@@ -2868,6 +2893,7 @@
   },
   "LaunchPlanPage": {
     "heading": "Lanserings- och marknadsplan",
+    "helpText": "Planera lanseringen här — målgrupp, positionering, budget och framgångsmått i fritext, en tabell över marknadsföringskanaler (taktik, ansvarig, budget och status) och en tidslinje med lanseringsmilstolpar.",
     "targetAudienceLabel": "Målgrupp",
     "targetAudiencePlaceholder": "Vem riktar sig lanseringen till?",
     "positioningLabel": "Positionering",
@@ -3117,12 +3143,14 @@
   },
   "EditProjectPage": {
     "heading": "Redigera projekt",
+    "helpText": "Här redigerar du projektets grunduppgifter — titel, slogan, beskrivning, bild, taggar, SDG-mål och vilka kompetenser som efterfrågas. Ägare kan också koppla ett GitHub-projekt för synk och, längst ner i farozonen, radera projektet permanent.",
     "dangerZoneHeading": "Farozon",
     "dangerZoneWarning": "Att ta bort ett projekt tar permanent bort alla kanban-kort, att-göra-punkter, wikisidor, milstolpar och aktivitet. Detta kan inte ångras."
   },
   "SprintsPage": {
     "heading": "Design Sprints",
     "intro": "Ett asynkront, steg-för-steg-arbetssätt för att undersöka, skissa och testa idéer tillsammans — utan att alla behöver vara online samtidigt.",
+    "helpText": "En sprint går genom fem faser i ordning — Förstå → Skissa → Besluta → Prototypa → Testa — och kan köras gemensamt i realtid eller utspritt över tid i egen takt. Ägare och admin kan starta nya sprintar och ta bort dem.",
     "statusActive": "Pågår",
     "statusPaused": "Pausad",
     "statusCompleted": "Avslutad",
@@ -3139,10 +3167,14 @@
     "anonymousUser": "Anonym"
   },
   "LeanCanvasPage": {
+    "pageHeading": "Lean Canvas",
+    "helpText": "Lean Canvas är en endasidig affärsplan för projektet — problem, lösning, målgrupper, kanaler, intäkter och kostnader på en och samma sida. Ägare och admin kan redigera fälten direkt i rutnätet. Alla ändringar sparas i en historik som går att bläddra i via knappen uppe till höger.",
+    "helpGuideLink": "Läs hela guiden",
     "helpLink": "Hjälp"
   },
   "ProjectPlanPage": {
-    "title": "Projektplan"
+    "title": "Projektplan",
+    "helpText": "Här skriver ni ner projektets övergripande plan i fyra fritextfält: Mål, Delmål/milstolpar, Resurser och Risker. Ägare och admin kan redigera texten, som sparas löpande."
   },
   "ProjectPlanForm": {
     "goalLabel": "Mål",
@@ -3238,6 +3270,7 @@
   "IdeaSessionsPage": {
     "heading": "Idéverkstad",
     "intro": "Bolla nya angreppssätt med projektets medlemmar — skriv @AI för att bjuda in AI, som har tillgång till projektets beskrivning, milstolpar, uppgifter och wiki.",
+    "helpText": "Varje idésession är en egen chattråd som alla projektmedlemmar kan delta i, asynkront eller i realtid. Skriv @AI i tråden för att bjuda in AI, som svarar utifrån projektets egen beskrivning, milstolpar, uppgifter och wiki — och kan sammanfatta sessionen som en tankekarta.",
     "startSessionButton": "+ Starta idésession",
     "emptyState": "Inga idésessioner ännu för det här projektet.",
     "unnamedSession": "Namnlös idésession",
@@ -3249,6 +3282,7 @@
   },
   "PartnershipsPage": {
     "heading": "Partnerskap",
+    "helpText": "Föreslå ett partnerskap med en organisation, eller matcha med en av de föreslagna organisationerna nedan. Ett partnerskap måste godkännas av båda sidor innan det blir aktivt, och kan återkallas när som helst.",
     "proposeHeading": "Föreslå ett partnerskap",
     "proposeIntro": "Ange slug för organisationen ni vill knyta till er som partner.",
     "matchesHeading": "Organisationer som kan vara partners",

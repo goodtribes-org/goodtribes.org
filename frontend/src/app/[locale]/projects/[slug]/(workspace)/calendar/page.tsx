@@ -10,6 +10,8 @@ import GanttView from "@/components/GanttView";
 import { isLeadRole } from "@/lib/authz";
 import { isOverdue } from "@/lib/roadmap";
 import Tooltip from "@/components/Tooltip";
+import WorkspacePageHeader from "@/components/WorkspacePageHeader";
+import HelpButton from "@/components/HelpButton";
 import { toggleMilestone, deleteMilestone } from "../milestones/actions";
 import { updateCard, moveCard, addCardDependency, removeCardDependency } from "../kanban/actions";
 
@@ -247,25 +249,50 @@ export default async function CalendarPage({
   const milestonePct = totalMilestones > 0 ? Math.round((doneMilestones / totalMilestones) * 100) : 0;
 
   // ─── Render ────────────────────────────────────────────────────────────────
+  const newEventAction = session?.user?.id ? (
+    <Link
+      href={`/projects/${slug}/calendar/new`}
+      className="flex items-center gap-1.5 bg-coral text-white text-sm font-medium px-4 py-1.5 rounded-lg hover:bg-watermelon transition-colors shrink-0"
+    >
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+      </svg>
+      {t("newEventButton")}
+    </Link>
+  ) : null;
+
+  const legend = (
+    <div className="flex flex-wrap gap-3 text-xs text-dark-slate/70">
+      {(["milestone", "task", "todo", "meeting", "deadline", "custom"] as const).map((entryType) => (
+        <span key={entryType} className="flex items-center gap-1.5">
+          <span className={`w-2.5 h-2.5 rounded-full ${TYPE_COLORS[entryType]}`} />
+          {t(TYPE_LABEL_KEYS[entryType])}
+        </span>
+      ))}
+    </div>
+  );
+
   return (
     <div>
+      {view === "gantt" && (
+        <WorkspacePageHeader
+          title={t("pageHeading")}
+          description={t("pageDescription")}
+          help={t("helpText")}
+          action={newEventAction}
+        />
+      )}
+
       {/* ── Calendar view ─────────────────────────────────────────────────── */}
       {view === "calendar" && (
         <>
-          {/* Toolbar + legend — full bleed */}
+          {/* Title + toolbar, merged onto one row — full bleed */}
           <div>
           <div className="flex items-center gap-3 mb-2 flex-wrap relative">
-            {session?.user?.id && (
-              <Link
-                href={`/projects/${slug}/calendar/new`}
-                className="flex items-center gap-1.5 bg-coral text-white text-sm font-medium px-4 py-1.5 rounded hover:bg-watermelon transition-colors shrink-0"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                {t("newEventButton")}
-              </Link>
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              <h1 className="text-xl font-bold text-dark-slate">{t("pageHeading")}</h1>
+              <HelpButton text={t("helpText")} />
+            </div>
             <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
               <Link
                 href={`?view=calendar&year=${prev.year}&month=${prev.month + 1}`}
@@ -289,29 +316,23 @@ export default async function CalendarPage({
                 </svg>
               </Link>
             </div>
-            <div className="ml-auto flex items-center gap-1 bg-gray-100 rounded-lg p-1">
-              <Link
-                href={`?view=calendar&year=${year}&month=${month + 1}`}
-                className="px-4 py-1.5 text-sm font-medium rounded-md transition-colors bg-white text-dark-slate shadow-sm"
-              >
-                {t("calendarViewLabel")}
-              </Link>
-              <Link
-                href="?view=gantt"
-                className="px-4 py-1.5 text-sm font-medium rounded-md transition-colors text-dark-slate/50 hover:text-dark-slate"
-              >
-                {t("ganttViewLabel")}
-              </Link>
+            <div className="ml-auto flex items-center gap-2">
+              {newEventAction}
+              <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                <Link
+                  href={`?view=calendar&year=${year}&month=${month + 1}`}
+                  className="px-4 py-1.5 text-sm font-medium rounded-md transition-colors bg-white text-dark-slate shadow-sm"
+                >
+                  {t("calendarViewLabel")}
+                </Link>
+                <Link
+                  href="?view=gantt"
+                  className="px-4 py-1.5 text-sm font-medium rounded-md transition-colors text-dark-slate/50 hover:text-dark-slate"
+                >
+                  {t("ganttViewLabel")}
+                </Link>
+              </div>
             </div>
-          </div>
-          {/* Legend */}
-          <div className="flex flex-wrap gap-3 mb-4 text-xs text-dark-slate/70">
-            {(["milestone", "task", "todo", "meeting", "deadline", "custom"] as const).map((entryType) => (
-              <span key={entryType} className="flex items-center gap-1.5">
-                <span className={`w-2.5 h-2.5 rounded-full ${TYPE_COLORS[entryType]}`} />
-                {t(TYPE_LABEL_KEYS[entryType])}
-              </span>
-            ))}
           </div>
           </div>
 
@@ -394,19 +415,12 @@ export default async function CalendarPage({
           </div>
           </div>
 
+          {/* Legend — moved below the calendar grid */}
+          <div className="mt-3">{legend}</div>
+
           {/* ── Milestones section ─────────────────────────────────────────── */}
-          <div className="mt-10">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold text-dark-slate">{t("milestonesHeading")}</h2>
-              {isOwnerOrAdmin && (
-                <Link
-                  href={`/projects/${slug}/calendar/new?type=milestone`}
-                  className="text-xs text-coral hover:text-watermelon font-medium transition-colors"
-                >
-                  {t("newMilestoneLink")}
-                </Link>
-              )}
-            </div>
+          <div className="mt-6">
+            <h2 className="text-base font-bold text-dark-slate mb-4">{t("milestonesHeading")}</h2>
 
             {totalMilestones > 0 && (
               <div className="mb-5">
@@ -507,20 +521,9 @@ export default async function CalendarPage({
       {/* ── Gantt view ────────────────────────────────────────────────────── */}
       {view === "gantt" && (
         <>
-          {/* Toolbar: Ny händelse | spacer | kalender/gantt toggle — full bleed */}
+          {/* Toolbar: kalender/gantt toggle — full bleed */}
           <div>
             <div className="flex items-center mb-2">
-              {session?.user?.id && (
-                <Link
-                  href={`/projects/${slug}/calendar/new`}
-                  className="flex items-center gap-1.5 bg-coral text-white text-sm font-medium px-4 py-1.5 rounded hover:bg-watermelon transition-colors shrink-0"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  {t("newEventButton")}
-                </Link>
-              )}
               <div className="ml-auto flex items-center gap-1 bg-gray-100 rounded-lg p-1">
                 <Link
                   href={`?view=calendar&year=${year}&month=${month + 1}`}

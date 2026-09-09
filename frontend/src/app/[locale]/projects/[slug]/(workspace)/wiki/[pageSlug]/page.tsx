@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { getTranslations } from "next-intl/server";
@@ -12,6 +11,7 @@ import { buildMetadata, APP_URL } from "@/lib/metadata";
 import ShareButton from "@/components/ShareButton";
 import FlagContentButton from "@/components/FlagContentButton";
 import LikeCommentBlock from "@/components/LikeCommentBlock";
+import HelpButton from "@/components/HelpButton";
 import { getLikeCommentData } from "@/lib/socialInteractions";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { escapeHtml } from "@/lib/renderBody";
@@ -101,10 +101,10 @@ export default async function WikiPageView({ params }: { params: Promise<{ local
       {/* Sidebar */}
       <aside className="w-44 shrink-0">
         <div className="mb-3">
-          <Link href={`/projects/${slug}`} className="text-xs text-dark-slate/40 hover:text-dark-slate">
-            {t("backToProject", { title: project.title })}
-          </Link>
-          <p className="text-xs font-semibold text-dark-slate/50 uppercase tracking-wider mt-3 mb-2">{t("sidebarHeading")}</p>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-xl font-bold text-dark-slate">{t("sidebarHeading")}</h1>
+            <HelpButton text={t("helpText")} />
+          </div>
         </div>
         <WikiSidebar
           projectSlug={slug}
@@ -142,7 +142,7 @@ export default async function WikiPageView({ params }: { params: Promise<{ local
           </p>
         )}
 
-        <div className="border-t border-muted-teal/30 pt-4 mt-6">
+        <div className="bg-white border border-muted-teal/30 rounded-xl p-6 mt-6">
           <LikeCommentBlock
             targetType="wikiPage"
             targetId={page.id}
