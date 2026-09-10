@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
-import { getChecklistForPhase, PHASE_COLORS, hexToRgba, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { getChecklistForPhase, PHASE_COLORS, type ProjectPhaseValue } from "@/lib/projectPhase";
 
 interface Props {
   slug: string;
