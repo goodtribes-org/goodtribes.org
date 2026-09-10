@@ -194,3 +194,27 @@ export function numberChecklist(items: { key: string; parentKey?: string }[], ph
     return `${phaseNumber}.${topLevel}`;
   });
 }
+
+// One fixed color per phase (cool → warm across the journey, idea to
+// impact), used by both PhaseMenuBar's arrows and PhaseChecklistWidget's
+// progress bar so the same phase always reads as the same color everywhere.
+// Deliberately separate from PROJECT_PHASES' own `color` field above, which
+// is a pastel Tailwind badge class for a different, lower-contrast use.
+export const PHASE_COLORS: Record<ProjectPhaseValue, string> = {
+  IDEA: "#2f6690",
+  SPRINT: "#2f6690",
+  PILOT: "#2f8f6f",
+  PRODUCTION: "#097809",
+  ESTABLISH: "#a68a1f",
+  SCALE: "#ff6600",
+  IMPACT: "#d10505",
+};
+
+export function hexToRgba(hex: string, alpha: number): string {
+  const clean = hex.replace("#", "");
+  const value = parseInt(clean, 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}

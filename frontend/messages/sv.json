@@ -2842,7 +2842,12 @@
     "next_step_decided": "Besluta om nästa steg: fortsätta, replikera, eller avsluta ansvarsfullt"
   },
   "PhaseMenuBar": {
-    "guideLinkLabel": "{phase} guiden"
+    "guideLinkLabel": "{phase} guiden",
+    "showChecklistTooltip": "Visa checklista"
+  },
+  "PhaseChecklistWidget": {
+    "heading": "Din fasresa",
+    "phaseProgress": "{phase} — {done} av {total} klara"
   },
   "InterviewLogPage": {
     "heading": "Målgruppsintervjuer",

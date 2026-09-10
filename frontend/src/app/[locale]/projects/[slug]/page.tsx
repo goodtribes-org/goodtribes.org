@@ -16,7 +16,7 @@ import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import ProjectSideNav from "./ProjectSideNav";
 import PhaseMenuBar from "./PhaseMenuBar";
 import OwnershipBanner from "@/components/OwnershipBanner";
-import { handwritingFontThin } from "@/lib/fonts";
+import { handwritingFont, handwritingFontThin } from "@/lib/fonts";
 import { ProjectSandboxAnnouncer } from "@/components/SandboxIndicator";
 import { isLeadRole, isSiteAdmin, isLastFounder } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
@@ -259,6 +259,7 @@ export default async function ProjectDetailPage({
 
   const upcomingEvents = monthEvents.filter((e) => e.startsAt >= now);
   const projectLinks: string[] = (project as typeof project & { links: string[] }).links ?? [];
+  const sdgGoals: number[] = (project as typeof project & { sdgGoals: number[] }).sdgGoals ?? [];
 
   const sortedMembers = [...project.members].sort((a, b) =>
     a.role === "FOUNDER" && b.role !== "FOUNDER" ? -1
@@ -282,148 +283,112 @@ export default async function ProjectDetailPage({
         className="relative -mt-8"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
       >
+        {/* Compact hero — one sharp image (no more separate blurred backdrop
+            copy of the same picture), title written directly on it in a
+            slightly tilted handwriting "sticker" so the page keeps some of
+            its personality without the two heavy rotated cards this used to
+            be. Roughly 220px vs. the previous 490px. */}
         <div
-          className="absolute top-0 left-0 right-0 overflow-hidden border-b border-muted-teal/20"
-          style={{ height: "490px" }}
+          className="relative overflow-hidden border-b border-muted-teal/20"
+          style={{ height: 220 }}
         >
           {project.imageUrl ? (
-            <Image src={project.imageUrl} alt="" fill unoptimized className="object-cover blur-2xl scale-110" sizes="100vw" />
+            <Image src={project.imageUrl} alt={content.title} fill unoptimized className="object-cover" sizes="100vw" />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-dark-slate to-dark-slate/70" />
           )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+          <div className="absolute left-6 sm:left-12 bottom-5 max-w-[85%]" style={{ transform: "rotate(-2deg)" }}>
+            <h1
+              className={`${handwritingFont.className} truncate text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]`}
+              style={{ fontSize: 34, lineHeight: "38px" }}
+            >
+              {content.title}
+              <span className={`${handwritingFontThin.className} ml-2 align-middle text-white/60`} style={{ fontSize: 15 }}>
+                · {createdDateLabel}
+              </span>
+            </h1>
+            {project.slogan && (
+              <p className={`${handwritingFontThin.className} truncate text-white/90`} style={{ fontSize: 17, lineHeight: "22px" }}>
+                &quot;{project.slogan}&quot;
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="relative z-10 flex flex-col sm:flex-row -mb-12">
         <ProjectSideNav slug={slug} isOwner={!!isOwnerOrAdmin} isCommercial={isCommercialLegalType(project.legalType)} />
         <div className="flex-1 min-w-0 pb-12">
-          <div className="px-4 pt-10 pb-10">
-            <div className="flex flex-wrap justify-center gap-5 items-stretch w-full max-w-[1160px] mx-auto">
-              {/* Card 1: project image — Polaroid-style, name written on the
-                  white border like a photo caption. */}
-              <div
-                className="shrink-0 bg-white w-full max-w-[660px] 2xl:max-w-[820px]"
-                style={{
-                  // No overflow-hidden here — the image is already fully bounded
-                  // by its own div below (position: relative + fixed height, so
-                  // `fill` never exceeds it), so this card doesn't need to clip
-                  // anything. It used to also clip Kalam's tall glyphs (ascenders
-                  // on the title, descenders like "j" on the slogan) whenever
-                  // they rendered slightly outside leading-none's tight 26px line
-                  // box — removing it here fixes that outright instead of
-                  // guessing at how many extra px of padding buffer they need.
-                  // Bottom padding covers for the missing slogan line (40px line
-                  // height + 3px gap) when there is none, so the blank zone below
-                  // the image still matches the title's zone above it.
-                  padding: project.slogan ? "0px 24px 0px" : "0px 24px 43px",
-                  boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)", transform: "rotate(-3deg)", position: "relative", zIndex: 1,
-                }}
-              >
-                {/* line-height is explicit (not leading-none) because `truncate`
-                    sets overflow-hidden on this element itself — Kalam's tall
-                    glyphs (ascenders here, descenders like "j" on the slogan
-                    below) need a line box big enough to actually contain them,
-                    or they clip regardless of the card's own overflow setting.
-                    40px is the smallest that keeps the clip imperceptible —
-                    tested empirically, anything smaller visibly clips descenders. */}
-                <p className={`${handwritingFontThin.className} text-center truncate px-2`} style={{ fontSize: 26, lineHeight: "40px", color: "#1a3d8f", transform: "translateY(2px)" }}>
-                  {content.title} - {createdDateLabel}
-                </p>
-                <div className="relative w-full h-64 sm:h-80 md:h-[400px] 2xl:h-[460px] mt-[3px]">
-                  {project.imageUrl ? (
-                    <Image src={project.imageUrl} alt={content.title} fill unoptimized className="object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-dry-sage/20">
-                      <span className="text-6xl font-bold text-dark-slate/20">{content.title[0]}</span>
+          {/* Compact info bar — same team/join/SDG content as before, now a
+              single row under the image instead of its own rotated card. */}
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-muted-teal/20 bg-white px-4 py-3.5 sm:px-10">
+            {project.members.length > 0 && (
+              <div className="flex items-center gap-2.5">
+                <div className="flex -space-x-2.5">
+                  {sortedMembers.slice(0, 8).map((m, i) => {
+                    const isProjectOwner = m.role === "FOUNDER";
+                    const initials = (m.user.name ?? "?").charAt(0).toUpperCase();
+                    const avatarClass = `w-8 h-8 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-xs font-semibold text-dark-slate shrink-0 ring-2 transition-all duration-200 ease-in-out hover:z-10 hover:scale-[1.3] hover:shadow-lg cursor-pointer ${isProjectOwner ? "ring-seagrass" : "ring-white"}`;
+                    const avatarContent = m.user.image ? (
+                      <Image src={m.user.image} alt={m.user.name ?? ""} fill className="object-cover" unoptimized />
+                    ) : initials;
+                    const avatar = m.user.showProfile ? (
+                      <Link href={`/members/${m.user.id}`} className={avatarClass}>{avatarContent}</Link>
+                    ) : (
+                      <div className={avatarClass}>{avatarContent}</div>
+                    );
+                    return (
+                      <Tooltip key={i} lines={[m.user.name ?? "?", ...(isProjectOwner ? [t("founderLabel")] : [])]}>
+                        {avatar}
+                      </Tooltip>
+                    );
+                  })}
+                  {project.members.length > 8 && (
+                    <div className="w-8 h-8 rounded-full ring-2 ring-white bg-muted-teal/20 flex items-center justify-center text-[10px] font-semibold text-dark-slate/60">
+                      +{project.members.length - 8}
                     </div>
                   )}
                 </div>
-                {project.slogan && (
-                  <p className={`${handwritingFontThin.className} text-center truncate px-2 mt-[3px]`} style={{ fontSize: 26, lineHeight: "40px", color: "#1a3d8f" }}>
-                    &quot;{project.slogan}&quot;
-                  </p>
-                )}
+                <span className="text-xs text-dark-slate/50">{t("membersCount", { count: project.members.length })}</span>
               </div>
-              {/* Card 2: team + SDG + join */}
-              <div
-                className="shrink-0 bg-white rounded-2xl p-5 flex flex-col w-full max-w-[320px] min-h-0 md:min-h-[400px] 2xl:min-h-[460px]"
-                style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3)", marginLeft: "-10px", transform: "rotate(3deg)" }}
-              >
-                {project.members.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-sm font-semibold text-dark-slate/70 mb-2 uppercase tracking-wide">
-                      {t("teamHeading")} <span className="text-[9px] font-normal text-dark-slate/40">· {t("membersCount", { count: project.members.length })}</span>
-                    </p>
-                    <div className="flex flex-wrap gap-3">
-                      {sortedMembers.slice(0, 12).map((m, i) => {
-                        const isProjectOwner = m.role === "FOUNDER";
-                        const initials = (m.user.name ?? "?").charAt(0).toUpperCase();
-                        const firstName = (m.user.name ?? "?").split(" ")[0];
-                        const avatarClass = `w-10 h-10 rounded-full overflow-hidden bg-dry-sage relative flex items-center justify-center text-sm font-semibold text-dark-slate shrink-0 ring-2 transition-all duration-200 ease-in-out hover:scale-[1.3] hover:shadow-lg cursor-pointer ${isProjectOwner ? "ring-seagrass" : "ring-white"}`;
-                        const avatarContent = m.user.image ? (
-                          <Image src={m.user.image} alt={m.user.name ?? ""} fill className="object-cover" unoptimized />
-                        ) : initials;
-                        const avatar = m.user.showProfile ? (
-                          <Link href={`/members/${m.user.id}`} className={avatarClass}>{avatarContent}</Link>
-                        ) : (
-                          <div className={avatarClass}>{avatarContent}</div>
-                        );
-                        return (
-                          <Tooltip key={i} lines={isProjectOwner ? [t("founderLabel")] : []}>
-                            <div className="flex flex-col items-center gap-1 w-10">
-                              {avatar}
-                              <span className="text-[9px] text-dark-slate/60 text-center truncate w-full leading-tight">{firstName}</span>
-                            </div>
-                          </Tooltip>
-                        );
-                      })}
-                      {project.members.length > 12 && (
-                        <div className="flex flex-col items-center gap-1 w-10">
-                          <div className="w-10 h-10 rounded-full ring-2 ring-white bg-muted-teal/20 flex items-center justify-center text-xs font-semibold text-dark-slate/60">+{project.members.length - 12}</div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-                <div className="flex-1" />
-                {!isMember && (
-                  <div className="mb-3">
-                    {userId ? (
-                      <JoinButton
-                        projectId={project.id}
-                        slug={slug}
-                        existingStatus={userJoinRequest?.status ?? null}
-                        label={t("joinCta")}
-                        className="flex justify-center w-full py-2.5 bg-coral text-white rounded-xl font-bold text-base hover:bg-coral/90 transition-colors shadow-md"
-                      />
-                    ) : (
-                      <Link
-                        href={`/login?callbackUrl=${encodeURIComponent(`/projects/${slug}`)}`}
-                        className="flex justify-center w-full py-2.5 bg-coral text-white rounded-xl font-bold text-base hover:bg-coral/90 transition-colors shadow-md"
-                      >
-                        {t("joinCta")}
-                      </Link>
-                    )}
-                  </div>
-                )}
-                {(project as typeof project & { sdgGoals: number[] }).sdgGoals.length > 0 && (
-                  <div className="mt-2">
-                    <p className="text-[10px] font-semibold text-dark-slate/40 uppercase tracking-wider mb-1.5">{t("agenda2030Label")}</p>
-                    <div className="grid grid-cols-6 gap-1">
-                      {[...Array.from({ length: 17 }, (_, i) => i + 1), 18].map((n) => {
-                        const isSelected = (project as typeof project & { sdgGoals: number[] }).sdgGoals.includes(n) || n === 18;
-                        return (
-                          <Tooltip key={n} lines={[t("sdgBadgeLabel", { number: n }), SDG_LABELS_SV[n] ?? ""]}>
-                            <a href={SDG_UN_URLS[n] ?? "https://www.un.org/sustainabledevelopment/sustainable-development-goals/"} target="_blank" rel="noopener noreferrer" className="transition-all duration-200 ease-in-out hover:scale-[1.6] hover:shadow-lg block cursor-pointer">
-                              <SdgIcon n={n} size={44} dark={!isSelected} />
-                            </a>
-                          </Tooltip>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+            )}
+
+            {!isMember && (
+              userId ? (
+                <JoinButton
+                  projectId={project.id}
+                  slug={slug}
+                  existingStatus={userJoinRequest?.status ?? null}
+                  label={t("joinCta")}
+                  className="rounded-full bg-coral px-5 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-coral/90"
+                />
+              ) : (
+                <Link
+                  href={`/login?callbackUrl=${encodeURIComponent(`/projects/${slug}`)}`}
+                  className="rounded-full bg-coral px-5 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-coral/90"
+                >
+                  {t("joinCta")}
+                </Link>
+              )
+            )}
+
+            {sdgGoals.length > 0 && (
+              <div className="flex items-center gap-1.5 sm:ml-auto">
+                <span className="mr-1 text-[10px] font-semibold uppercase tracking-wider text-dark-slate/40">{t("agenda2030Label")}</span>
+                {sdgGoals.map((n) => (
+                  <Tooltip key={n} lines={[t("sdgBadgeLabel", { number: n }), SDG_LABELS_SV[n] ?? ""]}>
+                    <a
+                      href={SDG_UN_URLS[n] ?? "https://www.un.org/sustainabledevelopment/sustainable-development-goals/"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block cursor-pointer transition-all duration-200 ease-in-out hover:scale-[1.3] hover:shadow-lg"
+                    >
+                      <SdgIcon n={n} size={26} dark={false} />
+                    </a>
+                  </Tooltip>
+                ))}
               </div>
-            </div>
+            )}
           </div>
 
       <div className="px-6">

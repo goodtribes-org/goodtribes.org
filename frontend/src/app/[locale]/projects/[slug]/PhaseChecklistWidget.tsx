@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
-import { getChecklistForPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { getChecklistForPhase, PHASE_COLORS, hexToRgba, type ProjectPhaseValue } from "@/lib/projectPhase";
 
 interface Props {
   slug: string;
@@ -15,9 +15,12 @@ interface Props {
 // Sidebar counterpart to PhaseMenuBar's popover checklist — same underlying
 // InitiativeChecklistItem rows and toggleChecklistItem action, just always
 // visible for the project's current phase instead of tucked behind a click.
+// Styled as "Din fasresa" so it visually pairs with the phase arrows above
+// (same per-phase color from PHASE_COLORS), instead of a generic
+// "Checklista: {phase}" label.
 export default function PhaseChecklistWidget({ slug, phase, completedKeys, canEdit }: Props) {
-  const t = useTranslations("ProjectDetailPage");
   const tPhase = useTranslations("ProjectPhase");
+  const tWidget = useTranslations("PhaseChecklistWidget");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
   const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedKeys));
   const [isPending, startTransition] = useTransition();
@@ -30,6 +33,9 @@ export default function PhaseChecklistWidget({ slug, phase, completedKeys, canEd
   if (!checklist || checklist.length === 0) return null;
 
   const doneCount = checklist.filter((item) => doneKeys.has(item.key)).length;
+  const pct = Math.round((doneCount / checklist.length) * 100);
+  const phaseColor = PHASE_COLORS[phase];
+  const barStyle = { "--phase-color-full": phaseColor } as CSSProperties;
 
   function handleToggle(itemKey: string, done: boolean) {
     if (!canEdit) return;
@@ -44,13 +50,17 @@ export default function PhaseChecklistWidget({ slug, phase, completedKeys, canEd
 
   return (
     <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-dark-slate">
-          {t("checklistWidgetHeading", { phase: tPhase(phase) })}
-        </h2>
-        <span className="text-xs text-dark-slate/40 tabular-nums">
-          {doneCount}/{checklist.length}
+      <h2 className="text-sm font-bold text-dark-slate">{tWidget("heading")}</h2>
+      <div className="flex items-center justify-between mt-1 mb-2">
+        <span className="text-xs font-medium" style={{ color: phaseColor }}>
+          {tWidget("phaseProgress", { phase: tPhase(phase), done: doneCount, total: checklist.length })}
         </span>
+      </div>
+      <div className="h-1.5 rounded-full bg-muted-teal/15 overflow-hidden mb-3" style={barStyle}>
+        <div
+          className="h-full rounded-full bg-[color:var(--phase-color-full)] transition-all"
+          style={{ width: `${pct}%` }}
+        />
       </div>
       <div className="flex flex-col gap-2 max-h-72 overflow-y-auto">
         {checklist.map((item) => {

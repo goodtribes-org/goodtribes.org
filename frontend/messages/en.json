@@ -2842,7 +2842,12 @@
     "next_step_decided": "Decide the next step: continue, replicate, or responsibly wind down"
   },
   "PhaseMenuBar": {
-    "guideLinkLabel": "{phase} guide"
+    "guideLinkLabel": "{phase} guide",
+    "showChecklistTooltip": "Show checklist"
+  },
+  "PhaseChecklistWidget": {
+    "heading": "Your phase journey",
+    "phaseProgress": "{phase} — {done} of {total} done"
   },
   "InterviewLogPage": {
     "heading": "Target audience interviews",
