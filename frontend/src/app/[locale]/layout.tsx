@@ -21,6 +21,7 @@ import LocaleSwitcher from "@/components/LocaleSwitcher";
 import ConsentGate from "@/components/ConsentGate";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import LogoMark from "@/components/LogoMark";
 import { SandboxProvider } from "@/components/SandboxIndicator";
 import { auth } from "@/auth";
 import { isSiteAdmin } from "@/lib/authz";
@@ -150,16 +151,9 @@ export default async function LocaleLayout({
           <SandboxProvider>
             <ConsentGate needsAgreementConsent={!!session?.user?.needsAgreementConsent} />
             <SiteHeader>
-              <nav className="relative w-full pl-3 pr-6 py-3 flex items-center gap-6">
-                <Link href="/" className="shrink-0 flex items-center gap-2.5">
-                  <Image
-                    src="/img/goodtribes-logo.svg"
-                    alt="GoodTribes.org"
-                    height={60}
-                    width={98}
-                    unoptimized
-                    className="object-contain"
-                  />
+              <nav className="relative w-full h-20 pl-3 pr-6 flex items-center gap-6">
+                <Link href="/" aria-label="GoodTribes.org" className="shrink-0 flex items-center gap-2.5">
+                  <LogoMark size={60} />
                 </Link>
                 <div className="shrink-0">
                   <NavMenuContainer />
