@@ -154,7 +154,7 @@ export default async function LocaleLayout({
               <nav className="relative w-full h-20 pl-3 pr-6 flex items-center gap-6">
                 <Link href="/" aria-label="GoodTribes.org" className="shrink-0 flex items-center gap-2.5">
                   <LogoMark size={60} />
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-coral bg-coral/10 border border-coral/30 rounded-full px-2 py-0.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-seagrass bg-seagrass/10 border border-seagrass/30 rounded-full px-2 py-0.5">
                     Beta
                   </span>
                 </Link>
