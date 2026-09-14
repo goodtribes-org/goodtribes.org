@@ -12,7 +12,8 @@ import { isSiteAdmin } from "@/lib/authz";
 import { isValidProjectPhase, DISPLAY_PHASES, PROJECT_PHASE_LABEL, toDisplayPhase } from "@/lib/projectPhase";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import { routing } from "@/i18n/routing";
-import type { Locale } from "next-intl";
+import { hasLocale } from "next-intl";
+import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { resolveProjectContent } from "@/lib/contentTranslation";
 import { fetchActivityItems } from "@/lib/activityFeed";
@@ -34,7 +35,11 @@ export default async function HomePage({
   params,
   searchParams,
 }: {
-  params: Promise<{ locale: Locale }>;
+  // Not `Locale`: middleware.ts's matcher excludes any path containing a dot
+  // (it's meant to skip static files), so a request like /wp-login.php reaches
+  // this route with that segment as the locale. Typing it as already-valid is
+  // what let an unchecked value reach toLocaleString() below.
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{
     sort?: string;
     q?: string;
@@ -45,6 +50,12 @@ export default async function HomePage({
   }>;
 }) {
   const { locale } = await params;
+  // Same guard as layout.tsx. It has to be repeated here because a layout and
+  // its page render concurrently — the layout's notFound() does not stop this
+  // component from running, so without this an invalid locale flows on into
+  // FoundingStory's toLocaleString(locale) and throws a RangeError (500)
+  // where a 404 belongs.
+  if (!hasLocale(routing.locales, locale)) notFound();
   const t = await getTranslations({ locale, namespace: "HomePage" });
   const { sort: sortParam, q, phase, category, sdg, page: pageStr } = await searchParams;
   const sort = sortParam === "new" ? "new" : sortParam === "trending" ? "trending" : "top";
