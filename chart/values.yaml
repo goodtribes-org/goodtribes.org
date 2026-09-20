@@ -192,10 +192,20 @@ ingress:
 
 minio:
   replicaCount: 1
+  # quay.io, not Docker Hub: docker.io/minio/* stopped serving anonymous
+  # pulls (the token endpoint returns a token carrying no pull scope, so
+  # kubelet fails with "insufficient_scope: authorization failed"). quay.io
+  # publishes the same images and is still anonymously pullable.
   image:
-    repository: minio/minio
+    repository: quay.io/minio/minio
     tag: latest
     pullPolicy: IfNotPresent
+  # The mc client, used by the minio-init hook Job and both backup
+  # CronJobs. Was hardcoded as minio/mc:latest in those three templates —
+  # same registry story as the server image above.
+  mc:
+    repository: quay.io/minio/mc
+    tag: latest
   service:
     apiPort: 9000
     consolePort: 9001

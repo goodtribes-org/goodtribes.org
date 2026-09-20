@@ -16,7 +16,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: minio-init
-          image: minio/mc:latest
+          image: "{{ .Values.minio.mc.repository }}:{{ .Values.minio.mc.tag }}"
           securityContext:
             allowPrivilegeEscalation: false
           command:
