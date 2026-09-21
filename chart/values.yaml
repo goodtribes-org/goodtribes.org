@@ -1,7 +1,13 @@
 namespace: goodtribes
 
 frontend:
-  replicaCount: 1
+  # 2, not 1: at a single replica any readiness miss empties the Service's
+  # endpoints and Traefik 404s the whole site, so one busy pod is a total
+  # outage. Two also makes rolling deploys and node drains non-disruptive
+  # (and renders the PDB, which is gated on replicaCount > 1).
+  # Not autoscaling instead — the HPA below needs metrics-server, and this
+  # cluster has none (`kubectl top` returns "Metrics API not available").
+  replicaCount: 2
   image:
     repository: ghcr.io/goodtribes-org/goodtribes.org/frontend
     tag: latest
@@ -27,7 +33,16 @@ frontend:
       cpu: 200m
       memory: 256Mi
     limits:
-      cpu: 1000m
+      # 2000m, was 1000m. At a 1 core ceiling this container sat throttled
+      # ~10% of CPU periods even idle (3 of 31 over a 30s sample) and 16.6%
+      # cumulatively — Next.js SSR bursts past one core routinely. The
+      # throttling is what pushed the probe round trip past its old 1s
+      # timeout. Requests stay at 200m, so this only raises the burst
+      # ceiling; it does not reserve more capacity or change scheduling.
+      cpu: 2000m
+      # Left at 512Mi deliberately: the pod sits at ~371Mi (72%), which is
+      # snug but has never OOMed (memory.events oom_kill 0), and two
+      # replicas now spread the load. Revisit if oom_kill ever moves.
       memory: 512Mi
   env:
     NEXT_PUBLIC_MEILI_HOST: http://goodtribes-meilisearch:7700
