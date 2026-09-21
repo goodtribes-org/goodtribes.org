@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
+import { createAiIntakeThread } from "./actions";
 
 export const metadata: Metadata = {
   title: "Idéverkstaden — GoodTribes.org",
@@ -45,12 +46,22 @@ export default async function IdeaverkstadPage() {
             {t("subtitle")}
           </p>
         </div>
-        <Link
-          href="/ideaverkstad/new"
-          className="px-4 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors flex-shrink-0"
-        >
-          {t("newSessionCta")}
-        </Link>
+        <div className="flex gap-2 flex-shrink-0">
+          <form action={createAiIntakeThread}>
+            <button
+              type="submit"
+              className="px-4 py-2 border border-coral text-coral text-sm font-medium rounded hover:bg-coral/10 transition-colors"
+            >
+              {t("aiGuideCta")}
+            </button>
+          </form>
+          <Link
+            href="/ideaverkstad/new"
+            className="px-4 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors"
+          >
+            {t("newSessionCta")}
+          </Link>
+        </div>
       </div>
 
       <Link href="/sandbox" className="block text-sm text-amber-700 hover:underline mb-6">

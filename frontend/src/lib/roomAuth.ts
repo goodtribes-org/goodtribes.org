@@ -23,7 +23,12 @@ export async function getRoomAccess(roomId: string, userId: string | null): Prom
   const room = await prisma.room.findUnique({ where: { id: roomId } });
   if (!room) return null;
 
-  if (room.type === "DM" || room.type === "GROUP") {
+  // DM/GROUP/AI_INTAKE all treat RoomParticipant as authoritative (unlike
+  // PROJECT_CHANNEL/ORG_CHANNEL, which re-check live membership, or open
+  // IDEA_THREAD, which has no membership check at all) -- AI_INTAKE is a
+  // private, solo intake dialogue, not a public brainstorm, so it gets the
+  // same "only participants" rule as a DM rather than IDEA_THREAD's open one.
+  if (room.type === "DM" || room.type === "GROUP" || room.type === "AI_INTAKE") {
     if (!userId) return { room, canRead: false, canPost: false };
     const participant = await prisma.roomParticipant.findUnique({
       where: { roomId_userId: { roomId, userId } },

@@ -7,6 +7,11 @@ enum RoomType {
   PROJECT_CHANNEL
   ORG_CHANNEL
   IDEA_THREAD
+  // Solo, AI-guided project-creation dialogue (Paket E) -- auto-replies to
+  // every message (no @AI mention needed), unlike IDEA_THREAD. Access is
+  // RoomParticipant-authoritative like DM/GROUP, not open like IDEA_THREAD,
+  // since this is a private intake conversation, not a public brainstorm.
+  AI_INTAKE
 }
 
 enum RoomPostingPolicy {
@@ -47,6 +52,7 @@ model Room {
   participants RoomParticipant[]
   messages     Message[]
   mindMap      MindMap?
+  aiProjectPlan AiProjectPlan?
 
   @@unique([projectId, name])
   @@unique([organisationId, name])

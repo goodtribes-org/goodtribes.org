@@ -9,6 +9,7 @@ import { getTranslations } from "next-intl/server";
 import { getRoomAccess } from "@/lib/roomAuth";
 import { getRoomMentionables } from "@/lib/rooms";
 import { RoomShell } from "@/app/[locale]/messages/[roomId]/RoomShell";
+import { generateAiProjectPlan } from "./plan/actions";
 
 export const metadata: Metadata = {
   title: "Idésession — Idéverkstaden",
@@ -26,13 +27,14 @@ export default async function IdeaThreadPage({
   const t = await getTranslations({ locale, namespace: "IdeaThreadPage" });
 
   const access = await getRoomAccess(roomId, userId);
-  if (!access || access.room.type !== "IDEA_THREAD") notFound();
+  if (!access || (access.room.type !== "IDEA_THREAD" && access.room.type !== "AI_INTAKE")) notFound();
   if (!access.canRead) notFound();
+  const isAiIntake = access.room.type === "AI_INTAKE";
 
   const [room, messages, participants, mentionables] = await Promise.all([
     prisma.room.findUnique({
       where: { id: roomId },
-      select: { convertedToIdeaId: true, convertedToProjectId: true },
+      select: { convertedToIdeaId: true, convertedToProjectId: true, aiProjectPlan: { select: { status: true } } },
     }),
     prisma.message.findMany({
       where: { roomId, hiddenAt: null },
@@ -61,7 +63,7 @@ export default async function IdeaThreadPage({
           {t("backToIdeaverkstad")}
         </Link>
         <div className="flex gap-2">
-          {!alreadyConverted && (
+          {!alreadyConverted && !isAiIntake && (
             <>
               <Link
                 href={`/ideas/new?fromThread=${roomId}`}
@@ -76,6 +78,25 @@ export default async function IdeaThreadPage({
                 {t("convertToProject")}
               </Link>
             </>
+          )}
+          {isAiIntake && !alreadyConverted && (
+            room?.aiProjectPlan ? (
+              <Link
+                href={`/ideaverkstad/${roomId}/plan`}
+                className="px-3 py-1.5 text-xs font-medium rounded bg-coral text-white hover:bg-watermelon transition-colors"
+              >
+                {t("viewPlanDraft")}
+              </Link>
+            ) : (
+              <form action={generateAiProjectPlan.bind(null, roomId)}>
+                <button
+                  type="submit"
+                  className="px-3 py-1.5 text-xs font-medium rounded bg-coral text-white hover:bg-watermelon transition-colors"
+                >
+                  {t("generatePlanCta")}
+                </button>
+              </form>
+            )
           )}
         </div>
       </div>

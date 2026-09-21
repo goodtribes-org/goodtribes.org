@@ -1360,6 +1360,7 @@
   },
   "RoomShell": {
     "roomTitleIdeaSession": "Idea session",
+    "roomTitleAiIntake": "AI-guided project setup",
     "roomTitleWorkspace": "Workspace",
     "roomTitleChannel": "Channel",
     "announcementsBadge": "Announcements",
@@ -1501,6 +1502,7 @@
   "IdeaverkstadPage": {
     "heading": "Idea Workshop",
     "subtitle": "Bounce ideas off others and AI — from problem to project.",
+    "aiGuideCta": "Let AI guide me",
     "newSessionCta": "+ New idea session",
     "sandboxPromo": "🧪 Try the Dream Factory — our experimental idea area with AI-generated problem statements →",
     "emptyState": "No idea sessions yet.",
@@ -1526,7 +1528,9 @@
   "IdeaThreadPage": {
     "backToIdeaverkstad": "← Idea Workshop",
     "saveToIdeaFeed": "Save to the idea feed",
-    "convertToProject": "Convert to project"
+    "convertToProject": "Convert to project",
+    "viewPlanDraft": "View plan draft",
+    "generatePlanCta": "Create my plan"
   },
   "KanbanBoard": {
     "addCardButton": "Add card",

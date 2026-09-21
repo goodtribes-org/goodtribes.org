@@ -162,6 +162,8 @@ model User {
   createdRecurringFundingSources RecurringFundingSource[]  @relation("RecurringFundingSourceCreatedBy")
   updatedRecurringFundingSources RecurringFundingSource[]  @relation("RecurringFundingSourceUpdatedBy")
   createdFundingSources          FundingSource[]
+  createdAiProjectPlans          AiProjectPlan[]           @relation("AiProjectPlanCreatedBy")
+  decidedAiProjectPlans          AiProjectPlan[]           @relation("AiProjectPlanDecidedBy")
 }
 
 model Skill {

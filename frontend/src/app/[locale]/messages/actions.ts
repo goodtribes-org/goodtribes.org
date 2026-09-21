@@ -153,6 +153,13 @@ export async function sendRoomMessage(
     }
   }
 
+  // AI_INTAKE (Paket E): auto-replies to every message, no @AI mention
+  // needed — it's a solo dialogue with the AI, not a multi-person thread
+  // where a mention picks it out of the crowd.
+  if (access.room.type === "AI_INTAKE") {
+    void triggerAiThreadReply(access.room, userId);
+  }
+
   // Deep-links straight to the message that triggered the notification —
   // ?m opens/scrolls to it, ?thread additionally opens the right thread
   // panel first since replies aren't visible in the main list at all.

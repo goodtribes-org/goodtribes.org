@@ -36,7 +36,7 @@ export type MessageRow = {
 
 type RoomInfo = {
   id: string;
-  type: "DM" | "GROUP" | "PROJECT_CHANNEL" | "ORG_CHANNEL" | "IDEA_THREAD";
+  type: "DM" | "GROUP" | "PROJECT_CHANNEL" | "ORG_CHANNEL" | "IDEA_THREAD" | "AI_INTAKE";
   name: string | null;
   postingPolicy: "ALL_MEMBERS" | "LEADS_ONLY";
   otherUsers: { id: string; name: string | null; image: string | null }[];
@@ -57,6 +57,7 @@ function roomTitle(room: RoomInfo, t: ReturnType<typeof useTranslations>) {
   if (room.type === "DM") return room.otherUsers[0]?.name ?? "?";
   if (room.type === "GROUP") return room.name ?? room.otherUsers.map((u) => u.name).join(", ");
   if (room.type === "IDEA_THREAD") return room.name ?? t("roomTitleIdeaSession");
+  if (room.type === "AI_INTAKE") return t("roomTitleAiIntake");
   return room.name ? `#${room.name}` : room.type === "ORG_CHANNEL" ? t("roomTitleWorkspace") : t("roomTitleChannel");
 }
 

@@ -12,11 +12,31 @@ Du deltar i en kollaborativ idédiskussion som en av flera deltagare.
 Var koncis, inspirerande och bygg vidare på vad andra redan sagt.
 Svara alltid på det språk som används i konversationen.`;
 
+// AI_INTAKE (Paket E): a solo, AI-guided project-creation dialogue rather
+// than a multi-person brainstorm. Effectuation questions first (vem är du,
+// vad kan du, vem känner du — PRD Metodram, Idé-fasen), then problem/lösning
+// mapping, then suggest generating a plan once there's enough to work with.
+// "Framdrift, inte långa texter" (PRD): concrete next steps and short
+// questions, never a long unstructured essay in one turn.
+const AI_INTAKE_SYSTEM_PROMPT = `Du är en erfaren startup-coach som hjälper en person gå från idé till en konkret projektplan på GoodTribes.org.
+Det här är en dialog med EN person, inte en gruppdiskussion.
+
+Håll dig till den här ordningen, men naturligt — inga numrerade listor eller långa textstycken:
+1. Om personen inte redan beskrivit vad de vill göra: fråga "Vad vill du göra? Vilket problem vill du lösa?"
+2. Ställ sedan Effectuation-frågorna, en i taget: vem är du (bakgrund/kompetens), vad kan du (resurser/färdigheter du redan har), vem känner du (nätverk/samarbetspartners).
+3. Kartlägg därefter själva problemet och lösningen konkret — vem har problemet, hur löser idén det, vad gör den unik.
+4. När du bedömer att du har tillräckligt (vanligtvis efter 4-8 utbyten): föreslå konkret "Jag tror jag har det jag behöver — vill du att jag skapar en plan?"
+
+Var kort och konkret i varje svar — en fråga eller ett konstaterande i taget, aldrig en lång sammanhängande text. Svara alltid på det språk personen skriver på.
+
+VIKTIGT: Skriv ALDRIG rå JSON eller kod i dina svar i den här dialogen — bara vanlig konversation. Ett separat, senare steg genererar den faktiska planen.`;
+
 function stripHtml(body: string): string {
   return body.replace(/<[^>]*>/g, "").trim();
 }
 
 async function buildSystemPrompt(room: Room): Promise<string> {
+  if (room.type === "AI_INTAKE") return AI_INTAKE_SYSTEM_PROMPT;
   if (!room.projectId) return SYSTEM_PROMPT;
   const project = await prisma.project.findUnique({
     where: { id: room.projectId },
@@ -26,7 +46,7 @@ async function buildSystemPrompt(room: Room): Promise<string> {
   return `${SYSTEM_PROMPT}\nProjektkontext: ${project.title} — ${project.description ?? "Ingen beskrivning ännu"}`;
 }
 
-async function persistAiMessage(roomId: string, body: string, aiUserId: string) {
+export async function persistAiMessage(roomId: string, body: string, aiUserId: string) {
   const message = await prisma.message.create({
     data: { roomId, authorId: aiUserId, body, isAi: true },
     include: {

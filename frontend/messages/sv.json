@@ -1360,6 +1360,7 @@
   },
   "RoomShell": {
     "roomTitleIdeaSession": "Idésession",
+    "roomTitleAiIntake": "AI-guidad projektstart",
     "roomTitleWorkspace": "Arbetsrum",
     "roomTitleChannel": "Kanal",
     "announcementsBadge": "Tillkännagivanden",
@@ -1501,6 +1502,7 @@
   "IdeaverkstadPage": {
     "heading": "Idéverkstaden",
     "subtitle": "Posta ett problem, bolla idéer med andra — och skriv @AI för att bjuda in AI i tråden.",
+    "aiGuideCta": "Låt AI guida mig",
     "newSessionCta": "+ Ny idésession",
     "sandboxPromo": "🧪 Prova Drömfabriken — vårt experimentella idéområde med AI-genererade problemställningar →",
     "emptyState": "Inga idésessioner ännu.",
@@ -1526,7 +1528,9 @@
   "IdeaThreadPage": {
     "backToIdeaverkstad": "← Idéverkstaden",
     "saveToIdeaFeed": "Spara till Idéflödet",
-    "convertToProject": "Konvertera till projekt"
+    "convertToProject": "Konvertera till projekt",
+    "viewPlanDraft": "Visa planförslag",
+    "generatePlanCta": "Skapa min plan"
   },
   "KanbanBoard": {
     "addCardButton": "Lägg till kort",

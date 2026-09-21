@@ -80,3 +80,33 @@ model ToolAiPreference {
 
   @@unique([projectId, toolKey])
 }
+
+enum AiProjectPlanStatus {
+  pending
+  approved
+  rejected
+}
+
+// The staged, not-yet-real plan an AI_INTAKE dialogue produces before a
+// human approves it -- same "inte skarpt förrän godkänt" principle as
+// LeanCanvasDraft/ValuePropositionDraft, but covering several artifact
+// types (project fields, Lean Canvas, Value Proposition, an initial
+// backlog) in one row instead of one per tool. roomId is @unique: at most
+// one plan per room, so generating a new one (e.g. "Be AI ändra") is always
+// an upsert on this same row, not a fresh insert.
+model AiProjectPlan {
+  id                 String              @id @default(cuid())
+  roomId             String              @unique
+  room               Room                @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  createdById        String
+  createdBy          User                @relation("AiProjectPlanCreatedBy", fields: [createdById], references: [id])
+  status             AiProjectPlanStatus @default(pending)
+  planJson           Json
+  revisionCount      Int                 @default(0)
+  createdProjectSlug String?
+  decidedById        String?
+  decidedBy          User?               @relation("AiProjectPlanDecidedBy", fields: [decidedById], references: [id], onDelete: SetNull)
+  decidedAt          DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+}
