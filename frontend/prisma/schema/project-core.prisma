@@ -57,6 +57,10 @@ model Project {
   imageUrl    String?
   links       String[] @default([])
   sdgGoals    Int[]
+  // Optional, self-declared -- used only to filter funding-source matches by
+  // amount range (see fundingMatching.ts). Never required, never used to
+  // gate anything else.
+  estimatedFundingNeedSek Int?
   legalType   LegalType @default(NONPROFIT_UMBRELLA)
   commercialUmbrellaEntityId String?
   commercialUmbrellaEntity   CommercialUmbrellaEntity? @relation(fields: [commercialUmbrellaEntityId], references: [id], onDelete: SetNull)
@@ -130,6 +134,8 @@ model Project {
   reviewCouncilRequests ReviewCouncilRequest[]
   toolAiPreferences  ToolAiPreference[]
   recurringFundingSources RecurringFundingSource[]
+  fundingMatches       FundingMatch[]
+  fundingApplications  FundingApplication[]
   convertedFromRoom  Room?                @relation("RoomConvertedToProject")
   profitDistributionProposals ProfitDistributionProposal[]
   profitDistributions         ProfitDistribution[]

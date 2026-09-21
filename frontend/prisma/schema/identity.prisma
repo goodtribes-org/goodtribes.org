@@ -161,6 +161,7 @@ model User {
   updatedToolAiPreferences      ToolAiPreference[]         @relation("ToolAiPreferenceUpdatedBy")
   createdRecurringFundingSources RecurringFundingSource[]  @relation("RecurringFundingSourceCreatedBy")
   updatedRecurringFundingSources RecurringFundingSource[]  @relation("RecurringFundingSourceUpdatedBy")
+  createdFundingSources          FundingSource[]
 }
 
 model Skill {

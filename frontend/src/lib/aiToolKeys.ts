@@ -10,6 +10,7 @@ export const AI_TOOL_KEYS = [
   { key: "network-insights", labelKey: "networkInsights" },
   { key: "ai-thread-reply", labelKey: "aiThreadReply" },
   { key: "sdg-suggestion", labelKey: "sdgSuggestion" },
+  { key: "funding-applications", labelKey: "fundingApplications" },
 ] as const;
 
 export type AiToolKey = (typeof AI_TOOL_KEYS)[number]["key"];

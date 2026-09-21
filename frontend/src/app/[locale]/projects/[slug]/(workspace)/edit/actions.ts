@@ -12,6 +12,7 @@ import { parseProjectInput } from "@/lib/github";
 import { syncProjectBoardInBackground } from "@/lib/githubSync";
 import { isColumnKey } from "@/lib/kanbanColumns";
 import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
+import { enqueueProjectUpdatedFundingMatch } from "@/lib/fundingMatching";
 
 
 /**
@@ -202,6 +203,8 @@ export async function advanceProjectPhase(slug: string) {
       },
     }),
   ]);
+
+  void enqueueProjectUpdatedFundingMatch(project.id);
 
   if (!project.hiddenAt) {
     void indexDocuments("projects", [{

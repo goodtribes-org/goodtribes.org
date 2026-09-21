@@ -44,6 +44,7 @@ import {
   Milestone,
   PartyPopper,
   ShieldCheck,
+  Landmark,
   type LucideIcon,
 } from "lucide-react";
 import type { ProjectPhaseValue } from "@/lib/projectPhase";
@@ -83,6 +84,7 @@ function buildToolsItems(t: ReturnType<typeof useTranslations>): NavItem[] {
   return [
     { label: t("navPolls"),    href: "/polls",              icon: Vote },
     { label: t("navFunding"),          href: "/funding",             icon: HandCoins },
+    { label: t("navFundingApplications"), href: "/funding-applications", icon: Landmark },
     { label: t("navTokens"),          href: "/tokens",               icon: Coins },
     { label: t("navProfitDistribution"), href: "/profit-distribution", icon: PiggyBank, commercialOnly: true },
   ];

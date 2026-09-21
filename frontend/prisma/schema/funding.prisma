@@ -150,3 +150,109 @@ model RecurringFundingSource {
 
   @@index([projectId])
 }
+
+enum FundingSourceCategory {
+  FOUNDATION
+  GOVERNMENT_GRANT
+  EU_PROGRAM
+  CORPORATE_CSR
+  OTHER
+}
+
+enum FundingSourceStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+// Site-admin-curated catalog of external funding sources (foundations,
+// government/EU grants, corporate CSR) -- deliberately a structured model,
+// not a hardcoded list, so it can grow and be updated over time. Matched
+// against projects by src/lib/fundingMatching.ts.
+model FundingSource {
+  id                 String                @id @default(cuid())
+  name               String
+  organization       String?
+  description        String?               @db.Text
+  category           FundingSourceCategory @default(OTHER)
+  sdgGoals           Int[]
+  eligibleLegalTypes LegalType[]
+  tags               String[]              @default([])
+  minAmountSek       Int?
+  maxAmountSek       Int?
+  applicationUrl     String?
+  hasApiIntegration  Boolean               @default(false)
+  requiresBankId     Boolean               @default(true)
+  region             String?
+  rollingDeadline    Boolean               @default(false)
+  nextDeadline       DateTime?
+  status             FundingSourceStatus   @default(ACTIVE)
+  createdById        String
+  createdBy          User                  @relation(fields: [createdById], references: [id])
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  matches      FundingMatch[]
+  applications FundingApplication[]
+
+  @@index([status])
+}
+
+// One row per (source, project) match -- unique index makes matching runs
+// idempotent (see fundingMatching.ts). dismissedAt lets a project lead hide
+// an irrelevant match without deleting the record.
+model FundingMatch {
+  id              String        @id @default(cuid())
+  fundingSourceId String
+  fundingSource   FundingSource @relation(fields: [fundingSourceId], references: [id], onDelete: Cascade)
+  projectId       String
+  project         Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  matchedAt       DateTime      @default(now())
+  notifiedAt      DateTime?
+  dismissedAt     DateTime?
+  dismissedById   String?
+
+  @@unique([fundingSourceId, projectId])
+  @@index([projectId])
+}
+
+// Lowercase (not SCREAMING_SNAKE_CASE) deliberately, matching this schema's
+// existing convention for enums whose values are compared against literal
+// strings across many call sites from day one (see e.g. ExclusionCaseStatus).
+enum FundingApplicationStatus {
+  draft
+  ai_drafted
+  ready_for_review
+  submitted
+  awarded
+  rejected
+  withdrawn
+}
+
+model FundingApplication {
+  id                      String                   @id @default(cuid())
+  fundingSourceId         String
+  fundingSource           FundingSource            @relation(fields: [fundingSourceId], references: [id])
+  projectId               String
+  project                 Project                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status                  FundingApplicationStatus @default(draft)
+  amountRequestedSek      Int?
+  deadline                DateTime?
+  draftMarkdown           String?                  @db.Text
+  draftGeneratedAt        DateTime?
+  approvedById            String?
+  approvedAt              DateTime?
+  submittedById           String?
+  submittedAt             DateTime?
+  outcome                 String?
+  outcomeAmountSek        Int?
+  outcomeNote             String?                  @db.Text
+  decidedAt               DateTime?
+  deadlineEscalationStage Int                      @default(0)
+  createdById             String
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+
+  @@index([projectId])
+  @@index([fundingSourceId])
+  @@index([deadline])
+}

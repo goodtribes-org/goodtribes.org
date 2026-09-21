@@ -487,7 +487,8 @@
     "toolKey_maturityReport": "Mognadsrapport/skalningsplan",
     "toolKey_networkInsights": "Nätverksinsikter",
     "toolKey_aiThreadReply": "@AI i Idéverkstad",
-    "toolKey_sdgSuggestion": "SDG-förslag"
+    "toolKey_sdgSuggestion": "SDG-förslag",
+    "toolKey_fundingApplications": "Bidragsansökningar (AI-utkast)"
   },
   "NetworkDashboard": {
     "heading": "Nätverksöversikt",
@@ -710,6 +711,7 @@
     "toolsGroupLabel": "Gemenskap",
     "navPolls": "Omröstningar",
     "navFunding": "Bidrag",
+    "navFundingApplications": "Fondansökningar",
     "navTokens": "Tokens",
     "navProfitDistribution": "Vinstfördelning",
     "adminGroupLabel": "Admin",

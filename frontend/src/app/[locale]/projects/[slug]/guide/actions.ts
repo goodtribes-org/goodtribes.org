@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { enqueueProjectUpdatedFundingMatch } from "@/lib/fundingMatching";
 
 // Idea-guide (PRD 4d/1.2): a skippable, step-by-step walkthrough of the
 // `idea` phase's checklist, shown right after project creation (its first
@@ -79,6 +80,7 @@ export async function completeIdeaGuideStep(slug: string, itemKey: string, done:
 
   if (sdgGoals) {
     await prisma.project.update({ where: { slug }, data: { sdgGoals } });
+    void enqueueProjectUpdatedFundingMatch(project.id);
   }
   if (done) {
     await markChecklistDone(project.id, itemKey, session.user.id);

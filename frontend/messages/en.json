@@ -487,7 +487,8 @@
     "toolKey_maturityReport": "Maturity report / scaling plan",
     "toolKey_networkInsights": "Network insights",
     "toolKey_aiThreadReply": "@AI in the Idea Workshop",
-    "toolKey_sdgSuggestion": "SDG suggestions"
+    "toolKey_sdgSuggestion": "SDG suggestions",
+    "toolKey_fundingApplications": "Grant applications (AI drafting)"
   },
   "NetworkDashboard": {
     "heading": "Network overview",
@@ -710,6 +711,7 @@
     "toolsGroupLabel": "Community",
     "navPolls": "Polls",
     "navFunding": "Funding",
+    "navFundingApplications": "Grant Applications",
     "navTokens": "Tokens",
     "navProfitDistribution": "Profit distribution",
     "adminGroupLabel": "Admin",

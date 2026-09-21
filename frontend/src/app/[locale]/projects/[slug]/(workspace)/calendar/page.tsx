@@ -137,7 +137,7 @@ export default async function CalendarPage({
   const gridEnd = new Date(year, month, 1 - firstWeekday + totalCells - 1, 23, 59, 59, 999);
 
   // Fetch calendar data + milestones (all) + all kanban cards + todos for Gantt
-  const [milestones, kanbanCardsMonth, calendarEvents, todoItemsMonth, allMilestones, allKanbanCards, allTodoItems] = await Promise.all([
+  const [milestones, kanbanCardsMonth, calendarEvents, todoItemsMonth, allMilestones, allKanbanCards, allTodoItems, fundingDeadlinesMonth] = await Promise.all([
     // Calendar: milestones visible in grid
     prisma.milestone.findMany({
       where: { projectId: project.id, dueDate: { gte: gridStart, lte: gridEnd } },
@@ -178,6 +178,15 @@ export default async function CalendarPage({
       where: { list: { projectSlug: slug } },
       select: { id: true, title: true, dueDate: true, done: true },
       orderBy: { order: "asc" },
+    }),
+    // Calendar: funding application deadlines due in grid
+    prisma.fundingApplication.findMany({
+      where: {
+        projectId: project.id,
+        deadline: { gte: gridStart, lte: gridEnd },
+        status: { notIn: ["submitted", "awarded", "rejected", "withdrawn"] },
+      },
+      select: { id: true, deadline: true, fundingSource: { select: { name: true } } },
     }),
   ]);
 
@@ -229,6 +238,14 @@ export default async function CalendarPage({
       id: t.id, title: t.title, type: "todo", color: TYPE_COLORS.todo,
       href: `/projects/${slug}/todos`,
       tooltip: [t.title],
+    });
+  }
+  for (const f of fundingDeadlinesMonth) {
+    if (!f.deadline) continue;
+    addEntry(f.deadline, {
+      id: f.id, title: f.fundingSource.name, type: "deadline", color: TYPE_COLORS.deadline,
+      href: `/projects/${slug}/funding-applications`,
+      tooltip: [f.fundingSource.name],
     });
   }
 
