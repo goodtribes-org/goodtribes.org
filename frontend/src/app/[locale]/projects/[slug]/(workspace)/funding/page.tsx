@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
@@ -74,7 +75,15 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
     if (!isOwnerOrAdmin) {
       return (
         <div className="max-w-xl">
-          <WorkspacePageHeader title={t("heading")} help={t("helpText")} />
+          <WorkspacePageHeader
+            title={t("heading")}
+            help={t("helpText")}
+            action={
+              <Link href={`/projects/${slug}/funding/recurring`} className="text-sm text-seagrass hover:underline font-medium whitespace-nowrap">
+                {t("recurringFundingLink")}
+              </Link>
+            }
+          />
           <p className="text-dark-slate/40 text-sm">
             {t("noCampaignYet")}
           </p>
@@ -89,7 +98,15 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
 
     return (
       <div className="max-w-2xl">
-        <WorkspacePageHeader title={t("heading")} help={t("helpText")} />
+        <WorkspacePageHeader
+          title={t("heading")}
+          help={t("helpText")}
+          action={
+            <Link href={`/projects/${slug}/funding/recurring`} className="text-sm text-seagrass hover:underline font-medium whitespace-nowrap">
+              {t("recurringFundingLink")}
+            </Link>
+          }
+        />
         <div className="border border-dashed border-muted-teal/50 rounded-xl p-8">
           <h2 className="font-semibold text-dark-slate mb-1">{t("startCampaignHeading")}</h2>
           <p className="text-sm text-dark-slate/50 mb-6">
@@ -267,7 +284,15 @@ export default async function FundingPage({ params }: { params: Promise<{ slug: 
 
   return (
     <div className="max-w-4xl">
-      <WorkspacePageHeader title={t("heading")} help={t("helpText")} />
+      <WorkspacePageHeader
+        title={t("heading")}
+        help={t("helpText")}
+        action={
+          <Link href={`/projects/${slug}/funding/recurring`} className="text-sm text-seagrass hover:underline font-medium whitespace-nowrap">
+            {t("recurringFundingLink")}
+          </Link>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* LEFT: main campaign info + pledge */}

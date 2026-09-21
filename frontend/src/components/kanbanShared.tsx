@@ -45,6 +45,7 @@ export type Card = {
   openToPublic?: boolean;
   claimedAt?: Date | string | null;
   createdById: string;
+  createdByAi?: boolean;
   createdAt: Date | string;
   updatedAt: Date | string;
   createdBy: CardCreator | null;

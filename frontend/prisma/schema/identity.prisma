@@ -158,6 +158,9 @@ model User {
   requestedCouncilReviews       ReviewCouncilRequest[]     @relation("RequestedCouncilReviews")
   assignedCouncilReviews        ReviewCouncilRequest[]     @relation("AssignedCouncilReviews")
   decidedCouncilReviews         ReviewCouncilRequest[]     @relation("DecidedCouncilReviews")
+  updatedToolAiPreferences      ToolAiPreference[]         @relation("ToolAiPreferenceUpdatedBy")
+  createdRecurringFundingSources RecurringFundingSource[]  @relation("RecurringFundingSourceCreatedBy")
+  updatedRecurringFundingSources RecurringFundingSource[]  @relation("RecurringFundingSourceUpdatedBy")
 }
 
 model Skill {

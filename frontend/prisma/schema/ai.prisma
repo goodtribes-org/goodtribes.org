@@ -40,3 +40,43 @@ model AiTaskReview {
   tokensAwarded Float?
   createdAt     DateTime  @default(now())
 }
+
+// Per-project, per-tool AI involvement preference (PRD "AI-läge: agent vs.
+// manuellt"). A generic table rather than a field per tool -- there are
+// 15+ workspace tools already and more keep shipping, so this avoids a
+// schema change every time a new one gets an AI entry point. Structurally
+// this is also what makes it "not a global switch": a project can run one
+// tool in AGENT mode and another in MANUAL mode simultaneously.
+enum AiMode {
+  MANUAL
+  AGENT
+}
+
+// TASK/PHASE/ALL is a scale of autonomy, not a second on/off switch --
+// AGENT mode always still routes through the existing AiTaskRun -> REVIEW
+// column -> human-approval gate before anything counts as done or pays
+// tokens (see ai-agent/review/route.ts). Raising agentScope only changes
+// how much gets queued for that same review, never who approves it.
+enum AiAgentScope {
+  TASK
+  PHASE
+  ALL
+}
+
+model ToolAiPreference {
+  id          String       @id @default(cuid())
+  projectId   String
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  // Values come from the shared constant list in src/lib/aiToolKeys.ts --
+  // a free string (not an enum) since the set of AI-capable tools is
+  // expected to keep growing, same reasoning as KanbanCard.category.
+  toolKey     String
+  aiMode      AiMode       @default(MANUAL)
+  agentScope  AiAgentScope @default(TASK)
+  updatedById String?
+  updatedBy   User?        @relation("ToolAiPreferenceUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime     @default(now())
+
+  @@unique([projectId, toolKey])
+}

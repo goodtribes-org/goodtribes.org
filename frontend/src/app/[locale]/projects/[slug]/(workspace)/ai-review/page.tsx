@@ -4,9 +4,12 @@ import { auth } from "@/auth";
 import type { Metadata } from "next";
 import { getTranslations, getLocale } from "next-intl/server";
 import AIReviewActions from "./AIReviewActions";
+import ToolAiPreferencesPanel from "./ToolAiPreferencesPanel";
 import { resolveProjectContent } from "@/lib/contentTranslation";
 import { routing } from "@/i18n/routing";
 import WorkspacePageHeader from "@/components/WorkspacePageHeader";
+import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { getToolAiPreferences } from "@/lib/actions/aiPreferences";
 import type { Locale } from "next-intl";
 
 
@@ -47,6 +50,11 @@ export default async function AiReviewPage({ params }: { params: Promise<{ slug:
 
   const project = await prisma.project.findUnique({ where: { slug }, select: { id: true } });
   if (!project) notFound();
+
+  const [canEditAiPreferences, toolAiPreferences] = await Promise.all([
+    hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES),
+    getToolAiPreferences(slug),
+  ]);
 
   const runs = await prisma.aiTaskRun.findMany({
     where: {
@@ -139,6 +147,8 @@ export default async function AiReviewPage({ params }: { params: Promise<{ slug:
           ))}
         </div>
       )}
+
+      <ToolAiPreferencesPanel projectSlug={slug} preferences={toolAiPreferences} canEdit={canEditAiPreferences} />
     </div>
   );
 }

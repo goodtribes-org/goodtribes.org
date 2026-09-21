@@ -11,7 +11,10 @@ import { ImpactReportForm, WithdrawReportButton } from "./ImpactReportForm";
 import { ImpactReportCard } from "@/components/ImpactReportCard";
 import { impactReportStatus } from "@/lib/impactReports";
 import { isLeadRole } from "@/lib/authz";
+import { sumByInterval } from "@/lib/recurringFunding";
+import { formatCurrency } from "@/lib/currency";
 import WorkspacePageHeader from "@/components/WorkspacePageHeader";
+import Link from "next/link";
 
 
 export async function generateMetadata({
@@ -104,9 +107,11 @@ export default async function ImpactPage({
   const project = await prisma.project.findUnique({
     where: { slug },
     select: {
+      id: true,
       members: session?.user?.id
         ? { where: { userId: session.user.id }, select: { role: true } }
         : false,
+      recurringFundingSources: { where: { endedAt: null }, orderBy: { createdAt: "asc" } },
       impactMetrics: {
         orderBy: { createdAt: "asc" },
         include: {
@@ -174,6 +179,41 @@ export default async function ImpactPage({
           </div>
         </div>
       )}
+
+      {/* Ekonomisk uthållighet -- deliberately its own, physically separate
+          card, never mixed into the SDG figures above or below: same
+          caution as impactReports.ts, summing across mismatched intervals
+          (or against SDG counts) would misrepresent both. */}
+      {(() => {
+        const totals = sumByInterval(project.recurringFundingSources);
+        if (Object.keys(totals).length === 0) return null;
+        const INTERVAL_LABEL: Record<string, string> = {
+          MONTHLY: t("recurringIntervalMonthly"),
+          QUARTERLY: t("recurringIntervalQuarterly"),
+          ANNUALLY: t("recurringIntervalAnnually"),
+          OTHER: t("recurringIntervalOther"),
+        };
+        return (
+          <div className="border border-muted-teal/30 rounded-lg p-4 bg-white mb-8">
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <h2 className="text-xs font-semibold text-dark-slate/60 uppercase tracking-wide">
+                {t("recurringFundingHeading")}
+              </h2>
+              <Link href={`/projects/${slug}/funding/recurring`} className="text-xs text-seagrass hover:underline font-medium">
+                {t("recurringFundingManageLink")}
+              </Link>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              {Object.entries(totals).map(([interval, amount]) => (
+                <div key={interval}>
+                  <p className="text-lg font-bold text-dark-slate">{formatCurrency(amount, "SEK", locale)}</p>
+                  <p className="text-xs text-dark-slate/40">{INTERVAL_LABEL[interval] ?? interval}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Empty state */}
       {metrics.length === 0 && (

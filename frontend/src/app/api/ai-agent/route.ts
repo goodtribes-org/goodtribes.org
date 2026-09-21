@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { getAnthropicClient, isAiEnabled, checkAiRateLimit } from "@/lib/anthropic";
 import { GITHUB_CARD_LOCKED_MESSAGE } from "@/lib/githubSync";
+import { getToolAiMode } from "@/lib/actions/aiPreferences";
 
 
 type AgentType = "writer" | "analyst" | "researcher";
@@ -56,6 +57,11 @@ export async function POST(req: NextRequest) {
   // just undo — reject before spending a model call.
   if (card.source === "github") {
     return NextResponse.json({ error: GITHUB_CARD_LOCKED_MESSAGE }, { status: 403 });
+  }
+
+  const { aiMode } = await getToolAiMode(card.projectSlug, "kanban-agent");
+  if (aiMode !== "AGENT") {
+    return NextResponse.json({ error: "AI agent mode is turned off for this project" }, { status: 403 });
   }
 
   const aiTaskRun = await prisma.aiTaskRun.create({

@@ -53,6 +53,12 @@ model KanbanCard {
   column      String    @default("BACKLOG")
   order       Int       @default(0)
   createdById String
+  // Pure display flag (a badge on the card) -- createdById above stays a
+  // real human (the triggering/approving user) regardless. Deliberately not
+  // tied to TokenLedger/awardTokens or the leaderboard query, which is what
+  // lets this ship without the AI system account that's paused pending
+  // legal/tax review (see CLAUDE.md).
+  createdByAi Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 

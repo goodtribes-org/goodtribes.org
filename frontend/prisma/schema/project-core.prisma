@@ -128,6 +128,8 @@ model Project {
   phaseTransitions   PhaseTransition[]
   checklistItems     InitiativeChecklistItem[]
   reviewCouncilRequests ReviewCouncilRequest[]
+  toolAiPreferences  ToolAiPreference[]
+  recurringFundingSources RecurringFundingSource[]
   convertedFromRoom  Room?                @relation("RoomConvertedToProject")
   profitDistributionProposals ProfitDistributionProposal[]
   profitDistributions         ProfitDistribution[]

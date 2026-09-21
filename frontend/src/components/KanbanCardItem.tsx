@@ -175,7 +175,17 @@ function KanbanCardItemImpl({
         <Tooltip lines={descPreview ? [descPreview] : []} className="flex gap-1.5 items-start">
           {/* Vänster: titel + metadata */}
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-gray-800 leading-snug truncate">{card.title}</p>
+            <p className="text-xs font-medium text-gray-800 leading-snug truncate flex items-center gap-1">
+              {card.createdByAi && (
+                <span
+                  title={t("createdByAiBadge")}
+                  className="shrink-0 text-[9px] font-bold px-1 py-px rounded bg-purple-100 text-purple-700"
+                >
+                  AI
+                </span>
+              )}
+              <span className="truncate">{card.title}</span>
+            </p>
             <GithubCardMeta card={card} compact />
             <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
               <Tooltip lines={[t("priorityTooltip", { label: priorityLabel, value: card.lockedTokenValue ?? priorityMeta.tokenValue, locked: card.priorityLockedAt ? "true" : "false" })]}>

@@ -108,3 +108,45 @@ model FundingExpense {
   @@index([campaignId])
   @@index([milestoneId])
 }
+
+enum RecurringFundingType {
+  MEMBERSHIP_FEES
+  GRANT
+  SUBSCRIPTION
+  REVENUE_SHARE
+  OTHER
+}
+
+enum RecurringFundingInterval {
+  MONTHLY
+  QUARTERLY
+  ANNUALLY
+  OTHER
+}
+
+// Self-reported tracking of recurring funding (membership fees, standing
+// grants, subscriptions, revenue share) -- deliberately NOT a Stripe
+// recurring-billing integration, which is a separate, much larger project.
+// A row's endedAt (not deletion) is how a source stops being active, so
+// historical funding data is never lost.
+model RecurringFundingSource {
+  id          String                   @id @default(cuid())
+  projectId   String
+  project     Project                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type        RecurringFundingType     @default(OTHER)
+  label       String
+  sourceName  String?
+  amountSek   Int
+  interval    RecurringFundingInterval @default(MONTHLY)
+  startedAt   DateTime?
+  endedAt     DateTime?
+  note        String?                  @db.Text
+  createdById String
+  createdBy   User                     @relation("RecurringFundingSourceCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime                 @default(now())
+  updatedById String?
+  updatedBy   User?                    @relation("RecurringFundingSourceUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime                 @updatedAt
+
+  @@index([projectId])
+}

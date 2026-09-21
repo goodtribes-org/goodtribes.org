@@ -473,7 +473,21 @@
     "agentAnalyst": "Analyst",
     "agentResearcher": "Researcher",
     "attemptNumber": "Attempt {number}",
-    "noContentGenerated": "No content generated."
+    "noContentGenerated": "No content generated.",
+    "toolPreferencesHeading": "AI settings per tool",
+    "toolPreferencesHelp": "Choose whether AI should act on your behalf (Agent mode, still requires approval before anything counts as done) or whether a tool should stay fully manual, per tool.",
+    "aiModeManual": "Manual",
+    "aiModeAgent": "Agent",
+    "agentScopeTask": "One task at a time",
+    "agentScopePhase": "The whole phase",
+    "agentScopeAll": "Everything",
+    "toolKey_kanbanAgent": "Kanban agent",
+    "toolKey_taskEstimate": "Task estimation",
+    "toolKey_mindmap": "Mindmap generation",
+    "toolKey_maturityReport": "Maturity report / scaling plan",
+    "toolKey_networkInsights": "Network insights",
+    "toolKey_aiThreadReply": "@AI in the Idea Workshop",
+    "toolKey_sdgSuggestion": "SDG suggestions"
   },
   "NetworkDashboard": {
     "heading": "Network overview",
@@ -1097,7 +1111,8 @@
     "exportReportLink": "Export report (CSV)",
     "tierBackersCount": "{count} / {max} backers",
     "tierFullSuffix": "— full",
-    "selectInFormBelow": "Select in the form below"
+    "selectInFormBelow": "Select in the form below",
+    "recurringFundingLink": "Recurring funding →"
   },
   "CalendarPage": {
     "pageTitle": "{projectTitle} — Planning — GoodTribes.org",
@@ -1609,7 +1624,8 @@
     "subtaskEditMenuItem": "Edit",
     "subtaskDeleteMenuItem": "Delete",
     "subtaskSavingTooltip": "Saving…",
-    "promoteToCardButton": "Own card"
+    "promoteToCardButton": "Own card",
+    "createdByAiBadge": "Created by AI"
   },
   "KanbanCardComments": {
     "likeLabel": "Like",
@@ -2573,7 +2589,39 @@
     "reportsIntro": "An impact report is a discrete result that GoodTribes reviews against your evidence. Unlike the metrics above, verified reports are shown publicly on the project page.",
     "verifiedCount": "{count, plural, one {# verified report} other {# verified reports}}",
     "reportsEmptyTitle": "No impact reports yet",
-    "reportsEmptyDescription": "Submit an achieved result with supporting evidence and GoodTribes will review it. Verified results are what funders, municipalities and partners can rely on."
+    "reportsEmptyDescription": "Submit an achieved result with supporting evidence and GoodTribes will review it. Verified results are what funders, municipalities and partners can rely on.",
+    "recurringFundingHeading": "Economic sustainability",
+    "recurringFundingManageLink": "Manage →",
+    "recurringIntervalMonthly": "SEK/month",
+    "recurringIntervalQuarterly": "SEK/quarter",
+    "recurringIntervalAnnually": "SEK/year",
+    "recurringIntervalOther": "SEK (other interval)"
+  },
+  "RecurringFundingPage": {
+    "backToFunding": "← Back to Funding",
+    "heading": "Recurring funding",
+    "helpText": "Record and track recurring funding sources like membership fees, grants, subscriptions and revenue share — self-reported, not connected to Stripe.",
+    "intervalMonthly": "SEK/month",
+    "intervalQuarterly": "SEK/quarter",
+    "intervalAnnually": "SEK/year",
+    "intervalOther": "SEK (other interval)",
+    "typeMembershipFees": "Membership fees",
+    "typeGrant": "Grant",
+    "typeSubscription": "Subscription",
+    "typeRevenueShare": "Revenue share",
+    "typeOther": "Other",
+    "emptyState": "No recurring funding sources recorded yet.",
+    "endedHeading": "Ended",
+    "labelLabel": "Name",
+    "typeLabel": "Type",
+    "intervalLabel": "Interval",
+    "amountLabel": "Amount (SEK)",
+    "sourceNameLabel": "Source/funder (optional)",
+    "noteLabel": "Note (optional)",
+    "submitButton": "Add",
+    "submitting": "Adding…",
+    "genericError": "Something went wrong. Please try again.",
+    "endSourceButton": "End"
   },
   "LeanCanvasBlock": {
     "edit": "Edit",

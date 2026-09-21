@@ -473,7 +473,21 @@
     "agentAnalyst": "Analytiker",
     "agentResearcher": "Researcher",
     "attemptNumber": "Försök {number}",
-    "noContentGenerated": "Inget innehåll genererat."
+    "noContentGenerated": "Inget innehåll genererat.",
+    "toolPreferencesHeading": "AI-inställningar per verktyg",
+    "toolPreferencesHelp": "Välj om AI ska agera åt er (Agent-läge, kräver godkännande innan något räknas som klart) eller om verktyget ska användas helt manuellt, per verktyg.",
+    "aiModeManual": "Manuellt",
+    "aiModeAgent": "Agent",
+    "agentScopeTask": "En uppgift i taget",
+    "agentScopePhase": "Hela fasen",
+    "agentScopeAll": "Allt",
+    "toolKey_kanbanAgent": "Kanban-agent",
+    "toolKey_taskEstimate": "Uppgiftsuppskattning",
+    "toolKey_mindmap": "Mindmap-generering",
+    "toolKey_maturityReport": "Mognadsrapport/skalningsplan",
+    "toolKey_networkInsights": "Nätverksinsikter",
+    "toolKey_aiThreadReply": "@AI i Idéverkstad",
+    "toolKey_sdgSuggestion": "SDG-förslag"
   },
   "NetworkDashboard": {
     "heading": "Nätverksöversikt",
@@ -1097,7 +1111,8 @@
     "exportReportLink": "Exportera rapport (CSV)",
     "tierBackersCount": "{count} / {max} finansiärer",
     "tierFullSuffix": "— full",
-    "selectInFormBelow": "Välj i formuläret nedan"
+    "selectInFormBelow": "Välj i formuläret nedan",
+    "recurringFundingLink": "Återkommande finansiering →"
   },
   "CalendarPage": {
     "pageTitle": "{projectTitle} — Planering — GoodTribes.org",
@@ -1609,7 +1624,8 @@
     "subtaskEditMenuItem": "Ändra",
     "subtaskDeleteMenuItem": "Ta bort",
     "subtaskSavingTooltip": "Sparar…",
-    "promoteToCardButton": "Eget kort"
+    "promoteToCardButton": "Eget kort",
+    "createdByAiBadge": "Skapad av AI"
   },
   "KanbanCardComments": {
     "likeLabel": "Gilla",
@@ -2573,7 +2589,39 @@
     "reportsIntro": "En impact-rapport är ett avgränsat resultat som GoodTribes granskar mot ert underlag. Till skillnad från mätvärdena ovan visas verifierade rapporter publikt på projektsidan.",
     "verifiedCount": "{count, plural, one {# verifierad rapport} other {# verifierade rapporter}}",
     "reportsEmptyTitle": "Inga impact-rapporter ännu",
-    "reportsEmptyDescription": "Skicka in ett uppnått resultat med underlag så granskar GoodTribes det. Verifierade resultat är det finansiärer, kommuner och partners kan lita på."
+    "reportsEmptyDescription": "Skicka in ett uppnått resultat med underlag så granskar GoodTribes det. Verifierade resultat är det finansiärer, kommuner och partners kan lita på.",
+    "recurringFundingHeading": "Ekonomisk uthållighet",
+    "recurringFundingManageLink": "Hantera →",
+    "recurringIntervalMonthly": "kr/månad",
+    "recurringIntervalQuarterly": "kr/kvartal",
+    "recurringIntervalAnnually": "kr/år",
+    "recurringIntervalOther": "kr (annat intervall)"
+  },
+  "RecurringFundingPage": {
+    "backToFunding": "← Tillbaka till Bidrag",
+    "heading": "Återkommande finansiering",
+    "helpText": "Ange och följ upp återkommande finansieringskällor som medlemsavgifter, bidrag, prenumerationer och intäktsdelning — självrapporterat, inte kopplat till Stripe.",
+    "intervalMonthly": "kr/månad",
+    "intervalQuarterly": "kr/kvartal",
+    "intervalAnnually": "kr/år",
+    "intervalOther": "kr (annat intervall)",
+    "typeMembershipFees": "Medlemsavgifter",
+    "typeGrant": "Bidrag",
+    "typeSubscription": "Prenumeration",
+    "typeRevenueShare": "Intäktsdelning",
+    "typeOther": "Annat",
+    "emptyState": "Inga återkommande finansieringskällor registrerade än.",
+    "endedHeading": "Avslutade",
+    "labelLabel": "Namn",
+    "typeLabel": "Typ",
+    "intervalLabel": "Intervall",
+    "amountLabel": "Belopp (kr)",
+    "sourceNameLabel": "Källa/givare (valfritt)",
+    "noteLabel": "Kommentar (valfritt)",
+    "submitButton": "Lägg till",
+    "submitting": "Lägger till…",
+    "genericError": "Något gick fel. Försök igen.",
+    "endSourceButton": "Avsluta"
   },
   "LeanCanvasBlock": {
     "edit": "Redigera",
