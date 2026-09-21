@@ -688,6 +688,11 @@
     "navMarketScan": "Omvärldsbevakning",
     "navDesignSprints": "Designsprints",
     "navLaunchPlan": "Marknadsplan",
+    "navPilotEvaluation": "Pilotutvärdering",
+    "navEstablishmentPlan": "Etableringsplan",
+    "navReviewRequest": "Granskningsråd",
+    "navScalingPlan": "Skalningsplan",
+    "navImpactFollowup": "Impact-uppföljning",
     "toolsGroupLabel": "Gemenskap",
     "navPolls": "Omröstningar",
     "navFunding": "Bidrag",
@@ -704,7 +709,8 @@
     "navLegalType": "Juridisk form",
     "navFork": "Gaffling",
     "toggleMenuExpand": "Visa menytext",
-    "toggleMenuCollapse": "Visa endast ikoner"
+    "toggleMenuCollapse": "Visa endast ikoner",
+    "earlyToolsGroupLabel": "Tidiga verktyg"
   },
   "MembersManager": {
     "pageTitle": "Projektmedlemmar",
@@ -2522,6 +2528,7 @@
     "youAreMember": "Du är ledamot i Granskningsrådet.",
     "seeOpenCasesLink": "Se öppna ärenden →",
     "ethicsReviewLink": "Etikgranskning →",
+    "reviewRequestsLink": "Begäranden om granskning",
     "electionHeading": "Val",
     "noOngoingElection": "Inget val pågår just nu.",
     "logIn": "Logga in",
@@ -3370,6 +3377,38 @@
     "statusOpen": "Väntar på svar",
     "statusUnderReview": "Under omröstning",
     "statusResolved": "Avgjort"
+  },
+  "ReviewRequestPage": {
+    "title": "Begär granskning",
+    "intro": "Be Granskningsrådet göra en djupare granskning av projektet inför skalning.",
+    "noteLabel": "Kommentar (valfritt)",
+    "submitButton": "Skicka begäran",
+    "submitting": "Skickar…",
+    "genericError": "Något gick fel. Försök igen.",
+    "emptyState": "Inga granskningsbegäranden än.",
+    "statusPending": "Väntar",
+    "statusInReview": "Under granskning",
+    "statusCompleted": "Klar",
+    "statusDeclined": "Avböjd",
+    "assignedTo": "Tilldelad {name}",
+    "unknownUser": "Okänd användare"
+  },
+  "ReviewCouncilRequestsPage": {
+    "pageTitle": "Granskningsbegäranden",
+    "backToCouncil": "← Tillbaka till Granskningsrådet",
+    "heading": "Granskningsbegäranden",
+    "requestCount": "{count} begäranden",
+    "emptyState": "Inga öppna granskningsbegäranden just nu.",
+    "statusPending": "Väntar",
+    "statusInReview": "Under granskning",
+    "requestedBy": "Begärd av {name}",
+    "unknownUser": "Okänd användare",
+    "assignToMe": "Tilldela mig",
+    "assignedTo": "Tilldelad {name}",
+    "assignedToYou": "Tilldelad dig",
+    "outcomeNotePlaceholder": "Utlåtande…",
+    "markCompleted": "Markera klar",
+    "decline": "Avböj"
   },
   "SuggestionsAdminPage": {
     "heading": "Förbättringsförslag",

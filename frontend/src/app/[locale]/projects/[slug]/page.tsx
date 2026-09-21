@@ -294,7 +294,13 @@ export default async function ProjectDetailPage({
         </div>
 
         <div className="relative z-10 flex flex-col sm:flex-row -mb-12">
-        <ProjectSideNav slug={slug} isOwner={!!isOwnerOrAdmin} isCommercial={isCommercialLegalType(project.legalType)} />
+        <ProjectSideNav
+          slug={slug}
+          isOwner={!!isOwnerOrAdmin}
+          isCommercial={isCommercialLegalType(project.legalType)}
+          phase={project.phase}
+          completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
+        />
         <div className="flex-1 min-w-0 pb-12">
           <div className="px-4 pt-10 pb-10">
             <div className="flex flex-wrap justify-center gap-5 items-stretch w-full max-w-[1160px] mx-auto">

@@ -155,6 +155,9 @@ model User {
   forkProfitSharesAsContributor ForkProfitShare[]          @relation("ForkProfitShareContributor")
   forkTokenGrantsAsContributor  ForkTokenGrant[]           @relation("ForkTokenGrantContributor")
   forkTokenGrantsGiven          ForkTokenGrant[]           @relation("ForkTokenGrantsGivenBy")
+  requestedCouncilReviews       ReviewCouncilRequest[]     @relation("RequestedCouncilReviews")
+  assignedCouncilReviews        ReviewCouncilRequest[]     @relation("AssignedCouncilReviews")
+  decidedCouncilReviews         ReviewCouncilRequest[]     @relation("DecidedCouncilReviews")
 }
 
 model Skill {

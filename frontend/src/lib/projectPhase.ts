@@ -102,11 +102,13 @@ export function getNextPhase(current: ProjectPhaseValue): ProjectPhaseValue | nu
 // "formalization document" tools were added (same shape as ProjectPlan/
 // LaunchPlan — see planning-tools.prisma) for items that had no home at all:
 // PilotEvaluation (pilot-evaluation), EstablishmentPlan (establishment-plan),
-// ScalingPlan (scaling-plan), ImpactFollowup (impact-followup). The one
-// exception left without an href is review_council_deep_review — there is no
-// existing per-project "request a review" flow into Granskningsrådet (which
-// today is platform-wide, not project-scoped); building one is a governance
-// design decision, not a linking fix, and is intentionally left open.
+// ScalingPlan (scaling-plan), ImpactFollowup (impact-followup).
+//
+// 2026-09-21: review_council_deep_review's missing href (the one exception
+// left above) is filled in — ReviewCouncilRequest is the new per-project
+// "request a review" flow into Granskningsrådet, which was platform-wide
+// only until now (see review-request/page.tsx and
+// granskningsradet/forfragningar/page.tsx).
 export const INITIATIVE_CHECKLIST_ITEMS: Record<
   ProjectPhaseValue,
   { key: string; label: string; href?: string; parentKey?: string }[]
@@ -149,7 +151,7 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
     { key: "partnerships_formalized", label: "Formalisera partnerskap och samarbeten", href: "partnerships" },
     { key: "supporter_base_built", label: "Bygga upp en stabil community/supporterbas", href: "establishment-plan" },
     { key: "playbook_documented", label: "Dokumentera \"playbook\" så andra kan replikera", href: "wiki" },
-    { key: "review_council_deep_review", label: "Granskningsråd gör en djupare granskning inför skalning" },
+    { key: "review_council_deep_review", label: "Granskningsråd gör en djupare granskning inför skalning", href: "review-request" },
   ],
   SCALE: [
     { key: "scale_vs_fork_decided", label: "Bestämma Skalning vs. Fork (samma projekt växer vs. nytt oberoende initiativ)", href: "scale" },

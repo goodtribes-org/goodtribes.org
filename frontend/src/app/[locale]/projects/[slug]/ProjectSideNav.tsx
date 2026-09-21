@@ -37,12 +37,21 @@ import {
   Flag,
   Menu,
   Route,
+  Lock,
+  History,
+  ClipboardCheck,
+  Building2,
+  Milestone,
+  PartyPopper,
+  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
+import type { ProjectPhaseValue } from "@/lib/projectPhase";
+import { groupNavItemsByPhase } from "@/lib/navPhaseGrouping";
 
 const SIDENAV_COLLAPSED_STORAGE_KEY = "projectSideNavCollapsed";
 
-type NavItem = { label: string; href: string; icon: LucideIcon; getHref?: (slug: string) => string; commercialOnly?: boolean };
+type NavItem = { label: string; href: string; icon: LucideIcon; getHref?: (slug: string) => string; commercialOnly?: boolean; phase?: ProjectPhaseValue };
 
 function buildMainItems(t: ReturnType<typeof useTranslations>): NavItem[] {
   return [
@@ -54,14 +63,19 @@ function buildMainItems(t: ReturnType<typeof useTranslations>): NavItem[] {
     { label: t("navBlog"),      href: "/updates",   icon: Megaphone },
     { label: t("navFiles"),      href: "/files",     icon: Folder },
     { label: t("navWiki"),       href: "/wiki",      icon: BookOpen },
-    { label: t("navIdeaWorkshop"), href: "/idea-sessions", icon: Lightbulb },
-    { label: t("navLeanCanvas"), href: "/lean-canvas",   icon: LayoutGrid },
-    { label: t("navProjectPlan"), href: "/project-plan", icon: ClipboardList },
-    { label: t("navValueProposition"), href: "/value-proposition", icon: Gem },
-    { label: t("navInterviews"), href: "/interviews", icon: Mic },
-    { label: t("navMarketScan"), href: "/market-scan", icon: Radar },
-    { label: t("navDesignSprints"), href: "/sprints",    icon: Rocket },
-    { label: t("navLaunchPlan"), href: "/launch-plan", icon: Flag },
+    { label: t("navIdeaWorkshop"), href: "/idea-sessions", icon: Lightbulb, phase: "IDEA" },
+    { label: t("navLeanCanvas"), href: "/lean-canvas",   icon: LayoutGrid, phase: "IDEA" },
+    { label: t("navValueProposition"), href: "/value-proposition", icon: Gem, phase: "IDEA" },
+    { label: t("navInterviews"), href: "/interviews", icon: Mic, phase: "IDEA" },
+    { label: t("navMarketScan"), href: "/market-scan", icon: Radar, phase: "IDEA" },
+    { label: t("navProjectPlan"), href: "/project-plan", icon: ClipboardList, phase: "PILOT" },
+    { label: t("navDesignSprints"), href: "/sprints",    icon: Rocket, phase: "PILOT" },
+    { label: t("navPilotEvaluation"), href: "/pilot-evaluation", icon: ClipboardCheck, phase: "PRODUCTION" },
+    { label: t("navLaunchPlan"), href: "/launch-plan", icon: Flag, phase: "PRODUCTION" },
+    { label: t("navEstablishmentPlan"), href: "/establishment-plan", icon: Building2, phase: "ESTABLISH" },
+    { label: t("navReviewRequest"), href: "/review-request", icon: ShieldCheck, phase: "ESTABLISH" },
+    { label: t("navScalingPlan"), href: "/scaling-plan", icon: Milestone, phase: "SCALE" },
+    { label: t("navImpactFollowup"), href: "/impact-followup", icon: PartyPopper, phase: "IMPACT" },
   ];
 }
 
@@ -94,28 +108,46 @@ function Row({
   href,
   indent,
   iconOnly,
+  locked,
 }: {
   item: NavItem;
   active: boolean;
   href: string;
   indent?: boolean;
   iconOnly?: boolean;
+  locked?: boolean;
 }) {
   const Icon = item.icon;
-  return (
-    <Link
-      href={href}
-      title={item.label}
-      className={`group flex items-center gap-3 rounded-lg py-2 mx-2 pl-2 pr-2 transition-colors border-l-4 ${
-        indent && !iconOnly ? "lg:pl-6" : "lg:pl-3"
-      } justify-center ${iconOnly ? "" : "lg:justify-start"} ${
-        active
-          ? "border-coral bg-coral/10 text-dark-slate font-bold"
-          : "border-transparent text-dark-slate/60 hover:bg-white hover:text-dark-slate"
-      }`}
-    >
+  const className = `group flex items-center gap-3 rounded-lg py-2 mx-2 pl-2 pr-2 transition-colors border-l-4 ${
+    indent && !iconOnly ? "lg:pl-6" : "lg:pl-3"
+  } justify-center ${iconOnly ? "" : "lg:justify-start"} ${
+    locked
+      ? "border-transparent text-dark-slate/30 cursor-not-allowed"
+      : active
+      ? "border-coral bg-coral/10 text-dark-slate font-bold"
+      : "border-transparent text-dark-slate/60 hover:bg-white hover:text-dark-slate"
+  }`;
+  const content = (
+    <>
       <Icon className="w-5 h-5 shrink-0" strokeWidth={2} />
       <span className={`${iconOnly ? "hidden" : "hidden lg:inline"} text-sm truncate`}>{item.label}</span>
+      {locked && (
+        <Lock className={`${iconOnly ? "hidden" : "hidden lg:inline"} w-3.5 h-3.5 shrink-0 ml-auto`} strokeWidth={2} />
+      )}
+    </>
+  );
+
+  if (locked) {
+    return (
+      <div className={className} title={item.label} aria-disabled="true">
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Link href={href} title={item.label} className={className}>
+      {content}
     </Link>
   );
 }
@@ -161,10 +193,14 @@ export default function ProjectSideNav({
   slug,
   isOwner,
   isCommercial,
+  phase,
+  completedChecklistKeys,
 }: {
   slug: string;
   isOwner?: boolean;
   isCommercial?: boolean;
+  phase?: ProjectPhaseValue;
+  completedChecklistKeys?: string[];
 }) {
   const pathname = usePathname();
   const t = useTranslations("ProjectSideNav");
@@ -172,6 +208,13 @@ export default function ProjectSideNav({
   const TOOLS_ITEMS = buildToolsItems(t);
   const ADMIN_ITEMS = buildAdminItems(t);
   const base = `/projects/${slug}`;
+
+  // phase is optional only so this component doesn't hard-crash on a caller
+  // that hasn't been updated yet — falls back to "no grouping" (everything
+  // in `current`) rather than guessing a phase.
+  const { current: currentMainItems, early: earlyMainItems, locked: lockedMainItems } = phase
+    ? groupNavItemsByPhase(MAIN_ITEMS, phase, completedChecklistKeys ?? [])
+    : { current: MAIN_ITEMS, early: [] as NavItem[], locked: [] as NavItem[] };
 
   function isActive(href: string) {
     if (href === "/kanaler") return pathname.startsWith("/messages");
@@ -207,12 +250,15 @@ export default function ProjectSideNav({
   const visibleToolsItems = TOOLS_ITEMS.filter((item) => !item.commercialOnly || isCommercial);
   const toolsActive = visibleToolsItems.some((item) => isActive(item.href));
   const adminActive = ADMIN_ITEMS.some((item) => isActive(item.href));
+  const earlyActive = earlyMainItems.some((item) => isActive(item.href));
 
   const [toolsOpen, setToolsOpen] = useState(toolsActive);
   const [adminOpen, setAdminOpen] = useState(adminActive);
+  const [earlyOpen, setEarlyOpen] = useState(earlyActive);
 
   const mobileItems = [
-    ...MAIN_ITEMS,
+    ...currentMainItems,
+    ...earlyMainItems,
     ...visibleToolsItems,
     ...(isOwner ? ADMIN_ITEMS : []),
   ];
@@ -266,7 +312,7 @@ export default function ProjectSideNav({
           <Menu className="w-5 h-5 shrink-0" strokeWidth={2} />
         </button>
         <div className="space-y-0.5">
-          {MAIN_ITEMS.map((item) => (
+          {currentMainItems.map((item) => (
             <Row
               key={item.href}
               item={item}
@@ -275,6 +321,27 @@ export default function ProjectSideNav({
               iconOnly={iconOnly}
             />
           ))}
+
+          {earlyMainItems.length > 0 && (
+            <div className="pt-1">
+              <GroupToggle label={t("earlyToolsGroupLabel")} icon={History} open={earlyOpen} active={earlyActive} onClick={() => setEarlyOpen((v) => !v)} iconOnly={iconOnly} />
+              {earlyOpen && (
+                <div className="space-y-0.5 mt-0.5">
+                  {earlyMainItems.map((item) => (
+                    <Row key={item.href} item={item} active={isActive(item.href)} href={hrefFor(item)} indent iconOnly={iconOnly} />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {lockedMainItems.length > 0 && (
+            <div className="space-y-0.5 pt-1">
+              {lockedMainItems.map((item) => (
+                <Row key={item.href} item={item} active={false} href="#" iconOnly={iconOnly} locked />
+              ))}
+            </div>
+          )}
 
           <div className="pt-1">
             <GroupToggle label={t("toolsGroupLabel")} icon={Users2} open={toolsOpen} active={toolsActive} onClick={() => setToolsOpen((v) => !v)} iconOnly={iconOnly} />

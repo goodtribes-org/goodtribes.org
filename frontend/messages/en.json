@@ -688,6 +688,11 @@
     "navMarketScan": "Market Scan",
     "navDesignSprints": "Design Sprints",
     "navLaunchPlan": "Marketing Plan",
+    "navPilotEvaluation": "Pilot Evaluation",
+    "navEstablishmentPlan": "Establishment Plan",
+    "navReviewRequest": "Review Council",
+    "navScalingPlan": "Scaling Plan",
+    "navImpactFollowup": "Impact Follow-up",
     "toolsGroupLabel": "Community",
     "navPolls": "Polls",
     "navFunding": "Funding",
@@ -704,7 +709,8 @@
     "navLegalType": "Legal form",
     "navFork": "Fork",
     "toggleMenuExpand": "Show menu labels",
-    "toggleMenuCollapse": "Show icons only"
+    "toggleMenuCollapse": "Show icons only",
+    "earlyToolsGroupLabel": "Early Tools"
   },
   "MembersManager": {
     "pageTitle": "Project members",
@@ -2522,6 +2528,7 @@
     "youAreMember": "You are a member of the Review Council.",
     "seeOpenCasesLink": "See open cases →",
     "ethicsReviewLink": "Ethics review →",
+    "reviewRequestsLink": "Review requests",
     "electionHeading": "Election",
     "noOngoingElection": "No election is currently underway.",
     "logIn": "Log in",
@@ -3370,6 +3377,38 @@
     "statusOpen": "Awaiting response",
     "statusUnderReview": "Under vote",
     "statusResolved": "Resolved"
+  },
+  "ReviewRequestPage": {
+    "title": "Request a review",
+    "intro": "Ask Granskningsrådet (the Review Council) to do a deeper review of the project ahead of scaling.",
+    "noteLabel": "Note (optional)",
+    "submitButton": "Send request",
+    "submitting": "Sending…",
+    "genericError": "Something went wrong. Please try again.",
+    "emptyState": "No review requests yet.",
+    "statusPending": "Pending",
+    "statusInReview": "In review",
+    "statusCompleted": "Completed",
+    "statusDeclined": "Declined",
+    "assignedTo": "Assigned to {name}",
+    "unknownUser": "Unknown user"
+  },
+  "ReviewCouncilRequestsPage": {
+    "pageTitle": "Review requests",
+    "backToCouncil": "← Back to the Review Council",
+    "heading": "Review requests",
+    "requestCount": "{count} requests",
+    "emptyState": "No open review requests right now.",
+    "statusPending": "Pending",
+    "statusInReview": "In review",
+    "requestedBy": "Requested by {name}",
+    "unknownUser": "Unknown user",
+    "assignToMe": "Assign to me",
+    "assignedTo": "Assigned to {name}",
+    "assignedToYou": "Assigned to you",
+    "outcomeNotePlaceholder": "Write-up…",
+    "markCompleted": "Mark completed",
+    "decline": "Decline"
   },
   "SuggestionsAdminPage": {
     "heading": "Suggestions",

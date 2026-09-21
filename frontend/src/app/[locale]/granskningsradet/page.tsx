@@ -90,6 +90,10 @@ export default async function CouncilPage({
           <Link href="/granskningsradet/etik" className="text-seagrass hover:underline font-medium">
             {t("ethicsReviewLink")}
           </Link>
+          {" · "}
+          <Link href="/granskningsradet/forfragningar" className="text-seagrass hover:underline font-medium">
+            {t("reviewRequestsLink")}
+          </Link>
         </div>
       )}
 

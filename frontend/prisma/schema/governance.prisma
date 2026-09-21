@@ -317,3 +317,38 @@ model ExclusionCaseVote {
 
   @@unique([caseId, councilMemberId])
 }
+
+enum ReviewCouncilRequestStatus {
+  pending
+  in_review
+  completed
+  declined
+}
+
+// Granskningsrådets proaktiva motsvarighet till ExclusionCase (som är
+// reaktiv -- filas mot en anmäld användare). Det här är en projektinitierad
+// begäran om en djupare granskning inför skalning (checklist-item
+// review_council_deep_review, ESTABLISH-fasen, se projectPhase.ts).
+// Medvetet en egen, enkel modell -- ExclusionCases form (anmäld användare,
+// svarsfrist, bestraffande beslut) passar inte en frivillig granskning. v1
+// är en enskild tilldelad rådsmedlems utlåtande, ingen fullständig
+// ExclusionCaseVote-liknande omröstning -- kan byggas ut additivt senare.
+model ReviewCouncilRequest {
+  id                      String                     @id @default(cuid())
+  projectId               String
+  project                 Project                    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requestedById           String
+  requestedBy             User                       @relation("RequestedCouncilReviews", fields: [requestedById], references: [id])
+  note                    String?                    @db.Text
+  status                  ReviewCouncilRequestStatus @default(pending)
+  assignedCouncilMemberId String?
+  assignedCouncilMember   User?                      @relation("AssignedCouncilReviews", fields: [assignedCouncilMemberId], references: [id], onDelete: SetNull)
+  outcomeNote             String?                    @db.Text
+  decidedById             String?
+  decidedBy               User?                      @relation("DecidedCouncilReviews", fields: [decidedById], references: [id], onDelete: SetNull)
+  decidedAt               DateTime?
+  createdAt               DateTime                   @default(now())
+
+  @@index([projectId])
+  @@index([status])
+}

@@ -17,20 +17,32 @@ export default async function WorkspaceLayout({
   const { slug } = await params;
   const [session, project] = await Promise.all([
     auth(),
-    prisma.project.findUnique({ where: { slug }, select: { id: true, title: true, imageUrl: true, legalType: true, isSandbox: true } }),
+    prisma.project.findUnique({ where: { slug }, select: { id: true, title: true, imageUrl: true, legalType: true, isSandbox: true, phase: true } }),
   ]);
   if (!project) notFound();
 
-  const isOwner = session?.user?.id
-    ? await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES)
-    : false;
+  const [isOwner, checklistItems] = await Promise.all([
+    session?.user?.id
+      ? hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES)
+      : Promise.resolve(false),
+    prisma.initiativeChecklistItem.findMany({
+      where: { projectId: project.id, completedAt: { not: null } },
+      select: { itemKey: true },
+    }),
+  ]);
 
   return (
     <>
       <ProjectSandboxAnnouncer isSandbox={project.isSandbox} />
       <ProjectMiniHero title={project.title} imageUrl={project.imageUrl} />
       <div className="flex flex-1 flex-col sm:flex-row -mb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-        <ProjectSideNav slug={slug} isOwner={isOwner} isCommercial={isCommercialLegalType(project.legalType)} />
+        <ProjectSideNav
+          slug={slug}
+          isOwner={isOwner}
+          isCommercial={isCommercialLegalType(project.legalType)}
+          phase={project.phase}
+          completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
+        />
         <div className="flex-1 min-w-0 px-6 pt-8 pb-12">{children}</div>
       </div>
     </>
