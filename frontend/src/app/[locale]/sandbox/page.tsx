@@ -232,12 +232,12 @@ export default async function SandboxPage({
     <>
     {/* Träd + rutan (nu med Sandbox-innehållet, flyttat hit från hero-bildens textkort)
         + Leva/Må/Göra Gott/Dröm stort — flyttade hit från startsidan, högst upp på sandboxsidan.
-        Samma bakgrundsfärg (#f6f5f2) som sektionen nedanför, kant-till-kant.
+        Samma bakgrundsfärg (#fbf8f4) som sektionen nedanför, kant-till-kant.
         -mt-8 tar bort main:s pt-8, pt-36/48/52 lägger tillbaka en liten marginal mot
         toppmenyn (utan den skulle trädens grenar överlappa menyn). */}
     <div
       className="relative -mt-8 pt-36 sm:pt-48 md:pt-52 pb-10 sm:pb-14"
-      style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f6f5f2" }}
+      style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#fbf8f4" }}
     >
       <Pillars
         heading={heroData.heroKicker}
@@ -250,7 +250,7 @@ export default async function SandboxPage({
       />
     </div>
 
-    <div className="relative -mb-12 flex-1" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#f6f5f2" }}>
+    <div className="relative -mb-12 flex-1" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw", backgroundColor: "#fbf8f4" }}>
     <div className="max-w-6xl mx-auto px-6 pb-12">
       <section id="projects" className="mb-10">
         <div className="flex items-center justify-between mb-4">
