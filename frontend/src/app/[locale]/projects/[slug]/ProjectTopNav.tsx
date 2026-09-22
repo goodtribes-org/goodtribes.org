@@ -134,7 +134,8 @@ type Group = {
 
 // Empty element in the site header ([locale]/layout.tsx) the tabs portal into.
 export const PROJECT_NAV_SLOT_ID = "project-nav-slot";
-// Element right after the GoodTribes logo where the project name is shown.
+// Element right after the GoodTribes logo where the project name is shown
+// (replacing the "GoodTribes" wordmark and Beta badge on project pages).
 export const PROJECT_TITLE_SLOT_ID = "project-title-slot";
 
 /**
@@ -252,6 +253,11 @@ export default function ProjectTopNav({
   useEffect(() => {
     setHeaderSlot(document.getElementById(PROJECT_NAV_SLOT_ID));
     setTitleSlot(document.getElementById(PROJECT_TITLE_SLOT_ID));
+    // Tells the header's brand block to show the project name instead of
+    // "GoodTribes BETA" (see #site-brand in [locale]/layout.tsx).
+    const brand = document.getElementById("site-brand");
+    brand?.setAttribute("data-project", "");
+    return () => brand?.removeAttribute("data-project");
   }, []);
   useEffect(() => {
     if (!headerSlot) return;
@@ -299,16 +305,13 @@ export default function ProjectTopNav({
     <>
       {titleSlot &&
         createPortal(
-          <>
-            <span aria-hidden className="text-dark-slate/30 text-xl">–</span>
-            <Link
-              href={base}
-              title={title}
-              className="truncate text-dark-slate font-semibold text-lg tracking-tight hover:text-seagrass transition-colors"
-            >
-              {title}
-            </Link>
-          </>,
+          <Link
+            href={base}
+            title={title}
+            className="truncate text-dark-slate font-semibold text-xl tracking-tight hover:text-seagrass transition-colors"
+          >
+            {title}
+          </Link>,
           titleSlot,
         )}
       {headerSlot &&
