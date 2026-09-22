@@ -41,7 +41,12 @@ export default async function WorkspaceLayout({
         phase={project.phase}
         completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
       />
-      <div className="flex-1 min-w-0">{children}</div>
+      {/* Full-bleed, as before the side rail was removed: pages that fill the
+          width (Att göra, Färdplan, ...) keep doing so; pages with their own
+          max-width still centre themselves. */}
+      <div className="flex-1 min-w-0 px-6" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+        {children}
+      </div>
     </>
   );
 }

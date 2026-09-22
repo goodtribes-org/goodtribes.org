@@ -33,7 +33,12 @@ export default function ProjectChrome({ children }: { children: React.ReactNode 
     <>
       <ProjectSandboxAnnouncer isSandbox={info.isSandbox} />
       <ProjectTopNav slug={slug} title={info.title} isOwner={info.isOwner} isCommercial={info.isCommercial} />
-      <div className="flex-1 min-w-0">{children}</div>
+      {/* Full-bleed, as before the side rail was removed: pages that fill the
+          width (Att göra, Färdplan, ...) keep doing so; pages with their own
+          max-width still centre themselves. */}
+      <div className="flex-1 min-w-0 px-6" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+        {children}
+      </div>
     </>
   );
 }
