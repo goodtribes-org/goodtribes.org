@@ -308,7 +308,7 @@ export default function ProjectTopNav({
           <Link
             href={base}
             title={title}
-            className="truncate text-seagrass font-semibold text-xl tracking-tight hover:text-dark-slate transition-colors"
+            className="truncate text-seagrass font-semibold text-lg tracking-tight hover:text-dark-slate transition-colors"
           >
             {title}
           </Link>,
