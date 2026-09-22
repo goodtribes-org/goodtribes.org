@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import ProjectTopNav from "../ProjectTopNav";
-import ProjectMiniHero from "../ProjectMiniHero";
 import { ProjectSandboxAnnouncer } from "@/components/SandboxIndicator";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
@@ -17,7 +16,7 @@ export default async function WorkspaceLayout({
   const { slug } = await params;
   const [session, project] = await Promise.all([
     auth(),
-    prisma.project.findUnique({ where: { slug }, select: { id: true, title: true, imageUrl: true, legalType: true, isSandbox: true, phase: true } }),
+    prisma.project.findUnique({ where: { slug }, select: { id: true, title: true, legalType: true, isSandbox: true, phase: true } }),
   ]);
   if (!project) notFound();
 
@@ -42,8 +41,7 @@ export default async function WorkspaceLayout({
         phase={project.phase}
         completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
       />
-      <ProjectMiniHero title={project.title} imageUrl={project.imageUrl} />
-      <div className="flex-1 min-w-0 pt-8">{children}</div>
+      <div className="flex-1 min-w-0">{children}</div>
     </>
   );
 }

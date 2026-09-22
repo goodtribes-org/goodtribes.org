@@ -3,9 +3,9 @@ import HelpButton from "./HelpButton";
 
 // Shared header for every project workspace subpage (Kalender, Wiki,
 // Omröstningar, ...) — see the "Undersidestandarden" design proposal.
-// No back-to-project link here: the slim ProjectMiniHero bar above every
-// workspace subpage already names (and links to) the project, so repeating
-// it here would just be the same fact twice.
+// No back-to-project link here: the project name next to the logo in the
+// site header (ProjectTopNav) already names and links to the project, so
+// repeating it here would just be the same fact twice.
 export default function WorkspacePageHeader({
   title,
   description,
