@@ -134,6 +134,8 @@ type Group = {
 
 // Empty element in the site header ([locale]/layout.tsx) the tabs portal into.
 export const PROJECT_NAV_SLOT_ID = "project-nav-slot";
+// Element right after the GoodTribes logo where the project name is shown.
+export const PROJECT_TITLE_SLOT_ID = "project-title-slot";
 
 /**
  * GitHub-style project tabs on every project page, rendered inside the site
@@ -141,12 +143,14 @@ export const PROJECT_NAV_SLOT_ID = "project-nav-slot";
  */
 export default function ProjectTopNav({
   slug,
+  title,
   isOwner,
   isCommercial,
   phase,
   completedChecklistKeys,
 }: {
   slug: string;
+  title: string;
   isOwner?: boolean;
   isCommercial?: boolean;
   phase?: ProjectPhaseValue;
@@ -241,10 +245,14 @@ export default function ProjectTopNav({
   // scrolls horizontally. Measured rather than a fixed breakpoint, because the
   // header's right side varies (logged in or not, admin tab or not).
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
+  const [titleSlot, setTitleSlot] = useState<HTMLElement | null>(null);
   const [compact, setCompact] = useState(false);
   const navRef = useRef<HTMLElement>(null);
   const fullWidthRef = useRef(0);
-  useEffect(() => setHeaderSlot(document.getElementById(PROJECT_NAV_SLOT_ID)), []);
+  useEffect(() => {
+    setHeaderSlot(document.getElementById(PROJECT_NAV_SLOT_ID));
+    setTitleSlot(document.getElementById(PROJECT_TITLE_SLOT_ID));
+  }, []);
   useEffect(() => {
     if (!headerSlot) return;
     const measure = () => {
@@ -289,6 +297,20 @@ export default function ProjectTopNav({
 
   return (
     <>
+      {titleSlot &&
+        createPortal(
+          <>
+            <span aria-hidden className="text-dark-slate/30 text-xl">–</span>
+            <Link
+              href={base}
+              title={title}
+              className="truncate text-dark-slate font-semibold text-lg tracking-tight hover:text-seagrass transition-colors"
+            >
+              {title}
+            </Link>
+          </>,
+          titleSlot,
+        )}
       {headerSlot &&
         createPortal(
           <nav

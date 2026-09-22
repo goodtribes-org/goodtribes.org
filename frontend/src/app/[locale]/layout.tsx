@@ -160,6 +160,8 @@ export default async function LocaleLayout({
                     Beta
                   </span>
                 </Link>
+                {/* Project pages portal the project name in here (ProjectTopNav): "GoodTribes – <projekt>". */}
+                <div id="project-title-slot" className="hidden md:flex md:empty:hidden min-w-0 max-w-[18rem] shrink items-center gap-2 -ml-2" />
                 {/* Spacer between logo and icons. Project pages portal their tab bar in
                     here (ProjectTopNav), centred; "safe center" so it scrolls from the
                     start instead of clipping both ends when it doesn't fit. */}

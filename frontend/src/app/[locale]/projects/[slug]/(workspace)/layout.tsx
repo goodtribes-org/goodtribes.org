@@ -36,6 +36,7 @@ export default async function WorkspaceLayout({
       <ProjectSandboxAnnouncer isSandbox={project.isSandbox} />
       <ProjectTopNav
         slug={slug}
+        title={project.title}
         isOwner={isOwner}
         isCommercial={isCommercialLegalType(project.legalType)}
         phase={project.phase}

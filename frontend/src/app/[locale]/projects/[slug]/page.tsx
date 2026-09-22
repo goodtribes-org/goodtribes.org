@@ -279,6 +279,7 @@ export default async function ProjectDetailPage({
       <ProjectSandboxAnnouncer isSandbox={project.isSandbox} />
       <ProjectTopNav
         slug={slug}
+        title={project.title}
         isOwner={!!isOwnerOrAdmin}
         isCommercial={isCommercialLegalType(project.legalType)}
         phase={project.phase}

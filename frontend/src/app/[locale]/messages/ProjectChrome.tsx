@@ -33,7 +33,7 @@ export default function ProjectChrome({ children }: { children: React.ReactNode 
   return (
     <>
       <ProjectSandboxAnnouncer isSandbox={info.isSandbox} />
-      <ProjectTopNav slug={slug} isOwner={info.isOwner} isCommercial={info.isCommercial} />
+      <ProjectTopNav slug={slug} title={info.title} isOwner={info.isOwner} isCommercial={info.isCommercial} />
       <ProjectMiniHero title={info.title} imageUrl={info.imageUrl} />
       <div className="flex-1 min-w-0 pt-8">{children}</div>
     </>
