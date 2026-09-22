@@ -22,7 +22,14 @@
     "myAccount": "My account",
     "signIn": "Sign in",
     "logOut": "Log out",
-    "toggleMenu": "Toggle menu"
+    "toggleMenu": "Toggle menu",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "home": "Home",
+    "discoverIdeas": "Idea feed",
+    "thisProject": "This project",
+    "projectAllSections": "All project pages are in the side menu",
+    "siteAdmin": "Site admin"
   },
   "Account": {
     "profile": "Profile",

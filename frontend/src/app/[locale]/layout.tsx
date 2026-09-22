@@ -15,7 +15,7 @@ import NotificationBell from "@/components/NotificationBell";
 import MessagesLink from "@/components/MessagesLink";
 import PresenceHeartbeat from "@/components/PresenceHeartbeat";
 import UserEventsProvider from "@/components/UserEventsProvider";
-import NavMenuContainer from "@/components/NavMenuContainer";
+import SideMenu from "@/components/SideMenu";
 import FooterPageManager from "@/components/FooterPageManager";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
 import ConsentGate from "@/components/ConsentGate";
@@ -151,7 +151,8 @@ export default async function LocaleLayout({
           <SandboxProvider>
             <ConsentGate needsAgreementConsent={!!session?.user?.needsAgreementConsent} />
             <SiteHeader>
-              <nav className="relative w-full h-[74px] pl-3 pr-6 flex items-center gap-6">
+              <nav className="relative w-full h-[74px] pl-3 pr-6 flex items-center gap-4">
+                <SideMenu />
                 <Link href="/" aria-label="GoodTribes.org" className="shrink-0 flex items-center gap-2.5">
                   <LogoMark size={36} />
                   <span className="text-dark-slate font-semibold text-[22px] tracking-tight">GoodTribes</span>
@@ -159,9 +160,6 @@ export default async function LocaleLayout({
                     Beta
                   </span>
                 </Link>
-                <div className="shrink-0">
-                  <NavMenuContainer />
-                </div>
                 <div className="flex-1" />
                 <LocaleSwitcher />
                 <SearchButton />
