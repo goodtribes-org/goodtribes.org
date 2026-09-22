@@ -15,7 +15,7 @@ import NotificationBell from "@/components/NotificationBell";
 import MessagesLink from "@/components/MessagesLink";
 import PresenceHeartbeat from "@/components/PresenceHeartbeat";
 import UserEventsProvider from "@/components/UserEventsProvider";
-import NavMenuContainer from "@/components/NavMenuContainer";
+import SideMenu from "@/components/SideMenu";
 import FooterPageManager from "@/components/FooterPageManager";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
 import ConsentGate from "@/components/ConsentGate";
@@ -139,7 +139,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={`bg-[#fbf8f4] ${siteSansFont.className}`}>
-      <body className="min-h-screen bg-[#fbf8f4] text-dark-slate flex flex-col">
+      <body className="min-h-screen overflow-x-clip bg-[#fbf8f4] text-dark-slate flex flex-col">
         {/* Static, locally-constructed object — no user input reaches this __html. */}
         <script
           type="application/ld+json"
@@ -151,18 +151,29 @@ export default async function LocaleLayout({
           <SandboxProvider>
             <ConsentGate needsAgreementConsent={!!session?.user?.needsAgreementConsent} />
             <SiteHeader>
-              <nav className="relative w-full h-[74px] pl-3 pr-6 flex items-center gap-6">
-                <Link href="/" aria-label="GoodTribes.org" className="shrink-0 flex items-center gap-2.5">
-                  <LogoMark size={36} />
-                  <span className="text-dark-slate font-semibold text-[22px] tracking-tight">GoodTribes</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-seagrass bg-seagrass/10 border border-seagrass/30 rounded-full px-2 py-0.5">
+              <nav className="relative w-full h-[74px] pl-3 pr-6 flex items-center gap-4">
+                <SideMenu />
+                {/* Project pages portal their name into #project-title-slot and set
+                    data-project on this wrapper (ProjectTopNav), which swaps
+                    "GoodTribes BETA" for just the project name. */}
+                <div id="site-brand" className="group/brand flex min-w-0 shrink items-center gap-2.5">
+                  <Link href="/" aria-label="GoodTribes.org" className="shrink-0 flex items-center gap-2.5">
+                    <LogoMark size={36} />
+                    <span className="hidden sm:inline group-data-[project]/brand:hidden text-dark-slate font-semibold text-[22px] tracking-tight">GoodTribes</span>
+                  </Link>
+                  <div id="project-title-slot" className="hidden md:flex md:empty:hidden min-w-0 max-w-[24rem] shrink items-center gap-2" />
+                  <span className="hidden sm:inline group-data-[project]/brand:hidden shrink-0 text-[10px] font-semibold uppercase tracking-wide text-seagrass bg-seagrass/10 border border-seagrass/30 rounded-full px-2 py-0.5">
                     Beta
                   </span>
-                </Link>
-                <div className="shrink-0">
-                  <NavMenuContainer />
                 </div>
-                <div className="flex-1" />
+                {/* Spacer between logo and icons. Project pages portal their tab bar in
+                    here (ProjectTopNav), centred; "safe center" so it scrolls from the
+                    start instead of clipping both ends when it doesn't fit. */}
+                <div
+                  id="project-nav-slot"
+                  className="flex-1 min-w-0 self-stretch flex [justify-content:safe_center] overflow-x-auto"
+                  style={{ scrollbarWidth: "none" }}
+                />
                 <LocaleSwitcher />
                 <SearchButton />
                 {session?.user && <MessagesLink />}

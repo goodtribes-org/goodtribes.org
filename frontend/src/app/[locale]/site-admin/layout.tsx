@@ -3,27 +3,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { isSiteAdmin } from "@/lib/authz";
 import { countPendingImpactReports } from "@/lib/impactReports";
+import { SITE_ADMIN_NAV } from "@/lib/siteAdminNav";
 
-const NAV = [
-  { href: "/site-admin/ethics", label: "Etikgranskning" },
-  { href: "/site-admin/content-flags", label: "Innehållsflaggor" },
-  { href: "/site-admin/suggestions", label: "Förbättringsförslag" },
-  { href: "/site-admin/users", label: "Användare" },
-  { href: "/site-admin/projects", label: "Projekt" },
-  { href: "/site-admin/organisations", label: "Organisationer" },
-  { href: "/site-admin/token-backfill", label: "Token-bakfyllning" },
-  { href: "/site-admin/council", label: "Granskningsråd" },
-  { href: "/site-admin/sandbox-graduation", label: "Drömfabriken-ansökningar" },
-  { href: "/site-admin/impact-reports", label: "Impact-rapporter" },
-  { href: "/site-admin/legal-type", label: "Juridisk form" },
-  { href: "/site-admin/profit-distribution", label: "Vinstfördelning" },
-  { href: "/site-admin/impact-fund", label: "Impact-fond" },
-  { href: "/site-admin/hero-carousel", label: "Startsidan" },
-  { href: "/site-admin/sandbox-hero", label: "Drömfabriken" },
-  { href: "/site-admin/site-copy", label: "Sidtexter" },
-  { href: "/site-admin/shop", label: "Shop" },
-  { href: "/site-admin/funding-sources", label: "Fondkatalog" },
-];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -40,7 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div>
       <div className="border-b border-muted-teal/30 mb-6">
         <nav className="max-w-4xl mx-auto px-4 flex gap-4">
-          {NAV.map((item) => (
+          {SITE_ADMIN_NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}

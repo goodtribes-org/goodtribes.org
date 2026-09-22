@@ -7,8 +7,8 @@ import { dismissTour } from "@/lib/tourActions";
 const STEPS: TourStep[] = [
   {
     target: "nav-discover",
-    title: "Utforska",
-    body: "Bläddra bland alla projekt, idéer, organisationer och kompetenser på plattformen.",
+    title: "Menyn",
+    body: "Här i menyn hittar du Skapa, Utforska och Drömfabriken — och den visar alltid det som hör till sidan du är på.",
   },
   {
     target: "nav-messages",
