@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import {
-  Home,
   ListChecks,
   Calendar,
   MessageCircle,
@@ -63,8 +62,9 @@ type NavItem = {
 
 type T = ReturnType<typeof useTranslations>;
 
-// Grouping: at most 7 top-level tabs (Översikt, Arbete, Chatt, Dokument,
+// Grouping: at most 6 top-level tabs (Arbete, Chatt, Dokument,
 // Fasverktyg, Gemenskap, Admin), replacing the ~35-row vertical side rail.
+// The project home is reached via the project name next to the logo.
 function workItems(t: T): NavItem[] {
   return [
     { label: t("navTasks"), href: "/tasks", icon: ListChecks },
@@ -319,7 +319,6 @@ export default function ProjectTopNav({
             aria-label={t("navGroupsLabel")}
             className="flex shrink-0 items-stretch h-full gap-0.5"
           >
-            {directTab(t("navHome"), base, Home, isActive(""))}
             {groups.slice(0, 1).map((g) => renderGroupTab(g))}
             {directTab(t("navChat"), `/messages?project=${slug}`, MessageCircle, isActive("/kanaler"))}
             {groups.slice(1).map((g) => renderGroupTab(g))}
