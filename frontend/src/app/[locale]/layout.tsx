@@ -153,15 +153,18 @@ export default async function LocaleLayout({
             <SiteHeader>
               <nav className="relative w-full h-[74px] pl-3 pr-6 flex items-center gap-4">
                 <SideMenu />
-                <Link href="/" aria-label="GoodTribes.org" className="shrink-0 flex items-center gap-2.5">
-                  <LogoMark size={36} />
-                  <span className="hidden sm:inline text-dark-slate font-semibold text-[22px] tracking-tight">GoodTribes</span>
-                  <span className="hidden sm:inline text-[10px] font-semibold uppercase tracking-wide text-seagrass bg-seagrass/10 border border-seagrass/30 rounded-full px-2 py-0.5">
+                {/* "GoodTribes – <projekt> BETA": project pages portal their name into
+                    #project-title-slot (ProjectTopNav), so the badge follows it. */}
+                <div className="flex min-w-0 shrink items-center gap-2.5">
+                  <Link href="/" aria-label="GoodTribes.org" className="shrink-0 flex items-center gap-2.5">
+                    <LogoMark size={36} />
+                    <span className="hidden sm:inline text-dark-slate font-semibold text-[22px] tracking-tight">GoodTribes</span>
+                  </Link>
+                  <div id="project-title-slot" className="hidden md:flex md:empty:hidden min-w-0 max-w-[18rem] shrink items-center gap-2" />
+                  <span className="hidden sm:inline shrink-0 text-[10px] font-semibold uppercase tracking-wide text-seagrass bg-seagrass/10 border border-seagrass/30 rounded-full px-2 py-0.5">
                     Beta
                   </span>
-                </Link>
-                {/* Project pages portal the project name in here (ProjectTopNav): "GoodTribes – <projekt>". */}
-                <div id="project-title-slot" className="hidden md:flex md:empty:hidden min-w-0 max-w-[18rem] shrink items-center gap-2 -ml-2" />
+                </div>
                 {/* Spacer between logo and icons. Project pages portal their tab bar in
                     here (ProjectTopNav), centred; "safe center" so it scrolls from the
                     start instead of clipping both ends when it doesn't fit. */}
