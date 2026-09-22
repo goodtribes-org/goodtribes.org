@@ -22,7 +22,7 @@ export default function GuideStepIndicator({
     // that many, since the Fas 1-6 restructuring), flex-shrinking every step
     // to fit one line made labels overlap each other rather than wrap or
     // clip. shrink-0 on each step keeps its full label intact; overflow-x-auto
-    // lets the row scroll instead, same pattern as ProjectSideNav's mobile bar.
+    // lets the row scroll instead, same pattern as ProjectTopNav's tab bar.
     <div className="flex items-center gap-0 mb-8 overflow-x-auto scrollbar-none" style={{ scrollbarWidth: "none" }}>
       {steps.map((s, i) => {
         const isDone = doneKeys.has(s.key);

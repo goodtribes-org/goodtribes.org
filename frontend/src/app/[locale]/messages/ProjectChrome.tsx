@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import ProjectSideNav from "../projects/[slug]/ProjectSideNav";
+import ProjectTopNav from "../projects/[slug]/ProjectTopNav";
 import ProjectMiniHero from "../projects/[slug]/ProjectMiniHero";
 import { ProjectSandboxAnnouncer } from "@/components/SandboxIndicator";
 
 type ProjectNavInfo = { title: string; slogan: string | null; imageUrl: string | null; isOwner: boolean; isCommercial: boolean; dateLabel: string; isSandbox: boolean };
 
-// Wraps /messages with the same project sidebar + mini hero shown on every other
+// Wraps /messages with the same project tab bar + mini hero shown on every other
 // project subpage, whenever it's opened from a project's channel (?project=slug) —
 // otherwise /messages has no project context and just renders children as-is.
 export default function ProjectChrome({ children }: { children: React.ReactNode }) {
@@ -33,11 +33,9 @@ export default function ProjectChrome({ children }: { children: React.ReactNode 
   return (
     <>
       <ProjectSandboxAnnouncer isSandbox={info.isSandbox} />
+      <ProjectTopNav slug={slug} isOwner={info.isOwner} isCommercial={info.isCommercial} />
       <ProjectMiniHero title={info.title} imageUrl={info.imageUrl} />
-      <div className="flex flex-1 flex-col sm:flex-row -mb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-        <ProjectSideNav slug={slug} isOwner={info.isOwner} isCommercial={info.isCommercial} />
-        <div className="flex-1 min-w-0 px-6 pt-8 pb-12">{children}</div>
-      </div>
+      <div className="flex-1 min-w-0 pt-8">{children}</div>
     </>
   );
 }

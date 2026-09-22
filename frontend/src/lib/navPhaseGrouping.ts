@@ -12,7 +12,7 @@ function isPhaseCompleted(phase: ProjectPhaseValue, completedKeys: Set<string>):
   return items.length > 0 && items.every((item) => completedKeys.has(item.key));
 }
 
-// Partitions a flat nav item list into three buckets for ProjectSideNav:
+// Partitions a flat nav item list into three buckets for ProjectTopNav's phase-tools menu:
 // - current: phase-agnostic items (no `phase` tag) plus items tagged for the
 //   project's current phase, or for an earlier phase that isn't fully
 //   checked off yet (so nothing disappears before its own phase is done).

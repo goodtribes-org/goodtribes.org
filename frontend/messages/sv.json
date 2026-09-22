@@ -28,7 +28,7 @@
     "home": "Startsida",
     "discoverIdeas": "Idéflödet",
     "thisProject": "Det här projektet",
-    "projectAllSections": "Alla projektsidor finns i sidomenyn",
+    "projectAllSections": "Alla projektsidor finns i projektmenyn överst på sidan",
     "siteAdmin": "Webbplatsadmin"
   },
   "Account": {
@@ -731,9 +731,12 @@
     "navAiReview": "AI-granskning",
     "navLegalType": "Juridisk form",
     "navFork": "Gaffling",
-    "toggleMenuExpand": "Visa menytext",
-    "toggleMenuCollapse": "Visa endast ikoner",
-    "earlyToolsGroupLabel": "Tidiga verktyg"
+    "earlyToolsGroupLabel": "Tidiga verktyg",
+    "groupWork": "Arbete",
+    "groupDocs": "Dokument",
+    "groupPhaseTools": "Fasverktyg",
+    "lockedHint": "Låses upp i en senare fas",
+    "navGroupsLabel": "Projektmeny"
   },
   "MembersManager": {
     "pageTitle": "Projektmedlemmar",

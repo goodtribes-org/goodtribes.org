@@ -13,7 +13,7 @@ import FlagContentButton from "@/components/FlagContentButton";
 import { SdgIcon } from "@/components/SdgIcon";
 import Tooltip from "@/components/Tooltip";
 import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
-import ProjectSideNav from "./ProjectSideNav";
+import ProjectTopNav from "./ProjectTopNav";
 import PhaseMenuBar from "./PhaseMenuBar";
 import OwnershipBanner from "@/components/OwnershipBanner";
 import { handwritingFontThin } from "@/lib/fonts";
@@ -277,7 +277,14 @@ export default async function ProjectDetailPage({
   return (
     <div className="flex flex-1 flex-col">
       <ProjectSandboxAnnouncer isSandbox={project.isSandbox} />
-      {/* Hero + side nav + page content: one continuous full-bleed row, so the rail runs from the hero down to the footer */}
+      <ProjectTopNav
+        slug={slug}
+        isOwner={!!isOwnerOrAdmin}
+        isCommercial={isCommercialLegalType(project.legalType)}
+        phase={project.phase}
+        completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
+      />
+      {/* Hero + page content: one continuous full-bleed block */}
       <div
         className="relative -mt-8"
         style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
@@ -293,14 +300,7 @@ export default async function ProjectDetailPage({
           )}
         </div>
 
-        <div className="relative z-10 flex flex-col sm:flex-row -mb-12">
-        <ProjectSideNav
-          slug={slug}
-          isOwner={!!isOwnerOrAdmin}
-          isCommercial={isCommercialLegalType(project.legalType)}
-          phase={project.phase}
-          completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
-        />
+        <div className="relative z-10 flex flex-col -mb-12">
         <div className="flex-1 min-w-0 pb-12">
           <div className="px-4 pt-10 pb-10">
             <div className="flex flex-wrap justify-center gap-5 items-stretch w-full max-w-[1160px] mx-auto">

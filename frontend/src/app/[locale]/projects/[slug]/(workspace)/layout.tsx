@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import ProjectSideNav from "../ProjectSideNav";
+import ProjectTopNav from "../ProjectTopNav";
 import ProjectMiniHero from "../ProjectMiniHero";
 import { ProjectSandboxAnnouncer } from "@/components/SandboxIndicator";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
@@ -34,17 +34,15 @@ export default async function WorkspaceLayout({
   return (
     <>
       <ProjectSandboxAnnouncer isSandbox={project.isSandbox} />
+      <ProjectTopNav
+        slug={slug}
+        isOwner={isOwner}
+        isCommercial={isCommercialLegalType(project.legalType)}
+        phase={project.phase}
+        completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
+      />
       <ProjectMiniHero title={project.title} imageUrl={project.imageUrl} />
-      <div className="flex flex-1 flex-col sm:flex-row -mb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-        <ProjectSideNav
-          slug={slug}
-          isOwner={isOwner}
-          isCommercial={isCommercialLegalType(project.legalType)}
-          phase={project.phase}
-          completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
-        />
-        <div className="flex-1 min-w-0 px-6 pt-8 pb-12">{children}</div>
-      </div>
+      <div className="flex-1 min-w-0 pt-8">{children}</div>
     </>
   );
 }

@@ -28,7 +28,7 @@
     "home": "Home",
     "discoverIdeas": "Idea feed",
     "thisProject": "This project",
-    "projectAllSections": "All project pages are in the side menu",
+    "projectAllSections": "All project pages are in the project bar at the top of the page",
     "siteAdmin": "Site admin"
   },
   "Account": {
@@ -731,9 +731,12 @@
     "navAiReview": "AI review",
     "navLegalType": "Legal form",
     "navFork": "Fork",
-    "toggleMenuExpand": "Show menu labels",
-    "toggleMenuCollapse": "Show icons only",
-    "earlyToolsGroupLabel": "Early Tools"
+    "earlyToolsGroupLabel": "Early Tools",
+    "groupWork": "Work",
+    "groupDocs": "Documents",
+    "groupPhaseTools": "Phase tools",
+    "lockedHint": "Unlocks in a later phase",
+    "navGroupsLabel": "Project menu"
   },
   "MembersManager": {
     "pageTitle": "Project members",

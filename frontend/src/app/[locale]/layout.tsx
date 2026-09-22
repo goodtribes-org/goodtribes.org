@@ -139,7 +139,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={`bg-[#fbf8f4] ${siteSansFont.className}`}>
-      <body className="min-h-screen bg-[#fbf8f4] text-dark-slate flex flex-col">
+      <body className="min-h-screen overflow-x-clip bg-[#fbf8f4] text-dark-slate flex flex-col">
         {/* Static, locally-constructed object — no user input reaches this __html. */}
         <script
           type="application/ld+json"
@@ -155,7 +155,7 @@ export default async function LocaleLayout({
                 <SideMenu />
                 <Link href="/" aria-label="GoodTribes.org" className="shrink-0 flex items-center gap-2.5">
                   <LogoMark size={36} />
-                  <span className="text-dark-slate font-semibold text-[22px] tracking-tight">GoodTribes</span>
+                  <span className="hidden sm:inline text-dark-slate font-semibold text-[22px] tracking-tight">GoodTribes</span>
                   <span className="text-[10px] font-semibold uppercase tracking-wide text-seagrass bg-seagrass/10 border border-seagrass/30 rounded-full px-2 py-0.5">
                     Beta
                   </span>
