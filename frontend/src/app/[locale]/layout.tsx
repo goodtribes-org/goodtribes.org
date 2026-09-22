@@ -156,13 +156,18 @@ export default async function LocaleLayout({
                 <Link href="/" aria-label="GoodTribes.org" className="shrink-0 flex items-center gap-2.5">
                   <LogoMark size={36} />
                   <span className="hidden sm:inline text-dark-slate font-semibold text-[22px] tracking-tight">GoodTribes</span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-seagrass bg-seagrass/10 border border-seagrass/30 rounded-full px-2 py-0.5">
+                  <span className="hidden sm:inline text-[10px] font-semibold uppercase tracking-wide text-seagrass bg-seagrass/10 border border-seagrass/30 rounded-full px-2 py-0.5">
                     Beta
                   </span>
                 </Link>
                 {/* Spacer between logo and icons. Project pages portal their tab bar in
-                    here (ProjectTopNav), centred; it falls back below the header if it doesn't fit. */}
-                <div id="project-nav-slot" className="flex-1 min-w-0 self-stretch flex justify-center overflow-hidden" />
+                    here (ProjectTopNav), centred; "safe center" so it scrolls from the
+                    start instead of clipping both ends when it doesn't fit. */}
+                <div
+                  id="project-nav-slot"
+                  className="flex-1 min-w-0 self-stretch flex [justify-content:safe_center] overflow-x-auto"
+                  style={{ scrollbarWidth: "none" }}
+                />
                 <LocaleSwitcher />
                 <SearchButton />
                 {session?.user && <MessagesLink />}

@@ -136,11 +136,8 @@ type Group = {
 export const PROJECT_NAV_SLOT_ID = "project-nav-slot";
 
 /**
- * GitHub-style project tabs on every project page, centred in the site
- * header when they fit, otherwise as a row directly under it. Replaces the
- * old vertical ProjectSideNav. The fallback row uses -mt-8/mb-8 so it attaches
- * flush to the header while the element after it (hero / mini hero, which
- * carry their own -mt-8) still lines up exactly as before.
+ * GitHub-style project tabs on every project page, rendered inside the site
+ * header (portal into its slot). Replaces the old vertical ProjectSideNav.
  */
 export default function ProjectTopNav({
   slug,
@@ -160,7 +157,6 @@ export default function ProjectTopNav({
   const base = `/projects/${slug}`;
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [menuPos, setMenuPos] = useState<{ left: number; top: number } | null>(null);
-  const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => setOpenKey(null), [pathname]);
 
@@ -179,7 +175,7 @@ export default function ProjectTopNav({
     document.addEventListener("mousedown", close);
     document.addEventListener("keydown", close);
     window.addEventListener("resize", closeOnScroll);
-    const bar = barRef.current;
+    const bar = document.getElementById(PROJECT_NAV_SLOT_ID);
     bar?.addEventListener("scroll", closeOnScroll);
     return () => {
       document.removeEventListener("mousedown", close);
@@ -230,28 +226,34 @@ export default function ProjectTopNav({
       setOpenKey(null);
       return;
     }
-    // Menus are position:fixed (not absolute) so the horizontally scrollable
-    // bar on narrow screens can't clip them.
+    // Menus are position:fixed (not absolute) so the header slot (which
+    // scrolls horizontally on very narrow screens) can't clip them.
     const r = button.getBoundingClientRect();
     const width = 240;
     setMenuPos({ left: Math.max(8, Math.min(r.left, window.innerWidth - width - 8)), top: r.bottom + 4 });
     setOpenKey(key);
   }
 
-  // The tabs render centred inside the site header itself (slot in
-  // [locale]/layout.tsx) whenever they fit between the logo and the icons;
-  // otherwise (narrow screens, many header icons) they fall back to a row
-  // under the header. Measured, not a fixed breakpoint, because the header's
-  // right side varies (logged in or not, admin tab or not).
+  // The tabs always render inside the site header itself (slot in
+  // [locale]/layout.tsx), centred between the logo and the icons. When the
+  // header gets too narrow for the labels, they collapse to icons only
+  // (label kept as tooltip/aria-label); if even that doesn't fit, the slot
+  // scrolls horizontally. Measured rather than a fixed breakpoint, because the
+  // header's right side varies (logged in or not, admin tab or not).
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
-  const [fitsInHeader, setFitsInHeader] = useState(false);
-  const headerNavRef = useRef<HTMLElement>(null);
+  const [compact, setCompact] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
+  const fullWidthRef = useRef(0);
   useEffect(() => setHeaderSlot(document.getElementById(PROJECT_NAV_SLOT_ID)), []);
   useEffect(() => {
     if (!headerSlot) return;
     const measure = () => {
-      const nav = headerNavRef.current;
-      if (nav) setFitsInHeader(nav.offsetWidth <= headerSlot.clientWidth);
+      const nav = navRef.current;
+      if (!nav) return;
+      setCompact((wasCompact) => {
+        if (!wasCompact) fullWidthRef.current = nav.offsetWidth;
+        return fullWidthRef.current > headerSlot.clientWidth;
+      });
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -259,68 +261,49 @@ export default function ProjectTopNav({
     return () => ro.disconnect();
   }, [headerSlot]);
 
-  const tabClassFor = (header: boolean) => (active: boolean) =>
-    `flex items-center gap-1.5 whitespace-nowrap px-3 text-sm border-b-2 -mb-px transition-colors ${
-      header ? "h-full" : "py-2.5"
-    } ${
+  const tabClass = (active: boolean) =>
+    `flex h-full shrink-0 items-center gap-1.5 whitespace-nowrap ${compact ? "px-2.5" : "px-3"} text-sm border-b-2 -mb-px transition-colors ${
       active
         ? "border-coral text-dark-slate font-semibold"
         : "border-transparent text-dark-slate/65 hover:text-dark-slate hover:border-muted-teal/50"
     }`;
 
-  function directTab(label: string, href: string, icon: LucideIcon, active: boolean, tabClass: (active: boolean) => string) {
+  function directTab(label: string, href: string, icon: LucideIcon, active: boolean) {
     const Icon = icon;
     return (
-      <Link key={href} href={href} className={tabClass(active)} aria-current={active ? "page" : undefined}>
+      <Link
+        key={href}
+        href={href}
+        title={compact ? label : undefined}
+        aria-label={compact ? label : undefined}
+        className={tabClass(active)}
+        aria-current={active ? "page" : undefined}
+      >
         <Icon className="w-4 h-4 shrink-0" strokeWidth={2} />
-        {label}
+        {!compact && label}
       </Link>
     );
   }
 
   const openGroup = groups.find((g) => g.key === openKey);
 
-  function renderTabs(header: boolean) {
-    const cls = tabClassFor(header);
-    return (
-      <>
-        {directTab(t("navHome"), base, Home, isActive(""), cls)}
-        {groups.slice(0, 1).map((g) => renderGroupTab(g, cls))}
-        {directTab(t("navChat"), `/messages?project=${slug}`, MessageCircle, isActive("/kanaler"), cls)}
-        {groups.slice(1).map((g) => renderGroupTab(g, cls))}
-      </>
-    );
-  }
-
   return (
     <>
       {headerSlot &&
         createPortal(
           <nav
-            ref={headerNavRef}
+            ref={navRef}
             data-project-nav
             aria-label={t("navGroupsLabel")}
-            aria-hidden={!fitsInHeader}
-            className={`flex shrink-0 items-stretch h-full gap-1 ${fitsInHeader ? "" : "invisible"}`}
+            className="flex shrink-0 items-stretch h-full gap-0.5"
           >
-            {renderTabs(true)}
+            {directTab(t("navHome"), base, Home, isActive(""))}
+            {groups.slice(0, 1).map((g) => renderGroupTab(g))}
+            {directTab(t("navChat"), `/messages?project=${slug}`, MessageCircle, isActive("/kanaler"))}
+            {groups.slice(1).map((g) => renderGroupTab(g))}
           </nav>,
           headerSlot,
         )}
-      <div
-        data-project-nav
-        className={`-mt-8 mb-8 bg-white/90 border-b border-muted-teal/30 ${fitsInHeader ? "hidden" : ""}`}
-        style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
-      >
-        <nav
-          ref={barRef}
-          aria-label={t("navGroupsLabel")}
-          className="flex items-center gap-1 px-3 overflow-x-auto"
-          style={{ scrollbarWidth: "none" }}
-        >
-          {renderTabs(false)}
-        </nav>
-      </div>
 
       {openGroup && menuPos && createPortal(
         <div
@@ -368,7 +351,7 @@ export default function ProjectTopNav({
     </>
   );
 
-  function renderGroupTab(group: Group, tabClass: (active: boolean) => string) {
+  function renderGroupTab(group: Group) {
     const Icon = group.icon;
     const active = [...group.items, ...(group.early ?? [])].some((i) => isActive(i.href));
     const open = openKey === group.key;
@@ -378,10 +361,12 @@ export default function ProjectTopNav({
         type="button"
         onClick={(e) => toggle(group.key, e.currentTarget)}
         aria-expanded={open}
+        title={compact ? group.label : undefined}
+        aria-label={compact ? group.label : undefined}
         className={tabClass(active)}
       >
         <Icon className="w-4 h-4 shrink-0" strokeWidth={2} />
-        {group.label}
+        {!compact && group.label}
         <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
     );
