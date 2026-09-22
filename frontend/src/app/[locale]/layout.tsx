@@ -160,7 +160,9 @@ export default async function LocaleLayout({
                     Beta
                   </span>
                 </Link>
-                <div className="flex-1" />
+                {/* Spacer between logo and icons. Project pages portal their tab bar in
+                    here (ProjectTopNav), centred; it falls back below the header if it doesn't fit. */}
+                <div id="project-nav-slot" className="flex-1 min-w-0 self-stretch flex justify-center overflow-hidden" />
                 <LocaleSwitcher />
                 <SearchButton />
                 {session?.user && <MessagesLink />}

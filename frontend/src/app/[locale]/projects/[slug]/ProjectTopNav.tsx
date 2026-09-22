@@ -2,6 +2,7 @@
 
 import { Link, usePathname } from "@/i18n/navigation";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import {
   Home,
@@ -131,12 +132,15 @@ type Group = {
   locked?: NavItem[];
 };
 
+// Empty element in the site header ([locale]/layout.tsx) the tabs portal into.
+export const PROJECT_NAV_SLOT_ID = "project-nav-slot";
+
 /**
- * Horizontal, GitHub-style project tab row shown directly under the site
- * header on every project page. Replaces the old vertical ProjectSideNav.
- * Rendered with -mt-8/mb-8 so it attaches flush to the header while the
- * element after it (hero / mini hero, which carry their own -mt-8) still lines
- * up exactly as before.
+ * GitHub-style project tabs on every project page, centred in the site
+ * header when they fit, otherwise as a row directly under it. Replaces the
+ * old vertical ProjectSideNav. The fallback row uses -mt-8/mb-8 so it attaches
+ * flush to the header while the element after it (hero / mini hero, which
+ * carry their own -mt-8) still lines up exactly as before.
  */
 export default function ProjectTopNav({
   slug,
@@ -234,19 +238,40 @@ export default function ProjectTopNav({
     setOpenKey(key);
   }
 
-  const tabBase =
-    "flex items-center gap-1.5 whitespace-nowrap px-3 py-2.5 text-sm border-b-2 -mb-px transition-colors";
-  const tabClass = (active: boolean) =>
-    `${tabBase} ${
+  // The tabs render centred inside the site header itself (slot in
+  // [locale]/layout.tsx) whenever they fit between the logo and the icons;
+  // otherwise (narrow screens, many header icons) they fall back to a row
+  // under the header. Measured, not a fixed breakpoint, because the header's
+  // right side varies (logged in or not, admin tab or not).
+  const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
+  const [fitsInHeader, setFitsInHeader] = useState(false);
+  const headerNavRef = useRef<HTMLElement>(null);
+  useEffect(() => setHeaderSlot(document.getElementById(PROJECT_NAV_SLOT_ID)), []);
+  useEffect(() => {
+    if (!headerSlot) return;
+    const measure = () => {
+      const nav = headerNavRef.current;
+      if (nav) setFitsInHeader(nav.offsetWidth <= headerSlot.clientWidth);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(headerSlot);
+    return () => ro.disconnect();
+  }, [headerSlot]);
+
+  const tabClassFor = (header: boolean) => (active: boolean) =>
+    `flex items-center gap-1.5 whitespace-nowrap px-3 text-sm border-b-2 -mb-px transition-colors ${
+      header ? "h-full" : "py-2.5"
+    } ${
       active
         ? "border-coral text-dark-slate font-semibold"
         : "border-transparent text-dark-slate/65 hover:text-dark-slate hover:border-muted-teal/50"
     }`;
 
-  function directTab(label: string, href: string, icon: LucideIcon, active: boolean) {
+  function directTab(label: string, href: string, icon: LucideIcon, active: boolean, tabClass: (active: boolean) => string) {
     const Icon = icon;
     return (
-      <Link href={href} className={tabClass(active)} aria-current={active ? "page" : undefined}>
+      <Link key={href} href={href} className={tabClass(active)} aria-current={active ? "page" : undefined}>
         <Icon className="w-4 h-4 shrink-0" strokeWidth={2} />
         {label}
       </Link>
@@ -255,30 +280,51 @@ export default function ProjectTopNav({
 
   const openGroup = groups.find((g) => g.key === openKey);
 
-  return (
-    <div
-      data-project-nav
-      className="-mt-8 mb-8 bg-white/90 border-b border-muted-teal/30"
-      style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
-    >
-      <nav
-        ref={barRef}
-        aria-label={t("navGroupsLabel")}
-        className="flex items-center gap-1 px-3 overflow-x-auto"
-        style={{ scrollbarWidth: "none" }}
-      >
-        {directTab(t("navHome"), base, Home, isActive(""))}
-        {groups.slice(0, 1).map((g) => (
-          renderGroupTab(g)
-        ))}
-        {directTab(t("navChat"), `/messages?project=${slug}`, MessageCircle, isActive("/kanaler"))}
-        {groups.slice(1).map((g) => (
-          renderGroupTab(g)
-        ))}
-      </nav>
+  function renderTabs(header: boolean) {
+    const cls = tabClassFor(header);
+    return (
+      <>
+        {directTab(t("navHome"), base, Home, isActive(""), cls)}
+        {groups.slice(0, 1).map((g) => renderGroupTab(g, cls))}
+        {directTab(t("navChat"), `/messages?project=${slug}`, MessageCircle, isActive("/kanaler"), cls)}
+        {groups.slice(1).map((g) => renderGroupTab(g, cls))}
+      </>
+    );
+  }
 
-      {openGroup && menuPos && (
+  return (
+    <>
+      {headerSlot &&
+        createPortal(
+          <nav
+            ref={headerNavRef}
+            data-project-nav
+            aria-label={t("navGroupsLabel")}
+            aria-hidden={!fitsInHeader}
+            className={`flex shrink-0 items-stretch h-full gap-1 ${fitsInHeader ? "" : "invisible"}`}
+          >
+            {renderTabs(true)}
+          </nav>,
+          headerSlot,
+        )}
+      <div
+        data-project-nav
+        className={`-mt-8 mb-8 bg-white/90 border-b border-muted-teal/30 ${fitsInHeader ? "hidden" : ""}`}
+        style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}
+      >
+        <nav
+          ref={barRef}
+          aria-label={t("navGroupsLabel")}
+          className="flex items-center gap-1 px-3 overflow-x-auto"
+          style={{ scrollbarWidth: "none" }}
+        >
+          {renderTabs(false)}
+        </nav>
+      </div>
+
+      {openGroup && menuPos && createPortal(
         <div
+          data-project-nav
           className="fixed z-[10001] w-60 bg-white border border-muted-teal rounded-xl shadow-lg py-1.5 text-sm"
           style={{ left: menuPos.left, top: menuPos.top }}
         >
@@ -316,12 +362,13 @@ export default function ProjectTopNav({
               })}
             </>
           )}
-        </div>
+        </div>,
+        document.body,
       )}
-    </div>
+    </>
   );
 
-  function renderGroupTab(group: Group) {
+  function renderGroupTab(group: Group, tabClass: (active: boolean) => string) {
     const Icon = group.icon;
     const active = [...group.items, ...(group.early ?? [])].some((i) => isActive(i.href));
     const open = openKey === group.key;
