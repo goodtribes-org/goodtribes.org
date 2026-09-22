@@ -151,9 +151,10 @@ export default async function LocaleLayout({
           <SandboxProvider>
             <ConsentGate needsAgreementConsent={!!session?.user?.needsAgreementConsent} />
             <SiteHeader>
-              <nav className="relative w-full h-20 pl-3 pr-6 flex items-center gap-6">
+              <nav className="relative w-full h-[74px] pl-3 pr-6 flex items-center gap-6">
                 <Link href="/" aria-label="GoodTribes.org" className="shrink-0 flex items-center gap-2.5">
-                  <LogoMark size={60} />
+                  <LogoMark size={40} />
+                  <span className="text-dark-slate font-semibold text-xl tracking-tight">GoodTribes</span>
                   <span className="text-[10px] font-semibold uppercase tracking-wide text-seagrass bg-seagrass/10 border border-seagrass/30 rounded-full px-2 py-0.5">
                     Beta
                   </span>
