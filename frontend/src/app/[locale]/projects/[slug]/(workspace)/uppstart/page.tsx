@@ -9,7 +9,7 @@ import { isFeatureEnabled } from "@/lib/featureFlags";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { latestInsight } from "@/lib/ideaInsights";
-import type { GateBrief } from "@/lib/phaseGate";
+import { uppstartGateCriteria, MIN_TEST_FEEDBACK, type GateBrief } from "@/lib/phaseGate";
 import { INITIATIVE_CHECKLIST_ITEMS } from "@/lib/projectPhase";
 import { PHASE_ORDER } from "@/lib/sprints";
 import { isUppstartFillInProgress, parseUppstartStatus, type UppstartFillStatus } from "@/lib/uppstartFill";
@@ -18,6 +18,9 @@ import OverviewSection from "../ide/OverviewSection";
 import FillPoller from "../ide/FillPoller";
 import RolesSection from "./RolesSection";
 import DraftButton from "./DraftButton";
+import PhaseGateSection from "../ide/PhaseGateSection";
+import { LEAN_CANVAS_BLOCKS } from "../lean-canvas/fields";
+import { VALUE_PROPOSITION_BLOCKS } from "../value-proposition/fields";
 
 // Which section of this page each Uppstart checklist step lives in.
 const STEP_ANCHOR: Record<string, string> = {
@@ -44,7 +47,7 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
   const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true, title: true } });
   if (!project) notFound();
 
-  const [t, tCheck, canEdit, aiAvailable, fillRow, brief, decision, done, roles, members, sprint, sprintPlan, cards, openCardCount, plan] =
+  const [t, tCheck, canEdit, aiAvailable, fillRow, brief, decision, done, roles, members, sprint, sprintPlan, cards, openCardCount, plan, tGate, tLc, tVp, isFounder, gate, gateBrief, gateDecision] =
     await Promise.all([
       getTranslations({ locale, namespace: "UppstartOverview" }),
       getTranslations({ locale, namespace: "ProjectPhaseChecklist" }),
@@ -52,7 +55,7 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
       isAiProjectStartAvailable(session.user.id),
       prisma.phaseFill.findUnique({ where: { projectId_phase: { projectId: project.id, phase: "PILOT" } } }),
       latestInsight<GateBrief>(project.id, "PHASE_GATE"),
-      prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, outcome: "CONTINUE" }, orderBy: { createdAt: "desc" } }),
+      prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: { in: ["IDEA", "SPRINT"] }, outcome: "CONTINUE" }, orderBy: { createdAt: "desc" } }),
       prisma.initiativeChecklistItem.findMany({ where: { projectId: project.id, completedAt: { not: null } }, select: { itemKey: true } }),
       prisma.projectRoleNeed.findMany({
         where: { projectId: project.id },
@@ -78,6 +81,13 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
       }),
       prisma.kanbanCard.count({ where: { projectSlug: slug, column: { not: "DONE" } } }),
       prisma.projectPlan.findUnique({ where: { projectSlug: slug } }),
+      getTranslations({ locale, namespace: "PhaseGate" }),
+      getTranslations({ locale, namespace: "LeanCanvasHistory" }),
+      getTranslations({ locale, namespace: "ValuePropositionHistory" }),
+      hasProjectRole(project.id, session.user.id, ["FOUNDER"]),
+      uppstartGateCriteria(project.id, slug),
+      latestInsight<GateBrief>(project.id, "UPPSTART_GATE"),
+      prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: "PILOT" }, orderBy: { createdAt: "desc" } }),
     ]);
 
   const fill: UppstartFillStatus = fillRow ? parseUppstartStatus(fillRow.status, fillRow.updatedAt) : {};
@@ -93,6 +103,14 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
     if (sprint.status === "COMPLETED" || i < currentSprintIndex || doneKeys.has(SPRINT_STEP_KEYS[i])) return "done";
     return i === currentSprintIndex ? "current" : "upcoming";
   };
+  const fieldLabels: Record<string, string> = {
+    ...Object.fromEntries(LEAN_CANVAS_BLOCKS.map((b) => [`leanCanvas.${b.field}`, tLc(`field${b.translationKey}` as Parameters<typeof tLc>[0])])),
+    ...Object.fromEntries(
+      VALUE_PROPOSITION_BLOCKS.map((b) => [`valueProposition.${b.field}`, tVp(`field${b.translationKey}` as Parameters<typeof tVp>[0])]),
+    ),
+  };
+  const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
+  const decisionDate = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
   const planFields = [
     ["goal", t("planGoal")],
     ["milestones", t("planMilestones")],
@@ -301,6 +319,36 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
           <p className="text-sm text-dark-slate/50">{t("planEmpty")}</p>
         )}
       </OverviewSection>
+
+      {project.phase === "PILOT" ? (
+        <OverviewSection id="fasgrind" title={t("gateHeading")} badge={t("yourTurn")} writingLabel={writing}>
+          <PhaseGateSection
+            gate="uppstart"
+            slug={slug}
+            criteria={gate.criteria.map((c) => ({ ...c, label: criterionLabel(c.key) }))}
+            countNote={{ key: "test_with_users", text: tGate("uppstart.feedbackOf", { count: gate.feedbackCount, min: MIN_TEST_FEEDBACK }) }}
+            brief={gateBrief?.content ?? null}
+            lastDecision={
+              gateDecision
+                ? { outcome: gateDecision.outcome, date: decisionDate(gateDecision.createdAt), missing: gateDecision.missing.map(criterionLabel) }
+                : null
+            }
+            fieldLabels={fieldLabels}
+            canEdit={canEdit}
+            isFounder={isFounder}
+            aiAvailable={aiAvailable}
+          />
+        </OverviewSection>
+      ) : (
+        gateDecision?.outcome === "CONTINUE" && (
+          <p className="rounded-2xl border border-seagrass/30 bg-seagrass/5 px-5 py-3 text-sm text-dark-slate/75">
+            {t("gateClosed", { date: decisionDate(gateDecision.createdAt) })}{" "}
+            <Link href={`/projects/${slug}/guide/production`} className="font-semibold text-seagrass hover:underline">
+              {t("gateClosedLink")}
+            </Link>
+          </p>
+        )
+      )}
     </div>
   );
 }

@@ -3939,7 +3939,22 @@
     "confirm_ADJUST": "Bekräfta: justera",
     "confirm_PIVOT": "Bekräfta: pivotera",
     "confirm_PAUSE": "Bekräfta: pausa projektet",
-    "cancel": "Avbryt"
+    "cancel": "Avbryt",
+    "unanswered": "Obesvarade sprintfrågor",
+    "successCriteria": "Förslag på framgångskriterier för piloten",
+    "successCriteriaHint": "Går ni vidare läggs de in som ett utkast i pilotutvärderingen, om den är tom.",
+    "uppstart": {
+      "intro": "Uppstart är klar när ni har testat lösningen med riktiga användare och vet vad piloten ska visa. Här ser ni vad som är gjort, vad sprinten visade — och ni fattar beslutet. Ni kan gå vidare även om något saknas; det noteras bara.",
+      "briefHint": "AI:n går igenom sprinten — frågorna, skisserna, prototypen och feedbacken från testpersonerna — och skriver ihop vad ni ville ta reda på, vad testerna visade och vad den rekommenderar.",
+      "believed": "Vad sprinten ville ta reda på",
+      "nextFocus": "Fokus i piloten",
+      "outcomeDesc_CONTINUE": "Projektet går till Lansering, där piloten genomförs. Framgångskriterierna läggs in som ett utkast i pilotutvärderingen.",
+      "outcomeDesc_ADJUST": "Stanna i Uppstart och testa det sprinten inte besvarade. Uppgifter skapas på tavlan.",
+      "outcomeDesc_PIVOT": "Ändra lösningen på det som föll i testerna. Uppgifter för att omarbeta skapas.",
+      "outcomeDesc_PAUSE": "Lägg projektet vilande. Det kan tas upp igen senare.",
+      "confirm_CONTINUE": "Bekräfta: gå vidare till Lansering",
+      "feedbackOf": "{count} av {min} testsvar"
+    }
   },
   "UppstartOverview": {
     "heading": "Uppstart",
@@ -3997,6 +4012,9 @@
     "planRisks": "Risker",
     "planEmpty": "Ingen projektplan ännu.",
     "failedPlan": "AI:n kunde inte ta fram projektplanen.",
-    "onePageLink": "Se hela Uppstart på en sida, med AI:ns utkast"
+    "onePageLink": "Se hela Uppstart på en sida, med AI:ns utkast",
+    "gateHeading": "Fasgrind: redo för Lansering?",
+    "gateClosed": "Uppstart avslutades {date} med beslutet att gå vidare.",
+    "gateClosedLink": "Till Lansering →"
   }
 }

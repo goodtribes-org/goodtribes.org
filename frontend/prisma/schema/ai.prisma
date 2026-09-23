@@ -262,7 +262,8 @@ model AiFieldSuggestion {
 enum AiInsightKind {
   CRITIQUE             // Kritikern: at most 3 objections to the AI's Idé drafts
   INTERVIEW_SYNTHESIS  // learnings from the logged interviews + a verdict per assumption
-  PHASE_GATE           // the one-page decision brief at the end of a phase
+  PHASE_GATE           // the one-page decision brief at the Idé → Uppstart gate
+  UPPSTART_GATE        // the same, at the Uppstart → Lansering gate (sprint results)
 }
 
 // Something the AI concluded about a project as a whole — shown on the Idé
