@@ -1251,7 +1251,8 @@
     "sprintLabel": "Sprint",
     "sprintHint": "Valfritt — förbered sprint-arbetet redan nu genom att bocka av det som redan är klart, eller starta en riktig, asynkron Design Sprint direkt.",
     "openDesignSprints": "Öppna Design Sprints →",
-    "finishButton": "Klar, ta mig till projektet"
+    "finishButton": "Klar, ta mig till projektet",
+    "aiModeForStep": "AI för det här steget"
   },
   "PhaseGuide": {
     "title": "{phaseLabel}-guiden — {projectTitle}",
@@ -3731,5 +3732,29 @@
     "stateAdminsOnly": "Bara site-admins",
     "stateOn": "På för alla",
     "lastChanged": "Senast ändrad {date}"
+  },
+  "AiMode": {
+    "pickerLabel": "AI-läge",
+    "shortAgent": "AI gör",
+    "shortAssist": "AI hjälper",
+    "shortManual": "Själv",
+    "labelAgent": "Låt AI göra",
+    "labelAssist": "AI hjälper mig",
+    "labelManual": "Jag gör själv",
+    "descAgent": "AI:n gör jobbet och lägger resultatet för din granskning.",
+    "descAssist": "Du gör jobbet. AI:n ger förslag och granskar när du ber om det, men fyller aldrig i något själv.",
+    "descManual": "Ingen AI alls. Guidens hjälptexter visas som vanligt.",
+    "inheritedHint": "ärvt",
+    "standardHint": "standard",
+    "settingsHeading": "AI i projektet",
+    "intro": "Du bestämmer hur mycket AI:n gör: för hela projektet, per fas eller per steg i guiden. Det mest specifika valet gäller. Att byta läge ändrar aldrig något som redan är skrivet.",
+    "introDismiss": "Stäng",
+    "projectModeHeading": "Projektets läge",
+    "legacyNote": "Projektet skapades innan AI-lägen fanns och fungerar som tidigare tills du väljer ett läge.",
+    "phaseModesHeading": "Per fas (valfritt)",
+    "phaseModesHint": "Välj ett läge för en fas om den ska skilja sig från projektet. Klicka på valt läge igen för att ärva.",
+    "projectManagerLabel": "AI-projektledare",
+    "projectManagerHint": "Låt AI:n skapa och föreslå uppgifter i projektet. Stäng av så skapas inga uppgifter automatiskt.",
+    "saveError": "Kunde inte spara — försök igen."
   }
 }

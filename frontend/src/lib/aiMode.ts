@@ -185,3 +185,35 @@ export function aiGateStatus(reason: AiGateBlockReason): number {
       return 429;
   }
 }
+
+// ─── Settings as shown in the UI ────────────────────────────────────────────
+
+export type DisplayPhase = Exclude<ProjectPhase, "SPRINT">;
+
+export type ProjectAiSettings = {
+  // NULL = a project from before AI modes; see resolveAiModeFrom's legacy default.
+  projectMode: AiMode | null;
+  aiProjectManager: boolean;
+  phaseModes: Partial<Record<DisplayPhase, AiMode>>;
+  stepModes: Record<string, AiMode>;
+};
+
+// Everything the settings page and the per-step pickers need, in one go.
+export async function getProjectAiSettings(projectId: string): Promise<ProjectAiSettings | null> {
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    select: {
+      aiMode: true,
+      aiProjectManager: true,
+      phaseAiSettings: { select: { phase: true, aiMode: true } },
+      stepAiSettings: { select: { stepKey: true, aiMode: true } },
+    },
+  });
+  if (!project) return null;
+  return {
+    projectMode: project.aiMode,
+    aiProjectManager: project.aiProjectManager,
+    phaseModes: Object.fromEntries(project.phaseAiSettings.map((p) => [toDisplayPhase(p.phase), p.aiMode])),
+    stepModes: Object.fromEntries(project.stepAiSettings.map((s) => [s.stepKey, s.aiMode])),
+  };
+}
