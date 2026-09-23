@@ -1251,7 +1251,8 @@
     "sprintLabel": "Sprint",
     "sprintHint": "Optional — get a head start on sprint prep now by checking off what's already done, or start a real, asynchronous Design Sprint right away.",
     "openDesignSprints": "Open Design Sprints →",
-    "finishButton": "Done, take me to the project"
+    "finishButton": "Done, take me to the project",
+    "aiModeForStep": "AI for this step"
   },
   "PhaseGuide": {
     "title": "{phaseLabel} guide — {projectTitle}",
@@ -3731,5 +3732,29 @@
     "stateAdminsOnly": "Site admins only",
     "stateOn": "On for everyone",
     "lastChanged": "Last changed {date}"
+  },
+  "AiMode": {
+    "pickerLabel": "AI mode",
+    "shortAgent": "AI does it",
+    "shortAssist": "AI helps",
+    "shortManual": "Myself",
+    "labelAgent": "Let AI do it",
+    "labelAssist": "AI helps me",
+    "labelManual": "I do it myself",
+    "descAgent": "AI does the work and puts the result up for your review.",
+    "descAssist": "You do the work. AI suggests and reviews when you ask, but never fills anything in itself.",
+    "descManual": "No AI at all. The guide's help texts are shown as usual.",
+    "inheritedHint": "inherited",
+    "standardHint": "default",
+    "settingsHeading": "AI in this project",
+    "intro": "You decide how much the AI does: for the whole project, per phase or per guide step. The most specific choice applies. Changing mode never changes anything already written.",
+    "introDismiss": "Close",
+    "projectModeHeading": "Project mode",
+    "legacyNote": "This project was created before AI modes existed and works as before until you choose a mode.",
+    "phaseModesHeading": "Per phase (optional)",
+    "phaseModesHint": "Pick a mode for a phase if it should differ from the project. Click the chosen mode again to inherit.",
+    "projectManagerLabel": "AI project manager",
+    "projectManagerHint": "Let the AI create and suggest tasks in the project. Turn off and no tasks are created automatically.",
+    "saveError": "Could not save — try again."
   }
 }

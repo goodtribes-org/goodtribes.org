@@ -19,6 +19,10 @@ import { SDG_NUMBERS, SDG_LABELS_SV } from "@/lib/sdg";
 import { IDEA_GUIDE_STEPS } from "@/lib/ideaGuideSteps";
 import { CATEGORIES } from "@/lib/categories";
 import { INITIATIVE_CHECKLIST_ITEMS } from "@/lib/projectPhase";
+import type { AiMode } from "@prisma/client";
+import type { ProjectAiSettings } from "@/lib/aiMode";
+import AiModePicker from "@/components/ai/AiModePicker";
+import { setStepAiMode } from "@/lib/actions/aiModeSettings";
 
 // The sprint step doesn't move the project's actual phase forward (IDEA and
 // SPRINT are merged into one visible "Idé" step everywhere — see
@@ -48,6 +52,9 @@ interface Props {
   // PhaseMenuBar.tsx) so clicking a checklist item's text lands directly on
   // that step instead of always step 0.
   initialStep?: number;
+  // Present only when the ai-project-start flag is on for this user —
+  // shows a per-step AI mode picker under the step indicator.
+  aiSettings?: ProjectAiSettings | null;
 }
 
 // The full idea-phase guide, all 8 steps navigable in either direction —
@@ -70,6 +77,7 @@ export default function IdeaGuide({
   hasMarketScan,
   hasInvitedSomeone,
   initialStep,
+  aiSettings,
 }: Props) {
   const t = useTranslations("IdeaGuide");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
@@ -86,6 +94,18 @@ export default function IdeaGuide({
   const [imageUrl, setImageUrl] = useState(initialImageUrl);
   const [selected, setSelected] = useState<Set<number>>(new Set(initialSdgGoals));
   const [isPending, startTransition] = useTransition();
+  const [stepModes, setStepModes] = useState<Record<string, AiMode>>(aiSettings?.stepModes ?? {});
+
+  function chooseStepMode(stepKey: string, mode: AiMode | null) {
+    const prev = stepModes;
+    setStepModes((m) => {
+      const next = { ...m };
+      if (mode) next[stepKey] = mode;
+      else delete next[stepKey];
+      return next;
+    });
+    setStepAiMode(slug, stepKey, mode).catch(() => setStepModes(prev));
+  }
 
   function toggleSdg(n: number) {
     setSelected((prev) => {
@@ -226,6 +246,19 @@ export default function IdeaGuide({
           doneKeys={done}
           onStepClick={(i) => setStep(i)}
         />
+
+        {aiSettings && (
+          <div className="mt-4 flex justify-end">
+            {/* The guide is the IDEA phase, so a step inherits the IDEA phase
+                setting, then the project's. */}
+            <AiModePicker
+              label={t("aiModeForStep")}
+              value={stepModes[IDEA_GUIDE_STEPS[step].key] ?? null}
+              inherited={aiSettings.phaseModes.IDEA ?? aiSettings.projectMode}
+              onChange={(mode) => chooseStepMode(IDEA_GUIDE_STEPS[step].key, mode)}
+            />
+          </div>
+        )}
       </div>
 
       {/* Step 1 — Beskriv projektet */}

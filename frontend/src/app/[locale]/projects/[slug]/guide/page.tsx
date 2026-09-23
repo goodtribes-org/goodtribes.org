@@ -5,6 +5,8 @@ import { isLeadRole } from "@/lib/authz";
 import IdeaGuide from "./IdeaGuide";
 import PhaseMenuBar from "../PhaseMenuBar";
 import { IDEA_GUIDE_STEPS } from "@/lib/ideaGuideSteps";
+import { isFeatureEnabled } from "@/lib/featureFlags";
+import { getProjectAiSettings } from "@/lib/aiMode";
 
 export default async function IdeaGuidePage({
   params,
@@ -42,6 +44,11 @@ export default async function IdeaGuidePage({
   ]);
   const hasInvitedSomeone = memberCount > 1 || pendingInviteCount > 0;
 
+  // Per-step AI mode pickers ship dark behind the ai-project-start flag.
+  const aiSettings = (await isFeatureEnabled("ai-project-start", session.user.id))
+    ? await getProjectAiSettings(project.id)
+    : null;
+
   return (
     <div className="max-w-5xl mx-auto min-w-0 w-full">
       <div className="mb-8">
@@ -70,6 +77,7 @@ export default async function IdeaGuidePage({
         hasMarketScan={marketScanCount > 0}
         hasInvitedSomeone={hasInvitedSomeone}
         initialStep={Math.max(0, IDEA_GUIDE_STEPS.findIndex((i) => i.key === step))}
+        aiSettings={aiSettings}
       />
     </div>
   );

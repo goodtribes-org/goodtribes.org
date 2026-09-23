@@ -9,6 +9,9 @@ import { parseColumnMap, parseStatusOptions } from "@/lib/githubColumnMap";
 import { routing } from "@/i18n/routing";
 import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { Locale } from "next-intl";
+import { isFeatureEnabled } from "@/lib/featureFlags";
+import { getProjectAiSettings } from "@/lib/aiMode";
+import AiModeSettings from "./AiModeSettings";
 
 
 export default async function EditProjectPage({
@@ -67,6 +70,11 @@ export default async function EditProjectPage({
 
   const isOwner = role === "FOUNDER";
 
+  // AI mode settings ship dark behind the ai-project-start flag.
+  const aiSettings = (await isFeatureEnabled("ai-project-start", session.user.id))
+    ? await getProjectAiSettings(project.id)
+    : null;
+
   return (
     <div className="max-w-2xl mx-auto">
       <WorkspacePageHeader title={t("heading")} help={t("helpText")} />
@@ -115,6 +123,7 @@ export default async function EditProjectPage({
           createdAt: i.createdAt.toISOString(),
         }))}
       />
+      {aiSettings && <AiModeSettings slug={slug} initial={aiSettings} />}
       {isOwner && (
         <div className="mt-12 pt-8 border-t border-red-200">
           <h2 className="text-sm font-semibold text-red-700 mb-2">{t("dangerZoneHeading")}</h2>
