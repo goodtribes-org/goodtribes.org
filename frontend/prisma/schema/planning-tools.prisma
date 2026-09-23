@@ -213,6 +213,9 @@ model MarketScanEntry {
   description   String              @db.Text
   relevanceNote String?             @db.Text
   sourceUrl     String?
+  // Found by the AI's web search (the Idé fill) — always with a sourceUrl
+  // that appeared in the actual search results.
+  createdByAi   Boolean             @default(false)
   createdById   String
   createdBy     User                @relation("MarketScanEntryCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
   createdAt     DateTime            @default(now())

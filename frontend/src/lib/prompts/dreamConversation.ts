@@ -3,7 +3,7 @@
 // and lib/aiThreadReply.ts).
 
 export const DREAM_OPENER =
-  "Hej! Jag heter Idécoachen och hjälper dig att komma igång med ditt projekt. Vi tar det i din takt, en fråga i taget — och \"vet inte\" är alltid ett okej svar.\n\nFör att börja: vad vill du förändra i världen?";
+  "Hej! Jag heter Idécoachen. Jag ställer några korta frågor om din idé — sedan fyller AI:n i resten av projektet åt dig. \"Vet inte\" är alltid ett okej svar.\n\nFör att börja: vad vill du förändra i världen?";
 
 export const DREAM_SYSTEM_PROMPT = `Du är Idécoachen på GoodTribes.org — en nyfiken, varm coach som hjälper en initiativtagare att sätta ord på sin idé innan de startar ett projekt. GoodTribes värderingar är Leva gott, Må gott, Göra gott.
 
@@ -24,8 +24,9 @@ Regler:
 - "Vet inte" är ett giltigt svar: notera det som en öppen fråga och gå vidare.
 - Ge inga långa råd, och hitta aldrig på fakta, siffror eller namn på organisationer.
 - Håll dig till ämnet. Om personen vill prata om annat, led vänligt tillbaka.
-- Sikta på ungefär 8–12 frågor totalt. När alla områden är täckta, eller efter cirka 15 frågor, avsluta: tacka kort och säg att personen nu kan trycka på knappen "Visa sammanfattningen" för att läsa igenom och godkänna det du förstått. Påstå aldrig att något händer av sig självt — sammanfattningen startar först när personen trycker på knappen. Sätt done = true i det meddelandet.
-- Om personen frågar vad som händer nu när samtalet redan är klart: hänvisa till knappen "Visa sammanfattningen".
+- Håll samtalet kort: sikta på 5–6 frågor totalt. Kombinera gärna områden i en fråga (t.ex. vem som ska använda det och vem som kan hjälpa till, eller tid och team). AI:n fyller sedan själv i resten av projektet utifrån samtalet, så du behöver inte gräva i detaljer.
+- När du har det viktigaste om alla områden, eller efter högst 7 frågor, avsluta: tacka kort och säg att personen nu kan trycka på knappen "Skapa mitt projekt". Påstå aldrig att något händer av sig självt — projektet skapas först när personen trycker på knappen. Sätt done = true i det meddelandet.
+- Om personen frågar vad som händer nu när samtalet redan är klart: hänvisa till knappen "Skapa mitt projekt".
 - Svara på det språk personen skriver på.
 
 Svara ALLTID genom verktyget "svara".`;
@@ -50,7 +51,7 @@ export const DREAM_REPLY_TOOL = {
       notes: {
         type: "object",
         description:
-          "En kort anteckning per område om vad personen sagt, med personens egna ord så långt det går. Nycklar: dream, problem, why_you, idea, people, conditions. Hela den uppdaterade uppsättningen.",
+          "En kort anteckning per område om ENBART det personen faktiskt sagt, med personens egna ord så långt det går — lägg aldrig till egna antaganden. Nycklar: dream, problem, why_you, idea, people, conditions. Hela den uppdaterade uppsättningen.",
         additionalProperties: { type: "string" },
       },
       open_questions: {
@@ -84,89 +85,6 @@ export function dreamProgressNote(state: {
     if (note) lines.push(`- ${area}: ${note}`);
   }
   if (state.openQuestions.length) lines.push(`- Öppna frågor: ${state.openQuestions.join("; ")}`);
-  if (state.aiQuestionCount >= 15) lines.push("Du har ställt många frågor nu — avsluta samtalet i det här meddelandet.");
+  if (state.aiQuestionCount >= 7) lines.push("Du har ställt många frågor nu — avsluta samtalet i det här meddelandet.");
   return lines.join("\n");
 }
-
-// ─── "Så här förstod jag dig" ───────────────────────────────────────────────
-
-export const DREAM_SUMMARY_SYSTEM_PROMPT = `Du har just haft ett Drömsamtal med en initiativtagare på GoodTribes.org. Sammanfatta vad du förstått, och föreslå hur projektets fält ska fyllas i.
-
-Regler:
-- Använd personens egna ord så långt det går. Sammanfattningen får vara högst en halv sida.
-- Hitta ALDRIG på fakta: inga siffror, statistik, namn på organisationer eller påståenden som personen inte sagt. Om något skulle kräva research, lämna fältet tomt och lägg det som en öppen fråga i stället.
-- Lämna ett fält tomt hellre än att gissa.
-- För varje fält: basis = "user" om personen själv sa det, "inferred" om du härlett eller föreslagit det.
-- Föreslå högst 3 av FN:s globala mål (siffror 1–17), bara de som tydligt passar.
-- Kategori måste vara en av: Technology, Environment, Education, Arts, Community, Health, Other.
-- Skriv på det språk personen använde.
-
-Svara genom verktyget "sammanfatta".`;
-
-const fieldSchema = {
-  type: "object" as const,
-  properties: {
-    value: { type: "string" },
-    basis: { type: "string", enum: ["user", "inferred"] },
-  },
-  required: ["value", "basis"],
-};
-
-export const DREAM_SUMMARY_TOOL = {
-  name: "sammanfatta",
-  description: "Sammanfatta samtalet och föreslå fältvärden.",
-  input_schema: {
-    type: "object" as const,
-    properties: {
-      sections: {
-        type: "object",
-        description: "Sammanfattningen, i personens egna ord.",
-        properties: {
-          dream: { type: "string", description: "Drömmen i en mening." },
-          problem: { type: "string", description: "Problemet och vem som drabbas." },
-          idea: { type: "string", description: "Idén." },
-          people: { type: "string", description: "Vilka som behövs: användare, betalare, medhjälpare." },
-          conditions: { type: "string", description: "Förutsättningar: tid, team, ambition." },
-        },
-        required: ["dream", "problem", "idea", "people", "conditions"],
-      },
-      open_questions: { type: "array", items: { type: "string" } },
-      project: {
-        type: "object",
-        properties: {
-          title: { ...fieldSchema, description: "Ett kort, beskrivande projektnamn." },
-          summary: { ...fieldSchema, description: "En mening som beskriver projektet." },
-          description: { ...fieldSchema, description: "Några stycken om projektet." },
-          category: { type: "string" },
-          tags: { type: "array", items: { type: "string" } },
-          sdg_goals: { type: "array", items: { type: "integer" } },
-        },
-        required: ["title", "summary", "description"],
-      },
-      canvas: {
-        type: "object",
-        description: "Lean Canvas-fält. Utelämna eller lämna tomma de du inte vet.",
-        properties: {
-          problem: { ...fieldSchema, description: "Problemet och varför det finns (från dröm och problem)." },
-          customerSegments: { ...fieldSchema, description: "Vilka som använder, betalar eller stöder." },
-          earlyAdopters: { ...fieldSchema, description: "Vilka som vill vara med först." },
-          alternatives: { ...fieldSchema, description: "Hur man löser problemet idag." },
-          solution: { ...fieldSchema, description: "Lösningen i korthet." },
-          uniqueValueProposition: { ...fieldSchema, description: "Utkast: varför välja detta framför alternativen." },
-          revenueStreams: { ...fieldSchema, description: "Utkast: varifrån pengarna kan komma." },
-          unfairAdvantage: { ...fieldSchema, description: "Vad initiativtagaren har med sig: erfarenhet, nätverk." },
-          impact: { ...fieldSchema, description: "Den långsiktiga förändringen." },
-        },
-      },
-      conditions: {
-        type: "object",
-        properties: {
-          weekly_hours: { type: ["integer", "null"], description: "Timmar i veckan, om personen sa det." },
-          team_mode: { type: ["string", "null"], enum: ["SOLO", "SMALL", "TEAM", null] },
-          ambition: { type: ["string", "null"], enum: ["HOBBY", "VENTURE", null] },
-        },
-      },
-    },
-    required: ["sections", "open_questions", "project"],
-  },
-};

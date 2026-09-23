@@ -86,7 +86,7 @@ export default async function DreamConversationPage({ params }: { params: Promis
         mentionables={[]}
       />
 
-      <DreamNextStep roomId={roomId} initial={initialProgress} />
+      <DreamNextStep roomId={roomId} initial={initialProgress} aiMode={dream.aiMode === "ASSIST" ? "ASSIST" : "AGENT"} />
     </div>
   );
 }

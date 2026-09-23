@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { generateDreamSummary, getDreamProgress, type DreamProgress } from "../actions";
+import { createProjectFromDream, getDreamProgress, type DreamProgress } from "../actions";
 
 // Polls the conversation's progress (the AI updates it asynchronously after
 // each reply — cheap: one small DB read, no AI call) and exposes the
-// "summarise" action with its pending/error state. Shared by the progress
-// bar at the top and the next-step card at the bottom of the conversation.
+// "create the project" action with its pending/error state. Shared by the
+// progress bar at the top and the next-step card at the bottom.
 export function useDreamSummary(roomId: string, initial: DreamProgress) {
   const [progress, setProgress] = useState(initial);
   const [summarizing, startSummarizing] = useTransition();
@@ -32,7 +32,7 @@ export function useDreamSummary(roomId: string, initial: DreamProgress) {
     setFailed(false);
     startSummarizing(async () => {
       try {
-        await generateDreamSummary(roomId);
+        await createProjectFromDream(roomId);
       } catch (e) {
         // redirect() on success surfaces as a thrown NEXT_REDIRECT — Next
         // handles it; only real errors are shown.
