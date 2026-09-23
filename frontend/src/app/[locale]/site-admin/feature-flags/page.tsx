@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import type { FeatureFlagState } from "@prisma/client";
 import type { Locale } from "next-intl";
 import { FEATURE_FLAGS, type FeatureFlagKey } from "@/lib/featureFlags";
+import { isAiEnabled } from "@/lib/anthropic";
 import { updateFeatureFlag } from "./actions";
 
 const STATES: FeatureFlagState[] = ["OFF", "ADMINS_ONLY", "ON"];
@@ -15,6 +16,7 @@ export default async function FeatureFlagsAdminPage({ params }: { params: Promis
     getTranslations({ locale, namespace: "FeatureFlagsAdminPage" }),
   ]);
   const byKey = new Map(rows.map((r) => [r.key, r]));
+  const aiConfigured = isAiEnabled();
   const stateLabel: Record<FeatureFlagState, string> = {
     OFF: t("stateOff"),
     ADMINS_ONLY: t("stateAdminsOnly"),
@@ -40,6 +42,11 @@ export default async function FeatureFlagsAdminPage({ params }: { params: Promis
                   <p className="font-semibold text-dark-slate">{flag.label}</p>
                   <p className="text-xs font-mono text-dark-slate/40 mt-0.5">{key}</p>
                   <p className="text-sm text-dark-slate/70 mt-2">{flag.description}</p>
+                  {"requiresAi" in flag && flag.requiresAi && !aiConfigured && (
+                    <p className="mt-2 rounded-md border border-amber-300 bg-amber-50 px-2 py-1.5 text-xs text-amber-800">
+                      {t("aiKeyMissing")}
+                    </p>
+                  )}
                   {row && (
                     <p className="text-xs text-dark-slate/40 mt-2">
                       {t("lastChanged", { date: row.updatedAt.toLocaleString(locale === "sv" ? "sv-SE" : "en-GB") })}

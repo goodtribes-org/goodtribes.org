@@ -79,7 +79,7 @@ export default async function LeanCanvasPage({
         action={<LeanCanvasHistory projectSlug={slug} />}
       />
 
-      {ai && <CanvasAiBar projectSlug={slug} entity="leanCanvas" stepKey={ai.stepKey} mode={ai.mode} canEdit={canEdit} />}
+      {ai?.aiAvailable && <CanvasAiBar projectSlug={slug} entity="leanCanvas" stepKey={ai.stepKey} mode={ai.mode} canEdit={canEdit} />}
       <LeanCanvasGrid
         projectSlug={slug}
         canvas={canvas}

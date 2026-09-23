@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { persistAiMessage } from "@/lib/aiThreadReply";
-import { isFeatureEnabled } from "@/lib/featureFlags";
+import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { isDreamComplete, parseDreamState, parseOpenQuestions, type DreamArea } from "@/lib/dreamConversation";
 import { DREAM_OPENER } from "@/lib/prompts/dreamConversation";
 import { escapeHtml } from "@/lib/renderBody";
@@ -39,7 +39,7 @@ async function requireUser(): Promise<string> {
 // aiMode once the summary is approved.
 export async function startDreamConversation(mode: string) {
   const userId = await requireUser();
-  if (!(await isFeatureEnabled("ai-project-start", userId))) redirect("/projects/new?manual=1");
+  if (!(await isAiProjectStartAvailable(userId))) redirect("/projects/new?manual=1");
   if (mode !== "AGENT" && mode !== "ASSIST") throw new Error("Ogiltigt val");
 
   const room = await prisma.room.create({ data: { type: "AI_INTAKE" } });
@@ -59,7 +59,7 @@ export async function startDreamConversation(mode: string) {
 // a follow-up conversation at phase changes is a later step.
 export async function startDreamConversationForProject(projectSlug: string) {
   const userId = await requireUser();
-  if (!(await isFeatureEnabled("ai-project-start", userId))) redirect(`/projects/${projectSlug}/guide`);
+  if (!(await isAiProjectStartAvailable(userId))) redirect(`/projects/${projectSlug}/guide`);
   const project = await prisma.project.findUnique({
     where: { slug: projectSlug },
     select: { id: true, dreamConversation: { select: { roomId: true } } },

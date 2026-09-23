@@ -67,6 +67,11 @@ frontend:
   #                          plus organisation "Projects: read" — needed for the
   #                          Projects V2 board sync. Classic: repo + read:project.)
   #   CRON_SECRET           (bearer token the CronJobs authenticate with)
+  #   ANTHROPIC_API_KEY     (optional — every AI feature is hidden/degrades gracefully
+  #                          without it. Server-side only, read at runtime: adding it to
+  #                          goodtribes-secret + restarting the frontend pods is enough,
+  #                          no rebuild. Also required for the ai-project-start flag's
+  #                          AI parts to appear, see frontend/src/lib/aiProjectStart.ts.)
 
 # Pulls the items of each project's mapped GitHub Projects V2 board into its task
 # board. Calls the in-cluster frontend Service — no ingress involved.

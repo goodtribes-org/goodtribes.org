@@ -6,7 +6,7 @@ import type { Locale } from "next-intl";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getRoomAccess } from "@/lib/roomAuth";
-import { isFeatureEnabled } from "@/lib/featureFlags";
+import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { isDreamComplete, parseDreamState, parseOpenQuestions } from "@/lib/dreamConversation";
 import { RoomShell } from "@/app/[locale]/messages/[roomId]/RoomShell";
 import DreamProgressBar from "./DreamProgressBar";
@@ -17,7 +17,7 @@ export default async function DreamConversationPage({ params }: { params: Promis
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
-  if (!(await isFeatureEnabled("ai-project-start", userId))) redirect("/projects/new");
+  if (!(await isAiProjectStartAvailable(userId))) redirect("/projects/new");
 
   const [dream, access, t] = await Promise.all([
     prisma.dreamConversation.findUnique({ where: { roomId } }),

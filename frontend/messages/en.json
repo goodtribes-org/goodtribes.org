@@ -3736,7 +3736,8 @@
     "stateOff": "Off",
     "stateAdminsOnly": "Site admins only",
     "stateOn": "On for everyone",
-    "lastChanged": "Last changed {date}"
+    "lastChanged": "Last changed {date}",
+    "aiKeyMissing": "ANTHROPIC_API_KEY is missing in this environment. The flag can be switched on already, but the AI parts (start choice, dream conversation, AI settings, review) stay hidden until the key exists — \"New project\" then goes straight to the quick start. Known/assumed marking is shown regardless."
   },
   "AiMode": {
     "pickerLabel": "AI mode",

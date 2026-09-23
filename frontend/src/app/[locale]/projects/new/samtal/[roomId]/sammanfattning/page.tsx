@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import type { Locale } from "next-intl";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { isFeatureEnabled } from "@/lib/featureFlags";
+import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import type { DreamSummary } from "@/lib/dreamSummary";
 import SummaryReview from "./SummaryReview";
 
@@ -12,7 +12,7 @@ export default async function DreamSummaryPage({ params }: { params: Promise<{ l
   const { roomId } = await params;
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  if (!(await isFeatureEnabled("ai-project-start", session.user.id))) redirect("/projects/new");
+  if (!(await isAiProjectStartAvailable(session.user.id))) redirect("/projects/new");
 
   const dream = await prisma.dreamConversation.findUnique({
     where: { roomId },
