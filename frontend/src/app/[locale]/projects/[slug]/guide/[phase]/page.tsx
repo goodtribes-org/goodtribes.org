@@ -6,6 +6,8 @@ import { isLeadRole } from "@/lib/authz";
 import { INITIATIVE_CHECKLIST_ITEMS, type ProjectPhaseValue } from "@/lib/projectPhase";
 import PhaseGuide from "./PhaseGuide";
 import PhaseMenuBar from "../../PhaseMenuBar";
+import { Link } from "@/i18n/navigation";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 
 // Idé has its own bespoke guide (see ../page.tsx and ../IdeaGuide.tsx) —
 // this generic, checklist-driven guide covers every phase after it.
@@ -36,6 +38,9 @@ export default async function PhaseGuidePage({
   });
   if (!project) redirect("/projects");
   if (!isLeadRole(project.members[0]?.role)) redirect(`/projects/${slug}`);
+  // Uppstart also has a one-page overview (see (workspace)/uppstart).
+  const onePage = phase === "PILOT" && (await isFeatureEnabled("ai-project-start", session.user.id));
+  const tUppstart = await getTranslations({ locale, namespace: "UppstartOverview" });
 
   return (
     <div className="max-w-5xl mx-auto min-w-0 w-full">
@@ -49,6 +54,14 @@ export default async function PhaseGuidePage({
         />
       </div>
       <div className="max-w-3xl mx-auto">
+        {onePage && (
+          <Link
+            href={`/projects/${slug}/uppstart`}
+            className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-seagrass/30 bg-seagrass/5 px-4 py-3 text-sm font-medium text-seagrass hover:bg-seagrass/10"
+          >
+            {tUppstart("onePageLink")} <span aria-hidden>→</span>
+          </Link>
+        )}
         <PhaseGuide
           slug={slug}
           phase={phase}

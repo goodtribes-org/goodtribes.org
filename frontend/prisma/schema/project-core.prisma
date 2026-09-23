@@ -152,6 +152,8 @@ model Project {
   aiFieldSuggestions AiFieldSuggestion[]
   aiInsights         AiInsight[]
   phaseGateDecisions PhaseGateDecision[]
+  phaseFills         PhaseFill[]
+  roleNeeds          ProjectRoleNeed[]
   dreamConversation  DreamConversation?
   kudos              Kudos[]              @relation("ProjectKudos")
   streaks            UserStreak[]         @relation("ProjectStreaks")
@@ -323,4 +325,23 @@ model CommercialUmbrellaEntity {
   createdAt             DateTime @default(now())
 
   projects Project[]
+}
+
+// A role the core team needs (Uppstart: "Definiera roller och bilda
+// kärnteam") — drafted by the AI or added by hand, and filled by pointing
+// it at a project member. Vacant roles are what the project invites for.
+model ProjectRoleNeed {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String?  @db.Text
+  filledById  String?
+  filledBy    User?    @relation("RoleNeedFilledBy", fields: [filledById], references: [id], onDelete: SetNull)
+  order       Int      @default(0)
+  createdByAi Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([projectId])
 }
