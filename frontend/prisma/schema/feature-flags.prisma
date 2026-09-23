@@ -1,0 +1,24 @@
+// Platform feature flags — lets new functionality ship to main (and to
+// production) switched off, then be turned on gradually from site-admin
+// without a deploy or a cluster/secret change. The set of known flags lives
+// in code (src/lib/featureFlags.ts); a row only exists once a site admin has
+// changed a flag, and a missing row means OFF.
+//
+// ADMINS_ONLY exists so site admins can try a feature against real
+// production data before anyone else sees it.
+
+enum FeatureFlagState {
+  OFF
+  ADMINS_ONLY
+  ON
+}
+
+model FeatureFlag {
+  key         String           @id
+  state       FeatureFlagState @default(OFF)
+  // Plain id rather than a User relation: purely an audit field, and a flag
+  // row shouldn't block (or be cascaded by) deleting a user account.
+  updatedById String?
+  updatedAt   DateTime         @updatedAt
+  createdAt   DateTime         @default(now())
+}
