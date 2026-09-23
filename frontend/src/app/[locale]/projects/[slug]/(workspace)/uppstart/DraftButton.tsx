@@ -7,8 +7,15 @@ import { startUppstartDrafts } from "./actions";
 import { startLanseringDrafts } from "../lansering/actions";
 import { startEtableraDrafts } from "../etablera/actions";
 import { startSkalaDrafts } from "../skala/actions";
+import { startImpactDrafts } from "../impactfasen/actions";
 
-const ACTIONS = { uppstart: startUppstartDrafts, lansering: startLanseringDrafts, etablera: startEtableraDrafts, skala: startSkalaDrafts };
+const ACTIONS = {
+  uppstart: startUppstartDrafts,
+  lansering: startLanseringDrafts,
+  etablera: startEtableraDrafts,
+  skala: startSkalaDrafts,
+  impact: startImpactDrafts,
+};
 
 // "Låt AI:n ta fram utkast" for a whole phase's overview (variant "primary"), or a
 // "Försök igen" / "Ta fram utkast" link for one section (variant "link").

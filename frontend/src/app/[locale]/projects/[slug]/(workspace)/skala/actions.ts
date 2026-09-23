@@ -11,6 +11,8 @@ import { SKALA_SECTIONS, startSkalaFill, type SkalaSection } from "@/lib/skalaFi
 import { cardsForLanseringDecision, SKALA_CARD_WORDS, skalaGateCriteria, runSkalaGateBrief, type GateBrief } from "@/lib/phaseGate";
 import { checkGateDecider, gateBriefErrorMessage, recordGateDecision } from "@/lib/gateDecision";
 import { advanceProjectPhase } from "../edit/actions";
+import { resolveAiMode } from "@/lib/aiMode";
+import { startImpactFill } from "@/lib/impactPhaseFill";
 
 async function requireLead(projectSlug: string) {
   const session = await auth();
@@ -70,5 +72,9 @@ export async function decideSkalaGate(projectSlug: string, outcome: string, note
   revalidatePath(`/projects/${projectSlug}`, "layout");
   if (decision !== "CONTINUE") return {};
   await advanceProjectPhase(project.slug);
-  return { next: `/projects/${project.slug}/guide/impact` };
+  // On to the Impact overview; in AGENT mode the AI starts drafting it.
+  if (!(await isAiProjectStartAvailable(session.user.id))) return { next: `/projects/${project.slug}/guide/impact` };
+  const { mode } = await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "IMPACT" });
+  if (mode === "AGENT") await startImpactFill({ projectId: project.id, projectSlug: project.slug, userId: session.user.id });
+  return { next: `/projects/${project.slug}/impactfasen` };
 }

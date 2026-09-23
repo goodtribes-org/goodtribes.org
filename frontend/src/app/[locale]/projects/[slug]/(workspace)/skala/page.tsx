@@ -160,7 +160,7 @@ export default async function SkalaOverviewPage({ params }: { params: Promise<{ 
         </OverviewSection>
       ) : (
         gateDecision?.outcome === "CONTINUE" && (
-          <GateClosed text={tGate("skala.closed", { date: decisionDate(gateDecision.createdAt) })} href={`/projects/${slug}/guide/impact`} linkLabel={t("gateClosedLink")} />
+          <GateClosed text={tGate("skala.closed", { date: decisionDate(gateDecision.createdAt) })} href={`/projects/${slug}/impactfasen`} linkLabel={t("gateClosedLink")} />
         )
       )}
     </div>
