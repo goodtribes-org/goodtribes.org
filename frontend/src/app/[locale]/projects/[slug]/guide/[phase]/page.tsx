@@ -38,9 +38,14 @@ export default async function PhaseGuidePage({
   });
   if (!project) redirect("/projects");
   if (!isLeadRole(project.members[0]?.role)) redirect(`/projects/${slug}`);
-  // Uppstart also has a one-page overview (see (workspace)/uppstart).
-  const onePage = phase === "PILOT" && (await isFeatureEnabled("ai-project-start", session.user.id));
-  const tUppstart = await getTranslations({ locale, namespace: "UppstartOverview" });
+  // Uppstart and Lansering also have a one-page overview (see
+  // (workspace)/uppstart and (workspace)/lansering).
+  const ONE_PAGE: Partial<Record<ProjectPhaseValue, { href: string; namespace: "UppstartOverview" | "LanseringOverview" }>> = {
+    PILOT: { href: "uppstart", namespace: "UppstartOverview" },
+    PRODUCTION: { href: "lansering", namespace: "LanseringOverview" },
+  };
+  const onePage = ONE_PAGE[phase] && (await isFeatureEnabled("ai-project-start", session.user.id)) ? ONE_PAGE[phase] : null;
+  const tOnePage = await getTranslations({ locale, namespace: onePage?.namespace ?? "UppstartOverview" });
 
   return (
     <div className="max-w-5xl mx-auto min-w-0 w-full">
@@ -56,10 +61,10 @@ export default async function PhaseGuidePage({
       <div className="max-w-3xl mx-auto">
         {onePage && (
           <Link
-            href={`/projects/${slug}/uppstart`}
+            href={`/projects/${slug}/${onePage.href}`}
             className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-seagrass/30 bg-seagrass/5 px-4 py-3 text-sm font-medium text-seagrass hover:bg-seagrass/10"
           >
-            {tUppstart("onePageLink")} <span aria-hidden>→</span>
+            {tOnePage("onePageLink")} <span aria-hidden>→</span>
           </Link>
         )}
         <PhaseGuide

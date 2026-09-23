@@ -1,7 +1,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
-import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { isPhaseFillInProgress, markPhaseFillPending, parsePhaseFillStatus, setPhaseFillState, type PhaseFillState } from "@/lib/phaseFill";
 import { getAiClientFor } from "@/lib/aiMode";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { escapeHtml } from "@/lib/renderBody";
@@ -28,36 +28,17 @@ const REQUEST_OPTIONS = { timeout: 90_000, maxRetries: 1 };
 
 export const UPPSTART_SECTIONS = ["team", "sprint", "tasks", "plan"] as const;
 export type UppstartSection = (typeof UPPSTART_SECTIONS)[number];
-export type UppstartFillState = "pending" | "running" | "done" | "failed" | "skipped";
+export type UppstartFillState = PhaseFillState;
 export type UppstartFillStatus = Partial<Record<UppstartSection, UppstartFillState>>;
 
-const STATES: readonly string[] = ["pending", "running", "done", "failed", "skipped"];
-const STALE_AFTER_MS = 5 * 60_000;
-
-// Parses the stored JSON; a section still waiting long after the last
-// update was cut short (restart, hung request) and shows as failed so the
-// page stops waiting and offers a retry — same rule as the Idé fill.
 export function parseUppstartStatus(raw: unknown, updatedAt?: Date, now = Date.now()): UppstartFillStatus {
-  const o = (raw ?? {}) as Record<string, unknown>;
-  const stale = updatedAt ? now - updatedAt.getTime() >= STALE_AFTER_MS : false;
-  const out: UppstartFillStatus = {};
-  for (const s of UPPSTART_SECTIONS) {
-    const v = o[s];
-    if (typeof v !== "string" || !STATES.includes(v)) continue;
-    out[s] = stale && (v === "pending" || v === "running") ? "failed" : (v as UppstartFillState);
-  }
-  return out;
+  return parsePhaseFillStatus(raw, UPPSTART_SECTIONS, updatedAt, now);
 }
 
-export function isUppstartFillInProgress(status: UppstartFillStatus): boolean {
-  return Object.values(status).some((s) => s === "pending" || s === "running");
-}
+export const isUppstartFillInProgress = isPhaseFillInProgress;
 
-async function setState(projectId: string, section: UppstartSection, state: UppstartFillState) {
-  await prisma.$executeRaw`
-    UPDATE "PhaseFill"
-    SET "status" = "status" || jsonb_build_object(${section}::text, ${state}::text), "updatedAt" = NOW()
-    WHERE "projectId" = ${projectId} AND "phase" = 'PILOT'::"ProjectPhase"`;
+function setState(projectId: string, section: UppstartSection, state: UppstartFillState) {
+  return setPhaseFillState(projectId, "PILOT", section, state);
 }
 
 // ─── Pure parsing (unit tested) ─────────────────────────────────────────────
@@ -219,13 +200,7 @@ export type UppstartFillParams = {
 // app is a persistent Node server, same as the Idé fill).
 export async function startUppstartFill(p: UppstartFillParams): Promise<void> {
   const sections = p.only ?? [...UPPSTART_SECTIONS];
-  const pending = Object.fromEntries(sections.map((s) => [s, "pending"])) as Prisma.InputJsonObject;
-  const existing = await prisma.phaseFill.findUnique({ where: { projectId_phase: { projectId: p.projectId, phase: "PILOT" } } });
-  await prisma.phaseFill.upsert({
-    where: { projectId_phase: { projectId: p.projectId, phase: "PILOT" } },
-    create: { projectId: p.projectId, phase: "PILOT", status: pending },
-    update: { status: { ...((existing?.status as Prisma.JsonObject | null) ?? {}), ...pending } },
-  });
+  await markPhaseFillPending(p.projectId, "PILOT", sections);
   void runUppstartFill({ ...p, only: sections }).catch((err) =>
     logger.error("uppstart-fill: crashed", { projectId: p.projectId, err: String(err) }),
   );

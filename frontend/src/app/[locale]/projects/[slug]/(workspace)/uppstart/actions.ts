@@ -10,7 +10,8 @@ import { startUppstartFill, UPPSTART_SECTIONS, type UppstartSection } from "@/li
 import type { PhaseGateOutcome } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import { logger } from "@/lib/logger";
-import { aiGateMessage, type AiGateBlockReason } from "@/lib/aiMode";
+import { aiGateMessage, resolveAiMode, type AiGateBlockReason } from "@/lib/aiMode";
+import { startLanseringFill } from "@/lib/lanseringFill";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { InsightError, latestInsight } from "@/lib/ideaInsights";
 import { cardsForUppstartDecision, missingCriteria, runUppstartGateBrief, uppstartGateCriteria, type GateBrief } from "@/lib/phaseGate";
@@ -204,7 +205,10 @@ export async function decideUppstartGate(projectSlug: string, outcome: string, n
   revalidatePath(`/projects/${projectSlug}`, "layout");
   if (decision !== "CONTINUE") return {};
   await advanceProjectPhase(project.slug);
-  // Lansering has no one-page overview yet — its guide starts at the success
-  // criteria the brief just proposed.
-  return { next: `/projects/${project.slug}/guide/production` };
+  // On to the Lansering overview. In AGENT mode the AI starts drafting it
+  // right away; without AI, the step-by-step guide.
+  if (!(await isAiProjectStartAvailable(userId))) return { next: `/projects/${project.slug}/guide/production` };
+  const { mode } = await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "PRODUCTION" });
+  if (mode === "AGENT") await startLanseringFill({ projectId: project.id, projectSlug: project.slug, userId });
+  return { next: `/projects/${project.slug}/lansering` };
 }
