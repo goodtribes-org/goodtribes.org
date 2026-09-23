@@ -11,7 +11,8 @@ import ValuePropositionHistory from "./ValuePropositionHistory";
 import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { Locale } from "next-intl";
 import { isFeatureEnabled } from "@/lib/featureFlags";
-import { getFieldProvenance } from "@/lib/fieldProvenance";
+import { getCanvasAiContext } from "@/lib/canvasAi";
+import CanvasAiBar from "@/components/ai/CanvasAiBar";
 
 export async function generateMetadata({
   params,
@@ -50,9 +51,9 @@ export default async function ValuePropositionPage({
     : false;
   const canvas = project.valueProposition;
   // vet/antar marking ships dark behind the ai-project-start flag.
-  const provenance = (await isFeatureEnabled("ai-project-start", session?.user?.id))
-    ? await getFieldProvenance(project.id, "valueProposition")
-    : undefined;
+  const ai = (await isFeatureEnabled("ai-project-start", session?.user?.id))
+    ? await getCanvasAiContext(project.id, "valueProposition")
+    : null;
 
   const helpGuide = await prisma.academyGuide.findFirst({
     where: { title: "Så använder du Värdeerbjudande-canvas", published: true },
@@ -70,7 +71,14 @@ export default async function ValuePropositionPage({
         action={<ValuePropositionHistory projectSlug={slug} />}
       />
 
-      <ValuePropositionGrid projectSlug={slug} canvas={canvas} canEdit={canEdit} provenance={provenance} />
+      {ai && <CanvasAiBar projectSlug={slug} entity="valueProposition" stepKey={ai.stepKey} mode={ai.mode} canEdit={canEdit} />}
+      <ValuePropositionGrid
+        projectSlug={slug}
+        canvas={canvas}
+        canEdit={canEdit}
+        provenance={ai?.provenance}
+        suggestions={ai?.suggestions}
+      />
     </div>
   );
 }

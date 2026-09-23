@@ -1255,7 +1255,9 @@
     "aiModeForStep": "AI for this step",
     "sdgRecommendation": "Tip: pick 1–3 goals the project clearly contributes to. Fewer goals make your impact easier to measure and explain.",
     "sdgTooMany": "You've picked {count} goals. Try to narrow it down to the 1–3 the project contributes to most clearly.",
-    "thinkAboutHeading": "Things to think about"
+    "thinkAboutHeading": "Things to think about",
+    "talkToAi": "Talk to the AI",
+    "talkToAiHint": "Tell the AI about the project in a short conversation and it fills in what's missing. Nothing you've already written is overwritten."
   },
   "PhaseGuide": {
     "title": "{phaseLabel} guide — {projectTitle}",
@@ -3833,6 +3835,20 @@
     "creating": "Creating the project…",
     "notRight": "That's not right",
     "backToConversation": "Back to the conversation",
-    "genericError": "Something went wrong — try again."
+    "genericError": "Something went wrong — try again.",
+    "existingNote": "Fields you've already filled in are never overwritten — the AI's suggestion is shown next to them instead.",
+    "approveExisting": "Approve and fill in the project"
+  },
+  "AiSuggestion": {
+    "label": "AI suggestion",
+    "use": "Use",
+    "useParts": "Use parts",
+    "ignore": "Ignore"
+  },
+  "CanvasAiBar": {
+    "review": "Review what I've written",
+    "reviewing": "Reviewing…",
+    "close": "Close",
+    "switchToAssist": "Want some help? Switch to AI helps me"
   }
 }

@@ -12,9 +12,11 @@ interface Props {
   canEdit: boolean;
   // Per-field provenance, passed only when vet/antar marking is enabled.
   provenance?: Record<string, ProvenanceInfo>;
+  // Pending AI suggestions per field (same flag).
+  suggestions?: Record<string, { id: string; content: string }>;
 }
 
-export default function ValuePropositionGrid({ projectSlug, canvas, canEdit, provenance }: Props) {
+export default function ValuePropositionGrid({ projectSlug, canvas, canEdit, provenance, suggestions }: Props) {
   const tField = useTranslations("ValuePropositionHistory");
   const tHint = useTranslations("ValuePropositionFields");
   const valueBlocks = VALUE_PROPOSITION_BLOCKS.filter((b) => b.side === "value");
@@ -32,6 +34,7 @@ export default function ValuePropositionGrid({ projectSlug, canvas, canEdit, pro
         value={canvas ? (canvas[b.field] ?? null) : null}
         canEdit={canEdit}
         provenance={provenance ? (provenance[b.field] ?? null) : undefined}
+        suggestion={suggestions?.[b.field]}
       />
     );
   }

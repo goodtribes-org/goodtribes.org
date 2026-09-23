@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import FieldProvenanceBadge from "@/components/ai/FieldProvenanceBadge";
+import AiSuggestionBox from "@/components/ai/AiSuggestionBox";
+import { markAiSuggestionPartlyUsed } from "@/lib/actions/aiSuggestions";
 import type { ProvenanceInfo } from "@/lib/fieldProvenance";
 import { updateValuePropositionBlock } from "./actions";
 import type { ValuePropositionField } from "./fields";
@@ -18,16 +20,23 @@ interface Props {
   // Present only when provenance marking is enabled (ai-project-start flag);
   // undefined hides the vet/antar badge entirely. null = no row for this field.
   provenance?: ProvenanceInfo | null;
+  // A pending AI suggestion for this field (shown next to it, never written).
+  suggestion?: { id: string; content: string };
 }
 
-export default function ValuePropositionBlock({ projectSlug, field, side, label, hint, value, canEdit, provenance }: Props) {
+export default function ValuePropositionBlock({ projectSlug, field, side, label, hint, value, canEdit, provenance, suggestion }: Props) {
   const t = useTranslations("LeanCanvasBlock");
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
+  // "Använd delar": the editor opens with the suggestion to adapt; saving
+  // then closes the suggestion and marks the field as an edited AI draft.
+  const [draftFromSuggestion, setDraftFromSuggestion] = useState<string | null>(null);
 
   function handleSave(formData: FormData) {
     startTransition(async () => {
       await updateValuePropositionBlock(projectSlug, field, formData);
+      if (draftFromSuggestion !== null && suggestion) await markAiSuggestionPartlyUsed(suggestion.id);
+      setDraftFromSuggestion(null);
       setEditing(false);
     });
   }
@@ -68,7 +77,7 @@ export default function ValuePropositionBlock({ projectSlug, field, side, label,
         <form action={handleSave} className="flex-1 flex flex-col gap-2 mt-1">
           <textarea
             name="value"
-            defaultValue={value ?? ""}
+            defaultValue={draftFromSuggestion ?? value ?? ""}
             rows={4}
             autoFocus
             placeholder={hint}
@@ -84,7 +93,10 @@ export default function ValuePropositionBlock({ projectSlug, field, side, label,
             </button>
             <button
               type="button"
-              onClick={() => setEditing(false)}
+              onClick={() => {
+                setDraftFromSuggestion(null);
+                setEditing(false);
+              }}
               className="text-xs text-dark-slate/50 hover:text-dark-slate transition-colors"
             >
               {t("cancel")}
@@ -97,6 +109,16 @@ export default function ValuePropositionBlock({ projectSlug, field, side, label,
         <p className="text-xs text-dark-slate/30 italic mt-1 flex-1">
           {canEdit ? t("emptyEditable") : t("emptyReadOnly")}
         </p>
+      )}
+      {suggestion && !editing && (
+        <AiSuggestionBox
+          suggestion={suggestion}
+          canEdit={canEdit}
+          onUseParts={() => {
+            setDraftFromSuggestion(value ? `${value}\n\n${suggestion.content}` : suggestion.content);
+            setEditing(true);
+          }}
+        />
       )}
     </div>
   );

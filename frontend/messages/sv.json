@@ -1255,7 +1255,9 @@
     "aiModeForStep": "AI för det här steget",
     "sdgRecommendation": "Tips: välj 1–3 mål som projektet tydligt bidrar till. Färre mål gör det lättare att mäta och berätta om er impact.",
     "sdgTooMany": "Du har valt {count} mål. Försök begränsa dig till de 1–3 som projektet tydligast bidrar till.",
-    "thinkAboutHeading": "Att fundera på"
+    "thinkAboutHeading": "Att fundera på",
+    "talkToAi": "Prata med AI:n",
+    "talkToAiHint": "Berätta om projektet i ett kort samtal, så fyller AI:n i det som saknas. Inget du redan skrivit skrivs över."
   },
   "PhaseGuide": {
     "title": "{phaseLabel}-guiden — {projectTitle}",
@@ -3833,6 +3835,20 @@
     "creating": "Skapar projektet…",
     "notRight": "Det stämmer inte",
     "backToConversation": "Tillbaka till samtalet",
-    "genericError": "Något gick fel — försök igen."
+    "genericError": "Något gick fel — försök igen.",
+    "existingNote": "Fält du redan fyllt i skrivs aldrig över — där visas AI:ns förslag bredvid fältet i stället.",
+    "approveExisting": "Godkänn och fyll i projektet"
+  },
+  "AiSuggestion": {
+    "label": "AI-förslag",
+    "use": "Använd",
+    "useParts": "Använd delar",
+    "ignore": "Ignorera"
+  },
+  "CanvasAiBar": {
+    "review": "Granska det jag skrivit",
+    "reviewing": "Granskar…",
+    "close": "Stäng",
+    "switchToAssist": "Vill du ha hjälp? Byt till AI hjälper mig"
   }
 }

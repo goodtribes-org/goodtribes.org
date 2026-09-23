@@ -226,3 +226,30 @@ model DreamConversation {
 
   @@index([userId, status])
 }
+
+enum AiFieldSuggestionStatus {
+  pending
+  used
+  ignored
+}
+
+// An AI suggestion for one project field that is shown NEXT TO the field
+// instead of being written into it — used in ASSIST mode ("AI hjälper
+// mig": the AI never fills anything in itself) and whenever the field
+// already has human content (canAiWrite in src/lib/fieldProvenance.ts).
+// The human decides: Använd / Använd delar / Ignorera. At most one pending
+// suggestion per field; a newer one replaces it.
+model AiFieldSuggestion {
+  id          String                  @id @default(cuid())
+  projectId   String
+  project     Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  entity      String
+  field       String
+  content     String                  @db.Text
+  status      AiFieldSuggestionStatus @default(pending)
+  decidedById String?
+  decidedAt   DateTime?
+  createdAt   DateTime                @default(now())
+
+  @@index([projectId, entity, status])
+}
