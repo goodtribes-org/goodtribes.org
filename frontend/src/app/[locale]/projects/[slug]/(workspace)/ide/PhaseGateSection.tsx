@@ -7,6 +7,7 @@ import type { GateBrief } from "@/lib/phaseGate";
 import { decideIdeaGate, generateGateBrief } from "./actions";
 import { decideUppstartGate, generateUppstartGateBrief } from "../uppstart/actions";
 import { decideLanseringGate, generateLanseringGateBrief } from "../lansering/actions";
+import { decideEtableraGate, generateEtableraGateBrief } from "../etablera/actions";
 
 type Outcome = "CONTINUE" | "ADJUST" | "PIVOT" | "PAUSE";
 const OUTCOMES: Outcome[] = ["CONTINUE", "ADJUST", "PIVOT", "PAUSE"];
@@ -21,6 +22,7 @@ const ACTIONS = {
   idea: { brief: generateGateBrief, decide: decideIdeaGate },
   uppstart: { brief: generateUppstartGateBrief, decide: decideUppstartGate },
   lansering: { brief: generateLanseringGateBrief, decide: decideLanseringGate },
+  etablera: { brief: generateEtableraGateBrief, decide: decideEtableraGate },
 };
 
 const VERDICT_STYLE: Record<string, string> = {
@@ -29,7 +31,7 @@ const VERDICT_STYLE: Record<string, string> = {
   unclear: "border-amber-300 bg-amber-50 text-amber-700",
 };
 
-// The end of a phase (Idé → Uppstart → Lansering → Etablera): are the criteria
+// The end of a phase (Idé → Uppstart → Lansering → Etablera → Skala): are the criteria
 // met, what does the evidence say (the AI's one-page brief), and the
 // team's decision. A decision point, not a lock — going ahead with
 // criteria unmet is allowed and recorded.
@@ -141,7 +143,7 @@ export default function PhaseGateSection({
           </div>
           {(brief.criteriaVerdicts?.length ?? 0) > 0 && (
             <div className="mt-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-dark-slate/50">{t("criteriaVerdicts")}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-dark-slate/50">{tg("criteriaVerdicts")}</p>
               <ul className="mt-1 flex flex-col gap-1.5">
                 {brief.criteriaVerdicts.map((c, i) => (
                   <li key={i} className="rounded-lg bg-white/70 px-3 py-2">

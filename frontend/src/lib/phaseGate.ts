@@ -7,6 +7,8 @@ import { CANVAS_FIELD_KEYS, InsightError, latestInsight, type CritiqueContent, t
 import { LEAN_CANVAS_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
 import {
+  ETABLERA_GATE_SYSTEM_PROMPT,
+  ETABLERA_GATE_TOOL,
   LANSERING_GATE_SYSTEM_PROMPT,
   LANSERING_GATE_TOOL,
   PHASE_GATE_SYSTEM_PROMPT,
@@ -464,22 +466,31 @@ export async function runLanseringGateBrief(projectId: string, slug: string, use
 
 // ADJUST: measure what's still unclear. PIVOT: fix the criteria the pilot
 // didn't meet. Pure, like the other two.
-export function cardsForLanseringDecision(outcome: PhaseGateOutcome, brief: GateBrief | null): { title: string; description: string }[] {
+export function cardsForLanseringDecision(
+  outcome: PhaseGateOutcome,
+  brief: GateBrief | null,
+  words: { unclear: string; unclearWhy: string; notMet: string; notMetWhy: string } = {
+    unclear: "Mät",
+    unclearWhy: "Piloten gav inte tillräckligt underlag för det här framgångskriteriet. Fortsätt piloten och mät det.",
+    notMet: "Åtgärda",
+    notMetWhy: "Piloten nådde inte det här framgångskriteriet. Ta reda på varför och ändra lösningen innan nästa försök.",
+  },
+): { title: string; description: string }[] {
   if (outcome === "ADJUST") {
     const open = [...new Set(brief?.unanswered ?? [])].map((q) => ({
       title: `Ta reda på: ${q}`.slice(0, 200),
-      description: "Det här behövs för att kunna bedöma piloten. Ta reda på det medan piloten fortsätter.",
+      description: "Det här behövs för att kunna bedöma läget. Ta reda på det innan nästa beslut.",
     }));
     const unclear = [...new Set(brief?.criteriaVerdicts.filter((c) => c.verdict === "unclear").map((c) => c.criterion) ?? [])].map((c) => ({
-      title: `Mät: ${c}`.slice(0, 200),
-      description: "Piloten gav inte tillräckligt underlag för det här framgångskriteriet. Fortsätt piloten och mät det.",
+      title: `${words.unclear}: ${c}`.slice(0, 200),
+      description: words.unclearWhy,
     }));
     return [...open, ...unclear];
   }
   if (outcome === "PIVOT") {
     return [...new Set(brief?.criteriaVerdicts.filter((c) => c.verdict === "not_met").map((c) => c.criterion) ?? [])].map((c) => ({
-      title: `Åtgärda: ${c}`.slice(0, 200),
-      description: "Piloten nådde inte det här framgångskriteriet. Ta reda på varför och ändra lösningen innan nästa försök.",
+      title: `${words.notMet}: ${c}`.slice(0, 200),
+      description: words.notMetWhy,
     }));
   }
   return [];
@@ -490,4 +501,112 @@ export function pilotDecisionFor(outcome: PhaseGateOutcome): "GO" | "NO_GO" | nu
   if (outcome === "CONTINUE") return "GO";
   if (outcome === "PIVOT" || outcome === "PAUSE") return "NO_GO";
   return null;
+}
+
+// ─── Etablera → Skala ───────────────────────────────────────────────────────
+
+export const ETABLERA_GATE_CRITERIA = [
+  "process_scaled_up",
+  "stable_operations_funding",
+  "funding_secured",
+  "partnerships_formalized",
+  "supporter_base_built",
+  "playbook_documented",
+  "review_council_deep_review",
+] as const;
+
+export const ETABLERA_CARD_WORDS = {
+  unclear: "Stärk",
+  unclearWhy: "Underlaget räcker inte för att säga att det här är på plats. Stärk det innan ni skalar.",
+  notMet: "Åtgärda",
+  notMetWhy: "Det här saknas för att projektet ska klara att växa. Lös det innan ni skalar.",
+};
+
+// Checklist keys; each counts as met when ticked, or when the project's
+// own data shows it (funding applied for or pledged, funding awarded, an
+// active partnership, a playbook page, a completed council review).
+export async function etableraGateCriteria(projectId: string, slug: string): Promise<{ criteria: GateCriteria }> {
+  const [done, campaign, applications, partnerships, playbook, review] = await Promise.all([
+    prisma.initiativeChecklistItem.findMany({
+      where: { projectId, completedAt: { not: null }, itemKey: { in: [...ETABLERA_GATE_CRITERIA] } },
+      select: { itemKey: true },
+    }),
+    prisma.fundingCampaign.findUnique({ where: { projectId }, select: { id: true, _count: { select: { pledges: { where: { pledgeStatus: "confirmed" } } } } } }),
+    prisma.fundingApplication.findMany({ where: { projectId, status: { in: ["submitted", "awarded"] } }, select: { status: true } }),
+    prisma.partnership.count({ where: { projectId, status: "active" } }),
+    prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "playbook" } }, select: { id: true } }),
+    prisma.reviewCouncilRequest.findFirst({ where: { projectId, status: "completed" }, select: { id: true } }),
+  ]);
+  const doneKeys = new Set(done.map((d) => d.itemKey));
+  const has: Partial<Record<(typeof ETABLERA_GATE_CRITERIA)[number], boolean>> = {
+    stable_operations_funding: !!campaign || applications.length > 0,
+    funding_secured: applications.some((a) => a.status === "awarded") || (campaign?._count.pledges ?? 0) > 0,
+    partnerships_formalized: partnerships > 0,
+    playbook_documented: !!playbook,
+    review_council_deep_review: !!review,
+  };
+  return { criteria: ETABLERA_GATE_CRITERIA.map((key) => ({ key, met: doneKeys.has(key) || !!has[key] })) };
+}
+
+export async function runEtableraGateBrief(projectId: string, slug: string, userId: string): Promise<GateBrief> {
+  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId });
+  if (!gate.ok) throw new InsightError(gate.reason);
+
+  const [project, plan, wikis, campaign, applications, partnerships, review, metrics, roles, previous] = await Promise.all([
+    prisma.project.findUnique({ where: { id: projectId }, select: { title: true, summary: true } }),
+    prisma.establishmentPlan.findUnique({ where: { projectSlug: slug }, select: { scaledProcessNotes: true, supporterBaseNotes: true } }),
+    prisma.wikiPage.findMany({ where: { projectSlug: slug, slug: { in: ["finansieringsplan", "partnerskap", "playbook"] } }, select: { slug: true, content: true } }),
+    prisma.fundingCampaign.findUnique({
+      where: { projectId },
+      select: { title: true, goal: true, currency: true, status: true, pledges: { where: { pledgeStatus: "confirmed" }, select: { amount: true } } },
+    }),
+    prisma.fundingApplication.findMany({ where: { projectId }, select: { status: true, amountRequestedSek: true, outcome: true, outcomeAmountSek: true, fundingSource: { select: { name: true } } } }),
+    prisma.partnership.findMany({ where: { projectId }, select: { type: true, status: true, description: true, organisation: { select: { name: true } } } }),
+    prisma.reviewCouncilRequest.findFirst({ where: { projectId }, orderBy: { createdAt: "desc" }, select: { status: true, outcomeNote: true } }),
+    prisma.impactMetric.findMany({ where: { projectSlug: slug }, select: { label: true, unit: true, currentValue: true, targetValue: true, _count: { select: { updates: true } } } }),
+    prisma.projectRoleNeed.findMany({ where: { projectId }, select: { title: true, filledById: true } }),
+    latestInsight<GateBrief>(projectId, "LANSERING_GATE"),
+  ]);
+  if (!project) throw new InsightError("not_found");
+  const strip = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  const wiki = (s: string) => wikis.find((w) => w.slug === s)?.content;
+  const pledged = campaign?.pledges.reduce((sum, p) => sum + p.amount, 0) ?? 0;
+
+  const content = [
+    `Projekt: ${project.title} — ${project.summary ?? ""}`,
+    plan ? `Etableringsplan:\nDrift: ${plan.scaledProcessNotes ?? "—"}\nSupporterbas: ${plan.supporterBaseNotes ?? "—"}` : "Ingen etableringsplan.",
+    wiki("finansieringsplan") ? `Finansieringsplan: ${strip(wiki("finansieringsplan")!).slice(0, 1200)}` : "Ingen finansieringsplan.",
+    campaign ? `Insamlingskampanj "${campaign.title}" (${campaign.status}): ${pledged} av ${campaign.goal} ${campaign.currency} insamlat` : "Ingen insamlingskampanj.",
+    applications.length
+      ? `Ansökningar: ${applications.map((a) => `${a.fundingSource.name}: ${a.status}${a.amountRequestedSek ? `, sökt ${a.amountRequestedSek} kr` : ""}${a.outcomeAmountSek ? `, beviljat ${a.outcomeAmountSek} kr` : ""}${a.outcome ? ` (${a.outcome})` : ""}`).join("; ")}`
+      : "Inga finansieringsansökningar.",
+    partnerships.length
+      ? `Partnerskap: ${partnerships.map((p) => `${p.organisation.name} (${p.type}, ${p.status})${p.description ? ` — ${p.description}` : ""}`).join("; ")}`
+      : "Inga registrerade partnerskap.",
+    wiki("partnerskap") ? `Partnerskapsplan: ${strip(wiki("partnerskap")!).slice(0, 800)}` : "",
+    wiki("playbook") ? `Playbook finns: ${strip(wiki("playbook")!).slice(0, 600)} …` : "Ingen playbook.",
+    review ? `Granskningsrådet: ${review.status}${review.outcomeNote ? ` — ${review.outcomeNote}` : ""}` : "Ingen granskning begärd.",
+    `Impact: ${metrics.map((m) => `${m.label} ${m.currentValue} ${m.unit}${m.targetValue ? ` (mål ${m.targetValue})` : ""}${m._count.updates ? "" : " — inte rapporterat"}`).join("; ") || "inga mätetal"}`,
+    `Kärnteam: ${roles.map((r) => `${r.title} (${r.filledById ? "tillsatt" : "vakant"})`).join(", ") || "inga roller definierade"}`,
+    previous ? `Fokus som sattes för Etablera vid pilotens go/no-go: ${previous.content.nextFocus.join(" | ")}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+  const response = await gate.client.messages.create(
+    {
+      model: "claude-sonnet-4-6",
+      max_tokens: 3000,
+      system: ETABLERA_GATE_SYSTEM_PROMPT,
+      tools: [ETABLERA_GATE_TOOL],
+      tool_choice: { type: "tool", name: ETABLERA_GATE_TOOL.name },
+      messages: [{ role: "user", content }],
+    },
+    { timeout: 90_000, maxRetries: 1 },
+  );
+  const toolUse = response.content.find((b) => b.type === "tool_use");
+  const brief = coerceGateBrief(toolUse && toolUse.type === "tool_use" ? toolUse.input : null);
+  if (!brief.reasons.length && !brief.learned.length) throw new InsightError("empty");
+  await prisma.aiInsight.create({ data: { projectId, kind: "ETABLERA_GATE", content: brief as unknown as Prisma.InputJsonValue } });
+  return brief;
 }
