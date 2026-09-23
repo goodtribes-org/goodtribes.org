@@ -3766,5 +3766,38 @@
     "assumed": "Assumed",
     "markKnown": "Mark as something you know",
     "markAssumed": "Mark as an assumption"
+  },
+  "ProjectStart": {
+    "heading": "Start a new project",
+    "intro": "How much do you want the AI to do? You can change it at any time, for the whole project or for individual steps.",
+    "recommended": "Recommended",
+    "agentTitle": "Let the AI do the work",
+    "agentDesc": "Tell us about your idea in a short conversation. The AI then fills in the guide for you, and you review and approve.",
+    "assistTitle": "The AI helps me",
+    "assistDesc": "Tell us about your idea in a short conversation. You fill in the guide yourself, with the AI's suggestions next to each field.",
+    "manualTitle": "I'll do it all myself",
+    "manualDesc": "Go straight to the guide and fill in everything yourself, without AI.",
+    "changeLater": "The conversation takes about 10–15 minutes and can be paused. Nothing is saved to the project until you have approved the summary.",
+    "resumeHeading": "Continue the conversation",
+    "resumeLink": "Conversation in progress ({covered} of 6 areas) — last {date}"
+  },
+  "DreamConversation": {
+    "heading": "The dream conversation",
+    "intro": "Tell it in your own words. One question at a time — short answers are fine.",
+    "progressLabel": "Areas in the conversation",
+    "areaDream": "The dream",
+    "areaProblem": "The problem",
+    "areaWhyYou": "Why you",
+    "areaIdea": "The idea",
+    "areaPeople": "The people",
+    "areaConditions": "Conditions",
+    "progressCount": "{count} of {total} areas",
+    "progressComplete": "All areas are covered",
+    "openQuestions": "{count, plural, one {# open question} other {# open questions}}",
+    "pause": "Pause and continue later",
+    "delete": "Delete the conversation",
+    "deleteConfirm": "Delete the whole conversation? This can't be undone.",
+    "deleteYes": "Yes, delete",
+    "deleteNo": "Cancel"
   }
 }

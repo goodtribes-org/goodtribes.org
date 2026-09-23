@@ -5,6 +5,9 @@ import { htmlToPreviewText } from "@/lib/renderBody";
 import { getTranslations } from "next-intl/server";
 import { buildMetadata } from "@/lib/metadata";
 import NewProjectGuide from "./NewProjectGuide";
+import ProjectStartChoice from "./ProjectStartChoice";
+import { isFeatureEnabled } from "@/lib/featureFlags";
+import { parseDreamState } from "@/lib/dreamConversation";
 import type { Metadata } from "next";
 import type { Locale } from "next-intl";
 
@@ -19,7 +22,7 @@ export default async function NewProjectPage({
   searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ from?: string; fromThread?: string; title?: string }>;
+  searchParams: Promise<{ from?: string; fromThread?: string; title?: string; manual?: string }>;
 }) {
   const { locale } = await params;
   const [session, t] = await Promise.all([
@@ -28,7 +31,28 @@ export default async function NewProjectPage({
   ]);
   if (!session?.user?.id) redirect("/login");
 
-  const { from: ideaId, fromThread, title: titleParam } = await searchParams;
+  const { from: ideaId, fromThread, title: titleParam, manual } = await searchParams;
+
+  // Vägvalet (behind the ai-project-start flag): a plain "Nytt projekt"
+  // first asks how much the AI should do. Promoting an idea or a thread, or
+  // choosing "Jag gör allt själv" (?manual=1), goes straight to Snabbstart.
+  if (!ideaId && !fromThread && !manual && (await isFeatureEnabled("ai-project-start", session.user.id))) {
+    const inProgress = await prisma.dreamConversation.findMany({
+      where: { userId: session.user.id, status: "in_progress" },
+      orderBy: { updatedAt: "desc" },
+      take: 3,
+      select: { roomId: true, updatedAt: true, state: true },
+    });
+    return (
+      <ProjectStartChoice
+        inProgress={inProgress.map((c) => ({
+          roomId: c.roomId,
+          updatedAt: c.updatedAt,
+          coveredCount: parseDreamState(c.state).covered.length,
+        }))}
+      />
+    );
+  }
 
   let initial: { title?: string; description?: string; sdgGoals?: number[]; category?: string; tags?: string[]; imageUrl?: string } = {};
 

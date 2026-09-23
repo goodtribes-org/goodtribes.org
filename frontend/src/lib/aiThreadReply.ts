@@ -56,7 +56,10 @@ export async function persistAiMessage(roomId: string, body: string, aiUserId: s
     },
   });
   await prisma.room.update({ where: { id: roomId }, data: { lastMessageAt: new Date() } });
-  publishToRoom(roomId, message);
+  // Same envelope sendRoomMessage publishes — RoomShell's SSE handler reads
+  // data.message, so a bare message here crashed open chat windows instead
+  // of showing the AI's reply live.
+  publishToRoom(roomId, { type: "created", message });
 
   const room = await prisma.room.findUnique({ where: { id: roomId } });
   if (room) {

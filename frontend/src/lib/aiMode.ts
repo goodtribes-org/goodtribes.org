@@ -10,7 +10,7 @@ import { toDisplayPhase } from "@/lib/projectPhase";
 // Every AI call belongs to a feature. The AiToolKey ones are user-visible
 // tools with their own ToolAiPreference; the rest are AI steps that have no
 // separate tool setting and only follow the step/phase/project levels.
-export type AiFeature = AiToolKey | "project-plan" | "translation" | "sandbox-seed";
+export type AiFeature = AiToolKey | "project-plan" | "translation" | "sandbox-seed" | "dream-conversation";
 
 // What kind of help the call gives, which decides which modes allow it:
 //   "agent"  — AI performs the work and writes a result (a card run, a
