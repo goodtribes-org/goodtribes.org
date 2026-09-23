@@ -100,6 +100,7 @@ export default async function IdeaGuidePage({
         canStartDream={canStartDream}
         openQuestions={dream ? parseOpenQuestions(dream.openQuestions) : undefined}
         sdgGuidance={aiFeatures}
+        hasOverview={!!dream}
       />
     </div>
   );

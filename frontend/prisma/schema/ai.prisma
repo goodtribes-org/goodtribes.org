@@ -218,6 +218,11 @@ model DreamConversation {
   // string[] — what the user didn't know yet ("vet inte" is a valid answer)
   openQuestions Json                    @default("[]")
   summary       Json?
+  // Progress of the AI filling in the Idé phase after the conversation:
+  // { about, leanCanvas, valueProposition, marketScan, interviewGuide:
+  //   "pending" | "running" | "done" | "failed" | "skipped" }. Drives the
+  // "AI skriver…" placeholders on the Idé overview page.
+  fillStatus    Json?
   status        DreamConversationStatus @default(in_progress)
   projectId     String?                 @unique
   project       Project?                @relation(fields: [projectId], references: [id], onDelete: SetNull)

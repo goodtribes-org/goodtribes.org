@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import type { LeanCanvas, ValueProposition } from "@prisma/client";
 import { completeIdeaGuideStep, updateIdeaDetails } from "./actions";
 import { toggleChecklistItem } from "../(workspace)/edit/actions";
@@ -68,6 +69,8 @@ interface Props {
   openQuestions?: string[];
   // Recommend 1–3 SDG goals (ai-project-start flag; needs no AI).
   sdgGuidance?: boolean;
+  // The project came from a Drömsamtal: link to the one-page Idé overview.
+  hasOverview?: boolean;
 }
 
 // The full idea-phase guide, all 8 steps navigable in either direction —
@@ -96,6 +99,7 @@ export default function IdeaGuide({
   canStartDream,
   openQuestions,
   sdgGuidance,
+  hasOverview,
 }: Props) {
   const t = useTranslations("IdeaGuide");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
@@ -264,6 +268,15 @@ export default function IdeaGuide({
           doneKeys={done}
           onStepClick={(i) => setStep(i)}
         />
+
+        {hasOverview && (
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-seagrass/40 bg-seagrass/5 p-4">
+            <p className="text-sm text-dark-slate/80">{t("overviewHint")}</p>
+            <Link href={`/projects/${slug}/ide`} className="rounded-lg bg-seagrass px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
+              {t("overviewLink")}
+            </Link>
+          </div>
+        )}
 
         {canStartDream && (
           <div className="mt-6 flex flex-wrap items-center gap-3 rounded-xl border border-seagrass/40 bg-seagrass/5 p-4">
