@@ -8,6 +8,7 @@ import { IDEA_GUIDE_STEPS } from "@/lib/ideaGuideSteps";
 import { isFeatureEnabled } from "@/lib/featureFlags";
 import { getProjectAiSettings } from "@/lib/aiMode";
 import { getFieldProvenance } from "@/lib/fieldProvenance";
+import { parseOpenQuestions } from "@/lib/dreamConversation";
 
 export default async function IdeaGuidePage({
   params,
@@ -48,13 +49,14 @@ export default async function IdeaGuidePage({
   // Per-step AI mode pickers ship dark behind the ai-project-start flag.
   // vet/antar marking on the canvas steps ships behind the same flag.
   const aiFeatures = await isFeatureEnabled("ai-project-start", session.user.id);
-  const [aiSettings, leanCanvasProvenance, valuePropositionProvenance] = aiFeatures
+  const [aiSettings, leanCanvasProvenance, valuePropositionProvenance, dream] = aiFeatures
     ? await Promise.all([
         getProjectAiSettings(project.id),
         getFieldProvenance(project.id, "leanCanvas"),
         getFieldProvenance(project.id, "valueProposition"),
+        prisma.dreamConversation.findUnique({ where: { projectId: project.id }, select: { openQuestions: true } }),
       ])
-    : [null, undefined, undefined];
+    : [null, undefined, undefined, null];
 
   return (
     <div className="max-w-5xl mx-auto min-w-0 w-full">
@@ -87,6 +89,7 @@ export default async function IdeaGuidePage({
         aiSettings={aiSettings}
         leanCanvasProvenance={leanCanvasProvenance}
         valuePropositionProvenance={valuePropositionProvenance}
+        openQuestions={dream ? parseOpenQuestions(dream.openQuestions) : undefined}
       />
     </div>
   );

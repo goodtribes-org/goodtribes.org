@@ -27,6 +27,20 @@ enum LegalType {
   NONPROFIT_OWN_ASSOC
 }
 
+// Förutsättningar from Drömsamtalet — used to pace the AI project manager
+// (fewer, smaller tasks for someone with a few hours a week; every human
+// task to the initiativtagare when solo).
+enum TeamMode {
+  SOLO
+  SMALL // 2–4 people
+  TEAM  // 5+
+}
+
+enum ProjectAmbition {
+  HOBBY
+  VENTURE
+}
+
 model Project {
   id          String   @id @default(cuid())
   slug        String   @unique
@@ -51,6 +65,9 @@ model Project {
   aiMode      AiMode?
   // When false, the AI project manager never creates tasks/cards on its own.
   aiProjectManager Boolean @default(true)
+  weeklyHours Int?
+  teamMode    TeamMode?
+  ambition    ProjectAmbition?
   // A founder-declared "looking for a new owner" flag — set explicitly by a
   // founder, never inferred from inactivity. While set, anyone logged in can
   // express interest in taking over; a founder/site-admin then picks one to
