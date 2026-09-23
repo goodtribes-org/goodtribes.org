@@ -20,4 +20,5 @@ export const SITE_ADMIN_NAV = [
   { href: "/site-admin/site-copy", label: "Sidtexter" },
   { href: "/site-admin/shop", label: "Shop" },
   { href: "/site-admin/funding-sources", label: "Fondkatalog" },
+  { href: "/site-admin/feature-flags", label: "Funktionsflaggor" },
 ];

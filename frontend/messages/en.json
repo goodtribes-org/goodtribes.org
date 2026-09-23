@@ -3723,5 +3723,13 @@
     "acceptButton": "Accept & join →",
     "loginPrompt": "Log in to accept this invitation.",
     "loginButton": "Log in →"
+  },
+  "FeatureFlagsAdminPage": {
+    "heading": "Feature flags",
+    "intro": "Roll out new functionality gradually. \"Site admins only\" lets you test against real data before anyone else sees it.",
+    "stateOff": "Off",
+    "stateAdminsOnly": "Site admins only",
+    "stateOn": "On for everyone",
+    "lastChanged": "Last changed {date}"
   }
 }

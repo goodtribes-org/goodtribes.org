@@ -3723,5 +3723,13 @@
     "acceptButton": "Acceptera och gå med →",
     "loginPrompt": "Logga in för att acceptera den här inbjudan.",
     "loginButton": "Logga in →"
+  },
+  "FeatureFlagsAdminPage": {
+    "heading": "Funktionsflaggor",
+    "intro": "Slå på ny funktionalitet stegvis. \"Bara site-admins\" låter er testa mot riktig data innan någon annan ser funktionen.",
+    "stateOff": "Av",
+    "stateAdminsOnly": "Bara site-admins",
+    "stateOn": "På för alla",
+    "lastChanged": "Senast ändrad {date}"
   }
 }
