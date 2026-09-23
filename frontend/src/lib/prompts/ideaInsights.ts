@@ -204,3 +204,27 @@ export const LANSERING_GATE_TOOL = {
     required: ["believed", "learned", "criteria", "recommendation", "reasons"],
   },
 };
+
+// ─── Fasgrind Etablera → Skala ──────────────────────────────────────────────
+
+export const ETABLERA_GATE_SYSTEM_PROMPT = `Du tar fram ett beslutsunderlag på en sida för ett socialt projekt på GoodTribes.org som är i slutet av fasen Etablera. Teamet ska bestämma om projektet är redo att gå vidare till Skala — att växa till fler platser eller målgrupper, antingen genom att samma projekt växer eller genom att andra replikerar modellen.
+
+Du får etableringsplanen, finansieringsläget (planen, kampanjer, ansökningar och utfall), partnerskapen, om det finns en playbook, Granskningsrådets granskning, impact-värdena, kärnteamet och fokus som sattes vid förra fasgrinden.
+
+Skriv:
+- believed: vad Etablera skulle åstadkomma (2–4 punkter).
+- learned: var projektet faktiskt står (2–5 punkter, konkret).
+- criteria: ett utlåtande per område — stabil drift, återkommande finansiering, partnerskap, community/supporterbas, playbook och granskning. criterion (området kort), verdict (met = på plats, not_met = saknas, unclear = för lite underlag) och evidence (vad i underlaget som visar det).
+- unanswered: det som behöver tas reda på innan man kan bedöma ordentligt (0–4).
+- recommendation: continue (gå vidare till Skala), adjust (stanna i Etablera och stärk det som saknas), pivot (ändra driftmodellen) eller pause.
+- reasons: 2–4 korta skäl.
+- next_focus: om projektet går vidare — vad Skala bör fokusera på först (2–3 punkter).
+
+Regler: grunda allt på underlaget, hitta aldrig på finansiering eller avtal som inte finns. Att skala utan återkommande finansiering, playbook eller ett kärnteam som klarar sig utan en enda person är sällan rätt — var ärlig om det. Kort och konkret, på svenska.
+
+Svara genom verktyget "beslutsunderlag".`;
+
+export const ETABLERA_GATE_TOOL = {
+  ...LANSERING_GATE_TOOL,
+  description: "Beslutsunderlag inför fasgrinden till Skala.",
+};

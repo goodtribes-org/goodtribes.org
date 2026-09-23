@@ -6,7 +6,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { hasProjectRole, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
-import { aiGateMessage, type AiGateBlockReason } from "@/lib/aiMode";
+import { aiGateMessage, resolveAiMode, type AiGateBlockReason } from "@/lib/aiMode";
+import { startEtableraFill } from "@/lib/etableraFill";
 import { InsightError } from "@/lib/ideaInsights";
 import { logger } from "@/lib/logger";
 import { appendLogEntry, LANSERING_SECTIONS, startLanseringFill, summarizePilotResults, type LanseringSection } from "@/lib/lanseringFill";
@@ -185,6 +186,10 @@ export async function decideLanseringGate(projectSlug: string, outcome: string, 
   revalidatePath(`/projects/${projectSlug}`, "layout");
   if (decision !== "CONTINUE") return {};
   await advanceProjectPhase(project.slug);
-  // Etablera has no one-page overview yet — its step-by-step guide.
-  return { next: `/projects/${project.slug}/guide/establish` };
+  // On to the Etablera overview. In AGENT mode the AI starts drafting it
+  // right away; without AI, the step-by-step guide.
+  if (!(await isAiProjectStartAvailable(userId))) return { next: `/projects/${project.slug}/guide/establish` };
+  const { mode } = await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "ESTABLISH" });
+  if (mode === "AGENT") await startEtableraFill({ projectId: project.id, projectSlug: project.slug, userId });
+  return { next: `/projects/${project.slug}/etablera` };
 }
