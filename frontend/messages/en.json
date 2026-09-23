@@ -3789,7 +3789,7 @@
   },
   "DreamConversation": {
     "heading": "The dream conversation",
-    "intro": "Tell it in your own words. One question at a time — short answers are fine.",
+    "intro": "Tell it in your own words, one question at a time — short answers are fine. When all six areas below are ticked off, the AI writes a summary for you to read and approve. Only then is the project created.",
     "progressLabel": "Areas in the conversation",
     "areaDream": "The dream",
     "areaProblem": "The problem",
@@ -3808,7 +3808,14 @@
     "summarize": "Summarise",
     "summarizing": "Summarising…",
     "summarizeEarlyHint": "Not every area is covered yet — you can summarise anyway.",
-    "summaryError": "Couldn't summarise right now — try again."
+    "summaryError": "Couldn't summarise right now — try again.",
+    "nextStepHeading": "The conversation is done!",
+    "nextStepBody": "Next: the AI summarises what you've told it. You read the summary, correct anything that's off and approve — only then is the project created.",
+    "nextStepButton": "Show the summary",
+    "nextStepWorking": "Summarising…",
+    "nextStepWait": "It takes about half a minute.",
+    "nextStepAddMore": "Want to add something? Write it in the chat first.",
+    "summaryWaiting": "The summary is ready and waiting for you."
   },
   "DreamSummary": {
     "heading": "Here's how I understood you",

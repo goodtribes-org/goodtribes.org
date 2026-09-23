@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { DREAM_AREAS, type DreamArea } from "@/lib/dreamConversation";
-import { generateDreamSummary, getDreamProgress, type DreamProgress } from "../actions";
-import { useTransition } from "react";
+import type { DreamProgress } from "../actions";
+import { useDreamSummary } from "./useDreamSummary";
 
 const AREA_KEY: Record<DreamArea, string> = {
   dream: "areaDream",
@@ -15,49 +14,14 @@ const AREA_KEY: Record<DreamArea, string> = {
   conditions: "areaConditions",
 };
 
-// The six areas as a progress indicator. The AI updates the state
-// asynchronously after each reply, so this polls while the page is open
-// (cheap: one small DB read, no AI call).
+// The six areas as a progress indicator, plus an early "Sammanfatta" for
+// those who want to wrap up before every area is covered. When the
+// conversation is complete, DreamNextStep (at the bottom, where the user is
+// typing) takes over as the main call to action.
 export default function DreamProgressBar({ roomId, initial }: { roomId: string; initial: DreamProgress }) {
   const t = useTranslations("DreamConversation");
-  const [progress, setProgress] = useState(initial);
-
-  useEffect(() => {
-    let active = true;
-    const id = window.setInterval(async () => {
-      try {
-        const next = await getDreamProgress(roomId);
-        if (active) setProgress(next);
-      } catch {
-        // transient — try again on the next tick
-      }
-    }, 4000);
-    return () => {
-      active = false;
-      window.clearInterval(id);
-    };
-  }, [roomId]);
-
-  const [summarizing, startSummarizing] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  // Summarising makes sense once there's something to summarise; it's the
-  // natural next step (and highlighted) once every area is covered.
-  const canSummarize = progress.covered.length >= 3;
-
-  function summarize() {
-    setError(null);
-    startSummarizing(async () => {
-      try {
-        await generateDreamSummary(roomId);
-      } catch (e) {
-        // redirect() on success surfaces as a thrown NEXT_REDIRECT here —
-        // Next handles it; only real errors are shown.
-        if (!(e instanceof Error) || !String((e as { digest?: string }).digest ?? "").startsWith("NEXT_REDIRECT")) {
-          setError(t("summaryError"));
-        }
-      }
-    });
-  }
+  const { progress, summarize, summarizing, failed } = useDreamSummary(roomId, initial);
+  const canSummarizeEarly = progress.covered.length >= 3 && !progress.complete;
 
   return (
     <div>
@@ -81,20 +45,18 @@ export default function DreamProgressBar({ roomId, initial }: { roomId: string; 
         {progress.complete ? t("progressComplete") : t("progressCount", { count: progress.covered.length, total: DREAM_AREAS.length })}
         {progress.openQuestionCount > 0 && ` · ${t("openQuestions", { count: progress.openQuestionCount })}`}
       </p>
-      {canSummarize && (
+      {canSummarizeEarly && (
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={summarize}
             disabled={summarizing}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
-              progress.complete ? "bg-coral text-white hover:bg-watermelon" : "border border-coral text-coral hover:bg-coral/10"
-            }`}
+            className="rounded-lg border border-coral px-4 py-2 text-sm font-semibold text-coral hover:bg-coral/10 disabled:opacity-60"
           >
             {summarizing ? t("summarizing") : t("summarize")}
           </button>
-          {!progress.complete && <span className="text-xs text-dark-slate/50">{t("summarizeEarlyHint")}</span>}
-          {error && <span className="text-xs text-watermelon">{error}</span>}
+          <span className="text-xs text-dark-slate/50">{t("summarizeEarlyHint")}</span>
+          {failed && <span className="text-xs text-watermelon">{t("summaryError")}</span>}
         </div>
       )}
     </div>

@@ -47,3 +47,14 @@ describe("dreamProgressNote", () => {
     expect(dreamProgressNote({ ...base, aiQuestionCount: 15 })).toMatch(/avsluta samtalet/);
   });
 });
+
+describe("done — the coach closing the conversation", () => {
+  it("counts as complete even if not every area is covered, and is never lost", () => {
+    const partial = parseDreamState({ covered: ["dream", "idea"], done: true });
+    expect(partial.done).toBe(true);
+    expect(isDreamComplete(partial)).toBe(true);
+    const merged = mergeDreamState(partial, parseDreamState({ covered: ["people"] }));
+    expect(merged.done).toBe(true);
+    expect(isDreamComplete(parseDreamState({ covered: ["dream"], done: "yes" }))).toBe(false);
+  });
+});

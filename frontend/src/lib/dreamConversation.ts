@@ -8,6 +8,9 @@ export type DreamArea = (typeof DREAM_AREAS)[number];
 export type DreamState = {
   covered: DreamArea[];
   notes: Partial<Record<DreamArea, string>>;
+  // The coach has closed the conversation (it may do so before every area
+  // is covered, e.g. after ~15 questions).
+  done?: boolean;
 };
 
 function isDreamArea(v: unknown): v is DreamArea {
@@ -26,7 +29,7 @@ export function parseDreamState(raw: unknown): DreamState {
     const v = notesRaw[area];
     if (typeof v === "string" && v.trim()) notes[area] = v.trim();
   }
-  return { covered: DREAM_AREAS.filter((a) => covered.includes(a)), notes };
+  return { covered: DREAM_AREAS.filter((a) => covered.includes(a)), notes, ...(o.done === true ? { done: true } : {}) };
 }
 
 export function parseOpenQuestions(raw: unknown): string[] {
@@ -40,9 +43,12 @@ export function parseOpenQuestions(raw: unknown): string[] {
 // that forgets something.
 export function mergeDreamState(previous: DreamState, update: DreamState): DreamState {
   const covered = DREAM_AREAS.filter((a) => previous.covered.includes(a) || update.covered.includes(a));
-  return { covered, notes: { ...previous.notes, ...update.notes } };
+  const done = previous.done || update.done;
+  return { covered, notes: { ...previous.notes, ...update.notes }, ...(done ? { done: true } : {}) };
 }
 
+// Ready for the summary: every area covered, or the coach closed the
+// conversation.
 export function isDreamComplete(state: DreamState): boolean {
-  return DREAM_AREAS.every((a) => state.covered.includes(a));
+  return state.done === true || DREAM_AREAS.every((a) => state.covered.includes(a));
 }
