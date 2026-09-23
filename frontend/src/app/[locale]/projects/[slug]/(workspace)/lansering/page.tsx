@@ -9,20 +9,21 @@ import { isFeatureEnabled } from "@/lib/featureFlags";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { latestInsight } from "@/lib/ideaInsights";
-import type { GateBrief } from "@/lib/phaseGate";
+import { lanseringGateCriteria, MIN_LOG_ENTRIES, type GateBrief } from "@/lib/phaseGate";
 import { INITIATIVE_CHECKLIST_ITEMS } from "@/lib/projectPhase";
 import { isLanseringFillInProgress, parseLanseringStatus, type LanseringFillStatus } from "@/lib/lanseringFill";
 import OverviewSection from "../ide/OverviewSection";
 import FillPoller from "../ide/FillPoller";
 import DraftButton from "../uppstart/DraftButton";
 import PilotSection from "./PilotSection";
+import PhaseGateSection from "../ide/PhaseGateSection";
 
 // Which section of this page each Lansering checklist step lives in.
 const STEP_ANCHOR: Record<string, string> = {
   pilot_success_criteria: "pilot",
   pilot_executed_documented: "pilot",
   pilot_results_collected: "pilot",
-  pilot_go_no_go: "pilot",
+  pilot_go_no_go: "fasgrind",
   launch_marketing_plan_created: "marknad",
   workflows_formalized: "arbetsfloden",
   impact_measurement_setup: "impact",
@@ -44,7 +45,7 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
   const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true } });
   if (!project) notFound();
 
-  const [t, tCheck, canEdit, canLog, aiAvailable, fillRow, brief, decision, done, evaluation, pilotPlan, workflows, metrics, launch, cards, openCardCount] =
+  const [t, tCheck, canEdit, canLog, aiAvailable, fillRow, brief, decision, done, evaluation, pilotPlan, workflows, metrics, launch, cards, openCardCount, tGate, isFounder, gate, gateBrief, gateDecision] =
     await Promise.all([
       getTranslations({ locale, namespace: "LanseringOverview" }),
       getTranslations({ locale, namespace: "ProjectPhaseChecklist" }),
@@ -67,7 +68,14 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
         select: { id: true, title: true, createdByAi: true },
       }),
       prisma.kanbanCard.count({ where: { projectSlug: slug, column: { not: "DONE" } } }),
+      getTranslations({ locale, namespace: "PhaseGate" }),
+      hasProjectRole(project.id, session.user.id, ["FOUNDER"]),
+      lanseringGateCriteria(project.id, slug),
+      latestInsight<GateBrief>(project.id, "LANSERING_GATE"),
+      prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: "PRODUCTION" }, orderBy: { createdAt: "desc" } }),
     ]);
+  const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
+  const decisionDate = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
 
   const fill: LanseringFillStatus = fillRow ? parseLanseringStatus(fillRow.status, fillRow.updatedAt) : {};
   const doneKeys = new Set(done.map((d) => d.itemKey));
@@ -295,6 +303,36 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
           <p className="text-sm text-dark-slate/50">{t("tasksEmpty")}</p>
         )}
       </OverviewSection>
+
+      {project.phase === "PRODUCTION" ? (
+        <OverviewSection id="fasgrind" title={t("gateHeading")} badge={t("yourTurn")} writingLabel={writing}>
+          <PhaseGateSection
+            gate="lansering"
+            slug={slug}
+            criteria={gate.criteria.map((c) => ({ ...c, label: criterionLabel(c.key) }))}
+            countNote={{ key: "pilot_executed_documented", text: tGate("lansering.logOf", { count: gate.logCount, min: MIN_LOG_ENTRIES }) }}
+            brief={gateBrief?.content ?? null}
+            lastDecision={
+              gateDecision
+                ? { outcome: gateDecision.outcome, date: decisionDate(gateDecision.createdAt), missing: gateDecision.missing.map(criterionLabel) }
+                : null
+            }
+            fieldLabels={{}}
+            canEdit={canEdit}
+            isFounder={isFounder}
+            aiAvailable={aiAvailable}
+          />
+        </OverviewSection>
+      ) : (
+        gateDecision?.outcome === "CONTINUE" && (
+          <p className="rounded-2xl border border-seagrass/30 bg-seagrass/5 px-5 py-3 text-sm text-dark-slate/75">
+            {t("gateClosed", { date: decisionDate(gateDecision.createdAt) })}{" "}
+            <Link href={`/projects/${slug}/guide/establish`} className="font-semibold text-seagrass hover:underline">
+              {t("gateClosedLink")}
+            </Link>
+          </p>
+        )
+      )}
     </div>
   );
 }

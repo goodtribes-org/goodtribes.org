@@ -6,7 +6,14 @@ import { parseOpenQuestions } from "@/lib/dreamConversation";
 import { CANVAS_FIELD_KEYS, InsightError, latestInsight, type CritiqueContent, type SynthesisContent } from "@/lib/ideaInsights";
 import { LEAN_CANVAS_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
-import { PHASE_GATE_SYSTEM_PROMPT, PHASE_GATE_TOOL, UPPSTART_GATE_SYSTEM_PROMPT, UPPSTART_GATE_TOOL } from "@/lib/prompts/ideaInsights";
+import {
+  LANSERING_GATE_SYSTEM_PROMPT,
+  LANSERING_GATE_TOOL,
+  PHASE_GATE_SYSTEM_PROMPT,
+  PHASE_GATE_TOOL,
+  UPPSTART_GATE_SYSTEM_PROMPT,
+  UPPSTART_GATE_TOOL,
+} from "@/lib/prompts/ideaInsights";
 
 // ─── Gate criteria (Idé → Uppstart) ─────────────────────────────────────────
 
@@ -65,7 +72,26 @@ export type GateBrief = {
   // tests didn't answer, and proposed pilot success criteria.
   unanswered: string[];
   successCriteria: string[];
+  // Lansering → Etablera only: a verdict per pilot success criterion.
+  criteriaVerdicts: CriterionVerdict[];
 };
+
+export type CriterionVerdict = { criterion: string; verdict: "met" | "not_met" | "unclear"; evidence: string };
+
+function criteriaVerdicts(v: unknown): CriterionVerdict[] {
+  return (Array.isArray(v) ? v : [])
+    .map((x) => {
+      const o = (x ?? {}) as Record<string, unknown>;
+      const verdict = o.verdict === "met" || o.verdict === "not_met" ? o.verdict : "unclear";
+      return {
+        criterion: typeof o.criterion === "string" ? o.criterion.trim() : "",
+        verdict,
+        evidence: typeof o.evidence === "string" ? o.evidence.trim() : "",
+      } as CriterionVerdict;
+    })
+    .filter((c) => c.criterion)
+    .slice(0, 6);
+}
 
 function list(v: unknown, max: number): string[] {
   return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && !!x.trim()).map((x) => x.trim()).slice(0, max) : [];
@@ -88,6 +114,7 @@ export function coerceGateBrief(raw: unknown): GateBrief {
     nextFocus: list(o.next_focus, 3),
     unanswered: list(o.unanswered, 4),
     successCriteria: list(o.success_criteria, 4),
+    criteriaVerdicts: criteriaVerdicts(o.criteria),
   };
 }
 
@@ -324,4 +351,143 @@ export function cardsForUppstartDecision(
     }));
   }
   return [];
+}
+
+// ─── Lansering → Etablera (pilotens go/no-go) ───────────────────────────────
+
+// Checklist keys again. Each counts as met by what the project actually
+// has (criteria written, log entries, a results summary, a launch plan,
+// workflows, metrics) or when someone ticked it. The go/no-go step itself
+// (pilot_go_no_go) is what this gate records, so it isn't a criterion.
+export const LANSERING_GATE_CRITERIA = [
+  "pilot_success_criteria",
+  "pilot_executed_documented",
+  "pilot_results_collected",
+  "impact_measurement_setup",
+  "launch_marketing_plan_created",
+  "workflows_formalized",
+] as const;
+
+export const MIN_LOG_ENTRIES = 3;
+
+export function logEntryCount(log: string | null | undefined): number {
+  return (log ?? "").split("\n").filter((l) => l.trim()).length;
+}
+
+export async function lanseringGateCriteria(projectId: string, slug: string): Promise<{ criteria: GateCriteria; logCount: number }> {
+  const [done, evaluation, metricCount, launch, workflows] = await Promise.all([
+    prisma.initiativeChecklistItem.findMany({
+      where: { projectId, completedAt: { not: null }, itemKey: { in: [...LANSERING_GATE_CRITERIA] } },
+      select: { itemKey: true },
+    }),
+    prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true, executionNotes: true, resultsSummary: true } }),
+    prisma.impactMetric.count({ where: { projectSlug: slug } }),
+    prisma.launchPlan.findUnique({ where: { projectSlug: slug }, select: { targetAudience: true, positioning: true } }),
+    prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "arbetsfloden" } }, select: { id: true } }),
+  ]);
+  const doneKeys = new Set(done.map((d) => d.itemKey));
+  const logCount = logEntryCount(evaluation?.executionNotes);
+  const has: Record<(typeof LANSERING_GATE_CRITERIA)[number], boolean> = {
+    pilot_success_criteria: !!evaluation?.successCriteria?.trim(),
+    pilot_executed_documented: logCount >= MIN_LOG_ENTRIES,
+    pilot_results_collected: !!evaluation?.resultsSummary?.trim(),
+    impact_measurement_setup: metricCount > 0,
+    launch_marketing_plan_created: !!(launch?.targetAudience?.trim() || launch?.positioning?.trim()),
+    workflows_formalized: !!workflows,
+  };
+  return { logCount, criteria: LANSERING_GATE_CRITERIA.map((key) => ({ key, met: doneKeys.has(key) || has[key] })) };
+}
+
+export async function runLanseringGateBrief(projectId: string, slug: string, userId: string): Promise<GateBrief> {
+  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId });
+  if (!gate.ok) throw new InsightError(gate.reason);
+
+  const [project, evaluation, metrics, launch, workflows, roles, previous] = await Promise.all([
+    prisma.project.findUnique({ where: { id: projectId }, select: { title: true, summary: true } }),
+    prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true, executionNotes: true, resultsSummary: true } }),
+    prisma.impactMetric.findMany({
+      where: { projectSlug: slug },
+      select: { label: true, unit: true, targetValue: true, currentValue: true, updates: { orderBy: { createdAt: "asc" }, select: { value: true, note: true, createdAt: true } } },
+    }),
+    prisma.launchPlan.findUnique({ where: { projectSlug: slug }, include: { channels: { select: { name: true } } } }),
+    prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "arbetsfloden" } }, select: { content: true } }),
+    prisma.projectRoleNeed.findMany({ where: { projectId }, select: { title: true, filledById: true } }),
+    latestInsight<GateBrief>(projectId, "UPPSTART_GATE"),
+  ]);
+  if (!project) throw new InsightError("not_found");
+  const strip = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+  const content = [
+    `Projekt: ${project.title} — ${project.summary ?? ""}`,
+    `Framgångskriterier:\n${evaluation?.successCriteria?.trim() || "(inga angivna)"}`,
+    `Pilotlogg:\n${evaluation?.executionNotes?.trim() || "(inget loggat)"}`,
+    evaluation?.resultsSummary?.trim() ? `Resultatsammanfattning:\n${evaluation.resultsSummary}` : "Ingen resultatsammanfattning.",
+    `Impact-mätetal:\n${
+      metrics
+        .map(
+          (m) =>
+            `${m.label}: ${m.currentValue} ${m.unit}${m.targetValue ? ` (mål ${m.targetValue})` : ""}${
+              m.updates.length
+                ? ` — uppdateringar: ${m.updates.map((u) => `${u.createdAt.toISOString().slice(0, 10)} ${u.value}${u.note ? ` (${u.note})` : ""}`).join(", ")}`
+                : " — inga rapporterade värden"
+            }`,
+        )
+        .join("\n") || "(inga)"
+    }`,
+    launch
+      ? `Lanseringsplan: målgrupp ${launch.targetAudience ?? "—"}; budskap ${launch.positioning ?? "—"}; kanaler ${launch.channels.map((c) => c.name).join(", ") || "—"}`
+      : "Ingen lanseringsplan.",
+    workflows ? `Arbetsflöden och ansvar: ${strip(workflows.content).slice(0, 1500)}` : "Arbetsflöden och ansvar är inte beskrivna.",
+    `Kärnteam: ${roles.length ? roles.map((r) => `${r.title} (${r.filledById ? "tillsatt" : "vakant"})`).join(", ") : "inga roller definierade"}`,
+    previous ? `Fokus som sattes för piloten vid förra fasgrinden: ${previous.content.nextFocus.join(" | ")}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+  const response = await gate.client.messages.create(
+    {
+      model: "claude-sonnet-4-6",
+      max_tokens: 3000,
+      system: LANSERING_GATE_SYSTEM_PROMPT,
+      tools: [LANSERING_GATE_TOOL],
+      tool_choice: { type: "tool", name: LANSERING_GATE_TOOL.name },
+      messages: [{ role: "user", content }],
+    },
+    { timeout: 90_000, maxRetries: 1 },
+  );
+  const toolUse = response.content.find((b) => b.type === "tool_use");
+  const brief = coerceGateBrief(toolUse && toolUse.type === "tool_use" ? toolUse.input : null);
+  if (!brief.reasons.length && !brief.learned.length) throw new InsightError("empty");
+  await prisma.aiInsight.create({ data: { projectId, kind: "LANSERING_GATE", content: brief as unknown as Prisma.InputJsonValue } });
+  return brief;
+}
+
+// ADJUST: measure what's still unclear. PIVOT: fix the criteria the pilot
+// didn't meet. Pure, like the other two.
+export function cardsForLanseringDecision(outcome: PhaseGateOutcome, brief: GateBrief | null): { title: string; description: string }[] {
+  if (outcome === "ADJUST") {
+    const open = [...new Set(brief?.unanswered ?? [])].map((q) => ({
+      title: `Ta reda på: ${q}`.slice(0, 200),
+      description: "Det här behövs för att kunna bedöma piloten. Ta reda på det medan piloten fortsätter.",
+    }));
+    const unclear = [...new Set(brief?.criteriaVerdicts.filter((c) => c.verdict === "unclear").map((c) => c.criterion) ?? [])].map((c) => ({
+      title: `Mät: ${c}`.slice(0, 200),
+      description: "Piloten gav inte tillräckligt underlag för det här framgångskriteriet. Fortsätt piloten och mät det.",
+    }));
+    return [...open, ...unclear];
+  }
+  if (outcome === "PIVOT") {
+    return [...new Set(brief?.criteriaVerdicts.filter((c) => c.verdict === "not_met").map((c) => c.criterion) ?? [])].map((c) => ({
+      title: `Åtgärda: ${c}`.slice(0, 200),
+      description: "Piloten nådde inte det här framgångskriteriet. Ta reda på varför och ändra lösningen innan nästa försök.",
+    }));
+  }
+  return [];
+}
+
+// What the gate decision means for the pilot's own go/no-go field.
+export function pilotDecisionFor(outcome: PhaseGateOutcome): "GO" | "NO_GO" | null {
+  if (outcome === "CONTINUE") return "GO";
+  if (outcome === "PIVOT" || outcome === "PAUSE") return "NO_GO";
+  return null;
 }

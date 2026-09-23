@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "AiInsightKind" ADD VALUE 'LANSERING_GATE';
