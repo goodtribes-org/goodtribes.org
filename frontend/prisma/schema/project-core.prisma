@@ -44,6 +44,13 @@ model Project {
   // experimental/playground one (see /sandbox). No separate "lift" step:
   // graduating out of sandbox is just flipping this back to false.
   isSandbox   Boolean  @default(false)
+  // Project-wide AI mode, chosen at the start of the AI-guided project flow
+  // and changeable in project settings. NULL = a project created before
+  // AI modes existed: every AI call behaves exactly as it did before (see
+  // resolveAiMode's legacy default in src/lib/aiMode.ts).
+  aiMode      AiMode?
+  // When false, the AI project manager never creates tasks/cards on its own.
+  aiProjectManager Boolean @default(true)
   // A founder-declared "looking for a new owner" flag — set explicitly by a
   // founder, never inferred from inactivity. While set, anyone logged in can
   // express interest in taking over; a founder/site-admin then picks one to
@@ -122,6 +129,8 @@ model Project {
   alumni             ProjectAlumni[]      @relation("ProjectAlumni")
   openForReplication Boolean              @default(false)
   mentorships        MentorshipRequest[]  @relation("ProjectMentorships")
+  phaseAiSettings    ProjectPhaseAiSetting[]
+  stepAiSettings     ProjectStepAiSetting[]
   kudos              Kudos[]              @relation("ProjectKudos")
   streaks            UserStreak[]         @relation("ProjectStreaks")
   flags              ProjectFlag[]        @relation("ProjectFlags")

@@ -47,9 +47,15 @@ model AiTaskReview {
 // schema change every time a new one gets an AI entry point. Structurally
 // this is also what makes it "not a global switch": a project can run one
 // tool in AGENT mode and another in MANUAL mode simultaneously.
+// How much AI does on a project, a phase, a step or a tool (see
+// src/lib/aiMode.ts's resolveAiMode for how the levels combine):
+//   AGENT  — "Låt AI göra": AI performs the work and puts it up for review
+//   ASSIST — "AI hjälper mig": AI suggests/reviews on request, never writes itself
+//   MANUAL — "Jag gör själv": no AI calls at all
 enum AiMode {
   MANUAL
   AGENT
+  ASSIST
 }
 
 // TASK/PHASE/ALL is a scale of autonomy, not a second on/off switch --
@@ -109,4 +115,36 @@ model AiProjectPlan {
   decidedAt          DateTime?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
+}
+
+// Phase-level AI mode override (steg 1 of the AI-guided project start). No
+// row = inherit from the project. Keyed by *display* phase (IDEA covers the
+// merged IDEA/SPRINT step, see projectPhase.ts's toDisplayPhase).
+model ProjectPhaseAiSetting {
+  id          String       @id @default(cuid())
+  projectId   String
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  phase       ProjectPhase
+  aiMode      AiMode
+  updatedById String?
+  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime     @default(now())
+
+  @@unique([projectId, phase])
+}
+
+// Step-level AI mode override for a guide/checklist step (stepKey is an
+// InitiativeChecklistItem itemKey, e.g. "lean_canvas_created"). No row =
+// inherit from the phase. The most specific level wins.
+model ProjectStepAiSetting {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  stepKey     String
+  aiMode      AiMode
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@unique([projectId, stepKey])
 }

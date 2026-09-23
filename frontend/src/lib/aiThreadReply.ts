@@ -1,4 +1,4 @@
-import { getAnthropicClient, checkAiRateLimit } from "@/lib/anthropic";
+import { getAiClientFor } from "@/lib/aiMode";
 import { prisma } from "@/lib/prisma";
 import { publishToRoom, publishToUser } from "@/lib/redis";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
@@ -100,20 +100,28 @@ export async function triggerAiThreadReply(room: Room, triggeredByUserId: string
   const aiUser = await getAiParticipantUser();
 
   try {
-    const client = await getAnthropicClient();
-    if (!client) {
-      await persistAiMessage(room.id, "AI är inte konfigurerad just nu.", aiUser.id);
+    // Rate-limited on whoever's message mentioned @AI (enforced inside the
+    // gate): this is a real Anthropic call triggered by a chat message, not
+    // behind a dedicated "ask AI" button, so an active thread could
+    // otherwise generate one call per @AI mention with no cap. A
+    // project-scoped idea thread also follows the project's AI mode.
+    const gate = await getAiClientFor({
+      feature: "ai-thread-reply",
+      kind: "assist",
+      userId: triggeredByUserId,
+      projectId: room.projectId,
+    });
+    if (!gate.ok) {
+      const text =
+        gate.reason === "not_configured"
+          ? "AI är inte konfigurerad just nu."
+          : gate.reason === "mode"
+            ? "AI är avstängt i projektets AI-inställningar."
+            : "AI är tillfälligt otillgänglig just nu, försök igen om en stund.";
+      await persistAiMessage(room.id, text, aiUser.id);
       return;
     }
-    // Rate-limited on whoever's message mentioned @AI — same reasoning as
-    // every other AI call site (see checkAiRateLimit): this is a real
-    // Anthropic call triggered by a chat message, not behind a dedicated
-    // "ask AI" button, so an active thread could otherwise generate one
-    // call per @AI mention with no cap.
-    if (!(await checkAiRateLimit(triggeredByUserId))) {
-      await persistAiMessage(room.id, "AI är tillfälligt otillgänglig just nu, försök igen om en stund.", aiUser.id);
-      return;
-    }
+    const { client } = gate;
 
     const history = await prisma.message.findMany({
       where: { roomId: room.id, hiddenAt: null },

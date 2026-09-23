@@ -97,7 +97,7 @@ export default function EditProjectForm({ slug, projectId, showTranslationSugges
 
   function handleSuggest() {
     startSuggesting(async () => {
-      const result = await getSdgSuggestions(description);
+      const result = await getSdgSuggestions(description, projectId);
       if (result) {
         setAiSuggested(result.goals);
         setReasoning(result.reasoning);

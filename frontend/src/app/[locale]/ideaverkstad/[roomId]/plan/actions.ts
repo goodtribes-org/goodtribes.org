@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getRoomAccess } from "@/lib/roomAuth";
 import { sendRoomMessage } from "@/app/[locale]/messages/actions";
-import { getAnthropicClient, checkAiRateLimit } from "@/lib/anthropic";
+import { getAiClientFor, aiGateMessage } from "@/lib/aiMode";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { createProjectRecord } from "@/lib/createProject";
 import { logger } from "@/lib/logger";
@@ -85,9 +85,11 @@ export async function generateAiProjectPlan(roomId: string) {
   const access = await getRoomAccess(roomId, userId);
   if (!access || access.room.type !== "AI_INTAKE" || !access.canPost) throw new Error("Forbidden");
 
-  const client = await getAnthropicClient();
-  if (!client) throw new Error("AI är inte konfigurerad");
-  if (!(await checkAiRateLimit(userId))) throw new Error("För många AI-anrop just nu — försök igen om en stund");
+  // No project exists yet, so only configuration and the rate limit apply.
+  // The plan is a draft the user reviews before anything is created.
+  const gate = await getAiClientFor({ feature: "project-plan", kind: "assist", userId, projectId: null });
+  if (!gate.ok) throw new Error(aiGateMessage(gate.reason));
+  const { client } = gate;
 
   const history = await prisma.message.findMany({
     where: { roomId, hiddenAt: null },

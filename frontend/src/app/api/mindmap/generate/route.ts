@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { computeRadialLayout, toReactFlowEdges, type RawMindMapNode, type RawMindMapEdge } from "@/lib/mindmapLayout";
-import { getAnthropicClient, checkAiRateLimit } from "@/lib/anthropic";
+import { getAiClientFor, aiGateStatus } from "@/lib/aiMode";
 import type { Prisma } from "@prisma/client";
 
 function stripHtml(body: string): string {
@@ -27,6 +27,8 @@ export async function POST(req: Request) {
 
   let title: string;
   let contentText: string;
+  // A project-scoped idea thread follows the project's AI mode.
+  let projectId: string | null = null;
 
   if (source === "room") {
     const room = await prisma.room.findUnique({
@@ -47,6 +49,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Tråden har inga meddelanden än" }, { status: 400 });
     }
 
+    projectId = room.projectId;
     title = room.name ?? "Idéverkstad";
     contentText = history.map((m) => `${m.author.name ?? "Någon"}: ${stripHtml(m.body)}`).join("\n");
   } else {
@@ -67,14 +70,18 @@ export async function POST(req: Request) {
       .join("\n");
   }
 
-  if (!(await checkAiRateLimit(session.user.id))) {
-    return NextResponse.json({ error: "Too many AI requests — try again later" }, { status: 429 });
+  // Generated on request as a structuring aid — "assist".
+  const gate = await getAiClientFor({ feature: "mindmap", kind: "assist", userId: session.user.id, projectId });
+  if (!gate.ok) {
+    const error =
+      gate.reason === "rate_limited"
+        ? "Too many AI requests — try again later"
+        : gate.reason === "mode"
+          ? "AI är avstängt i projektets AI-inställningar"
+          : "AI ej konfigurerad";
+    return NextResponse.json({ error }, { status: aiGateStatus(gate.reason) });
   }
-
-  const client = await getAnthropicClient();
-  if (!client) {
-    return NextResponse.json({ error: "AI ej konfigurerad" }, { status: 500 });
-  }
+  const { client } = gate;
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-6",

@@ -5,8 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
-import { getAnthropicClient, checkAiRateLimit } from "@/lib/anthropic";
-import { getToolAiMode } from "@/lib/actions/aiPreferences";
+import { getAiClientFor, aiGateMessage } from "@/lib/aiMode";
 import { logger } from "@/lib/logger";
 import { enqueueProjectUpdatedFundingMatch } from "@/lib/fundingMatching";
 
@@ -63,8 +62,8 @@ export async function dismissMatch(matchId: string, projectSlug: string) {
 }
 
 // AI drafts the application from the project's Lean Canvas/Värdeerbjudande
-// data -- gated on the "funding-applications" ToolAiPreference (default
-// MANUAL). Human-triggered (a button, not automatic), and per-application
+// data -- gated through getAiClientFor (the "funding-applications" tool
+// setting, or the step/phase/project AI mode). Human-triggered (a button, not automatic), and per-application
 // only: there is deliberately no "draft all my applications" action.
 export async function requestAiDraft(applicationId: string, projectSlug: string) {
   const session = await auth();
@@ -72,13 +71,13 @@ export async function requestAiDraft(applicationId: string, projectSlug: string)
   const userId = session.user.id;
   const project = await requireLead(projectSlug, userId);
 
-  const { aiMode } = await getToolAiMode(projectSlug, "funding-applications");
-  if (aiMode !== "AGENT") throw new Error("AI-läge är avstängt för bidragsansökningar i det här projektet");
-
-  if (!(await checkAiRateLimit(userId))) throw new Error("För många AI-anrop just nu — försök igen om en stund");
-
-  const client = await getAnthropicClient();
-  if (!client) throw new Error("AI är inte konfigurerad");
+  // AI writes the whole draft — "agent" (only in AGENT mode).
+  const gate = await getAiClientFor({ feature: "funding-applications", kind: "agent", userId, projectId: project.id });
+  if (!gate.ok) {
+    if (gate.reason === "mode") throw new Error("AI-läge är avstängt för bidragsansökningar i det här projektet");
+    throw new Error(aiGateMessage(gate.reason));
+  }
+  const { client } = gate;
 
   const application = await prisma.fundingApplication.findUnique({
     where: { id: applicationId },

@@ -11,10 +11,15 @@ import { parseProjectInput } from "@/lib/github";
 import { syncProjectBoardInBackground } from "@/lib/githubSync";
 import { markChecklistDone } from "../[slug]/guide/actions";
 
+// projectId is passed from the edit form (an existing project follows its
+// AI mode); new-project creation has no project yet.
 export async function getSdgSuggestions(
-  description: string
+  description: string,
+  projectId: string | null = null,
 ): Promise<{ goals: number[]; reasoning: string } | null> {
-  return suggestSdgGoals(description);
+  const session = await auth();
+  if (!session?.user?.id) return null;
+  return suggestSdgGoals(description, session.user.id, projectId);
 }
 
 export async function createProject(formData: FormData) {

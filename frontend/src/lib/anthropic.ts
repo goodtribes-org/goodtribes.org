@@ -24,9 +24,13 @@ export function checkAiRateLimit(userId: string): Promise<boolean> {
 }
 
 // Returns null when ANTHROPIC_API_KEY is unset instead of constructing a
-// client that would throw synchronously on first use — callers should
-// treat null as "feature unavailable" and respond accordingly.
-export async function getAnthropicClient(): Promise<AnthropicSdk | null> {
+// client that would throw synchronously on first use.
+//
+// Do NOT call this from feature code: every AI call must go through
+// getAiClientFor() in lib/aiMode.ts, which also enforces the project's AI
+// mode (AGENT/ASSIST/MANUAL) and the rate limit. __tests__/aiGate.test.ts
+// fails if anything other than lib/aiMode.ts imports this.
+export async function createAnthropicClient(): Promise<AnthropicSdk | null> {
   if (!isAiEnabled()) return null;
   const Anthropic = (await import("@anthropic-ai/sdk")).default;
   return new Anthropic();

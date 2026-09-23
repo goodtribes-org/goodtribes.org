@@ -28,20 +28,6 @@ export async function getToolAiPreferences(
   return result;
 }
 
-// Cheap single-tool lookup for call sites that just need to know whether to
-// run in agent mode -- e.g. the kanban AI agent route.
-export async function getToolAiMode(
-  projectSlug: string,
-  toolKey: AiToolKey
-): Promise<{ aiMode: AiMode; agentScope: AiAgentScope }> {
-  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
-  if (!project) return { aiMode: "MANUAL", agentScope: "TASK" };
-  const row = await prisma.toolAiPreference.findUnique({
-    where: { projectId_toolKey: { projectId: project.id, toolKey } },
-  });
-  return { aiMode: row?.aiMode ?? "MANUAL", agentScope: row?.agentScope ?? "TASK" };
-}
-
 export async function setToolAiMode(
   projectSlug: string,
   toolKey: string,

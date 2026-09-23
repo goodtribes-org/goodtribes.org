@@ -1,38 +1,30 @@
-import { isAiEnabled } from "@/lib/anthropic";
+import { getAiClientFor } from "@/lib/aiMode";
 
-// Raw fetch rather than the SDK client (see @/lib/anthropic) since this only
-// ever makes this one simple call — still shares the same enablement check.
+// SDG suggestions for a free-text description (idea feed, project creation,
+// project edit). Goes through the AI gate like every other call: rate-limited
+// per user, and when projectId is given, blocked by a MANUAL project.
 export async function suggestSdgGoals(
-  text: string
+  text: string,
+  userId: string,
+  projectId: string | null = null,
 ): Promise<{ goals: number[]; reasoning: string } | null> {
-  if (!isAiEnabled() || text.trim().length < 20) return null;
+  if (text.trim().length < 20) return null;
+
+  const gate = await getAiClientFor({ feature: "sdg-suggestion", kind: "assist", userId, projectId });
+  if (!gate.ok) return null;
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY!,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 256,
-        system: `You are an expert on the UN Agenda 2030 Sustainable Development Goals.
+    const response = await gate.client.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 256,
+      system: `You are an expert on the UN Agenda 2030 Sustainable Development Goals.
 Analyze the text and return ONLY valid JSON (no markdown, no explanation):
 {"suggested_sdgs": [array of 1-5 SDG numbers most relevant, sorted by relevance], "reasoning": "one sentence"}
 SDG numbers are 1-17.`,
-        messages: [{ role: "user", content: text }],
-      }),
+      messages: [{ role: "user", content: text }],
     });
 
-    if (!res.ok) return null;
-
-    const data = (await res.json()) as {
-      content?: { type: string; text: string }[];
-    };
-
-    const raw = data.content?.find((b) => b.type === "text")?.text ?? "";
+    const raw = response.content.find((b) => b.type === "text")?.text ?? "";
     const parsed = JSON.parse(raw) as { suggested_sdgs: number[]; reasoning: string };
 
     return {
