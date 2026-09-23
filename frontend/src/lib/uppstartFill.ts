@@ -158,7 +158,7 @@ async function buildContext(projectId: string, slug: string): Promise<string> {
     getFieldProvenance(projectId, "valueProposition"),
     latestInsight<GateBrief>(projectId, "PHASE_GATE"),
     latestInsight<SynthesisContent>(projectId, "INTERVIEW_SYNTHESIS"),
-    prisma.phaseGateDecision.findFirst({ where: { projectId, outcome: "CONTINUE" }, orderBy: { createdAt: "desc" } }),
+    prisma.phaseGateDecision.findFirst({ where: { projectId, fromPhase: { in: ["IDEA", "SPRINT"] }, outcome: "CONTINUE" }, orderBy: { createdAt: "desc" } }),
   ]);
   const fields = (entity: string, row: unknown, keys: readonly string[], prov: Record<string, { status: string }>) =>
     keys

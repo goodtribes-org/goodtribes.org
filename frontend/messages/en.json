@@ -3939,7 +3939,22 @@
     "confirm_ADJUST": "Confirm: adjust",
     "confirm_PIVOT": "Confirm: pivot",
     "confirm_PAUSE": "Confirm: pause the project",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "unanswered": "Unanswered sprint questions",
+    "successCriteria": "Proposed success criteria for the pilot",
+    "successCriteriaHint": "If you continue, they're added as a draft to the pilot evaluation, if it's empty.",
+    "uppstart": {
+      "intro": "Start-up is done when you've tested the solution with real users and know what the pilot should show. Here you see what's done, what the sprint showed — and you make the call. You can move on even if something is missing; it's just noted.",
+      "briefHint": "The AI reviews the sprint — the questions, sketches, prototype and test feedback — and writes up what you set out to learn, what the tests showed and what it recommends.",
+      "believed": "What the sprint set out to learn",
+      "nextFocus": "Focus in the pilot",
+      "outcomeDesc_CONTINUE": "The project moves to Launch, where the pilot is run. The success criteria are added as a draft to the pilot evaluation.",
+      "outcomeDesc_ADJUST": "Stay in Start-up and test what the sprint didn't answer. Tasks are created on the board.",
+      "outcomeDesc_PIVOT": "Change the solution where the tests said no. Tasks to rework it are created.",
+      "outcomeDesc_PAUSE": "Put the project on hold. It can be picked up again later.",
+      "confirm_CONTINUE": "Confirm: move on to Launch",
+      "feedbackOf": "{count} of {min} test responses"
+    }
   },
   "UppstartOverview": {
     "heading": "Start-up",
@@ -3997,6 +4012,9 @@
     "planRisks": "Risks",
     "planEmpty": "No project plan yet.",
     "failedPlan": "The AI couldn't draft the project plan.",
-    "onePageLink": "See all of Start-up on one page, with the AI's drafts"
+    "onePageLink": "See all of Start-up on one page, with the AI's drafts",
+    "gateHeading": "Phase gate: ready for Launch?",
+    "gateClosed": "Start-up was closed on {date} with the decision to move on.",
+    "gateClosedLink": "To Launch →"
   }
 }

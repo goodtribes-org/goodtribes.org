@@ -53,7 +53,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
 
   const [
     t, tLc, tVp, canEdit, projectProv, leanCanvasAi, valuePropositionAi, marketScan, interviewGuide, interviews,
-    critique, synthesis, assumptions, aiAvailable, tCheck, isFounder, gate, gateBrief, lastDecision,
+    critique, synthesis, assumptions, aiAvailable, tGate, tCheck, isFounder, gate, gateBrief, lastDecision,
   ] = await Promise.all([
     getTranslations({ locale, namespace: "IdeaOverview" }),
     getTranslations({ locale, namespace: "LeanCanvasHistory" }),
@@ -69,11 +69,12 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
     latestInsight<SynthesisContent>(project.id, "INTERVIEW_SYNTHESIS"),
     currentAssumptions(project.id, slug),
     isAiProjectStartAvailable(session.user.id),
+    getTranslations({ locale, namespace: "PhaseGate" }),
     getTranslations({ locale, namespace: "ProjectPhaseChecklist" }),
     hasProjectRole(project.id, session.user.id, ["FOUNDER"]),
     ideaGateCriteria(project.id, slug),
     latestInsight<GateBrief>(project.id, "PHASE_GATE"),
-    prisma.phaseGateDecision.findFirst({ where: { projectId: project.id }, orderBy: { createdAt: "desc" } }),
+    prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: { in: ["IDEA", "SPRINT"] } }, orderBy: { createdAt: "desc" } }),
   ]);
   const inIdeaPhase = project.phase === "IDEA" || project.phase === "SPRINT";
   const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
@@ -269,9 +270,10 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
       {inIdeaPhase ? (
         <OverviewSection id="fasgrind" title={t("gateHeading")} badge={t("yourTurn")} writingLabel={writing}>
           <PhaseGateSection
+            gate="idea"
             slug={slug}
             criteria={gate.criteria.map((c) => ({ ...c, label: criterionLabel(c.key) }))}
-            interviewCount={gate.interviewCount}
+            countNote={{ key: "target_audience_interviews", text: tGate("interviewsOf", { count: gate.interviewCount }) }}
             brief={gateBrief?.content ?? null}
             lastDecision={
               lastDecision

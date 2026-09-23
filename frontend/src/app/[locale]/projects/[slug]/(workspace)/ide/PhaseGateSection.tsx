@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import type { GateBrief } from "@/lib/phaseGate";
 import { decideIdeaGate, generateGateBrief } from "./actions";
+import { decideUppstartGate, generateUppstartGateBrief } from "../uppstart/actions";
 
 type Outcome = "CONTINUE" | "ADJUST" | "PIVOT" | "PAUSE";
 const OUTCOMES: Outcome[] = ["CONTINUE", "ADJUST", "PIVOT", "PAUSE"];
@@ -15,14 +16,20 @@ const RECOMMENDED: Record<GateBrief["recommendation"], Outcome> = {
   pause: "PAUSE",
 };
 
-// The end of the Idé phase: are the criteria met, what does the evidence
-// say (the AI's one-page brief), and the initiativtagare's decision. A
-// decision point, not a lock — going ahead with criteria unmet is allowed
-// and recorded.
+const ACTIONS = {
+  idea: { brief: generateGateBrief, decide: decideIdeaGate },
+  uppstart: { brief: generateUppstartGateBrief, decide: decideUppstartGate },
+};
+
+// The end of a phase (Idé → Uppstart, Uppstart → Lansering): are the criteria
+// met, what does the evidence say (the AI's one-page brief), and the
+// team's decision. A decision point, not a lock — going ahead with
+// criteria unmet is allowed and recorded.
 export default function PhaseGateSection({
+  gate,
   slug,
   criteria,
-  interviewCount,
+  countNote,
   brief,
   lastDecision,
   fieldLabels,
@@ -30,9 +37,11 @@ export default function PhaseGateSection({
   isFounder,
   aiAvailable,
 }: {
+  gate: "idea" | "uppstart";
   slug: string;
   criteria: { key: string; label: string; met: boolean }[];
-  interviewCount: number;
+  // A count shown after one criterion, e.g. "(3 av 3)" for interviews.
+  countNote?: { key: string; text: string };
   brief: GateBrief | null;
   lastDecision: { outcome: Outcome; date: string; missing: string[] } | null;
   fieldLabels: Record<string, string>;
@@ -47,11 +56,14 @@ export default function PhaseGateSection({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const missing = criteria.filter((c) => !c.met);
+  const actions = ACTIONS[gate];
+  // Wording that differs per gate lives under PhaseGate.uppstart.*.
+  const tg = (key: string) => (gate === "idea" ? t(key) : t(`uppstart.${key}`));
 
   function makeBrief() {
     setError(null);
     startTransition(async () => {
-      const res = await generateGateBrief(slug);
+      const res = await actions.brief(slug);
       if (res.error) setError(res.error);
       else router.refresh();
     });
@@ -61,7 +73,7 @@ export default function PhaseGateSection({
     if (!choice) return;
     setError(null);
     startTransition(async () => {
-      const res = await decideIdeaGate(slug, choice, note);
+      const res = await actions.decide(slug, choice, note);
       if (res.error) {
         setError(res.error);
         return;
@@ -77,7 +89,7 @@ export default function PhaseGateSection({
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="text-sm text-dark-slate/70">{t("intro")}</p>
+      <p className="text-sm text-dark-slate/70">{tg("intro")}</p>
 
       <ul className="grid gap-1.5 sm:grid-cols-2">
         {criteria.map((c) => (
@@ -86,7 +98,7 @@ export default function PhaseGateSection({
               {c.met ? "✓" : "○"}
             </span>
             {c.label}
-            {c.key === "target_audience_interviews" && <span className="text-xs text-dark-slate/40">({t("interviewsOf", { count: interviewCount })})</span>}
+            {countNote?.key === c.key && <span className="text-xs text-dark-slate/40">({countNote.text})</span>}
           </li>
         ))}
       </ul>
@@ -111,7 +123,7 @@ export default function PhaseGateSection({
           </div>
           <div className="mt-3 grid gap-4 md:grid-cols-2">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-dark-slate/50">{t("believed")}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-dark-slate/50">{tg("believed")}</p>
               <ul className="mt-1 list-disc pl-5 text-dark-slate/80">{brief.believed.map((b, i) => <li key={i}>{b}</li>)}</ul>
             </div>
             <div>
@@ -119,6 +131,12 @@ export default function PhaseGateSection({
               <ul className="mt-1 list-disc pl-5 text-dark-slate/80">{brief.learned.map((b, i) => <li key={i}>{b}</li>)}</ul>
             </div>
           </div>
+          {(brief.unanswered?.length ?? 0) > 0 && (
+            <div className="mt-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-dark-slate/50">{t("unanswered")}</p>
+              <ul className="mt-1 list-disc pl-5 text-dark-slate/80">{brief.unanswered.map((b, i) => <li key={i}>{b}</li>)}</ul>
+            </div>
+          )}
           {(brief.held.length > 0 || brief.fell.length > 0) && (
             <div className="mt-3 flex flex-wrap gap-1.5">
               {brief.held.map((k) => (
@@ -134,8 +152,15 @@ export default function PhaseGateSection({
             <ul className="mt-1 list-disc pl-5 text-dark-slate/75">{brief.reasons.map((r, i) => <li key={i}>{r}</li>)}</ul>
             {brief.nextFocus.length > 0 && (
               <>
-                <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-dark-slate/50">{t("nextFocus")}</p>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-dark-slate/50">{tg("nextFocus")}</p>
                 <ul className="mt-1 list-disc pl-5 text-dark-slate/75">{brief.nextFocus.map((r, i) => <li key={i}>{r}</li>)}</ul>
+              </>
+            )}
+            {(brief.successCriteria?.length ?? 0) > 0 && (
+              <>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-dark-slate/50">{t("successCriteria")}</p>
+                <ul className="mt-1 list-disc pl-5 text-dark-slate/75">{brief.successCriteria.map((r, i) => <li key={i}>{r}</li>)}</ul>
+                <p className="mt-1 text-xs text-dark-slate/50">{t("successCriteriaHint")}</p>
               </>
             )}
           </div>
@@ -146,7 +171,7 @@ export default function PhaseGateSection({
             <button type="button" onClick={makeBrief} disabled={pending} className="rounded-lg border border-seagrass/60 px-4 py-2 text-sm font-medium text-seagrass hover:bg-seagrass/10 disabled:opacity-60">
               {pending ? t("briefWorking") : t("briefCreate")}
             </button>
-            <p className="mt-1 text-xs text-dark-slate/50">{t("briefHint")}</p>
+            <p className="mt-1 text-xs text-dark-slate/50">{tg("briefHint")}</p>
           </div>
         )
       )}
@@ -175,7 +200,7 @@ export default function PhaseGateSection({
                     {t(`outcome_${o}`)}
                     {recommended && <span className="rounded-full bg-seagrass/15 px-1.5 py-px text-[10px] font-semibold text-seagrass">{t("recommended")}</span>}
                   </span>
-                  <span className="mt-1 block text-xs text-dark-slate/60">{t(`outcomeDesc_${o}`)}</span>
+                  <span className="mt-1 block text-xs text-dark-slate/60">{tg(`outcomeDesc_${o}`)}</span>
                   {disabled && <span className="mt-1 block text-[11px] text-dark-slate/40">{t("founderOnly")}</span>}
                 </button>
               );
@@ -195,7 +220,7 @@ export default function PhaseGateSection({
               </label>
               <div className="flex gap-2">
                 <button type="button" onClick={decide} disabled={pending} className="rounded-lg bg-coral px-4 py-2 text-sm font-semibold text-white hover:bg-watermelon disabled:opacity-60">
-                  {pending ? t("deciding") : t(`confirm_${choice}`)}
+                  {pending ? t("deciding") : choice === "CONTINUE" ? tg("confirm_CONTINUE") : t(`confirm_${choice}`)}
                 </button>
                 <button type="button" onClick={() => setChoice(null)} className="text-sm text-dark-slate/60 hover:text-dark-slate">
                   {t("cancel")}

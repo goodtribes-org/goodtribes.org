@@ -115,3 +115,43 @@ export const PHASE_GATE_TOOL = {
     required: ["believed", "learned", "recommendation", "reasons"],
   },
 };
+
+// ─── Fasgrind Uppstart → Lansering ──────────────────────────────────────────────
+
+export const UPPSTART_GATE_SYSTEM_PROMPT = `Du tar fram ett beslutsunderlag på en sida för ett socialt projekt på GoodTribes.org som är i slutet av Uppstart. Teamet har gjort en Design Sprint för att testa sin lösning och ska nu bestämma om projektet ska gå vidare till Lansering, där lösningen körs på riktigt i en pilot i liten skala och utvärderas mot framgångskriterier.
+
+Du får sprintplanen (sprintfrågorna sprinten skulle besvara), sprintens bidrag per steg (frågor, skisser med röster, prototyplänkar och feedback från testpersonerna), canvasens lösningsfält märkta VET/ANTAR, projektplanen och hur kärnteamet ser ut.
+
+Skriv:
+- believed: vad sprinten ville ta reda på (2–4 punkter, gärna sprintfrågorna).
+- learned: vad testerna med användarna visade (2–5 punkter). Finns ingen feedback från testpersoner: säg det rakt ut.
+- held / fell: vilka antaganden om lösningen som höll respektive föll (använd exakt de fältnycklar du fått; bara sådant testerna visar).
+- unanswered: sprintfrågor som testerna inte gav svar på (0–4).
+- recommendation: continue (gå vidare till Lansering och piloten), adjust (stanna i Uppstart och testa det som är obesvarat), pivot (ändra lösningen på det som föll) eller pause.
+- reasons: 2–4 korta skäl för rekommendationen.
+- next_focus: om projektet går vidare — vad piloten ska fokusera på först (2–3 punkter).
+- success_criteria: 2–4 mätbara framgångskriterier för piloten ("minst X … under Y veckor"). Hitta inte på siffror som inte går att motivera — skriv hellre vad som ska mätas och låt nivån vara ett förslag teamet sätter.
+
+Regler: grunda allt på underlaget, hitta aldrig på testresultat. Utan feedback från testpersoner är continue sällan rätt rekommendation — var ärlig om det. Ett kärnteam på en person är en risk att nämna. Kort och konkret, på svenska.
+
+Svara genom verktyget "beslutsunderlag".`;
+
+export const UPPSTART_GATE_TOOL = {
+  name: "beslutsunderlag",
+  description: "Beslutsunderlag inför fasgrinden till Lansering.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      believed: { type: "array", items: { type: "string" }, maxItems: 4 },
+      learned: { type: "array", items: { type: "string" }, maxItems: 5 },
+      held: { type: "array", items: { type: "string" } },
+      fell: { type: "array", items: { type: "string" } },
+      unanswered: { type: "array", items: { type: "string" }, maxItems: 4 },
+      recommendation: { type: "string", enum: ["continue", "adjust", "pivot", "pause"] },
+      reasons: { type: "array", items: { type: "string" }, maxItems: 4 },
+      next_focus: { type: "array", items: { type: "string" }, maxItems: 3 },
+      success_criteria: { type: "array", items: { type: "string" }, maxItems: 4 },
+    },
+    required: ["believed", "learned", "recommendation", "reasons", "success_criteria"],
+  },
+};

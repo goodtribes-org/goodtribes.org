@@ -1,7 +1,7 @@
 jest.mock("../lib/prisma", () => ({ prisma: {} }));
 jest.mock("../lib/aiMode", () => ({ getAiClientFor: jest.fn() }));
 
-import { cardsForDecision, coerceGateBrief, missingCriteria, type GateBrief } from "../lib/phaseGate";
+import { cardsForDecision, cardsForUppstartDecision, coerceGateBrief, missingCriteria, type GateBrief } from "../lib/phaseGate";
 import type { SynthesisContent } from "../lib/ideaInsights";
 
 describe("coerceGateBrief", () => {
@@ -24,7 +24,9 @@ describe("coerceGateBrief", () => {
 
   it("defaults to the cautious 'adjust' on a missing or unknown recommendation", () => {
     expect(coerceGateBrief({ recommendation: "yolo" }).recommendation).toBe("adjust");
-    expect(coerceGateBrief(null)).toEqual({ believed: [], learned: [], held: [], fell: [], recommendation: "adjust", reasons: [], nextFocus: [] });
+    expect(coerceGateBrief(null)).toEqual({
+      believed: [], learned: [], held: [], fell: [], recommendation: "adjust", reasons: [], nextFocus: [], unanswered: [], successCriteria: [],
+    });
   });
 });
 
@@ -68,5 +70,31 @@ describe("cardsForDecision", () => {
     expect(cardsForDecision("CONTINUE", synthesis, brief, label)).toEqual([]);
     expect(cardsForDecision("PAUSE", synthesis, brief, label)).toEqual([]);
     expect(cardsForDecision("ADJUST", null, null, label)).toEqual([]);
+  });
+});
+
+describe("cardsForUppstartDecision", () => {
+  const brief = coerceGateBrief({
+    unanswered: ["Hämtar familjerna maten?", "Hämtar familjerna maten?", "Säger kostchefen ja?"],
+    fell: ["leanCanvas.channels", "nope"],
+    success_criteria: ["Minst 20 hämtningar på 4 veckor", 42],
+  });
+  const label = (k: string) => k.split(".")[1];
+
+  it("keeps the pilot success criteria as strings", () => {
+    expect(brief.successCriteria).toEqual(["Minst 20 hämtningar på 4 veckor"]);
+  });
+
+  it("ADJUST: one card per unanswered sprint question, without duplicates", () => {
+    expect(cardsForUppstartDecision("ADJUST", brief, label).map((c) => c.title)).toEqual([
+      "Testa: Hämtar familjerna maten?",
+      "Testa: Säger kostchefen ja?",
+    ]);
+  });
+
+  it("PIVOT: one card per solution field that fell; CONTINUE/PAUSE none", () => {
+    expect(cardsForUppstartDecision("PIVOT", brief, label).map((c) => c.title)).toEqual(["Omarbeta lösningen: channels"]);
+    expect(cardsForUppstartDecision("CONTINUE", brief, label)).toEqual([]);
+    expect(cardsForUppstartDecision("PAUSE", null, label)).toEqual([]);
   });
 });

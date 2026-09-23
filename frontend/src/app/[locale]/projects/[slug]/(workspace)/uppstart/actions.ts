@@ -7,6 +7,16 @@ import { revalidatePath } from "next/cache";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { startUppstartFill, UPPSTART_SECTIONS, type UppstartSection } from "@/lib/uppstartFill";
+import type { PhaseGateOutcome } from "@prisma/client";
+import { getTranslations } from "next-intl/server";
+import { logger } from "@/lib/logger";
+import { aiGateMessage, type AiGateBlockReason } from "@/lib/aiMode";
+import { getAiParticipantUser } from "@/lib/aiParticipant";
+import { InsightError, latestInsight } from "@/lib/ideaInsights";
+import { cardsForUppstartDecision, missingCriteria, runUppstartGateBrief, uppstartGateCriteria, type GateBrief } from "@/lib/phaseGate";
+import { LEAN_CANVAS_BLOCKS } from "../lean-canvas/fields";
+import { VALUE_PROPOSITION_BLOCKS } from "../value-proposition/fields";
+import { advanceProjectPhase } from "../edit/actions";
 
 async function requireLead(projectSlug: string) {
   const session = await auth();
@@ -93,4 +103,108 @@ export async function assignRoleNeed(projectSlug: string, roleId: string, userId
     });
   }
   return done(projectSlug);
+}
+
+// ─── Fasgrind Uppstart → Lansering ──────────────────────────────────────────────
+
+function gateErrorMessage(err: unknown): string {
+  const reason = err instanceof InsightError ? err.message : "";
+  if (!(err instanceof InsightError) || reason === "empty") logger.error("uppstart-gate brief failed", { err: String(err) });
+  if (reason === "budget_exceeded" || reason === "rate_limited" || reason === "mode" || reason === "not_configured") {
+    return aiGateMessage(reason as AiGateBlockReason);
+  }
+  return "Kunde inte göra det just nu — försök igen.";
+}
+
+export async function generateUppstartGateBrief(projectSlug: string): Promise<{ error?: string }> {
+  const ctx = await requireLead(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  if (!(await isAiProjectStartAvailable(ctx.userId))) return { error: "AI är inte tillgänglig just nu." };
+  try {
+    await runUppstartGateBrief(ctx.project.id, ctx.project.slug, ctx.userId);
+  } catch (err) {
+    return { error: gateErrorMessage(err) };
+  }
+  return done(projectSlug);
+}
+
+const OUTCOMES: readonly PhaseGateOutcome[] = ["CONTINUE", "ADJUST", "PIVOT", "PAUSE"];
+
+// The team's decision at the end of Uppstart — same rules as the Idé gate:
+// always recorded with any unmet criteria; CONTINUE moves the project to
+// Lansering (PRODUCTION, where the pilot runs; the manual "advance phase" path) and, if the pilot evaluation has
+// no success criteria yet, starts it with the brief's proposal; ADJUST /
+// PIVOT stay in Uppstart and put what to test or rework on the board;
+// PAUSE (founder only) marks the project as ownerless. Doesn't need AI.
+export async function decideUppstartGate(projectSlug: string, outcome: string, note: string): Promise<{ error?: string; next?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+  const userId = session.user.id;
+  if (!OUTCOMES.includes(outcome as PhaseGateOutcome)) return { error: "Okänt beslut" };
+  const decision = outcome as PhaseGateOutcome;
+
+  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true, slug: true, phase: true } });
+  if (!project) return { error: "Projektet hittades inte" };
+  if (project.phase !== "PILOT") return { error: "Projektet är inte i Uppstart längre" };
+  const allowed = decision === "PAUSE"
+    ? await hasProjectRole(project.id, userId, ["FOUNDER"])
+    : await hasProjectRole(project.id, userId, PROJECT_LEAD_ROLES);
+  if (!allowed) return { error: decision === "PAUSE" ? "Bara grundaren kan pausa projektet" : "Forbidden" };
+
+  const [{ criteria }, brief, tLc, tVp, aiUser, evaluation] = await Promise.all([
+    uppstartGateCriteria(project.id, project.slug),
+    latestInsight<GateBrief>(project.id, "UPPSTART_GATE"),
+    getTranslations({ locale: "sv", namespace: "LeanCanvasHistory" }),
+    getTranslations({ locale: "sv", namespace: "ValuePropositionHistory" }),
+    getAiParticipantUser(),
+    prisma.pilotEvaluation.findUnique({ where: { projectSlug: project.slug }, select: { successCriteria: true } }),
+  ]);
+  const labelFor = (key: string) => {
+    const [entity, field] = key.split(".");
+    const lc = LEAN_CANVAS_BLOCKS.find((b) => b.field === field);
+    const vp = VALUE_PROPOSITION_BLOCKS.find((b) => b.field === field);
+    if (entity === "leanCanvas" && lc) return tLc(`field${lc.translationKey}` as Parameters<typeof tLc>[0]);
+    if (entity === "valueProposition" && vp) return tVp(`field${vp.translationKey}` as Parameters<typeof tVp>[0]);
+    return key;
+  };
+  const cards = cardsForUppstartDecision(decision, brief?.content ?? null, labelFor);
+  const proposedCriteria = decision === "CONTINUE" && !evaluation?.successCriteria?.trim() ? brief?.content.successCriteria ?? [] : [];
+
+  await prisma.$transaction(async (tx) => {
+    await tx.phaseGateDecision.create({
+      data: { projectId: project.id, fromPhase: "PILOT", outcome: decision, note: note.trim() || null, missing: missingCriteria(criteria), decidedById: userId },
+    });
+    if (cards.length) {
+      const max = await tx.kanbanCard.aggregate({ where: { projectSlug: project.slug, column: "TODO" }, _max: { order: true } });
+      await tx.kanbanCard.createMany({
+        data: cards.map((c, i) => ({
+          projectSlug: project.slug,
+          title: c.title,
+          description: c.description,
+          column: "TODO",
+          order: (max._max.order ?? -1) + 1 + i,
+          createdById: aiUser.id,
+          createdByAi: true,
+        })),
+      });
+    }
+    if (proposedCriteria.length) {
+      // A starting point for the pilot's first step — marked as the AI's
+      // proposal, not ticked as done: the team sets the real levels.
+      const successCriteria = `${proposedCriteria.map((c) => `- ${c}`).join("\n")}\n\n(Förslag från beslutsunderlaget vid fasgrinden — justera nivåerna.)`;
+      await tx.pilotEvaluation.upsert({
+        where: { projectSlug: project.slug },
+        create: { projectSlug: project.slug, successCriteria, updatedById: aiUser.id },
+        update: { successCriteria, updatedById: aiUser.id },
+      });
+    }
+    if (decision === "PAUSE") await tx.project.update({ where: { id: project.id }, data: { abandonedAt: new Date() } });
+  });
+
+  revalidatePath(`/projects/${projectSlug}`, "layout");
+  if (decision !== "CONTINUE") return {};
+  await advanceProjectPhase(project.slug);
+  // Lansering has no one-page overview yet — its guide starts at the success
+  // criteria the brief just proposed.
+  return { next: `/projects/${project.slug}/guide/production` };
 }
