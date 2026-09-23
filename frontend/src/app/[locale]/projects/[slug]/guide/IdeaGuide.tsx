@@ -66,6 +66,8 @@ interface Props {
   canStartDream?: boolean;
   // Open questions from Drömsamtalet ("Att fundera på").
   openQuestions?: string[];
+  // Recommend 1–3 SDG goals (ai-project-start flag; needs no AI).
+  sdgGuidance?: boolean;
 }
 
 // The full idea-phase guide, all 8 steps navigable in either direction —
@@ -93,6 +95,7 @@ export default function IdeaGuide({
   valuePropositionAi,
   canStartDream,
   openQuestions,
+  sdgGuidance,
 }: Props) {
   const t = useTranslations("IdeaGuide");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
@@ -401,7 +404,7 @@ export default function IdeaGuide({
             {t("sdgHint")}
           </p>
           {/* AI-guided start (same flag): steer towards a focused choice. */}
-          {aiSettings && (
+          {sdgGuidance && (
             <p className={`-mt-2 mb-4 text-xs ${selected.size > 5 ? "text-watermelon font-medium" : "text-dark-slate/60"}`}>
               {selected.size > 5 ? t("sdgTooMany", { count: selected.size }) : t("sdgRecommendation")}
             </p>
@@ -484,7 +487,7 @@ export default function IdeaGuide({
             {t("leanCanvasHint")}
           </p>
         </div>
-        {leanCanvasAi && (
+        {leanCanvasAi?.aiAvailable && (
           <CanvasAiBar projectSlug={slug} entity="leanCanvas" stepKey={leanCanvasAi.stepKey} mode={leanCanvasAi.mode} canEdit />
         )}
         <LeanCanvasGrid
@@ -516,7 +519,7 @@ export default function IdeaGuide({
             {t("valuePropositionHint")}
           </p>
         </div>
-        {valuePropositionAi && (
+        {valuePropositionAi?.aiAvailable && (
           <CanvasAiBar
             projectSlug={slug}
             entity="valueProposition"

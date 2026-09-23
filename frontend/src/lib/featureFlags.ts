@@ -11,8 +11,11 @@ export const FEATURE_FLAGS = {
     label: "AI-guidad projektstart",
     description:
       "Vägval (AI gör / AI hjälper / manuellt) och Drömsamtalet när ett nytt projekt skapas, i stället för att gå direkt till Snabbstart.",
+    // The AI parts stay hidden until ANTHROPIC_API_KEY is configured (see
+    // lib/aiProjectStart.ts); the admin page warns about it.
+    requiresAi: true,
   },
-} as const satisfies Record<string, { label: string; description: string }>;
+} as const satisfies Record<string, { label: string; description: string; requiresAi?: boolean }>;
 
 export type FeatureFlagKey = keyof typeof FEATURE_FLAGS;
 

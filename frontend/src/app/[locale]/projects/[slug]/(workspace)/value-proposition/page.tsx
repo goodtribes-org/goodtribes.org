@@ -71,7 +71,7 @@ export default async function ValuePropositionPage({
         action={<ValuePropositionHistory projectSlug={slug} />}
       />
 
-      {ai && <CanvasAiBar projectSlug={slug} entity="valueProposition" stepKey={ai.stepKey} mode={ai.mode} canEdit={canEdit} />}
+      {ai?.aiAvailable && <CanvasAiBar projectSlug={slug} entity="valueProposition" stepKey={ai.stepKey} mode={ai.mode} canEdit={canEdit} />}
       <ValuePropositionGrid
         projectSlug={slug}
         canvas={canvas}

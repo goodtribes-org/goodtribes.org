@@ -1,5 +1,6 @@
 import type { AiMode } from "@prisma/client";
 import { resolveAiMode } from "@/lib/aiMode";
+import { isAiEnabled } from "@/lib/anthropic";
 import { getFieldProvenance, type ProvenanceInfo } from "@/lib/fieldProvenance";
 import { getPendingSuggestions, type PendingSuggestion } from "@/lib/aiSuggestions";
 
@@ -8,6 +9,10 @@ export type CanvasAiContext = {
   suggestions: Record<string, PendingSuggestion>;
   mode: AiMode;
   stepKey: string;
+  // Whether AI can actually be called here (an Anthropic key is
+  // configured). Marking and suggestions work without it; the review bar
+  // is hidden when it's false.
+  aiAvailable: boolean;
 };
 
 const STEP_FOR: Record<"leanCanvas" | "valueProposition", string> = {
@@ -29,5 +34,5 @@ export async function getCanvasAiContext(
     getPendingSuggestions(projectId, entity),
     resolveAiMode({ projectId, feature: "canvas-review", stepKey }),
   ]);
-  return { provenance, suggestions, mode: resolved.mode, stepKey };
+  return { provenance, suggestions, mode: resolved.mode, stepKey, aiAvailable: isAiEnabled() };
 }

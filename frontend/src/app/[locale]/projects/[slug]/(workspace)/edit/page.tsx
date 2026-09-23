@@ -9,7 +9,7 @@ import { parseColumnMap, parseStatusOptions } from "@/lib/githubColumnMap";
 import { routing } from "@/i18n/routing";
 import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { Locale } from "next-intl";
-import { isFeatureEnabled } from "@/lib/featureFlags";
+import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { getProjectAiSettings } from "@/lib/aiMode";
 import AiModeSettings from "./AiModeSettings";
 
@@ -70,8 +70,10 @@ export default async function EditProjectPage({
 
   const isOwner = role === "FOUNDER";
 
-  // AI mode settings ship dark behind the ai-project-start flag.
-  const aiSettings = (await isFeatureEnabled("ai-project-start", session.user.id))
+  // AI mode settings ship dark behind the ai-project-start flag, and only
+  // appear once an Anthropic key is configured (they'd control nothing
+  // otherwise).
+  const aiSettings = (await isAiProjectStartAvailable(session.user.id))
     ? await getProjectAiSettings(project.id)
     : null;
 
