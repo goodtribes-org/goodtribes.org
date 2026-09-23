@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "AiInsightKind" ADD VALUE 'IMPACT_NEXT_STEP';
