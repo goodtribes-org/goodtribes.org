@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { getAiClientFor, aiGateStatus } from "@/lib/aiMode";
+import { isCardClaimant, isRealMember } from "@/lib/authz";
 import { GITHUB_CARD_LOCKED_MESSAGE } from "@/lib/githubSync";
 
 
@@ -49,6 +50,15 @@ export async function POST(req: NextRequest) {
   // just undo — reject before spending a model call.
   if (card.source === "github") {
     return NextResponse.json({ error: GITHUB_CARD_LOCKED_MESSAGE }, { status: 403 });
+  }
+
+  // Same rule as moving the card (see kanbanMove.ts): a real project member,
+  // or the non-member who claimed this open micro-task. Checked before any
+  // AI call or DB write — a run spends the project's AI budget and moves
+  // the card to REVIEW.
+  const allowed = (await isRealMember(card.project.id, session.user.id)) || isCardClaimant(card, session.user.id);
+  if (!allowed) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   // The agent performs the task itself — "agent" kind, AGENT mode only.

@@ -51,6 +51,8 @@ export default async function AiReviewPage({ params }: { params: Promise<{ slug:
   const project = await prisma.project.findUnique({ where: { slug }, select: { id: true } });
   if (!project) notFound();
 
+  // Project leads edit the AI settings and are the only ones who may review
+  // runs (the review API enforces the same rule).
   const [canEditAiPreferences, toolAiPreferences] = await Promise.all([
     hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES),
     getToolAiPreferences(slug),
@@ -141,7 +143,7 @@ export default async function AiReviewPage({ params }: { params: Promise<{ slug:
 
               {/* Actions */}
               <div className="px-5 py-4 border-t border-muted-teal/20 bg-dry-sage/10">
-                <AIReviewActions aiTaskRunId={run.id} />
+                {canEditAiPreferences && <AIReviewActions aiTaskRunId={run.id} />}
               </div>
             </div>
           ))}

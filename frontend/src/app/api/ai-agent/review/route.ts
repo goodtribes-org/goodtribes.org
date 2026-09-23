@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { getAiClientFor, aiGateStatus } from "@/lib/aiMode";
+import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { GITHUB_CARD_LOCKED_MESSAGE } from "@/lib/githubSync";
 import { awardTokens } from "@/lib/tokens";
 
@@ -53,6 +54,14 @@ export async function POST(req: NextRequest) {
   if (!aiTaskRun) {
     return NextResponse.json({ error: "AI task run not found" }, { status: 404 });
   }
+  // Reviewing is a project lead's call, matching the kanban rule that only
+  // leads move cards to DONE (kanbanMove.ts): approval moves the card to
+  // DONE and awards tokens, a revision spends AI budget. Checked before any
+  // AI call or DB write.
+  if (!(await hasProjectRole(aiTaskRun.kanbanCard.project.id, session.user.id, PROJECT_LEAD_ROLES))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   // Both branches below force the card into DONE/REVIEW; GitHub owns that column.
   if (aiTaskRun.kanbanCard.source === "github") {
     return NextResponse.json({ error: GITHUB_CARD_LOCKED_MESSAGE }, { status: 403 });
