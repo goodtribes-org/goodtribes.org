@@ -3953,7 +3953,25 @@
       "outcomeDesc_PIVOT": "Ändra lösningen på det som föll i testerna. Uppgifter för att omarbeta skapas.",
       "outcomeDesc_PAUSE": "Lägg projektet vilande. Det kan tas upp igen senare.",
       "confirm_CONTINUE": "Bekräfta: gå vidare till Lansering",
-      "feedbackOf": "{count} av {min} testsvar"
+      "feedbackOf": "{count} av {min} testsvar",
+      "unanswered": "Obesvarade sprintfrågor"
+    },
+    "criteriaVerdicts": "Framgångskriterierna",
+    "verdict_met": "Uppnått",
+    "verdict_not_met": "Inte uppnått",
+    "verdict_unclear": "Oklart",
+    "lansering": {
+      "intro": "Lansering är klar när piloten är genomförd och ni kan säga om den nådde framgångskriterierna. Här fattar ni pilotens go/no-go-beslut. Ni kan gå vidare även om något saknas; det noteras bara.",
+      "briefHint": "AI:n går igenom framgångskriterierna, pilotloggen, resultaten och impact-värdena och bedömer varje kriterium — och rekommenderar go eller no-go.",
+      "believed": "Vad piloten skulle visa",
+      "nextFocus": "Fokus i Etablera",
+      "unanswered": "Behöver mätas eller tas reda på",
+      "outcomeDesc_CONTINUE": "Go: projektet går till Etablera — skala upp det som fungerade. Pilotens beslut sätts till go.",
+      "outcomeDesc_ADJUST": "Fortsätt piloten och mät det som är oklart. Uppgifter skapas på tavlan; go/no-go lämnas öppet.",
+      "outcomeDesc_PIVOT": "No-go för nuvarande lösning: ändra det som inte nådde kriterierna. Uppgifter skapas på tavlan.",
+      "outcomeDesc_PAUSE": "No-go: lägg projektet vilande. Det kan tas upp igen senare.",
+      "confirm_CONTINUE": "Bekräfta: go — gå vidare till Etablera",
+      "logOf": "{count} av {min} loggade tillfällen"
     }
   },
   "UppstartOverview": {
@@ -4077,6 +4095,9 @@
     "moreTasks": "+ {count} till på tavlan",
     "tasksEmpty": "Inga uppgifter på tavlan ännu.",
     "failedTasks": "AI:n kunde inte föreslå uppgifter.",
-    "onePageLink": "Se hela Lansering på en sida, med AI:ns utkast"
+    "onePageLink": "Se hela Lansering på en sida, med AI:ns utkast",
+    "gateHeading": "Fasgrind: go/no-go för piloten",
+    "gateClosed": "Lansering avslutades {date} med go för piloten.",
+    "gateClosedLink": "Till Etablera →"
   }
 }

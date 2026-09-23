@@ -1,7 +1,16 @@
 jest.mock("../lib/prisma", () => ({ prisma: {} }));
 jest.mock("../lib/aiMode", () => ({ getAiClientFor: jest.fn() }));
 
-import { cardsForDecision, cardsForUppstartDecision, coerceGateBrief, missingCriteria, type GateBrief } from "../lib/phaseGate";
+import {
+  cardsForDecision,
+  cardsForLanseringDecision,
+  cardsForUppstartDecision,
+  coerceGateBrief,
+  logEntryCount,
+  missingCriteria,
+  pilotDecisionFor,
+  type GateBrief,
+} from "../lib/phaseGate";
 import type { SynthesisContent } from "../lib/ideaInsights";
 
 describe("coerceGateBrief", () => {
@@ -25,7 +34,7 @@ describe("coerceGateBrief", () => {
   it("defaults to the cautious 'adjust' on a missing or unknown recommendation", () => {
     expect(coerceGateBrief({ recommendation: "yolo" }).recommendation).toBe("adjust");
     expect(coerceGateBrief(null)).toEqual({
-      believed: [], learned: [], held: [], fell: [], recommendation: "adjust", reasons: [], nextFocus: [], unanswered: [], successCriteria: [],
+      believed: [], learned: [], held: [], fell: [], recommendation: "adjust", reasons: [], nextFocus: [], unanswered: [], successCriteria: [], criteriaVerdicts: [],
     });
   });
 });
@@ -96,5 +105,43 @@ describe("cardsForUppstartDecision", () => {
     expect(cardsForUppstartDecision("PIVOT", brief, label).map((c) => c.title)).toEqual(["Omarbeta lösningen: channels"]);
     expect(cardsForUppstartDecision("CONTINUE", brief, label)).toEqual([]);
     expect(cardsForUppstartDecision("PAUSE", null, label)).toEqual([]);
+  });
+});
+
+describe("Lansering → Etablera", () => {
+  const brief = coerceGateBrief({
+    criteria: [
+      { criterion: "Minst 6 familjer", verdict: "met", evidence: "6 familjer vecka 2" },
+      { criterion: "Andel upphämtad mat", verdict: "not_met", evidence: "68 %" },
+      { criterion: "Skriftligt godkännande", verdict: "maybe", evidence: "" },
+      { criterion: "", verdict: "met" },
+    ],
+    unanswered: ["Hur många familjer är unika?"],
+  });
+
+  it("keeps criterion verdicts, defaulting unknown verdicts to unclear", () => {
+    expect(brief.criteriaVerdicts.map((c) => [c.criterion, c.verdict])).toEqual([
+      ["Minst 6 familjer", "met"],
+      ["Andel upphämtad mat", "not_met"],
+      ["Skriftligt godkännande", "unclear"],
+    ]);
+  });
+
+  it("ADJUST measures what's unclear; PIVOT fixes what wasn't met", () => {
+    expect(cardsForLanseringDecision("ADJUST", brief).map((c) => c.title)).toEqual(["Ta reda på: Hur många familjer är unika?", "Mät: Skriftligt godkännande"]);
+    expect(cardsForLanseringDecision("PIVOT", brief).map((c) => c.title)).toEqual(["Åtgärda: Andel upphämtad mat"]);
+    expect(cardsForLanseringDecision("CONTINUE", brief)).toEqual([]);
+  });
+
+  it("maps the gate decision to the pilot's go/no-go", () => {
+    expect(pilotDecisionFor("CONTINUE")).toBe("GO");
+    expect(pilotDecisionFor("PIVOT")).toBe("NO_GO");
+    expect(pilotDecisionFor("PAUSE")).toBe("NO_GO");
+    expect(pilotDecisionFor("ADJUST")).toBeNull();
+  });
+
+  it("counts non-empty log lines", () => {
+    expect(logEntryCount("2026-09-20: a\n\n2026-09-21: b\n")).toBe(2);
+    expect(logEntryCount(null)).toBe(0);
   });
 });

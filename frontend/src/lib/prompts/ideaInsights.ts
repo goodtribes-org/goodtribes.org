@@ -155,3 +155,52 @@ export const UPPSTART_GATE_TOOL = {
     required: ["believed", "learned", "recommendation", "reasons", "success_criteria"],
   },
 };
+
+// ─── Fasgrind Lansering → Etablera (pilotens go/no-go) ──────────────────────
+
+export const LANSERING_GATE_SYSTEM_PROMPT = `Du tar fram ett beslutsunderlag på en sida för ett socialt projekt på GoodTribes.org som har genomfört sin pilot i fasen Lansering. Teamet ska fatta pilotens go/no-go-beslut: gå vidare till Etablera (skala upp det som fungerade, bygga stabil drift och återkommande finansiering, formalisera partnerskap), eller inte.
+
+Du får framgångskriterierna, pilotloggen, resultatsammanfattningen om den finns, impact-mätetalen med rapporterade värden, lanseringsplanen, arbetsflödena och kärnteamet.
+
+Skriv:
+- believed: vad piloten skulle visa (2–4 punkter, gärna framgångskriterierna i kort form).
+- learned: vad piloten faktiskt visade (2–5 punkter, med siffror ur loggen där de finns).
+- criteria: ett utlåtande per framgångskriterium — criterion (kort), verdict (met = uppnått, not_met = inte uppnått, unclear = för lite underlag) och evidence (vad i loggen eller värdena som visar det).
+- unanswered: det som behöver mätas eller tas reda på innan man kan bedöma ordentligt (0–4).
+- recommendation: continue (go — gå vidare till Etablera), adjust (fortsätt piloten och mät det som är oklart), pivot (no-go för nuvarande lösning — ändra det som inte fungerade) eller pause (no-go — lägg projektet vilande).
+- reasons: 2–4 korta skäl.
+- next_focus: om projektet går vidare — vad Etablera bör fokusera på först (2–3 punkter).
+
+Regler: grunda allt på underlaget, hitta aldrig på resultat. Ett impact-värde på 0 utan uppdateringar har bara inte rapporterats — säg det, kalla det inte fel. Är flera kriterier oklara är continue sällan rätt; var ärlig om det. Ett kärnteam med vakanta nyckelroller är en risk inför Etablera. Kort och konkret, på svenska.
+
+Svara genom verktyget "beslutsunderlag".`;
+
+export const LANSERING_GATE_TOOL = {
+  name: "beslutsunderlag",
+  description: "Beslutsunderlag för pilotens go/no-go.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      believed: { type: "array", items: { type: "string" }, maxItems: 4 },
+      learned: { type: "array", items: { type: "string" }, maxItems: 5 },
+      criteria: {
+        type: "array",
+        maxItems: 6,
+        items: {
+          type: "object",
+          properties: {
+            criterion: { type: "string" },
+            verdict: { type: "string", enum: ["met", "not_met", "unclear"] },
+            evidence: { type: "string" },
+          },
+          required: ["criterion", "verdict", "evidence"],
+        },
+      },
+      unanswered: { type: "array", items: { type: "string" }, maxItems: 4 },
+      recommendation: { type: "string", enum: ["continue", "adjust", "pivot", "pause"] },
+      reasons: { type: "array", items: { type: "string" }, maxItems: 4 },
+      next_focus: { type: "array", items: { type: "string" }, maxItems: 3 },
+    },
+    required: ["believed", "learned", "criteria", "recommendation", "reasons"],
+  },
+};

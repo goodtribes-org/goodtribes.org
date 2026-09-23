@@ -6,6 +6,7 @@ import { useRouter } from "@/i18n/navigation";
 import type { GateBrief } from "@/lib/phaseGate";
 import { decideIdeaGate, generateGateBrief } from "./actions";
 import { decideUppstartGate, generateUppstartGateBrief } from "../uppstart/actions";
+import { decideLanseringGate, generateLanseringGateBrief } from "../lansering/actions";
 
 type Outcome = "CONTINUE" | "ADJUST" | "PIVOT" | "PAUSE";
 const OUTCOMES: Outcome[] = ["CONTINUE", "ADJUST", "PIVOT", "PAUSE"];
@@ -19,9 +20,16 @@ const RECOMMENDED: Record<GateBrief["recommendation"], Outcome> = {
 const ACTIONS = {
   idea: { brief: generateGateBrief, decide: decideIdeaGate },
   uppstart: { brief: generateUppstartGateBrief, decide: decideUppstartGate },
+  lansering: { brief: generateLanseringGateBrief, decide: decideLanseringGate },
 };
 
-// The end of a phase (Idé → Uppstart, Uppstart → Lansering): are the criteria
+const VERDICT_STYLE: Record<string, string> = {
+  met: "border-seagrass/40 bg-seagrass/10 text-seagrass",
+  not_met: "border-watermelon/40 bg-watermelon/10 text-watermelon",
+  unclear: "border-amber-300 bg-amber-50 text-amber-700",
+};
+
+// The end of a phase (Idé → Uppstart → Lansering → Etablera): are the criteria
 // met, what does the evidence say (the AI's one-page brief), and the
 // team's decision. A decision point, not a lock — going ahead with
 // criteria unmet is allowed and recorded.
@@ -37,7 +45,7 @@ export default function PhaseGateSection({
   isFounder,
   aiAvailable,
 }: {
-  gate: "idea" | "uppstart";
+  gate: keyof typeof ACTIONS;
   slug: string;
   criteria: { key: string; label: string; met: boolean }[];
   // A count shown after one criterion, e.g. "(3 av 3)" for interviews.
@@ -57,8 +65,8 @@ export default function PhaseGateSection({
   const [pending, startTransition] = useTransition();
   const missing = criteria.filter((c) => !c.met);
   const actions = ACTIONS[gate];
-  // Wording that differs per gate lives under PhaseGate.uppstart.*.
-  const tg = (key: string) => (gate === "idea" ? t(key) : t(`uppstart.${key}`));
+  // Wording that differs per gate lives under PhaseGate.<gate>.*.
+  const tg = (key: string) => (gate === "idea" ? t(key) : t(`${gate}.${key}`));
 
   function makeBrief() {
     setError(null);
@@ -131,9 +139,25 @@ export default function PhaseGateSection({
               <ul className="mt-1 list-disc pl-5 text-dark-slate/80">{brief.learned.map((b, i) => <li key={i}>{b}</li>)}</ul>
             </div>
           </div>
+          {(brief.criteriaVerdicts?.length ?? 0) > 0 && (
+            <div className="mt-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-dark-slate/50">{t("criteriaVerdicts")}</p>
+              <ul className="mt-1 flex flex-col gap-1.5">
+                {brief.criteriaVerdicts.map((c, i) => (
+                  <li key={i} className="rounded-lg bg-white/70 px-3 py-2">
+                    <span className="flex flex-wrap items-center gap-2 font-medium text-dark-slate">
+                      {c.criterion}
+                      <span className={`rounded-full border px-2 py-px text-[11px] font-semibold ${VERDICT_STYLE[c.verdict]}`}>{t(`verdict_${c.verdict}`)}</span>
+                    </span>
+                    {c.evidence && <span className="mt-0.5 block text-xs text-dark-slate/70">{c.evidence}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {(brief.unanswered?.length ?? 0) > 0 && (
             <div className="mt-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-dark-slate/50">{t("unanswered")}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-dark-slate/50">{tg("unanswered")}</p>
               <ul className="mt-1 list-disc pl-5 text-dark-slate/80">{brief.unanswered.map((b, i) => <li key={i}>{b}</li>)}</ul>
             </div>
           )}
