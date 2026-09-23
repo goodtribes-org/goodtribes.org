@@ -1,5 +1,5 @@
 import type Anthropic from "@anthropic-ai/sdk";
-import type { Prisma } from "@prisma/client";
+import type { AiInsightKind, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getAiClientFor } from "@/lib/aiMode";
 import { getFieldProvenance } from "@/lib/fieldProvenance";
@@ -193,7 +193,7 @@ export async function runInterviewSynthesis(projectId: string, slug: string, use
   return synthesis;
 }
 
-export async function latestInsight<T>(projectId: string, kind: "CRITIQUE" | "INTERVIEW_SYNTHESIS"): Promise<{ content: T; createdAt: Date } | null> {
+export async function latestInsight<T>(projectId: string, kind: AiInsightKind): Promise<{ content: T; createdAt: Date } | null> {
   const row = await prisma.aiInsight.findFirst({ where: { projectId, kind }, orderBy: { createdAt: "desc" } });
   return row ? { content: row.content as unknown as T, createdAt: row.createdAt } : null;
 }

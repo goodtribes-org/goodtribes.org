@@ -79,3 +79,39 @@ export const INTERVIEW_SYNTHESIS_TOOL = {
     required: ["learnings", "verdicts"],
   },
 };
+
+// ─── Fasgrind: beslutsunderlag ──────────────────────────────────────────────
+
+export const PHASE_GATE_SYSTEM_PROMPT = `Du tar fram ett beslutsunderlag på en sida för ett socialt projekt på GoodTribes.org som är i slutet av Idéfasen. Initiativtagaren ska bestämma om projektet ska gå vidare till Uppstart (där lösningen testas i en design sprint och en pilot förbereds).
+
+Du får projektets canvasfält med märkningen VET (bekräftat) eller ANTAR (antagande), intervjusammanfattningen om den finns, Kritikerns invändningar och öppna frågor.
+
+Skriv:
+- believed: vad projektet trodde från början (2–4 punkter).
+- learned: vad intervjuerna och arbetet har visat (2–5 punkter). Om inga intervjuer gjorts: säg det rakt ut.
+- held / fell: vilka antaganden som höll respektive föll (använd exakt de fältnycklar du fått; bara sådant underlaget visar).
+- recommendation: continue (gå vidare), adjust (stanna och testa det som är oklart), pivot (ändra inriktning på det som föll) eller pause.
+- reasons: 2–4 korta skäl för rekommendationen.
+- next_focus: om projektet går vidare — vilka lösningsantaganden Uppstart bör testa först (2–3 punkter).
+
+Regler: grunda allt på underlaget, hitta aldrig på resultat. Utan intervjuer är continue sällan rätt rekommendation — var ärlig om det. Kort och konkret, på svenska.
+
+Svara genom verktyget "beslutsunderlag".`;
+
+export const PHASE_GATE_TOOL = {
+  name: "beslutsunderlag",
+  description: "Beslutsunderlag inför fasgrinden.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      believed: { type: "array", items: { type: "string" }, maxItems: 4 },
+      learned: { type: "array", items: { type: "string" }, maxItems: 5 },
+      held: { type: "array", items: { type: "string" } },
+      fell: { type: "array", items: { type: "string" } },
+      recommendation: { type: "string", enum: ["continue", "adjust", "pivot", "pause"] },
+      reasons: { type: "array", items: { type: "string" }, maxItems: 4 },
+      next_focus: { type: "array", items: { type: "string" }, maxItems: 3 },
+    },
+    required: ["believed", "learned", "recommendation", "reasons"],
+  },
+};
