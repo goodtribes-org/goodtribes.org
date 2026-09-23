@@ -24,6 +24,8 @@ import FillPoller from "./FillPoller";
 import RetryButton from "./RetryButton";
 import CritiqueBox from "./CritiqueBox";
 import InterviewSynthesisPanel from "./InterviewSynthesisPanel";
+import PhaseGateSection from "./PhaseGateSection";
+import { ideaGateCriteria, type GateBrief } from "@/lib/phaseGate";
 import { currentAssumptions, latestInsight, type CritiqueContent, type SynthesisContent } from "@/lib/ideaInsights";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { LEAN_CANVAS_BLOCKS } from "../lean-canvas/fields";
@@ -42,7 +44,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
   const project = await prisma.project.findUnique({
     where: { slug },
     select: {
-      id: true, title: true, summary: true, description: true, category: true, tags: true, sdgGoals: true,
+      id: true, phase: true, title: true, summary: true, description: true, category: true, tags: true, sdgGoals: true,
       leanCanvas: true, valueProposition: true,
       dreamConversation: { select: { fillStatus: true, openQuestions: true, updatedAt: true } },
     },
@@ -51,7 +53,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
 
   const [
     t, tLc, tVp, canEdit, projectProv, leanCanvasAi, valuePropositionAi, marketScan, interviewGuide, interviews,
-    critique, synthesis, assumptions, aiAvailable,
+    critique, synthesis, assumptions, aiAvailable, tCheck, isFounder, gate, gateBrief, lastDecision,
   ] = await Promise.all([
     getTranslations({ locale, namespace: "IdeaOverview" }),
     getTranslations({ locale, namespace: "LeanCanvasHistory" }),
@@ -67,7 +69,15 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
     latestInsight<SynthesisContent>(project.id, "INTERVIEW_SYNTHESIS"),
     currentAssumptions(project.id, slug),
     isAiProjectStartAvailable(session.user.id),
+    getTranslations({ locale, namespace: "ProjectPhaseChecklist" }),
+    hasProjectRole(project.id, session.user.id, ["FOUNDER"]),
+    ideaGateCriteria(project.id, slug),
+    latestInsight<GateBrief>(project.id, "PHASE_GATE"),
+    prisma.phaseGateDecision.findFirst({ where: { projectId: project.id }, orderBy: { createdAt: "desc" } }),
   ]);
+  const inIdeaPhase = project.phase === "IDEA" || project.phase === "SPRINT";
+  const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
+  const decisionDate = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
   const interviewCount = interviews.length;
   const fieldLabels: Record<string, string> = {
     ...Object.fromEntries(
@@ -255,6 +265,32 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         <p className="mb-3 text-sm text-dark-slate/70">{t("inviteIntro")}</p>
         {canEdit ? <AddOrInviteMember projectId={project.id} slug={slug} /> : <p className="text-sm text-dark-slate/50">{t("inviteLeadsOnly")}</p>}
       </OverviewSection>
+
+      {inIdeaPhase ? (
+        <OverviewSection id="fasgrind" title={t("gateHeading")} badge={t("yourTurn")} writingLabel={writing}>
+          <PhaseGateSection
+            slug={slug}
+            criteria={gate.criteria.map((c) => ({ ...c, label: criterionLabel(c.key) }))}
+            interviewCount={gate.interviewCount}
+            brief={gateBrief?.content ?? null}
+            lastDecision={
+              lastDecision
+                ? { outcome: lastDecision.outcome, date: decisionDate(lastDecision.createdAt), missing: lastDecision.missing.map(criterionLabel) }
+                : null
+            }
+            fieldLabels={fieldLabels}
+            canEdit={canEdit}
+            isFounder={isFounder}
+            aiAvailable={aiAvailable}
+          />
+        </OverviewSection>
+      ) : (
+        lastDecision?.outcome === "CONTINUE" && (
+          <p className="rounded-2xl border border-seagrass/30 bg-seagrass/5 px-5 py-3 text-sm text-dark-slate/75">
+            {t("gateClosed", { date: decisionDate(lastDecision.createdAt) })}
+          </p>
+        )
+      )}
     </div>
   );
 }

@@ -262,6 +262,7 @@ model AiFieldSuggestion {
 enum AiInsightKind {
   CRITIQUE             // Kritikern: at most 3 objections to the AI's Idé drafts
   INTERVIEW_SYNTHESIS  // learnings from the logged interviews + a verdict per assumption
+  PHASE_GATE           // the one-page decision brief at the end of a phase
 }
 
 // Something the AI concluded about a project as a whole — shown on the Idé
@@ -277,4 +278,29 @@ model AiInsight {
   createdAt DateTime      @default(now())
 
   @@index([projectId, kind, createdAt])
+}
+
+enum PhaseGateOutcome {
+  CONTINUE // move on to the next phase
+  ADJUST   // stay; test what's still unclear
+  PIVOT    // stay; rework what the evidence contradicted
+  PAUSE    // put the project on hold (marked as ownerless so others can take over)
+}
+
+// A decision taken at a phase gate — a decision point, not a lock: the
+// phase can still be changed by hand as before. "missing" records which
+// gate criteria weren't met when the decision was taken ("went ahead
+// without interviews"), for transparency.
+model PhaseGateDecision {
+  id          String           @id @default(cuid())
+  projectId   String
+  project     Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fromPhase   ProjectPhase
+  outcome     PhaseGateOutcome
+  note        String?          @db.Text
+  missing     String[]         @default([])
+  decidedById String
+  createdAt   DateTime         @default(now())
+
+  @@index([projectId, createdAt])
 }
