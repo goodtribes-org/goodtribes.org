@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import type { ProvenanceInfo } from "@/lib/fieldProvenance";
 import LeanCanvasBlock from "./LeanCanvasBlock";
 import { LEAN_CANVAS_BLOCKS } from "./fields";
 import type { LeanCanvasField } from "./fields";
@@ -9,9 +10,11 @@ interface Props {
   projectSlug: string;
   canvas: Partial<Record<LeanCanvasField, string | null>> | null;
   canEdit: boolean;
+  // Per-field provenance, passed only when vet/antar marking is enabled.
+  provenance?: Record<string, ProvenanceInfo>;
 }
 
-export default function LeanCanvasGrid({ projectSlug, canvas, canEdit }: Props) {
+export default function LeanCanvasGrid({ projectSlug, canvas, canEdit, provenance }: Props) {
   const tField = useTranslations("LeanCanvasHistory");
   const tHint = useTranslations("LeanCanvasFields");
   return (
@@ -54,6 +57,7 @@ export default function LeanCanvasGrid({ projectSlug, canvas, canEdit }: Props) 
             hint={tHint(`hint${b.translationKey}` as Parameters<typeof tHint>[0])}
             value={canvas ? (canvas[b.field] ?? null) : null}
             canEdit={canEdit}
+            provenance={provenance ? (provenance[b.field] ?? null) : undefined}
           />
         ))}
       </div>

@@ -131,6 +131,7 @@ model Project {
   mentorships        MentorshipRequest[]  @relation("ProjectMentorships")
   phaseAiSettings    ProjectPhaseAiSetting[]
   stepAiSettings     ProjectStepAiSetting[]
+  fieldProvenance    FieldProvenance[]
   kudos              Kudos[]              @relation("ProjectKudos")
   streaks            UserStreak[]         @relation("ProjectStreaks")
   flags              ProjectFlag[]        @relation("ProjectFlags")

@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
+import { recordHumanEdits } from "@/lib/fieldProvenance";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { indexDocuments, deleteDocument } from "@/lib/meili";
@@ -138,6 +139,7 @@ export async function updateProject(slug: string, formData: FormData) {
     where: { slug },
     data: { title, slogan, summary, description, category, tags, sdgGoals, ...(imageUrl ? { imageUrl } : {}), orgId },
   });
+  await recordHumanEdits(project.id, "project", project, { title, summary, description, category, tags, sdgGoals }, session.user.id);
 
   await prisma.$transaction([
     prisma.projectSkill.deleteMany({ where: { projectId: project.id } }),

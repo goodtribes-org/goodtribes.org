@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { hasProjectRole, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { LEAN_CANVAS_FIELDS, type LeanCanvasField } from "./fields";
+import { recordHumanEdits } from "@/lib/fieldProvenance";
 
 export async function updateLeanCanvasBlock(
   projectSlug: string,
@@ -21,6 +22,7 @@ export async function updateLeanCanvasBlock(
   if (!(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) return;
 
   const value = (formData.get("value") as string | null)?.trim() || null;
+  const before = await prisma.leanCanvas.findUnique({ where: { projectSlug }, select: { [field]: true } });
 
   const canvas = await prisma.leanCanvas.upsert({
     where: { projectSlug },
@@ -37,6 +39,14 @@ export async function updateLeanCanvasBlock(
       ...Object.fromEntries(LEAN_CANVAS_FIELDS.map((f) => [f, canvas[f]])),
     },
   });
+
+  await recordHumanEdits(
+    project.id,
+    "leanCanvas",
+    before,
+    { [field]: value },
+    session.user.id,
+  );
 
   revalidatePath(`/projects/${projectSlug}/lean-canvas`);
 }

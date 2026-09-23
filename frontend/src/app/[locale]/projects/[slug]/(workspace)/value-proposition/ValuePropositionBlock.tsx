@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import FieldProvenanceBadge from "@/components/ai/FieldProvenanceBadge";
+import type { ProvenanceInfo } from "@/lib/fieldProvenance";
 import { updateValuePropositionBlock } from "./actions";
 import type { ValuePropositionField } from "./fields";
 
@@ -13,9 +15,12 @@ interface Props {
   hint: string;
   value: string | null;
   canEdit: boolean;
+  // Present only when provenance marking is enabled (ai-project-start flag);
+  // undefined hides the vet/antar badge entirely. null = no row for this field.
+  provenance?: ProvenanceInfo | null;
 }
 
-export default function ValuePropositionBlock({ projectSlug, field, side, label, hint, value, canEdit }: Props) {
+export default function ValuePropositionBlock({ projectSlug, field, side, label, hint, value, canEdit, provenance }: Props) {
   const t = useTranslations("LeanCanvasBlock");
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -36,6 +41,18 @@ export default function ValuePropositionBlock({ projectSlug, field, side, label,
         <div>
           <h3 className={`text-xs font-bold uppercase tracking-wide ${labelColor}`}>{label}</h3>
           <p className="text-[10px] text-dark-slate/40 leading-tight mt-0.5">{hint}</p>
+          {provenance !== undefined && (
+            <div className="mt-1">
+              <FieldProvenanceBadge
+                projectSlug={projectSlug}
+                entity="valueProposition"
+                field={field}
+                info={provenance ?? undefined}
+                hasContent={!!value?.trim()}
+                canEdit={canEdit}
+              />
+            </div>
+          )}
         </div>
         {canEdit && !editing && (
           <button

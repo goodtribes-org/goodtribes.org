@@ -3756,5 +3756,15 @@
     "projectManagerLabel": "AI project manager",
     "projectManagerHint": "Let the AI create and suggest tasks in the project. Turn off and no tasks are created automatically.",
     "saveError": "Could not save — try again."
+  },
+  "FieldProvenance": {
+    "aiDraft": "AI draft",
+    "aiDraftHint": "Written by the AI and not yet edited by a person.",
+    "aiEdited": "AI + edited",
+    "aiEditedHint": "An AI draft a person has edited.",
+    "known": "Known",
+    "assumed": "Assumed",
+    "markKnown": "Mark as something you know",
+    "markAssumed": "Mark as an assumption"
   }
 }

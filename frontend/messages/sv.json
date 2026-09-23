@@ -3756,5 +3756,15 @@
     "projectManagerLabel": "AI-projektledare",
     "projectManagerHint": "Låt AI:n skapa och föreslå uppgifter i projektet. Stäng av så skapas inga uppgifter automatiskt.",
     "saveError": "Kunde inte spara — försök igen."
+  },
+  "FieldProvenance": {
+    "aiDraft": "AI-utkast",
+    "aiDraftHint": "Skrivet av AI:n och ännu inte redigerat av en människa.",
+    "aiEdited": "AI + redigerat",
+    "aiEditedHint": "Ett AI-utkast som en människa har redigerat.",
+    "known": "Vet",
+    "assumed": "Antar",
+    "markKnown": "Markera som något ni vet",
+    "markAssumed": "Markera som ett antagande"
   }
 }

@@ -21,6 +21,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { INITIATIVE_CHECKLIST_ITEMS } from "@/lib/projectPhase";
 import type { AiMode } from "@prisma/client";
 import type { ProjectAiSettings } from "@/lib/aiMode";
+import type { ProvenanceInfo } from "@/lib/fieldProvenance";
 import AiModePicker from "@/components/ai/AiModePicker";
 import { setStepAiMode } from "@/lib/actions/aiModeSettings";
 
@@ -55,6 +56,9 @@ interface Props {
   // Present only when the ai-project-start flag is on for this user —
   // shows a per-step AI mode picker under the step indicator.
   aiSettings?: ProjectAiSettings | null;
+  // vet/antar marking on the canvas steps (same flag).
+  leanCanvasProvenance?: Record<string, ProvenanceInfo>;
+  valuePropositionProvenance?: Record<string, ProvenanceInfo>;
 }
 
 // The full idea-phase guide, all 8 steps navigable in either direction —
@@ -78,6 +82,8 @@ export default function IdeaGuide({
   hasInvitedSomeone,
   initialStep,
   aiSettings,
+  leanCanvasProvenance,
+  valuePropositionProvenance,
 }: Props) {
   const t = useTranslations("IdeaGuide");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
@@ -441,7 +447,7 @@ export default function IdeaGuide({
             {t("leanCanvasHint")}
           </p>
         </div>
-        <LeanCanvasGrid projectSlug={slug} canvas={leanCanvas} canEdit />
+        <LeanCanvasGrid projectSlug={slug} canvas={leanCanvas} canEdit provenance={leanCanvasProvenance} />
         <div className="flex justify-between pt-2">
           <button type="button" onClick={() => setStep(2)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
@@ -464,7 +470,7 @@ export default function IdeaGuide({
             {t("valuePropositionHint")}
           </p>
         </div>
-        <ValuePropositionGrid projectSlug={slug} canvas={valueProposition} canEdit />
+        <ValuePropositionGrid projectSlug={slug} canvas={valueProposition} canEdit provenance={valuePropositionProvenance} />
         <div className="flex justify-between pt-2">
           <button type="button" onClick={() => setStep(3)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
