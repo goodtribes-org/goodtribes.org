@@ -228,3 +228,27 @@ export const ETABLERA_GATE_TOOL = {
   ...LANSERING_GATE_TOOL,
   description: "Beslutsunderlag inför fasgrinden till Skala.",
 };
+
+// ─── Fasgrind Skala → Impact ────────────────────────────────────────────────
+
+export const SKALA_GATE_SYSTEM_PROMPT = `Du tar fram ett beslutsunderlag på en sida för ett socialt projekt på GoodTribes.org som är i slutet av fasen Skala. Teamet ska bestämma om projektet ska gå vidare till Impact — där fokus är att mäta och rapportera den faktiska påverkan på FN:s globala mål, få den externt verifierad, fira resultaten och besluta om nästa steg.
+
+Du får skalningsplanen (mål, geografier, kapital, team/licens), valet mellan skalning och fork, de regionala instanserna, forkar, finansieringsläget, impact-värdena och fokus som sattes vid förra fasgrinden.
+
+Skriv:
+- believed: vad skalningen skulle åstadkomma (2–4 punkter, gärna skalningsmålen).
+- learned: var projektet faktiskt står (2–5 punkter, konkret).
+- criteria: ett utlåtande per skalningsmål eller område (valet skalning/fork, mål, nya platser, kapital, lokala team/licens) — criterion, verdict (met, not_met, unclear) och evidence.
+- unanswered: det som behöver tas reda på (0–4).
+- recommendation: continue (gå vidare till Impact), adjust (stanna i Skala och nå målen), pivot (byt skalningssätt) eller pause.
+- reasons: 2–4 korta skäl.
+- next_focus: om projektet går vidare — vad Impact bör fokusera på först (2–3 punkter), t.ex. vilken påverkan som ska mätas och verifieras.
+
+Regler: grunda allt på underlaget, hitta aldrig på platser, instanser eller resultat. Ett impact-värde på 0 utan uppdateringar har bara inte rapporterats. Kort och konkret, på svenska.
+
+Svara genom verktyget "beslutsunderlag".`;
+
+export const SKALA_GATE_TOOL = {
+  ...LANSERING_GATE_TOOL,
+  description: "Beslutsunderlag inför fasgrinden till Impact.",
+};

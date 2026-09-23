@@ -13,6 +13,8 @@ import {
   LANSERING_GATE_TOOL,
   PHASE_GATE_SYSTEM_PROMPT,
   PHASE_GATE_TOOL,
+  SKALA_GATE_SYSTEM_PROMPT,
+  SKALA_GATE_TOOL,
   UPPSTART_GATE_SYSTEM_PROMPT,
   UPPSTART_GATE_TOOL,
 } from "@/lib/prompts/ideaInsights";
@@ -608,5 +610,96 @@ export async function runEtableraGateBrief(projectId: string, slug: string, user
   const brief = coerceGateBrief(toolUse && toolUse.type === "tool_use" ? toolUse.input : null);
   if (!brief.reasons.length && !brief.learned.length) throw new InsightError("empty");
   await prisma.aiInsight.create({ data: { projectId, kind: "ETABLERA_GATE", content: brief as unknown as Prisma.InputJsonValue } });
+  return brief;
+}
+
+// ─── Skala → Impact ─────────────────────────────────────────────────────────
+
+export const SKALA_GATE_CRITERIA = [
+  "scale_vs_fork_decided",
+  "scaling_goals_set",
+  "new_geographies_identified",
+  "expansion_capital_secured",
+  "local_teams_or_license",
+] as const;
+
+export const SKALA_CARD_WORDS = {
+  unclear: "Följ upp",
+  unclearWhy: "Underlaget räcker inte för att säga om det här är nått. Följ upp och mät innan nästa beslut.",
+  notMet: "Nå",
+  notMetWhy: "Det här skalningsmålet eller området är inte nått. Gör en plan för att nå det, eller ändra målet.",
+};
+
+// Checklist keys; met when ticked, or when the data shows it (replication
+// opened or an instance started, goals/geographies written in the scaling
+// plan, funding awarded, an approved instance).
+export async function skalaGateCriteria(projectId: string, slug: string): Promise<{ criteria: GateCriteria }> {
+  const [done, project, plan, instances, awarded] = await Promise.all([
+    prisma.initiativeChecklistItem.findMany({
+      where: { projectId, completedAt: { not: null }, itemKey: { in: [...SKALA_GATE_CRITERIA] } },
+      select: { itemKey: true },
+    }),
+    prisma.project.findUnique({ where: { id: projectId }, select: { openForReplication: true } }),
+    prisma.scalingPlan.findUnique({ where: { projectSlug: slug }, select: { goals: true, geographies: true } }),
+    prisma.projectInstance.findMany({ where: { parentSlug: slug }, select: { status: true } }),
+    prisma.fundingApplication.count({ where: { projectId, status: "awarded" } }),
+  ]);
+  const doneKeys = new Set(done.map((d) => d.itemKey));
+  const has: Record<(typeof SKALA_GATE_CRITERIA)[number], boolean> = {
+    scale_vs_fork_decided: !!project?.openForReplication || instances.length > 0,
+    scaling_goals_set: !!plan?.goals?.trim(),
+    new_geographies_identified: !!plan?.geographies?.trim(),
+    expansion_capital_secured: awarded > 0,
+    local_teams_or_license: instances.some((i) => i.status === "approved"),
+  };
+  return { criteria: SKALA_GATE_CRITERIA.map((key) => ({ key, met: doneKeys.has(key) || has[key] })) };
+}
+
+export async function runSkalaGateBrief(projectId: string, slug: string, userId: string): Promise<GateBrief> {
+  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId });
+  if (!gate.ok) throw new InsightError(gate.reason);
+
+  const [project, plan, choice, instances, forks, applications, metrics, previous] = await Promise.all([
+    prisma.project.findUnique({ where: { id: projectId }, select: { title: true, summary: true, openForReplication: true } }),
+    prisma.scalingPlan.findUnique({ where: { projectSlug: slug }, select: { goals: true, geographies: true, capitalPlan: true, teamOrLicenseModel: true } }),
+    prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "skalningsval" } }, select: { content: true } }),
+    prisma.projectInstance.findMany({ where: { parentSlug: slug }, select: { region: true, country: true, status: true } }),
+    prisma.project.count({ where: { forkedFromProjectId: projectId } }),
+    prisma.fundingApplication.findMany({ where: { projectId }, select: { status: true, outcomeAmountSek: true, fundingSource: { select: { name: true } } } }),
+    prisma.impactMetric.findMany({ where: { projectSlug: slug }, select: { label: true, unit: true, currentValue: true, targetValue: true, _count: { select: { updates: true } } } }),
+    latestInsight<GateBrief>(projectId, "ETABLERA_GATE"),
+  ]);
+  if (!project) throw new InsightError("not_found");
+  const strip = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+  const content = [
+    `Projekt: ${project.title} — ${project.summary ?? ""}`,
+    plan
+      ? `Skalningsplan:\nMål: ${plan.goals ?? "—"}\nGeografier: ${plan.geographies ?? "—"}\nKapital: ${plan.capitalPlan ?? "—"}\nTeam/licens: ${plan.teamOrLicenseModel ?? "—"}`
+      : "Ingen skalningsplan.",
+    choice ? `Skalning eller fork (underlag): ${strip(choice.content).slice(0, 1000)}` : "",
+    `Öppet för replikering: ${project.openForReplication ? "ja" : "nej"}. Regionala instanser: ${instances.map((i) => `${i.region}${i.country ? `, ${i.country}` : ""} (${i.status})`).join("; ") || "inga"}. Forkar: ${forks}.`,
+    applications.length ? `Finansiering: ${applications.map((a) => `${a.fundingSource.name}: ${a.status}${a.outcomeAmountSek ? ` (${a.outcomeAmountSek} kr)` : ""}`).join("; ")}` : "Inga finansieringsansökningar.",
+    `Impact: ${metrics.map((m) => `${m.label} ${m.currentValue} ${m.unit}${m.targetValue ? ` (mål ${m.targetValue})` : ""}${m._count.updates ? "" : " — inte rapporterat"}`).join("; ") || "inga mätetal"}`,
+    previous ? `Fokus som sattes för Skala vid förra fasgrinden: ${previous.content.nextFocus.join(" | ")}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+  const response = await gate.client.messages.create(
+    {
+      model: "claude-sonnet-4-6",
+      max_tokens: 3000,
+      system: SKALA_GATE_SYSTEM_PROMPT,
+      tools: [SKALA_GATE_TOOL],
+      tool_choice: { type: "tool", name: SKALA_GATE_TOOL.name },
+      messages: [{ role: "user", content }],
+    },
+    { timeout: 90_000, maxRetries: 1 },
+  );
+  const toolUse = response.content.find((b) => b.type === "tool_use");
+  const brief = coerceGateBrief(toolUse && toolUse.type === "tool_use" ? toolUse.input : null);
+  if (!brief.reasons.length && !brief.learned.length) throw new InsightError("empty");
+  await prisma.aiInsight.create({ data: { projectId, kind: "SKALA_GATE", content: brief as unknown as Prisma.InputJsonValue } });
   return brief;
 }

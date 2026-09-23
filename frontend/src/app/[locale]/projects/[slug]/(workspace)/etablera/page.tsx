@@ -219,7 +219,7 @@ export default async function EtableraOverviewPage({ params }: { params: Promise
         </OverviewSection>
       ) : (
         gateDecision?.outcome === "CONTINUE" && (
-          <GateClosed text={tGate("etablera.closed", { date: decisionDate(gateDecision.createdAt) })} href={`/projects/${slug}/guide/scale`} linkLabel={t("gateClosedLink")} />
+          <GateClosed text={tGate("etablera.closed", { date: decisionDate(gateDecision.createdAt) })} href={`/projects/${slug}/skala`} linkLabel={t("gateClosedLink")} />
         )
       )}
     </div>

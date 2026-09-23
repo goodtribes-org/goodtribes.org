@@ -40,10 +40,11 @@ export default async function PhaseGuidePage({
   if (!isLeadRole(project.members[0]?.role)) redirect(`/projects/${slug}`);
   // Phases from Uppstart on also have a one-page overview (see
   // (workspace)/uppstart, lansering, etablera, …).
-  const ONE_PAGE: Partial<Record<ProjectPhaseValue, { href: string; namespace: "UppstartOverview" | "LanseringOverview" | "EtableraOverview" }>> = {
+  const ONE_PAGE: Partial<Record<ProjectPhaseValue, { href: string; namespace: "UppstartOverview" | "LanseringOverview" | "EtableraOverview" | "SkalaOverview" }>> = {
     PILOT: { href: "uppstart", namespace: "UppstartOverview" },
     PRODUCTION: { href: "lansering", namespace: "LanseringOverview" },
     ESTABLISH: { href: "etablera", namespace: "EtableraOverview" },
+    SCALE: { href: "skala", namespace: "SkalaOverview" },
   };
   const onePage = ONE_PAGE[phase] && (await isFeatureEnabled("ai-project-start", session.user.id)) ? ONE_PAGE[phase] : null;
   const tOnePage = await getTranslations({ locale, namespace: onePage?.namespace ?? "UppstartOverview" });
