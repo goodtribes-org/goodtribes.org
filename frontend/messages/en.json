@@ -1252,7 +1252,10 @@
     "sprintHint": "Optional — get a head start on sprint prep now by checking off what's already done, or start a real, asynchronous Design Sprint right away.",
     "openDesignSprints": "Open Design Sprints →",
     "finishButton": "Done, take me to the project",
-    "aiModeForStep": "AI for this step"
+    "aiModeForStep": "AI for this step",
+    "sdgRecommendation": "Tip: pick 1–3 goals the project clearly contributes to. Fewer goals make your impact easier to measure and explain.",
+    "sdgTooMany": "You've picked {count} goals. Try to narrow it down to the 1–3 the project contributes to most clearly.",
+    "thinkAboutHeading": "Things to think about"
   },
   "PhaseGuide": {
     "title": "{phaseLabel} guide — {projectTitle}",
@@ -3798,6 +3801,38 @@
     "delete": "Delete the conversation",
     "deleteConfirm": "Delete the whole conversation? This can't be undone.",
     "deleteYes": "Yes, delete",
-    "deleteNo": "Cancel"
+    "deleteNo": "Cancel",
+    "summarize": "Summarise",
+    "summarizing": "Summarising…",
+    "summarizeEarlyHint": "Not every area is covered yet — you can summarise anyway.",
+    "summaryError": "Couldn't summarise right now — try again."
+  },
+  "DreamSummary": {
+    "heading": "Here's how I understood you",
+    "intro": "Read it through and correct anything that's off. Nothing is saved to the project until you approve.",
+    "sectionDream": "The dream",
+    "sectionProblem": "The problem and who is affected",
+    "sectionIdea": "The idea",
+    "sectionPeople": "Who is needed",
+    "sectionConditions": "Conditions",
+    "openQuestionsHeading": "Open questions",
+    "openQuestionsHint": "They become cards to think about in the project.",
+    "willFillHeading": "This will be filled in",
+    "projectName": "Project name",
+    "projectSummary": "Summary",
+    "sdgGoals": "Global goals",
+    "known": "Known",
+    "assumed": "Assumed",
+    "agentNote": "Everything is marked as an AI draft. What you said yourself is marked \"known\", what the AI derived \"assumed\". You can change everything in the guide.",
+    "assistNote": "Only the name, summary and description are set. You fill in the rest yourself, with the AI's suggestions next to the fields.",
+    "correctionLabel": "What's not right?",
+    "regenerate": "Redo the summary",
+    "regenerating": "Redoing…",
+    "cancel": "Cancel",
+    "approve": "Approve and create the project",
+    "creating": "Creating the project…",
+    "notRight": "That's not right",
+    "backToConversation": "Back to the conversation",
+    "genericError": "Something went wrong — try again."
   }
 }

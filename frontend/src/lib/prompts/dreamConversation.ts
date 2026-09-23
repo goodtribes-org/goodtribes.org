@@ -86,3 +86,86 @@ export function dreamProgressNote(state: {
   if (state.aiQuestionCount >= 15) lines.push("Du har ställt många frågor nu — avsluta samtalet i det här meddelandet.");
   return lines.join("\n");
 }
+
+// ─── "Så här förstod jag dig" ───────────────────────────────────────────────
+
+export const DREAM_SUMMARY_SYSTEM_PROMPT = `Du har just haft ett Drömsamtal med en initiativtagare på GoodTribes.org. Sammanfatta vad du förstått, och föreslå hur projektets fält ska fyllas i.
+
+Regler:
+- Använd personens egna ord så långt det går. Sammanfattningen får vara högst en halv sida.
+- Hitta ALDRIG på fakta: inga siffror, statistik, namn på organisationer eller påståenden som personen inte sagt. Om något skulle kräva research, lämna fältet tomt och lägg det som en öppen fråga i stället.
+- Lämna ett fält tomt hellre än att gissa.
+- För varje fält: basis = "user" om personen själv sa det, "inferred" om du härlett eller föreslagit det.
+- Föreslå högst 3 av FN:s globala mål (siffror 1–17), bara de som tydligt passar.
+- Kategori måste vara en av: Technology, Environment, Education, Arts, Community, Health, Other.
+- Skriv på det språk personen använde.
+
+Svara genom verktyget "sammanfatta".`;
+
+const fieldSchema = {
+  type: "object" as const,
+  properties: {
+    value: { type: "string" },
+    basis: { type: "string", enum: ["user", "inferred"] },
+  },
+  required: ["value", "basis"],
+};
+
+export const DREAM_SUMMARY_TOOL = {
+  name: "sammanfatta",
+  description: "Sammanfatta samtalet och föreslå fältvärden.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      sections: {
+        type: "object",
+        description: "Sammanfattningen, i personens egna ord.",
+        properties: {
+          dream: { type: "string", description: "Drömmen i en mening." },
+          problem: { type: "string", description: "Problemet och vem som drabbas." },
+          idea: { type: "string", description: "Idén." },
+          people: { type: "string", description: "Vilka som behövs: användare, betalare, medhjälpare." },
+          conditions: { type: "string", description: "Förutsättningar: tid, team, ambition." },
+        },
+        required: ["dream", "problem", "idea", "people", "conditions"],
+      },
+      open_questions: { type: "array", items: { type: "string" } },
+      project: {
+        type: "object",
+        properties: {
+          title: { ...fieldSchema, description: "Ett kort, beskrivande projektnamn." },
+          summary: { ...fieldSchema, description: "En mening som beskriver projektet." },
+          description: { ...fieldSchema, description: "Några stycken om projektet." },
+          category: { type: "string" },
+          tags: { type: "array", items: { type: "string" } },
+          sdg_goals: { type: "array", items: { type: "integer" } },
+        },
+        required: ["title", "summary", "description"],
+      },
+      canvas: {
+        type: "object",
+        description: "Lean Canvas-fält. Utelämna eller lämna tomma de du inte vet.",
+        properties: {
+          problem: { ...fieldSchema, description: "Problemet och varför det finns (från dröm och problem)." },
+          customerSegments: { ...fieldSchema, description: "Vilka som använder, betalar eller stöder." },
+          earlyAdopters: { ...fieldSchema, description: "Vilka som vill vara med först." },
+          alternatives: { ...fieldSchema, description: "Hur man löser problemet idag." },
+          solution: { ...fieldSchema, description: "Lösningen i korthet." },
+          uniqueValueProposition: { ...fieldSchema, description: "Utkast: varför välja detta framför alternativen." },
+          revenueStreams: { ...fieldSchema, description: "Utkast: varifrån pengarna kan komma." },
+          unfairAdvantage: { ...fieldSchema, description: "Vad initiativtagaren har med sig: erfarenhet, nätverk." },
+          impact: { ...fieldSchema, description: "Den långsiktiga förändringen." },
+        },
+      },
+      conditions: {
+        type: "object",
+        properties: {
+          weekly_hours: { type: ["integer", "null"], description: "Timmar i veckan, om personen sa det." },
+          team_mode: { type: ["string", "null"], enum: ["SOLO", "SMALL", "TEAM", null] },
+          ambition: { type: ["string", "null"], enum: ["HOBBY", "VENTURE", null] },
+        },
+      },
+    },
+    required: ["sections", "open_questions", "project"],
+  },
+};

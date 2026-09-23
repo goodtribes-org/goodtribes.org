@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { DREAM_AREAS, type DreamArea } from "@/lib/dreamConversation";
-import { getDreamProgress, type DreamProgress } from "../actions";
+import { generateDreamSummary, getDreamProgress, type DreamProgress } from "../actions";
+import { useTransition } from "react";
 
 const AREA_KEY: Record<DreamArea, string> = {
   dream: "areaDream",
@@ -37,6 +38,27 @@ export default function DreamProgressBar({ roomId, initial }: { roomId: string; 
     };
   }, [roomId]);
 
+  const [summarizing, startSummarizing] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  // Summarising makes sense once there's something to summarise; it's the
+  // natural next step (and highlighted) once every area is covered.
+  const canSummarize = progress.covered.length >= 3;
+
+  function summarize() {
+    setError(null);
+    startSummarizing(async () => {
+      try {
+        await generateDreamSummary(roomId);
+      } catch (e) {
+        // redirect() on success surfaces as a thrown NEXT_REDIRECT here —
+        // Next handles it; only real errors are shown.
+        if (!(e instanceof Error) || !String((e as { digest?: string }).digest ?? "").startsWith("NEXT_REDIRECT")) {
+          setError(t("summaryError"));
+        }
+      }
+    });
+  }
+
   return (
     <div>
       <ol className="flex flex-wrap gap-1.5" aria-label={t("progressLabel")}>
@@ -59,6 +81,22 @@ export default function DreamProgressBar({ roomId, initial }: { roomId: string; 
         {progress.complete ? t("progressComplete") : t("progressCount", { count: progress.covered.length, total: DREAM_AREAS.length })}
         {progress.openQuestionCount > 0 && ` · ${t("openQuestions", { count: progress.openQuestionCount })}`}
       </p>
+      {canSummarize && (
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={summarize}
+            disabled={summarizing}
+            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
+              progress.complete ? "bg-coral text-white hover:bg-watermelon" : "border border-coral text-coral hover:bg-coral/10"
+            }`}
+          >
+            {summarizing ? t("summarizing") : t("summarize")}
+          </button>
+          {!progress.complete && <span className="text-xs text-dark-slate/50">{t("summarizeEarlyHint")}</span>}
+          {error && <span className="text-xs text-watermelon">{error}</span>}
+        </div>
+      )}
     </div>
   );
 }

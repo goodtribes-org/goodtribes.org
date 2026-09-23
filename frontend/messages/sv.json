@@ -1252,7 +1252,10 @@
     "sprintHint": "Valfritt — förbered sprint-arbetet redan nu genom att bocka av det som redan är klart, eller starta en riktig, asynkron Design Sprint direkt.",
     "openDesignSprints": "Öppna Design Sprints →",
     "finishButton": "Klar, ta mig till projektet",
-    "aiModeForStep": "AI för det här steget"
+    "aiModeForStep": "AI för det här steget",
+    "sdgRecommendation": "Tips: välj 1–3 mål som projektet tydligt bidrar till. Färre mål gör det lättare att mäta och berätta om er impact.",
+    "sdgTooMany": "Du har valt {count} mål. Försök begränsa dig till de 1–3 som projektet tydligast bidrar till.",
+    "thinkAboutHeading": "Att fundera på"
   },
   "PhaseGuide": {
     "title": "{phaseLabel}-guiden — {projectTitle}",
@@ -3798,6 +3801,38 @@
     "delete": "Radera samtalet",
     "deleteConfirm": "Radera hela samtalet? Det går inte att ångra.",
     "deleteYes": "Ja, radera",
-    "deleteNo": "Avbryt"
+    "deleteNo": "Avbryt",
+    "summarize": "Sammanfatta",
+    "summarizing": "Sammanfattar…",
+    "summarizeEarlyHint": "Alla områden är inte täckta än — du kan sammanfatta ändå.",
+    "summaryError": "Kunde inte sammanfatta just nu — försök igen."
+  },
+  "DreamSummary": {
+    "heading": "Så här förstod jag dig",
+    "intro": "Läs igenom och rätta det som inte stämmer. Ingenting sparas i projektet förrän du godkänner.",
+    "sectionDream": "Drömmen",
+    "sectionProblem": "Problemet och vem som drabbas",
+    "sectionIdea": "Idén",
+    "sectionPeople": "Vilka som behövs",
+    "sectionConditions": "Förutsättningar",
+    "openQuestionsHeading": "Öppna frågor",
+    "openQuestionsHint": "De blir kort att fundera på i projektet.",
+    "willFillHeading": "Det här fylls i",
+    "projectName": "Projektnamn",
+    "projectSummary": "Sammanfattning",
+    "sdgGoals": "Globala mål",
+    "known": "Vet",
+    "assumed": "Antar",
+    "agentNote": "Allt märks som AI-utkast. Det du själv sa märks \"vet\", det AI:n härlett \"antar\". Du kan ändra allt i guiden.",
+    "assistNote": "Bara namn, sammanfattning och beskrivning sätts. Resten fyller du i själv, med AI:ns förslag bredvid fälten.",
+    "correctionLabel": "Vad stämmer inte?",
+    "regenerate": "Gör om sammanfattningen",
+    "regenerating": "Gör om…",
+    "cancel": "Avbryt",
+    "approve": "Godkänn och skapa projektet",
+    "creating": "Skapar projektet…",
+    "notRight": "Det stämmer inte",
+    "backToConversation": "Tillbaka till samtalet",
+    "genericError": "Något gick fel — försök igen."
   }
 }

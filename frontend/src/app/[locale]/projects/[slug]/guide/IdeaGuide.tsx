@@ -59,6 +59,8 @@ interface Props {
   // vet/antar marking on the canvas steps (same flag).
   leanCanvasProvenance?: Record<string, ProvenanceInfo>;
   valuePropositionProvenance?: Record<string, ProvenanceInfo>;
+  // Open questions from Drömsamtalet ("Att fundera på").
+  openQuestions?: string[];
 }
 
 // The full idea-phase guide, all 8 steps navigable in either direction —
@@ -84,6 +86,7 @@ export default function IdeaGuide({
   aiSettings,
   leanCanvasProvenance,
   valuePropositionProvenance,
+  openQuestions,
 }: Props) {
   const t = useTranslations("IdeaGuide");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
@@ -253,6 +256,17 @@ export default function IdeaGuide({
           onStepClick={(i) => setStep(i)}
         />
 
+        {openQuestions && openQuestions.length > 0 && (
+          <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-sm font-semibold text-dark-slate">{t("thinkAboutHeading")}</p>
+            <ul className="mt-2 list-disc pl-5 text-sm text-dark-slate/80">
+              {openQuestions.map((q) => (
+                <li key={q}>{q}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {aiSettings && (
           <div className="mt-4 flex justify-end">
             {/* The guide is the IDEA phase, so a step inherits the IDEA phase
@@ -369,6 +383,12 @@ export default function IdeaGuide({
           <p className="text-xs text-dark-slate/50 mb-4">
             {t("sdgHint")}
           </p>
+          {/* AI-guided start (same flag): steer towards a focused choice. */}
+          {aiSettings && (
+            <p className={`-mt-2 mb-4 text-xs ${selected.size > 5 ? "text-watermelon font-medium" : "text-dark-slate/60"}`}>
+              {selected.size > 5 ? t("sdgTooMany", { count: selected.size }) : t("sdgRecommendation")}
+            </p>
+          )}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {SDG_NUMBERS.map((n) => {
               const label = SDG_LABELS_SV[n];
