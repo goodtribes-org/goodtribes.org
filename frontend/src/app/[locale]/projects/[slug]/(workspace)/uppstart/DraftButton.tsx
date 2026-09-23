@@ -4,15 +4,20 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { startUppstartDrafts } from "./actions";
+import { startLanseringDrafts } from "../lansering/actions";
 
-// "Låt AI:n ta fram utkast" for the whole phase (variant "primary"), or a
+const ACTIONS = { uppstart: startUppstartDrafts, lansering: startLanseringDrafts };
+
+// "Låt AI:n ta fram utkast" for a whole phase's overview (variant "primary"), or a
 // "Försök igen" / "Ta fram utkast" link for one section (variant "link").
 export default function DraftButton({
+  phase = "uppstart",
   slug,
   section,
   label,
   variant = "link",
 }: {
+  phase?: keyof typeof ACTIONS;
   slug: string;
   section?: string;
   label: string;
@@ -25,7 +30,7 @@ export default function DraftButton({
   const onClick = () =>
     startTransition(async () => {
       setError(null);
-      const res = await startUppstartDrafts(slug, section);
+      const res = await ACTIONS[phase](slug, section);
       if (res.error) setError(res.error);
       else router.refresh();
     });

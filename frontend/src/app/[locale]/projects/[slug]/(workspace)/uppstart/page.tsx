@@ -343,7 +343,7 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
         gateDecision?.outcome === "CONTINUE" && (
           <p className="rounded-2xl border border-seagrass/30 bg-seagrass/5 px-5 py-3 text-sm text-dark-slate/75">
             {t("gateClosed", { date: decisionDate(gateDecision.createdAt) })}{" "}
-            <Link href={`/projects/${slug}/guide/production`} className="font-semibold text-seagrass hover:underline">
+            <Link href={`/projects/${slug}/lansering`} className="font-semibold text-seagrass hover:underline">
               {t("gateClosedLink")}
             </Link>
           </p>
