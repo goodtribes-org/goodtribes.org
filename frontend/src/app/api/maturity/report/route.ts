@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
-import { getAnthropicClient, checkAiRateLimit } from "@/lib/anthropic";
+import { getAiClientFor, aiGateStatus } from "@/lib/aiMode";
 
 
 export async function POST(req: Request) {
@@ -38,14 +38,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  if (!(await checkAiRateLimit(session.user.id))) {
-    return NextResponse.json({ error: "Too many AI requests — try again later" }, { status: 429 });
+  // A report the lead asked for — "assist".
+  const gate = await getAiClientFor({ feature: "maturity-report", kind: "assist", userId: session.user.id, projectId: project.id });
+  if (!gate.ok) {
+    const error =
+      gate.reason === "rate_limited"
+        ? "Too many AI requests — try again later"
+        : gate.reason === "mode"
+          ? "AI is turned off in this project's AI settings"
+          : "AI not configured";
+    return NextResponse.json({ error }, { status: aiGateStatus(gate.reason) });
   }
-
-  const client = await getAnthropicClient();
-  if (!client) {
-    return NextResponse.json({ error: "AI not configured" }, { status: 500 });
-  }
+  const { client } = gate;
 
   const alumniCount = project.alumni.length;
   const score = project.maturity?.score ?? 0;

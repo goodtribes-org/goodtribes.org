@@ -12,7 +12,9 @@ import { IDEAS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 export async function getSdgSuggestions(
   description: string
 ): Promise<{ goals: number[]; reasoning: string } | null> {
-  return suggestSdgGoals(description);
+  const session = await auth();
+  if (!session?.user?.id) return null;
+  return suggestSdgGoals(description, session.user.id);
 }
 
 

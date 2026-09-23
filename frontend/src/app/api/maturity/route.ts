@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
-import { getAnthropicClient, checkAiRateLimit } from "@/lib/anthropic";
+import { getAiClientFor } from "@/lib/aiMode";
 import { calculateMaturityScore } from "@/lib/projectMaturity";
 
 
@@ -23,9 +23,18 @@ export async function POST(req: NextRequest) {
 
   let scalingPlan: string | null = existing?.scalingPlan ?? null;
 
-  if (score >= 70 && !scalingPlan && (await checkAiRateLimit(session.user.id))) {
-    const client = await getAnthropicClient();
-    if (client) {
+  // Written automatically once the score crosses 70, without anyone asking —
+  // "agent" kind, so it only happens in AGENT mode (or a legacy project).
+  const project =
+    score >= 70 && !scalingPlan
+      ? await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } })
+      : null;
+  const gate = project
+    ? await getAiClientFor({ feature: "maturity-report", kind: "agent", userId: session.user.id, projectId: project.id })
+    : null;
+  if (gate?.ok) {
+    const { client } = gate;
+    {
       try {
         const response = await client.messages.create({
           model: "claude-opus-4-8",

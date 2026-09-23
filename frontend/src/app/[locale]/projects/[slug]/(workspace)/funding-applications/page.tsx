@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
-import { getToolAiMode } from "@/lib/actions/aiPreferences";
+import { resolveAiMode, isAiCallAllowed } from "@/lib/aiMode";
 import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import MatchList from "./MatchList";
 import ApplicationList from "./ApplicationList";
@@ -54,7 +54,7 @@ export default async function FundingApplicationsPage({
   const appliedSourceIds = new Set(project.fundingApplications.map((a) => a.fundingSourceId));
   const openMatches = project.fundingMatches.filter((m) => !appliedSourceIds.has(m.fundingSourceId));
 
-  const { aiMode: fundingAiMode } = await getToolAiMode(slug, "funding-applications");
+  const { mode: fundingAiMode } = await resolveAiMode({ projectId: project.id, feature: "funding-applications" });
 
   return (
     <div className="max-w-2xl">
@@ -84,7 +84,7 @@ export default async function FundingApplicationsPage({
           applications={project.fundingApplications}
           projectSlug={slug}
           canManage={canManage}
-          aiModeEnabled={fundingAiMode === "AGENT"}
+          aiModeEnabled={isAiCallAllowed(fundingAiMode, "agent")}
         />
       )}
     </div>

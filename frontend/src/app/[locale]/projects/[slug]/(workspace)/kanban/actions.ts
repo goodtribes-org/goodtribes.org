@@ -84,7 +84,7 @@ export async function createCard(
     subtasks: cleanedSubtasks.map((title) => ({ title, done: false })),
   });
 
-  const est = await estimateTask(card.title, card.description, session.user.id);
+  const est = await estimateTask(card.title, card.description, session.user.id, project?.id ?? null);
   if (est) {
     await prisma.taskEstimate.create({
       data: {

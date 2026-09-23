@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { createProjectRecord } from "@/lib/createProject";
-import { getAnthropicClient } from "@/lib/anthropic";
+import { getAiClientFor } from "@/lib/aiMode";
 
 const SYSTEM_PROMPT = `Du är en kreativ idégenerator för GoodTribes, en plattform som kopplar
 volontärer och organisationer till projekt som bidrar till FN:s Agenda 2030.
@@ -32,10 +32,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const client = await getAnthropicClient();
-  if (!client) {
+  // System job: no user (bounded by its daily schedule instead of a rate
+  // limit) and no project yet — only AI configuration applies.
+  const gate = await getAiClientFor({ feature: "sandbox-seed", kind: "agent", userId: null, projectId: null });
+  if (!gate.ok) {
     return NextResponse.json({ ok: true, seeded: 0, note: "AI ej konfigurerad" });
   }
+  const { client } = gate;
 
   let threads: { title: string; problemStatement: string; sdgGoals: number[] }[] = [];
   try {

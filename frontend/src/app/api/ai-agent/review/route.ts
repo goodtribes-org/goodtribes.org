@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
-import { getAnthropicClient, isAiEnabled, checkAiRateLimit } from "@/lib/anthropic";
+import { getAiClientFor, aiGateStatus } from "@/lib/aiMode";
 import { GITHUB_CARD_LOCKED_MESSAGE } from "@/lib/githubSync";
 import { awardTokens } from "@/lib/tokens";
 
@@ -22,10 +22,9 @@ Leverera alltid ett strukturerat svar i markdown-format.`;
 }
 
 export async function POST(req: NextRequest) {
-  if (!isAiEnabled()) {
-    return NextResponse.json({ error: "AI not configured" }, { status: 500 });
-  }
-
+  // No blanket AI check here: approve/reject never call the model, so they
+  // keep working even when AI is unconfigured or the project is MANUAL.
+  // Only the revision branch goes through the AI gate.
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -43,7 +42,7 @@ export async function POST(req: NextRequest) {
     include: {
       kanbanCard: {
         include: {
-          project: { select: { title: true, description: true, slug: true } },
+          project: { select: { id: true, title: true, description: true, slug: true } },
           estimate: true,
         },
       },
@@ -121,9 +120,24 @@ export async function POST(req: NextRequest) {
   }
 
   if (decision === "revision") {
-    if (!(await checkAiRateLimit(session.user.id))) {
-      return NextResponse.json({ error: "Too many AI requests — try again later" }, { status: 429 });
+    // A revision re-runs the agent on the card — same "agent" kind as the
+    // original run.
+    const gate = await getAiClientFor({
+      feature: "kanban-agent",
+      kind: "agent",
+      userId: session.user.id,
+      projectId: aiTaskRun.kanbanCard.project.id,
+    });
+    if (!gate.ok) {
+      const error =
+        gate.reason === "mode"
+          ? "AI agent mode is turned off for this project"
+          : gate.reason === "rate_limited"
+            ? "Too many AI requests — try again later"
+            : "AI not configured";
+      return NextResponse.json({ error }, { status: aiGateStatus(gate.reason) });
     }
+    const { client } = gate;
 
     const newAttemptNumber = aiTaskRun.attemptNumber + 1;
 
@@ -149,8 +163,6 @@ export async function POST(req: NextRequest) {
         ? `${baseUserMessage}\n\nPrevious attempt feedback: ${feedback}`
         : baseUserMessage;
 
-      // isAiEnabled() was already checked above, so this can't come back null.
-      const client = (await getAnthropicClient())!;
       const message = await client.messages.create({
         model: "claude-sonnet-4-6",
         max_tokens: 2000,
