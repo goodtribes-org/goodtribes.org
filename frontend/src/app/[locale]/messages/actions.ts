@@ -7,6 +7,7 @@ import { getProjectRole, isLeadRole } from "@/lib/authz";
 import { getRoomAccess } from "@/lib/roomAuth";
 import { publishToRoom, publishToUser } from "@/lib/redis";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
+import { triggerDreamReply } from "@/lib/dreamReply";
 import { triggerAiThreadReply } from "@/lib/aiThreadReply";
 import { guardSocialAction } from "@/lib/socialActionGuard";
 import { runProactiveModeration } from "@/lib/proactiveModeration";
@@ -156,8 +157,12 @@ export async function sendRoomMessage(
   // AI_INTAKE (Paket E): auto-replies to every message, no @AI mention
   // needed — it's a solo dialogue with the AI, not a multi-person thread
   // where a mention picks it out of the crowd.
+  // A Drömsamtal (an AI_INTAKE room with a DreamConversation row) gets the
+  // structured coach instead of the older Idéverkstaden intake prompt.
   if (access.room.type === "AI_INTAKE") {
-    void triggerAiThreadReply(access.room, userId);
+    const isDream = await prisma.dreamConversation.count({ where: { roomId: access.room.id } });
+    if (isDream) void triggerDreamReply(access.room, userId);
+    else void triggerAiThreadReply(access.room, userId);
   }
 
   // Deep-links straight to the message that triggered the notification —

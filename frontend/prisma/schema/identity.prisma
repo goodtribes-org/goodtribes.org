@@ -164,6 +164,7 @@ model User {
   createdFundingSources          FundingSource[]
   createdAiProjectPlans          AiProjectPlan[]           @relation("AiProjectPlanCreatedBy")
   decidedAiProjectPlans          AiProjectPlan[]           @relation("AiProjectPlanDecidedBy")
+  dreamConversations DreamConversation[] @relation("DreamConversations")
 }
 
 model Skill {

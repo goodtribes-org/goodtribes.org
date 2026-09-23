@@ -30,6 +30,11 @@ export default async function IdeaThreadPage({
   if (!access || (access.room.type !== "IDEA_THREAD" && access.room.type !== "AI_INTAKE")) notFound();
   if (!access.canRead) notFound();
   const isAiIntake = access.room.type === "AI_INTAKE";
+  // A Drömsamtal is an AI_INTAKE room too, but it lives in the new-project
+  // flow, not in Idéverkstaden.
+  if (isAiIntake && (await prisma.dreamConversation.count({ where: { roomId } }))) {
+    redirect(`/projects/new/samtal/${roomId}`);
+  }
 
   const [room, messages, participants, mentionables] = await Promise.all([
     prisma.room.findUnique({

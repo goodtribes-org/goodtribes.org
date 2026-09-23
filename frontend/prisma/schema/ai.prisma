@@ -188,3 +188,41 @@ model FieldProvenance {
   // Also serves "all provenance for one entity" lookups (prefix match).
   @@unique([projectId, entity, field])
 }
+
+enum DreamConversationStatus {
+  in_progress
+  summary_pending
+  confirmed
+  abandoned
+}
+
+// Drömsamtalet: the AI dialogue at the start of a new project, before the
+// Snabbstart guide (steg 1 of the AI-guided project start). The chat itself
+// lives in an AI_INTAKE Room (messages, realtime, access via
+// RoomParticipant); this row holds the structured side: which of the six
+// areas (see src/lib/dreamConversation.ts) are covered, a short note per
+// area, the user's open questions, and — once generated — the "Så här
+// förstod jag dig" summary. Nothing is written to a project until that
+// summary is approved; the project is created then and linked here.
+model DreamConversation {
+  id            String                  @id @default(cuid())
+  roomId        String                  @unique
+  room          Room                    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User                    @relation("DreamConversations", fields: [userId], references: [id], onDelete: Cascade)
+  // The mode chosen at the vägval (AGENT or ASSIST — MANUAL skips the
+  // conversation entirely); becomes the project's aiMode.
+  aiMode        AiMode
+  // { covered: string[], notes: Record<area, string> }
+  state         Json                    @default("{}")
+  // string[] — what the user didn't know yet ("vet inte" is a valid answer)
+  openQuestions Json                    @default("[]")
+  summary       Json?
+  status        DreamConversationStatus @default(in_progress)
+  projectId     String?                 @unique
+  project       Project?                @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  @@index([userId, status])
+}

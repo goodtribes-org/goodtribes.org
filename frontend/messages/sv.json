@@ -3766,5 +3766,38 @@
     "assumed": "Antar",
     "markKnown": "Markera som något ni vet",
     "markAssumed": "Markera som ett antagande"
+  },
+  "ProjectStart": {
+    "heading": "Starta ett nytt projekt",
+    "intro": "Hur mycket vill du att AI:n ska göra? Du kan ändra det när som helst, för hela projektet eller för enskilda steg.",
+    "recommended": "Rekommenderas",
+    "agentTitle": "Låt AI:n göra jobbet",
+    "agentDesc": "Berätta om din idé i ett kort samtal. AI:n fyller sedan i guiden åt dig, och du granskar och godkänner.",
+    "assistTitle": "AI:n hjälper mig",
+    "assistDesc": "Berätta om din idé i ett kort samtal. Du fyller i guiden själv, med AI:ns förslag bredvid varje fält.",
+    "manualTitle": "Jag gör allt själv",
+    "manualDesc": "Gå direkt till guiden och fyll i allt själv, utan AI.",
+    "changeLater": "Samtalet tar ungefär 10–15 minuter och kan pausas. Ingenting sparas i projektet förrän du har godkänt sammanfattningen.",
+    "resumeHeading": "Fortsätt samtalet",
+    "resumeLink": "Påbörjat samtal ({covered} av 6 områden) — senast {date}"
+  },
+  "DreamConversation": {
+    "heading": "Drömsamtalet",
+    "intro": "Berätta med egna ord. En fråga i taget — korta svar går bra.",
+    "progressLabel": "Områden i samtalet",
+    "areaDream": "Drömmen",
+    "areaProblem": "Problemet",
+    "areaWhyYou": "Varför du",
+    "areaIdea": "Idén",
+    "areaPeople": "Människorna",
+    "areaConditions": "Förutsättningar",
+    "progressCount": "{count} av {total} områden",
+    "progressComplete": "Alla områden är täckta",
+    "openQuestions": "{count, plural, one {# öppen fråga} other {# öppna frågor}}",
+    "pause": "Pausa och fortsätt senare",
+    "delete": "Radera samtalet",
+    "deleteConfirm": "Radera hela samtalet? Det går inte att ångra.",
+    "deleteYes": "Ja, radera",
+    "deleteNo": "Avbryt"
   }
 }

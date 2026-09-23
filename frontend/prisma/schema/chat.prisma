@@ -53,6 +53,7 @@ model Room {
   messages     Message[]
   mindMap      MindMap?
   aiProjectPlan AiProjectPlan?
+  dreamConversation DreamConversation?
 
   @@unique([projectId, name])
   @@unique([organisationId, name])
