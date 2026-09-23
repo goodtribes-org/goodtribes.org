@@ -22,6 +22,12 @@ import AboutSection from "./AboutSection";
 import SdgSection from "./SdgSection";
 import FillPoller from "./FillPoller";
 import RetryButton from "./RetryButton";
+import CritiqueBox from "./CritiqueBox";
+import InterviewSynthesisPanel from "./InterviewSynthesisPanel";
+import { currentAssumptions, latestInsight, type CritiqueContent, type SynthesisContent } from "@/lib/ideaInsights";
+import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
+import { LEAN_CANVAS_BLOCKS } from "../lean-canvas/fields";
+import { VALUE_PROPOSITION_BLOCKS } from "../value-proposition/fields";
 
 // The Idé phase on one page, top to bottom — what the AI produced after
 // Drömsamtalet (in AGENT mode), shown as plain content with vet/antar and an
@@ -43,16 +49,34 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
   });
   if (!project) notFound();
 
-  const [t, canEdit, projectProv, leanCanvasAi, valuePropositionAi, marketScan, interviewGuide, interviewCount] = await Promise.all([
+  const [
+    t, tLc, tVp, canEdit, projectProv, leanCanvasAi, valuePropositionAi, marketScan, interviewGuide, interviews,
+    critique, synthesis, assumptions, aiAvailable,
+  ] = await Promise.all([
     getTranslations({ locale, namespace: "IdeaOverview" }),
+    getTranslations({ locale, namespace: "LeanCanvasHistory" }),
+    getTranslations({ locale, namespace: "ValuePropositionHistory" }),
     hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES),
     getFieldProvenance(project.id, "project"),
     getCanvasAiContext(project.id, "leanCanvas"),
     getCanvasAiContext(project.id, "valueProposition"),
     prisma.marketScanEntry.findMany({ where: { projectSlug: slug }, orderBy: { createdAt: "asc" } }),
     prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "intervjuguide" } }, select: { slug: true } }),
-    prisma.interviewLogEntry.count({ where: { projectSlug: slug } }),
+    prisma.interviewLogEntry.findMany({ where: { projectSlug: slug }, select: { id: true, personaName: true } }),
+    latestInsight<CritiqueContent>(project.id, "CRITIQUE"),
+    latestInsight<SynthesisContent>(project.id, "INTERVIEW_SYNTHESIS"),
+    currentAssumptions(project.id, slug),
+    isAiProjectStartAvailable(session.user.id),
   ]);
+  const interviewCount = interviews.length;
+  const fieldLabels: Record<string, string> = {
+    ...Object.fromEntries(
+      LEAN_CANVAS_BLOCKS.map((b) => [`leanCanvas.${b.field}`, tLc(`field${b.translationKey}` as Parameters<typeof tLc>[0])]),
+    ),
+    ...Object.fromEntries(
+      VALUE_PROPOSITION_BLOCKS.map((b) => [`valueProposition.${b.field}`, tVp(`field${b.translationKey}` as Parameters<typeof tVp>[0])]),
+    ),
+  };
 
   const fill = project.dreamConversation
     ? withStaleAsFailed(parseFillStatus(project.dreamConversation.fillStatus), project.dreamConversation.updatedAt)
@@ -80,6 +104,16 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
           {t("stepByStep")}
         </Link>
       </div>
+
+      {(critique || fill.critique === "pending" || fill.critique === "running" || (canEdit && aiAvailable && project.leanCanvas)) && (
+        <CritiqueBox
+          slug={slug}
+          points={critique?.content.points ?? null}
+          fieldLabels={fieldLabels}
+          canEdit={canEdit && aiAvailable}
+          writing={fill.critique === "pending" || fill.critique === "running"}
+        />
+      )}
 
       <OverviewSection id="om" title={t("aboutHeading")} fill={fill.about} writingLabel={writing}>
         <AboutSection
@@ -205,6 +239,16 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
           </Link>
           <span className="text-sm text-dark-slate/60">{t("interviewCount", { count: interviewCount })}</span>
         </div>
+        <InterviewSynthesisPanel
+          slug={slug}
+          interviewCount={interviewCount}
+          synthesis={synthesis?.content ?? null}
+          stillAssumed={assumptions.map((a) => a.key)}
+          fieldLabels={fieldLabels}
+          personaById={Object.fromEntries(interviews.map((i) => [i.id, i.personaName]))}
+          canEdit={canEdit}
+          aiAvailable={aiAvailable}
+        />
       </OverviewSection>
 
       <OverviewSection id="bjud-in" title={t("inviteHeading")} badge={t("yourTurn")} writingLabel={writing}>

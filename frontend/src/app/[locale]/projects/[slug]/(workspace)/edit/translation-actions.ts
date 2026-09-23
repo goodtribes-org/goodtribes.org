@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { indexDocuments } from "@/lib/meili";
 import { requireProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { routing } from "@/i18n/routing";
-import { getAiClientFor } from "@/lib/aiMode";
+import { getAiClientFor, aiGateMessage } from "@/lib/aiMode";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 
 export type TranslationDraft = { title: string; summary: string | null; description: string | null };
@@ -39,6 +39,7 @@ export async function suggestProjectTranslation(
   if (!gate.ok) {
     if (gate.reason === "rate_limited") return { error: "Du har nått gränsen för AI-anrop denna timme — försök igen senare." };
     if (gate.reason === "mode") return { error: "AI är avstängt i projektets AI-inställningar." };
+    if (gate.reason === "budget_exceeded") return { error: aiGateMessage("budget_exceeded") };
     return { error: "AI-funktioner är inte tillgängliga just nu." };
   }
   const { client } = gate;

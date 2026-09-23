@@ -1,7 +1,7 @@
 import type AnthropicSdk from "@anthropic-ai/sdk";
 import type { AiMode, ProjectPhase } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { checkAiRateLimit, createAnthropicClient, isAiEnabled } from "@/lib/anthropic";
+import { checkAiProjectBudget, checkAiRateLimit, createAnthropicClient, isAiEnabled } from "@/lib/anthropic";
 import { isKnownAiToolKey, type AiToolKey } from "@/lib/aiToolKeys";
 import { toDisplayPhase } from "@/lib/projectPhase";
 
@@ -16,7 +16,8 @@ export type AiFeature =
   | "translation"
   | "sandbox-seed"
   | "dream-conversation"
-  | "canvas-review";
+  | "canvas-review"
+  | "critique";
 
 // What kind of help the call gives, which decides which modes allow it:
 //   "agent"  — AI performs the work and writes a result (a card run, a
@@ -136,7 +137,7 @@ export type AiGateRequest = {
   phase?: ProjectPhase;
 };
 
-export type AiGateBlockReason = "not_configured" | "mode" | "rate_limited";
+export type AiGateBlockReason = "not_configured" | "mode" | "rate_limited" | "budget_exceeded";
 
 export type AiGateResult =
   | { ok: true; client: AnthropicSdk; mode: AiMode }
@@ -145,7 +146,8 @@ export type AiGateResult =
 // The ONLY way to get an Anthropic client (enforced by
 // __tests__/aiGate.test.ts, which fails if anything else imports
 // createAnthropicClient). Order matters: the mode check comes before the
-// rate limit so a call blocked by MANUAL doesn't burn the user's quota.
+// rate limits so a call blocked by MANUAL doesn't burn the user's quota or
+// the project's monthly budget.
 export async function getAiClientFor(req: AiGateRequest): Promise<AiGateResult> {
   if (!isAiEnabled()) return { ok: false, reason: "not_configured" };
 
@@ -161,6 +163,7 @@ export async function getAiClientFor(req: AiGateRequest): Promise<AiGateResult> 
   }
 
   if (req.userId && !(await checkAiRateLimit(req.userId))) return { ok: false, reason: "rate_limited", mode };
+  if (req.projectId && !(await checkAiProjectBudget(req.projectId))) return { ok: false, reason: "budget_exceeded", mode };
 
   const client = await createAnthropicClient();
   if (!client) return { ok: false, reason: "not_configured" };
@@ -177,6 +180,8 @@ export function aiGateMessage(reason: AiGateBlockReason): string {
       return "AI är avstängt för det här i projektets AI-inställningar.";
     case "rate_limited":
       return "För många AI-anrop just nu — försök igen om en stund.";
+    case "budget_exceeded":
+      return "Projektets AI-kvot för månaden är slut. Den fylls på av sig själv — eller kontakta GoodTribes.";
   }
 }
 
@@ -188,6 +193,7 @@ export function aiGateStatus(reason: AiGateBlockReason): number {
     case "mode":
       return 403;
     case "rate_limited":
+    case "budget_exceeded":
       return 429;
   }
 }

@@ -3881,6 +3881,27 @@
     "retry": "Försök igen",
     "retrying": "Startar…",
     "retryFailed": "Gick inte — försök senare",
-    "failedInterviewGuide": "AI:n kunde inte skriva intervjuguiden just nu."
+    "failedInterviewGuide": "AI:n kunde inte skriva intervjuguiden just nu.",
+    "critiqueHeading": "Kritikern",
+    "critiqueIntro": "En andra AI har läst utkasten som djävulens advokat. Här är det som mest sannolikt behöver testas eller ändras.",
+    "critiqueWriting": "Kritikern läser igenom utkasten…",
+    "critiqueRun": "Granska utkasten",
+    "critiqueRerun": "Granska igen",
+    "critiqueRunning": "Granskar…",
+    "synthesize": "Sammanfatta intervjuerna",
+    "synthesizeAgain": "Sammanfatta igen",
+    "synthesizing": "Sammanfattar…",
+    "synthesizeFewHint": "Tips: sammanfattningen blir säkrare med 3 eller fler intervjuer.",
+    "newInterviews": "{count, plural, one {# ny intervju sedan förra sammanfattningen} other {# nya intervjuer sedan förra sammanfattningen}}",
+    "learningsHeading": "Lärdomar från {count, plural, one {# intervju} other {# intervjuer}}",
+    "verdictsHeading": "Vad intervjuerna säger om era antaganden",
+    "verdict_confirmed": "Bekräftat",
+    "verdict_refuted": "Motsägs",
+    "verdict_unclear": "Oklart",
+    "basedOn": "Bygger på",
+    "markKnown": "Markera som något ni vet",
+    "markedKnown": "Markerat som vet",
+    "reviewField": "Se över fältet",
+    "genericError": "Något gick fel — försök igen."
   }
 }

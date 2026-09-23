@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { computeRadialLayout, toReactFlowEdges, type RawMindMapNode, type RawMindMapEdge } from "@/lib/mindmapLayout";
-import { getAiClientFor, aiGateStatus } from "@/lib/aiMode";
+import { getAiClientFor, aiGateStatus, aiGateMessage } from "@/lib/aiMode";
 import type { Prisma } from "@prisma/client";
 
 function stripHtml(body: string): string {
@@ -78,7 +78,9 @@ export async function POST(req: Request) {
         ? "Too many AI requests — try again later"
         : gate.reason === "mode"
           ? "AI är avstängt i projektets AI-inställningar"
-          : "AI ej konfigurerad";
+          : gate.reason === "budget_exceeded"
+            ? aiGateMessage("budget_exceeded")
+            : "AI ej konfigurerad";
     return NextResponse.json({ error }, { status: aiGateStatus(gate.reason) });
   }
   const { client } = gate;

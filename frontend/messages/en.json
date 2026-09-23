@@ -3881,6 +3881,27 @@
     "retry": "Try again",
     "retrying": "Starting…",
     "retryFailed": "Didn't work — try later",
-    "failedInterviewGuide": "The AI couldn't write the interview guide right now."
+    "failedInterviewGuide": "The AI couldn't write the interview guide right now.",
+    "critiqueHeading": "The critic",
+    "critiqueIntro": "A second AI has read the drafts as devil's advocate. Here's what most likely needs testing or changing.",
+    "critiqueWriting": "The critic is reading the drafts…",
+    "critiqueRun": "Review the drafts",
+    "critiqueRerun": "Review again",
+    "critiqueRunning": "Reviewing…",
+    "synthesize": "Summarise the interviews",
+    "synthesizeAgain": "Summarise again",
+    "synthesizing": "Summarising…",
+    "synthesizeFewHint": "Tip: the summary is more reliable with 3 or more interviews.",
+    "newInterviews": "{count, plural, one {# new interview since the last summary} other {# new interviews since the last summary}}",
+    "learningsHeading": "Learnings from {count, plural, one {# interview} other {# interviews}}",
+    "verdictsHeading": "What the interviews say about your assumptions",
+    "verdict_confirmed": "Confirmed",
+    "verdict_refuted": "Contradicted",
+    "verdict_unclear": "Unclear",
+    "basedOn": "Based on",
+    "markKnown": "Mark as something you know",
+    "markedKnown": "Marked as known",
+    "reviewField": "Review the field",
+    "genericError": "Something went wrong — try again."
   }
 }

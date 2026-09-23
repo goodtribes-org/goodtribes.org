@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { getNetworkStats } from "@/lib/networkStats";
-import { getAiClientFor, aiGateStatus } from "@/lib/aiMode";
+import { getAiClientFor, aiGateStatus, aiGateMessage } from "@/lib/aiMode";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -29,7 +29,9 @@ export async function POST(req: Request) {
         ? "Too many AI requests — try again later"
         : gate.reason === "mode"
           ? "AI is turned off in this project's AI settings"
-          : "AI not configured";
+          : gate.reason === "budget_exceeded"
+            ? aiGateMessage("budget_exceeded")
+            : "AI not configured";
     return NextResponse.json({ error }, { status: aiGateStatus(gate.reason) });
   }
   const { client } = gate;

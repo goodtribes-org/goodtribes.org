@@ -7,6 +7,7 @@ const stepFindUnique = jest.fn();
 const toolFindUnique = jest.fn();
 const createAnthropicClient = jest.fn();
 const checkAiRateLimit = jest.fn();
+const checkAiProjectBudget = jest.fn();
 let aiEnabled = true;
 
 jest.mock("../lib/prisma", () => ({
@@ -20,6 +21,7 @@ jest.mock("../lib/prisma", () => ({
 jest.mock("../lib/anthropic", () => ({
   isAiEnabled: () => aiEnabled,
   checkAiRateLimit: (...a: unknown[]) => checkAiRateLimit(...a),
+  checkAiProjectBudget: (...a: unknown[]) => checkAiProjectBudget(...a),
   createAnthropicClient: (...a: unknown[]) => createAnthropicClient(...a),
 }));
 
@@ -81,7 +83,8 @@ describe("getAiClientFor", () => {
 
   beforeEach(() => {
     aiEnabled = true;
-    [projectFindUnique, phaseFindUnique, stepFindUnique, toolFindUnique, createAnthropicClient, checkAiRateLimit].forEach((m) => m.mockReset());
+    [projectFindUnique, phaseFindUnique, stepFindUnique, toolFindUnique, createAnthropicClient, checkAiRateLimit, checkAiProjectBudget].forEach((m) => m.mockReset());
+    checkAiProjectBudget.mockResolvedValue(true);
     phaseFindUnique.mockResolvedValue(null);
     stepFindUnique.mockResolvedValue(null);
     toolFindUnique.mockResolvedValue(null);
@@ -127,6 +130,20 @@ describe("getAiClientFor", () => {
     checkAiRateLimit.mockResolvedValue(false);
     await expect(getAiClientFor({ feature: "mindmap", kind: "assist", userId: "u1", projectId: "p1" })).resolves.toMatchObject({ ok: false, reason: "rate_limited" });
     expect(createAnthropicClient).not.toHaveBeenCalled();
+  });
+
+  it("stops a project that has used up its monthly budget, without creating a client", async () => {
+    projectFindUnique.mockResolvedValue({ aiMode: "AGENT", phase: "IDEA" });
+    checkAiProjectBudget.mockResolvedValue(false);
+    await expect(getAiClientFor({ feature: "mindmap", kind: "assist", userId: "u1", projectId: "p1" })).resolves.toMatchObject({ ok: false, reason: "budget_exceeded" });
+    expect(checkAiProjectBudget).toHaveBeenCalledWith("p1");
+    expect(createAnthropicClient).not.toHaveBeenCalled();
+  });
+
+  it("MANUAL doesn't spend the project's budget either", async () => {
+    projectFindUnique.mockResolvedValue({ aiMode: "MANUAL", phase: "IDEA" });
+    await getAiClientFor({ feature: "mindmap", kind: "assist", userId: "u1", projectId: "p1" });
+    expect(checkAiProjectBudget).not.toHaveBeenCalled();
   });
 
   it("returns not_configured before touching the database when AI is off", async () => {

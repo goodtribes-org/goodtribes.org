@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
-import { getAiClientFor, aiGateStatus } from "@/lib/aiMode";
+import { getAiClientFor, aiGateStatus, aiGateMessage } from "@/lib/aiMode";
 import { isCardClaimant, isRealMember } from "@/lib/authz";
 import { GITHUB_CARD_LOCKED_MESSAGE } from "@/lib/githubSync";
 
@@ -74,7 +74,9 @@ export async function POST(req: NextRequest) {
         ? "AI agent mode is turned off for this project"
         : gate.reason === "rate_limited"
           ? "Too many AI requests — try again later"
-          : "AI not configured";
+          : gate.reason === "budget_exceeded"
+            ? aiGateMessage("budget_exceeded")
+            : "AI not configured";
     return NextResponse.json({ error }, { status: aiGateStatus(gate.reason) });
   }
   const { client } = gate;
