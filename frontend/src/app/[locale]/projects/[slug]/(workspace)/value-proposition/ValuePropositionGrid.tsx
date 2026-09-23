@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import type { ProvenanceInfo } from "@/lib/fieldProvenance";
 import ValuePropositionBlock from "./ValuePropositionBlock";
 import { VALUE_PROPOSITION_BLOCKS } from "./fields";
 import type { ValuePropositionField } from "./fields";
@@ -9,9 +10,11 @@ interface Props {
   projectSlug: string;
   canvas: Partial<Record<ValuePropositionField, string | null>> | null;
   canEdit: boolean;
+  // Per-field provenance, passed only when vet/antar marking is enabled.
+  provenance?: Record<string, ProvenanceInfo>;
 }
 
-export default function ValuePropositionGrid({ projectSlug, canvas, canEdit }: Props) {
+export default function ValuePropositionGrid({ projectSlug, canvas, canEdit, provenance }: Props) {
   const tField = useTranslations("ValuePropositionHistory");
   const tHint = useTranslations("ValuePropositionFields");
   const valueBlocks = VALUE_PROPOSITION_BLOCKS.filter((b) => b.side === "value");
@@ -28,6 +31,7 @@ export default function ValuePropositionGrid({ projectSlug, canvas, canEdit }: P
         hint={tHint(`hint${b.translationKey}` as Parameters<typeof tHint>[0])}
         value={canvas ? (canvas[b.field] ?? null) : null}
         canEdit={canEdit}
+        provenance={provenance ? (provenance[b.field] ?? null) : undefined}
       />
     );
   }

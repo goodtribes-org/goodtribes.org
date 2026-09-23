@@ -148,3 +148,43 @@ model ProjectStepAiSetting {
 
   @@unique([projectId, stepKey])
 }
+
+// Whether a fact in a project field is known or assumed. Everything starts
+// as ANTAR; it becomes VET when the user said it themselves (e.g. in the
+// Drömsamtal) or confirms it.
+enum FieldKnowledgeStatus {
+  VET
+  ANTAR
+}
+
+// Who wrote a field's current content.
+enum FieldAuthor {
+  USER
+  AI
+  AI_EDITED // an AI draft a human has since edited
+}
+
+// Provenance per project field ("vet/antar" + who wrote it + sources), one
+// generic table for every tool instead of extra columns per canvas. entity
+// is a key from src/lib/fieldProvenance.ts's PROVENANCE_FIELDS
+// ("project", "leanCanvas", "valueProposition", ...); field is that
+// entity's column name. No row = written before provenance existed, which
+// counts as human-written (AI must never overwrite it).
+model FieldProvenance {
+  id          String               @id @default(cuid())
+  projectId   String
+  project     Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  entity      String
+  field       String
+  status      FieldKnowledgeStatus @default(ANTAR)
+  author      FieldAuthor
+  // [{ url?: string, note?: string }] — evidence behind the content. AI
+  // research must always cite; free-form so later tools can add detail.
+  sources     Json?
+  updatedById String?
+  updatedAt   DateTime             @updatedAt
+  createdAt   DateTime             @default(now())
+
+  // Also serves "all provenance for one entity" lookups (prefix match).
+  @@unique([projectId, entity, field])
+}

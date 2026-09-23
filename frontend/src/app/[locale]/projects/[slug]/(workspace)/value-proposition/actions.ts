@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { VALUE_PROPOSITION_FIELDS, type ValuePropositionField } from "./fields";
+import { recordHumanEdits } from "@/lib/fieldProvenance";
 
 export async function updateValuePropositionBlock(
   projectSlug: string,
@@ -21,6 +22,7 @@ export async function updateValuePropositionBlock(
   if (!(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) return;
 
   const value = (formData.get("value") as string | null)?.trim() || null;
+  const before = await prisma.valueProposition.findUnique({ where: { projectSlug }, select: { [field]: true } });
 
   const canvas = await prisma.valueProposition.upsert({
     where: { projectSlug },
@@ -37,6 +39,14 @@ export async function updateValuePropositionBlock(
       ...Object.fromEntries(VALUE_PROPOSITION_FIELDS.map((f) => [f, canvas[f]])),
     },
   });
+
+  await recordHumanEdits(
+    project.id,
+    "valueProposition",
+    before,
+    { [field]: value },
+    session.user.id,
+  );
 
   revalidatePath(`/projects/${projectSlug}/value-proposition`);
 }

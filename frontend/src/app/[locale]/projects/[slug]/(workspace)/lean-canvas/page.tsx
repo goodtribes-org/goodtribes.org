@@ -11,6 +11,8 @@ import LeanCanvasComments from "./LeanCanvasComments";
 import LeanCanvasHistory from "./LeanCanvasHistory";
 import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { Locale } from "next-intl";
+import { isFeatureEnabled } from "@/lib/featureFlags";
+import { getFieldProvenance } from "@/lib/fieldProvenance";
 
 export async function generateMetadata({
   params,
@@ -49,6 +51,10 @@ export default async function LeanCanvasPage({
     : false;
   const canComment = session?.user?.id ? await isRealMember(project.id, session.user.id) : false;
   const canvas = project.leanCanvas;
+  // vet/antar marking ships dark behind the ai-project-start flag.
+  const provenance = (await isFeatureEnabled("ai-project-start", session?.user?.id))
+    ? await getFieldProvenance(project.id, "leanCanvas")
+    : undefined;
 
   const helpGuide = await prisma.academyGuide.findFirst({
     where: { title: "Så använder du Lean Canvas", published: true },
@@ -72,7 +78,7 @@ export default async function LeanCanvasPage({
         action={<LeanCanvasHistory projectSlug={slug} />}
       />
 
-      <LeanCanvasGrid projectSlug={slug} canvas={canvas} canEdit={canEdit} />
+      <LeanCanvasGrid projectSlug={slug} canvas={canvas} canEdit={canEdit} provenance={provenance} />
 
       <LeanCanvasComments
         projectSlug={slug}

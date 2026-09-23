@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { recordHumanEdits } from "@/lib/fieldProvenance";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
@@ -49,17 +50,18 @@ export async function updateIdeaDetails(
   const title = data.title.trim();
   if (!title) return;
 
+  const after = {
+    title,
+    summary: data.summary.trim() || null,
+    description: data.description.trim() || null,
+    category: data.category.trim() || null,
+    tags: data.tags,
+  };
   await prisma.project.update({
     where: { slug },
-    data: {
-      title,
-      summary: data.summary.trim() || null,
-      description: data.description.trim() || null,
-      category: data.category.trim() || null,
-      tags: data.tags,
-      ...(data.imageUrl.trim() ? { imageUrl: data.imageUrl.trim() } : {}),
-    },
+    data: { ...after, ...(data.imageUrl.trim() ? { imageUrl: data.imageUrl.trim() } : {}) },
   });
+  await recordHumanEdits(project.id, "project", project, after, session.user.id);
   // Defensive re-mark — already set when the project was first created via
   // /projects/new, but this keeps it true even for a project that reached
   // this guide some other way.
@@ -80,6 +82,7 @@ export async function completeIdeaGuideStep(slug: string, itemKey: string, done:
 
   if (sdgGoals) {
     await prisma.project.update({ where: { slug }, data: { sdgGoals } });
+    await recordHumanEdits(project.id, "project", project, { sdgGoals }, session.user.id);
     void enqueueProjectUpdatedFundingMatch(project.id);
   }
   if (done) {

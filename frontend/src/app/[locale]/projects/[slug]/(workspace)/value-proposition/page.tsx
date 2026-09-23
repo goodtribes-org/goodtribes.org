@@ -10,6 +10,8 @@ import ValuePropositionGrid from "./ValuePropositionGrid";
 import ValuePropositionHistory from "./ValuePropositionHistory";
 import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { Locale } from "next-intl";
+import { isFeatureEnabled } from "@/lib/featureFlags";
+import { getFieldProvenance } from "@/lib/fieldProvenance";
 
 export async function generateMetadata({
   params,
@@ -47,6 +49,10 @@ export default async function ValuePropositionPage({
     ? await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES)
     : false;
   const canvas = project.valueProposition;
+  // vet/antar marking ships dark behind the ai-project-start flag.
+  const provenance = (await isFeatureEnabled("ai-project-start", session?.user?.id))
+    ? await getFieldProvenance(project.id, "valueProposition")
+    : undefined;
 
   const helpGuide = await prisma.academyGuide.findFirst({
     where: { title: "Så använder du Värdeerbjudande-canvas", published: true },
@@ -64,7 +70,7 @@ export default async function ValuePropositionPage({
         action={<ValuePropositionHistory projectSlug={slug} />}
       />
 
-      <ValuePropositionGrid projectSlug={slug} canvas={canvas} canEdit={canEdit} />
+      <ValuePropositionGrid projectSlug={slug} canvas={canvas} canEdit={canEdit} provenance={provenance} />
     </div>
   );
 }
