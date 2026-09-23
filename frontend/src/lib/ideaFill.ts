@@ -8,6 +8,7 @@ import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { escapeHtml } from "@/lib/renderBody";
 import { getFieldProvenance, recordAiWrite } from "@/lib/fieldProvenance";
 import { createAiSuggestion, decideAiPlacement } from "@/lib/aiSuggestions";
+import { runCritique } from "@/lib/ideaInsights";
 import { LEAN_CANVAS_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
 import {
@@ -31,7 +32,7 @@ const REQUEST_OPTIONS = { timeout: 90_000, maxRetries: 1 };
 
 // ─── Fill status (drives the overview page's placeholders) ──────────────────
 
-export const FILL_SECTIONS = ["about", "leanCanvas", "valueProposition", "marketScan", "interviewGuide"] as const;
+export const FILL_SECTIONS = ["about", "leanCanvas", "valueProposition", "marketScan", "interviewGuide", "critique"] as const;
 export type FillSection = (typeof FILL_SECTIONS)[number];
 export type FillState = "pending" | "running" | "done" | "failed" | "skipped";
 export type FillStatus = Partial<Record<FillSection, FillState>>;
@@ -339,8 +340,9 @@ export type IdeaFillParams = {
 // Not rate-limited per user: it's a single bounded batch per project
 // (the conversation itself was rate-limited).
 export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
-  const gate = await getAiClientFor({ feature: "dream-conversation", kind: "assist", userId: null, projectId: null });
-  const sections: FillSection[] = p.only ?? ["leanCanvas", "valueProposition", "marketScan", "interviewGuide"];
+  // The project's monthly AI budget applies (projectId); no per-user limit.
+  const gate = await getAiClientFor({ feature: "dream-conversation", kind: "assist", userId: null, projectId: p.projectId });
+  const sections: FillSection[] = p.only ?? ["leanCanvas", "valueProposition", "marketScan", "interviewGuide", "critique"];
   const wanted = (section: FillSection) => sections.includes(section);
   if (!gate.ok) {
     await Promise.all(sections.map((s) => setFillState(p.dreamId, s, "failed")));
@@ -417,4 +419,10 @@ export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
         })
       : setFillState(p.dreamId, "interviewGuide", "skipped"),
   ]);
+
+  // Kritikern goes last: it reviews the drafts the other sections produced.
+  if (wanted("critique")) {
+    if (agent) await run("critique", async () => void (await runCritique(p.projectId, null)));
+    else await setFillState(p.dreamId, "critique", "skipped");
+  }
 }

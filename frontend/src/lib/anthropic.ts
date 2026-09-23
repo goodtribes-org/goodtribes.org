@@ -23,6 +23,22 @@ export function checkAiRateLimit(userId: string): Promise<boolean> {
   return checkRateLimit(`rl:ai:${userId}`, AI_RATE_LIMIT, AI_RATE_LIMIT_WINDOW_SECONDS);
 }
 
+// A ceiling per project on top of the per-user limit: the AI-guided start
+// and later the AI project manager can run many calls for one project
+// without anyone clicking, so a project gets a monthly budget of calls
+// (default 150 / 30 days — a Drömsamtal plus the Idé fill is ~15). Tunable
+// via AI_PROJECT_MONTHLY_LIMIT. Fails open on a Redis outage, like every
+// rate limit here.
+const AI_PROJECT_BUDGET_WINDOW_SECONDS = 30 * 24 * 60 * 60;
+export function aiProjectMonthlyLimit(): number {
+  const n = Number(process.env.AI_PROJECT_MONTHLY_LIMIT);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 150;
+}
+
+export function checkAiProjectBudget(projectId: string): Promise<boolean> {
+  return checkRateLimit(`rl:ai:project:${projectId}`, aiProjectMonthlyLimit(), AI_PROJECT_BUDGET_WINDOW_SECONDS);
+}
+
 // Returns null when ANTHROPIC_API_KEY is unset instead of constructing a
 // client that would throw synchronously on first use.
 //

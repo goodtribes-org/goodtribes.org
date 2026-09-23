@@ -208,6 +208,7 @@ export async function createProjectFromDream(roomId: string) {
       valueProposition: "pending",
       marketScan: agent ? "pending" : "skipped",
       interviewGuide: agent ? "pending" : "skipped",
+      critique: agent ? "pending" : "skipped",
     };
 
     await prisma.$transaction(async (tx) => {

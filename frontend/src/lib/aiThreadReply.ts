@@ -120,6 +120,8 @@ export async function triggerAiThreadReply(room: Room, triggeredByUserId: string
           ? "AI är inte konfigurerad just nu."
           : gate.reason === "mode"
             ? "AI är avstängt i projektets AI-inställningar."
+            : gate.reason === "budget_exceeded"
+              ? "Projektets AI-kvot för månaden är slut."
             : "AI är tillfälligt otillgänglig just nu, försök igen om en stund.";
       await persistAiMessage(room.id, text, aiUser.id);
       return;
