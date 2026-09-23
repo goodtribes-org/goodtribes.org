@@ -3789,7 +3789,7 @@
   },
   "DreamConversation": {
     "heading": "Drömsamtalet",
-    "intro": "Berätta med egna ord. En fråga i taget — korta svar går bra.",
+    "intro": "Berätta med egna ord, en fråga i taget — korta svar går bra. När alla sex områden nedan är avbockade gör AI:n en sammanfattning som du läser igenom och godkänner. Först då skapas projektet.",
     "progressLabel": "Områden i samtalet",
     "areaDream": "Drömmen",
     "areaProblem": "Problemet",
@@ -3808,7 +3808,14 @@
     "summarize": "Sammanfatta",
     "summarizing": "Sammanfattar…",
     "summarizeEarlyHint": "Alla områden är inte täckta än — du kan sammanfatta ändå.",
-    "summaryError": "Kunde inte sammanfatta just nu — försök igen."
+    "summaryError": "Kunde inte sammanfatta just nu — försök igen.",
+    "nextStepHeading": "Samtalet är klart!",
+    "nextStepBody": "Nästa steg: AI:n sammanfattar det du berättat. Du läser igenom sammanfattningen, rättar det som inte stämmer och godkänner — först då skapas projektet.",
+    "nextStepButton": "Visa sammanfattningen",
+    "nextStepWorking": "Sammanfattar…",
+    "nextStepWait": "Det tar ungefär en halv minut.",
+    "nextStepAddMore": "Vill du lägga till något? Skriv det i chatten först.",
+    "summaryWaiting": "Sammanfattningen är klar och väntar på dig."
   },
   "DreamSummary": {
     "heading": "Så här förstod jag dig",

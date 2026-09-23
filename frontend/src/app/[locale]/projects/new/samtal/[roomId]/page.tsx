@@ -11,6 +11,7 @@ import { isDreamComplete, parseDreamState, parseOpenQuestions } from "@/lib/drea
 import { RoomShell } from "@/app/[locale]/messages/[roomId]/RoomShell";
 import DreamProgressBar from "./DreamProgressBar";
 import DreamActions from "./DreamActions";
+import DreamNextStep from "./DreamNextStep";
 
 export default async function DreamConversationPage({ params }: { params: Promise<{ locale: Locale; roomId: string }> }) {
   const { locale, roomId } = await params;
@@ -44,6 +45,12 @@ export default async function DreamConversationPage({ params }: { params: Promis
   ]);
 
   const state = parseDreamState(dream.state);
+  const initialProgress = {
+    covered: state.covered,
+    openQuestionCount: parseOpenQuestions(dream.openQuestions).length,
+    complete: isDreamComplete(state),
+    status: dream.status,
+  };
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -55,15 +62,7 @@ export default async function DreamConversationPage({ params }: { params: Promis
           </div>
           <DreamActions roomId={roomId} />
         </div>
-        <DreamProgressBar
-          roomId={roomId}
-          initial={{
-            covered: state.covered,
-            openQuestionCount: parseOpenQuestions(dream.openQuestions).length,
-            complete: isDreamComplete(state),
-            status: dream.status,
-          }}
-        />
+        <DreamProgressBar roomId={roomId} initial={initialProgress} />
       </div>
 
       <RoomShell
@@ -86,6 +85,8 @@ export default async function DreamConversationPage({ params }: { params: Promis
         canPost={access.canPost && dream.status === "in_progress"}
         mentionables={[]}
       />
+
+      <DreamNextStep roomId={roomId} initial={initialProgress} />
     </div>
   );
 }

@@ -87,7 +87,7 @@ export async function triggerDreamReply(room: Room, triggeredByUserId: string): 
     const reply = typeof input.reply === "string" ? input.reply.trim() : "";
     if (!reply) throw new Error("empty dream reply");
 
-    const next = mergeDreamState(previous, parseDreamState({ covered: input.covered, notes: input.notes }));
+    const next = mergeDreamState(previous, parseDreamState({ covered: input.covered, notes: input.notes, done: input.done }));
     await prisma.dreamConversation.update({
       where: { id: dream.id },
       data: { state: next, openQuestions: parseOpenQuestions(input.open_questions) },
