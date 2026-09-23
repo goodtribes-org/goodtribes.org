@@ -304,3 +304,18 @@ model PhaseGateDecision {
 
   @@index([projectId, createdAt])
 }
+
+// Progress of the AI's background drafting for one phase's one-page
+// overview (Uppstart and later; Idé keeps DreamConversation.fillStatus).
+// status is { <section>: "pending" | "running" | "done" | "failed" | "skipped" }.
+model PhaseFill {
+  id        String       @id @default(cuid())
+  projectId String
+  project   Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  phase     ProjectPhase
+  status    Json         @default("{}")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@unique([projectId, phase])
+}

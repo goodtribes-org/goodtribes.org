@@ -287,7 +287,10 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
       ) : (
         lastDecision?.outcome === "CONTINUE" && (
           <p className="rounded-2xl border border-seagrass/30 bg-seagrass/5 px-5 py-3 text-sm text-dark-slate/75">
-            {t("gateClosed", { date: decisionDate(lastDecision.createdAt) })}
+            {t("gateClosed", { date: decisionDate(lastDecision.createdAt) })}{" "}
+            <Link href={`/projects/${slug}/uppstart`} className="font-semibold text-seagrass hover:underline">
+              {t("gateClosedLink")}
+            </Link>
           </p>
         )
       )}

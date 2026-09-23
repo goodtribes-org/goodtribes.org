@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import type { GateBrief } from "@/lib/phaseGate";
 import { decideIdeaGate, generateGateBrief } from "./actions";
 
@@ -68,7 +68,8 @@ export default function PhaseGateSection({
       }
       setChoice(null);
       setNote("");
-      router.refresh();
+      if (res.next) router.push(res.next);
+      else router.refresh();
     });
   }
 

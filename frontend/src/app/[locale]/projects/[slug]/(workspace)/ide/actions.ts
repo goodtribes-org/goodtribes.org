@@ -8,7 +8,8 @@ import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { buildTranscript, runIdeaFill, type FillSection } from "@/lib/ideaFill";
 import { InsightError, runCritique, runInterviewSynthesis } from "@/lib/ideaInsights";
-import { aiGateMessage, type AiGateBlockReason } from "@/lib/aiMode";
+import { aiGateMessage, resolveAiMode, type AiGateBlockReason } from "@/lib/aiMode";
+import { startUppstartFill } from "@/lib/uppstartFill";
 import { markChecklistDone } from "../../guide/actions";
 import { logger } from "@/lib/logger";
 import type { PhaseGateOutcome } from "@prisma/client";
@@ -121,10 +122,10 @@ const OUTCOMES: readonly PhaseGateOutcome[] = ["CONTINUE", "ADJUST", "PIVOT", "P
 // The initiativtagare's decision at the gate. Always recorded — with any
 // unmet criteria — then: CONTINUE moves the project to Uppstart (the same
 // path as the manual "advance phase", after saving the canvases as a
-// version); ADJUST / PIVOT stay in Idé and put what needs testing or
+// version) and on to the Uppstart overview; ADJUST / PIVOT stay in Idé and put what needs testing or
 // reworking on the board; PAUSE marks the project as ownerless so others
 // can take over (founder only, same rule as elsewhere). Doesn't need AI.
-export async function decideIdeaGate(projectSlug: string, outcome: string, note: string): Promise<{ error?: string }> {
+export async function decideIdeaGate(projectSlug: string, outcome: string, note: string): Promise<{ error?: string; next?: string }> {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
@@ -204,7 +205,14 @@ export async function decideIdeaGate(projectSlug: string, outcome: string, note:
     }
   });
 
-  if (decision === "CONTINUE") await advanceProjectPhase(project.slug);
   revalidatePath(`/projects/${projectSlug}`, "layout");
-  return {};
+  if (decision !== "CONTINUE") return {};
+
+  await advanceProjectPhase(project.slug);
+  // On to the Uppstart overview. In AGENT mode the AI starts drafting it
+  // right away; otherwise the page offers to (or the team does it by hand).
+  if (!(await isAiProjectStartAvailable(userId))) return {};
+  const { mode } = await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "PILOT" });
+  if (mode === "AGENT") await startUppstartFill({ projectId: project.id, projectSlug: project.slug, userId });
+  return { next: `/projects/${project.slug}/uppstart` };
 }
