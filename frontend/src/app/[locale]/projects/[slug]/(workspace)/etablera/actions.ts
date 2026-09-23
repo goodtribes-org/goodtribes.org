@@ -11,6 +11,8 @@ import { ETABLERA_SECTIONS, startEtableraFill, type EtableraSection } from "@/li
 import { cardsForLanseringDecision, ETABLERA_CARD_WORDS, etableraGateCriteria, runEtableraGateBrief, type GateBrief } from "@/lib/phaseGate";
 import { checkGateDecider, gateBriefErrorMessage, recordGateDecision } from "@/lib/gateDecision";
 import { advanceProjectPhase } from "../edit/actions";
+import { resolveAiMode } from "@/lib/aiMode";
+import { startSkalaFill } from "@/lib/skalaFill";
 
 async function requireLead(projectSlug: string) {
   const session = await auth();
@@ -70,5 +72,9 @@ export async function decideEtableraGate(projectSlug: string, outcome: string, n
   revalidatePath(`/projects/${projectSlug}`, "layout");
   if (decision !== "CONTINUE") return {};
   await advanceProjectPhase(project.slug);
-  return { next: `/projects/${project.slug}/guide/scale` };
+  // On to the Skala overview; in AGENT mode the AI starts drafting it.
+  if (!(await isAiProjectStartAvailable(session.user.id))) return { next: `/projects/${project.slug}/guide/scale` };
+  const { mode } = await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "SCALE" });
+  if (mode === "AGENT") await startSkalaFill({ projectId: project.id, projectSlug: project.slug, userId: session.user.id });
+  return { next: `/projects/${project.slug}/skala` };
 }

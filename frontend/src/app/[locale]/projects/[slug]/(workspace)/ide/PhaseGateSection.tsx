@@ -8,6 +8,7 @@ import { decideIdeaGate, generateGateBrief } from "./actions";
 import { decideUppstartGate, generateUppstartGateBrief } from "../uppstart/actions";
 import { decideLanseringGate, generateLanseringGateBrief } from "../lansering/actions";
 import { decideEtableraGate, generateEtableraGateBrief } from "../etablera/actions";
+import { decideSkalaGate, generateSkalaGateBrief } from "../skala/actions";
 
 type Outcome = "CONTINUE" | "ADJUST" | "PIVOT" | "PAUSE";
 const OUTCOMES: Outcome[] = ["CONTINUE", "ADJUST", "PIVOT", "PAUSE"];
@@ -23,6 +24,7 @@ const ACTIONS = {
   uppstart: { brief: generateUppstartGateBrief, decide: decideUppstartGate },
   lansering: { brief: generateLanseringGateBrief, decide: decideLanseringGate },
   etablera: { brief: generateEtableraGateBrief, decide: decideEtableraGate },
+  skala: { brief: generateSkalaGateBrief, decide: decideSkalaGate },
 };
 
 const VERDICT_STYLE: Record<string, string> = {
@@ -31,7 +33,7 @@ const VERDICT_STYLE: Record<string, string> = {
   unclear: "border-amber-300 bg-amber-50 text-amber-700",
 };
 
-// The end of a phase (Idé → Uppstart → Lansering → Etablera → Skala): are the criteria
+// The end of a phase (Idé → Uppstart → Lansering → Etablera → Skala → Impact): are the criteria
 // met, what does the evidence say (the AI's one-page brief), and the
 // team's decision. A decision point, not a lock — going ahead with
 // criteria unmet is allowed and recorded.
