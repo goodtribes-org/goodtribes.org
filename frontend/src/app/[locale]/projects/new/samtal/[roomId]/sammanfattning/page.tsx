@@ -19,7 +19,7 @@ export default async function DreamSummaryPage({ params }: { params: Promise<{ l
     include: { project: { select: { slug: true } } },
   });
   if (!dream || dream.userId !== session.user.id) notFound();
-  if (dream.project) redirect(`/projects/${dream.project.slug}/guide`);
+  if (dream.status === "confirmed" && dream.project) redirect(`/projects/${dream.project.slug}/guide`);
   if (!dream.summary || dream.status !== "summary_pending") redirect(`/projects/new/samtal/${roomId}`);
 
   return (
@@ -27,6 +27,7 @@ export default async function DreamSummaryPage({ params }: { params: Promise<{ l
       roomId={roomId}
       aiMode={dream.aiMode === "ASSIST" ? "ASSIST" : "AGENT"}
       summary={dream.summary as unknown as DreamSummary}
+      existingProject={!!dream.projectId}
     />
   );
 }

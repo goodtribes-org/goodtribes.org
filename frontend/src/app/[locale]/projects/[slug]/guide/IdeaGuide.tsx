@@ -21,7 +21,9 @@ import { CATEGORIES } from "@/lib/categories";
 import { INITIATIVE_CHECKLIST_ITEMS } from "@/lib/projectPhase";
 import type { AiMode } from "@prisma/client";
 import type { ProjectAiSettings } from "@/lib/aiMode";
-import type { ProvenanceInfo } from "@/lib/fieldProvenance";
+import type { CanvasAiContext } from "@/lib/canvasAi";
+import CanvasAiBar from "@/components/ai/CanvasAiBar";
+import { startDreamConversationForProject } from "@/app/[locale]/projects/new/samtal/actions";
 import AiModePicker from "@/components/ai/AiModePicker";
 import { setStepAiMode } from "@/lib/actions/aiModeSettings";
 
@@ -56,9 +58,12 @@ interface Props {
   // Present only when the ai-project-start flag is on for this user —
   // shows a per-step AI mode picker under the step indicator.
   aiSettings?: ProjectAiSettings | null;
-  // vet/antar marking on the canvas steps (same flag).
-  leanCanvasProvenance?: Record<string, ProvenanceInfo>;
-  valuePropositionProvenance?: Record<string, ProvenanceInfo>;
+  // AI features on the canvas steps — vet/antar marking, suggestions next
+  // to fields, the review button (same flag).
+  leanCanvasAi?: CanvasAiContext | null;
+  valuePropositionAi?: CanvasAiContext | null;
+  // Offer "Prata med AI:n" (a Drömsamtal for this existing project).
+  canStartDream?: boolean;
   // Open questions from Drömsamtalet ("Att fundera på").
   openQuestions?: string[];
 }
@@ -84,8 +89,9 @@ export default function IdeaGuide({
   hasInvitedSomeone,
   initialStep,
   aiSettings,
-  leanCanvasProvenance,
-  valuePropositionProvenance,
+  leanCanvasAi,
+  valuePropositionAi,
+  canStartDream,
   openQuestions,
 }: Props) {
   const t = useTranslations("IdeaGuide");
@@ -255,6 +261,17 @@ export default function IdeaGuide({
           doneKeys={done}
           onStepClick={(i) => setStep(i)}
         />
+
+        {canStartDream && (
+          <div className="mt-6 flex flex-wrap items-center gap-3 rounded-xl border border-seagrass/40 bg-seagrass/5 p-4">
+            <p className="flex-1 text-sm text-dark-slate/80">{t("talkToAiHint")}</p>
+            <form action={startDreamConversationForProject.bind(null, slug)}>
+              <button type="submit" className="rounded-lg bg-seagrass px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
+                {t("talkToAi")}
+              </button>
+            </form>
+          </div>
+        )}
 
         {openQuestions && openQuestions.length > 0 && (
           <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
@@ -467,7 +484,16 @@ export default function IdeaGuide({
             {t("leanCanvasHint")}
           </p>
         </div>
-        <LeanCanvasGrid projectSlug={slug} canvas={leanCanvas} canEdit provenance={leanCanvasProvenance} />
+        {leanCanvasAi && (
+          <CanvasAiBar projectSlug={slug} entity="leanCanvas" stepKey={leanCanvasAi.stepKey} mode={leanCanvasAi.mode} canEdit />
+        )}
+        <LeanCanvasGrid
+          projectSlug={slug}
+          canvas={leanCanvas}
+          canEdit
+          provenance={leanCanvasAi?.provenance}
+          suggestions={leanCanvasAi?.suggestions}
+        />
         <div className="flex justify-between pt-2">
           <button type="button" onClick={() => setStep(2)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
@@ -490,7 +516,22 @@ export default function IdeaGuide({
             {t("valuePropositionHint")}
           </p>
         </div>
-        <ValuePropositionGrid projectSlug={slug} canvas={valueProposition} canEdit provenance={valuePropositionProvenance} />
+        {valuePropositionAi && (
+          <CanvasAiBar
+            projectSlug={slug}
+            entity="valueProposition"
+            stepKey={valuePropositionAi.stepKey}
+            mode={valuePropositionAi.mode}
+            canEdit
+          />
+        )}
+        <ValuePropositionGrid
+          projectSlug={slug}
+          canvas={valueProposition}
+          canEdit
+          provenance={valuePropositionAi?.provenance}
+          suggestions={valuePropositionAi?.suggestions}
+        />
         <div className="flex justify-between pt-2">
           <button type="button" onClick={() => setStep(3)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button

@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { createAiIntakeThread } from "./actions";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 
 export const metadata: Metadata = {
   title: "Idéverkstaden — GoodTribes.org",
@@ -27,6 +28,7 @@ export default async function IdeaverkstadPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const t = await getTranslations("IdeaverkstadPage");
+  const aiProjectStart = await isFeatureEnabled("ai-project-start", session.user.id);
 
   const rooms = await prisma.room.findMany({
     where: { type: "IDEA_THREAD", projectId: null },
@@ -47,14 +49,16 @@ export default async function IdeaverkstadPage() {
           </p>
         </div>
         <div className="flex gap-2 flex-shrink-0">
-          <form action={createAiIntakeThread}>
+          {/* The AI-guided start lives in the new-project flow when the
+              ai-project-start flag is on; this older entry stays until then. */}
+          {!aiProjectStart && <form action={createAiIntakeThread}>
             <button
               type="submit"
               className="px-4 py-2 border border-coral text-coral text-sm font-medium rounded hover:bg-coral/10 transition-colors"
             >
               {t("aiGuideCta")}
             </button>
-          </form>
+          </form>}
           <Link
             href="/ideaverkstad/new"
             className="px-4 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors"

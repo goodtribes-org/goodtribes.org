@@ -149,6 +149,7 @@ model Project {
   phaseAiSettings    ProjectPhaseAiSetting[]
   stepAiSettings     ProjectStepAiSetting[]
   fieldProvenance    FieldProvenance[]
+  aiFieldSuggestions AiFieldSuggestion[]
   dreamConversation  DreamConversation?
   kudos              Kudos[]              @relation("ProjectKudos")
   streaks            UserStreak[]         @relation("ProjectStreaks")

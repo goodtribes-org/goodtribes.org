@@ -6,8 +6,8 @@ import IdeaGuide from "./IdeaGuide";
 import PhaseMenuBar from "../PhaseMenuBar";
 import { IDEA_GUIDE_STEPS } from "@/lib/ideaGuideSteps";
 import { isFeatureEnabled } from "@/lib/featureFlags";
-import { getProjectAiSettings } from "@/lib/aiMode";
-import { getFieldProvenance } from "@/lib/fieldProvenance";
+import { getProjectAiSettings, resolveAiMode } from "@/lib/aiMode";
+import { getCanvasAiContext } from "@/lib/canvasAi";
 import { parseOpenQuestions } from "@/lib/dreamConversation";
 
 export default async function IdeaGuidePage({
@@ -49,14 +49,18 @@ export default async function IdeaGuidePage({
   // Per-step AI mode pickers ship dark behind the ai-project-start flag.
   // vet/antar marking on the canvas steps ships behind the same flag.
   const aiFeatures = await isFeatureEnabled("ai-project-start", session.user.id);
-  const [aiSettings, leanCanvasProvenance, valuePropositionProvenance, dream] = aiFeatures
+  const [aiSettings, leanCanvasAi, valuePropositionAi, dream] = aiFeatures
     ? await Promise.all([
         getProjectAiSettings(project.id),
-        getFieldProvenance(project.id, "leanCanvas"),
-        getFieldProvenance(project.id, "valueProposition"),
+        getCanvasAiContext(project.id, "leanCanvas"),
+        getCanvasAiContext(project.id, "valueProposition"),
         prisma.dreamConversation.findUnique({ where: { projectId: project.id }, select: { openQuestions: true } }),
       ])
-    : [null, undefined, undefined, null];
+    : [null, null, null, null];
+  // "Prata med AI:n" is offered when the project has no Drömsamtal yet and
+  // its AI mode for describing the project isn't MANUAL.
+  const canStartDream =
+    aiFeatures && !dream && (await resolveAiMode({ projectId: project.id, feature: "dream-conversation", stepKey: "dream_defined" })).mode !== "MANUAL";
 
   return (
     <div className="max-w-5xl mx-auto min-w-0 w-full">
@@ -87,8 +91,9 @@ export default async function IdeaGuidePage({
         hasInvitedSomeone={hasInvitedSomeone}
         initialStep={Math.max(0, IDEA_GUIDE_STEPS.findIndex((i) => i.key === step))}
         aiSettings={aiSettings}
-        leanCanvasProvenance={leanCanvasProvenance}
-        valuePropositionProvenance={valuePropositionProvenance}
+        leanCanvasAi={leanCanvasAi}
+        valuePropositionAi={valuePropositionAi}
+        canStartDream={canStartDream}
         openQuestions={dream ? parseOpenQuestions(dream.openQuestions) : undefined}
       />
     </div>

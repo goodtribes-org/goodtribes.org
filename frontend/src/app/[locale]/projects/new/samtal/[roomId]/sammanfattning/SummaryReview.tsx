@@ -27,10 +27,14 @@ export default function SummaryReview({
   roomId,
   aiMode,
   summary,
+  existingProject,
 }: {
   roomId: string;
   aiMode: "AGENT" | "ASSIST";
   summary: DreamSummary;
+  // Started from an existing project ("Prata med AI:n"): nothing already
+  // filled in is overwritten — those proposals become suggestions.
+  existingProject: boolean;
 }) {
   const t = useTranslations("DreamSummary");
   const tField = useTranslations("LeanCanvasHistory");
@@ -58,7 +62,7 @@ export default function SummaryReview({
   }
 
   const proposals: { label: string; field: ProposedField }[] =
-    aiMode === "AGENT"
+    aiMode === "AGENT" || existingProject
       ? DREAM_CANVAS_FIELDS.flatMap((f) => (summary.canvas[f]?.value ? [{ label: canvasLabel(f), field: summary.canvas[f]! }] : []))
       : [];
 
@@ -122,7 +126,9 @@ export default function SummaryReview({
             </div>
           ))}
         </dl>
-        <p className="mt-3 text-xs text-dark-slate/50">{aiMode === "AGENT" ? t("agentNote") : t("assistNote")}</p>
+        <p className="mt-3 text-xs text-dark-slate/50">
+          {existingProject ? t("existingNote") : aiMode === "AGENT" ? t("agentNote") : t("assistNote")}
+        </p>
       </div>
 
       {correcting && (
@@ -162,7 +168,7 @@ export default function SummaryReview({
           onClick={() => run(() => approveDreamSummary(roomId, sections))}
           className="rounded-lg bg-coral px-5 py-2.5 text-sm font-semibold text-white hover:bg-watermelon disabled:opacity-60"
         >
-          {pending ? t("creating") : t("approve")}
+          {pending ? t("creating") : existingProject ? t("approveExisting") : t("approve")}
         </button>
         {!correcting && (
           <button
