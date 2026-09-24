@@ -8,7 +8,7 @@ import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { aiGateMessage, getAiClientFor } from "@/lib/aiMode";
 import { recordAiWrite } from "@/lib/fieldProvenance";
 import { snapshotImpactModel } from "@/lib/impactModelVersions";
-import { LEAN_CANVAS_BLOCKS, LEAN_CANVAS_FIELDS, LEAN_CANVAS_STORED_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
+import { CUSTOMER_MODEL_EXTRA_BLOCKS, LEAN_CANVAS_BLOCKS, LEAN_CANVAS_FIELDS, LEAN_CANVAS_STORED_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
 import { CANVAS_REVIEW_SYSTEM_PROMPT, CANVAS_REVIEW_TOOL } from "@/lib/prompts/canvasReview";
 
@@ -107,7 +107,7 @@ export async function reviewCanvas(projectSlug: string, entity: string): Promise
 
   const row = (entity === "leanCanvas" ? project.leanCanvas : project.valueProposition) as Record<string, unknown> | null;
   const fields: readonly string[] = entity === "leanCanvas" ? LEAN_CANVAS_FIELDS : VALUE_PROPOSITION_FIELDS;
-  const label = (f: string) => (entity === "leanCanvas" ? LEAN_CANVAS_BLOCKS.find((b) => b.field === f)?.translationKey ?? f : f);
+  const label = (f: string) => (entity === "leanCanvas" ? [...LEAN_CANVAS_BLOCKS, ...CUSTOMER_MODEL_EXTRA_BLOCKS].find((b) => b.field === f)?.translationKey ?? f : f);
   const filled = fields.filter((f) => typeof row?.[f] === "string" && (row[f] as string).trim());
   if (filled.length === 0) return { error: "Det finns inget att granska än — fyll i några fält först." };
 

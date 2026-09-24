@@ -376,7 +376,7 @@
     "savedByReadOnly": "Saved by {name} — read-only",
     "emptyField": "Empty",
     "fieldProblem": "Problem",
-    "fieldAlternatives": "Alternatives",
+    "fieldAlternatives": "Existing alternatives",
     "fieldCustomerSegments": "Customer segments",
     "fieldEarlyAdopters": "Early adopters",
     "fieldUniqueValueProposition": "Unique value proposition",
@@ -740,7 +740,8 @@
     "groupPhaseTools": "Phase tools",
     "lockedHint": "Unlocks in a later phase",
     "navGroupsLabel": "Project menu",
-    "navImpactModel": "Impact model"
+    "navImpactModel": "Impact model",
+    "navCustomerModel": "Customer model"
   },
   "MembersManager": {
     "pageTitle": "Project members",
@@ -2661,7 +2662,7 @@
   },
   "LeanCanvasFields": {
     "hintProblem": "Top 3 problems worth solving",
-    "hintAlternatives": "How the problem is solved today",
+    "hintAlternatives": "How customers get the job done today, without you",
     "hintSolution": "The product or service you offer",
     "hintKeyMetrics": "How you measure progress, for both impact and economics",
     "hintUniqueValueProposition": "Why customers choose you — a clear promise",
@@ -2669,7 +2670,7 @@
     "hintUnfairAdvantage": "Something that can't easily be copied or bought",
     "hintChannels": "How you reach customers and deliver value",
     "hintCustomerSegments": "Who pays, and who benefits if they're different",
-    "hintEarlyAdopters": "Who will be first to start using the solution",
+    "hintEarlyAdopters": "The customers who need it most and want to be first",
     "hintCostStructure": "The most important costs",
     "hintImpact": "Your theory of change: how what you do leads to measurable impact",
     "hintRevenueStreams": "How money comes in",
@@ -3264,7 +3265,8 @@
     "legacyHeading": "From your earlier Lean Canvas",
     "legacyNote": "These blocks aren't part of the Social Lean Canvas. The text is kept here so you can move anything relevant into the blocks above.",
     "attribution": "Social Lean Canvas by Rowan Yeoman, Dave Moskovitz and the Ākina Foundation, licensed under CC BY-SA 3.0.",
-    "impactModelLink": "Break Impact down into an impact model →"
+    "impactModelLink": "Break Impact down into an impact model →",
+    "customerModelLink": "Go deeper into the customer side in the customer model →"
   },
   "ProjectPlanPage": {
     "title": "Project Plan",
@@ -4329,5 +4331,11 @@
     "aiDoneWritten": "The AI filled in {count, plural, one {# step} other {# steps}}. Review and change freely.",
     "aiDoneSuggested": "The AI put {count, plural, one {a suggestion} other {# suggestions}} next to the steps. You choose what to use.",
     "aiDoneBoth": "The AI filled in {written} empty steps and put {suggested} suggestions next to steps that already had text."
+  },
+  "CustomerModelPage": {
+    "pageHeading": "Customer model",
+    "helpText": "The customer model goes deeper into the customer side of the Social Lean Canvas: who the customers are and which of them want to be first, which job they're trying to get done and how they manage today, and why they'd choose your solution. Customers, jobs to be done, value proposition and solution are the same blocks as on the canvas.",
+    "shared": "Customers, jobs to be done, value proposition and solution are the same blocks as on the canvas.",
+    "canvasLink": "View Social Lean Canvas →"
   }
 }

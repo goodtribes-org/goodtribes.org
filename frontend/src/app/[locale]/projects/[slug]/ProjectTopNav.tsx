@@ -86,6 +86,7 @@ function phaseItems(t: T): NavItem[] {
   return [
     { label: t("navIdeaWorkshop"), href: "/idea-sessions", icon: Lightbulb, phase: "IDEA" },
     { label: t("navLeanCanvas"), href: "/lean-canvas", icon: LayoutGrid, phase: "IDEA" },
+    { label: t("navCustomerModel"), href: "/customer-model", icon: Users, phase: "IDEA" },
     { label: t("navImpactModel"), href: "/impact-model", icon: Workflow, phase: "IDEA" },
     { label: t("navValueProposition"), href: "/value-proposition", icon: Gem, phase: "IDEA" },
     { label: t("navInterviews"), href: "/interviews", icon: Mic, phase: "IDEA" },

@@ -376,7 +376,7 @@
     "savedByReadOnly": "Sparad av {name} — skrivskyddad",
     "emptyField": "Tomt",
     "fieldProblem": "Problem",
-    "fieldAlternatives": "Alternativ",
+    "fieldAlternatives": "Befintliga alternativ",
     "fieldCustomerSegments": "Kundsegment",
     "fieldEarlyAdopters": "Tidiga användare",
     "fieldUniqueValueProposition": "Unikt värdeerbjudande",
@@ -740,7 +740,8 @@
     "groupPhaseTools": "Fasverktyg",
     "lockedHint": "Låses upp i en senare fas",
     "navGroupsLabel": "Projektmeny",
-    "navImpactModel": "Impactmodell"
+    "navImpactModel": "Impactmodell",
+    "navCustomerModel": "Kundmodell"
   },
   "MembersManager": {
     "pageTitle": "Projektmedlemmar",
@@ -2661,7 +2662,7 @@
   },
   "LeanCanvasFields": {
     "hintProblem": "Topp 3 problem värda att lösa",
-    "hintAlternatives": "Hur löser man problemet idag",
+    "hintAlternatives": "Hur kunderna får jobbet gjort idag, utan er",
     "hintSolution": "Produkten eller tjänsten ni erbjuder",
     "hintKeyMetrics": "Hur ni mäter framsteg, för både impact och ekonomi",
     "hintUniqueValueProposition": "Varför kunderna väljer er — ett tydligt löfte",
@@ -2669,7 +2670,7 @@
     "hintUnfairAdvantage": "Något som inte lätt kan kopieras eller köpas",
     "hintChannels": "Hur ni når kunderna och levererar värdet",
     "hintCustomerSegments": "Vilka som betalar, och vilka som gynnas om det är andra",
-    "hintEarlyAdopters": "Vem kommer först att börja använda lösningen",
+    "hintEarlyAdopters": "De som har behovet mest akut och vill vara med först",
     "hintCostStructure": "De viktigaste kostnaderna",
     "hintImpact": "Er förändringsteori: hur det ni gör leder till mätbar impact",
     "hintRevenueStreams": "Hur pengarna kommer in",
@@ -3264,7 +3265,8 @@
     "legacyHeading": "Från er tidigare Lean Canvas",
     "legacyNote": "De här rutorna finns inte i Social Lean Canvas. Texten ligger kvar här så att ni kan flytta över det som är relevant till rutorna ovan.",
     "attribution": "Social Lean Canvas av Rowan Yeoman, Dave Moskovitz och Ākina Foundation, licensierad under CC BY-SA 3.0.",
-    "impactModelLink": "Bryt ner Impact i en impactmodell →"
+    "impactModelLink": "Bryt ner Impact i en impactmodell →",
+    "customerModelLink": "Fördjupa kundsidan i kundmodellen →"
   },
   "ProjectPlanPage": {
     "title": "Projektplan",
@@ -4329,5 +4331,11 @@
     "aiDoneWritten": "AI:n fyllde i {count, plural, one {# steg} other {# steg}}. Granska och ändra fritt.",
     "aiDoneSuggested": "AI:n lade {count, plural, one {ett förslag} other {# förslag}} bredvid stegen. Du väljer vad som används.",
     "aiDoneBoth": "AI:n fyllde i {written} tomma steg och lade {suggested} förslag bredvid steg som redan hade text."
+  },
+  "CustomerModelPage": {
+    "pageHeading": "Kundmodell",
+    "helpText": "Kundmodellen fördjupar Social Lean Canvas kundsida: vilka kunderna är och vilka av dem som vill vara med först, vilket jobb de försöker få gjort och hur de klarar det idag, och varför de skulle välja er lösning. Kunder, jobs to be done, värdeerbjudande och lösning är samma rutor som på canvasen.",
+    "shared": "Kunder, jobs to be done, värdeerbjudande och lösning är samma rutor som på canvasen.",
+    "canvasLink": "Visa Social Lean Canvas →"
   }
 }

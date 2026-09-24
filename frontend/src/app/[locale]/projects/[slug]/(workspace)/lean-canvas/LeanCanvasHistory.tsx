@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { getLeanCanvasHistory } from "./actions";
-import { LEAN_CANVAS_BLOCKS, LEGACY_LEAN_CANVAS_BLOCKS, type LeanCanvasField, type LegacyLeanCanvasField } from "./fields";
+import { CUSTOMER_MODEL_EXTRA_BLOCKS, LEAN_CANVAS_BLOCKS, LEGACY_LEAN_CANVAS_BLOCKS, type LeanCanvasField, type LegacyLeanCanvasField } from "./fields";
 
 type Version = {
   id: string;
@@ -93,8 +93,8 @@ export default function LeanCanvasHistory({ projectSlug }: { projectSlug: string
                   {t("savedByReadOnly", { name: selected.savedBy?.name ?? t("unknownUser") })}
                 </p>
                 <div className="space-y-3">
-                  {/* Legacy Lean Canvas blocks only when this version has text in them. */}
-                  {[...LEAN_CANVAS_BLOCKS, ...LEGACY_LEAN_CANVAS_BLOCKS.filter((b) => selected[b.field])].map(({ field, translationKey }) => (
+                  {/* Customer-model and legacy blocks only when this version has text in them. */}
+                  {[...LEAN_CANVAS_BLOCKS, ...[...CUSTOMER_MODEL_EXTRA_BLOCKS, ...LEGACY_LEAN_CANVAS_BLOCKS].filter((b) => selected[b.field])].map(({ field, translationKey }) => (
                     <div key={field}>
                       <h3 className="text-xs font-bold text-dark-slate uppercase tracking-wide">{label(translationKey)}</h3>
                       <p className="text-sm text-dark-slate/80 whitespace-pre-wrap mt-0.5">
