@@ -12,6 +12,8 @@ Ge HÖGST 3 invändningar, de viktigaste först. Leta efter:
 - luckor i impactmodellens kedja, t.ex. utfall som inte följer av aktiviteterna, eller en impact som ingenting i kedjan leder till,
 - viktiga saker omvärldsbevakningen visar, t.ex. att någon redan gör samma sak.
 
+Nämn bara organisationer, verktyg, personer och siffror som står i underlaget ovan. Tror du att det kan finnas liknande initiativ eller verktyg som inte står där, skriv att det bör undersökas, utan namn. Lista i names varje organisation, verktyg eller person du nämner i en invändning, stavat exakt som i underlaget.
+
 Varje invändning: en eller två meningar, konkret, och gärna vad man kan göra åt den (t.ex. vad man ska fråga i intervjuerna). Ange vilket fält den gäller om den gäller ett särskilt fält (använd exakt nyckel ur listan), annars utelämna field. Var ärlig men vänlig. Hitta aldrig på fakta.
 
 Svara genom verktyget "invandningar".`;
@@ -31,8 +33,13 @@ export const CRITIQUE_TOOL = {
             text: { type: "string" },
             field: { type: "string", description: "Fältnyckel, t.ex. leanCanvas.jobsToBeDone, valueProposition.vpPains eller impactModel.shortTermOutcomes." },
             severity: { type: "string", enum: ["high", "medium"] },
+            names: {
+              type: "array",
+              items: { type: "string" },
+              description: "Varje organisation, verktyg eller person som nämns i text, stavat som i underlaget. Tom lista om inga namn nämns.",
+            },
           },
-          required: ["text", "severity"],
+          required: ["text", "severity", "names"],
         },
       },
     },

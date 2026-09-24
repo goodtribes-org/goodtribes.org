@@ -1,7 +1,7 @@
 jest.mock("../lib/prisma", () => ({ prisma: {} }));
 jest.mock("../lib/aiMode", () => ({ getAiClientFor: jest.fn() }));
 
-import { coerceCritique, coerceSynthesis, splitFieldKey } from "../lib/ideaInsights";
+import { coerceCritique, coerceSynthesis, namesAreGrounded, splitFieldKey } from "../lib/ideaInsights";
 
 describe("coerceCritique", () => {
   it("keeps at most 3 points, drops unknown field keys but keeps the point", () => {
@@ -58,5 +58,32 @@ describe("splitFieldKey", () => {
     expect(splitFieldKey("valueProposition.vpGains")).toEqual({ entity: "valueProposition", field: "vpGains" });
     expect(splitFieldKey("project.title")).toBeNull();
     expect(splitFieldKey("leanCanvas.nope")).toBeNull();
+  });
+});
+
+describe("namesAreGrounded", () => {
+  const source = "Omvärldsbevakning:\n- Håll Sverige Rent (COMPETITOR): städar stränder";
+  it("accepts names that appear in the source, ignoring case", () => {
+    expect(namesAreGrounded(["håll sverige rent"], source)).toBe(true);
+    expect(namesAreGrounded([], source)).toBe(true);
+    expect(namesAreGrounded(undefined, source)).toBe(true);
+  });
+  it("rejects a name the Critic wasn't given", () => {
+    expect(namesAreGrounded(["Marine Litter Watch"], source)).toBe(false);
+  });
+});
+
+describe("coerceCritique with a source", () => {
+  it("drops points that name something not in the source, keeps the rest", () => {
+    const c = coerceCritique(
+      {
+        points: [
+          { text: "Testa betalviljan", severity: "high", names: [] },
+          { text: "Marine Litter Watch finns redan", severity: "medium", names: ["Marine Litter Watch"] },
+        ],
+      },
+      "Projekt: Ren Kust",
+    );
+    expect(c.points.map((p) => p.text)).toEqual(["Testa betalviljan"]);
   });
 });

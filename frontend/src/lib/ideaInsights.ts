@@ -3,6 +3,7 @@ import type { AiInsightKind, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getAiClientFor } from "@/lib/aiMode";
 import { getFieldProvenance } from "@/lib/fieldProvenance";
+import { logger } from "@/lib/logger";
 import { LEAN_CANVAS_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
 import { IMPACT_MODEL_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
@@ -43,10 +44,21 @@ function str(v: unknown): string {
 export type CritiquePoint = { text: string; field: string | null; severity: "high" | "medium" };
 export type CritiqueContent = { points: CritiquePoint[] };
 
-export function coerceCritique(raw: unknown): CritiqueContent {
+// "Hitta aldrig på fakta", enforced rather than trusted: a point that names
+// an organisation, tool or person not found in what the Critic was given is
+// dropped. The model lists its own names (the prompt asks it to); a name
+// counts as found if it appears in the source text, ignoring case.
+export function namesAreGrounded(names: unknown, source: string): boolean {
+  if (!Array.isArray(names)) return true;
+  const haystack = source.toLowerCase();
+  return names.every((n) => typeof n !== "string" || !n.trim() || haystack.includes(n.trim().toLowerCase()));
+}
+
+export function coerceCritique(raw: unknown, source?: string): CritiqueContent {
   const points = Array.isArray((raw as { points?: unknown })?.points) ? (raw as { points: unknown[] }).points : [];
   return {
     points: points
+      .filter((p) => source === undefined || namesAreGrounded((p as Record<string, unknown> | null)?.names, source))
       .map((p) => {
         const o = (p ?? {}) as Record<string, unknown>;
         const field = str(o.field);
@@ -139,7 +151,12 @@ export async function runCritique(projectId: string, userId: string | null): Pro
     `Värdeerbjudande:\n${canvasText("valueProposition", project.valueProposition as Record<string, unknown> | null, VALUE_PROPOSITION_FIELDS)}\n\n` +
     `Omvärldsbevakning:\n${project.marketScanEntries.map((e) => `- ${e.name} (${e.type}): ${e.description}`).join("\n") || "(inget)"}`;
 
-  const critique = coerceCritique(await callTool(gate.client, CRITIQUE_SYSTEM_PROMPT, CRITIQUE_TOOL, content));
+  const raw = await callTool(gate.client, CRITIQUE_SYSTEM_PROMPT, CRITIQUE_TOOL, content);
+  const critique = coerceCritique(raw, content);
+  const proposed = coerceCritique(raw).points.length;
+  if (proposed > critique.points.length) {
+    logger.info("critique: dropped points naming things not in the source", { projectId, dropped: proposed - critique.points.length });
+  }
   if (!critique.points.length) throw new InsightError("empty");
   await prisma.aiInsight.create({ data: { projectId, kind: "CRITIQUE", content: critique as unknown as Prisma.InputJsonValue } });
   return critique;
