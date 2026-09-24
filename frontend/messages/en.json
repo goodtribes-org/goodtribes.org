@@ -4290,5 +4290,8 @@
     "saving": "Saving …",
     "cancel": "Cancel",
     "onePageLink": "See all of Impact on one page, with the AI's drafts"
+  },
+  "OverviewSkeleton": {
+    "loading": "Loading the phase …"
   }
 }

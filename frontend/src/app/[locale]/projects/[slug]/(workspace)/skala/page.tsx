@@ -31,9 +31,11 @@ export default async function SkalaOverviewPage({ params }: { params: Promise<{ 
   const { locale, slug } = await params;
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  if (!(await isFeatureEnabled("ai-project-start", session.user.id))) redirect(`/projects/${slug}/guide/scale`);
-
-  const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true, openForReplication: true } });
+  const [journeyOn, project] = await Promise.all([
+    isFeatureEnabled("ai-project-start", session.user.id),
+    prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true, openForReplication: true } }),
+  ]);
+  if (!journeyOn) redirect(`/projects/${slug}/guide/scale`);
   if (!project) notFound();
 
   const [t, tCheck, tGate, canEdit, isFounder, aiAvailable, fillRow, focusBrief, focusDecision, done, plan, choice, instances, forkCount, cards, openCardCount, gate, gateBrief, gateDecision] =
