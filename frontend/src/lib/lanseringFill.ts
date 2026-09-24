@@ -172,7 +172,7 @@ async function buildContext(projectId: string, slug: string): Promise<string> {
     prisma.projectRoleNeed.findMany({ where: { projectId }, orderBy: { order: "asc" }, select: { title: true, description: true, filledById: true } }),
   ]);
   const lc = (project?.leanCanvas ?? {}) as Record<string, unknown>;
-  const canvas = ["problem", "customerSegments", "earlyAdopters", "solution", "uniqueValueProposition", "channels"]
+  const canvas = ["purpose", "customerSegments", "jobsToBeDone", "solution", "uniqueValueProposition", "channels", "impact"]
     .filter((f) => str(lc[f]))
     .map((f) => `${f}: ${str(lc[f])}`)
     .join("\n");

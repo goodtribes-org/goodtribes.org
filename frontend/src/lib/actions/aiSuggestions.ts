@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { aiGateMessage, getAiClientFor } from "@/lib/aiMode";
 import { recordAiWrite } from "@/lib/fieldProvenance";
-import { LEAN_CANVAS_BLOCKS, LEAN_CANVAS_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
+import { LEAN_CANVAS_BLOCKS, LEAN_CANVAS_FIELDS, LEAN_CANVAS_STORED_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
 import { CANVAS_REVIEW_SYSTEM_PROMPT, CANVAS_REVIEW_TOOL } from "@/lib/prompts/canvasReview";
 
@@ -46,7 +46,7 @@ export async function applyAiSuggestion(id: string) {
   if (s.entity === "leanCanvas") {
     const canvas = await prisma.leanCanvas.upsert({ where: { projectSlug: slug }, create: { projectSlug: slug, ...data }, update: data });
     await prisma.leanCanvasVersion.create({
-      data: { projectSlug: slug, savedById: userId, ...Object.fromEntries(LEAN_CANVAS_FIELDS.map((f) => [f, canvas[f]])) },
+      data: { projectSlug: slug, savedById: userId, ...Object.fromEntries(LEAN_CANVAS_STORED_FIELDS.map((f) => [f, canvas[f]])) },
     });
   } else {
     const canvas = await prisma.valueProposition.upsert({ where: { projectSlug: slug }, create: { projectSlug: slug, ...data }, update: data });

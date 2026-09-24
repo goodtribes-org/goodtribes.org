@@ -54,7 +54,7 @@ export const BASICS_TOOL = {
 
 // ─── Lean Canvas ────────────────────────────────────────────────────────────
 
-export const LEAN_CANVAS_SYSTEM_PROMPT = `Fyll i en Lean Canvas för ett socialt projekt på GoodTribes.org utifrån Drömsamtalet och projektbeskrivningen. Det är ett första utkast som initiativtagaren granskar; allt du härleder märks som ett antagande.
+export const LEAN_CANVAS_SYSTEM_PROMPT = `Fyll i en Social Lean Canvas (socialleancanvas.com) för ett socialt projekt på GoodTribes.org utifrån Drömsamtalet och projektbeskrivningen. Canvasen håller ihop tre modeller: kundmodellen (kundsegment, jobs to be done, värdeerbjudande, lösning), impactmodellen (syfte och impact) och den ekonomiska modellen (kanaler, intäkter, kostnader). Det är ett första utkast som initiativtagaren granskar; allt du härleder märks som ett antagande.
 
 ${SHARED_RULES}
 - Fält som kräver siffror du inte fått (t.ex. kostnader eller nyckeltal) formuleras som vad som behöver tas reda på, inte som påhittade belopp.
@@ -63,23 +63,21 @@ Svara genom verktyget "lean_canvas".`;
 
 export const LEAN_CANVAS_TOOL = {
   name: "lean_canvas",
-  description: "Lean Canvas-fält.",
+  description: "Social Lean Canvas-fält.",
   input_schema: {
     type: "object" as const,
     properties: {
-      problem: field("De viktigaste problemen som ska lösas."),
-      alternatives: field("Hur man löser problemet idag."),
-      customerSegments: field("Vilka som använder, betalar eller stöder."),
-      earlyAdopters: field("Vilka som vill vara med först."),
-      uniqueValueProposition: field("Varför välja detta framför alternativen."),
-      concept: field("Idén i en mening, som en pitch."),
-      solution: field("Lösningen i korthet."),
-      channels: field("Hur man når målgrupperna."),
-      revenueStreams: field("Varifrån pengarna kan komma: bidrag, försäljning, crowdfunding, sponsring."),
+      purpose: field("Syftet: varför projektet finns, den förändring det vill se i världen."),
+      impact: field("Förändringsteorin: hur det projektet gör leder till mätbar impact, via deltagare och aktiviteter till utfall."),
+      customerSegments: field("Kunderna: vilka som betalar, och vilka som använder eller gynnas om det inte är samma."),
+      jobsToBeDone: field("Vad kunderna försöker få gjort: behov och problem de vill lösa."),
+      uniqueValueProposition: field("Varför kunderna väljer detta: löftet i en tydlig mening."),
+      solution: field("Lösningen i korthet: produkten eller tjänsten."),
+      channels: field("Hur man når kunderna och levererar värdet."),
+      revenueStreams: field("Varifrån pengarna kan komma: försäljning, bidrag, crowdfunding, sponsring."),
       costStructure: field("Vad det kostar att driva, i stora drag."),
-      impact: field("Den långsiktiga förändringen projektet bidrar till."),
+      unfairAdvantage: field("Fördelen: vad initiativtagaren har som är svårt att kopiera, t.ex. erfarenhet, nätverk, förtroende."),
       keyMetrics: field("Några få mått som visar att det fungerar, både för impact och ekonomi."),
-      unfairAdvantage: field("Vad initiativtagaren har som är svårt att kopiera: erfarenhet, nätverk."),
     },
   },
 };

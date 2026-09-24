@@ -19,9 +19,9 @@ const MAX_REVISIONS = 3; // same cap as ai-agent/review's revision branch
 type PlanJson = {
   project: { title: string; summary: string; description: string; category: string; tags: string[]; sdgGoals: number[] };
   leanCanvas: {
-    problem: string; alternatives: string; solution: string; uniqueValueProposition: string; concept: string;
-    unfairAdvantage: string; channels: string; customerSegments: string; earlyAdopters: string;
-    costStructure: string; impact: string; keyMetrics: string; revenueStreams: string;
+    purpose: string; impact: string; jobsToBeDone: string; solution: string; keyMetrics: string;
+    uniqueValueProposition: string; unfairAdvantage: string; channels: string; customerSegments: string;
+    costStructure: string; revenueStreams: string;
   };
   valueProposition: { vpJobs: string; vpPains: string; vpGains: string; vpProducts: string; vpRelievers: string; vpCreators: string };
   initialTasks: { title: string; description: string }[];
@@ -52,12 +52,11 @@ function coercePlanShape(raw: unknown): PlanJson {
       sdgGoals: Array.isArray(project.sdgGoals) ? project.sdgGoals.filter((n): n is number => typeof n === "number") : [],
     },
     leanCanvas: {
-      problem: str(leanCanvas.problem), alternatives: str(leanCanvas.alternatives), solution: str(leanCanvas.solution),
-      uniqueValueProposition: str(leanCanvas.uniqueValueProposition), concept: str(leanCanvas.concept),
-      unfairAdvantage: str(leanCanvas.unfairAdvantage), channels: str(leanCanvas.channels),
-      customerSegments: str(leanCanvas.customerSegments), earlyAdopters: str(leanCanvas.earlyAdopters),
-      costStructure: str(leanCanvas.costStructure), impact: str(leanCanvas.impact),
-      keyMetrics: str(leanCanvas.keyMetrics), revenueStreams: str(leanCanvas.revenueStreams),
+      purpose: str(leanCanvas.purpose), impact: str(leanCanvas.impact), jobsToBeDone: str(leanCanvas.jobsToBeDone),
+      solution: str(leanCanvas.solution), keyMetrics: str(leanCanvas.keyMetrics),
+      uniqueValueProposition: str(leanCanvas.uniqueValueProposition), unfairAdvantage: str(leanCanvas.unfairAdvantage),
+      channels: str(leanCanvas.channels), customerSegments: str(leanCanvas.customerSegments),
+      costStructure: str(leanCanvas.costStructure), revenueStreams: str(leanCanvas.revenueStreams),
     },
     valueProposition: {
       vpJobs: str(valueProposition.vpJobs), vpPains: str(valueProposition.vpPains), vpGains: str(valueProposition.vpGains),
@@ -74,8 +73,8 @@ function coercePlanShape(raw: unknown): PlanJson {
 const PLAN_SYSTEM_PROMPT = `Du analyserar en konversation mellan en AI-coach och en person som vill starta ett projekt på GoodTribes.org.
 Utifrån HELA konversationen, skriv ett komplett förslag till projektplan.
 Svara ENBART med giltig JSON (ingen markdown, inga kodblock, ingen förklaringstext) i exakt denna form:
-{"project":{"title":"","summary":"","description":"","category":"","tags":[],"sdgGoals":[]},"leanCanvas":{"problem":"","alternatives":"","solution":"","uniqueValueProposition":"","concept":"","unfairAdvantage":"","channels":"","customerSegments":"","earlyAdopters":"","costStructure":"","impact":"","keyMetrics":"","revenueStreams":""},"valueProposition":{"vpJobs":"","vpPains":"","vpGains":"","vpProducts":"","vpRelievers":"","vpCreators":""},"initialTasks":[{"title":"","description":""}]}
-sdgGoals ska vara siffror 1-17 för FN:s globala mål som är relevanta. initialTasks ska vara 3-6 konkreta första uppgifter för att komma igång. Skriv på svenska.`;
+{"project":{"title":"","summary":"","description":"","category":"","tags":[],"sdgGoals":[]},"leanCanvas":{"purpose":"","impact":"","jobsToBeDone":"","solution":"","keyMetrics":"","uniqueValueProposition":"","unfairAdvantage":"","channels":"","customerSegments":"","costStructure":"","revenueStreams":""},"valueProposition":{"vpJobs":"","vpPains":"","vpGains":"","vpProducts":"","vpRelievers":"","vpCreators":""},"initialTasks":[{"title":"","description":""}]}
+leanCanvas är en Social Lean Canvas (socialleancanvas.com): purpose är syftet, impact förändringsteorin, jobsToBeDone vad kunderna försöker få gjort, unfairAdvantage fördelen som är svår att kopiera. sdgGoals ska vara siffror 1-17 för FN:s globala mål som är relevanta. initialTasks ska vara 3-6 konkreta första uppgifter för att komma igång. Skriv på svenska.`;
 
 export async function generateAiProjectPlan(roomId: string) {
   const session = await auth();

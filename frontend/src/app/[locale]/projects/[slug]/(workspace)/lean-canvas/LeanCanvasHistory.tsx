@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { getLeanCanvasHistory } from "./actions";
-import type { LeanCanvasField } from "./fields";
+import { LEAN_CANVAS_BLOCKS, LEGACY_LEAN_CANVAS_BLOCKS, type LeanCanvasField, type LegacyLeanCanvasField } from "./fields";
 
 type Version = {
   id: string;
   createdAt: Date;
   savedBy: { name: string | null } | null;
-} & Record<LeanCanvasField, string | null>;
+} & Record<LeanCanvasField | LegacyLeanCanvasField, string | null>;
 
 function formatDate(d: Date) {
   return new Date(d).toLocaleString("sv-SE", { dateStyle: "medium", timeStyle: "short" });
@@ -22,21 +22,7 @@ export default function LeanCanvasHistory({ projectSlug }: { projectSlug: string
   const [versions, setVersions] = useState<Version[] | null>(null);
   const [selected, setSelected] = useState<Version | null>(null);
 
-  const FIELD_LABELS: Record<LeanCanvasField, string> = {
-    problem: t("fieldProblem"),
-    alternatives: t("fieldAlternatives"),
-    customerSegments: t("fieldCustomerSegments"),
-    earlyAdopters: t("fieldEarlyAdopters"),
-    uniqueValueProposition: t("fieldUniqueValueProposition"),
-    concept: t("fieldConcept"),
-    solution: t("fieldSolution"),
-    channels: t("fieldChannels"),
-    revenueStreams: t("fieldRevenueStreams"),
-    costStructure: t("fieldCostStructure"),
-    impact: t("fieldImpact"),
-    keyMetrics: t("fieldKeyMetrics"),
-    unfairAdvantage: t("fieldUnfairAdvantage"),
-  };
+  const label = (key: string) => t(`field${key}` as Parameters<typeof t>[0]);
 
   async function handleOpen() {
     setOpen(true);
@@ -107,9 +93,10 @@ export default function LeanCanvasHistory({ projectSlug }: { projectSlug: string
                   {t("savedByReadOnly", { name: selected.savedBy?.name ?? t("unknownUser") })}
                 </p>
                 <div className="space-y-3">
-                  {(Object.keys(FIELD_LABELS) as LeanCanvasField[]).map((field) => (
+                  {/* Legacy Lean Canvas blocks only when this version has text in them. */}
+                  {[...LEAN_CANVAS_BLOCKS, ...LEGACY_LEAN_CANVAS_BLOCKS.filter((b) => selected[b.field])].map(({ field, translationKey }) => (
                     <div key={field}>
-                      <h3 className="text-xs font-bold text-dark-slate uppercase tracking-wide">{FIELD_LABELS[field]}</h3>
+                      <h3 className="text-xs font-bold text-dark-slate uppercase tracking-wide">{label(translationKey)}</h3>
                       <p className="text-sm text-dark-slate/80 whitespace-pre-wrap mt-0.5">
                         {selected[field] || <span className="text-dark-slate/30 italic">{t("emptyField")}</span>}
                       </p>

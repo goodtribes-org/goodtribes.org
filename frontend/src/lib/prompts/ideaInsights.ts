@@ -28,7 +28,7 @@ export const CRITIQUE_TOOL = {
           type: "object",
           properties: {
             text: { type: "string" },
-            field: { type: "string", description: "Fältnyckel, t.ex. leanCanvas.problem eller valueProposition.vpPains." },
+            field: { type: "string", description: "Fältnyckel, t.ex. leanCanvas.jobsToBeDone eller valueProposition.vpPains." },
             severity: { type: "string", enum: ["high", "medium"] },
           },
           required: ["text", "severity"],

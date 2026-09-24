@@ -10,7 +10,7 @@ import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { getFieldProvenance, recordAiWrite } from "@/lib/fieldProvenance";
 import { createAiSuggestion, decideAiPlacement } from "@/lib/aiSuggestions";
 import { runCritique } from "@/lib/ideaInsights";
-import { LEAN_CANVAS_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
+import { LEAN_CANVAS_FIELDS, LEAN_CANVAS_STORED_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
 import {
   BASICS_SYSTEM_PROMPT,
@@ -295,7 +295,7 @@ async function applyCanvas(
   await prisma.$transaction(async (tx) => {
     if (writes.length) {
       const data = Object.fromEntries(writes.map(([f, p]) => [f, p.value]));
-      const fields: readonly string[] = entity === "leanCanvas" ? LEAN_CANVAS_FIELDS : VALUE_PROPOSITION_FIELDS;
+      const fields: readonly string[] = entity === "leanCanvas" ? LEAN_CANVAS_STORED_FIELDS : VALUE_PROPOSITION_FIELDS;
       if (entity === "leanCanvas") {
         const canvas = await tx.leanCanvas.upsert({ where: { projectSlug }, create: { projectSlug, ...data }, update: data });
         await tx.leanCanvasVersion.create({ data: { projectSlug, ...Object.fromEntries(fields.map((f) => [f, (canvas as Record<string, unknown>)[f]])) } });

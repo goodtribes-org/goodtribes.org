@@ -17,7 +17,7 @@ import { getTranslations } from "next-intl/server";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { cardsForDecision, ideaGateCriteria, missingCriteria, runGateBrief, type GateBrief } from "@/lib/phaseGate";
 import { latestInsight, type SynthesisContent } from "@/lib/ideaInsights";
-import { LEAN_CANVAS_BLOCKS, LEAN_CANVAS_FIELDS } from "../lean-canvas/fields";
+import { LEAN_CANVAS_BLOCKS, LEAN_CANVAS_STORED_FIELDS } from "../lean-canvas/fields";
 import { VALUE_PROPOSITION_BLOCKS, VALUE_PROPOSITION_FIELDS } from "../value-proposition/fields";
 import { advanceProjectPhase } from "../edit/actions";
 import { draftText, normalizeContentLocale } from "@/lib/aiLanguage";
@@ -191,7 +191,7 @@ export async function decideIdeaGate(projectSlug: string, outcome: string, note:
       if (project.leanCanvas) {
         const lc = project.leanCanvas as Record<string, unknown>;
         await tx.leanCanvasVersion.create({
-          data: { projectSlug: project.slug, savedById: userId, ...Object.fromEntries(LEAN_CANVAS_FIELDS.map((f) => [f, lc[f] ?? null])) },
+          data: { projectSlug: project.slug, savedById: userId, ...Object.fromEntries(LEAN_CANVAS_STORED_FIELDS.map((f) => [f, lc[f] ?? null])) },
         });
       }
       if (project.valueProposition) {
