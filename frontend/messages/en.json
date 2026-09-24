@@ -739,7 +739,8 @@
     "groupDocs": "Documents",
     "groupPhaseTools": "Phase tools",
     "lockedHint": "Unlocks in a later phase",
-    "navGroupsLabel": "Project menu"
+    "navGroupsLabel": "Project menu",
+    "navImpactModel": "Impact model"
   },
   "MembersManager": {
     "pageTitle": "Project members",
@@ -3262,7 +3263,8 @@
     "helpLink": "Help",
     "legacyHeading": "From your earlier Lean Canvas",
     "legacyNote": "These blocks aren't part of the Social Lean Canvas. The text is kept here so you can move anything relevant into the blocks above.",
-    "attribution": "Social Lean Canvas by Rowan Yeoman, Dave Moskovitz and the Ākina Foundation, licensed under CC BY-SA 3.0."
+    "attribution": "Social Lean Canvas by Rowan Yeoman, Dave Moskovitz and the Ākina Foundation, licensed under CC BY-SA 3.0.",
+    "impactModelLink": "Break Impact down into an impact model →"
   },
   "ProjectPlanPage": {
     "title": "Project Plan",
@@ -4300,5 +4302,25 @@
   },
   "OverviewSkeleton": {
     "loading": "Loading the phase …"
+  },
+  "ImpactModelPage": {
+    "pageHeading": "Impact model",
+    "helpText": "The impact model is the theory of change behind the Social Lean Canvas Impact block. It shows step by step how what you do leads to impact: which issue you take on, who participates, what you do, and the outcomes it produces in the short, medium and long term. The last step is the same block as Impact on the canvas.",
+    "fieldIssue": "Issue",
+    "hintIssue": "The social problem you take on",
+    "fieldParticipants": "Participants",
+    "hintParticipants": "Who takes part: target groups, volunteers, partners",
+    "fieldActivities": "Activities",
+    "hintActivities": "What you do together with the participants",
+    "fieldShortTermOutcomes": "Short-term outcomes",
+    "hintShortTermOutcomes": "Direct changes: knowledge, attitudes, skills",
+    "fieldMediumTermOutcomes": "Medium-term outcomes",
+    "hintMediumTermOutcomes": "Changed behaviour and new habits",
+    "fieldLongTermOutcomes": "Long-term outcomes",
+    "hintLongTermOutcomes": "Lasting change in people's lives or conditions",
+    "hintImpact": "The measurable change in the world",
+    "legacyProblem": "From your earlier Lean Canvas",
+    "impactShared": "Impact is the same block as on the canvas.",
+    "canvasLink": "View Social Lean Canvas →"
   }
 }

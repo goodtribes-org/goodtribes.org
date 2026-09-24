@@ -10,6 +10,7 @@ import LeanCanvasGrid from "./LeanCanvasGrid";
 import LeanCanvasComments from "./LeanCanvasComments";
 import LeanCanvasHistory from "./LeanCanvasHistory";
 import { LEGACY_LEAN_CANVAS_BLOCKS } from "./fields";
+import { Link } from "@/i18n/navigation";
 import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { Locale } from "next-intl";
 import { isFeatureEnabled } from "@/lib/featureFlags";
@@ -62,7 +63,9 @@ export default async function LeanCanvasPage({
   const tField = await getTranslations({ locale, namespace: "LeanCanvasHistory" });
 
   const helpGuide = await prisma.academyGuide.findFirst({
-    where: { title: "Så använder du Lean Canvas", published: true },
+    // Old title kept until the production guide has been renamed.
+    where: { title: { in: ["Så använder du Social Lean Canvas", "Så använder du Lean Canvas"] }, published: true },
+    orderBy: { updatedAt: "desc" },
     select: { id: true },
   });
   const helpHref = helpGuide ? `/academy/${helpGuide.id}` : "/academy?category=Projektledning";
@@ -91,6 +94,11 @@ export default async function LeanCanvasPage({
         provenance={ai?.provenance}
         suggestions={ai?.suggestions}
       />
+      <p className="mt-2 text-sm">
+        <Link href={`/projects/${slug}/impact-model`} className="text-coral hover:underline">
+          {t("impactModelLink")}
+        </Link>
+      </p>
       <p className="mt-2 text-xs text-dark-slate/40">
         <a href="https://socialleancanvas.com" target="_blank" rel="noopener noreferrer" className="hover:text-coral">
           {t("attribution")}

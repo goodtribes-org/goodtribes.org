@@ -126,6 +126,7 @@ model Project {
   maturity           ProjectMaturity?     @relation("ProjectMaturity")
   githubBoard        ProjectGithubBoard?  @relation("ProjectGithubBoard")
   leanCanvas         LeanCanvas?          @relation("ProjectLeanCanvas")
+  impactModel        ImpactModel?         @relation("ProjectImpactModel")
   leanCanvasComments LeanCanvasComment[]  @relation("ProjectLeanCanvasComments")
   leanCanvasVersions LeanCanvasVersion[]  @relation("ProjectLeanCanvasVersions")
   projectPlan        ProjectPlan?         @relation("ProjectPlan")

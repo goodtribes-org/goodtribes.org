@@ -675,41 +675,54 @@ Verktygsfältet ovanför tavlan låter dig filtrera på kategori, prioritet och 
 
 - Att flytta ett kort till Klart som icke-ledare skickar det till Granskning — det är inte ett fel, utan tänkt att fungera som ett enkelt godkännandesteg.
 - Listvyns Klart-sektion är hopfälld i grunden, så tavlan inte känns rörig när ni kommit igång.` },
-    { title: "Så använder du Lean Canvas", category: "Projektledning", difficulty: "beginner", readTimeMinutes: 6, author: u.elin,
-      body: `# Så använder du Lean Canvas
+    { title: "Så använder du Social Lean Canvas", category: "Projektledning", difficulty: "beginner", readTimeMinutes: 7, author: u.elin,
+      body: `# Så använder du Social Lean Canvas
 
-Lean Canvas är projektets endasidiga affärs- och verksamhetsmodell — ett samlat ställe att formulera vilket problem ni löser, för vem, och hur. Varje projekt på GoodTribes har sin egen canvas under fliken **Verktyg → Lean Canvas**.
+Social Lean Canvas är projektets endasidiga affärsmodell, gjord för syftesdrivna projekt. Den hjälper er att se om idén håller både som verksamhet och som förändring i världen. Varje projekt på GoodTribes har sin egen canvas under **Verktyg → Social Lean Canvas**.
 
-## De 13 rutorna
+Canvasen knyter ihop tre modeller, och alla tre behöver fungera för att projektet ska hålla:
 
-Canvasen är uppdelad i 13 rutor, upplagda i tre rader på datorn (och staplade under varandra på mobilen). Varje ruta har en kort ledtråd som beskriver vad som hör hemma där:
+- **Kundmodellen:** hur ni skapar värde som någon är beredd att betala för.
+- **Impactmodellen:** er förändringsteori, alltså hur det ni gör leder till mätbar impact.
+- **Den ekonomiska modellen:** hur pengarna flödar så att projektet kan växa och bära sig.
 
-- **Problem** — vilka är de tre problem som är mest värda att lösa?
-- **Alternativ** — hur löser folk problemet idag, utan er?
-- **Lösning** — era möjliga lösningar på problemen ovan
-- **Nyckeltal** — hur mäter ni att det faktiskt fungerar?
-- **Unikt värdeerbjudande** — ett tydligt budskap som gör er annorlunda
-- **Koncept** — vad är pitchen, i en mening?
-- **Orättvis fördel** — något ni har som inte lätt kan kopieras eller köpas
-- **Kanaler** — vägarna ni når era målgrupper genom
-- **Kundsegment** — vilka är målgrupperna och de tidiga användarna riktade mot?
-- **Tidiga användare** — vilka blir era allra första användare?
-- **Kostnadsstruktur** — de största kostnaderna för att driva projektet
-- **Impact** — vilken skillnad gör ni, konkret?
-- **Intäktsströmmar** — hur (om alls) finansieras projektet?
+## De 11 rutorna
+
+På datorn ligger rutorna som på originalet: Syfte och Impact överst, fem kolumner i mitten och Kostnader och Intäkter nederst. På mobilen staplas de under varandra.
+
+- **Syfte:** varför finns ni? Förändringen ni vill se i världen.
+- **Impact:** er förändringsteori, hur det ni gör leder till mätbar impact.
+- **Jobs to be done:** vad era kunder försöker få gjort, deras behov och problem.
+- **Lösning:** produkten eller tjänsten ni erbjuder.
+- **Nyckeltal:** hur ni mäter framsteg, för både impact och ekonomi.
+- **Unikt värdeerbjudande:** varför kunderna väljer just er, i ett tydligt löfte.
+- **Fördel:** något ni har som inte lätt kan kopieras eller köpas, till exempel erfarenhet, nätverk eller förtroende.
+- **Kanaler:** hur ni når kunderna och levererar värdet.
+- **Kundsegment:** vilka som betalar, och vilka som gynnas om det inte är samma personer.
+- **Kostnader:** de viktigaste kostnaderna för att driva projektet.
+- **Intäkter:** hur pengarna kommer in, till exempel försäljning, bidrag, crowdfunding eller sponsring.
+
+## Impactmodellen
+
+Impact-rutan kan brytas ner i en egen **Impactmodell** (länk under canvasen). Där beskriver ni kedjan steg för steg: problemet ni tar er an, vilka som deltar, vad ni gör, vilka utfall det ger på kort, medellång och lång sikt, och till sist impact. Sista steget är samma ruta som Impact på canvasen, så de två visar alltid samma text.
 
 ## Redigera en ruta
 
-Varje ruta redigeras och sparas för sig via en egen **Redigera**-knapp — ni behöver alltså inte fylla i allt på en gång. Det är projektledare (grundare/admin) som kan redigera rutorna; övriga besökare och medlemmar ser innehållet som text, eller "Inte ifyllt än." om rutan är tom.
+Varje ruta redigeras och sparas för sig via en egen **Redigera**-knapp, så ni behöver inte fylla i allt på en gång. Det är projektledare (grundare/admin) som kan redigera rutorna. Övriga besökare och medlemmar ser innehållet som text. Alla ändringar sparas i en historik som ni når via **Historik** uppe till höger.
 
 ## Kommentera
 
-Under rutorna finns en gemensam kommentarstråd för hela canvasen (inte en per ruta). Alla riktiga projektmedlemmar — det vill säga alla roller utom följare — kan skriva kommentarer, och kan ta bort sina egna. Om en kommentar är olämplig går den att flagga för granskning.
+Under rutorna finns en gemensam kommentarstråd för hela canvasen. Alla riktiga projektmedlemmar, det vill säga alla roller utom följare, kan skriva kommentarer och ta bort sina egna. Om en kommentar är olämplig går den att flagga för granskning.
+
+## Om ni hade en Lean Canvas sedan tidigare
+
+Projekt som började med den äldre Lean Canvas har kvar texten i rutorna Problem, Alternativ, Tidiga användare och Koncept. Den visas skrivskyddad under canvasen, i rutan **Från er tidigare Lean Canvas**. Flytta över det som är relevant: problemet passar ofta i Impactmodellens första steg eller i Jobs to be done, och koncept-pitchen kan vässa ert värdeerbjudande.
 
 ## Bra att veta
 
-- Det är helt okej att lämna rutor tomma till att börja med och fylla i dem allt eftersom — canvasen är tänkt att uppdateras i takt med att ni lär er mer om er egen idé.
-- Eftersom varje ruta sparas för sig kan ni jobba på olika delar av canvasen vid olika tillfällen utan att riskera att skriva över varandras text.` },
+- Det är helt okej att lämna rutor tomma till att börja med och fylla i dem allt eftersom. Canvasen är tänkt att uppdateras i takt med att ni lär er mer.
+- Börja gärna med Syfte och Kundsegment. De två styr nästan allt annat.
+- Social Lean Canvas skapades av Rowan Yeoman, Dave Moskovitz och Ākina Foundation och delas under licensen CC BY-SA 3.0. Mer finns på socialleancanvas.com.` },
   ];
   const guides = {};
   for (const g of guideDefs) {

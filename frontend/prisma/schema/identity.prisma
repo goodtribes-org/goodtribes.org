@@ -108,6 +108,7 @@ model User {
   orgEthicsReviews        OrganisationEthicsReview[] @relation("OrgEthicsReviewer")
   orgReviewsAuthored      OrganisationReview[]       @relation("OrgReviewAuthor")
   leanCanvasEdits         LeanCanvas[]               @relation("LeanCanvasUpdatedBy")
+  impactModelEdits        ImpactModel[]              @relation("ImpactModelUpdatedBy")
   leanCanvasComments      LeanCanvasComment[]        @relation("LeanCanvasCommentAuthor")
   leanCanvasVersionsSaved LeanCanvasVersion[]        @relation("LeanCanvasVersionSavedBy")
   leanCanvasDrafts        LeanCanvasDraft[]          @relation("LeanCanvasDraftOwner")
