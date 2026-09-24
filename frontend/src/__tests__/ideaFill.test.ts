@@ -8,6 +8,7 @@ import {
   coerceBasics,
   coerceMarketScan,
   coerceProposals,
+  impactModelContext,
   interviewGuideHtml,
   isFillInProgress,
   parseFillStatus,
@@ -116,5 +117,26 @@ describe("interviewGuideHtml markdown", () => {
     expect(html).toContain("<strong>Skolkökspersonal</strong>");
     expect(html).toContain("&lt;b&gt;familjer&lt;/b&gt;");
     expect(html).not.toContain("**");
+  });
+});
+
+describe("impactModelContext", () => {
+  it("adds the canvas text the chain builds on, skipping empty fields", () => {
+    const c = impactModelContext("Projekt: X", { purpose: "Rena stränder", impact: " Mindre plast ", solution: "", problem: "Plast ökar" });
+    expect(c).toContain("Projekt: X");
+    expect(c).toContain("- Syfte: Rena stränder");
+    expect(c).toContain("- Impact (kedjans slutpunkt): Mindre plast");
+    expect(c).toContain("- Problem (från tidigare Lean Canvas): Plast ökar");
+    expect(c).not.toContain("Lösning");
+  });
+
+  it("is just the base when there's no canvas yet", () => {
+    expect(impactModelContext("Projekt: X", null)).toBe("Projekt: X");
+  });
+});
+
+describe("parseFillStatus", () => {
+  it("knows the impact model section", () => {
+    expect(parseFillStatus({ impactModel: "running" })).toEqual({ impactModel: "running" });
   });
 });

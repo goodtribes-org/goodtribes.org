@@ -22,7 +22,7 @@ import { VALUE_PROPOSITION_BLOCKS, VALUE_PROPOSITION_FIELDS } from "../value-pro
 import { advanceProjectPhase } from "../edit/actions";
 import { draftText, normalizeContentLocale } from "@/lib/aiLanguage";
 
-const RETRYABLE: readonly FillSection[] = ["leanCanvas", "valueProposition", "marketScan", "interviewGuide", "critique"];
+const RETRYABLE: readonly FillSection[] = ["leanCanvas", "impactModel", "valueProposition", "marketScan", "interviewGuide", "critique"];
 
 // "Försök igen" for a section the AI couldn't fill (failed, or cut short).
 // Same background fill as after the conversation, for just that section.

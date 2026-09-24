@@ -15,9 +15,14 @@ export type CanvasAiContext = {
   aiAvailable: boolean;
 };
 
-const STEP_FOR: Record<"leanCanvas" | "valueProposition", string> = {
+export type CanvasAiEntity = "leanCanvas" | "valueProposition" | "impactModel";
+
+// The impact model has no checklist step of its own: it breaks down the
+// canvas's Impact block, so it follows the canvas step's AI mode.
+const STEP_FOR: Record<CanvasAiEntity, string> = {
   leanCanvas: "lean_canvas_created",
   valueProposition: "value_proposition_created",
+  impactModel: "lean_canvas_created",
 };
 
 // Everything a canvas view needs for its AI features (vet/antar marking,
@@ -26,7 +31,7 @@ const STEP_FOR: Record<"leanCanvas" | "valueProposition", string> = {
 // ai-project-start flag.
 export async function getCanvasAiContext(
   projectId: string,
-  entity: "leanCanvas" | "valueProposition",
+  entity: CanvasAiEntity,
 ): Promise<CanvasAiContext> {
   const stepKey = STEP_FOR[entity];
   const [provenance, suggestions, resolved] = await Promise.all([

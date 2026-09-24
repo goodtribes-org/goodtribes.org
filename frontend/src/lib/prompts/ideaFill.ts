@@ -82,6 +82,32 @@ export const LEAN_CANVAS_TOOL = {
   },
 };
 
+// ─── Impactmodell ───────────────────────────────────────────────────────────
+
+export const IMPACT_MODEL_SYSTEM_PROMPT = `Fyll i en impactmodell (Social Lean Canvas, socialleancanvas.com) för ett socialt projekt på GoodTribes.org. Impactmodellen är projektets förändringsteori: en kedja från problemet projektet tar sig an, via deltagare och aktiviteter, till utfall på kort, medellång och lång sikt. Kedjan slutar i canvasens Impact-ruta, som redan finns och inte ska fyllas i här. Varje steg ska leda logiskt till nästa. Det är ett första utkast som initiativtagaren granskar.
+
+${SHARED_RULES}
+- Utfall beskriver förändring hos människor eller i samhället, inte vad projektet producerar. "30 städdagar" är en aktivitet, "elever vet var plasten kommer ifrån" är ett utfall.
+- Lova inga siffror eller effekter som inte nämnts. Skriv hellre vad som behöver mätas.
+
+Svara genom verktyget "impactmodell".`;
+
+export const IMPACT_MODEL_TOOL = {
+  name: "impactmodell",
+  description: "Impactmodellens steg.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      issue: field("Problemet: samhällsproblemet projektet tar sig an."),
+      participants: field("Deltagarna: vilka som är med, t.ex. målgrupper, volontärer och partner."),
+      activities: field("Aktiviteterna: vad projektet gör tillsammans med deltagarna."),
+      shortTermOutcomes: field("Kortsiktiga utfall: direkta förändringar i kunskap, attityder eller färdigheter."),
+      mediumTermOutcomes: field("Medellånga utfall: förändrat beteende och nya vanor."),
+      longTermOutcomes: field("Långsiktiga utfall: bestående förändring i människors liv eller villkor."),
+    },
+  },
+};
+
 // ─── Värdeerbjudande ────────────────────────────────────────────────────────
 
 export const VALUE_PROPOSITION_SYSTEM_PROMPT = `Fyll i en värdeerbjudande-canvas (kundprofil och värdekarta) för ett socialt projekt på GoodTribes.org utifrån Drömsamtalet och projektbeskrivningen. Utgå från den primära målgruppen. Det är ett första utkast som initiativtagaren granskar.

@@ -3916,7 +3916,8 @@
     "genericError": "Something went wrong — try again.",
     "gateHeading": "Phase gate: ready for Start-up?",
     "gateClosed": "The Idea phase was closed on {date} with the decision to move on.",
-    "gateClosedLink": "To Start-up →"
+    "gateClosedLink": "To Start-up →",
+    "impactModelHeading": "Impact model"
   },
   "PhaseGate": {
     "intro": "The Idea phase is done when you know enough to start testing the solution. Here you see what's done, what the evidence says — and you make the call. You can move on even if something is missing; it's just noted.",
@@ -4321,6 +4322,12 @@
     "hintImpact": "The measurable change in the world",
     "legacyProblem": "From your earlier Lean Canvas",
     "impactShared": "Impact is the same block as on the canvas.",
-    "canvasLink": "View Social Lean Canvas →"
+    "canvasLink": "View Social Lean Canvas →",
+    "aiFill": "Let the AI fill in the impact model",
+    "aiSuggest": "Let the AI suggest an impact model",
+    "aiWorking": "The AI is thinking…",
+    "aiDoneWritten": "The AI filled in {count, plural, one {# step} other {# steps}}. Review and change freely.",
+    "aiDoneSuggested": "The AI put {count, plural, one {a suggestion} other {# suggestions}} next to the steps. You choose what to use.",
+    "aiDoneBoth": "The AI filled in {written} empty steps and put {suggested} suggestions next to steps that already had text."
   }
 }

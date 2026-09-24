@@ -11,7 +11,7 @@ import { LEAN_CANVAS_BLOCKS, LEAN_CANVAS_FIELDS, LEAN_CANVAS_STORED_FIELDS } fro
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
 import { CANVAS_REVIEW_SYSTEM_PROMPT, CANVAS_REVIEW_TOOL } from "@/lib/prompts/canvasReview";
 
-type CanvasEntity = "leanCanvas" | "valueProposition";
+type CanvasEntity = "leanCanvas" | "valueProposition" | "impactModel";
 
 async function requireLeadFor(projectId: string): Promise<string> {
   const session = await auth();
@@ -26,7 +26,7 @@ async function loadSuggestion(id: string) {
     include: { project: { select: { id: true, slug: true } } },
   });
   if (!suggestion || suggestion.status !== "pending") throw new Error("Förslaget finns inte längre");
-  if (suggestion.entity !== "leanCanvas" && suggestion.entity !== "valueProposition") throw new Error("Okänt fält");
+  if (!["leanCanvas", "valueProposition", "impactModel"].includes(suggestion.entity)) throw new Error("Okänt fält");
   return suggestion as typeof suggestion & { entity: CanvasEntity };
 }
 
@@ -48,6 +48,8 @@ export async function applyAiSuggestion(id: string) {
     await prisma.leanCanvasVersion.create({
       data: { projectSlug: slug, savedById: userId, ...Object.fromEntries(LEAN_CANVAS_STORED_FIELDS.map((f) => [f, canvas[f]])) },
     });
+  } else if (s.entity === "impactModel") {
+    await prisma.impactModel.upsert({ where: { projectSlug: slug }, create: { projectSlug: slug, ...data }, update: data });
   } else {
     const canvas = await prisma.valueProposition.upsert({ where: { projectSlug: slug }, create: { projectSlug: slug, ...data }, update: data });
     await prisma.valuePropositionVersion.create({

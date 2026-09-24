@@ -18,6 +18,7 @@ export type AiFeature =
   | "sandbox-seed"
   | "dream-conversation"
   | "canvas-review"
+  | "impact-model"
   | "critique";
 
 // What kind of help the call gives, which decides which modes allow it:

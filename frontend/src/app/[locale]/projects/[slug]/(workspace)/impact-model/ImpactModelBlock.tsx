@@ -2,6 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import FieldProvenanceBadge from "@/components/ai/FieldProvenanceBadge";
+import AiSuggestionBox from "@/components/ai/AiSuggestionBox";
+import { markAiSuggestionPartlyUsed } from "@/lib/actions/aiSuggestions";
+import type { ProvenanceInfo } from "@/lib/fieldProvenance";
 import { updateImpactModelBlock } from "./actions";
 import type { ImpactModelField } from "./fields";
 
@@ -14,17 +18,23 @@ interface Props {
   canEdit: boolean;
   // Text from the earlier Lean Canvas worth moving here (the Problem block → Issue).
   legacy?: { label: string; text: string };
+  // Same AI props as LeanCanvasBlock: undefined provenance hides vet/antar.
+  provenance?: ProvenanceInfo | null;
+  suggestion?: { id: string; content: string };
 }
 
-// Same edit-in-place pattern as LeanCanvasBlock, without the AI parts.
-export default function ImpactModelBlock({ projectSlug, field, label, hint, value, canEdit, legacy }: Props) {
+// Same edit-in-place pattern as LeanCanvasBlock.
+export default function ImpactModelBlock({ projectSlug, field, label, hint, value, canEdit, legacy, provenance, suggestion }: Props) {
   const t = useTranslations("LeanCanvasBlock");
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [draftFromSuggestion, setDraftFromSuggestion] = useState<string | null>(null);
 
   function handleSave(formData: FormData) {
     startTransition(async () => {
       await updateImpactModelBlock(projectSlug, field, formData);
+      if (draftFromSuggestion !== null && suggestion) await markAiSuggestionPartlyUsed(suggestion.id);
+      setDraftFromSuggestion(null);
       setEditing(false);
     });
   }
@@ -35,6 +45,18 @@ export default function ImpactModelBlock({ projectSlug, field, label, hint, valu
         <div>
           <h3 className="text-xs font-bold text-dark-slate uppercase tracking-wide">{label}</h3>
           <p className="text-[10px] text-dark-slate/40 leading-tight mt-0.5">{hint}</p>
+          {provenance !== undefined && (
+            <div className="mt-1">
+              <FieldProvenanceBadge
+                projectSlug={projectSlug}
+                entity="impactModel"
+                field={field}
+                info={provenance ?? undefined}
+                hasContent={!!value?.trim()}
+                canEdit={canEdit}
+              />
+            </div>
+          )}
         </div>
         {canEdit && !editing && (
           <button
@@ -50,7 +72,7 @@ export default function ImpactModelBlock({ projectSlug, field, label, hint, valu
         <form action={handleSave} className="flex-1 flex flex-col gap-2 mt-1">
           <textarea
             name="value"
-            defaultValue={value ?? ""}
+            defaultValue={draftFromSuggestion ?? value ?? ""}
             rows={5}
             autoFocus
             placeholder={hint}
@@ -66,7 +88,10 @@ export default function ImpactModelBlock({ projectSlug, field, label, hint, valu
             </button>
             <button
               type="button"
-              onClick={() => setEditing(false)}
+              onClick={() => {
+                setDraftFromSuggestion(null);
+                setEditing(false);
+              }}
               className="text-xs text-dark-slate/50 hover:text-dark-slate transition-colors"
             >
               {t("cancel")}
@@ -79,6 +104,16 @@ export default function ImpactModelBlock({ projectSlug, field, label, hint, valu
         <p className="text-xs text-dark-slate/30 italic mt-1 flex-1">
           {canEdit ? t("emptyEditable") : t("emptyReadOnly")}
         </p>
+      )}
+      {suggestion && !editing && (
+        <AiSuggestionBox
+          suggestion={suggestion}
+          canEdit={canEdit}
+          onUseParts={() => {
+            setDraftFromSuggestion(value ? `${value}\n\n${suggestion.content}` : suggestion.content);
+            setEditing(true);
+          }}
+        />
       )}
       {legacy && !value && !editing && (
         <div className="mt-2 border-t border-dashed border-dark-slate/15 pt-2">
