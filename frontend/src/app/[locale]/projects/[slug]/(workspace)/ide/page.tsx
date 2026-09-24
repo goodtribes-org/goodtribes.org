@@ -39,16 +39,18 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
   const { locale, slug } = await params;
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  if (!(await isFeatureEnabled("ai-project-start", session.user.id))) redirect(`/projects/${slug}/guide`);
-
-  const project = await prisma.project.findUnique({
+  const [journeyOn, project] = await Promise.all([
+    isFeatureEnabled("ai-project-start", session.user.id),
+    prisma.project.findUnique({
     where: { slug },
     select: {
       id: true, phase: true, title: true, summary: true, description: true, category: true, tags: true, sdgGoals: true,
       leanCanvas: true, valueProposition: true,
       dreamConversation: { select: { fillStatus: true, openQuestions: true, updatedAt: true } },
     },
-  });
+    }),
+  ]);
+  if (!journeyOn) redirect(`/projects/${slug}/guide`);
   if (!project) notFound();
 
   const [

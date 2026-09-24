@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import type { SiteRole, ProjectRole } from "@prisma/client";
@@ -15,15 +16,15 @@ export function isLeadRole(role: string | null | undefined): boolean {
   return !!role && (PROJECT_LEAD_ROLES as readonly string[]).includes(role);
 }
 
-export async function getProjectRole(
-  projectId: string,
-  userId: string
-): Promise<ProjectRole | null> {
+// Memoized per request (React cache): a page, its layout and the helpers
+// they call all ask for the same role — one query instead of several.
+// Outside a React render (e.g. plain scripts) it's just the function.
+export const getProjectRole = cache(async (projectId: string, userId: string): Promise<ProjectRole | null> => {
   const member = await prisma.projectMember.findUnique({
     where: { projectId_userId: { projectId, userId } },
   });
   return (member?.role as ProjectRole | undefined) ?? null;
-}
+});
 
 export async function hasProjectRole(
   projectId: string,
@@ -61,10 +62,11 @@ export function isSiteOwnerRole(siteRole: SiteRole | null | undefined): boolean 
 
 // Re-fetches the User row rather than trusting a possibly-stale session —
 // prefer this over session.user.siteRole for anything destructive.
-export async function isSiteAdmin(userId: string): Promise<boolean> {
+// Memoized per request, same as getProjectRole.
+export const isSiteAdmin = cache(async (userId: string): Promise<boolean> => {
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { siteRole: true } });
   return isSiteAdminRole(user?.siteRole);
-}
+});
 
 export async function isSiteOwner(userId: string): Promise<boolean> {
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { siteRole: true } });

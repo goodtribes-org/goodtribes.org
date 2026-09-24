@@ -40,9 +40,11 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
   const { locale, slug } = await params;
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  if (!(await isFeatureEnabled("ai-project-start", session.user.id))) redirect(`/projects/${slug}/guide/production`);
-
-  const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true } });
+  const [journeyOn, project] = await Promise.all([
+    isFeatureEnabled("ai-project-start", session.user.id),
+    prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true } }),
+  ]);
+  if (!journeyOn) redirect(`/projects/${slug}/guide/production`);
   if (!project) notFound();
 
   const [t, tCheck, canEdit, canLog, aiAvailable, fillRow, brief, decision, done, evaluation, pilotPlan, workflows, metrics, launch, cards, openCardCount, tGate, isFounder, gate, gateBrief, gateDecision] =

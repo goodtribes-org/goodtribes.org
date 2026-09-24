@@ -42,9 +42,11 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
   const { locale, slug } = await params;
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  if (!(await isFeatureEnabled("ai-project-start", session.user.id))) redirect(`/projects/${slug}/guide/pilot`);
-
-  const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true, title: true } });
+  const [journeyOn, project] = await Promise.all([
+    isFeatureEnabled("ai-project-start", session.user.id),
+    prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true, title: true } }),
+  ]);
+  if (!journeyOn) redirect(`/projects/${slug}/guide/pilot`);
   if (!project) notFound();
 
   const [t, tCheck, canEdit, aiAvailable, fillRow, brief, decision, done, roles, members, sprint, sprintPlan, cards, openCardCount, plan, tGate, tLc, tVp, isFounder, gate, gateBrief, gateDecision] =

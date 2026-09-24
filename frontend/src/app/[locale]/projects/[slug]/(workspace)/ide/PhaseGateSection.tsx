@@ -92,8 +92,9 @@ export default function PhaseGateSection({
       }
       setChoice(null);
       setNote("");
-      if (res.next) router.push(res.next);
-      else router.refresh();
+      // Inside a transition, so the button keeps showing "Sparar …" until
+      // the next phase's page is actually there.
+      startTransition(() => (res.next ? router.push(res.next) : router.refresh()));
     });
   }
 
