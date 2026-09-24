@@ -10,6 +10,7 @@ import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { getFieldProvenance, recordAiWrite } from "@/lib/fieldProvenance";
 import { createAiSuggestion, decideAiPlacement } from "@/lib/aiSuggestions";
 import { runCritique } from "@/lib/ideaInsights";
+import { snapshotImpactModel } from "@/lib/impactModelVersions";
 import { LEAN_CANVAS_FIELDS, LEAN_CANVAS_STORED_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
 import { IMPACT_MODEL_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
@@ -305,8 +306,8 @@ export async function applyCanvas(
         const canvas = await tx.leanCanvas.upsert({ where: { projectSlug }, create: { projectSlug, ...data }, update: data });
         await tx.leanCanvasVersion.create({ data: { projectSlug, ...Object.fromEntries(fields.map((f) => [f, (canvas as Record<string, unknown>)[f]])) } });
       } else if (entity === "impactModel") {
-        // No version history for the impact model (see its schema comment).
         await tx.impactModel.upsert({ where: { projectSlug }, create: { projectSlug, ...data }, update: data });
+        await snapshotImpactModel(tx, projectSlug, null);
       } else {
         const canvas = await tx.valueProposition.upsert({ where: { projectSlug }, create: { projectSlug, ...data }, update: data });
         await tx.valuePropositionVersion.create({ data: { projectSlug, ...Object.fromEntries(fields.map((f) => [f, (canvas as Record<string, unknown>)[f]])) } });

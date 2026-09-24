@@ -13,6 +13,7 @@ import { getCanvasAiContext } from "@/lib/canvasAi";
 import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import ImpactModelChain from "./ImpactModelChain";
 import ImpactModelAiBar from "./ImpactModelAiBar";
+import ImpactModelHistory from "./ImpactModelHistory";
 
 export async function generateMetadata({
   params,
@@ -58,7 +59,7 @@ export default async function ImpactModelPage({
 
   return (
     <div>
-      <WorkspacePageHeader title={t("pageHeading")} help={t("helpText")} />
+      <WorkspacePageHeader title={t("pageHeading")} help={t("helpText")} action={<ImpactModelHistory projectSlug={slug} />} />
 
       {ai?.aiAvailable && <ImpactModelAiBar projectSlug={slug} stepKey={ai.stepKey} mode={ai.mode} canEdit={canEdit} />}
       <ImpactModelChain

@@ -5,6 +5,7 @@ import { getAiClientFor } from "@/lib/aiMode";
 import { getFieldProvenance } from "@/lib/fieldProvenance";
 import { LEAN_CANVAS_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
+import { IMPACT_MODEL_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
 import {
   CRITIQUE_SYSTEM_PROMPT,
   CRITIQUE_TOOL,
@@ -20,11 +21,14 @@ const REQUEST_OPTIONS = { timeout: 90_000, maxRetries: 1 };
 export const CANVAS_FIELD_KEYS: readonly string[] = [
   ...LEAN_CANVAS_FIELDS.map((f) => `leanCanvas.${f}`),
   ...VALUE_PROPOSITION_FIELDS.map((f) => `valueProposition.${f}`),
+  ...IMPACT_MODEL_FIELDS.map((f) => `impactModel.${f}`),
 ];
 
-export function splitFieldKey(key: string): { entity: "leanCanvas" | "valueProposition"; field: string } | null {
+export type CanvasFieldEntity = "leanCanvas" | "valueProposition" | "impactModel";
+
+export function splitFieldKey(key: string): { entity: CanvasFieldEntity; field: string } | null {
   const [entity, field] = key.split(".");
-  if ((entity === "leanCanvas" || entity === "valueProposition") && field && CANVAS_FIELD_KEYS.includes(key)) {
+  if ((entity === "leanCanvas" || entity === "valueProposition" || entity === "impactModel") && field && CANVAS_FIELD_KEYS.includes(key)) {
     return { entity, field };
   }
   return null;
@@ -122,7 +126,7 @@ export async function runCritique(projectId: string, userId: string | null): Pro
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     select: {
-      title: true, summary: true, description: true, slug: true, leanCanvas: true, valueProposition: true,
+      title: true, summary: true, description: true, slug: true, leanCanvas: true, valueProposition: true, impactModel: true,
       marketScanEntries: { select: { name: true, type: true, description: true } },
     },
   });
@@ -130,7 +134,8 @@ export async function runCritique(projectId: string, userId: string | null): Pro
 
   const content =
     `Projekt: ${project.title}\nSammanfattning: ${project.summary ?? ""}\nBeskrivning: ${(project.description ?? "").replace(/<[^>]*>/g, " ")}\n\n` +
-    `Lean Canvas:\n${canvasText("leanCanvas", project.leanCanvas as Record<string, unknown> | null, LEAN_CANVAS_FIELDS)}\n\n` +
+    `Social Lean Canvas:\n${canvasText("leanCanvas", project.leanCanvas as Record<string, unknown> | null, LEAN_CANVAS_FIELDS)}\n\n` +
+    `Impactmodell (förändringsteorin bakom leanCanvas.impact):\n${canvasText("impactModel", project.impactModel as Record<string, unknown> | null, IMPACT_MODEL_FIELDS)}\n\n` +
     `Värdeerbjudande:\n${canvasText("valueProposition", project.valueProposition as Record<string, unknown> | null, VALUE_PROPOSITION_FIELDS)}\n\n` +
     `Omvärldsbevakning:\n${project.marketScanEntries.map((e) => `- ${e.name} (${e.type}): ${e.description}`).join("\n") || "(inget)"}`;
 
@@ -143,11 +148,13 @@ export async function runCritique(projectId: string, userId: string | null): Pro
 // The canvas fields still marked as assumptions (ANTAR, or never marked —
 // untouched text counts as an assumption) that have content.
 export async function currentAssumptions(projectId: string, slug: string): Promise<{ key: string; text: string }[]> {
-  const [lc, vp, lcProv, vpProv] = await Promise.all([
+  const [lc, vp, im, lcProv, vpProv, imProv] = await Promise.all([
     prisma.leanCanvas.findUnique({ where: { projectSlug: slug } }),
     prisma.valueProposition.findUnique({ where: { projectSlug: slug } }),
+    prisma.impactModel.findUnique({ where: { projectSlug: slug } }),
     getFieldProvenance(projectId, "leanCanvas"),
     getFieldProvenance(projectId, "valueProposition"),
+    getFieldProvenance(projectId, "impactModel"),
   ]);
   const out: { key: string; text: string }[] = [];
   for (const f of LEAN_CANVAS_FIELDS) {
@@ -157,6 +164,10 @@ export async function currentAssumptions(projectId: string, slug: string): Promi
   for (const f of VALUE_PROPOSITION_FIELDS) {
     const text = str((vp as Record<string, unknown> | null)?.[f]);
     if (text && vpProv[f]?.status !== "VET") out.push({ key: `valueProposition.${f}`, text });
+  }
+  for (const f of IMPACT_MODEL_FIELDS) {
+    const text = str((im as Record<string, unknown> | null)?.[f]);
+    if (text && imProv[f]?.status !== "VET") out.push({ key: `impactModel.${f}`, text });
   }
   return out;
 }

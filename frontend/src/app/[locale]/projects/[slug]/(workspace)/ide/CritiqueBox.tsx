@@ -45,7 +45,8 @@ export default function CritiqueBox({
     });
   }
 
-  const anchor = (field: string | null) => (field?.startsWith("valueProposition.") ? "#vardeerbjudande" : "#lean-canvas");
+  const anchor = (field: string | null) =>
+    field?.startsWith("valueProposition.") ? "#vardeerbjudande" : field?.startsWith("impactModel.") ? "#impactmodell" : "#lean-canvas";
 
   return (
     <section aria-labelledby="critique-heading" className="rounded-2xl border border-watermelon/30 bg-watermelon/5 p-5">

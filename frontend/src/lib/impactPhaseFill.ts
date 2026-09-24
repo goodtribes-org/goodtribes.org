@@ -20,6 +20,7 @@ import {
   wikiPageExists,
   type PhaseFillState,
 } from "@/lib/phaseFill";
+import { IMPACT_MODEL_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
 import {
   CELEBRATION_SYSTEM_PROMPT,
   IMPACT_SUMMARY_SYSTEM_PROMPT,
@@ -98,8 +99,17 @@ export const FOLLOWUP_FIELDS = ["externalVerificationNotes", "celebrationNotes"]
 
 const strip = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
+// The team's theory of change from the Idé phase — what they planned to
+// achieve, as a yardstick for what was actually reported. A plan, never a
+// result (the prompt says so too).
+export function impactModelPlanText(model: Record<string, unknown> | null): string {
+  const lines = IMPACT_MODEL_FIELDS.map((f) => [f, typeof model?.[f] === "string" ? (model[f] as string).trim() : ""] as const).filter(([, v]) => v);
+  if (!lines.length) return "";
+  return `Impactmodellen (teamets plan, INTE resultat):\n${lines.map(([f, v]) => `${f}: ${v}`).join("\n")}`;
+}
+
 async function buildContext(projectId: string, slug: string): Promise<string> {
-  const [project, metrics, reports, brief, plan, instances, forks, launch, playbook] = await Promise.all([
+  const [project, metrics, reports, brief, plan, instances, forks, launch, playbook, impactModel] = await Promise.all([
     prisma.project.findUnique({ where: { id: projectId }, select: { title: true, summary: true, sdgGoals: true, openForReplication: true } }),
     prisma.impactMetric.findMany({
       where: { projectSlug: slug },
@@ -115,6 +125,7 @@ async function buildContext(projectId: string, slug: string): Promise<string> {
     prisma.project.count({ where: { forkedFromProjectId: projectId } }),
     prisma.launchPlan.findUnique({ where: { projectSlug: slug }, select: { channels: { select: { name: true } } } }),
     prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "playbook" } }, select: { content: true } }),
+    prisma.impactModel.findUnique({ where: { projectSlug: slug } }),
   ]);
   const day = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : "?");
   return [
@@ -124,6 +135,7 @@ async function buildContext(projectId: string, slug: string): Promise<string> {
         .map((m) => `${m.label}: ${m.currentValue} ${m.unit}${m.targetValue ? ` (mål ${m.targetValue})` : ""}${m.updates.length ? ` — ${m.updates.map((u) => `${day(u.createdAt)} ${u.value}`).join(", ")}` : " — inte rapporterat"}`)
         .join("\n") || "(inga)"
     }`,
+    impactModelPlanText(impactModel),
     `Impactrapporter:\n${
       reports
         .map(

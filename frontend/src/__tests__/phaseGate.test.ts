@@ -18,13 +18,13 @@ describe("coerceGateBrief", () => {
     const b = coerceGateBrief({
       believed: ["Skolkök slänger mat", ""],
       learned: ["Köken vill ha hjälp"],
-      held: ["leanCanvas.jobsToBeDone", "leanCanvas.channels", "leanCanvas.notAField"],
+      held: ["leanCanvas.jobsToBeDone", "leanCanvas.channels", "leanCanvas.notAField", "impactModel.shortTermOutcomes"],
       fell: ["leanCanvas.channels", "valueProposition.vpPains", "nope"],
       recommendation: "pivot",
       reasons: ["Kanalen föll"],
       next_focus: ["Testa hämtning"],
     });
-    expect(b.held).toEqual(["leanCanvas.jobsToBeDone"]);
+    expect(b.held).toEqual(["leanCanvas.jobsToBeDone", "impactModel.shortTermOutcomes"]);
     expect(b.fell).toEqual(["leanCanvas.channels", "valueProposition.vpPains"]);
     expect(b.believed).toEqual(["Skolkök slänger mat"]);
     expect(b.recommendation).toBe("pivot");

@@ -8,15 +8,13 @@ import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { startUppstartFill, UPPSTART_SECTIONS, type UppstartSection } from "@/lib/uppstartFill";
 import type { PhaseGateOutcome } from "@prisma/client";
-import { getTranslations } from "next-intl/server";
+import { getCanvasFieldLabels } from "@/lib/canvasFieldLabels";
 import { logger } from "@/lib/logger";
 import { aiGateMessage, resolveAiMode, type AiGateBlockReason } from "@/lib/aiMode";
 import { startLanseringFill } from "@/lib/lanseringFill";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { InsightError, latestInsight } from "@/lib/ideaInsights";
 import { cardsForUppstartDecision, missingCriteria, runUppstartGateBrief, uppstartGateCriteria, type GateBrief } from "@/lib/phaseGate";
-import { LEAN_CANVAS_BLOCKS } from "../lean-canvas/fields";
-import { VALUE_PROPOSITION_BLOCKS } from "../value-proposition/fields";
 import { advanceProjectPhase } from "../edit/actions";
 import { draftText, normalizeContentLocale } from "@/lib/aiLanguage";
 import { successCriteriaText } from "@/lib/lanseringFill";
@@ -154,22 +152,14 @@ export async function decideUppstartGate(projectSlug: string, outcome: string, n
     : await hasProjectRole(project.id, userId, PROJECT_LEAD_ROLES);
   if (!allowed) return { error: decision === "PAUSE" ? "Bara grundaren kan pausa projektet" : "Forbidden" };
 
-  const [{ criteria }, brief, tLc, tVp, aiUser, evaluation] = await Promise.all([
+  const [{ criteria }, brief, fieldLabels, aiUser, evaluation] = await Promise.all([
     uppstartGateCriteria(project.id, project.slug),
     latestInsight<GateBrief>(project.id, "UPPSTART_GATE"),
-    getTranslations({ locale: normalizeContentLocale(project.contentLocale), namespace: "LeanCanvasHistory" }),
-    getTranslations({ locale: normalizeContentLocale(project.contentLocale), namespace: "ValuePropositionHistory" }),
+    getCanvasFieldLabels(normalizeContentLocale(project.contentLocale)),
     getAiParticipantUser(),
     prisma.pilotEvaluation.findUnique({ where: { projectSlug: project.slug }, select: { successCriteria: true } }),
   ]);
-  const labelFor = (key: string) => {
-    const [entity, field] = key.split(".");
-    const lc = LEAN_CANVAS_BLOCKS.find((b) => b.field === field);
-    const vp = VALUE_PROPOSITION_BLOCKS.find((b) => b.field === field);
-    if (entity === "leanCanvas" && lc) return tLc(`field${lc.translationKey}` as Parameters<typeof tLc>[0]);
-    if (entity === "valueProposition" && vp) return tVp(`field${vp.translationKey}` as Parameters<typeof tVp>[0]);
-    return key;
-  };
+  const labelFor = (key: string) => fieldLabels[key] ?? key;
   const t = draftText(project.contentLocale);
   const cards = cardsForUppstartDecision(decision, brief?.content ?? null, labelFor, t);
   const proposedCriteria = decision === "CONTINUE" && !evaluation?.successCriteria?.trim() ? brief?.content.successCriteria ?? [] : [];

@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { aiGateMessage, getAiClientFor } from "@/lib/aiMode";
 import { recordAiWrite } from "@/lib/fieldProvenance";
+import { snapshotImpactModel } from "@/lib/impactModelVersions";
 import { LEAN_CANVAS_BLOCKS, LEAN_CANVAS_FIELDS, LEAN_CANVAS_STORED_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
 import { CANVAS_REVIEW_SYSTEM_PROMPT, CANVAS_REVIEW_TOOL } from "@/lib/prompts/canvasReview";
@@ -50,6 +51,7 @@ export async function applyAiSuggestion(id: string) {
     });
   } else if (s.entity === "impactModel") {
     await prisma.impactModel.upsert({ where: { projectSlug: slug }, create: { projectSlug: slug, ...data }, update: data });
+    await snapshotImpactModel(prisma, slug, userId);
   } else {
     const canvas = await prisma.valueProposition.upsert({ where: { projectSlug: slug }, create: { projectSlug: slug, ...data }, update: data });
     await prisma.valuePropositionVersion.create({

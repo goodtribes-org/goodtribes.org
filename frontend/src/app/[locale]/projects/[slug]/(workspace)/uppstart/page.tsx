@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { getCanvasFieldLabels } from "@/lib/canvasFieldLabels";
 import type { Locale } from "next-intl";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -18,8 +19,6 @@ import { DraftCta, FieldGrid, FocusBox, GateClosed, OverviewHeader, TaskList, Wi
 import RolesSection from "./RolesSection";
 import DraftButton from "./DraftButton";
 import PhaseGateSection from "../ide/PhaseGateSection";
-import { LEAN_CANVAS_BLOCKS } from "../lean-canvas/fields";
-import { VALUE_PROPOSITION_BLOCKS } from "../value-proposition/fields";
 
 // Which section of this page each Uppstart checklist step lives in.
 const STEP_ANCHOR: Record<string, string> = {
@@ -48,7 +47,7 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
   if (!journeyOn) redirect(`/projects/${slug}/guide/pilot`);
   if (!project) notFound();
 
-  const [t, tCheck, canEdit, aiAvailable, fillRow, brief, decision, done, roles, members, sprint, sprintPlan, cards, openCardCount, plan, tGate, tLc, tVp, isFounder, gate, gateBrief, gateDecision] =
+  const [t, tCheck, canEdit, aiAvailable, fillRow, brief, decision, done, roles, members, sprint, sprintPlan, cards, openCardCount, plan, tGate, fieldLabels, isFounder, gate, gateBrief, gateDecision] =
     await Promise.all([
       getTranslations({ locale, namespace: "UppstartOverview" }),
       getTranslations({ locale, namespace: "ProjectPhaseChecklist" }),
@@ -83,8 +82,7 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
       prisma.kanbanCard.count({ where: { projectSlug: slug, column: { not: "DONE" } } }),
       prisma.projectPlan.findUnique({ where: { projectSlug: slug } }),
       getTranslations({ locale, namespace: "PhaseGate" }),
-      getTranslations({ locale, namespace: "LeanCanvasHistory" }),
-      getTranslations({ locale, namespace: "ValuePropositionHistory" }),
+      getCanvasFieldLabels(locale),
       hasProjectRole(project.id, session.user.id, ["FOUNDER"]),
       uppstartGateCriteria(project.id, slug),
       latestInsight<GateBrief>(project.id, "UPPSTART_GATE"),
@@ -103,12 +101,6 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
     if (!sprint) return doneKeys.has(SPRINT_STEP_KEYS[i]) ? "done" : "upcoming";
     if (sprint.status === "COMPLETED" || i < currentSprintIndex || doneKeys.has(SPRINT_STEP_KEYS[i])) return "done";
     return i === currentSprintIndex ? "current" : "upcoming";
-  };
-  const fieldLabels: Record<string, string> = {
-    ...Object.fromEntries(LEAN_CANVAS_BLOCKS.map((b) => [`leanCanvas.${b.field}`, tLc(`field${b.translationKey}` as Parameters<typeof tLc>[0])])),
-    ...Object.fromEntries(
-      VALUE_PROPOSITION_BLOCKS.map((b) => [`valueProposition.${b.field}`, tVp(`field${b.translationKey}` as Parameters<typeof tVp>[0])]),
-    ),
   };
   const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
   const decisionDate = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
