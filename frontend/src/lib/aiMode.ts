@@ -3,6 +3,7 @@ import type { AiMode, ProjectPhase } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { checkAiProjectBudget, checkAiRateLimit, createAnthropicClient, isAiEnabled } from "@/lib/anthropic";
 import { normalizeContentLocale, withLanguageClient } from "@/lib/aiLanguage";
+import { withUsageLogging } from "@/lib/aiUsage";
 import { isKnownAiToolKey, type AiToolKey } from "@/lib/aiToolKeys";
 import { toDisplayPhase } from "@/lib/projectPhase";
 
@@ -171,8 +172,9 @@ export async function getAiClientFor(req: AiGateRequest): Promise<AiGateResult> 
   if (req.userId && !(await checkAiRateLimit(req.userId))) return { ok: false, reason: "rate_limited", mode };
   if (req.projectId && !(await checkAiProjectBudget(req.projectId))) return { ok: false, reason: "budget_exceeded", mode };
 
-  const client = await createAnthropicClient();
-  if (!client) return { ok: false, reason: "not_configured" };
+  const raw = await createAnthropicClient();
+  if (!raw) return { ok: false, reason: "not_configured" };
+  const client = withUsageLogging(raw, { feature: req.feature, projectId: req.projectId });
   if (!req.language) return { ok: true, client, mode };
   const locale =
     req.language === "project"

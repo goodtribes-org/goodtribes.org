@@ -675,7 +675,7 @@ Verktygsfältet ovanför tavlan låter dig filtrera på kategori, prioritet och 
 
 - Att flytta ett kort till Klart som icke-ledare skickar det till Granskning — det är inte ett fel, utan tänkt att fungera som ett enkelt godkännandesteg.
 - Listvyns Klart-sektion är hopfälld i grunden, så tavlan inte känns rörig när ni kommit igång.` },
-    { title: "Så använder du Social Lean Canvas", category: "Projektledning", difficulty: "beginner", readTimeMinutes: 7, author: u.elin,
+    { title: "Så använder du Social Lean Canvas", category: "Projektledning", difficulty: "beginner", readTimeMinutes: 8, author: u.elin,
       body: `# Så använder du Social Lean Canvas
 
 Social Lean Canvas är projektets endasidiga affärsmodell, gjord för syftesdrivna projekt. Den hjälper er att se om idén håller både som verksamhet och som förändring i världen. Varje projekt på GoodTribes har sin egen canvas under **Verktyg → Social Lean Canvas**.
@@ -702,6 +702,15 @@ På datorn ligger rutorna som på originalet: Syfte och Impact överst, fem kolu
 - **Kostnader:** de viktigaste kostnaderna för att driva projektet.
 - **Intäkter:** hur pengarna kommer in, till exempel försäljning, bidrag, crowdfunding eller sponsring.
 
+## Kundmodellen
+
+Kundsidan av canvasen kan fördjupas i en egen **Kundmodell** (länk under canvasen). Där ligger Kundsegment, Jobs to be done, Unikt värdeerbjudande och Lösning, samma rutor som på canvasen, tillsammans med två rutor till:
+
+- **Tidiga användare:** de kunder som har behovet mest akut och vill vara med först.
+- **Befintliga alternativ:** hur kunderna får jobbet gjort idag, utan er.
+
+Det är ofta där en idé visar sig hålla eller inte. Finns det tidiga användare som verkligen vill ha lösningen, och är den bättre än det de redan gör?
+
 ## Impactmodellen
 
 Impact-rutan kan brytas ner i en egen **Impactmodell** (länk under canvasen). Där beskriver ni kedjan steg för steg: problemet ni tar er an, vilka som deltar, vad ni gör, vilka utfall det ger på kort, medellång och lång sikt, och till sist impact. Sista steget är samma ruta som Impact på canvasen, så de två visar alltid samma text.
@@ -716,7 +725,7 @@ Under rutorna finns en gemensam kommentarstråd för hela canvasen. Alla riktiga
 
 ## Om ni hade en Lean Canvas sedan tidigare
 
-Projekt som började med den äldre Lean Canvas har kvar texten i rutorna Problem, Alternativ, Tidiga användare och Koncept. Den visas skrivskyddad under canvasen, i rutan **Från er tidigare Lean Canvas**. Flytta över det som är relevant: problemet passar ofta i Impactmodellens första steg eller i Jobs to be done, och koncept-pitchen kan vässa ert värdeerbjudande.
+Projekt som började med den äldre Lean Canvas har kvar texten i rutorna Problem och Koncept. Den visas skrivskyddad under canvasen, i rutan **Från er tidigare Lean Canvas**. Flytta över det som är relevant: problemet passar ofta i Impactmodellens första steg eller i Jobs to be done, och koncept-pitchen kan vässa ert värdeerbjudande. Det ni skrev i Alternativ och Tidiga användare finns kvar och går att redigera i Kundmodellen.
 
 ## Bra att veta
 
