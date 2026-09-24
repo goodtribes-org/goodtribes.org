@@ -127,6 +127,7 @@ model Project {
   githubBoard        ProjectGithubBoard?  @relation("ProjectGithubBoard")
   leanCanvas         LeanCanvas?          @relation("ProjectLeanCanvas")
   impactModel        ImpactModel?         @relation("ProjectImpactModel")
+  impactModelVersions ImpactModelVersion[] @relation("ProjectImpactModelVersions")
   leanCanvasComments LeanCanvasComment[]  @relation("ProjectLeanCanvasComments")
   leanCanvasVersions LeanCanvasVersion[]  @relation("ProjectLeanCanvasVersions")
   projectPlan        ProjectPlan?         @relation("ProjectPlan")

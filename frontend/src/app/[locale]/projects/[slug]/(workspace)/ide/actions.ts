@@ -13,12 +13,13 @@ import { startUppstartFill } from "@/lib/uppstartFill";
 import { markChecklistDone } from "../../guide/actions";
 import { logger } from "@/lib/logger";
 import type { PhaseGateOutcome } from "@prisma/client";
-import { getTranslations } from "next-intl/server";
+import { getCanvasFieldLabels } from "@/lib/canvasFieldLabels";
+import { snapshotImpactModel } from "@/lib/impactModelVersions";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { cardsForDecision, ideaGateCriteria, missingCriteria, runGateBrief, type GateBrief } from "@/lib/phaseGate";
 import { latestInsight, type SynthesisContent } from "@/lib/ideaInsights";
-import { LEAN_CANVAS_BLOCKS, LEAN_CANVAS_STORED_FIELDS } from "../lean-canvas/fields";
-import { VALUE_PROPOSITION_BLOCKS, VALUE_PROPOSITION_FIELDS } from "../value-proposition/fields";
+import { LEAN_CANVAS_STORED_FIELDS } from "../lean-canvas/fields";
+import { VALUE_PROPOSITION_FIELDS } from "../value-proposition/fields";
 import { advanceProjectPhase } from "../edit/actions";
 import { draftText, normalizeContentLocale } from "@/lib/aiLanguage";
 
@@ -145,21 +146,13 @@ export async function decideIdeaGate(projectSlug: string, outcome: string, note:
   if (!allowed) return { error: decision === "PAUSE" ? "Bara grundaren kan pausa projektet" : "Forbidden" };
 
   const { criteria } = await ideaGateCriteria(project.id, project.slug);
-  const [synthesis, brief, tLc, tVp, aiUser] = await Promise.all([
+  const [synthesis, brief, fieldLabels, aiUser] = await Promise.all([
     latestInsight<SynthesisContent>(project.id, "INTERVIEW_SYNTHESIS"),
     latestInsight<GateBrief>(project.id, "PHASE_GATE"),
-    getTranslations({ locale: normalizeContentLocale(project.contentLocale), namespace: "LeanCanvasHistory" }),
-    getTranslations({ locale: normalizeContentLocale(project.contentLocale), namespace: "ValuePropositionHistory" }),
+    getCanvasFieldLabels(normalizeContentLocale(project.contentLocale)),
     getAiParticipantUser(),
   ]);
-  const labelFor = (key: string) => {
-    const [entity, field] = key.split(".");
-    const lc = LEAN_CANVAS_BLOCKS.find((b) => b.field === field);
-    const vp = VALUE_PROPOSITION_BLOCKS.find((b) => b.field === field);
-    if (entity === "leanCanvas" && lc) return tLc(`field${lc.translationKey}` as Parameters<typeof tLc>[0]);
-    if (entity === "valueProposition" && vp) return tVp(`field${vp.translationKey}` as Parameters<typeof tVp>[0]);
-    return key;
-  };
+  const labelFor = (key: string) => fieldLabels[key] ?? key;
   const cards = cardsForDecision(decision, synthesis?.content ?? null, brief?.content ?? null, labelFor, draftText(project.contentLocale));
 
   await prisma.$transaction(async (tx) => {
@@ -200,6 +193,7 @@ export async function decideIdeaGate(projectSlug: string, outcome: string, note:
           data: { projectSlug: project.slug, savedById: userId, ...Object.fromEntries(VALUE_PROPOSITION_FIELDS.map((f) => [f, vp[f] ?? null])) },
         });
       }
+      await snapshotImpactModel(tx, project.slug, userId);
     }
     if (decision === "PAUSE") {
       await tx.project.update({ where: { id: project.id }, data: { abandonedAt: new Date() } });

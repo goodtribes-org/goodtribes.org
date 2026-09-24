@@ -6,6 +6,7 @@ const SHARED_RULES = `Regler som alltid gäller:
 - Utgå bara från underlaget: impact-mätetalen med rapporterade värden, impactrapporterna (verifierade och inte), skalningsläget och tidigare beslutsunderlag. Hitta ALDRIG på resultat, siffror, verifierare eller organisationer.
 - Summera ALDRIG siffror från olika rapporter eller mätetal till en egen totalsiffra — en "total sedan start"-rapport överlappar periodrapporterna, och bidrag/stöd som projektet fått är inte impact det levererat. Återge siffrorna som de rapporterats.
 - Ett mätetal på 0 utan uppdateringar har bara inte rapporterats.
+- Impactmodellen är teamets plan (förändringsteori), inte resultat. Jämför gärna de planerade utfallen med det som rapporterats, men beskriv aldrig ett planerat utfall som uppnått.
 - Kort och konkret. Allt är utkast som teamet ändrar.`;
 
 const PHASE_CONTEXT = `Projektet är nu i Impact, den sista fasen: mäta och rapportera den faktiska påverkan på FN:s globala mål, få den externt verifierad, fira och synliggöra resultaten för community och finansiärer, och besluta om nästa steg — fortsätta, replikera eller avsluta ansvarsfullt. På GoodTribes verifieras en impactrapport av plattformens granskare mot ett underlag (t.ex. en årsrapport, en utvärdering eller ett dataset); bara verifierade rapporter visas publikt.`;
@@ -17,7 +18,7 @@ export const IMPACT_SUMMARY_SYSTEM_PROMPT = withRules(
 - summary: vad projektet gör och för vem, i 2–3 meningar.
 - results: en punkt per mätetal eller rapport — vad som uppnåtts, med siffran som den rapporterats, perioden om den finns, och om den är verifierad eller inte.
 - sdgs: vilka av FN:s globala mål resultaten bidrar till och hur (bara mål som stöds av levererade resultat, inte av stöd projektet fått).
-- gaps: vad som inte är mätt eller verifierat ännu (1–3 punkter).`,
+- gaps: vad som inte är mätt eller verifierat ännu (1–3 punkter), t.ex. utfall i impactmodellen som inget mätetal eller ingen rapport följer upp.`,
   "impactsammanfattning",
 );
 

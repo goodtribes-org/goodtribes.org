@@ -7,6 +7,7 @@ import { parseOpenQuestions } from "@/lib/dreamConversation";
 import { CANVAS_FIELD_KEYS, InsightError, latestInsight, type CritiqueContent, type SynthesisContent } from "@/lib/ideaInsights";
 import { LEAN_CANVAS_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
+import { IMPACT_MODEL_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
 import {
   ETABLERA_GATE_SYSTEM_PROMPT,
   ETABLERA_GATE_TOOL,
@@ -127,13 +128,14 @@ export async function runGateBrief(projectId: string, slug: string, userId: stri
   const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId, language: "project" });
   if (!gate.ok) throw new InsightError(gate.reason);
 
-  const [project, lcProv, vpProv, synthesis, critique, { interviewCount }] = await Promise.all([
+  const [project, lcProv, vpProv, imProv, synthesis, critique, { interviewCount }] = await Promise.all([
     prisma.project.findUnique({
       where: { id: projectId },
-      select: { title: true, summary: true, leanCanvas: true, valueProposition: true, dreamConversation: { select: { openQuestions: true } } },
+      select: { title: true, summary: true, leanCanvas: true, valueProposition: true, impactModel: true, dreamConversation: { select: { openQuestions: true } } },
     }),
     getFieldProvenance(projectId, "leanCanvas"),
     getFieldProvenance(projectId, "valueProposition"),
+    getFieldProvenance(projectId, "impactModel"),
     latestInsight<SynthesisContent>(projectId, "INTERVIEW_SYNTHESIS"),
     latestInsight<CritiqueContent>(projectId, "CRITIQUE"),
     ideaGateCriteria(projectId, slug),
@@ -149,7 +151,7 @@ export async function runGateBrief(projectId: string, slug: string, userId: stri
   const content = [
     `Projekt: ${project.title} — ${project.summary ?? ""}`,
     `Antal loggade intervjuer: ${interviewCount}`,
-    `Canvasfält:\n${fieldLines("leanCanvas", project.leanCanvas as Record<string, unknown> | null, LEAN_CANVAS_FIELDS, lcProv)}\n${fieldLines("valueProposition", project.valueProposition as Record<string, unknown> | null, VALUE_PROPOSITION_FIELDS, vpProv)}`,
+    `Canvasfält:\n${fieldLines("leanCanvas", project.leanCanvas as Record<string, unknown> | null, LEAN_CANVAS_FIELDS, lcProv)}\n${fieldLines("valueProposition", project.valueProposition as Record<string, unknown> | null, VALUE_PROPOSITION_FIELDS, vpProv)}\n${fieldLines("impactModel", project.impactModel as Record<string, unknown> | null, IMPACT_MODEL_FIELDS, imProv)}`,
     synthesis
       ? `Intervjusammanfattning (${synthesis.content.interviewCount} intervjuer):\nLärdomar: ${synthesis.content.learnings.join(" | ")}\nUtlåtanden: ${synthesis.content.verdicts.map((v) => `${v.field}=${v.verdict} (${v.reason})`).join(" | ")}`
       : "Ingen intervjusammanfattning finns.",

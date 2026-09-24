@@ -67,7 +67,8 @@ export default function InterviewSynthesisPanel({
     });
   }
 
-  const anchor = (key: string) => (key.startsWith("valueProposition.") ? "#vardeerbjudande" : "#lean-canvas");
+  const anchor = (key: string) =>
+    key.startsWith("valueProposition.") ? "#vardeerbjudande" : key.startsWith("impactModel.") ? "#impactmodell" : "#lean-canvas";
   const newSinceSynthesis = synthesis ? interviewCount - synthesis.interviewCount : 0;
 
   return (

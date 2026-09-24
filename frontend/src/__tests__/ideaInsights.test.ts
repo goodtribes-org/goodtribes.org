@@ -53,6 +53,8 @@ describe("splitFieldKey", () => {
   it("accepts only real canvas fields", () => {
     expect(splitFieldKey("leanCanvas.jobsToBeDone")).toEqual({ entity: "leanCanvas", field: "jobsToBeDone" });
     expect(splitFieldKey("leanCanvas.problem")).toBeNull();
+    expect(splitFieldKey("impactModel.longTermOutcomes")).toEqual({ entity: "impactModel", field: "longTermOutcomes" });
+    expect(splitFieldKey("impactModel.impact")).toBeNull();
     expect(splitFieldKey("valueProposition.vpGains")).toEqual({ entity: "valueProposition", field: "vpGains" });
     expect(splitFieldKey("project.title")).toBeNull();
     expect(splitFieldKey("leanCanvas.nope")).toBeNull();

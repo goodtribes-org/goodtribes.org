@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { getCanvasFieldLabels } from "@/lib/canvasFieldLabels";
 import type { Locale } from "next-intl";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -29,8 +30,6 @@ import PhaseGateSection from "./PhaseGateSection";
 import { ideaGateCriteria, type GateBrief } from "@/lib/phaseGate";
 import { currentAssumptions, latestInsight, type CritiqueContent, type SynthesisContent } from "@/lib/ideaInsights";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
-import { LEAN_CANVAS_BLOCKS } from "../lean-canvas/fields";
-import { VALUE_PROPOSITION_BLOCKS } from "../value-proposition/fields";
 
 // The Idé phase on one page, top to bottom — what the AI produced after
 // Drömsamtalet (in AGENT mode), shown as plain content with vet/antar and an
@@ -55,12 +54,11 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
   if (!project) notFound();
 
   const [
-    t, tLc, tVp, canEdit, projectProv, leanCanvasAi, valuePropositionAi, marketScan, interviewGuide, interviews,
+    t, fieldLabels, canEdit, projectProv, leanCanvasAi, valuePropositionAi, marketScan, interviewGuide, interviews,
     critique, synthesis, assumptions, aiAvailable, tGate, tCheck, isFounder, gate, gateBrief, lastDecision, impactModelAi,
   ] = await Promise.all([
     getTranslations({ locale, namespace: "IdeaOverview" }),
-    getTranslations({ locale, namespace: "LeanCanvasHistory" }),
-    getTranslations({ locale, namespace: "ValuePropositionHistory" }),
+    getCanvasFieldLabels(locale),
     hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES),
     getFieldProvenance(project.id, "project"),
     getCanvasAiContext(project.id, "leanCanvas"),
@@ -84,14 +82,6 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
   const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
   const decisionDate = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
   const interviewCount = interviews.length;
-  const fieldLabels: Record<string, string> = {
-    ...Object.fromEntries(
-      LEAN_CANVAS_BLOCKS.map((b) => [`leanCanvas.${b.field}`, tLc(`field${b.translationKey}` as Parameters<typeof tLc>[0])]),
-    ),
-    ...Object.fromEntries(
-      VALUE_PROPOSITION_BLOCKS.map((b) => [`valueProposition.${b.field}`, tVp(`field${b.translationKey}` as Parameters<typeof tVp>[0])]),
-    ),
-  };
 
   const fill = project.dreamConversation
     ? withStaleAsFailed(parseFillStatus(project.dreamConversation.fillStatus), project.dreamConversation.updatedAt)

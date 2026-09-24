@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { IMPACT_MODEL_FIELDS, type ImpactModelField } from "./fields";
 import { recordHumanEdits } from "@/lib/fieldProvenance";
+import { snapshotImpactModel } from "@/lib/impactModelVersions";
 import { aiGateMessage, getAiClientFor } from "@/lib/aiMode";
 import { buildTranscript, fillImpactModel } from "@/lib/ideaFill";
 import { logger } from "@/lib/logger";
@@ -31,10 +32,19 @@ export async function updateImpactModelBlock(
     create: { projectSlug, [field]: value, updatedById: session.user.id },
     update: { [field]: value, updatedById: session.user.id },
   });
+  await snapshotImpactModel(prisma, projectSlug, session.user.id);
 
   await recordHumanEdits(project.id, "impactModel", before, { [field]: value }, session.user.id);
 
   revalidatePath(`/projects/${projectSlug}`, "layout");
+}
+
+export async function getImpactModelHistory(projectSlug: string) {
+  return prisma.impactModelVersion.findMany({
+    where: { projectSlug },
+    orderBy: { createdAt: "desc" },
+    include: { savedBy: { select: { name: true } } },
+  });
 }
 
 // "Låt AI:n föreslå en impactmodell": for projects that didn't get one from

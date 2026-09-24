@@ -16,6 +16,7 @@ import { getFieldProvenance } from "@/lib/fieldProvenance";
 import { latestInsight, type SynthesisContent } from "@/lib/ideaInsights";
 import type { GateBrief } from "@/lib/phaseGate";
 import { LEAN_CANVAS_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
+import { IMPACT_MODEL_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
 import {
   PLAN_SYSTEM_PROMPT,
@@ -128,16 +129,17 @@ export function planFieldsToWrite(current: Partial<Record<(typeof PLAN_FIELDS)[n
 // ─── Context ────────────────────────────────────────────────────────────────
 
 async function buildContext(projectId: string, slug: string): Promise<string> {
-  const [project, lcProv, vpProv, brief, synthesis, decision] = await Promise.all([
+  const [project, lcProv, vpProv, imProv, brief, synthesis, decision] = await Promise.all([
     prisma.project.findUnique({
       where: { id: projectId },
       select: {
-        title: true, summary: true, description: true, leanCanvas: true, valueProposition: true,
+        title: true, summary: true, description: true, leanCanvas: true, valueProposition: true, impactModel: true,
         _count: { select: { members: { where: { role: { not: "FOLLOWER" } } } } },
       },
     }),
     getFieldProvenance(projectId, "leanCanvas"),
     getFieldProvenance(projectId, "valueProposition"),
+    getFieldProvenance(projectId, "impactModel"),
     latestInsight<GateBrief>(projectId, "PHASE_GATE"),
     latestInsight<SynthesisContent>(projectId, "INTERVIEW_SYNTHESIS"),
     prisma.phaseGateDecision.findFirst({ where: { projectId, fromPhase: { in: ["IDEA", "SPRINT"] }, outcome: "CONTINUE" }, orderBy: { createdAt: "desc" } }),
@@ -152,7 +154,7 @@ async function buildContext(projectId: string, slug: string): Promise<string> {
     `Projekt: ${project?.title ?? slug} — ${project?.summary ?? ""}`,
     `Beskrivning: ${(project?.description ?? "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()}`,
     `Antal medlemmar i teamet nu: ${project?._count.members ?? 1}`,
-    `Canvas:\n${fields("leanCanvas", project?.leanCanvas, LEAN_CANVAS_FIELDS, lcProv)}\n${fields("valueProposition", project?.valueProposition, VALUE_PROPOSITION_FIELDS, vpProv)}`,
+    `Canvas:\n${fields("leanCanvas", project?.leanCanvas, LEAN_CANVAS_FIELDS, lcProv)}\n${fields("valueProposition", project?.valueProposition, VALUE_PROPOSITION_FIELDS, vpProv)}\n${fields("impactModel", project?.impactModel, IMPACT_MODEL_FIELDS, imProv)}`,
     synthesis ? `Lärdomar från ${synthesis.content.interviewCount} intervjuer: ${synthesis.content.learnings.join(" | ")}` : "Inga intervjulärdomar sammanfattade.",
     brief
       ? `Beslutsunderlag från fasgrinden:\nLärt: ${brief.content.learned.join(" | ")}\nFokus härnäst: ${brief.content.nextFocus.join(" | ")}`
