@@ -95,6 +95,10 @@ export default async function LeanCanvasPage({
         suggestions={ai?.suggestions}
       />
       <p className="mt-2 text-sm">
+        <Link href={`/projects/${slug}/customer-model`} className="text-coral hover:underline">
+          {t("customerModelLink")}
+        </Link>
+        <span className="mx-2 text-dark-slate/20">·</span>
         <Link href={`/projects/${slug}/impact-model`} className="text-coral hover:underline">
           {t("impactModelLink")}
         </Link>

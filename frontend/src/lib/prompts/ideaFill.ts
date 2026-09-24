@@ -54,7 +54,7 @@ export const BASICS_TOOL = {
 
 // ─── Lean Canvas ────────────────────────────────────────────────────────────
 
-export const LEAN_CANVAS_SYSTEM_PROMPT = `Fyll i en Social Lean Canvas (socialleancanvas.com) för ett socialt projekt på GoodTribes.org utifrån Drömsamtalet och projektbeskrivningen. Canvasen håller ihop tre modeller: kundmodellen (kundsegment, jobs to be done, värdeerbjudande, lösning), impactmodellen (syfte och impact) och den ekonomiska modellen (kanaler, intäkter, kostnader). Det är ett första utkast som initiativtagaren granskar; allt du härleder märks som ett antagande.
+export const LEAN_CANVAS_SYSTEM_PROMPT = `Fyll i en Social Lean Canvas (socialleancanvas.com) för ett socialt projekt på GoodTribes.org utifrån Drömsamtalet och projektbeskrivningen. Canvasen håller ihop tre modeller: kundmodellen (kundsegment och tidiga användare, jobs to be done och befintliga alternativ, värdeerbjudande, lösning), impactmodellen (syfte och impact) och den ekonomiska modellen (kanaler, intäkter, kostnader). Det är ett första utkast som initiativtagaren granskar; allt du härleder märks som ett antagande.
 
 ${SHARED_RULES}
 - Fält som kräver siffror du inte fått (t.ex. kostnader eller nyckeltal) formuleras som vad som behöver tas reda på, inte som påhittade belopp.
@@ -71,6 +71,8 @@ export const LEAN_CANVAS_TOOL = {
       impact: field("Förändringsteorin: hur det projektet gör leder till mätbar impact, via deltagare och aktiviteter till utfall."),
       customerSegments: field("Kunderna: vilka som betalar, och vilka som använder eller gynnas om det inte är samma."),
       jobsToBeDone: field("Vad kunderna försöker få gjort: behov och problem de vill lösa."),
+      earlyAdopters: field("Tidiga användare: de kunder som har behovet mest akut och vill vara med först."),
+      alternatives: field("Befintliga alternativ: hur kunderna får jobbet gjort idag, utan projektet."),
       uniqueValueProposition: field("Varför kunderna väljer detta: löftet i en tydlig mening."),
       solution: field("Lösningen i korthet: produkten eller tjänsten."),
       channels: field("Hur man når kunderna och levererar värdet."),

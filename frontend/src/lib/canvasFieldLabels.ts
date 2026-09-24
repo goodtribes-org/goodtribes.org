@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { LEAN_CANVAS_BLOCKS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
+import { CUSTOMER_MODEL_EXTRA_BLOCKS, LEAN_CANVAS_BLOCKS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_BLOCKS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
 import { IMPACT_MODEL_BLOCKS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
 
@@ -13,7 +13,7 @@ export async function getCanvasFieldLabels(locale: string): Promise<Record<strin
     getTranslations({ locale, namespace: "ImpactModelPage" }),
   ]);
   return {
-    ...Object.fromEntries(LEAN_CANVAS_BLOCKS.map((b) => [`leanCanvas.${b.field}`, tLc(`field${b.translationKey}` as Parameters<typeof tLc>[0])])),
+    ...Object.fromEntries([...LEAN_CANVAS_BLOCKS, ...CUSTOMER_MODEL_EXTRA_BLOCKS].map((b) => [`leanCanvas.${b.field}`, tLc(`field${b.translationKey}` as Parameters<typeof tLc>[0])])),
     ...Object.fromEntries(
       VALUE_PROPOSITION_BLOCKS.map((b) => [`valueProposition.${b.field}`, tVp(`field${b.translationKey}` as Parameters<typeof tVp>[0])]),
     ),

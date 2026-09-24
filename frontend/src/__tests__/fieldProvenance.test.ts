@@ -94,6 +94,8 @@ describe("isProvenanceField", () => {
     expect(isProvenanceField("leanCanvas", "purpose")).toBe(true);
     // Legacy Lean Canvas blocks are read-only now, so no longer tracked.
     expect(isProvenanceField("leanCanvas", "problem")).toBe(false);
+    // The customer model's extra blocks are live fields again.
+    expect(isProvenanceField("leanCanvas", "earlyAdopters")).toBe(true);
     expect(isProvenanceField("valueProposition", "vpGains")).toBe(true);
     expect(isProvenanceField("impactModel", "shortTermOutcomes")).toBe(true);
     expect(isProvenanceField("impactModel", "impact")).toBe(false);
