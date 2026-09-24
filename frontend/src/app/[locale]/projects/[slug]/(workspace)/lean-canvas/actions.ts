@@ -49,6 +49,8 @@ export async function updateLeanCanvasBlock(
   );
 
   revalidatePath(`/projects/${projectSlug}/lean-canvas`);
+  // The Impact block is also the last step of the impact model.
+  if (field === "impact") revalidatePath(`/projects/${projectSlug}/impact-model`);
 }
 
 export async function getLeanCanvasHistory(projectSlug: string) {

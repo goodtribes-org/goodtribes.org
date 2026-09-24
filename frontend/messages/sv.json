@@ -739,7 +739,8 @@
     "groupDocs": "Dokument",
     "groupPhaseTools": "Fasverktyg",
     "lockedHint": "Låses upp i en senare fas",
-    "navGroupsLabel": "Projektmeny"
+    "navGroupsLabel": "Projektmeny",
+    "navImpactModel": "Impactmodell"
   },
   "MembersManager": {
     "pageTitle": "Projektmedlemmar",
@@ -3262,7 +3263,8 @@
     "helpLink": "Hjälp",
     "legacyHeading": "Från er tidigare Lean Canvas",
     "legacyNote": "De här rutorna finns inte i Social Lean Canvas. Texten ligger kvar här så att ni kan flytta över det som är relevant till rutorna ovan.",
-    "attribution": "Social Lean Canvas av Rowan Yeoman, Dave Moskovitz och Ākina Foundation, licensierad under CC BY-SA 3.0."
+    "attribution": "Social Lean Canvas av Rowan Yeoman, Dave Moskovitz och Ākina Foundation, licensierad under CC BY-SA 3.0.",
+    "impactModelLink": "Bryt ner Impact i en impactmodell →"
   },
   "ProjectPlanPage": {
     "title": "Projektplan",
@@ -4300,5 +4302,25 @@
   },
   "OverviewSkeleton": {
     "loading": "Hämtar fasen …"
+  },
+  "ImpactModelPage": {
+    "pageHeading": "Impactmodell",
+    "helpText": "Impactmodellen är förändringsteorin bakom Social Lean Canvas Impact-ruta. Den visar steg för steg hur det ni gör leder till impact: vilket problem ni tar er an, vilka som deltar, vad ni gör och vilka utfall det ger på kort, medellång och lång sikt. Sista steget är samma ruta som Impact på canvasen.",
+    "fieldIssue": "Problem",
+    "hintIssue": "Samhällsproblemet ni tar er an",
+    "fieldParticipants": "Deltagare",
+    "hintParticipants": "Vilka som är med: målgrupper, volontärer, partner",
+    "fieldActivities": "Aktiviteter",
+    "hintActivities": "Vad ni gör tillsammans med deltagarna",
+    "fieldShortTermOutcomes": "Kortsiktiga utfall",
+    "hintShortTermOutcomes": "Direkta förändringar: kunskap, attityder, färdigheter",
+    "fieldMediumTermOutcomes": "Medellånga utfall",
+    "hintMediumTermOutcomes": "Förändrat beteende och nya vanor",
+    "fieldLongTermOutcomes": "Långsiktiga utfall",
+    "hintLongTermOutcomes": "Bestående förändring i människors liv eller villkor",
+    "hintImpact": "Den mätbara förändringen i världen",
+    "legacyProblem": "Från er tidigare Lean Canvas",
+    "impactShared": "Impact är samma ruta som på canvasen.",
+    "canvasLink": "Visa Social Lean Canvas →"
   }
 }

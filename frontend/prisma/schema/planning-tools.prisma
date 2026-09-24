@@ -396,3 +396,24 @@ model WhiteboardDraft {
 
   @@index([ownerId])
 }
+
+// Social Lean Canvas impact model (socialleancanvas.com/templates, CC BY-SA
+// 3.0): the theory of change behind the canvas's Impact block, as a chain
+// issue → participants → activities → short/medium/long-term outcomes →
+// impact. The last step is LeanCanvas.impact itself, not a column here, so
+// the canvas and the model can never disagree.
+model ImpactModel {
+  id                 String   @id @default(cuid())
+  projectSlug        String   @unique
+  project            Project  @relation("ProjectImpactModel", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  issue              String?  @db.Text
+  participants       String?  @db.Text
+  activities         String?  @db.Text
+  shortTermOutcomes  String?  @db.Text
+  mediumTermOutcomes String?  @db.Text
+  longTermOutcomes   String?  @db.Text
+  updatedById        String?
+  updatedBy          User?    @relation("ImpactModelUpdatedBy", fields: [updatedById], references: [id])
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}

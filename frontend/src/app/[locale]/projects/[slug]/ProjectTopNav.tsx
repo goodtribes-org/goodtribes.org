@@ -46,6 +46,7 @@ import {
   Briefcase,
   FileText,
   Wrench,
+  Workflow,
   type LucideIcon,
 } from "lucide-react";
 import type { ProjectPhaseValue } from "@/lib/projectPhase";
@@ -85,6 +86,7 @@ function phaseItems(t: T): NavItem[] {
   return [
     { label: t("navIdeaWorkshop"), href: "/idea-sessions", icon: Lightbulb, phase: "IDEA" },
     { label: t("navLeanCanvas"), href: "/lean-canvas", icon: LayoutGrid, phase: "IDEA" },
+    { label: t("navImpactModel"), href: "/impact-model", icon: Workflow, phase: "IDEA" },
     { label: t("navValueProposition"), href: "/value-proposition", icon: Gem, phase: "IDEA" },
     { label: t("navInterviews"), href: "/interviews", icon: Mic, phase: "IDEA" },
     { label: t("navMarketScan"), href: "/market-scan", icon: Radar, phase: "IDEA" },
