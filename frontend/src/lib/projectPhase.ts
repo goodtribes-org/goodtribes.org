@@ -42,6 +42,22 @@ export function toDisplayPhase(phase: ProjectPhaseValue): Exclude<ProjectPhaseVa
   return phase === "SPRINT" ? "IDEA" : phase;
 }
 
+// Each visible phase's one-page overview (the AI-guided journey, flag
+// ai-project-start) — relative to /projects/[slug]/. Lansering is
+// PRODUCTION; Impact's page isn't /impact because that's the impact tool.
+export const PHASE_OVERVIEW_PATH: Record<Exclude<ProjectPhaseValue, "SPRINT">, string> = {
+  IDEA: "ide",
+  PILOT: "uppstart",
+  PRODUCTION: "lansering",
+  ESTABLISH: "etablera",
+  SCALE: "skala",
+  IMPACT: "impactfasen",
+};
+
+export function overviewPathFor(phase: ProjectPhaseValue): string {
+  return PHASE_OVERVIEW_PATH[toDisplayPhase(phase)];
+}
+
 const VALID_PROJECT_PHASE_VALUES: readonly string[] = PROJECT_PHASES.map((p) => p.value);
 
 export function isValidProjectPhase(value: string): value is ProjectPhaseValue {

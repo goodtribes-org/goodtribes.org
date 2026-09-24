@@ -691,7 +691,8 @@
     "leaveProjectButton": "Leave project",
     "leaveProjectConfirm": "Are you sure you want to leave the project? You can apply to join again later.",
     "followButton": "Follow",
-    "followingButton": "Following"
+    "followingButton": "Following",
+    "continuePhase": "Continue in {phase} — everything on one page"
   },
   "ProjectSideNav": {
     "navHome": "Home",
@@ -2921,7 +2922,8 @@
     "next_step_decided": "Decide the next step: continue, replicate, or responsibly wind down"
   },
   "PhaseMenuBar": {
-    "guideLinkLabel": "{phase} guide"
+    "guideLinkLabel": "{phase} guide",
+    "overviewLinkLabel": "{phase} on one page"
   },
   "PhaseChecklistWidget": {
     "heading": "Your phase journey",

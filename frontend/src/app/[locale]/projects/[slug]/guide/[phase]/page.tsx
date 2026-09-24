@@ -47,7 +47,8 @@ export default async function PhaseGuidePage({
     SCALE: { href: "skala", namespace: "SkalaOverview" },
     IMPACT: { href: "impactfasen", namespace: "ImpactOverview" },
   };
-  const onePage = ONE_PAGE[phase] && (await isFeatureEnabled("ai-project-start", session.user.id)) ? ONE_PAGE[phase] : null;
+  const journeyOn = await isFeatureEnabled("ai-project-start", session.user.id);
+  const onePage = ONE_PAGE[phase] && journeyOn ? ONE_PAGE[phase] : null;
   const tOnePage = await getTranslations({ locale, namespace: onePage?.namespace ?? "UppstartOverview" });
 
   return (
@@ -59,6 +60,7 @@ export default async function PhaseGuidePage({
           completedKeys={project.checklistItems.map((c) => c.itemKey)}
           canEdit={true}
           viewingPhase={phase}
+          showOverviews={journeyOn}
         />
       </div>
       <div className="max-w-3xl mx-auto">

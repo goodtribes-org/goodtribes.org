@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
-import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, numberChecklist, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, numberChecklist, overviewPathFor, type ProjectPhaseValue } from "@/lib/projectPhase";
 
 interface Props {
   slug: string;
@@ -14,6 +14,9 @@ interface Props {
   // independent of `phase` (the project's actual current phase, still shown
   // via the solid fill), since a guide can be opened for any phase.
   viewingPhase?: ProjectPhaseValue;
+  // Link each phase's dropdown to its one-page overview (flag
+  // ai-project-start is on for this viewer).
+  showOverviews?: boolean;
 }
 
 // Fas- och stegmeny (PRD 4d) — en platt meny under hero, "1. Idé", "2. Pilot"
@@ -21,7 +24,7 @@ interface Props {
 // på UI-nivå, inget separat "Sprint"-steg längre). Varje fas har en
 // checklista och går att klicka på för att fälla ut en undermeny med
 // numrerade delsteg ("1.1 Beskriv idén", "1.2 ...").
-export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, viewingPhase }: Props) {
+export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, viewingPhase, showOverviews }: Props) {
   const t = useTranslations("PhaseMenuBar");
   const tPhase = useTranslations("ProjectPhase");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
@@ -167,6 +170,14 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
 
               {isOpen && checklist && (
                 <div className="absolute left-0 top-full mt-2 w-72 bg-white border border-muted-teal/20 rounded-xl shadow-lg z-20 overflow-hidden animate-[fadeIn_0.12s_ease-out]">
+                  {showOverviews && (
+                    <a
+                      href={`/projects/${slug}/${overviewPathFor(p.value)}`}
+                      className="flex items-center justify-between px-3.5 py-2.5 text-sm font-semibold text-seagrass border-b border-muted-teal/10 hover:bg-seagrass/5 transition-colors"
+                    >
+                      {t("overviewLinkLabel", { phase: tPhase(p.value) })} <span aria-hidden>→</span>
+                    </a>
+                  )}
                   <a
                     href={p.value === "IDEA" ? `/projects/${slug}/guide` : `/projects/${slug}/guide/${p.value.toLowerCase()}`}
                     className="block px-3.5 pt-3 pb-2 text-xs font-semibold text-dark-slate/40 uppercase tracking-wide border-b border-muted-teal/10 hover:text-seagrass transition-colors"
