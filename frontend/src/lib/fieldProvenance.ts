@@ -2,6 +2,7 @@ import type { FieldAuthor, FieldKnowledgeStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { LEAN_CANVAS_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
+import { IMPACT_MODEL_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
 
 // Every field whose provenance (vet/antar, who wrote it, sources) is
 // tracked, keyed by entity. The entity key is what's stored in
@@ -10,6 +11,7 @@ export const PROVENANCE_FIELDS = {
   project: ["title", "summary", "description", "category", "tags", "sdgGoals"],
   leanCanvas: LEAN_CANVAS_FIELDS,
   valueProposition: VALUE_PROPOSITION_FIELDS,
+  impactModel: IMPACT_MODEL_FIELDS,
 } as const satisfies Record<string, readonly string[]>;
 
 export type ProvenanceEntity = keyof typeof PROVENANCE_FIELDS;

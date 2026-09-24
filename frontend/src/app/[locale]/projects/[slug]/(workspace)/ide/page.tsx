@@ -16,6 +16,7 @@ import { isFillInProgress, parseFillStatus, withStaleAsFailed } from "@/lib/idea
 import CanvasAiBar from "@/components/ai/CanvasAiBar";
 import LeanCanvasGrid from "../lean-canvas/LeanCanvasGrid";
 import ValuePropositionGrid from "../value-proposition/ValuePropositionGrid";
+import ImpactModelChain from "../impact-model/ImpactModelChain";
 import AddOrInviteMember from "../../AddOrInviteMember";
 import OverviewSection from "./OverviewSection";
 import AboutSection from "./AboutSection";
@@ -45,7 +46,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
     where: { slug },
     select: {
       id: true, phase: true, title: true, summary: true, description: true, category: true, tags: true, sdgGoals: true,
-      leanCanvas: true, valueProposition: true,
+      leanCanvas: true, valueProposition: true, impactModel: true,
       dreamConversation: { select: { fillStatus: true, openQuestions: true, updatedAt: true } },
     },
     }),
@@ -55,7 +56,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
 
   const [
     t, tLc, tVp, canEdit, projectProv, leanCanvasAi, valuePropositionAi, marketScan, interviewGuide, interviews,
-    critique, synthesis, assumptions, aiAvailable, tGate, tCheck, isFounder, gate, gateBrief, lastDecision,
+    critique, synthesis, assumptions, aiAvailable, tGate, tCheck, isFounder, gate, gateBrief, lastDecision, impactModelAi,
   ] = await Promise.all([
     getTranslations({ locale, namespace: "IdeaOverview" }),
     getTranslations({ locale, namespace: "LeanCanvasHistory" }),
@@ -77,6 +78,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
     ideaGateCriteria(project.id, slug),
     latestInsight<GateBrief>(project.id, "PHASE_GATE"),
     prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: { in: ["IDEA", "SPRINT"] } }, orderBy: { createdAt: "desc" } }),
+    getCanvasAiContext(project.id, "impactModel"),
   ]);
   const inIdeaPhase = project.phase === "IDEA" || project.phase === "SPRINT";
   const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
@@ -164,6 +166,29 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
           canEdit={canEdit}
           provenance={leanCanvasAi.provenance}
           suggestions={leanCanvasAi.suggestions}
+        />
+      </OverviewSection>
+
+      <OverviewSection
+        id="impactmodell"
+        title={t("impactModelHeading")}
+        fill={fill.impactModel}
+        writingLabel={writing}
+        failedNote={<>{t("failedCanvas")}{retry("impactModel")}</>}
+        action={
+          <Link href={`/projects/${slug}/impact-model`} className="text-sm font-medium text-dark-slate/50 hover:text-coral">
+            {t("open")}
+          </Link>
+        }
+      >
+        <ImpactModelChain
+          projectSlug={slug}
+          model={project.impactModel}
+          canvasImpact={project.leanCanvas?.impact ?? null}
+          legacyProblem={project.leanCanvas?.problem?.trim() || null}
+          canEdit={canEdit}
+          ai={impactModelAi}
+          canvasAi={leanCanvasAi}
         />
       </OverviewSection>
 

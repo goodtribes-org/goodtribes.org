@@ -206,6 +206,7 @@ export async function createProjectFromDream(roomId: string) {
     const initialFill = {
       about: "done",
       leanCanvas: "pending",
+      impactModel: "pending",
       valueProposition: "pending",
       marketScan: agent ? "pending" : "skipped",
       interviewGuide: agent ? "pending" : "skipped",

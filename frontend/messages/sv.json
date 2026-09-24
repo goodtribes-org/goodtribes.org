@@ -3916,7 +3916,8 @@
     "genericError": "Något gick fel — försök igen.",
     "gateHeading": "Fasgrind: redo för Uppstart?",
     "gateClosed": "Idéfasen avslutades {date} med beslutet att gå vidare.",
-    "gateClosedLink": "Till Uppstart →"
+    "gateClosedLink": "Till Uppstart →",
+    "impactModelHeading": "Impactmodell"
   },
   "PhaseGate": {
     "intro": "Idéfasen är klar när ni vet tillräckligt för att börja testa lösningen. Här ser ni vad som är gjort, vad underlaget säger — och ni fattar beslutet. Ni kan gå vidare även om något saknas; det noteras bara.",
@@ -4321,6 +4322,12 @@
     "hintImpact": "Den mätbara förändringen i världen",
     "legacyProblem": "Från er tidigare Lean Canvas",
     "impactShared": "Impact är samma ruta som på canvasen.",
-    "canvasLink": "Visa Social Lean Canvas →"
+    "canvasLink": "Visa Social Lean Canvas →",
+    "aiFill": "Låt AI:n fylla i impactmodellen",
+    "aiSuggest": "Låt AI:n föreslå en impactmodell",
+    "aiWorking": "AI:n tänker…",
+    "aiDoneWritten": "AI:n fyllde i {count, plural, one {# steg} other {# steg}}. Granska och ändra fritt.",
+    "aiDoneSuggested": "AI:n lade {count, plural, one {ett förslag} other {# förslag}} bredvid stegen. Du väljer vad som används.",
+    "aiDoneBoth": "AI:n fyllde i {written} tomma steg och lade {suggested} förslag bredvid steg som redan hade text."
   }
 }

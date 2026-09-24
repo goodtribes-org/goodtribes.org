@@ -12,9 +12,12 @@ import { createAiSuggestion, decideAiPlacement } from "@/lib/aiSuggestions";
 import { runCritique } from "@/lib/ideaInsights";
 import { LEAN_CANVAS_FIELDS, LEAN_CANVAS_STORED_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
+import { IMPACT_MODEL_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
 import {
   BASICS_SYSTEM_PROMPT,
   BASICS_TOOL,
+  IMPACT_MODEL_SYSTEM_PROMPT,
+  IMPACT_MODEL_TOOL,
   INTERVIEW_GUIDE_SYSTEM_PROMPT,
   INTERVIEW_GUIDE_TOOL,
   LEAN_CANVAS_SYSTEM_PROMPT,
@@ -33,7 +36,7 @@ const REQUEST_OPTIONS = { timeout: 90_000, maxRetries: 1 };
 
 // ─── Fill status (drives the overview page's placeholders) ──────────────────
 
-export const FILL_SECTIONS = ["about", "leanCanvas", "valueProposition", "marketScan", "interviewGuide", "critique"] as const;
+export const FILL_SECTIONS = ["about", "leanCanvas", "impactModel", "valueProposition", "marketScan", "interviewGuide", "critique"] as const;
 export type FillSection = (typeof FILL_SECTIONS)[number];
 export type FillState = "pending" | "running" | "done" | "failed" | "skipped";
 export type FillStatus = Partial<Record<FillSection, FillState>>;
@@ -267,11 +270,11 @@ async function researchMarket(client: Anthropic, context: string): Promise<Marke
 
 // ─── Applying proposals (the never-overwrite rule) ──────────────────────────
 
-type CanvasEntity = "leanCanvas" | "valueProposition";
+type CanvasEntity = "leanCanvas" | "valueProposition" | "impactModel";
 
 // Writes (as AI drafts) what AI may write and turns the rest into
 // suggestions next to the field — see decideAiPlacement.
-async function applyCanvas(
+export async function applyCanvas(
   projectId: string,
   projectSlug: string,
   entity: CanvasEntity,
@@ -281,7 +284,9 @@ async function applyCanvas(
   const [row, provenance] = await Promise.all([
     entity === "leanCanvas"
       ? prisma.leanCanvas.findUnique({ where: { projectSlug } })
-      : prisma.valueProposition.findUnique({ where: { projectSlug } }),
+      : entity === "impactModel"
+        ? prisma.impactModel.findUnique({ where: { projectSlug } })
+        : prisma.valueProposition.findUnique({ where: { projectSlug } }),
     getFieldProvenance(projectId, entity),
   ]);
   const current = (row ?? {}) as Record<string, unknown>;
@@ -299,6 +304,9 @@ async function applyCanvas(
       if (entity === "leanCanvas") {
         const canvas = await tx.leanCanvas.upsert({ where: { projectSlug }, create: { projectSlug, ...data }, update: data });
         await tx.leanCanvasVersion.create({ data: { projectSlug, ...Object.fromEntries(fields.map((f) => [f, (canvas as Record<string, unknown>)[f]])) } });
+      } else if (entity === "impactModel") {
+        // No version history for the impact model (see its schema comment).
+        await tx.impactModel.upsert({ where: { projectSlug }, create: { projectSlug, ...data }, update: data });
       } else {
         const canvas = await tx.valueProposition.upsert({ where: { projectSlug }, create: { projectSlug, ...data }, update: data });
         await tx.valuePropositionVersion.create({ data: { projectSlug, ...Object.fromEntries(fields.map((f) => [f, (canvas as Record<string, unknown>)[f]])) } });
@@ -308,6 +316,41 @@ async function applyCanvas(
     for (const [field, p] of suggestions) await createAiSuggestion(tx, { projectId, entity, field, content: p.value });
   });
   return { written: writes.length };
+}
+
+// ─── Impact model ───────────────────────────────────────────────────────────
+
+// The impact model builds on the canvas: its chain has to end in the
+// canvas's Impact block and start from the project's purpose, so the
+// canvas text (whatever is there, human or AI) goes into the prompt.
+export function impactModelContext(base: string, canvas: Record<string, unknown> | null): string {
+  const s = (k: string) => (typeof canvas?.[k] === "string" ? (canvas[k] as string).trim() : "");
+  const lines = [
+    ["Syfte", s("purpose")],
+    ["Impact (kedjans slutpunkt)", s("impact")],
+    ["Kundsegment", s("customerSegments")],
+    ["Lösning", s("solution")],
+    ["Problem (från tidigare Lean Canvas)", s("problem")],
+  ].filter(([, v]) => v);
+  if (!lines.length) return base;
+  return `${base}\n\nSocial Lean Canvas hittills:\n${lines.map(([k, v]) => `- ${k}: ${v}`).join("\n")}`;
+}
+
+// One call → the six steps, placed by the never-overwrite rule. Shared by
+// the background Idé fill and the impact model page's AI button.
+export async function fillImpactModel(
+  client: Anthropic,
+  p: { projectId: string; projectSlug: string; mode: AiMode; context: string },
+): Promise<{ written: number; proposed: number }> {
+  const canvas = await prisma.leanCanvas.findUnique({ where: { projectSlug: p.projectSlug } });
+  const raw = await callTool(client, {
+    system: IMPACT_MODEL_SYSTEM_PROMPT,
+    tool: IMPACT_MODEL_TOOL,
+    content: impactModelContext(p.context, canvas as Record<string, unknown> | null),
+  });
+  const proposals = coerceProposals(raw, IMPACT_MODEL_FIELDS);
+  const { written } = await applyCanvas(p.projectId, p.projectSlug, "impactModel", proposals, p.mode);
+  return { written, proposed: Object.keys(proposals).length };
 }
 
 async function markDone(projectId: string, itemKey: string, userId: string) {
@@ -343,7 +386,7 @@ export type IdeaFillParams = {
 export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
   // The project's monthly AI budget applies (projectId); no per-user limit.
   const gate = await getAiClientFor({ feature: "dream-conversation", kind: "assist", userId: null, projectId: p.projectId, language: "project" });
-  const sections: FillSection[] = p.only ?? ["leanCanvas", "valueProposition", "marketScan", "interviewGuide", "critique"];
+  const sections: FillSection[] = p.only ?? ["leanCanvas", "impactModel", "valueProposition", "marketScan", "interviewGuide", "critique"];
   const wanted = (section: FillSection) => sections.includes(section);
   if (!gate.ok) {
     await Promise.all(sections.map((s) => setFillState(p.dreamId, s, "failed")));
@@ -370,12 +413,21 @@ export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
 
   const aiUser = await getAiParticipantUser();
 
+  const leanCanvasDone = !wanted("leanCanvas") ? null : run("leanCanvas", async () => {
+    const raw = await callTool(client, { system: LEAN_CANVAS_SYSTEM_PROMPT, tool: LEAN_CANVAS_TOOL, content: context });
+    const { written } = await applyCanvas(p.projectId, p.projectSlug, "leanCanvas", coerceProposals(raw, LEAN_CANVAS_FIELDS), p.mode);
+    if (written) await markDone(p.projectId, "lean_canvas_created", p.userId);
+  });
+
   await Promise.all([
-    !wanted("leanCanvas") ? null : run("leanCanvas", async () => {
-      const raw = await callTool(client, { system: LEAN_CANVAS_SYSTEM_PROMPT, tool: LEAN_CANVAS_TOOL, content: context });
-      const { written } = await applyCanvas(p.projectId, p.projectSlug, "leanCanvas", coerceProposals(raw, LEAN_CANVAS_FIELDS), p.mode);
-      if (written) await markDone(p.projectId, "lean_canvas_created", p.userId);
-    }),
+    leanCanvasDone,
+    // After the canvas, so the chain can start from its purpose and end in
+    // its Impact block. Runs even if the canvas failed (then on the
+    // conversation alone).
+    !wanted("impactModel") ? null : (async () => {
+      await leanCanvasDone;
+      await run("impactModel", async () => void (await fillImpactModel(client, { ...p, context })));
+    })(),
     !wanted("valueProposition") ? null : run("valueProposition", async () => {
       const raw = await callTool(client, { system: VALUE_PROPOSITION_SYSTEM_PROMPT, tool: VALUE_PROPOSITION_TOOL, content: context });
       const { written } = await applyCanvas(p.projectId, p.projectSlug, "valueProposition", coerceProposals(raw, VALUE_PROPOSITION_FIELDS), p.mode);

@@ -8,10 +8,11 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { isFeatureEnabled } from "@/lib/featureFlags";
+import { getCanvasAiContext } from "@/lib/canvasAi";
 import WorkspacePageHeader from "@/components/WorkspacePageHeader";
-import LeanCanvasBlock from "../lean-canvas/LeanCanvasBlock";
-import ImpactModelBlock from "./ImpactModelBlock";
-import { IMPACT_MODEL_BLOCKS } from "./fields";
+import ImpactModelChain from "./ImpactModelChain";
+import ImpactModelAiBar from "./ImpactModelAiBar";
 
 export async function generateMetadata({
   params,
@@ -30,11 +31,10 @@ export default async function ImpactModelPage({
   params: Promise<{ locale: Locale; slug: string }>;
 }) {
   const { locale, slug } = await params;
-  const [session, t, tCanvas, tField] = await Promise.all([
+  const [session, t, tCanvas] = await Promise.all([
     auth(),
     getTranslations({ locale, namespace: "ImpactModelPage" }),
     getTranslations({ locale, namespace: "LeanCanvasPage" }),
-    getTranslations({ locale, namespace: "LeanCanvasHistory" }),
   ]);
 
   const project = await prisma.project.findUnique({
@@ -50,44 +50,26 @@ export default async function ImpactModelPage({
   const canEdit = session?.user?.id
     ? await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES)
     : false;
-  const model = project.impactModel;
-  const legacyProblem = project.leanCanvas?.problem?.trim();
+  // vet/antar, suggestions and the AI button ship behind ai-project-start.
+  const aiOn = await isFeatureEnabled("ai-project-start", session?.user?.id);
+  const [ai, canvasAi] = aiOn
+    ? await Promise.all([getCanvasAiContext(project.id, "impactModel"), getCanvasAiContext(project.id, "leanCanvas")])
+    : [null, null];
 
   return (
     <div>
       <WorkspacePageHeader title={t("pageHeading")} help={t("helpText")} />
 
-      <style>{`
-        .impactmodel-chain { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
-        @media (min-width: 1100px) {
-          .impactmodel-chain { grid-template-columns: repeat(7, minmax(0, 1fr)); }
-        }
-      `}</style>
-
-      <div className="impactmodel-chain">
-        {IMPACT_MODEL_BLOCKS.map((b) => (
-          <ImpactModelBlock
-            key={b.field}
-            projectSlug={slug}
-            field={b.field}
-            label={t(`field${b.translationKey}` as Parameters<typeof t>[0])}
-            hint={t(`hint${b.translationKey}` as Parameters<typeof t>[0])}
-            value={model?.[b.field] ?? null}
-            canEdit={canEdit}
-            legacy={b.field === "issue" && legacyProblem ? { label: t("legacyProblem"), text: legacyProblem } : undefined}
-          />
-        ))}
-        {/* The last step is the canvas's own Impact block — one field, two views. */}
-        <LeanCanvasBlock
-          projectSlug={slug}
-          field="impact"
-          area="impact"
-          label={tField("fieldImpact")}
-          hint={t("hintImpact")}
-          value={project.leanCanvas?.impact ?? null}
-          canEdit={canEdit}
-        />
-      </div>
+      {ai?.aiAvailable && <ImpactModelAiBar projectSlug={slug} stepKey={ai.stepKey} mode={ai.mode} canEdit={canEdit} />}
+      <ImpactModelChain
+        projectSlug={slug}
+        model={project.impactModel}
+        canvasImpact={project.leanCanvas?.impact ?? null}
+        legacyProblem={project.leanCanvas?.problem?.trim() || null}
+        canEdit={canEdit}
+        ai={ai ?? undefined}
+        canvasAi={canvasAi ?? undefined}
+      />
 
       <p className="mt-2 text-xs text-dark-slate/40">
         {t("impactShared")}{" "}
