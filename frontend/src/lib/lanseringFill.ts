@@ -1,14 +1,21 @@
-import type Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
-import { logger } from "@/lib/logger";
 import { getAiClientFor } from "@/lib/aiMode";
-import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { escapeHtml } from "@/lib/renderBody";
 import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { InsightError, latestInsight } from "@/lib/ideaInsights";
 import type { GateBrief } from "@/lib/phaseGate";
 import { coerceTasks } from "@/lib/uppstartFill";
-import { isPhaseFillInProgress, markPhaseFillPending, parsePhaseFillStatus, setPhaseFillState, type PhaseFillState } from "@/lib/phaseFill";
+import {
+  addAiCards,
+  callFillTool,
+  createWikiPage,
+  isPhaseFillInProgress,
+  markStepDone,
+  parsePhaseFillStatus,
+  startPhaseFill,
+  wikiPageExists,
+  type PhaseFillState,
+} from "@/lib/phaseFill";
 import { TASKS_TOOL } from "@/lib/prompts/uppstartFill";
 import {
   IMPACT_METRICS_SYSTEM_PROMPT,
@@ -23,9 +30,6 @@ import {
   WORKFLOWS_SYSTEM_PROMPT,
   WORKFLOWS_TOOL,
 } from "@/lib/prompts/lanseringFill";
-
-const MODEL = "claude-sonnet-4-6";
-const REQUEST_OPTIONS = { timeout: 90_000, maxRetries: 1 };
 
 // ─── Fill status ────────────────────────────────────────────────────────────
 
@@ -188,144 +192,85 @@ async function buildContext(projectId: string, slug: string): Promise<string> {
     .join("\n\n");
 }
 
-async function callTool(client: Anthropic, system: string, tool: Anthropic.Tool, content: string): Promise<unknown> {
-  const response = await client.messages.create(
-    { model: MODEL, max_tokens: 3000, system, tools: [tool], tool_choice: { type: "tool", name: tool.name }, messages: [{ role: "user", content }] },
-    REQUEST_OPTIONS,
-  );
-  const toolUse = response.content.find((b) => b.type === "tool_use");
-  return toolUse && toolUse.type === "tool_use" ? toolUse.input : null;
-}
 
-async function markDone(projectId: string, itemKey: string, userId: string) {
-  await prisma.initiativeChecklistItem.upsert({
-    where: { projectId_itemKey: { projectId, itemKey } },
-    create: { projectId, phase: "PRODUCTION", itemKey, completedAt: new Date(), completedById: userId },
-    update: { completedAt: new Date(), completedById: userId },
-  });
-}
 
-async function createWikiPage(projectSlug: string, slug: string, title: string, content: string, authorId: string) {
-  const maxOrder = await prisma.wikiPage.aggregate({ where: { projectSlug }, _max: { order: true } });
-  await prisma.wikiPage.create({ data: { projectSlug, slug, title, content, order: (maxOrder._max.order ?? -1) + 1, createdById: authorId } });
-}
 
 // ─── The background fill ────────────────────────────────────────────────────
 
 export type LanseringFillParams = { projectId: string; projectSlug: string; userId: string; only?: LanseringSection[] };
 
-export async function startLanseringFill(p: LanseringFillParams): Promise<void> {
-  const sections = p.only ?? [...LANSERING_SECTIONS];
-  await markPhaseFillPending(p.projectId, "PRODUCTION", sections);
-  void runLanseringFill({ ...p, only: sections }).catch((err) =>
-    logger.error("lansering-fill: crashed", { projectId: p.projectId, err: String(err) }),
-  );
-}
-
 // Drafts what AI can do in Lansering; people run the pilot, log what
 // happens and decide. Every section only adds — existing wiki pages,
-// metrics, launch plan text and success criteria are left alone.
-export async function runLanseringFill(p: LanseringFillParams): Promise<void> {
-  const sections = p.only ?? [...LANSERING_SECTIONS];
-  const setState = (s: LanseringSection, state: PhaseFillState) => setPhaseFillState(p.projectId, "PRODUCTION", s, state);
-  const gate = await getAiClientFor({ feature: "project-plan", kind: "assist", userId: null, projectId: p.projectId, phase: "PRODUCTION", language: "project" });
-  if (!gate.ok) {
-    await Promise.all(sections.map((s) => setState(s, "failed")));
-    return;
-  }
-  const client = gate.client;
-  const [context, aiUser, lang] = await Promise.all([
-    buildContext(p.projectId, p.projectSlug),
-    getAiParticipantUser(),
-    prisma.project.findUnique({ where: { id: p.projectId }, select: { contentLocale: true } }),
-  ]);
-  const t = draftText(lang?.contentLocale);
+// metrics, launch plan text and success criteria are left alone. Runs in
+// the background via the shared runner (lib/phaseFill.ts).
+export async function startLanseringFill(p: LanseringFillParams): Promise<void> {
+  const slug = p.projectSlug;
+  await startPhaseFill({
+    projectId: p.projectId,
+    phase: "PRODUCTION",
+    sections: p.only ?? LANSERING_SECTIONS,
+    buildContext: () => buildContext(p.projectId, slug),
+    work: {
+      pilot: async ({ client, context, aiUserId, t }) => {
+        const [wiki, evaluation] = await Promise.all([
+          wikiPageExists(slug, "pilotplan"),
+          prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true } }),
+        ]);
+        const needsCriteria = !evaluation?.successCriteria?.trim();
+        if (wiki && !needsCriteria) return;
+        const plan = coercePilotPlan(await callFillTool(client, PILOT_PLAN_SYSTEM_PROMPT, PILOT_PLAN_TOOL, context));
+        if (!plan) throw new Error("no pilot plan");
+        if (!wiki) await createWikiPage(slug, "pilotplan", t.titlePilotPlan, pilotPlanHtml(plan, t), aiUserId);
+        if (needsCriteria && plan.successCriteria.length) {
+          const successCriteria = successCriteriaText(plan.successCriteria, t);
+          await prisma.pilotEvaluation.upsert({
+            where: { projectSlug: slug },
+            create: { projectSlug: slug, successCriteria, updatedById: aiUserId },
+            update: { successCriteria, updatedById: aiUserId },
+          });
+        }
+      },
 
-  const run = async (section: LanseringSection, work: () => Promise<void>) => {
-    if (!sections.includes(section)) return;
-    await setState(section, "running");
-    try {
-      await work();
-      await setState(section, "done");
-    } catch (err) {
-      logger.error("lansering-fill: section failed", { section, projectId: p.projectId, err: String(err) });
-      await setState(section, "failed");
-    }
-  };
-
-  await Promise.all([
-    run("pilot", async () => {
-      const [wiki, evaluation] = await Promise.all([
-        prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: p.projectSlug, slug: "pilotplan" } }, select: { id: true } }),
-        prisma.pilotEvaluation.findUnique({ where: { projectSlug: p.projectSlug }, select: { successCriteria: true } }),
-      ]);
-      const needsCriteria = !evaluation?.successCriteria?.trim();
-      if (wiki && !needsCriteria) return;
-      const plan = coercePilotPlan(await callTool(client, PILOT_PLAN_SYSTEM_PROMPT, PILOT_PLAN_TOOL, context));
-      if (!plan) throw new Error("no pilot plan");
-      if (!wiki) await createWikiPage(p.projectSlug, "pilotplan", t.titlePilotPlan, pilotPlanHtml(plan, t), aiUser.id);
-      if (needsCriteria && plan.successCriteria.length) {
-        const successCriteria = successCriteriaText(plan.successCriteria, t);
-        await prisma.pilotEvaluation.upsert({
-          where: { projectSlug: p.projectSlug },
-          create: { projectSlug: p.projectSlug, successCriteria, updatedById: aiUser.id },
-          update: { successCriteria, updatedById: aiUser.id },
+      impact: async ({ client, context }) => {
+        if (await prisma.impactMetric.count({ where: { projectSlug: slug } })) return;
+        const metrics = coerceImpactMetrics(await callFillTool(client, IMPACT_METRICS_SYSTEM_PROMPT, IMPACT_METRICS_TOOL, context));
+        if (!metrics.length) throw new Error("no metrics");
+        await prisma.impactMetric.createMany({
+          data: metrics.map((m) => ({ projectSlug: slug, label: m.label, unit: m.unit, targetValue: m.targetValue, description: m.description || null })),
         });
-      }
-    }),
+        await markStepDone(p.projectId, "PRODUCTION", "impact_measurement_setup", p.userId);
+      },
 
-    run("impact", async () => {
-      if (await prisma.impactMetric.count({ where: { projectSlug: p.projectSlug } })) return;
-      const metrics = coerceImpactMetrics(await callTool(client, IMPACT_METRICS_SYSTEM_PROMPT, IMPACT_METRICS_TOOL, context));
-      if (!metrics.length) throw new Error("no metrics");
-      await prisma.impactMetric.createMany({
-        data: metrics.map((m) => ({ projectSlug: p.projectSlug, label: m.label, unit: m.unit, targetValue: m.targetValue, description: m.description || null })),
-      });
-      await markDone(p.projectId, "impact_measurement_setup", p.userId);
-    }),
+      launch: async ({ client, context, aiUserId }) => {
+        const current = await prisma.launchPlan.findUnique({ where: { projectSlug: slug }, include: { _count: { select: { channels: true } } } });
+        if (current && current._count.channels && LAUNCH_FIELDS.every((f) => current[f]?.trim())) return;
+        const draft = coerceLaunchPlan(await callFillTool(client, LAUNCH_PLAN_SYSTEM_PROMPT, LAUNCH_PLAN_TOOL, context));
+        const writes = launchFieldsToWrite(current, draft);
+        const channels = current?._count.channels ? [] : draft.channels;
+        if (!Object.keys(writes).length && !channels.length) throw new Error("no launch plan");
+        await prisma.launchPlan.upsert({
+          where: { projectSlug: slug },
+          create: { projectSlug: slug, ...writes, updatedById: aiUserId, channels: { create: channels } },
+          update: { ...writes, updatedById: aiUserId, channels: { create: channels } },
+        });
+        await markStepDone(p.projectId, "PRODUCTION", "launch_marketing_plan_created", p.userId);
+      },
 
-    run("launch", async () => {
-      const current = await prisma.launchPlan.findUnique({ where: { projectSlug: p.projectSlug }, include: { _count: { select: { channels: true } } } });
-      if (current && current._count.channels && LAUNCH_FIELDS.every((f) => current[f]?.trim())) return;
-      const draft = coerceLaunchPlan(await callTool(client, LAUNCH_PLAN_SYSTEM_PROMPT, LAUNCH_PLAN_TOOL, context));
-      const writes = launchFieldsToWrite(current, draft);
-      const channels = current?._count.channels ? [] : draft.channels;
-      if (!Object.keys(writes).length && !channels.length) throw new Error("no launch plan");
-      await prisma.launchPlan.upsert({
-        where: { projectSlug: p.projectSlug },
-        create: { projectSlug: p.projectSlug, ...writes, updatedById: aiUser.id, channels: { create: channels } },
-        update: { ...writes, updatedById: aiUser.id, channels: { create: channels } },
-      });
-      await markDone(p.projectId, "launch_marketing_plan_created", p.userId);
-    }),
+      workflows: async ({ client, context, aiUserId, t }) => {
+        if (await wikiPageExists(slug, "arbetsfloden")) return;
+        const html = workflowsHtml(await callFillTool(client, WORKFLOWS_SYSTEM_PROMPT, WORKFLOWS_TOOL, context), t);
+        if (!html) throw new Error("no workflows");
+        await createWikiPage(slug, "arbetsfloden", t.titleWorkflows, html, aiUserId);
+        await markStepDone(p.projectId, "PRODUCTION", "workflows_formalized", p.userId);
+      },
 
-    run("workflows", async () => {
-      const exists = await prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: p.projectSlug, slug: "arbetsfloden" } }, select: { id: true } });
-      if (exists) return;
-      const html = workflowsHtml(await callTool(client, WORKFLOWS_SYSTEM_PROMPT, WORKFLOWS_TOOL, context), t);
-      if (!html) throw new Error("no workflows");
-      await createWikiPage(p.projectSlug, "arbetsfloden", t.titleWorkflows, html, aiUser.id);
-      await markDone(p.projectId, "workflows_formalized", p.userId);
-    }),
-
-    run("tasks", async () => {
-      const tasks = coerceTasks(await callTool(client, LANSERING_TASKS_SYSTEM_PROMPT, TASKS_TOOL, context));
-      if (!tasks.length) throw new Error("no tasks");
-      const maxOrder = await prisma.kanbanCard.aggregate({ where: { projectSlug: p.projectSlug, column: "TODO" }, _max: { order: true } });
-      const start = (maxOrder._max.order ?? -1) + 1;
-      await prisma.kanbanCard.createMany({
-        data: tasks.map((t, i) => ({
-          projectSlug: p.projectSlug,
-          title: t.title,
-          description: t.description || null,
-          column: "TODO" as const,
-          order: start + i,
-          createdById: aiUser.id,
-          createdByAi: true,
-        })),
-      });
-    }),
-  ]);
+      tasks: async ({ client, context, aiUserId }) => {
+        const tasks = coerceTasks(await callFillTool(client, LANSERING_TASKS_SYSTEM_PROMPT, TASKS_TOOL, context));
+        if (!tasks.length) throw new Error("no tasks");
+        await addAiCards(slug, tasks, aiUserId);
+      },
+    },
+  });
 }
 
 // ─── "Sammanfatta resultaten" (on request) ──────────────────────────────────
@@ -356,7 +301,7 @@ export async function summarizePilotResults(projectId: string, slug: string, use
         .join("\n") || "(inga)"
     }`,
   ].join("\n\n");
-  const raw = (await callTool(gate.client, RESULTS_SYSTEM_PROMPT, RESULTS_TOOL, content)) as { summary?: unknown } | null;
+  const raw = (await callFillTool(gate.client, RESULTS_SYSTEM_PROMPT, RESULTS_TOOL, content)) as { summary?: unknown } | null;
   const summary = plainText(str(raw?.summary));
   if (!summary) throw new InsightError("empty");
   return summary;

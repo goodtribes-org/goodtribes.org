@@ -7,7 +7,6 @@ import { Link } from "@/i18n/navigation";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isFeatureEnabled } from "@/lib/featureFlags";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
-import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { latestInsight } from "@/lib/ideaInsights";
 import { uppstartGateCriteria, MIN_TEST_FEEDBACK, type GateBrief } from "@/lib/phaseGate";
 import { INITIATIVE_CHECKLIST_ITEMS } from "@/lib/projectPhase";
@@ -15,7 +14,7 @@ import { PHASE_ORDER } from "@/lib/sprints";
 import { isUppstartFillInProgress, parseUppstartStatus, type UppstartFillStatus } from "@/lib/uppstartFill";
 import AddOrInviteMember from "../../AddOrInviteMember";
 import OverviewSection from "../ide/OverviewSection";
-import FillPoller from "../ide/FillPoller";
+import { DraftCta, FieldGrid, FocusBox, GateClosed, OverviewHeader, TaskList, WikiHtml } from "../_overview/parts";
 import RolesSection from "./RolesSection";
 import DraftButton from "./DraftButton";
 import PhaseGateSection from "../ide/PhaseGateSection";
@@ -122,65 +121,24 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 py-6">
-      {isUppstartFillInProgress(fill) && <FillPoller />}
+      <OverviewHeader
+        heading={t("heading")}
+        intro={isUppstartFillInProgress(fill) ? t("introWriting") : t("intro")}
+        polling={isUppstartFillInProgress(fill)}
+        stepByStep={{ href: `/projects/${slug}/guide/pilot`, label: t("stepByStep") }}
+        notYet={stillInIdea ? { text: t("stillInIdea"), href: `/projects/${slug}/ide#fasgrind`, linkLabel: t("toGate") } : null}
+        progressLabel={t("progressLabel")}
+        steps={steps.map((st) => ({ key: st.key, label: tCheck(st.key as Parameters<typeof tCheck>[0]), done: doneKeys.has(st.key), anchor: STEP_ANCHOR[st.key] ?? "plan" }))}
+        draftCta={
+          !fillRow && canEdit && aiAvailable && !stillInIdea ? (
+            <DraftCta text={t("draftIntro")}>
+              <DraftButton slug={slug} label={t("draftAll")} variant="primary" />
+            </DraftCta>
+          ) : null
+        }
+      />
 
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
-          <p className="mt-1 text-sm text-dark-slate/60">{isUppstartFillInProgress(fill) ? t("introWriting") : t("intro")}</p>
-        </div>
-        <Link href={`/projects/${slug}/guide/pilot`} className="text-sm font-medium text-dark-slate/60 hover:text-coral">
-          {t("stepByStep")}
-        </Link>
-      </div>
-
-      {stillInIdea && (
-        <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          {t("stillInIdea")}{" "}
-          <Link href={`/projects/${slug}/ide#fasgrind`} className="font-semibold underline underline-offset-2">
-            {t("toGate")}
-          </Link>
-        </p>
-      )}
-
-      {/* Progress through the phase's steps */}
-      <nav aria-label={t("progressLabel")} className="flex flex-wrap gap-2">
-        {steps.map((s) => (
-          <a
-            key={s.key}
-            href={`#${STEP_ANCHOR[s.key] ?? "plan"}`}
-            className={`rounded-full border px-3 py-1 text-xs font-medium ${
-              doneKeys.has(s.key) ? "border-seagrass/40 bg-seagrass/10 text-seagrass" : "border-muted-teal/40 bg-white text-dark-slate/60 hover:border-coral/50"
-            }`}
-          >
-            {doneKeys.has(s.key) ? "✓ " : ""}
-            {tCheck(s.key as Parameters<typeof tCheck>[0])}
-          </a>
-        ))}
-      </nav>
-
-      {!fillRow && canEdit && aiAvailable && !stillInIdea && (
-        <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-seagrass/30 bg-seagrass/5 p-5">
-          <p className="flex-1 text-sm text-dark-slate/75">{t("draftIntro")}</p>
-          <DraftButton slug={slug} label={t("draftAll")} variant="primary" />
-        </div>
-      )}
-
-      {(brief?.content.nextFocus.length || decision?.note) && (
-        <section aria-labelledby="fokus-heading" className="rounded-2xl border border-muted-teal/30 bg-dry-sage/15 p-5">
-          <h2 id="fokus-heading" className="text-sm font-semibold uppercase tracking-wide text-dark-slate/60">
-            {t("focusHeading")}
-          </h2>
-          {brief && brief.content.nextFocus.length > 0 && (
-            <ul className="mt-2 list-disc pl-5 text-sm text-dark-slate/80">
-              {brief.content.nextFocus.map((f, i) => (
-                <li key={i}>{f}</li>
-              ))}
-            </ul>
-          )}
-          {decision?.note && <p className="mt-2 text-sm italic text-dark-slate/70">”{decision.note}”</p>}
-        </section>
-      )}
+      <FocusBox heading={t("focusHeading")} items={brief?.content.nextFocus ?? []} note={decision?.note} />
 
       <OverviewSection
         id="team"
@@ -257,10 +215,7 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
                 {canEdit ? t("edit") : t("open")}
               </Link>
             </div>
-            <div
-              className="text-sm text-dark-slate/80 [&_h2]:mb-1 [&_h2]:mt-3 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:text-dark-slate [&_h2:first-child]:mt-0 [&_ul]:list-disc [&_ul]:pl-5 [&_em]:text-dark-slate/50"
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(sprintPlan.content) }}
-            />
+            <WikiHtml html={sprintPlan.content} />
           </div>
         ) : (
           !sprint && <p className="mt-3 text-sm text-dark-slate/50">{t("sprintEmpty")}</p>
@@ -279,21 +234,7 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
           </Link>
         }
       >
-        {cards.length ? (
-          <>
-            <ul className="flex flex-col divide-y divide-muted-teal/15">
-              {cards.map((c) => (
-                <li key={c.id} className="flex items-center justify-between gap-3 py-2 text-sm text-dark-slate/80">
-                  <span>{c.title}</span>
-                  {c.createdByAi && <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-seagrass">{t("aiDraft")}</span>}
-                </li>
-              ))}
-            </ul>
-            {openCardCount > cards.length && <p className="mt-2 text-xs text-dark-slate/50">{t("moreTasks", { count: openCardCount - cards.length })}</p>}
-          </>
-        ) : (
-          <p className="text-sm text-dark-slate/50">{t("tasksEmpty")}</p>
-        )}
+        <TaskList cards={cards} total={openCardCount} aiDraftLabel={t("aiDraft")} moreLabel={(count) => t("moreTasks", { count })} emptyLabel={t("tasksEmpty")} />
       </OverviewSection>
 
       <OverviewSection
@@ -308,18 +249,7 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
           </Link>
         }
       >
-        {plan && planFields.some(([f]) => plan[f]) ? (
-          <dl className="grid gap-4 md:grid-cols-2">
-            {planFields.map(([f, label]) => (
-              <div key={f}>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-dark-slate/50">{label}</dt>
-                <dd className="mt-1 whitespace-pre-line text-sm text-dark-slate/80">{plan[f] || <span className="text-dark-slate/40">—</span>}</dd>
-              </div>
-            ))}
-          </dl>
-        ) : (
-          <p className="text-sm text-dark-slate/50">{t("planEmpty")}</p>
-        )}
+        <FieldGrid empty={t("planEmpty")} fields={planFields.map(([f, label]) => ({ key: f, label, value: plan?.[f] }))} />
       </OverviewSection>
 
       {project.phase === "PILOT" ? (
@@ -343,12 +273,7 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
         </OverviewSection>
       ) : (
         gateDecision?.outcome === "CONTINUE" && (
-          <p className="rounded-2xl border border-seagrass/30 bg-seagrass/5 px-5 py-3 text-sm text-dark-slate/75">
-            {t("gateClosed", { date: decisionDate(gateDecision.createdAt) })}{" "}
-            <Link href={`/projects/${slug}/lansering`} className="font-semibold text-seagrass hover:underline">
-              {t("gateClosedLink")}
-            </Link>
-          </p>
+          <GateClosed text={t("gateClosed", { date: decisionDate(gateDecision.createdAt) })} href={`/projects/${slug}/lansering`} linkLabel={t("gateClosedLink")} />
         )
       )}
     </div>

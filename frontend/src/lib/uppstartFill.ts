@@ -1,9 +1,15 @@
-import type Anthropic from "@anthropic-ai/sdk";
 import { prisma } from "@/lib/prisma";
-import { logger } from "@/lib/logger";
-import { isPhaseFillInProgress, markPhaseFillPending, parsePhaseFillStatus, setPhaseFillState, type PhaseFillState } from "@/lib/phaseFill";
-import { getAiClientFor } from "@/lib/aiMode";
-import { getAiParticipantUser } from "@/lib/aiParticipant";
+import {
+  addAiCards,
+  callFillTool,
+  createWikiPage,
+  isPhaseFillInProgress,
+  markStepDone,
+  parsePhaseFillStatus,
+  startPhaseFill,
+  wikiPageExists,
+  type PhaseFillState,
+} from "@/lib/phaseFill";
 import { escapeHtml } from "@/lib/renderBody";
 import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { getFieldProvenance } from "@/lib/fieldProvenance";
@@ -22,9 +28,6 @@ import {
   TASKS_TOOL,
 } from "@/lib/prompts/uppstartFill";
 
-const MODEL = "claude-sonnet-4-6";
-const REQUEST_OPTIONS = { timeout: 90_000, maxRetries: 1 };
-
 // ─── Fill status (drives the Uppstart page's placeholders) ─────────────────
 
 export const UPPSTART_SECTIONS = ["team", "sprint", "tasks", "plan"] as const;
@@ -38,9 +41,6 @@ export function parseUppstartStatus(raw: unknown, updatedAt?: Date, now = Date.n
 
 export const isUppstartFillInProgress = isPhaseFillInProgress;
 
-function setState(projectId: string, section: UppstartSection, state: UppstartFillState) {
-  return setPhaseFillState(projectId, "PILOT", section, state);
-}
 
 // ─── Pure parsing (unit tested) ─────────────────────────────────────────────
 
@@ -163,29 +163,7 @@ async function buildContext(projectId: string, slug: string): Promise<string> {
     .join("\n\n");
 }
 
-async function callTool(client: Anthropic, system: string, tool: Anthropic.Tool, content: string): Promise<unknown> {
-  const response = await client.messages.create(
-    {
-      model: MODEL,
-      max_tokens: 3000,
-      system,
-      tools: [tool],
-      tool_choice: { type: "tool", name: tool.name },
-      messages: [{ role: "user", content }],
-    },
-    REQUEST_OPTIONS,
-  );
-  const toolUse = response.content.find((b) => b.type === "tool_use");
-  return toolUse && toolUse.type === "tool_use" ? toolUse.input : null;
-}
 
-async function markDone(projectId: string, itemKey: string, userId: string) {
-  await prisma.initiativeChecklistItem.upsert({
-    where: { projectId_itemKey: { projectId, itemKey } },
-    create: { projectId, phase: "PILOT", itemKey, completedAt: new Date(), completedById: userId },
-    update: { completedAt: new Date(), completedById: userId },
-  });
-}
 
 // ─── The background fill ────────────────────────────────────────────────────
 
@@ -197,86 +175,39 @@ export type UppstartFillParams = {
   only?: UppstartSection[];
 };
 
-// Marks the sections pending and runs the fill in the background (the
-// app is a persistent Node server, same as the Idé fill).
-export async function startUppstartFill(p: UppstartFillParams): Promise<void> {
-  const sections = p.only ?? [...UPPSTART_SECTIONS];
-  await markPhaseFillPending(p.projectId, "PILOT", sections);
-  void runUppstartFill({ ...p, only: sections }).catch((err) =>
-    logger.error("uppstart-fill: crashed", { projectId: p.projectId, err: String(err) }),
-  );
-}
-
 // Drafts what AI can do in Uppstart; humans form the team, run the sprint
 // and build/test the prototype. Every section only adds — it never
 // replaces what the team already has (existing roles, sprint, plan text).
-export async function runUppstartFill(p: UppstartFillParams): Promise<void> {
-  const sections = p.only ?? [...UPPSTART_SECTIONS];
-  // Asked for by a person (after the gate or with the button); the
-  // project's monthly AI budget applies.
-  const gate = await getAiClientFor({ feature: "project-plan", kind: "assist", userId: null, projectId: p.projectId, phase: "PILOT", language: "project" });
-  if (!gate.ok) {
-    await Promise.all(sections.map((s) => setState(p.projectId, s, "failed")));
-    return;
-  }
-  const client = gate.client;
-  const [context, aiUser, lang] = await Promise.all([
-    buildContext(p.projectId, p.projectSlug),
-    getAiParticipantUser(),
-    prisma.project.findUnique({ where: { id: p.projectId }, select: { contentLocale: true } }),
-  ]);
-  const t = draftText(lang?.contentLocale);
+// Runs in the background via the shared runner (lib/phaseFill.ts).
+export async function startUppstartFill(p: UppstartFillParams): Promise<void> {
+  const slug = p.projectSlug;
+  await startPhaseFill({
+    projectId: p.projectId,
+    phase: "PILOT",
+    sections: p.only ?? UPPSTART_SECTIONS,
+    buildContext: () => buildContext(p.projectId, slug),
+    work: {
+      team: async ({ client, context }) => {
+        if (await prisma.projectRoleNeed.count({ where: { projectId: p.projectId } })) return;
+        const roles = coerceRoles(await callFillTool(client, ROLES_SYSTEM_PROMPT, ROLES_TOOL, context));
+        if (!roles.length) throw new Error("no roles");
+        await prisma.projectRoleNeed.createMany({
+          data: roles.map((r, i) => ({ projectId: p.projectId, title: r.title, description: r.description || null, order: i, createdByAi: true })),
+        });
+      },
 
-  const run = async (section: UppstartSection, work: () => Promise<void>) => {
-    if (!sections.includes(section)) return;
-    await setState(p.projectId, section, "running");
-    try {
-      await work();
-      await setState(p.projectId, section, "done");
-    } catch (err) {
-      logger.error("uppstart-fill: section failed", { section, projectId: p.projectId, err: String(err) });
-      await setState(p.projectId, section, "failed");
-    }
-  };
-
-  await Promise.all([
-    run("team", async () => {
-      if (await prisma.projectRoleNeed.count({ where: { projectId: p.projectId } })) return;
-      const roles = coerceRoles(await callTool(client, ROLES_SYSTEM_PROMPT, ROLES_TOOL, context));
-      if (!roles.length) throw new Error("no roles");
-      await prisma.projectRoleNeed.createMany({
-        data: roles.map((r, i) => ({ projectId: p.projectId, title: r.title, description: r.description || null, order: i, createdByAi: true })),
-      });
-    }),
-
-    run("sprint", async () => {
-      const [sprintCount, wiki] = await Promise.all([
-        prisma.sprint.count({ where: { projectSlug: p.projectSlug } }),
-        prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: p.projectSlug, slug: "sprintplan" } }, select: { id: true } }),
-      ]);
-      if (sprintCount && wiki) return;
-      const plan = coerceSprintPlan(await callTool(client, SPRINT_SYSTEM_PROMPT, SPRINT_TOOL, context), t);
-      if (!plan) throw new Error("no sprint plan");
-      await prisma.$transaction(async (tx) => {
-        if (!wiki) {
-          const maxOrder = await tx.wikiPage.aggregate({ where: { projectSlug: p.projectSlug }, _max: { order: true } });
-          await tx.wikiPage.create({
-            data: {
-              projectSlug: p.projectSlug,
-              slug: "sprintplan",
-              title: t.titleSprintPlan,
-              content: sprintPlanHtml(plan, t),
-              order: (maxOrder._max.order ?? -1) + 1,
-              createdById: aiUser.id,
-            },
-          });
-        }
+      sprint: async ({ client, context, aiUserId, t }) => {
+        const [sprintCount, wiki] = await Promise.all([prisma.sprint.count({ where: { projectSlug: slug } }), wikiPageExists(slug, "sprintplan")]);
+        if (sprintCount && wiki) return;
+        const plan = coerceSprintPlan(await callFillTool(client, SPRINT_SYSTEM_PROMPT, SPRINT_TOOL, context), t);
+        if (!plan) throw new Error("no sprint plan");
+        if (!wiki) await createWikiPage(slug, "sprintplan", t.titleSprintPlan, sprintPlanHtml(plan, t), aiUserId);
         if (!sprintCount) {
           // Same shape as createSprint (together, no deadlines — the team
           // picks its pace), with the HMW questions waiting in step 1.
-          await tx.sprint.create({
+          await prisma.sprint.create({
             data: {
-              projectSlug: p.projectSlug,
+              projectSlug: slug,
               createdById: p.userId,
               name: plan.sprintName,
               pace: "TOGETHER",
@@ -285,48 +216,30 @@ export async function runUppstartFill(p: UppstartFillParams): Promise<void> {
                   phase: "UNDERSTAND",
                   status: "OPEN",
                   openedAt: new Date(),
-                  contributions: {
-                    create: plan.hmw.map((content) => ({ authorId: aiUser.id, type: "HMW" as const, content, visibleAuthor: false })),
-                  },
+                  contributions: { create: plan.hmw.map((content) => ({ authorId: aiUserId, type: "HMW" as const, content, visibleAuthor: false })) },
                 },
               },
             },
           });
         }
-      });
-    }),
+      },
 
-    run("tasks", async () => {
-      const tasks = coerceTasks(await callTool(client, TASKS_SYSTEM_PROMPT, TASKS_TOOL, context));
-      if (!tasks.length) throw new Error("no tasks");
-      const maxOrder = await prisma.kanbanCard.aggregate({ where: { projectSlug: p.projectSlug, column: "TODO" }, _max: { order: true } });
-      const start = (maxOrder._max.order ?? -1) + 1;
-      await prisma.kanbanCard.createMany({
-        data: tasks.map((t, i) => ({
-          projectSlug: p.projectSlug,
-          title: t.title,
-          description: t.description || null,
-          column: "TODO" as const,
-          order: start + i,
-          createdById: aiUser.id,
-          createdByAi: true,
-        })),
-      });
-      await markDone(p.projectId, "kanban_seeded", p.userId);
-    }),
+      tasks: async ({ client, context, aiUserId }) => {
+        const tasks = coerceTasks(await callFillTool(client, TASKS_SYSTEM_PROMPT, TASKS_TOOL, context));
+        if (!tasks.length) throw new Error("no tasks");
+        await addAiCards(slug, tasks, aiUserId);
+        await markStepDone(p.projectId, "PILOT", "kanban_seeded", p.userId);
+      },
 
-    run("plan", async () => {
-      const current = await prisma.projectPlan.findUnique({ where: { projectSlug: p.projectSlug } });
-      if (current && PLAN_FIELDS.every((f) => current[f]?.trim())) return;
-      const writes = planFieldsToWrite(current, coercePlan(await callTool(client, PLAN_SYSTEM_PROMPT, PLAN_TOOL, context)));
-      if (!Object.keys(writes).length) throw new Error("no plan");
-      await prisma.projectPlan.upsert({
-        where: { projectSlug: p.projectSlug },
-        create: { projectSlug: p.projectSlug, ...writes, updatedById: aiUser.id },
-        update: { ...writes, updatedById: aiUser.id },
-      });
-      if (writes.goal) await markDone(p.projectId, "pilot_scope_defined", p.userId);
-      if (writes.resources) await markDone(p.projectId, "rough_budget_estimated", p.userId);
-    }),
-  ]);
+      plan: async ({ client, context, aiUserId }) => {
+        const current = await prisma.projectPlan.findUnique({ where: { projectSlug: slug } });
+        if (current && PLAN_FIELDS.every((f) => current[f]?.trim())) return;
+        const writes = planFieldsToWrite(current, coercePlan(await callFillTool(client, PLAN_SYSTEM_PROMPT, PLAN_TOOL, context)));
+        if (!Object.keys(writes).length) throw new Error("no plan");
+        await prisma.projectPlan.upsert({ where: { projectSlug: slug }, create: { projectSlug: slug, ...writes, updatedById: aiUserId }, update: { ...writes, updatedById: aiUserId } });
+        if (writes.goal) await markStepDone(p.projectId, "PILOT", "pilot_scope_defined", p.userId);
+        if (writes.resources) await markStepDone(p.projectId, "PILOT", "rough_budget_estimated", p.userId);
+      },
+    },
+  });
 }
