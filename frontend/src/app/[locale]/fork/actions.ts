@@ -65,6 +65,8 @@ export async function forkProject(sourceSlug: string, formData: FormData) {
             legalType: "NONPROFIT_UMBRELLA",
             ownerId: userId,
             forkedFromProjectId: source.id,
+            // Copied content, so the same language as the original.
+            contentLocale: source.contentLocale,
             ...(source.imageUrl ? { imageUrl: source.imageUrl } : {}),
           },
         });

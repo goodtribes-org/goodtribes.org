@@ -8,7 +8,7 @@ const SHARED_RULES = `Regler som alltid gäller:
 - Utgå bara från samtalet och det som redan står om projektet. Hitta ALDRIG på fakta: inga siffror, statistik, namn på organisationer eller personer som inte nämnts.
 - Lämna hellre ett fält tomt än att gissa.
 - För varje fält: basis = "user" om initiativtagaren själv sa det, "inferred" om du härlett eller föreslagit det.
-- Skriv kort och konkret, med initiativtagarens egna ord så långt det går, på det språk samtalet fördes på.`;
+- Skriv kort och konkret, med initiativtagarens egna ord så långt det går.`;
 
 const field = (description: string) => ({
   type: "object" as const,
@@ -117,7 +117,6 @@ Regler:
 - Hellre 3 säkra träffar än 8 osäkra. Högst 8.
 - type: COMPETITOR (liknande aktör eller alternativ), PARTNER_PROSPECT (möjlig samarbetspartner), TREND eller REGULATION.
 - description: vad aktören gör, en till två meningar. relevance: varför det spelar roll för just det här projektet.
-- Skriv på svenska.
 
 När du är klar med sökningarna: rapportera genom verktyget "omvarld".`;
 
@@ -155,7 +154,7 @@ Regler:
 - 8–12 öppna frågor om personens egna erfarenheter ("Berätta om senast…", "Hur gör du idag när…"). Inga ledande frågor och inga frågor om vad de skulle tycka om lösningen.
 - Utgå från projektets riskablaste antaganden om problemet och målgruppen.
 - Några korta tips om hur man genomför intervjun och vad man ska anteckna.
-- Skriv på svenska, kort och praktiskt.
+- Kort och praktiskt.
 
 Svara genom verktyget "intervjuguide".`;
 

@@ -1,5 +1,6 @@
 import type { PhaseGateOutcome, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { getAiClientFor } from "@/lib/aiMode";
 import { getFieldProvenance } from "@/lib/fieldProvenance";
 import { parseOpenQuestions } from "@/lib/dreamConversation";
@@ -123,7 +124,7 @@ export function coerceGateBrief(raw: unknown): GateBrief {
 }
 
 export async function runGateBrief(projectId: string, slug: string, userId: string): Promise<GateBrief> {
-  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId });
+  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId, language: "project" });
   if (!gate.ok) throw new InsightError(gate.reason);
 
   const [project, lcProv, vpProv, synthesis, critique, { interviewCount }] = await Promise.all([
@@ -186,12 +187,13 @@ export function cardsForDecision(
   synthesis: SynthesisContent | null,
   brief: GateBrief | null,
   labelFor: (key: string) => string,
+  t: DraftText = draftText("sv"),
 ): { title: string; description: string }[] {
   if (outcome === "ADJUST") {
     const unclear = synthesis?.verdicts.filter((v) => v.verdict === "unclear").map((v) => v.field) ?? [];
     return [...new Set(unclear)].map((key) => ({
-      title: `Testa antagandet: ${labelFor(key)}`,
-      description: "Intervjuerna gav inget tydligt svar. Hitta ett sätt att testa det — fler intervjuer eller ett litet experiment.",
+      title: `${t.cardTestAssumption}: ${labelFor(key)}`,
+      description: t.cardTestAssumptionWhy,
     }));
   }
   if (outcome === "PIVOT") {
@@ -200,8 +202,8 @@ export function cardsForDecision(
       ...(brief?.fell ?? []),
     ];
     return [...new Set(contradicted)].map((key) => ({
-      title: `Omarbeta: ${labelFor(key)}`,
-      description: "Underlaget motsäger det här antagandet. Tänk om och skriv om fältet.",
+      title: `${t.cardRework}: ${labelFor(key)}`,
+      description: t.cardReworkWhy,
     }));
   }
   return [];
@@ -256,7 +258,7 @@ const SPRINT_PHASE_LABEL: Record<string, string> = {
 };
 
 export async function runUppstartGateBrief(projectId: string, slug: string, userId: string): Promise<GateBrief> {
-  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId });
+  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId, language: "project" });
   if (!gate.ok) throw new InsightError(gate.reason);
 
   const [project, lcProv, vpProv, sprint, sprintPlan, plan, roles, { feedbackCount }] = await Promise.all([
@@ -341,17 +343,18 @@ export function cardsForUppstartDecision(
   outcome: PhaseGateOutcome,
   brief: GateBrief | null,
   labelFor: (key: string) => string,
+  t: DraftText = draftText("sv"),
 ): { title: string; description: string }[] {
   if (outcome === "ADJUST") {
     return [...new Set(brief?.unanswered ?? [])].map((q) => ({
-      title: `Testa: ${q}`.slice(0, 200),
-      description: "Sprinten gav inget svar på den här frågan. Testa den igen — med fler testpersoner eller en ändrad prototyp.",
+      title: `${t.cardTest}: ${q}`.slice(0, 200),
+      description: t.cardTestWhy,
     }));
   }
   if (outcome === "PIVOT") {
     return [...new Set(brief?.fell ?? [])].map((key) => ({
-      title: `Omarbeta lösningen: ${labelFor(key)}`,
-      description: "Testerna motsäger det här antagandet om lösningen. Tänk om, skriv om fältet och testa igen.",
+      title: `${t.cardReworkSolution}: ${labelFor(key)}`,
+      description: t.cardReworkSolutionWhy,
     }));
   }
   return [];
@@ -403,7 +406,7 @@ export async function lanseringGateCriteria(projectId: string, slug: string): Pr
 }
 
 export async function runLanseringGateBrief(projectId: string, slug: string, userId: string): Promise<GateBrief> {
-  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId });
+  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId, language: "project" });
   if (!gate.ok) throw new InsightError(gate.reason);
 
   const [project, evaluation, metrics, launch, workflows, roles, previous] = await Promise.all([
@@ -468,20 +471,25 @@ export async function runLanseringGateBrief(projectId: string, slug: string, use
 
 // ADJUST: measure what's still unclear. PIVOT: fix the criteria the pilot
 // didn't meet. Pure, like the other two.
+export type CardWords = { findOut: string; findOutWhy: string; unclear: string; unclearWhy: string; notMet: string; notMetWhy: string };
+
+// The card prefixes for the criteria-based gates, in the project's language.
+export function cardWords(gate: "lansering" | "etablera" | "skala", t: DraftText = draftText("sv")): CardWords {
+  const base = { findOut: t.cardFindOut, findOutWhy: t.cardFindOutWhy };
+  if (gate === "etablera") return { ...base, unclear: t.cardStrengthen, unclearWhy: t.cardStrengthenWhy, notMet: t.cardFixEtablera, notMetWhy: t.cardFixEtableraWhy };
+  if (gate === "skala") return { ...base, unclear: t.cardFollowUp, unclearWhy: t.cardFollowUpWhy, notMet: t.cardReach, notMetWhy: t.cardReachWhy };
+  return { ...base, unclear: t.cardMeasure, unclearWhy: t.cardMeasureWhy, notMet: t.cardFix, notMetWhy: t.cardFixWhy };
+}
+
 export function cardsForLanseringDecision(
   outcome: PhaseGateOutcome,
   brief: GateBrief | null,
-  words: { unclear: string; unclearWhy: string; notMet: string; notMetWhy: string } = {
-    unclear: "Mät",
-    unclearWhy: "Piloten gav inte tillräckligt underlag för det här framgångskriteriet. Fortsätt piloten och mät det.",
-    notMet: "Åtgärda",
-    notMetWhy: "Piloten nådde inte det här framgångskriteriet. Ta reda på varför och ändra lösningen innan nästa försök.",
-  },
+  words: CardWords = cardWords("lansering"),
 ): { title: string; description: string }[] {
   if (outcome === "ADJUST") {
     const open = [...new Set(brief?.unanswered ?? [])].map((q) => ({
-      title: `Ta reda på: ${q}`.slice(0, 200),
-      description: "Det här behövs för att kunna bedöma läget. Ta reda på det innan nästa beslut.",
+      title: `${words.findOut}: ${q}`.slice(0, 200),
+      description: words.findOutWhy,
     }));
     const unclear = [...new Set(brief?.criteriaVerdicts.filter((c) => c.verdict === "unclear").map((c) => c.criterion) ?? [])].map((c) => ({
       title: `${words.unclear}: ${c}`.slice(0, 200),
@@ -517,12 +525,7 @@ export const ETABLERA_GATE_CRITERIA = [
   "review_council_deep_review",
 ] as const;
 
-export const ETABLERA_CARD_WORDS = {
-  unclear: "Stärk",
-  unclearWhy: "Underlaget räcker inte för att säga att det här är på plats. Stärk det innan ni skalar.",
-  notMet: "Åtgärda",
-  notMetWhy: "Det här saknas för att projektet ska klara att växa. Lös det innan ni skalar.",
-};
+export const ETABLERA_CARD_WORDS = cardWords("etablera");
 
 // Checklist keys; each counts as met when ticked, or when the project's
 // own data shows it (funding applied for or pledged, funding awarded, an
@@ -551,7 +554,7 @@ export async function etableraGateCriteria(projectId: string, slug: string): Pro
 }
 
 export async function runEtableraGateBrief(projectId: string, slug: string, userId: string): Promise<GateBrief> {
-  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId });
+  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId, language: "project" });
   if (!gate.ok) throw new InsightError(gate.reason);
 
   const [project, plan, wikis, campaign, applications, partnerships, review, metrics, roles, previous] = await Promise.all([
@@ -623,12 +626,7 @@ export const SKALA_GATE_CRITERIA = [
   "local_teams_or_license",
 ] as const;
 
-export const SKALA_CARD_WORDS = {
-  unclear: "Följ upp",
-  unclearWhy: "Underlaget räcker inte för att säga om det här är nått. Följ upp och mät innan nästa beslut.",
-  notMet: "Nå",
-  notMetWhy: "Det här skalningsmålet eller området är inte nått. Gör en plan för att nå det, eller ändra målet.",
-};
+export const SKALA_CARD_WORDS = cardWords("skala");
 
 // Checklist keys; met when ticked, or when the data shows it (replication
 // opened or an instance started, goals/geographies written in the scaling
@@ -656,7 +654,7 @@ export async function skalaGateCriteria(projectId: string, slug: string): Promis
 }
 
 export async function runSkalaGateBrief(projectId: string, slug: string, userId: string): Promise<GateBrief> {
-  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId });
+  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId, language: "project" });
   if (!gate.ok) throw new InsightError(gate.reason);
 
   const [project, plan, choice, instances, forks, applications, metrics, previous] = await Promise.all([

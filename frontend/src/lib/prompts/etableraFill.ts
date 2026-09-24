@@ -3,7 +3,7 @@
 
 const SHARED_RULES = `Regler som alltid gäller:
 - Utgå bara från underlaget: pilotens resultat och beslutsunderlaget från fasgrinden, framgångskriterierna, impact-värdena, arbetsflödena, pilotplanen, lanseringsplanen, kärnteamet och omvärldsbevakningen. Hitta ALDRIG på fakta: inga siffror, bidragsgivare, organisationer eller personer som inte nämns i underlaget.
-- Allt du skriver är ett utkast som teamet granskar och ändrar. Kort och konkret, på svenska.
+- Allt du skriver är ett utkast som teamet granskar och ändrar. Kort och konkret.
 - Projekten drivs av ideella deltagare med begränsad tid — håll det enkelt och genomförbart.`;
 
 const PHASE_CONTEXT = `Projektets pilot fick go och projektet är nu i Etablera: skala upp processen som fungerade i piloten, bygga stabil drift och återkommande finansiering, formalisera partnerskap, bygga en stabil community/supporterbas, dokumentera en "playbook" så att andra kan replikera, och låta Granskningsrådet göra en djupare granskning inför skalning.`;

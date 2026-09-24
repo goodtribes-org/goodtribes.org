@@ -5,7 +5,7 @@
 
 const SHARED_RULES = `Regler som alltid gäller:
 - Utgå bara från underlaget: canvasen, beslutsunderlaget från fasgrinden (vad sprinttesterna visade, fokus i piloten, framgångskriterier), projektplanen och kärnteamet. Hitta ALDRIG på fakta: inga siffror, statistik, organisationer eller personer som inte nämnts.
-- Allt du skriver är ett utkast som teamet granskar och ändrar. Kort och konkret, på svenska.
+- Allt du skriver är ett utkast som teamet granskar och ändrar. Kort och konkret.
 - Projekten drivs av ideella deltagare med begränsad tid — håll det enkelt och genomförbart.`;
 
 const PHASE_CONTEXT = `Projektet har just gått från Uppstart till Lansering. I Lansering genomförs piloten: lösningen körs på riktigt i liten skala, lärdomar dokumenteras löpande, resultat samlas in och utvärderas mot framgångskriterierna. Samtidigt tas en lanserings- och marknadsplan fram, arbetsflöden och ansvar formaliseras och impact börjar mätas.`;
@@ -173,7 +173,7 @@ Skriv en kort resultatsammanfattning, högst ca 12 rader. Vanlig text utan markd
 - De viktigaste lärdomarna (2–3 rader).
 - Vad som saknas för att kunna utvärdera ordentligt (1–2 rader).
 
-Grunda allt på loggen och värdena — hitta aldrig på resultat. Är underlaget tunt: säg det. Ett impact-värde som står på 0 utan uppdateringar har bara inte rapporterats ännu — säg det, kalla det inte fel. Skriv på svenska.
+Grunda allt på loggen och värdena — hitta aldrig på resultat. Är underlaget tunt: säg det. Ett impact-värde som står på 0 utan uppdateringar har bara inte rapporterats ännu — säg det, kalla det inte fel.
 
 Svara genom verktyget "resultat".`;
 

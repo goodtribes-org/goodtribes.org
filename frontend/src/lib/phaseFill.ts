@@ -5,6 +5,7 @@ import { logger } from "@/lib/logger";
 import { getAiClientFor } from "@/lib/aiMode";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { escapeHtml } from "@/lib/renderBody";
+import { draftText, type DraftText } from "@/lib/aiLanguage";
 
 // Shared status handling for the AI's background drafting on a phase's
 // one-page overview (Uppstart, Lansering, …), stored in PhaseFill as
@@ -127,7 +128,8 @@ export async function addAiCards(projectSlug: string, cards: { title: string; de
   });
 }
 
-export type PhaseFillWork = (ctx: { client: Anthropic; context: string; aiUserId: string }) => Promise<void>;
+// t = the fixed draft text (headings, titles) in the project's language.
+export type PhaseFillWork = (ctx: { client: Anthropic; context: string; aiUserId: string; t: DraftText }) => Promise<void>;
 
 // Runs a phase's sections in parallel: each one marks itself running, then
 // done or failed (logged) — one failing never stops the others. Gated by
@@ -139,17 +141,22 @@ export async function runPhaseFill<S extends string>(p: {
   buildContext: () => Promise<string>;
   work: Record<S, PhaseFillWork>;
 }): Promise<void> {
-  const gate = await getAiClientFor({ feature: "project-plan", kind: "assist", userId: null, projectId: p.projectId, phase: p.phase });
+  const gate = await getAiClientFor({ feature: "project-plan", kind: "assist", userId: null, projectId: p.projectId, phase: p.phase, language: "project" });
   if (!gate.ok) {
     await Promise.all(p.sections.map((s) => setPhaseFillState(p.projectId, p.phase, s, "failed")));
     return;
   }
-  const [context, aiUser] = await Promise.all([p.buildContext(), getAiParticipantUser()]);
+  const [context, aiUser, lang] = await Promise.all([
+    p.buildContext(),
+    getAiParticipantUser(),
+    prisma.project.findUnique({ where: { id: p.projectId }, select: { contentLocale: true } }),
+  ]);
+  const t = draftText(lang?.contentLocale);
   await Promise.all(
     p.sections.map(async (section) => {
       await setPhaseFillState(p.projectId, p.phase, section, "running");
       try {
-        await p.work[section]({ client: gate.client, context, aiUserId: aiUser.id });
+        await p.work[section]({ client: gate.client, context, aiUserId: aiUser.id, t });
         await setPhaseFillState(p.projectId, p.phase, section, "done");
       } catch (err) {
         logger.error("phase-fill: section failed", { phase: p.phase, section, projectId: p.projectId, err: String(err) });

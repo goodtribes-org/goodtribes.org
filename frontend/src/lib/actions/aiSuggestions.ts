@@ -97,6 +97,7 @@ export async function reviewCanvas(projectSlug: string, entity: string): Promise
     userId,
     projectId: project.id,
     stepKey: entity === "leanCanvas" ? "lean_canvas_created" : "value_proposition_created",
+    language: "project",
   });
   if (!gate.ok) return { error: aiGateMessage(gate.reason) };
 

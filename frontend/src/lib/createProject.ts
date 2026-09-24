@@ -3,6 +3,7 @@ import { slugify } from "@/lib/slugify";
 import { indexDocuments } from "@/lib/meili";
 import { isCreatableLegalType } from "@/lib/legalType";
 import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
+import { normalizeContentLocale, requestContentLocale } from "@/lib/aiLanguage";
 
 export type CreateProjectParams = {
   title: string;
@@ -18,6 +19,9 @@ export type CreateProjectParams = {
   orgId?: string | null;
   isSandbox?: boolean;
   skillIds?: string[];
+  // The language the project is written in; defaults to the creator's
+  // locale in a request, Swedish otherwise (crons).
+  contentLocale?: string;
 };
 
 // Shared core of project creation — slug-retry, the Project row itself, the
@@ -38,6 +42,7 @@ export async function createProjectRecord(params: CreateProjectParams) {
   } = params;
   const legalType = params.legalType && isCreatableLegalType(params.legalType) ? params.legalType : "NONPROFIT_UMBRELLA";
 
+  const contentLocale = params.contentLocale ? normalizeContentLocale(params.contentLocale) : await requestContentLocale();
   const baseSlug = slugify(title) || "project";
 
   for (let attempt = 0; attempt <= 9; attempt++) {
@@ -46,7 +51,7 @@ export async function createProjectRecord(params: CreateProjectParams) {
       const project = await prisma.project.create({
         data: {
           slug: candidate, title, slogan, summary, description, category, tags, sdgGoals, legalType,
-          ownerId, isSandbox,
+          ownerId, isSandbox, contentLocale,
           ...(imageUrl ? { imageUrl } : {}),
           ...(orgId ? { orgId } : {}),
         },

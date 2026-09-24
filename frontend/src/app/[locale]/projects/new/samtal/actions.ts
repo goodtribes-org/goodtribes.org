@@ -16,6 +16,7 @@ import { decideAiPlacement } from "@/lib/aiSuggestions";
 import { buildTranscript, generateBasics, runIdeaFill, statusFor } from "@/lib/ideaFill";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { markChecklistDone } from "@/app/[locale]/projects/[slug]/guide/actions";
+import { requestContentLocale } from "@/lib/aiLanguage";
 
 // A fixed opener, not an AI call — the first model call happens on the
 // user's first reply (see triggerDreamReply).
@@ -151,7 +152,7 @@ export async function createProjectFromDream(roomId: string) {
   // after it leaves a bare project; the claim is released so the user can
   // retry.
   try {
-    const gate = await getAiClientFor({ feature: "dream-conversation", kind: "assist", userId, projectId: null });
+    const gate = await getAiClientFor({ feature: "dream-conversation", kind: "assist", userId, projectId: null, language: await requestContentLocale() });
     if (!gate.ok) throw new Error(aiGateMessage(gate.reason));
     const transcript = await buildTranscript(roomId);
     const basics = await generateBasics(gate.client, transcript);

@@ -145,6 +145,10 @@ model Project {
   childInstance      ProjectInstance?     @relation("ChildInstance")
   alumni             ProjectAlumni[]      @relation("ProjectAlumni")
   openForReplication Boolean              @default(false)
+  // The language the project's own content is written in (set from the
+  // creator's locale at creation) — the AI writes its drafts, and the fixed
+  // text it inserts (wiki headings, card titles), in this language.
+  contentLocale      String               @default("sv")
   mentorships        MentorshipRequest[]  @relation("ProjectMentorships")
   phaseAiSettings    ProjectPhaseAiSetting[]
   stepAiSettings     ProjectStepAiSetting[]

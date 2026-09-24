@@ -8,9 +8,10 @@ import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { latestInsight } from "@/lib/ideaInsights";
 import { SKALA_SECTIONS, startSkalaFill, type SkalaSection } from "@/lib/skalaFill";
-import { cardsForLanseringDecision, SKALA_CARD_WORDS, skalaGateCriteria, runSkalaGateBrief, type GateBrief } from "@/lib/phaseGate";
+import { cardWords, cardsForLanseringDecision, skalaGateCriteria, runSkalaGateBrief, type GateBrief } from "@/lib/phaseGate";
 import { checkGateDecider, gateBriefErrorMessage, recordGateDecision } from "@/lib/gateDecision";
 import { advanceProjectPhase } from "../edit/actions";
+import { draftText } from "@/lib/aiLanguage";
 import { resolveAiMode } from "@/lib/aiMode";
 import { startImpactFill } from "@/lib/impactPhaseFill";
 
@@ -65,7 +66,7 @@ export async function decideSkalaGate(projectSlug: string, outcome: string, note
     decision,
     note,
     criteria,
-    cards: cardsForLanseringDecision(decision, brief?.content ?? null, SKALA_CARD_WORDS),
+    cards: cardsForLanseringDecision(decision, brief?.content ?? null, cardWords("skala", draftText(project.contentLocale))),
     userId: session.user.id,
   });
 

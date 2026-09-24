@@ -20,6 +20,7 @@ import { latestInsight, type SynthesisContent } from "@/lib/ideaInsights";
 import { LEAN_CANVAS_BLOCKS, LEAN_CANVAS_FIELDS } from "../lean-canvas/fields";
 import { VALUE_PROPOSITION_BLOCKS, VALUE_PROPOSITION_FIELDS } from "../value-proposition/fields";
 import { advanceProjectPhase } from "../edit/actions";
+import { draftText, normalizeContentLocale } from "@/lib/aiLanguage";
 
 const RETRYABLE: readonly FillSection[] = ["leanCanvas", "valueProposition", "marketScan", "interviewGuide", "critique"];
 
@@ -134,7 +135,7 @@ export async function decideIdeaGate(projectSlug: string, outcome: string, note:
 
   const project = await prisma.project.findUnique({
     where: { slug: projectSlug },
-    select: { id: true, slug: true, phase: true, leanCanvas: true, valueProposition: true },
+    select: { id: true, slug: true, phase: true, leanCanvas: true, valueProposition: true, contentLocale: true },
   });
   if (!project) return { error: "Projektet hittades inte" };
   if (project.phase !== "IDEA" && project.phase !== "SPRINT") return { error: "Projektet är inte i Idéfasen längre" };
@@ -147,8 +148,8 @@ export async function decideIdeaGate(projectSlug: string, outcome: string, note:
   const [synthesis, brief, tLc, tVp, aiUser] = await Promise.all([
     latestInsight<SynthesisContent>(project.id, "INTERVIEW_SYNTHESIS"),
     latestInsight<GateBrief>(project.id, "PHASE_GATE"),
-    getTranslations({ locale: "sv", namespace: "LeanCanvasHistory" }),
-    getTranslations({ locale: "sv", namespace: "ValuePropositionHistory" }),
+    getTranslations({ locale: normalizeContentLocale(project.contentLocale), namespace: "LeanCanvasHistory" }),
+    getTranslations({ locale: normalizeContentLocale(project.contentLocale), namespace: "ValuePropositionHistory" }),
     getAiParticipantUser(),
   ]);
   const labelFor = (key: string) => {
@@ -159,7 +160,7 @@ export async function decideIdeaGate(projectSlug: string, outcome: string, note:
     if (entity === "valueProposition" && vp) return tVp(`field${vp.translationKey}` as Parameters<typeof tVp>[0]);
     return key;
   };
-  const cards = cardsForDecision(decision, synthesis?.content ?? null, brief?.content ?? null, labelFor);
+  const cards = cardsForDecision(decision, synthesis?.content ?? null, brief?.content ?? null, labelFor, draftText(project.contentLocale));
 
   await prisma.$transaction(async (tx) => {
     await tx.phaseGateDecision.create({

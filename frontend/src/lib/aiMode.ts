@@ -2,6 +2,7 @@ import type AnthropicSdk from "@anthropic-ai/sdk";
 import type { AiMode, ProjectPhase } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { checkAiProjectBudget, checkAiRateLimit, createAnthropicClient, isAiEnabled } from "@/lib/anthropic";
+import { normalizeContentLocale, withLanguageClient } from "@/lib/aiLanguage";
 import { isKnownAiToolKey, type AiToolKey } from "@/lib/aiToolKeys";
 import { toDisplayPhase } from "@/lib/projectPhase";
 
@@ -135,6 +136,10 @@ export type AiGateRequest = {
   projectId: string | null;
   stepKey?: string;
   phase?: ProjectPhase;
+  // Write in this language: "project" = the project's content language
+  // (Project.contentLocale), or an explicit locale. Omitted = no language
+  // rule (e.g. translation, where the prompt names the target language).
+  language?: "project" | string;
 };
 
 export type AiGateBlockReason = "not_configured" | "mode" | "rate_limited" | "budget_exceeded";
@@ -167,7 +172,14 @@ export async function getAiClientFor(req: AiGateRequest): Promise<AiGateResult> 
 
   const client = await createAnthropicClient();
   if (!client) return { ok: false, reason: "not_configured" };
-  return { ok: true, client, mode };
+  if (!req.language) return { ok: true, client, mode };
+  const locale =
+    req.language === "project"
+      ? req.projectId
+        ? (await prisma.project.findUnique({ where: { id: req.projectId }, select: { contentLocale: true } }))?.contentLocale
+        : undefined
+      : req.language;
+  return { ok: true, client: withLanguageClient(client, normalizeContentLocale(locale)), mode };
 }
 
 // Swedish user-facing message for a blocked call — same wording the call

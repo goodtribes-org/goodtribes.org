@@ -19,17 +19,17 @@ export async function checkGateDecider(
   phase: ProjectPhase,
   outcome: string,
   userId: string,
-): Promise<{ error: string } | { project: { id: string; slug: string }; decision: PhaseGateOutcome }> {
+): Promise<{ error: string } | { project: { id: string; slug: string; contentLocale: string }; decision: PhaseGateOutcome }> {
   if (!GATE_OUTCOMES.includes(outcome as PhaseGateOutcome)) return { error: "Okänt beslut" };
   const decision = outcome as PhaseGateOutcome;
-  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true, slug: true, phase: true } });
+  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true, slug: true, phase: true, contentLocale: true } });
   if (!project) return { error: "Projektet hittades inte" };
   if (project.phase !== phase) return { error: "Projektet är inte i den här fasen längre" };
   const allowed = decision === "PAUSE"
     ? await hasProjectRole(project.id, userId, ["FOUNDER"])
     : await hasProjectRole(project.id, userId, PROJECT_LEAD_ROLES);
   if (!allowed) return { error: decision === "PAUSE" ? "Bara grundaren kan pausa projektet" : "Forbidden" };
-  return { project: { id: project.id, slug: project.slug }, decision };
+  return { project: { id: project.id, slug: project.slug, contentLocale: project.contentLocale }, decision };
 }
 
 export async function recordGateDecision(p: {
