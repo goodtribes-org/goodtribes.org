@@ -7,13 +7,12 @@ import { Link } from "@/i18n/navigation";
 import { hasProjectRole, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isFeatureEnabled } from "@/lib/featureFlags";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
-import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { latestInsight } from "@/lib/ideaInsights";
 import { lanseringGateCriteria, MIN_LOG_ENTRIES, type GateBrief } from "@/lib/phaseGate";
 import { INITIATIVE_CHECKLIST_ITEMS } from "@/lib/projectPhase";
 import { isLanseringFillInProgress, parseLanseringStatus, type LanseringFillStatus } from "@/lib/lanseringFill";
 import OverviewSection from "../ide/OverviewSection";
-import FillPoller from "../ide/FillPoller";
+import { DraftCta, FocusBox, GateClosed, OverviewHeader, TaskList, WikiHtml } from "../_overview/parts";
 import DraftButton from "../uppstart/DraftButton";
 import PilotSection from "./PilotSection";
 import PhaseGateSection from "../ide/PhaseGateSection";
@@ -29,8 +28,6 @@ const STEP_ANCHOR: Record<string, string> = {
   impact_measurement_setup: "impact",
 };
 
-const WIKI_HTML =
-  "text-sm text-dark-slate/80 [&_h2]:mb-1 [&_h2]:mt-3 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:text-dark-slate [&_h2:first-child]:mt-0 [&_ul]:list-disc [&_ul]:pl-5 [&_em]:text-dark-slate/50";
 
 // Lansering on one page, same idea as Idé and Uppstart: what the AI
 // drafted after the gate (pilot plan, impact metrics, launch plan,
@@ -104,64 +101,29 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 py-6">
-      {isLanseringFillInProgress(fill) && <FillPoller />}
+      <OverviewHeader
+        heading={t("heading")}
+        intro={isLanseringFillInProgress(fill) ? t("introWriting") : t("intro")}
+        polling={isLanseringFillInProgress(fill)}
+        stepByStep={{ href: `/projects/${slug}/guide/production`, label: t("stepByStep") }}
+        notYet={notYet ? { text: t("notYet"), href: `/projects/${slug}/uppstart#fasgrind`, linkLabel: t("toGate") } : null}
+        progressLabel={t("progressLabel")}
+        steps={INITIATIVE_CHECKLIST_ITEMS.PRODUCTION.map((st) => ({
+          key: st.key,
+          label: tCheck(st.key as Parameters<typeof tCheck>[0]),
+          done: doneKeys.has(st.key),
+          anchor: STEP_ANCHOR[st.key] ?? "pilot",
+        }))}
+        draftCta={
+          !fillRow && canEdit && aiAvailable && !notYet ? (
+            <DraftCta text={t("draftIntro")}>
+              <DraftButton phase="lansering" slug={slug} label={t("draftAll")} variant="primary" />
+            </DraftCta>
+          ) : null
+        }
+      />
 
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
-          <p className="mt-1 text-sm text-dark-slate/60">{isLanseringFillInProgress(fill) ? t("introWriting") : t("intro")}</p>
-        </div>
-        <Link href={`/projects/${slug}/guide/production`} className="text-sm font-medium text-dark-slate/60 hover:text-coral">
-          {t("stepByStep")}
-        </Link>
-      </div>
-
-      {notYet && (
-        <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          {t("notYet")}{" "}
-          <Link href={`/projects/${slug}/uppstart#fasgrind`} className="font-semibold underline underline-offset-2">
-            {t("toGate")}
-          </Link>
-        </p>
-      )}
-
-      <nav aria-label={t("progressLabel")} className="flex flex-wrap gap-2">
-        {INITIATIVE_CHECKLIST_ITEMS.PRODUCTION.map((s) => (
-          <a
-            key={s.key}
-            href={`#${STEP_ANCHOR[s.key] ?? "pilot"}`}
-            className={`rounded-full border px-3 py-1 text-xs font-medium ${
-              doneKeys.has(s.key) ? "border-seagrass/40 bg-seagrass/10 text-seagrass" : "border-muted-teal/40 bg-white text-dark-slate/60 hover:border-coral/50"
-            }`}
-          >
-            {doneKeys.has(s.key) ? "✓ " : ""}
-            {tCheck(s.key as Parameters<typeof tCheck>[0])}
-          </a>
-        ))}
-      </nav>
-
-      {!fillRow && canEdit && aiAvailable && !notYet && (
-        <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-seagrass/30 bg-seagrass/5 p-5">
-          <p className="flex-1 text-sm text-dark-slate/75">{t("draftIntro")}</p>
-          <DraftButton phase="lansering" slug={slug} label={t("draftAll")} variant="primary" />
-        </div>
-      )}
-
-      {(brief?.content.nextFocus.length || decision?.note) && (
-        <section aria-labelledby="fokus-heading" className="rounded-2xl border border-muted-teal/30 bg-dry-sage/15 p-5">
-          <h2 id="fokus-heading" className="text-sm font-semibold uppercase tracking-wide text-dark-slate/60">
-            {t("focusHeading")}
-          </h2>
-          {brief && brief.content.nextFocus.length > 0 && (
-            <ul className="mt-2 list-disc pl-5 text-sm text-dark-slate/80">
-              {brief.content.nextFocus.map((f, i) => (
-                <li key={i}>{f}</li>
-              ))}
-            </ul>
-          )}
-          {decision?.note && <p className="mt-2 text-sm italic text-dark-slate/70">”{decision.note}”</p>}
-        </section>
-      )}
+      <FocusBox heading={t("focusHeading")} items={brief?.content.nextFocus ?? []} note={decision?.note} />
 
       <OverviewSection
         id="pilot"
@@ -181,7 +143,9 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
                 {canEdit ? t("edit") : t("open")}
               </Link>
             </summary>
-            <div className={`mt-3 ${WIKI_HTML}`} dangerouslySetInnerHTML={{ __html: sanitizeHtml(pilotPlan.content) }} />
+            <div className="mt-3">
+              <WikiHtml html={pilotPlan.content} />
+            </div>
           </details>
         )}
         <PilotSection
@@ -271,7 +235,7 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
         action={workflows ? editLink("wiki/arbetsfloden") : undefined}
       >
         {workflows?.content ? (
-          <div className={WIKI_HTML} dangerouslySetInnerHTML={{ __html: sanitizeHtml(workflows.content) }} />
+          <WikiHtml html={workflows.content} />
         ) : (
           <p className="text-sm text-dark-slate/50">{t("workflowsEmpty")}</p>
         )}
@@ -289,21 +253,7 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
           </Link>
         }
       >
-        {cards.length ? (
-          <>
-            <ul className="flex flex-col divide-y divide-muted-teal/15">
-              {cards.map((c) => (
-                <li key={c.id} className="flex items-center justify-between gap-3 py-2 text-sm text-dark-slate/80">
-                  <span>{c.title}</span>
-                  {c.createdByAi && <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-seagrass">{t("aiDraft")}</span>}
-                </li>
-              ))}
-            </ul>
-            {openCardCount > cards.length && <p className="mt-2 text-xs text-dark-slate/50">{t("moreTasks", { count: openCardCount - cards.length })}</p>}
-          </>
-        ) : (
-          <p className="text-sm text-dark-slate/50">{t("tasksEmpty")}</p>
-        )}
+        <TaskList cards={cards} total={openCardCount} aiDraftLabel={t("aiDraft")} moreLabel={(count) => t("moreTasks", { count })} emptyLabel={t("tasksEmpty")} />
       </OverviewSection>
 
       {project.phase === "PRODUCTION" ? (
@@ -327,12 +277,7 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
         </OverviewSection>
       ) : (
         gateDecision?.outcome === "CONTINUE" && (
-          <p className="rounded-2xl border border-seagrass/30 bg-seagrass/5 px-5 py-3 text-sm text-dark-slate/75">
-            {t("gateClosed", { date: decisionDate(gateDecision.createdAt) })}{" "}
-            <Link href={`/projects/${slug}/etablera`} className="font-semibold text-seagrass hover:underline">
-              {t("gateClosedLink")}
-            </Link>
-          </p>
+          <GateClosed text={t("gateClosed", { date: decisionDate(gateDecision.createdAt) })} href={`/projects/${slug}/etablera`} linkLabel={t("gateClosedLink")} />
         )
       )}
     </div>
