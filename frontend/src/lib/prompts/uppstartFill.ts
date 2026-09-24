@@ -5,7 +5,7 @@
 
 const SHARED_RULES = `Regler som alltid gäller:
 - Utgå bara från underlaget om projektet: canvasen (VET = bekräftat, ANTAR = antagande), intervjulärdomarna och beslutsunderlaget från fasgrinden. Hitta ALDRIG på fakta: inga siffror, statistik, organisationer eller personer som inte nämnts.
-- Allt du skriver är ett utkast som teamet granskar och ändrar. Kort och konkret, på svenska.
+- Allt du skriver är ett utkast som teamet granskar och ändrar. Kort och konkret.
 - Projekten drivs av ideella deltagare med begränsad tid — håll det enkelt och genomförbart.`;
 
 const PHASE_CONTEXT = `Projektet har just gått från Idéfasen till Uppstart. I Uppstart bildar man ett kärnteam, testar lösningen i en Design Sprint (Kartlägga & förstå → Skissa lösningar → Beslut & planera → Bygga prototyp → Testa med användare), sätter upp de första uppgifterna och planerar och avgränsar piloten.`;

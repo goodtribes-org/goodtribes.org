@@ -4,6 +4,7 @@ import { logger } from "@/lib/logger";
 import { getAiClientFor } from "@/lib/aiMode";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { escapeHtml } from "@/lib/renderBody";
+import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { InsightError, latestInsight } from "@/lib/ideaInsights";
 import type { GateBrief } from "@/lib/phaseGate";
 import { coerceTasks } from "@/lib/uppstartFill";
@@ -46,7 +47,7 @@ function list(v: unknown, max: number): string[] {
   return Array.isArray(v) ? v.map(str).filter(Boolean).slice(0, max) : [];
 }
 const ul = (items: string[]) => `<ul>${items.map((i) => `<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
-const AI_NOTE = `<p><em>Utkast från AI:n utifrån Uppstartens underlag — ändra fritt.</em></p>`;
+const aiNote = (t: DraftText) => `<p><em>${escapeHtml(t.draftNoteFromUppstart)}</em></p>`;
 
 export type PilotPlan = { setup: string; weeks: string[]; measure: string[]; logPrompts: string[]; stopRules: string[]; successCriteria: string[] };
 
@@ -63,14 +64,14 @@ export function coercePilotPlan(raw: unknown): PilotPlan | null {
   return plan.setup || plan.weeks.length ? plan : null;
 }
 
-export function pilotPlanHtml(p: PilotPlan): string {
+export function pilotPlanHtml(p: PilotPlan, t: DraftText = draftText("sv")): string {
   return [
-    p.setup && `<h2>Upplägg</h2><p>${escapeHtml(p.setup)}</p>`,
-    p.weeks.length && `<h2>Steg för steg</h2>${ul(p.weeks)}`,
-    p.measure.length && `<h2>Så mäter vi</h2>${ul(p.measure)}`,
-    p.logPrompts.length && `<h2>Efter varje pilottillfälle — skriv i loggen</h2>${ul(p.logPrompts)}`,
-    p.stopRules.length && `<h2>När vi pausar eller ändrar</h2>${ul(p.stopRules)}`,
-    AI_NOTE,
+    p.setup && `<h2>${escapeHtml(t.hSetup)}</h2><p>${escapeHtml(p.setup)}</p>`,
+    p.weeks.length && `<h2>${escapeHtml(t.hSteps)}</h2>${ul(p.weeks)}`,
+    p.measure.length && `<h2>${escapeHtml(t.hMeasure)}</h2>${ul(p.measure)}`,
+    p.logPrompts.length && `<h2>${escapeHtml(t.hLogPrompts)}</h2>${ul(p.logPrompts)}`,
+    p.stopRules.length && `<h2>${escapeHtml(t.hStopRules)}</h2>${ul(p.stopRules)}`,
+    aiNote(t),
   ]
     .filter(Boolean)
     .join("\n");
@@ -116,7 +117,7 @@ export function launchFieldsToWrite(
   return out;
 }
 
-export function workflowsHtml(raw: unknown): string | null {
+export function workflowsHtml(raw: unknown, t: DraftText = draftText("sv")): string | null {
   const o = (raw ?? {}) as Record<string, unknown>;
   const responsibilities = list(o.responsibilities, 6);
   const routines = list(o.routines, 5);
@@ -124,11 +125,11 @@ export function workflowsHtml(raw: unknown): string | null {
   const decisions = list(o.decisions, 3);
   const handover = list(o.handover, 3);
   return [
-    responsibilities.length && `<h2>Vem ansvarar för vad</h2>${ul(responsibilities)}`,
-    routines.length && `<h2>Rutiner</h2>${ul(routines)}`,
-    decisions.length && `<h2>Så fattar vi beslut</h2>${ul(decisions)}`,
-    handover.length && `<h2>För att någon ska kunna ta över</h2>${ul(handover)}`,
-    AI_NOTE,
+    responsibilities.length && `<h2>${escapeHtml(t.hResponsibilities)}</h2>${ul(responsibilities)}`,
+    routines.length && `<h2>${escapeHtml(t.hRoutines)}</h2>${ul(routines)}`,
+    decisions.length && `<h2>${escapeHtml(t.hDecisions)}</h2>${ul(decisions)}`,
+    handover.length && `<h2>${escapeHtml(t.hHandover)}</h2>${ul(handover)}`,
+    aiNote(t),
   ]
     .filter(Boolean)
     .join("\n");
@@ -151,8 +152,8 @@ export function plainText(text: string): string {
     .trim();
 }
 
-export function successCriteriaText(criteria: string[]): string {
-  return `${criteria.map((c) => `- ${c}`).join("\n")}\n\n(Förslag från AI:n — justera nivåerna.)`;
+export function successCriteriaText(criteria: string[], t: DraftText = draftText("sv"), suffix: "proposalSuffix" | "gateProposalSuffix" = "proposalSuffix"): string {
+  return `${criteria.map((c) => `- ${c}`).join("\n")}\n\n${t[suffix]}`;
 }
 
 // ─── Context ────────────────────────────────────────────────────────────────
@@ -227,14 +228,18 @@ export async function startLanseringFill(p: LanseringFillParams): Promise<void> 
 export async function runLanseringFill(p: LanseringFillParams): Promise<void> {
   const sections = p.only ?? [...LANSERING_SECTIONS];
   const setState = (s: LanseringSection, state: PhaseFillState) => setPhaseFillState(p.projectId, "PRODUCTION", s, state);
-  const gate = await getAiClientFor({ feature: "project-plan", kind: "assist", userId: null, projectId: p.projectId, phase: "PRODUCTION" });
+  const gate = await getAiClientFor({ feature: "project-plan", kind: "assist", userId: null, projectId: p.projectId, phase: "PRODUCTION", language: "project" });
   if (!gate.ok) {
     await Promise.all(sections.map((s) => setState(s, "failed")));
     return;
   }
   const client = gate.client;
-  const context = await buildContext(p.projectId, p.projectSlug);
-  const aiUser = await getAiParticipantUser();
+  const [context, aiUser, lang] = await Promise.all([
+    buildContext(p.projectId, p.projectSlug),
+    getAiParticipantUser(),
+    prisma.project.findUnique({ where: { id: p.projectId }, select: { contentLocale: true } }),
+  ]);
+  const t = draftText(lang?.contentLocale);
 
   const run = async (section: LanseringSection, work: () => Promise<void>) => {
     if (!sections.includes(section)) return;
@@ -258,9 +263,9 @@ export async function runLanseringFill(p: LanseringFillParams): Promise<void> {
       if (wiki && !needsCriteria) return;
       const plan = coercePilotPlan(await callTool(client, PILOT_PLAN_SYSTEM_PROMPT, PILOT_PLAN_TOOL, context));
       if (!plan) throw new Error("no pilot plan");
-      if (!wiki) await createWikiPage(p.projectSlug, "pilotplan", "Pilotplan", pilotPlanHtml(plan), aiUser.id);
+      if (!wiki) await createWikiPage(p.projectSlug, "pilotplan", t.titlePilotPlan, pilotPlanHtml(plan, t), aiUser.id);
       if (needsCriteria && plan.successCriteria.length) {
-        const successCriteria = successCriteriaText(plan.successCriteria);
+        const successCriteria = successCriteriaText(plan.successCriteria, t);
         await prisma.pilotEvaluation.upsert({
           where: { projectSlug: p.projectSlug },
           create: { projectSlug: p.projectSlug, successCriteria, updatedById: aiUser.id },
@@ -297,9 +302,9 @@ export async function runLanseringFill(p: LanseringFillParams): Promise<void> {
     run("workflows", async () => {
       const exists = await prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: p.projectSlug, slug: "arbetsfloden" } }, select: { id: true } });
       if (exists) return;
-      const html = workflowsHtml(await callTool(client, WORKFLOWS_SYSTEM_PROMPT, WORKFLOWS_TOOL, context));
+      const html = workflowsHtml(await callTool(client, WORKFLOWS_SYSTEM_PROMPT, WORKFLOWS_TOOL, context), t);
       if (!html) throw new Error("no workflows");
-      await createWikiPage(p.projectSlug, "arbetsfloden", "Arbetsflöden och ansvar", html, aiUser.id);
+      await createWikiPage(p.projectSlug, "arbetsfloden", t.titleWorkflows, html, aiUser.id);
       await markDone(p.projectId, "workflows_formalized", p.userId);
     }),
 
@@ -334,7 +339,7 @@ export async function summarizePilotResults(projectId: string, slug: string, use
     }),
   ]);
   if (!evaluation?.executionNotes?.trim()) throw new InsightError("no_log");
-  const gate = await getAiClientFor({ feature: "project-plan", kind: "assist", userId, projectId, stepKey: "pilot_results_collected" });
+  const gate = await getAiClientFor({ feature: "project-plan", kind: "assist", userId, projectId, stepKey: "pilot_results_collected", language: "project" });
   if (!gate.ok) throw new InsightError(gate.reason);
 
   const content = [

@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
       tags: parent.tags,
       imageUrl: parent.imageUrl,
       sdgGoals: parent.sdgGoals,
+      contentLocale: parent.contentLocale,
       ownerId: session.user!.id,
       orgId: null,
     },

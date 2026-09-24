@@ -3,7 +3,7 @@
 
 const SHARED_RULES = `Regler som alltid gäller:
 - Utgå bara från underlaget: beslutsunderlaget från förra fasgrinden, etableringsplanen, playbooken, finansierings- och partnerskapsläget, impact-värdena och kärnteamet. Hitta ALDRIG på fakta: inga siffror, orter, finansiärer, organisationer eller personer som inte nämns i underlaget.
-- Allt du skriver är ett utkast som teamet granskar och ändrar. Kort och konkret, på svenska.`;
+- Allt du skriver är ett utkast som teamet granskar och ändrar. Kort och konkret.`;
 
 const PHASE_CONTEXT = `Projektet är nu i Skala: det ska växa till fler platser eller målgrupper. På GoodTribes kan det ske på tre sätt: (1) samma projekt växer och startar regionala instanser som godkänns av projektet, (2) projektet öppnar för att andra replikerar modellen med playbooken, eller (3) någon forkar projektet till ett nytt, oberoende initiativ (forken krediterar originalets Tribe Token-innehavare). Stegen i Skala: bestämma skalning vs. fork, sätta mätbara skalningsmål, identifiera nya geografier/målgrupper, säkra kapital för expansion och bygga lokala team eller licensiera modellen.`;
 

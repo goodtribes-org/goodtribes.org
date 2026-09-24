@@ -18,6 +18,8 @@ import { cardsForUppstartDecision, missingCriteria, runUppstartGateBrief, uppsta
 import { LEAN_CANVAS_BLOCKS } from "../lean-canvas/fields";
 import { VALUE_PROPOSITION_BLOCKS } from "../value-proposition/fields";
 import { advanceProjectPhase } from "../edit/actions";
+import { draftText, normalizeContentLocale } from "@/lib/aiLanguage";
+import { successCriteriaText } from "@/lib/lanseringFill";
 
 async function requireLead(projectSlug: string) {
   const session = await auth();
@@ -144,7 +146,7 @@ export async function decideUppstartGate(projectSlug: string, outcome: string, n
   if (!OUTCOMES.includes(outcome as PhaseGateOutcome)) return { error: "Okänt beslut" };
   const decision = outcome as PhaseGateOutcome;
 
-  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true, slug: true, phase: true } });
+  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true, slug: true, phase: true, contentLocale: true } });
   if (!project) return { error: "Projektet hittades inte" };
   if (project.phase !== "PILOT") return { error: "Projektet är inte i Uppstart längre" };
   const allowed = decision === "PAUSE"
@@ -155,8 +157,8 @@ export async function decideUppstartGate(projectSlug: string, outcome: string, n
   const [{ criteria }, brief, tLc, tVp, aiUser, evaluation] = await Promise.all([
     uppstartGateCriteria(project.id, project.slug),
     latestInsight<GateBrief>(project.id, "UPPSTART_GATE"),
-    getTranslations({ locale: "sv", namespace: "LeanCanvasHistory" }),
-    getTranslations({ locale: "sv", namespace: "ValuePropositionHistory" }),
+    getTranslations({ locale: normalizeContentLocale(project.contentLocale), namespace: "LeanCanvasHistory" }),
+    getTranslations({ locale: normalizeContentLocale(project.contentLocale), namespace: "ValuePropositionHistory" }),
     getAiParticipantUser(),
     prisma.pilotEvaluation.findUnique({ where: { projectSlug: project.slug }, select: { successCriteria: true } }),
   ]);
@@ -168,7 +170,8 @@ export async function decideUppstartGate(projectSlug: string, outcome: string, n
     if (entity === "valueProposition" && vp) return tVp(`field${vp.translationKey}` as Parameters<typeof tVp>[0]);
     return key;
   };
-  const cards = cardsForUppstartDecision(decision, brief?.content ?? null, labelFor);
+  const t = draftText(project.contentLocale);
+  const cards = cardsForUppstartDecision(decision, brief?.content ?? null, labelFor, t);
   const proposedCriteria = decision === "CONTINUE" && !evaluation?.successCriteria?.trim() ? brief?.content.successCriteria ?? [] : [];
 
   await prisma.$transaction(async (tx) => {
@@ -192,7 +195,7 @@ export async function decideUppstartGate(projectSlug: string, outcome: string, n
     if (proposedCriteria.length) {
       // A starting point for the pilot's first step — marked as the AI's
       // proposal, not ticked as done: the team sets the real levels.
-      const successCriteria = `${proposedCriteria.map((c) => `- ${c}`).join("\n")}\n\n(Förslag från beslutsunderlaget vid fasgrinden — justera nivåerna.)`;
+      const successCriteria = successCriteriaText(proposedCriteria, t, "gateProposalSuffix");
       await tx.pilotEvaluation.upsert({
         where: { projectSlug: project.slug },
         create: { projectSlug: project.slug, successCriteria, updatedById: aiUser.id },

@@ -15,6 +15,7 @@ import type { PhaseGateOutcome } from "@prisma/client";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { latestInsight } from "@/lib/ideaInsights";
 import {
+  cardWords,
   cardsForLanseringDecision,
   lanseringGateCriteria,
   missingCriteria,
@@ -23,6 +24,7 @@ import {
   type GateBrief,
 } from "@/lib/phaseGate";
 import { advanceProjectPhase } from "../edit/actions";
+import { draftText } from "@/lib/aiLanguage";
 
 async function requireProject(projectSlug: string) {
   const session = await auth();
@@ -134,7 +136,7 @@ export async function decideLanseringGate(projectSlug: string, outcome: string, 
   if (!OUTCOMES.includes(outcome as PhaseGateOutcome)) return { error: "Okänt beslut" };
   const decision = outcome as PhaseGateOutcome;
 
-  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true, slug: true, phase: true } });
+  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true, slug: true, phase: true, contentLocale: true } });
   if (!project) return { error: "Projektet hittades inte" };
   if (project.phase !== "PRODUCTION") return { error: "Projektet är inte i Lansering längre" };
   const allowed = decision === "PAUSE"
@@ -147,7 +149,7 @@ export async function decideLanseringGate(projectSlug: string, outcome: string, 
     latestInsight<GateBrief>(project.id, "LANSERING_GATE"),
     getAiParticipantUser(),
   ]);
-  const cards = cardsForLanseringDecision(decision, brief?.content ?? null);
+  const cards = cardsForLanseringDecision(decision, brief?.content ?? null, cardWords("lansering", draftText(project.contentLocale)));
   const pilotDecision = pilotDecisionFor(decision);
 
   await prisma.$transaction(async (tx) => {

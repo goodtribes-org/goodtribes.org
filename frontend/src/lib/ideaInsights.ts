@@ -116,7 +116,7 @@ export class InsightError extends Error {}
 // ("Granska igen"). userId null for the automatic run (bounded, once per
 // project); the project's monthly AI budget applies either way.
 export async function runCritique(projectId: string, userId: string | null): Promise<CritiqueContent> {
-  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId });
+  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId, language: "project" });
   if (!gate.ok) throw new InsightError(gate.reason);
 
   const project = await prisma.project.findUnique({
@@ -169,7 +169,7 @@ export async function runInterviewSynthesis(projectId: string, slug: string, use
   });
   if (!interviews.length) throw new InsightError("no_interviews");
 
-  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId, stepKey: "target_audience_interviews" });
+  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId, stepKey: "target_audience_interviews", language: "project" });
   if (!gate.ok) throw new InsightError(gate.reason);
 
   const assumptions = await currentAssumptions(projectId, slug);

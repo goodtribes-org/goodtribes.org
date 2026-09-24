@@ -8,9 +8,10 @@ import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { latestInsight } from "@/lib/ideaInsights";
 import { ETABLERA_SECTIONS, startEtableraFill, type EtableraSection } from "@/lib/etableraFill";
-import { cardsForLanseringDecision, ETABLERA_CARD_WORDS, etableraGateCriteria, runEtableraGateBrief, type GateBrief } from "@/lib/phaseGate";
+import { cardWords, cardsForLanseringDecision, etableraGateCriteria, runEtableraGateBrief, type GateBrief } from "@/lib/phaseGate";
 import { checkGateDecider, gateBriefErrorMessage, recordGateDecision } from "@/lib/gateDecision";
 import { advanceProjectPhase } from "../edit/actions";
+import { draftText } from "@/lib/aiLanguage";
 import { resolveAiMode } from "@/lib/aiMode";
 import { startSkalaFill } from "@/lib/skalaFill";
 
@@ -65,7 +66,7 @@ export async function decideEtableraGate(projectSlug: string, outcome: string, n
     decision,
     note,
     criteria,
-    cards: cardsForLanseringDecision(decision, brief?.content ?? null, ETABLERA_CARD_WORDS),
+    cards: cardsForLanseringDecision(decision, brief?.content ?? null, cardWords("etablera", draftText(project.contentLocale))),
     userId: session.user.id,
   });
 

@@ -1,5 +1,6 @@
 import type { NextStepDecision, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { getAiClientFor } from "@/lib/aiMode";
 import { InsightError, latestInsight } from "@/lib/ideaInsights";
 import type { GateBrief } from "@/lib/phaseGate";
@@ -41,18 +42,18 @@ export const isImpactFillInProgress = isPhaseFillInProgress;
 
 // ─── Pure parsing (unit tested) ─────────────────────────────────────────────
 
-export function impactSummaryHtml(raw: unknown): string | null {
+export function impactSummaryHtml(raw: unknown, t: DraftText = draftText("sv")): string | null {
   const o = (raw ?? {}) as Record<string, unknown>;
   const results = fillList(o.results, 8);
   if (!results.length) return null;
   return wikiHtml(
     [
-      { heading: "Vad vi gör", text: fillStr(o.summary) },
-      { heading: "Resultat", items: results },
-      { heading: "Bidrag till de globala målen", items: fillList(o.sdgs, 5) },
-      { heading: "Inte mätt eller verifierat ännu", items: fillList(o.gaps, 3) },
+      { heading: t.hWhatWeDo, text: fillStr(o.summary) },
+      { heading: t.hResults, items: results },
+      { heading: t.hSdgs, items: fillList(o.sdgs, 5) },
+      { heading: t.hGaps, items: fillList(o.gaps, 3) },
     ],
-    "Utkast från AI:n — siffrorna återges som de rapporterats, utan egna summor.",
+    t.draftNoteImpact,
   );
 }
 
@@ -161,11 +162,11 @@ export async function startImpactFill(p: { projectId: string; projectSlug: strin
     sections: p.only ?? IMPACT_SECTIONS,
     buildContext: () => buildContext(projectId, slug),
     work: {
-      summary: async ({ client, context, aiUserId }) => {
+      summary: async ({ client, context, aiUserId, t }) => {
         if (await wikiPageExists(slug, "impactsammanfattning")) return;
-        const html = impactSummaryHtml(await callFillTool(client, IMPACT_SUMMARY_SYSTEM_PROMPT, IMPACT_SUMMARY_TOOL, context));
+        const html = impactSummaryHtml(await callFillTool(client, IMPACT_SUMMARY_SYSTEM_PROMPT, IMPACT_SUMMARY_TOOL, context), t);
         if (!html) throw new Error("no impact summary");
-        await createWikiPage(slug, "impactsammanfattning", "Impactsammanfattning", html, aiUserId);
+        await createWikiPage(slug, "impactsammanfattning", t.titleImpactSummary, html, aiUserId);
       },
       verification: followupField("externalVerificationNotes", VERIFICATION_SYSTEM_PROMPT, "verifiering"),
       celebration: followupField("celebrationNotes", CELEBRATION_SYSTEM_PROMPT, "fira"),
@@ -181,7 +182,7 @@ export async function startImpactFill(p: { projectId: string; projectSlug: strin
 // ─── Nästa steg (on request) ────────────────────────────────────────────────
 
 export async function runNextStepBrief(projectId: string, slug: string, userId: string): Promise<NextStepBrief> {
-  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId });
+  const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId, language: "project" });
   if (!gate.ok) throw new InsightError(gate.reason);
   const [context, followup] = await Promise.all([
     buildContext(projectId, slug),

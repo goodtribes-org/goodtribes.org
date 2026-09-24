@@ -6,6 +6,7 @@ import { logger } from "@/lib/logger";
 import { getAiClientFor } from "@/lib/aiMode";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { escapeHtml } from "@/lib/renderBody";
+import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { getFieldProvenance, recordAiWrite } from "@/lib/fieldProvenance";
 import { createAiSuggestion, decideAiPlacement } from "@/lib/aiSuggestions";
 import { runCritique } from "@/lib/ideaInsights";
@@ -188,17 +189,17 @@ function inline(text: string): string {
   return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\*\*/g, "");
 }
 
-export function interviewGuideHtml(raw: unknown): string | null {
+export function interviewGuideHtml(raw: unknown, t: DraftText = draftText("sv")): string | null {
   const o = (raw ?? {}) as Record<string, unknown>;
   const questions = Array.isArray(o.questions) ? o.questions.map(str).filter(Boolean) : [];
   if (questions.length < 3) return null;
   const tips = Array.isArray(o.tips) ? o.tips.map(str).filter(Boolean) : [];
   const parts = [
-    `<p><em>Framtagen av AI:n som ett utkast — ändra fritt.</em></p>`,
-    str(o.purpose) ? `<h2>Syfte</h2><p>${inline(str(o.purpose))}</p>` : "",
-    str(o.who) ? `<h2>Vilka du bör intervjua</h2><p>${inline(str(o.who))}</p>` : "",
-    `<h2>Frågor</h2><ol>${questions.map((q) => `<li>${inline(q)}</li>`).join("")}</ol>`,
-    tips.length ? `<h2>Tips</h2><ul>${tips.map((t) => `<li>${inline(t)}</li>`).join("")}</ul>` : "",
+    `<p><em>${escapeHtml(t.draftNote)}</em></p>`,
+    str(o.purpose) ? `<h2>${escapeHtml(t.hPurpose)}</h2><p>${inline(str(o.purpose))}</p>` : "",
+    str(o.who) ? `<h2>${escapeHtml(t.hWhoToInterview)}</h2><p>${inline(str(o.who))}</p>` : "",
+    `<h2>${escapeHtml(t.hQuestions)}</h2><ol>${questions.map((q) => `<li>${inline(q)}</li>`).join("")}</ol>`,
+    tips.length ? `<h2>${escapeHtml(t.hTips)}</h2><ul>${tips.map((t) => `<li>${inline(t)}</li>`).join("")}</ul>` : "",
   ];
   return parts.filter(Boolean).join("");
 }
@@ -341,7 +342,7 @@ export type IdeaFillParams = {
 // (the conversation itself was rate-limited).
 export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
   // The project's monthly AI budget applies (projectId); no per-user limit.
-  const gate = await getAiClientFor({ feature: "dream-conversation", kind: "assist", userId: null, projectId: p.projectId });
+  const gate = await getAiClientFor({ feature: "dream-conversation", kind: "assist", userId: null, projectId: p.projectId, language: "project" });
   const sections: FillSection[] = p.only ?? ["leanCanvas", "valueProposition", "marketScan", "interviewGuide", "critique"];
   const wanted = (section: FillSection) => sections.includes(section);
   if (!gate.ok) {
@@ -349,7 +350,8 @@ export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
     return;
   }
   const client = gate.client;
-  const project = await prisma.project.findUnique({ where: { id: p.projectId }, select: { title: true, summary: true, description: true } });
+  const project = await prisma.project.findUnique({ where: { id: p.projectId }, select: { title: true, summary: true, description: true, contentLocale: true } });
+  const t = draftText(project?.contentLocale);
   const context =
     `Projekt: ${project?.title ?? ""}\nSammanfattning: ${project?.summary ?? ""}\nBeskrivning: ${(project?.description ?? "").replace(/<[^>]*>/g, " ")}\n\n` +
     `Drömsamtalet:\n${p.transcript}`;
@@ -403,14 +405,14 @@ export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
       ? run("interviewGuide", async () => {
           const exists = await prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: p.projectSlug, slug: "intervjuguide" } } });
           if (exists) return;
-          const html = interviewGuideHtml(await callTool(client, { system: INTERVIEW_GUIDE_SYSTEM_PROMPT, tool: INTERVIEW_GUIDE_TOOL, content: context }));
+          const html = interviewGuideHtml(await callTool(client, { system: INTERVIEW_GUIDE_SYSTEM_PROMPT, tool: INTERVIEW_GUIDE_TOOL, content: context }), t);
           if (!html) throw new Error("no interview guide");
           const maxOrder = await prisma.wikiPage.aggregate({ where: { projectSlug: p.projectSlug }, _max: { order: true } });
           await prisma.wikiPage.create({
             data: {
               projectSlug: p.projectSlug,
               slug: "intervjuguide",
-              title: "Intervjuguide",
+              title: t.titleInterviewGuide,
               content: html,
               order: (maxOrder._max.order ?? -1) + 1,
               createdById: aiUser.id,

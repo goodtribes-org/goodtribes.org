@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { latestInsight } from "@/lib/ideaInsights";
 import type { GateBrief } from "@/lib/phaseGate";
 import { coerceTasks } from "@/lib/uppstartFill";
@@ -37,17 +38,17 @@ export function coerceScalingPlan(raw: unknown): Record<(typeof SCALING_FIELDS)[
   return { goals: fillStr(o.goals), geographies: fillStr(o.geographies), capitalPlan: fillStr(o.capital_plan), teamOrLicenseModel: fillStr(o.team_or_license) };
 }
 
-export function scaleChoiceHtml(raw: unknown): string | null {
+export function scaleChoiceHtml(raw: unknown, t: DraftText = draftText("sv")): string | null {
   const o = (raw ?? {}) as Record<string, unknown>;
   const recommendation = fillStr(o.recommendation);
   if (!recommendation) return null;
   return wikiHtml(
     [
-      { heading: "Tre sätt att skala", items: fillList(o.options, 3) },
-      { heading: "Rekommendation", text: recommendation },
-      { heading: "Det här behöver finnas på plats", items: fillList(o.requirements, 4) },
+      { heading: t.hThreeWays, items: fillList(o.options, 3) },
+      { heading: t.hRecommendation, text: recommendation },
+      { heading: t.hRequirements, items: fillList(o.requirements, 4) },
     ],
-    "Utkast från AI:n — beslutet är teamets.",
+    t.draftNoteDecision,
   );
 }
 
@@ -105,11 +106,11 @@ export async function startSkalaFill(p: { projectId: string; projectSlug: string
         if (!Object.keys(writes).length) throw new Error("no scaling plan");
         await prisma.scalingPlan.upsert({ where: { projectSlug: slug }, create: { projectSlug: slug, ...writes, updatedById: aiUserId }, update: { ...writes, updatedById: aiUserId } });
       },
-      choice: async ({ client, context, aiUserId }) => {
+      choice: async ({ client, context, aiUserId, t }) => {
         if (await wikiPageExists(slug, "skalningsval")) return;
-        const html = scaleChoiceHtml(await callFillTool(client, SCALE_CHOICE_SYSTEM_PROMPT, SCALE_CHOICE_TOOL, context));
+        const html = scaleChoiceHtml(await callFillTool(client, SCALE_CHOICE_SYSTEM_PROMPT, SCALE_CHOICE_TOOL, context), t);
         if (!html) throw new Error("no scale choice");
-        await createWikiPage(slug, "skalningsval", "Skalning eller fork", html, aiUserId);
+        await createWikiPage(slug, "skalningsval", t.titleScaleChoice, html, aiUserId);
       },
       tasks: async ({ client, context, aiUserId }) => {
         const tasks = coerceTasks(await callFillTool(client, SKALA_TASKS_SYSTEM_PROMPT, TASKS_TOOL, context));

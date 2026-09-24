@@ -11,7 +11,7 @@ Ge HÖGST 3 invändningar, de viktigaste först. Leta efter:
 - vaga formuleringar som döljer ett oklart problem ("alla", "samhället"),
 - viktiga saker omvärldsbevakningen visar, t.ex. att någon redan gör samma sak.
 
-Varje invändning: en eller två meningar, konkret, och gärna vad man kan göra åt den (t.ex. vad man ska fråga i intervjuerna). Ange vilket fält den gäller om den gäller ett särskilt fält (använd exakt nyckel ur listan), annars utelämna field. Var ärlig men vänlig. Hitta aldrig på fakta. Skriv på svenska.
+Varje invändning: en eller två meningar, konkret, och gärna vad man kan göra åt den (t.ex. vad man ska fråga i intervjuerna). Ange vilket fält den gäller om den gäller ett särskilt fält (använd exakt nyckel ur listan), annars utelämna field. Var ärlig men vänlig. Hitta aldrig på fakta.
 
 Svara genom verktyget "invandningar".`;
 
@@ -51,7 +51,6 @@ Regler:
 - Grunda allt ENBART på anteckningarna. Hitta aldrig på citat, personer eller slutsatser. Hellre unclear än en överdriven slutsats.
 - Tre eller fler samstämmiga intervjuer krävs normalt för confirmed; en enstaka intervju räcker sällan.
 - Ta bara med antaganden som intervjuerna faktiskt berör. Använd exakt de nycklar och id:n du fått.
-- Skriv på svenska.
 
 Svara genom verktyget "intervjusyntes".`;
 
@@ -94,7 +93,7 @@ Skriv:
 - reasons: 2–4 korta skäl för rekommendationen.
 - next_focus: om projektet går vidare — vilka lösningsantaganden Uppstart bör testa först (2–3 punkter).
 
-Regler: grunda allt på underlaget, hitta aldrig på resultat. Utan intervjuer är continue sällan rätt rekommendation — var ärlig om det. Kort och konkret, på svenska.
+Regler: grunda allt på underlaget, hitta aldrig på resultat. Utan intervjuer är continue sällan rätt rekommendation — var ärlig om det. Kort och konkret.
 
 Svara genom verktyget "beslutsunderlag".`;
 
@@ -132,7 +131,7 @@ Skriv:
 - next_focus: om projektet går vidare — vad piloten ska fokusera på först (2–3 punkter).
 - success_criteria: 2–4 mätbara framgångskriterier för piloten ("minst X … under Y veckor"). Hitta inte på siffror som inte går att motivera — skriv hellre vad som ska mätas och låt nivån vara ett förslag teamet sätter.
 
-Regler: grunda allt på underlaget, hitta aldrig på testresultat. Utan feedback från testpersoner är continue sällan rätt rekommendation — var ärlig om det. Ett kärnteam på en person är en risk att nämna. Kort och konkret, på svenska.
+Regler: grunda allt på underlaget, hitta aldrig på testresultat. Utan feedback från testpersoner är continue sällan rätt rekommendation — var ärlig om det. Ett kärnteam på en person är en risk att nämna. Kort och konkret.
 
 Svara genom verktyget "beslutsunderlag".`;
 
@@ -171,7 +170,7 @@ Skriv:
 - reasons: 2–4 korta skäl.
 - next_focus: om projektet går vidare — vad Etablera bör fokusera på först (2–3 punkter).
 
-Regler: grunda allt på underlaget, hitta aldrig på resultat. Ett impact-värde på 0 utan uppdateringar har bara inte rapporterats — säg det, kalla det inte fel. Är flera kriterier oklara är continue sällan rätt; var ärlig om det. Ett kärnteam med vakanta nyckelroller är en risk inför Etablera. Kort och konkret, på svenska.
+Regler: grunda allt på underlaget, hitta aldrig på resultat. Ett impact-värde på 0 utan uppdateringar har bara inte rapporterats — säg det, kalla det inte fel. Är flera kriterier oklara är continue sällan rätt; var ärlig om det. Ett kärnteam med vakanta nyckelroller är en risk inför Etablera. Kort och konkret.
 
 Svara genom verktyget "beslutsunderlag".`;
 
@@ -220,7 +219,7 @@ Skriv:
 - reasons: 2–4 korta skäl.
 - next_focus: om projektet går vidare — vad Skala bör fokusera på först (2–3 punkter).
 
-Regler: grunda allt på underlaget, hitta aldrig på finansiering eller avtal som inte finns. Att skala utan återkommande finansiering, playbook eller ett kärnteam som klarar sig utan en enda person är sällan rätt — var ärlig om det. Kort och konkret, på svenska.
+Regler: grunda allt på underlaget, hitta aldrig på finansiering eller avtal som inte finns. Att skala utan återkommande finansiering, playbook eller ett kärnteam som klarar sig utan en enda person är sällan rätt — var ärlig om det. Kort och konkret.
 
 Svara genom verktyget "beslutsunderlag".`;
 
@@ -244,7 +243,7 @@ Skriv:
 - reasons: 2–4 korta skäl.
 - next_focus: om projektet går vidare — vad Impact bör fokusera på först (2–3 punkter), t.ex. vilken påverkan som ska mätas och verifieras.
 
-Regler: grunda allt på underlaget, hitta aldrig på platser, instanser eller resultat. Ett impact-värde på 0 utan uppdateringar har bara inte rapporterats. Kort och konkret, på svenska.
+Regler: grunda allt på underlaget, hitta aldrig på platser, instanser eller resultat. Ett impact-värde på 0 utan uppdateringar har bara inte rapporterats. Kort och konkret.
 
 Svara genom verktyget "beslutsunderlag".`;
 

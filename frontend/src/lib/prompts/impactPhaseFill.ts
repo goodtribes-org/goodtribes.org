@@ -6,7 +6,7 @@ const SHARED_RULES = `Regler som alltid gäller:
 - Utgå bara från underlaget: impact-mätetalen med rapporterade värden, impactrapporterna (verifierade och inte), skalningsläget och tidigare beslutsunderlag. Hitta ALDRIG på resultat, siffror, verifierare eller organisationer.
 - Summera ALDRIG siffror från olika rapporter eller mätetal till en egen totalsiffra — en "total sedan start"-rapport överlappar periodrapporterna, och bidrag/stöd som projektet fått är inte impact det levererat. Återge siffrorna som de rapporterats.
 - Ett mätetal på 0 utan uppdateringar har bara inte rapporterats.
-- Kort och konkret, på svenska. Allt är utkast som teamet ändrar.`;
+- Kort och konkret. Allt är utkast som teamet ändrar.`;
 
 const PHASE_CONTEXT = `Projektet är nu i Impact, den sista fasen: mäta och rapportera den faktiska påverkan på FN:s globala mål, få den externt verifierad, fira och synliggöra resultaten för community och finansiärer, och besluta om nästa steg — fortsätta, replikera eller avsluta ansvarsfullt. På GoodTribes verifieras en impactrapport av plattformens granskare mot ett underlag (t.ex. en årsrapport, en utvärdering eller ett dataset); bara verifierade rapporter visas publikt.`;
 

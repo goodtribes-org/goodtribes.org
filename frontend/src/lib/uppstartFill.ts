@@ -5,6 +5,7 @@ import { isPhaseFillInProgress, markPhaseFillPending, parsePhaseFillStatus, setP
 import { getAiClientFor } from "@/lib/aiMode";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { escapeHtml } from "@/lib/renderBody";
+import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { getFieldProvenance } from "@/lib/fieldProvenance";
 import { latestInsight, type SynthesisContent } from "@/lib/ideaInsights";
 import type { GateBrief } from "@/lib/phaseGate";
@@ -77,10 +78,10 @@ export type SprintPlan = {
   testQuestions: string[];
 };
 
-export function coerceSprintPlan(raw: unknown): SprintPlan | null {
+export function coerceSprintPlan(raw: unknown, t: DraftText = draftText("sv")): SprintPlan | null {
   const o = (raw ?? {}) as Record<string, unknown>;
   const plan: SprintPlan = {
-    sprintName: str(o.sprint_name).slice(0, 120) || "Design Sprint 1",
+    sprintName: str(o.sprint_name).slice(0, 120) || t.defaultSprintName,
     longTermGoal: str(o.long_term_goal),
     sprintQuestions: list(o.sprint_questions, 4),
     targetUser: str(o.target_user),
@@ -94,16 +95,16 @@ export function coerceSprintPlan(raw: unknown): SprintPlan | null {
 
 // The sprint plan as a wiki page — escaped, so model output can never
 // inject markup.
-export function sprintPlanHtml(p: SprintPlan): string {
+export function sprintPlanHtml(p: SprintPlan, t: DraftText = draftText("sv")): string {
   const ul = (items: string[]) => `<ul>${items.map((i) => `<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
   return [
-    p.longTermGoal && `<h2>Långsiktigt mål</h2><p>${escapeHtml(p.longTermGoal)}</p>`,
-    `<h2>Sprintfrågor</h2>${ul(p.sprintQuestions)}`,
-    p.targetUser && `<h2>Vem vi testar med</h2><p>${escapeHtml(p.targetUser)}</p>`,
-    p.hmw.length && `<h2>Hur skulle vi kunna …</h2>${ul(p.hmw)}`,
-    p.prototypeHint && `<h2>Enklaste prototypen</h2><p>${escapeHtml(p.prototypeHint)}</p>`,
-    p.testQuestions.length && `<h2>Frågor till testpersonerna</h2>${ul(p.testQuestions)}`,
-    `<p><em>Utkast från AI:n utifrån Idéfasens underlag — ändra fritt.</em></p>`,
+    p.longTermGoal && `<h2>${escapeHtml(t.hLongTermGoal)}</h2><p>${escapeHtml(p.longTermGoal)}</p>`,
+    `<h2>${escapeHtml(t.hSprintQuestions)}</h2>${ul(p.sprintQuestions)}`,
+    p.targetUser && `<h2>${escapeHtml(t.hTargetUser)}</h2><p>${escapeHtml(p.targetUser)}</p>`,
+    p.hmw.length && `<h2>${escapeHtml(t.hHmw)}</h2>${ul(p.hmw)}`,
+    p.prototypeHint && `<h2>${escapeHtml(t.hPrototype)}</h2><p>${escapeHtml(p.prototypeHint)}</p>`,
+    p.testQuestions.length && `<h2>${escapeHtml(t.hTestQuestions)}</h2>${ul(p.testQuestions)}`,
+    `<p><em>${escapeHtml(t.draftNoteFromIdea)}</em></p>`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -213,14 +214,18 @@ export async function runUppstartFill(p: UppstartFillParams): Promise<void> {
   const sections = p.only ?? [...UPPSTART_SECTIONS];
   // Asked for by a person (after the gate or with the button); the
   // project's monthly AI budget applies.
-  const gate = await getAiClientFor({ feature: "project-plan", kind: "assist", userId: null, projectId: p.projectId, phase: "PILOT" });
+  const gate = await getAiClientFor({ feature: "project-plan", kind: "assist", userId: null, projectId: p.projectId, phase: "PILOT", language: "project" });
   if (!gate.ok) {
     await Promise.all(sections.map((s) => setState(p.projectId, s, "failed")));
     return;
   }
   const client = gate.client;
-  const context = await buildContext(p.projectId, p.projectSlug);
-  const aiUser = await getAiParticipantUser();
+  const [context, aiUser, lang] = await Promise.all([
+    buildContext(p.projectId, p.projectSlug),
+    getAiParticipantUser(),
+    prisma.project.findUnique({ where: { id: p.projectId }, select: { contentLocale: true } }),
+  ]);
+  const t = draftText(lang?.contentLocale);
 
   const run = async (section: UppstartSection, work: () => Promise<void>) => {
     if (!sections.includes(section)) return;
@@ -250,7 +255,7 @@ export async function runUppstartFill(p: UppstartFillParams): Promise<void> {
         prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: p.projectSlug, slug: "sprintplan" } }, select: { id: true } }),
       ]);
       if (sprintCount && wiki) return;
-      const plan = coerceSprintPlan(await callTool(client, SPRINT_SYSTEM_PROMPT, SPRINT_TOOL, context));
+      const plan = coerceSprintPlan(await callTool(client, SPRINT_SYSTEM_PROMPT, SPRINT_TOOL, context), t);
       if (!plan) throw new Error("no sprint plan");
       await prisma.$transaction(async (tx) => {
         if (!wiki) {
@@ -259,8 +264,8 @@ export async function runUppstartFill(p: UppstartFillParams): Promise<void> {
             data: {
               projectSlug: p.projectSlug,
               slug: "sprintplan",
-              title: "Sprintplan",
-              content: sprintPlanHtml(plan),
+              title: t.titleSprintPlan,
+              content: sprintPlanHtml(plan, t),
               order: (maxOrder._max.order ?? -1) + 1,
               createdById: aiUser.id,
             },
