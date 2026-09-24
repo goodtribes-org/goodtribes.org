@@ -75,6 +75,7 @@ export default async function IdeaGuidePage({
           completedKeys={project.checklistItems.map((c) => c.itemKey)}
           canEdit={true}
           viewingPhase="IDEA"
+          showOverviews={aiFeatures}
         />
       </div>
       <IdeaGuide

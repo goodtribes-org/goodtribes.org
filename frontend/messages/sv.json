@@ -691,7 +691,8 @@
     "leaveProjectButton": "Lämna projektet",
     "leaveProjectConfirm": "Är du säker på att du vill lämna projektet? Du kan ansöka om att gå med igen senare.",
     "followButton": "Följ",
-    "followingButton": "Följer"
+    "followingButton": "Följer",
+    "continuePhase": "Fortsätt i {phase} — allt på en sida"
   },
   "ProjectSideNav": {
     "navHome": "Startsidan",
@@ -2921,7 +2922,8 @@
     "next_step_decided": "Besluta om nästa steg: fortsätta, replikera, eller avsluta ansvarsfullt"
   },
   "PhaseMenuBar": {
-    "guideLinkLabel": "{phase} guiden"
+    "guideLinkLabel": "{phase} guiden",
+    "overviewLinkLabel": "{phase} på en sida"
   },
   "PhaseChecklistWidget": {
     "heading": "Din fasresa",

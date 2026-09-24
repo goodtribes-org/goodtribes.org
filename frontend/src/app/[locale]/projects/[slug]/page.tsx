@@ -4,6 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { getTranslations } from "next-intl/server";
+import { isFeatureEnabled } from "@/lib/featureFlags";
+import { overviewPathFor } from "@/lib/projectPhase";
 import type { useTranslations } from "next-intl";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { prisma } from "@/lib/prisma";
@@ -86,6 +88,7 @@ export default async function ProjectDetailPage({
   const { locale, slug } = await params;
   const session = await auth();
   const t = await getTranslations("ProjectDetailPage");
+  const tPhase = await getTranslations("ProjectPhase");
 
   const project = await prisma.project.findUnique({
     where: { slug },
@@ -124,6 +127,9 @@ export default async function ProjectDetailPage({
   // established precedent, see requireProjectRole's allowSiteAdmin default.
   const isOwnerOrAdmin = isLeadRole(userMembership?.role) || (!!userId && (await isSiteAdmin(userId)));
   const isMember = !!userMembership;
+  // The AI-guided journey: link the phase menu to each phase's one-page
+  // overview, and give leads a way straight back into the current phase.
+  const showOverviews = !!userId && (await isFeatureEnabled("ai-project-start", userId));
 
   // A site-admin-hidden project (suspected criminal activity, see
   // contentModeration.ts) stays visible to its own members and site-admins,
@@ -441,7 +447,16 @@ export default async function ProjectDetailPage({
           phase={project.phase}
           completedKeys={checklistItems.map((c) => c.itemKey)}
           canEdit={!!isOwnerOrAdmin}
+          showOverviews={showOverviews}
         />
+        {showOverviews && isOwnerOrAdmin && !project.abandonedAt && (
+          <Link
+            href={`/projects/${slug}/${overviewPathFor(project.phase)}`}
+            className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-seagrass/30 bg-seagrass/5 px-4 py-3 text-sm font-semibold text-seagrass hover:bg-seagrass/10"
+          >
+            {t("continuePhase", { phase: tPhase(project.phase) })} <span aria-hidden>→</span>
+          </Link>
+        )}
       </div>
 
       {project.abandonedAt && (
