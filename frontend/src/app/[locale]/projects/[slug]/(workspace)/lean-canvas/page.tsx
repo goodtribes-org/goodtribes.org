@@ -9,6 +9,7 @@ import { hasProjectRole, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import LeanCanvasGrid from "./LeanCanvasGrid";
 import LeanCanvasComments from "./LeanCanvasComments";
 import LeanCanvasHistory from "./LeanCanvasHistory";
+import { LEGACY_LEAN_CANVAS_BLOCKS } from "./fields";
 import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { Locale } from "next-intl";
 import { isFeatureEnabled } from "@/lib/featureFlags";
@@ -23,7 +24,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) return {};
-  return { title: `${project.title} — Lean Canvas — GoodTribes.org` };
+  return { title: `${project.title} — Social Lean Canvas — GoodTribes.org` };
 }
 
 export default async function LeanCanvasPage({
@@ -57,6 +58,9 @@ export default async function LeanCanvasPage({
     ? await getCanvasAiContext(project.id, "leanCanvas")
     : null;
 
+  const legacy = canvas ? LEGACY_LEAN_CANVAS_BLOCKS.filter((b) => canvas[b.field]?.trim()) : [];
+  const tField = await getTranslations({ locale, namespace: "LeanCanvasHistory" });
+
   const helpGuide = await prisma.academyGuide.findFirst({
     where: { title: "Så använder du Lean Canvas", published: true },
     select: { id: true },
@@ -87,6 +91,28 @@ export default async function LeanCanvasPage({
         provenance={ai?.provenance}
         suggestions={ai?.suggestions}
       />
+      <p className="mt-2 text-xs text-dark-slate/40">
+        <a href="https://socialleancanvas.com" target="_blank" rel="noopener noreferrer" className="hover:text-coral">
+          {t("attribution")}
+        </a>
+      </p>
+
+      {canvas && legacy.length > 0 && (
+        <section className="mt-6 rounded-lg border border-dashed border-dark-slate/20 p-4">
+          <h2 className="text-sm font-bold text-dark-slate">{t("legacyHeading")}</h2>
+          <p className="mt-1 text-xs text-dark-slate/50">{t("legacyNote")}</p>
+          <div className="mt-3 space-y-3">
+            {legacy.map((b) => (
+              <div key={b.field}>
+                <h3 className="text-xs font-bold text-dark-slate uppercase tracking-wide">
+                  {tField(`field${b.translationKey}` as Parameters<typeof tField>[0])}
+                </h3>
+                <p className="text-sm text-dark-slate/80 whitespace-pre-wrap mt-0.5">{canvas[b.field]}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <LeanCanvasComments
         projectSlug={slug}

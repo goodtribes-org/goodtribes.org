@@ -92,8 +92,9 @@ export async function requestAiDraft(applicationId: string, projectSlug: string)
 
   const context = `Projekt: ${project.title}
 
-Lean Canvas:
-- Problem: ${leanCanvas?.problem ?? "Ej ifyllt"}
+Social Lean Canvas:
+- Syfte: ${leanCanvas?.purpose ?? "Ej ifyllt"}
+- Jobs to be done: ${leanCanvas?.jobsToBeDone ?? "Ej ifyllt"}${leanCanvas?.problem ? `\n- Problem (från tidigare canvas): ${leanCanvas.problem}` : ""}
 - Lösning: ${leanCanvas?.solution ?? "Ej ifyllt"}
 - Unikt värdeerbjudande: ${leanCanvas?.uniqueValueProposition ?? "Ej ifyllt"}
 - Kundsegment: ${leanCanvas?.customerSegments ?? "Ej ifyllt"}

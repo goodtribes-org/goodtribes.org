@@ -69,7 +69,7 @@ describe("recordHumanEdits", () => {
   });
 
   it("does nothing (no queries) when nothing changed", async () => {
-    await recordHumanEdits("p1", "leanCanvas", { problem: "x" }, { problem: " x " }, "u1");
+    await recordHumanEdits("p1", "leanCanvas", { purpose: "x" }, { purpose: " x " }, "u1");
     expect(findMany).not.toHaveBeenCalled();
     expect(transaction).not.toHaveBeenCalled();
   });
@@ -91,7 +91,9 @@ describe("recordHumanEdits", () => {
 
 describe("isProvenanceField", () => {
   it("knows each entity's fields", () => {
-    expect(isProvenanceField("leanCanvas", "problem")).toBe(true);
+    expect(isProvenanceField("leanCanvas", "purpose")).toBe(true);
+    // Legacy Lean Canvas blocks are read-only now, so no longer tracked.
+    expect(isProvenanceField("leanCanvas", "problem")).toBe(false);
     expect(isProvenanceField("valueProposition", "vpGains")).toBe(true);
     expect(isProvenanceField("project", "description")).toBe(true);
     expect(isProvenanceField("project", "problem")).toBe(false);

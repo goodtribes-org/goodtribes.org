@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createProjectRecord } from "@/lib/createProject";
-import { LEAN_CANVAS_FIELDS, type LeanCanvasField } from "../projects/[slug]/(workspace)/lean-canvas/fields";
+import { LEAN_CANVAS_FIELDS, LEAN_CANVAS_STORED_FIELDS, type LeanCanvasField } from "../projects/[slug]/(workspace)/lean-canvas/fields";
 
 export async function createLeanCanvasDraft(formData: FormData): Promise<void> {
   const session = await auth();
@@ -62,7 +62,7 @@ export async function promoteLeanCanvasDraftToProject(
     data: {
       projectSlug: project.slug,
       updatedById: session.user.id,
-      ...Object.fromEntries(LEAN_CANVAS_FIELDS.map((f) => [f, draft[f]])),
+      ...Object.fromEntries(LEAN_CANVAS_STORED_FIELDS.map((f) => [f, draft[f]])),
     },
   });
   await prisma.leanCanvasDraft.update({ where: { id: draftId }, data: { promotedToProjectSlug: project.slug } });

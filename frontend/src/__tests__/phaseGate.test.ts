@@ -18,13 +18,13 @@ describe("coerceGateBrief", () => {
     const b = coerceGateBrief({
       believed: ["Skolkök slänger mat", ""],
       learned: ["Köken vill ha hjälp"],
-      held: ["leanCanvas.problem", "leanCanvas.channels", "leanCanvas.notAField"],
+      held: ["leanCanvas.jobsToBeDone", "leanCanvas.channels", "leanCanvas.notAField"],
       fell: ["leanCanvas.channels", "valueProposition.vpPains", "nope"],
       recommendation: "pivot",
       reasons: ["Kanalen föll"],
       next_focus: ["Testa hämtning"],
     });
-    expect(b.held).toEqual(["leanCanvas.problem"]);
+    expect(b.held).toEqual(["leanCanvas.jobsToBeDone"]);
     expect(b.fell).toEqual(["leanCanvas.channels", "valueProposition.vpPains"]);
     expect(b.believed).toEqual(["Skolkök slänger mat"]);
     expect(b.recommendation).toBe("pivot");
@@ -56,7 +56,7 @@ describe("cardsForDecision", () => {
     interviewCount: 3,
     learnings: [],
     verdicts: [
-      { field: "leanCanvas.problem", verdict: "confirmed", reason: "", interviewIds: ["i1"] },
+      { field: "leanCanvas.jobsToBeDone", verdict: "confirmed", reason: "", interviewIds: ["i1"] },
       { field: "leanCanvas.channels", verdict: "unclear", reason: "", interviewIds: [] },
       { field: "valueProposition.vpPains", verdict: "refuted", reason: "", interviewIds: ["i2"] },
     ],

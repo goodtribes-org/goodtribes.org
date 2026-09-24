@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { hasProjectRole, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
-import { LEAN_CANVAS_FIELDS, type LeanCanvasField } from "./fields";
+import { LEAN_CANVAS_FIELDS, LEAN_CANVAS_STORED_FIELDS, type LeanCanvasField } from "./fields";
 import { recordHumanEdits } from "@/lib/fieldProvenance";
 
 export async function updateLeanCanvasBlock(
@@ -36,7 +36,7 @@ export async function updateLeanCanvasBlock(
     data: {
       projectSlug,
       savedById: session.user.id,
-      ...Object.fromEntries(LEAN_CANVAS_FIELDS.map((f) => [f, canvas[f]])),
+      ...Object.fromEntries(LEAN_CANVAS_STORED_FIELDS.map((f) => [f, canvas[f]])),
     },
   });
 

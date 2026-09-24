@@ -5,6 +5,11 @@ model LeanCanvas {
   id                     String    @id @default(cuid())
   projectSlug            String    @unique
   project                Project   @relation("ProjectLeanCanvas", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  // Social Lean Canvas (socialleancanvas.com, slc@2.0.1) — the 11 live blocks
+  // are listed in lean-canvas/fields.ts. problem/alternatives/earlyAdopters/
+  // concept are from the earlier Lean Canvas and kept read-only (never dropped).
+  purpose                String?   @db.Text
+  jobsToBeDone           String?   @db.Text
   problem                String?   @db.Text
   alternatives           String?   @db.Text
   customerSegments       String?   @db.Text
@@ -48,6 +53,11 @@ model LeanCanvasVersion {
   id                     String    @id @default(cuid())
   projectSlug            String
   project                Project   @relation("ProjectLeanCanvasVersions", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  // Social Lean Canvas (socialleancanvas.com, slc@2.0.1) — the 11 live blocks
+  // are listed in lean-canvas/fields.ts. problem/alternatives/earlyAdopters/
+  // concept are from the earlier Lean Canvas and kept read-only (never dropped).
+  purpose                String?   @db.Text
+  jobsToBeDone           String?   @db.Text
   problem                String?   @db.Text
   alternatives           String?   @db.Text
   customerSegments       String?   @db.Text
@@ -84,7 +94,7 @@ model LeanCanvasComment {
   @@index([projectSlug])
 }
 
-// A project-less scratchpad, same 12 fields as LeanCanvas — lets a user try
+// A project-less scratchpad, same fields as LeanCanvas — lets a user try
 // the tool from Sandbox before any Project exists. No version history or
 // comments (deliberately lighter-weight than the real thing). Once promoted,
 // promotedToProjectSlug is set and the draft becomes read-only; the real
@@ -94,6 +104,11 @@ model LeanCanvasDraft {
   ownerId                String
   owner                  User      @relation("LeanCanvasDraftOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   name                   String?
+  // Social Lean Canvas (socialleancanvas.com, slc@2.0.1) — the 11 live blocks
+  // are listed in lean-canvas/fields.ts. problem/alternatives/earlyAdopters/
+  // concept are from the earlier Lean Canvas and kept read-only (never dropped).
+  purpose                String?   @db.Text
+  jobsToBeDone           String?   @db.Text
   problem                String?   @db.Text
   alternatives           String?   @db.Text
   customerSegments       String?   @db.Text

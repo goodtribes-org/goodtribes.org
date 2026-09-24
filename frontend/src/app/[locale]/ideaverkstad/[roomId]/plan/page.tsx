@@ -20,10 +20,11 @@ type PlanJson = {
 };
 
 const LEAN_CANVAS_LABELS: Record<string, string> = {
-  problem: "Problem", alternatives: "Alternativ idag", solution: "Lösning",
-  uniqueValueProposition: "Unikt värdeerbjudande", concept: "Koncept", unfairAdvantage: "Orättvis fördel",
-  channels: "Kanaler", customerSegments: "Kundsegment", earlyAdopters: "Tidiga användare",
-  costStructure: "Kostnadsstruktur", impact: "Impact", keyMetrics: "Nyckeltal", revenueStreams: "Intäktsströmmar",
+  purpose: "Syfte", impact: "Impact", jobsToBeDone: "Jobs to be done", solution: "Lösning",
+  keyMetrics: "Nyckeltal", uniqueValueProposition: "Unikt värdeerbjudande", unfairAdvantage: "Fördel",
+  channels: "Kanaler", customerSegments: "Kundsegment", costStructure: "Kostnader", revenueStreams: "Intäkter",
+  // Plans generated before the switch to Social Lean Canvas.
+  problem: "Problem", alternatives: "Alternativ idag", concept: "Koncept", earlyAdopters: "Tidiga användare",
 };
 
 const VALUE_PROP_LABELS: Record<string, string> = {

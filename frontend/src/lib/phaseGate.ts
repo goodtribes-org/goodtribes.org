@@ -288,7 +288,7 @@ export async function runUppstartGateBrief(projectId: string, slug: string, user
   if (!project) throw new InsightError("not_found");
 
   // The fields a sprint tests: the solution side of both canvases.
-  const SOLUTION_FIELDS = new Set(["solution", "uniqueValueProposition", "channels", "earlyAdopters", "concept", "vpProducts", "vpRelievers", "vpCreators"]);
+  const SOLUTION_FIELDS = new Set(["solution", "uniqueValueProposition", "channels", "vpProducts", "vpRelievers", "vpCreators"]);
   const fieldLines = (entity: string, row: Record<string, unknown> | null, fields: readonly string[], prov: Record<string, { status: string }>) =>
     fields
       .filter((f) => SOLUTION_FIELDS.has(f) && typeof row?.[f] === "string" && (row[f] as string).trim())
