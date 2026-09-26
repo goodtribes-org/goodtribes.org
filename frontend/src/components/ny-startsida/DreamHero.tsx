@@ -89,7 +89,7 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
       </h1>
       <p className="relative z-[2] m-0 max-w-[520px] text-lg leading-[1.55] text-[#4A514D] sm:text-[21px]">{t("intro")}</p>
 
-      <div className="relative mt-4 w-full max-w-[960px] sm:mt-16 xl:-mt-2">
+      <div className="relative mt-6 w-full max-w-[960px] sm:mt-[72px] xl:mt-0">
         {/* On wide screens the whole text block sits low, with the intro
             between the tree crowns just above the box (xl:pt / xl:-mt).
             The trees at their own size above the ends of the box, trunks
