@@ -30,7 +30,7 @@ export default async function FoundingCard({ locale }: { locale: Locale }) {
     .filter((logo, i, all) => all.findIndex((l) => l.src === logo.src) === i);
 
   return (
-    <section className={`${wrap} flex flex-col gap-9 pt-[104px]`}>
+    <section className={`${wrap} flex flex-col gap-9 pt-[72px]`}>
       <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} />
       <div className={`${card} flex flex-col items-center gap-10 p-6 sm:p-10 lg:flex-row lg:gap-16 lg:p-16`}>
         <div className="flex flex-1 flex-col gap-[18px]">
