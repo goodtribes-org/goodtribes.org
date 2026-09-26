@@ -3752,7 +3752,7 @@
     "stateAdminsOnly": "Site admins only",
     "stateOn": "On for everyone",
     "lastChanged": "Last changed {date}",
-    "aiKeyMissing": "AI isn't configured in this environment (ANTHROPIC_API_KEY, or AI_PROVIDER=vertex with GOOGLE_VERTEX_PROJECT_ID). The flag can be switched on already, but the AI parts (start choice, dream conversation, AI settings, review) stay hidden until AI is configured — \"New project\" then goes straight to the quick start. Known/assumed marking is shown regardless."
+    "aiKeyMissing": "ANTHROPIC_API_KEY is missing in this environment. The flag can be switched on already, but the AI parts (start choice, dream conversation, AI settings, review) stay hidden until the key exists — \"New project\" then goes straight to the quick start. Known/assumed marking is shown regardless."
   },
   "AiMode": {
     "pickerLabel": "AI mode",

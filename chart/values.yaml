@@ -55,14 +55,6 @@ frontend:
     # connections, well inside the 100 connection default with headroom for
     # pg_dump/psql/etc. Re-tune if maxReplicas or postgres.resources change.
     DATABASE_CONNECTION_LIMIT: "10"
-    # Claude via Google Cloud Vertex AI instead of the Claude API (paid from
-    # the Google Cloud credits). Uncomment and fill in the Google Cloud
-    # project, plus GOOGLE_VERTEX_CREDENTIALS_JSON in goodtribes-secret (see
-    # below). Region "global" is Google's default; an EU region such as
-    # "europe-west1" keeps processing in the EU if that model is offered there.
-    # AI_PROVIDER: vertex
-    # GOOGLE_VERTEX_PROJECT_ID: <google-cloud-project-id>
-    # GOOGLE_VERTEX_REGION: global
   # Sensitive vars from goodtribes-secret:
   #   AUTH_SECRET
   #   RESEND_API_KEY
@@ -79,11 +71,7 @@ frontend:
   #                          without it. Server-side only, read at runtime: adding it to
   #                          goodtribes-secret + restarting the frontend pods is enough,
   #                          no rebuild. Also required for the ai-project-start flag's
-  #                          AI parts to appear, see frontend/src/lib/aiProjectStart.ts.
-  #                          Not needed when AI_PROVIDER=vertex.)
-  #   GOOGLE_VERTEX_CREDENTIALS_JSON (only with AI_PROVIDER=vertex — the Google Cloud
-  #                          service account key JSON, role "Vertex AI User". Runtime-only
-  #                          like ANTHROPIC_API_KEY: add + restart pods, no rebuild.)
+  #                          AI parts to appear, see frontend/src/lib/aiProjectStart.ts.)
 
 # Pulls the items of each project's mapped GitHub Projects V2 board into its task
 # board. Calls the in-cluster frontend Service — no ingress involved.
