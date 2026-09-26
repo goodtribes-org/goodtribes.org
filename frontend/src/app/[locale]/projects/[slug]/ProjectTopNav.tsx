@@ -52,7 +52,7 @@ import {
 import type { ProjectPhaseValue } from "@/lib/projectPhase";
 import { groupNavItemsByPhase } from "@/lib/navPhaseGrouping";
 
-export type NavItem = {
+type NavItem = {
   label: string;
   href: string;
   icon: LucideIcon;
@@ -126,7 +126,7 @@ function adminItems(t: T): NavItem[] {
   ];
 }
 
-export type Group = {
+type Group = {
   key: string;
   label: string;
   icon: LucideIcon;
@@ -134,46 +134,6 @@ export type Group = {
   early?: NavItem[];
   locked?: NavItem[];
 };
-
-/**
- * The project menu's groups, shared by the tabs in the header (ProjectTopNav)
- * and the side rail on the project home (ProjectSideNav).
- */
-export function buildProjectNavGroups(
-  t: T,
-  {
-    phase,
-    completedChecklistKeys,
-    isOwner,
-    isCommercial,
-  }: { phase?: ProjectPhaseValue; completedChecklistKeys?: string[]; isOwner?: boolean; isCommercial?: boolean },
-): Group[] {
-  // phase is optional (e.g. /messages?project=… doesn't know it) — without it
-  // every phase tool is shown as available rather than guessing a phase.
-  const phased = phase
-    ? groupNavItemsByPhase(phaseItems(t), phase, completedChecklistKeys ?? [])
-    : { current: phaseItems(t), early: [] as NavItem[], locked: [] as NavItem[] };
-
-  return [
-    { key: "work", label: t("groupWork"), icon: Briefcase, items: workItems(t) },
-    { key: "docs", label: t("groupDocs"), icon: FileText, items: docItems(t) },
-    {
-      key: "phase",
-      label: t("groupPhaseTools"),
-      icon: Wrench,
-      items: phased.current,
-      early: phased.early,
-      locked: phased.locked,
-    },
-    {
-      key: "community",
-      label: t("toolsGroupLabel"),
-      icon: Users2,
-      items: communityItems(t).filter((i) => !i.commercialOnly || isCommercial),
-    },
-    ...(isOwner ? [{ key: "admin", label: t("adminGroupLabel"), icon: Settings, items: adminItems(t) }] : []),
-  ];
-}
 
 // Empty element in the site header ([locale]/layout.tsx) the tabs portal into.
 export const PROJECT_NAV_SLOT_ID = "project-nav-slot";
@@ -243,7 +203,31 @@ export default function ProjectTopNav({
     return item.getHref ? item.getHref(slug) : `${base}${item.href}`;
   }
 
-  const groups = buildProjectNavGroups(t, { phase, completedChecklistKeys, isOwner, isCommercial });
+  // phase is optional (e.g. /messages?project=… doesn't know it) — without it
+  // every phase tool is shown as available rather than guessing a phase.
+  const phased = phase
+    ? groupNavItemsByPhase(phaseItems(t), phase, completedChecklistKeys ?? [])
+    : { current: phaseItems(t), early: [] as NavItem[], locked: [] as NavItem[] };
+
+  const groups: Group[] = [
+    { key: "work", label: t("groupWork"), icon: Briefcase, items: workItems(t) },
+    { key: "docs", label: t("groupDocs"), icon: FileText, items: docItems(t) },
+    {
+      key: "phase",
+      label: t("groupPhaseTools"),
+      icon: Wrench,
+      items: phased.current,
+      early: phased.early,
+      locked: phased.locked,
+    },
+    {
+      key: "community",
+      label: t("toolsGroupLabel"),
+      icon: Users2,
+      items: communityItems(t).filter((i) => !i.commercialOnly || isCommercial),
+    },
+    ...(isOwner ? [{ key: "admin", label: t("adminGroupLabel"), icon: Settings, items: adminItems(t) }] : []),
+  ];
 
   function toggle(key: string, button: HTMLButtonElement) {
     if (openKey === key) {

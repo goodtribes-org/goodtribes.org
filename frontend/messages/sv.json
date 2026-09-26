@@ -3752,7 +3752,7 @@
     "stateAdminsOnly": "Bara site-admins",
     "stateOn": "På för alla",
     "lastChanged": "Senast ändrad {date}",
-    "aiKeyMissing": "AI är inte konfigurerad i den här miljön (ANTHROPIC_API_KEY, eller AI_PROVIDER=vertex med GOOGLE_VERTEX_PROJECT_ID). Flaggan kan slås på redan nu, men AI-delarna (vägval, Drömsamtalet, AI-inställningar, granskning) är dolda tills AI:n är konfigurerad — \"Nytt projekt\" går då direkt till Snabbstart. Vet/antar-märkningen visas ändå."
+    "aiKeyMissing": "ANTHROPIC_API_KEY saknas i den här miljön. Flaggan kan slås på redan nu, men AI-delarna (vägval, Drömsamtalet, AI-inställningar, granskning) är dolda tills nyckeln finns — \"Nytt projekt\" går då direkt till Snabbstart. Vet/antar-märkningen visas ändå."
   },
   "AiMode": {
     "pickerLabel": "AI-läge",
