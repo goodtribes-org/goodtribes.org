@@ -4345,12 +4345,12 @@
       "heading": "Vad drömmer du om att",
       "headingHighlight": "förändra?",
       "intro": "GoodTribes är platsen där människor tillsammans förverkligar idéer som gör världen bättre. Berätta om din dröm, så tar AI-guiden dig hela vägen från idé till verklig skillnad.",
-      "label": "Berätta om din dröm",
+      "label": "Beskriv din dröm",
       "examples": {
-        "0": "Jag drömmer om en läxhjälp där äldre hjälper yngre i mitt område…",
-        "1": "Jag drömmer om att datorer som skulle skrotas får ett nytt liv hos någon som behöver dem…",
-        "2": "Jag drömmer om en fotbollsskola för tjejer som aldrig fått chansen att spela…",
-        "3": "Jag drömmer om att ingen i min stad ska behöva äta middag ensam…"
+        "0": "Jag drömmer om att färre äldre i mitt område ska känna sig ensamma…",
+        "1": "Jag drömmer om en skola som inte slänger mat…",
+        "2": "Jag drömmer om en cykelverkstad där alla kan lära sig laga…",
+        "3": "Jag drömmer om en gård där grannar möts…"
       },
       "note": "Gratis konto krävs för AI-guiden · Samtalet är privat tills du själv skapar projektet",
       "restored": "Välkommen tillbaka! Din dröm finns kvar, tryck på pilen för att börja.",
@@ -4363,30 +4363,30 @@
     "promises": {
       "idea": {
         "title": "Från idé till verklighet",
-        "body": "AI-guiden hjälper dig genom sex faser – och du bestämmer själv i varje steg."
+        "body": "AI-guiden hjälper dig genom sex faser – och kan göra jobbet åt dig om du vill."
       },
       "together": {
         "title": "Tillsammans går det",
-        "body": "Hitta frivilliga, mentorer och andra eldsjälar – ingen behöver göra allt själv."
+        "body": "Hitta frivilliga, mentorer och andra eldsjälar – eller hoppa in i någon annans projekt."
       },
       "nonprofit": {
         "title": "Ideellt på riktigt",
-        "body": "En stiftelse som vill ge alla möjligheten att leva, må och göra gott."
+        "body": "En stiftelse som vill ge alla möjligheten att leva gott, må gott, göra gott och drömma stort."
       }
     },
     "phases": {
       "heading": "Från idé till impact, ett steg i taget",
-      "intro": "Varje projekt går igenom samma sex faser. Guiden visar vad som behövs i varje fas – du bestämmer takten.",
-      "now": "Just nu",
-      "empty": "Inga projekt här ännu",
+      "intro": "Varje projekt går igenom samma sex faser. Guiden visar var du är och vad nästa steg är – du bestämmer takten.",
+      "now": "Just nu · {count}",
+      "empty": "Inga projekt ännu",
       "more": "+{count} till",
       "descriptions": {
-        "idea": "Beskriv drömmen, testa idén och hitta de första som vill vara med.",
-        "startup": "Bygg teamet, planera första sprinten och kom igång på riktigt.",
-        "launch": "Testa i liten skala med riktiga användare och lär av resultatet.",
-        "establish": "Gör det som fungerar hållbart – arbetssätt, ansvar och finansiering.",
-        "scale": "Nå fler, på fler platser, med det ni vet fungerar.",
-        "impact": "Visa skillnaden ni gjort – och bestäm nästa steg."
+        "idea": "Formulera drömmen och vem den hjälper.",
+        "startup": "Samla ett team och gör en plan.",
+        "launch": "Testa i liten skala och lär dig.",
+        "establish": "Bygg rutiner och hitta resurser.",
+        "scale": "Nå fler människor och platser.",
+        "impact": "Mät och visa skillnaden ni gör."
       }
     },
     "projects": {
@@ -4396,28 +4396,44 @@
     },
     "ideas": {
       "heading": "Eller tyck till om en idé",
-      "sub": "Rösta och kommentera – idéer med stöd kan bli projekt.",
+      "sub": "Rösta och kommentera – det enklaste sättet att vara med.",
       "allLink": "Se alla idéer →"
     },
     "stats": {
-      "eyebrow": "Just nu",
+      "eyebrow": "Vår påverkan",
       "heading": "Det här händer på plattformen",
-      "raised": "insamlat",
+      "raised": "insamlat totalt",
       "tasks": "avklarade uppgifter",
-      "tokens": "utdelade tokens",
+      "tokens": "tokens utdelade",
       "projects": "aktiva projekt"
     },
     "tools": {
       "eyebrow": "Verktyg",
       "heading": "Allt ett projekt behöver",
-      "intro": "Verktygen öppnas när projektet behöver dem – från första skissen till färdig verksamhet."
+      "intro": "Verktygen dyker upp i rätt fas i ditt projekt – och AI-guiden fyller i dem utifrån det du redan berättat.",
+      "items": {
+        "leanCanvas": "Social Lean Canvas",
+        "valueProposition": "Värdeerbjudande",
+        "whiteboard": "Whiteboard",
+        "kanban": "Kanban-board",
+        "funding": "Crowdfunding",
+        "polls": "Omröstningar",
+        "rewards": "Belöningar",
+        "chatWiki": "Chatt och wiki"
+      }
     },
     "closing": {
       "heading": "Vi gör goda drömmar",
       "headingHighlight": "verkliga.",
-      "body": "Leva, må och göra gott – det börjar med en dröm. Berätta om din, så hjälper vi dig ta första steget.",
-      "cta": "Berätta din dröm",
-      "imageAlt": "Pyramid med Leva, Må och Göra gott"
+      "body": "Leva gott, må gott, göra gott och drömma stort – tillsammans.",
+      "cta": "Beskriv din dröm →",
+      "imageAlt": "Pyramiden Leva gott, Må gott, Göra gott"
+    },
+    "founding": {
+      "eyebrow": "Så långt kan en idé nå",
+      "heading": "Det började med datorer som skulle skrotas",
+      "body": "Fullt fungerande datorer byts ut efter tre, fyra år – samtidigt som förskolor, skolor och ideella organisationer saknar utrustning. Infos Datordonation löste båda problemen: datorerna raderades säkert, fick nya program och gick vidare till skolor i Tensta, Rinkeby och Skärholmen och till organisationer som Amnesty. Ur det arbetet grundades Stiftelsen GoodTribes, så att fler goda idéer ska kunna gå samma väg.",
+      "supportLabel": "Möjliggjort av"
     }
   }
 }

@@ -4345,12 +4345,12 @@
       "heading": "What do you dream of",
       "headingHighlight": "changing?",
       "intro": "GoodTribes is where people come together to make ideas that improve the world happen. Tell us about your dream, and the AI guide takes you all the way from idea to real change.",
-      "label": "Tell us about your dream",
+      "label": "Describe your dream",
       "examples": {
-        "0": "I dream of homework help where older kids help younger ones in my area…",
-        "1": "I dream of computers that were going to be scrapped getting a new life with someone who needs them…",
-        "2": "I dream of a football school for girls who never got the chance to play…",
-        "3": "I dream that no one in my town has to eat dinner alone…"
+        "0": "I dream that fewer older people in my area feel lonely…",
+        "1": "I dream of a school that doesn't throw food away…",
+        "2": "I dream of a bike workshop where anyone can learn to repair…",
+        "3": "I dream of a farm where neighbours meet…"
       },
       "note": "Free account needed for the AI guide · The conversation is private until you create the project yourself",
       "restored": "Welcome back! Your dream is still here, press the arrow to start.",
@@ -4363,30 +4363,30 @@
     "promises": {
       "idea": {
         "title": "From idea to reality",
-        "body": "The AI guide helps you through six phases – and you decide every step."
+        "body": "The AI guide helps you through six phases – and can do the work for you if you like."
       },
       "together": {
         "title": "Better together",
-        "body": "Find volunteers, mentors and other enthusiasts – nobody has to do it all alone."
+        "body": "Find volunteers, mentors and other enthusiasts – or jump into someone else's project."
       },
       "nonprofit": {
         "title": "Truly non-profit",
-        "body": "A foundation that wants to give everyone the chance to live well, feel good and do good."
+        "body": "A foundation that wants to give everyone the chance to live well, feel well, do good and dream big."
       }
     },
     "phases": {
       "heading": "From idea to impact, one step at a time",
-      "intro": "Every project goes through the same six phases. The guide shows what each phase needs – you set the pace.",
-      "now": "Right now",
-      "empty": "No projects here yet",
+      "intro": "Every project goes through the same six phases. The guide shows where you are and what the next step is – you set the pace.",
+      "now": "Right now · {count}",
+      "empty": "No projects yet",
       "more": "+{count} more",
       "descriptions": {
-        "idea": "Describe the dream, test the idea and find the first people who want to join.",
-        "startup": "Build the team, plan the first sprint and get going for real.",
-        "launch": "Test on a small scale with real users and learn from the results.",
-        "establish": "Make what works sustainable – ways of working, roles and funding.",
-        "scale": "Reach more people, in more places, with what you know works.",
-        "impact": "Show the difference you've made – and decide the next step."
+        "idea": "Put the dream into words and who it helps.",
+        "startup": "Gather a team and make a plan.",
+        "launch": "Test on a small scale and learn.",
+        "establish": "Build routines and find resources.",
+        "scale": "Reach more people and places.",
+        "impact": "Measure and show the difference you make."
       }
     },
     "projects": {
@@ -4396,13 +4396,13 @@
     },
     "ideas": {
       "heading": "Or share your view on an idea",
-      "sub": "Vote and comment – ideas with support can become projects.",
+      "sub": "Vote and comment – the easiest way to take part.",
       "allLink": "See all ideas →"
     },
     "stats": {
-      "eyebrow": "Right now",
+      "eyebrow": "Our impact",
       "heading": "What's happening on the platform",
-      "raised": "raised",
+      "raised": "raised in total",
       "tasks": "tasks completed",
       "tokens": "tokens awarded",
       "projects": "active projects"
@@ -4410,14 +4410,30 @@
     "tools": {
       "eyebrow": "Tools",
       "heading": "Everything a project needs",
-      "intro": "Tools open up when the project needs them – from the first sketch to a running organisation."
+      "intro": "The tools appear in the right phase of your project – and the AI guide fills them in from what you've already told it.",
+      "items": {
+        "leanCanvas": "Social Lean Canvas",
+        "valueProposition": "Value proposition",
+        "whiteboard": "Whiteboard",
+        "kanban": "Kanban board",
+        "funding": "Crowdfunding",
+        "polls": "Polls",
+        "rewards": "Rewards",
+        "chatWiki": "Chat and wiki"
+      }
     },
     "closing": {
       "heading": "We make good dreams",
       "headingHighlight": "come true.",
-      "body": "Live well, feel good, do good – it starts with a dream. Tell us yours, and we'll help you take the first step.",
-      "cta": "Tell us your dream",
-      "imageAlt": "Pyramid with Live, Feel good and Do good"
+      "body": "Live well, feel well, do good and dream big – together.",
+      "cta": "Describe your dream →",
+      "imageAlt": "The pyramid Live well, Feel well, Do good"
+    },
+    "founding": {
+      "eyebrow": "How far an idea can go",
+      "heading": "It started with computers that were going to be scrapped",
+      "body": "Perfectly working computers are replaced after three or four years – while preschools, schools and non-profits lack equipment. Infos Datordonation solved both problems: the computers were securely wiped, got new software and went on to schools in Tensta, Rinkeby and Skärholmen and to organisations such as Amnesty. That work led to the founding of the GoodTribes Foundation, so that more good ideas can take the same path.",
+      "supportLabel": "Made possible by"
     }
   }
 }
