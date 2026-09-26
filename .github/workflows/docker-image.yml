@@ -176,6 +176,7 @@ jobs:
           no-cache: true
           build-args: |
             NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+            GIT_SHA=${{ github.sha }}
 
       # Report-only for now (exit-code 0): this repo has never been
       # vulnerability-scanned before, so the current baseline is unknown —
