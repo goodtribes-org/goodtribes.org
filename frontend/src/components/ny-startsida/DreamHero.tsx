@@ -23,6 +23,20 @@ function Arrow({ size }: { size: number }) {
   );
 }
 
+// A little idea-bulb-with-wings, flying loops around the trees. Same bulb
+// glyph as ToolsGrid's "ideaSessions" icon, with a pair of wings added.
+function FlyingBulb({ style }: { style: React.CSSProperties }) {
+  return (
+    <svg width="30" height="26" viewBox="0 0 32 26" fill="none" style={style} aria-hidden>
+      <path d="M10 12c-4.5-6.5-10-4.5-10 1s5.5 8.5 10 3" stroke="#F5B82E" strokeWidth="1.6" strokeLinecap="round" fill="#FCEFC7" fillOpacity="0.6" />
+      <path d="M22 12c4.5-6.5 10-4.5 10 1s-5.5 8.5-10 3" stroke="#F5B82E" strokeWidth="1.6" strokeLinecap="round" fill="#FCEFC7" fillOpacity="0.6" />
+      <g transform="translate(8 1) scale(0.65)">
+        <path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.3.2.5.6.5 1v.6h6v-.6c0-.4.2-.8.5-1A6 6 0 0012 3z" stroke="#E8531F" strokeWidth="2" fill="#FCEFC7" />
+      </g>
+    </svg>
+  );
+}
+
 export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
   const t = useTranslations("NewHomePage.hero");
   const [text, setText] = useState("");
@@ -65,10 +79,26 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
       <style>{`
         @keyframes nh-grow { 0% { transform: scale(0); } 100% { transform: scale(1); } }
         @keyframes nh-ph { 0% { opacity: 0; transform: translateY(6px); } 12% { opacity: 1; transform: none; } 88% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes nh-fly-a {
+          0%   { transform: translate(0, 0) rotate(-6deg); }
+          25%  { transform: translate(22px, -18px) rotate(4deg); }
+          50%  { transform: translate(2px, -34px) rotate(-8deg); }
+          75%  { transform: translate(-20px, -14px) rotate(6deg); }
+          100% { transform: translate(0, 0) rotate(-6deg); }
+        }
+        @keyframes nh-fly-b {
+          0%   { transform: translate(0, 0) rotate(6deg); }
+          25%  { transform: translate(-18px, -22px) rotate(-6deg); }
+          50%  { transform: translate(-2px, -40px) rotate(8deg); }
+          75%  { transform: translate(20px, -16px) rotate(-4deg); }
+          100% { transform: translate(0, 0) rotate(6deg); }
+        }
         .nh-grow { transform-origin: 47% 100%; }
         @media (prefers-reduced-motion: no-preference) {
           .nh-grow { animation: nh-grow 1.4s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
           .nh-ph { animation: nh-ph 3.2s ease-in-out infinite; }
+          .nh-fly-a { animation: nh-fly-a 8s ease-in-out infinite; }
+          .nh-fly-b { animation: nh-fly-b 9.5s ease-in-out infinite; }
         }
       `}</style>
 
@@ -101,6 +131,20 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
         </div>
         <div aria-hidden className="nh-grow pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% - 60px)", left: 780, width: 316, height: 330 }}>
           <img className="block" src="/img/sandbox-tree-right.png" alt="" width={316} height={330} />
+        </div>
+
+        {/* A few idea-bulbs with wings, looping around the tree crowns. */}
+        <div aria-hidden className="nh-fly-a pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% + 190px)", left: -50 }}>
+          <FlyingBulb style={{}} />
+        </div>
+        <div aria-hidden className="nh-fly-b pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% + 100px)", left: 40, animationDelay: "-3s" }}>
+          <FlyingBulb style={{}} />
+        </div>
+        <div aria-hidden className="nh-fly-b pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% + 200px)", left: 955, animationDelay: "-1.5s" }}>
+          <FlyingBulb style={{}} />
+        </div>
+        <div aria-hidden className="nh-fly-a pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% + 105px)", left: 1030, animationDelay: "-5s" }}>
+          <FlyingBulb style={{}} />
         </div>
 
         <form
