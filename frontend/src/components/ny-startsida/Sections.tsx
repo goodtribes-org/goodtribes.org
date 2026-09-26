@@ -178,7 +178,7 @@ export async function PlatformStats({
     { value: n(activeProjects), label: t("projects"), bg: "#E4ECF5", fg: "#12486C" },
   ];
   return (
-    <section className={`${wrap} flex flex-col gap-7 pt-[104px]`}>
+    <section className={`${wrap} flex flex-col gap-7 pt-[72px]`}>
       <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {tiles.map((tile) => (
@@ -204,7 +204,7 @@ export async function ToolsRow({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.tools" });
   const tItems = await getTranslations({ locale, namespace: "HomePage.tools" });
   return (
-    <section className={`${wrap} flex flex-col gap-9 pt-[104px]`}>
+    <section className={`${wrap} flex flex-col gap-9 pt-[72px]`}>
       <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} />
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {TOOLS.map((tool) => (
