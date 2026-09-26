@@ -34,6 +34,7 @@ export default async function FoundingCard({ locale }: { locale: Locale }) {
       <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} />
       <div className={`${card} flex flex-col items-center gap-10 p-6 sm:p-10 lg:flex-row lg:gap-16 lg:p-16`}>
         <div className="flex flex-1 flex-col gap-[18px]">
+          <h3 className={`${newHomeDisplayFont.className} m-0 text-2xl font-bold tracking-[-0.01em]`}>{t("storyHeading")}</h3>
           <p className="m-0 text-lg leading-[1.65]" style={{ color: MUTED }}>{t("body")}</p>
           {logos.length > 0 && (
             <div className="flex flex-wrap items-center gap-7 pt-2">
