@@ -9,6 +9,10 @@ import { getFoundingStoryData, verifiedSdgGoals } from "@/lib/impactReports";
 
 type Report = NonNullable<Awaited<ReturnType<typeof getFoundingStoryData>>>["delivered"][number];
 
+// The helpers below are also used by the new start page's founding card
+// (components/ny-startsida/FoundingCard.tsx), so both show the same figures
+// the same way.
+//
 // Cycled by index across the delivered-impact circles so an arbitrary number
 // of figures still reads as deliberately colorful rather than repetitive.
 const STAT_CIRCLE_COLORS = [
@@ -22,7 +26,7 @@ const STAT_CIRCLE_COLORS = [
 // A short category word above the number, curated per report id rather than
 // derived from metricDescription (too long for a circle) or left generic.
 // Reports without a curated label here just skip the line.
-const STAT_CIRCLE_LABELS: Record<string, string> = {
+export const STAT_CIRCLE_LABELS: Record<string, string> = {
   "infos-units-total": "Donerat",
   "infos-equipment-purchase-value": "Inköpsvärde",
   "infos-co2-total": "Utsläppsminskning",
@@ -34,7 +38,7 @@ const STAT_CIRCLE_LABELS: Record<string, string> = {
 // per explicit direction, staff count reads as a footnote on the volunteer
 // count rather than a peer circle. The merged-in report is dropped from the
 // main circle list entirely and rendered as a small second line instead.
-const STAT_CIRCLE_MERGE_INTO: Record<string, string> = {
+export const STAT_CIRCLE_MERGE_INTO: Record<string, string> = {
   "infos-fulltime-staff": "infos-volunteers",
 };
 
@@ -42,7 +46,7 @@ const STAT_CIRCLE_MERGE_INTO: Record<string, string> = {
 // where the bare unit alone would read strangely once "miljoner" moves down
 // into this line (see millionsInUnit below) — "kr" alone under "~147,5"
 // doesn't say "147,5 *million*", "miljoner kronor" does.
-const STAT_CIRCLE_UNIT_OVERRIDES: Record<string, string> = {
+export const STAT_CIRCLE_UNIT_OVERRIDES: Record<string, string> = {
   "infos-equipment-purchase-value": "miljoner kronor",
   "infos-co2-total": "Ton CO2",
 };
@@ -54,7 +58,7 @@ const STAT_CIRCLE_UNIT_OVERRIDES: Record<string, string> = {
 // counted; the purchase-value circle keeps its "~" since the underlying
 // number is a linear extrapolation, a step further removed from the source
 // than CO2's direct-formula estimate.
-const STAT_CIRCLE_HIDE_APPROX_SYMBOL = new Set(["infos-co2-total"]);
+export const STAT_CIRCLE_HIDE_APPROX_SYMBOL = new Set(["infos-co2-total"]);
 
 // Compact "25 000+" / "~147,5" style formatting for the circles — terser
 // than the qualifier words (minst/ca) used in the full project-page report
@@ -64,7 +68,7 @@ const STAT_CIRCLE_HIDE_APPROX_SYMBOL = new Set(["infos-co2-total"]);
 // millionsInUnit is set, the "miljoner" word is left for the unit line
 // (STAT_CIRCLE_UNIT_OVERRIDES) instead of being appended here, so it isn't
 // stated twice.
-function formatStatNumber(
+export function formatStatNumber(
   value: number,
   qualifier: Report["valueQualifier"],
   locale: string,
@@ -96,7 +100,7 @@ const SPONSOR_LOGOS = [
   { match: /ok\s*\/?\s*q8/i, src: "/img/sponsors/okq8.svg", alt: "OKQ8" },
 ];
 
-function sponsorLogosFor(sourceName: string) {
+export function sponsorLogosFor(sourceName: string) {
   return SPONSOR_LOGOS.filter((logo) => logo.match.test(sourceName));
 }
 

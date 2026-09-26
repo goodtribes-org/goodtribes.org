@@ -2,17 +2,26 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowRight } from "lucide-react";
 import { startDreamFromHome } from "@/app/[locale]/ny-startsida/actions";
-import { handwritingFontThin } from "@/lib/fonts";
-import { newHomeDisplayFont } from "./fonts";
+import { newHomeDisplayFont, newHomeScriptFont } from "./fonts";
 
 // Kept in sessionStorage across the login round trip, so a visitor who
 // writes their dream before logging in finds it again afterwards. It never
 // goes in the URL.
 const DRAFT_KEY = "gt:new-home-dream";
 const EXAMPLE_COUNT = 4;
-const EXAMPLE_INTERVAL_MS = 3500;
+// Matches the placeholder's fade animation (nh-ph below), so each example
+// fades in, stays and fades out once.
+const EXAMPLE_INTERVAL_MS = 3200;
+
+function Arrow({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M5 12h14" />
+      <path d="M13 6l6 6-6 6" />
+    </svg>
+  );
+}
 
 export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
   const t = useTranslations("NewHomePage.hero");
@@ -52,45 +61,48 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
   }
 
   return (
-    <section id="drom" className="relative px-4 pt-14 pb-16 sm:pt-20 overflow-hidden">
+    <section id="drom" className="relative flex flex-col items-center gap-[26px] overflow-hidden px-4 pt-[72px] pb-24 text-center xl:min-h-[900px]">
       <style>{`
-        @keyframes nh-grow { from { transform: scale(.6) translateY(24px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+        @keyframes nh-grow { 0% { transform: scale(0); } 100% { transform: scale(1); } }
         @keyframes nh-sway { 0%, 100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
-        .nh-tree { animation: nh-grow .9s cubic-bezier(.2,.8,.2,1) both; transform-origin: 50% 100%; }
-        .nh-tree > img { animation: nh-sway 7s ease-in-out 1s infinite; transform-origin: 50% 100%; display: block; }
-        .nh-tree-right { animation-delay: .15s; }
-        .nh-tree-right > img { animation-delay: 1.4s; }
-        @media (prefers-reduced-motion: reduce) {
-          .nh-tree, .nh-tree > img { animation: none; }
+        @keyframes nh-ph { 0% { opacity: 0; transform: translateY(6px); } 12% { opacity: 1; transform: none; } 88% { opacity: 1; } 100% { opacity: 0; } }
+        .nh-grow { transform-origin: 47% 100%; }
+        .nh-sway { transform-origin: 47% 100%; display: block; }
+        @media (prefers-reduced-motion: no-preference) {
+          .nh-grow { animation: nh-grow 1.4s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+          .nh-sway { animation: nh-sway 5s ease-in-out infinite; }
+          .nh-sway-b { animation-duration: 6s; animation-delay: -2s; }
+          .nh-ph { animation: nh-ph 3.2s ease-in-out infinite; }
         }
       `}</style>
 
-      <div className="relative z-10 mx-auto max-w-3xl text-center">
-        <p className={`${handwritingFontThin.className} text-2xl sm:text-3xl`} style={{ color: "var(--nh-accent)" }}>
-          {t("overline")}
-        </p>
-        <h1
-          className={`${newHomeDisplayFont.className} mt-3 font-extrabold tracking-tight text-[#1c1c1a]`}
-          style={{ fontSize: "clamp(2.4rem, 6vw, 4.2rem)", lineHeight: 1.02, letterSpacing: "-0.035em" }}
-        >
-          {t("heading")}{" "}
-          <span className="relative inline-block" style={{ color: "var(--nh-accent)" }}>
-            {t("headingHighlight")}
-            <svg aria-hidden viewBox="0 0 200 12" preserveAspectRatio="none" className="absolute left-0 -bottom-1 w-full h-2.5">
-              <path d="M2 8 C 50 2, 150 2, 198 7" fill="none" stroke="#f4b63f" strokeWidth="4" strokeLinecap="round" />
-            </svg>
-          </span>
-        </h1>
-        <p className="mx-auto mt-6 max-w-xl xl:max-w-[30rem] text-lg leading-relaxed text-[#5b5b57]">{t("intro")}</p>
-      </div>
+      <p className={`${newHomeScriptFont.className} relative text-[32px] leading-none sm:text-[40px]`} style={{ color: "#C2410C" }}>
+        {t("overline")}
+      </p>
+      <h1
+        className={`${newHomeDisplayFont.className} relative m-0 max-w-[900px] font-extrabold`}
+        style={{ fontSize: "clamp(2.6rem, 6.4vw, 84px)", lineHeight: 1.02, letterSpacing: "-0.035em" }}
+      >
+        {t("heading")}{" "}
+        <span className="relative inline-block" style={{ color: "var(--nh-accent)" }}>
+          {t("headingHighlight")}
+          <svg width="100%" height="22" viewBox="0 0 300 22" preserveAspectRatio="none" fill="none" aria-hidden className="absolute left-0" style={{ bottom: -14 }}>
+            <path d="M4 14 C 80 4, 200 4, 296 12" stroke="#F5B82E" strokeWidth="7" strokeLinecap="round" />
+          </svg>
+        </span>
+      </h1>
+      <p className="relative z-[2] m-0 max-w-[520px] text-lg leading-[1.55] text-[#4A514D] sm:text-[21px]">{t("intro")}</p>
 
-      {/* Trees at their own size, with the trunks behind the ends of the box. */}
-      <div className="relative mx-auto mt-4 max-w-[1080px]">
-        <div aria-hidden className="nh-tree pointer-events-none absolute left-0 bottom-6 hidden lg:block" style={{ width: 319 }}>
-          <img src="/img/sandbox-tree-left.png" alt="" width={319} height={312} />
+      <div className="relative mt-4 w-full max-w-[960px] sm:mt-16">
+        {/* The trees at their own size above the ends of the box, trunks
+            tucked behind it. Only where there is room for them beside the
+            intro text; they grow in on load and sway gently, both switched
+            off under prefers-reduced-motion. */}
+        <div aria-hidden className="nh-grow pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% - 48px)", left: -105, width: 319, height: 312 }}>
+          <img className="nh-sway" src="/img/sandbox-tree-left.png" alt="" width={319} height={312} />
         </div>
-        <div aria-hidden className="nh-tree nh-tree-right pointer-events-none absolute right-0 bottom-6 hidden lg:block" style={{ width: 316 }}>
-          <img src="/img/sandbox-tree-right.png" alt="" width={316} height={330} />
+        <div aria-hidden className="nh-grow pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% - 60px)", left: 780, width: 316, height: 330 }}>
+          <img className="nh-sway nh-sway-b" src="/img/sandbox-tree-right.png" alt="" width={316} height={330} />
         </div>
 
         <form
@@ -98,39 +110,45 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
             e.preventDefault();
             submit();
           }}
-          className="relative z-10 mx-auto mt-0 lg:mt-56 xl:mt-10 max-w-[640px] rounded-2xl border border-black/5 bg-white p-4 text-left shadow-[0_12px_40px_rgba(28,28,26,.12)]"
+          className="relative z-[1] flex flex-col gap-2.5 rounded-[26px] border border-[#E4E4DF] bg-white text-left"
+          style={{ padding: "18px 18px 14px 22px", boxShadow: "0 10px 30px rgba(27,31,29,0.08)" }}
         >
           <label htmlFor="nh-dream" className="sr-only">
             {t("label")}
           </label>
-          <textarea
-            id="nh-dream"
-            value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-              setRestored(false);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                submit();
-              }
-            }}
-            rows={3}
-            maxLength={2000}
-            placeholder={t(`examples.${example}`)}
-            className="w-full resize-none border-0 bg-transparent p-1 text-base text-[#1c1c1a] placeholder:text-[#a3a39d] focus:outline-none focus:ring-0"
-          />
-          <div className="mt-2 flex items-center justify-between gap-3">
-            <p className="text-xs text-[#8a8a84]">{restored ? t("restored") : t("note")}</p>
+          <div className="relative h-[84px]">
+            <textarea
+              id="nh-dream"
+              value={text}
+              onChange={(e) => {
+                setText(e.target.value);
+                setRestored(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  submit();
+                }
+              }}
+              maxLength={2000}
+              className="absolute inset-0 h-[84px] w-full resize-none border-0 bg-transparent py-1.5 text-[17px] leading-normal text-[#1B1F1D] outline-none focus:ring-0 sm:text-[19px]"
+            />
+            {!text && (
+              <div key={example} aria-hidden className="nh-ph pointer-events-none absolute left-0 top-1.5 text-[17px] leading-normal text-[#8A918D] sm:text-[19px]">
+                {t(`examples.${example}`)}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[13px] text-[#6B726E] sm:text-sm">{restored ? t("restored") : t("note")}</p>
             <button
               type="submit"
               disabled={!text.trim() || pending}
               aria-label={t("submit")}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition-opacity disabled:opacity-40"
+              className="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 text-white transition-opacity disabled:cursor-default disabled:opacity-50"
               style={{ background: "var(--nh-accent)" }}
             >
-              <ArrowRight className="h-5 w-5" strokeWidth={2.4} />
+              <Arrow size={22} />
             </button>
           </div>
         </form>
