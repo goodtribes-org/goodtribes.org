@@ -4363,10 +4363,7 @@
     "phases": {
       "eyebrow": "How it works",
       "heading": "From idea to impact, one step at a time",
-      "intro": "Every project goes through the same six phases. The guide shows where you are and what the next step is – you set the pace.",
-      "now": "Right now · {count}",
-      "empty": "No projects yet",
-      "more": "+{count} more",
+      "now": "Right now · {count, plural, one {# project} other {# projects}}",
       "descriptions": {
         "idea": "Put the dream into words and who it helps.",
         "startup": "Gather a team and make a plan.",
