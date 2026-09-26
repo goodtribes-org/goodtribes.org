@@ -4363,10 +4363,7 @@
     "phases": {
       "eyebrow": "Så fungerar det",
       "heading": "Från idé till impact, ett steg i taget",
-      "intro": "Varje projekt går igenom samma sex faser. Guiden visar var du är och vad nästa steg är – du bestämmer takten.",
-      "now": "Just nu · {count}",
-      "empty": "Inga projekt ännu",
-      "more": "+{count} till",
+      "now": "Just nu · {count} projekt",
       "descriptions": {
         "idea": "Formulera drömmen och vem den hjälper.",
         "startup": "Samla ett team och gör en plan.",
