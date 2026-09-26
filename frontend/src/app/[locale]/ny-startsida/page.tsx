@@ -127,7 +127,7 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
         <section id="projekt" className={`${wrap} flex flex-col gap-9 pt-[104px]`}>
           <ProjectsHeader eyebrow={t("projects.eyebrow")} heading={t("projects.heading")} href="/projects" linkLabel={t("projects.allLink")} />
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {projects.map((p) => <ProjectCard key={p.slug} project={p} showStats={false} />)}
+            {projects.map((p) => <ProjectCard key={p.slug} project={p} />)}
           </div>
         </section>
       )}
