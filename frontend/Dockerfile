@@ -76,5 +76,10 @@ USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+# The commit this image was built from, reported by /api/health so anyone can
+# see which version production actually runs (curl goodtribes.org/api/health).
+# Set by docker-image.yml; last in the file so it never busts the layer cache.
+ARG GIT_SHA=unknown
+ENV APP_VERSION=$GIT_SHA
 
 CMD ["/bin/sh", "/app/entrypoint.sh"]
