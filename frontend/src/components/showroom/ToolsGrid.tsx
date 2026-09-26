@@ -7,7 +7,7 @@ import { siteSansFont, showroomMonoFont } from "@/lib/fonts";
 // actual project-workspace routes and models) — this grid is a marketing
 // overview, not a deep link, so every card points at /sandbox rather than a
 // specific project's route.
-const TOOLS = [
+export const TOOLS = [
   { key: "leanCanvas", color: "coral", path: <><rect x="3" y="4" width="18" height="16" rx="1" /><path d="M3 10h18M9 10v10" /></> },
   { key: "valueProposition", color: "seagrass", path: <><rect x="3" y="3" width="9" height="9" rx="1.5" /><circle cx="16.5" cy="16.5" r="4.5" /></> },
   { key: "whiteboard", color: "ink", path: <path d="M4 20l4.5-1.5L19 8a2 2 0 000-3l-1-1a2 2 0 00-3 0L4.5 14.5 3 20z" /> },
@@ -26,7 +26,7 @@ const TOOLS = [
   { key: "todos", color: "ink", path: <path d="M9 11l2 2 3-4M4 6h16M4 12h16M4 18h16" /> },
 ] as const;
 
-const COLOR_HEX: Record<string, string> = {
+export const COLOR_HEX: Record<string, string> = {
   coral: "var(--color-coral)",
   seagrass: "var(--color-seagrass)",
   ink: "var(--color-dark-slate)",

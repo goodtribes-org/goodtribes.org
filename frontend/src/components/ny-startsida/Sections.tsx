@@ -2,6 +2,7 @@ import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
 import type { ProjectPhaseValue } from "@/lib/projectPhase";
+import { TOOLS, COLOR_HEX } from "@/components/showroom/ToolsGrid";
 import { newHomeDisplayFont } from "./fonts";
 
 // Sections of the new start page (/ny-startsida), following the design
@@ -195,9 +196,35 @@ export async function PlatformStats({
 
 // ─── 8. Tools ─────────────────────────────────────────────────────────────
 //
-// The tools grid itself is @/components/showroom/ToolsGrid — the same one
-// shown on the plain HomePage — reused as-is rather than re-implemented
-// here.
+// Same 16 tools and icons as @/components/showroom/ToolsGrid (the plain
+// HomePage's version), restyled to this page's own card language — spaced,
+// individually rounded tiles instead of a hairline-divided grid.
+
+export async function ToolsRow({ locale }: { locale: Locale }) {
+  const t = await getTranslations({ locale, namespace: "NewHomePage.tools" });
+  const tItems = await getTranslations({ locale, namespace: "HomePage.tools" });
+  return (
+    <section className={`${wrap} flex flex-col gap-9 pt-[104px]`}>
+      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} />
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {TOOLS.map((tool) => (
+          <div key={tool.key} className="flex flex-col gap-2.5 rounded-2xl border border-[#E4E4DF] bg-white p-5">
+            <div
+              className="flex h-9 w-9 items-center justify-center rounded-lg"
+              style={{ background: `color-mix(in oklab, ${COLOR_HEX[tool.color]} 12%, white)` }}
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={COLOR_HEX[tool.color]} strokeWidth={2}>
+                {tool.path}
+              </svg>
+            </div>
+            <p className="m-0 text-[15px] font-bold" style={{ color: INK }}>{tItems(`${tool.key}Label`)}</p>
+            <p className="m-0 text-[13px] leading-snug" style={{ color: MUTED }}>{tItems(`${tool.key}Body`)}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 // ─── 9. Closing ───────────────────────────────────────────────────────────
 
