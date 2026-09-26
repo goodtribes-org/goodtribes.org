@@ -4337,5 +4337,87 @@
     "helpText": "The customer model goes deeper into the customer side of the Social Lean Canvas: who the customers are and which of them want to be first, which job they're trying to get done and how they manage today, and why they'd choose your solution. Customers, jobs to be done, value proposition and solution are the same blocks as on the canvas.",
     "shared": "Customers, jobs to be done, value proposition and solution are the same blocks as on the canvas.",
     "canvasLink": "View Social Lean Canvas →"
+  },
+  "NewHomePage": {
+    "metaTitle": "GoodTribes – What do you dream of changing?",
+    "hero": {
+      "overline": "We make good dreams come true.",
+      "heading": "What do you dream of",
+      "headingHighlight": "changing?",
+      "intro": "GoodTribes is where people come together to make ideas that improve the world happen. Tell us about your dream, and the AI guide takes you all the way from idea to real change.",
+      "label": "Tell us about your dream",
+      "examples": {
+        "0": "I dream of homework help where older kids help younger ones in my area…",
+        "1": "I dream of computers that were going to be scrapped getting a new life with someone who needs them…",
+        "2": "I dream of a football school for girls who never got the chance to play…",
+        "3": "I dream that no one in my town has to eat dinner alone…"
+      },
+      "note": "Free account needed for the AI guide · The conversation is private until you create the project yourself",
+      "restored": "Welcome back! Your dream is still here, press the arrow to start.",
+      "submit": "Start with the AI guide"
+    },
+    "live": {
+      "label": "Live",
+      "allLink": "Full feed →"
+    },
+    "promises": {
+      "idea": {
+        "title": "From idea to reality",
+        "body": "The AI guide helps you through six phases – and you decide every step."
+      },
+      "together": {
+        "title": "Better together",
+        "body": "Find volunteers, mentors and other enthusiasts – nobody has to do it all alone."
+      },
+      "nonprofit": {
+        "title": "Truly non-profit",
+        "body": "A foundation that wants to give everyone the chance to live well, feel good and do good."
+      }
+    },
+    "phases": {
+      "heading": "From idea to impact, one step at a time",
+      "intro": "Every project goes through the same six phases. The guide shows what each phase needs – you set the pace.",
+      "now": "Right now",
+      "empty": "No projects here yet",
+      "more": "+{count} more",
+      "descriptions": {
+        "idea": "Describe the dream, test the idea and find the first people who want to join.",
+        "startup": "Build the team, plan the first sprint and get going for real.",
+        "launch": "Test on a small scale with real users and learn from the results.",
+        "establish": "Make what works sustainable – ways of working, roles and funding.",
+        "scale": "Reach more people, in more places, with what you know works.",
+        "impact": "Show the difference you've made – and decide the next step."
+      }
+    },
+    "projects": {
+      "eyebrow": "Projects",
+      "heading": "Jump into a project",
+      "allLink": "See all projects →"
+    },
+    "ideas": {
+      "heading": "Or share your view on an idea",
+      "sub": "Vote and comment – ideas with support can become projects.",
+      "allLink": "See all ideas →"
+    },
+    "stats": {
+      "eyebrow": "Right now",
+      "heading": "What's happening on the platform",
+      "raised": "raised",
+      "tasks": "tasks completed",
+      "tokens": "tokens awarded",
+      "projects": "active projects"
+    },
+    "tools": {
+      "eyebrow": "Tools",
+      "heading": "Everything a project needs",
+      "intro": "Tools open up when the project needs them – from the first sketch to a running organisation."
+    },
+    "closing": {
+      "heading": "We make good dreams",
+      "headingHighlight": "come true.",
+      "body": "Live well, feel good, do good – it starts with a dream. Tell us yours, and we'll help you take the first step.",
+      "cta": "Tell us your dream",
+      "imageAlt": "Pyramid with Live, Feel good and Do good"
+    }
   }
 }

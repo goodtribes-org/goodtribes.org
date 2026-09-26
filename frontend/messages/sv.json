@@ -4337,5 +4337,87 @@
     "helpText": "Kundmodellen fördjupar Social Lean Canvas kundsida: vilka kunderna är och vilka av dem som vill vara med först, vilket jobb de försöker få gjort och hur de klarar det idag, och varför de skulle välja er lösning. Kunder, jobs to be done, värdeerbjudande och lösning är samma rutor som på canvasen.",
     "shared": "Kunder, jobs to be done, värdeerbjudande och lösning är samma rutor som på canvasen.",
     "canvasLink": "Visa Social Lean Canvas →"
+  },
+  "NewHomePage": {
+    "metaTitle": "GoodTribes – Vad drömmer du om att förändra?",
+    "hero": {
+      "overline": "Vi gör goda drömmar verkliga.",
+      "heading": "Vad drömmer du om att",
+      "headingHighlight": "förändra?",
+      "intro": "GoodTribes är platsen där människor tillsammans förverkligar idéer som gör världen bättre. Berätta om din dröm, så tar AI-guiden dig hela vägen från idé till verklig skillnad.",
+      "label": "Berätta om din dröm",
+      "examples": {
+        "0": "Jag drömmer om en läxhjälp där äldre hjälper yngre i mitt område…",
+        "1": "Jag drömmer om att datorer som skulle skrotas får ett nytt liv hos någon som behöver dem…",
+        "2": "Jag drömmer om en fotbollsskola för tjejer som aldrig fått chansen att spela…",
+        "3": "Jag drömmer om att ingen i min stad ska behöva äta middag ensam…"
+      },
+      "note": "Gratis konto krävs för AI-guiden · Samtalet är privat tills du själv skapar projektet",
+      "restored": "Välkommen tillbaka! Din dröm finns kvar, tryck på pilen för att börja.",
+      "submit": "Börja med AI-guiden"
+    },
+    "live": {
+      "label": "Live",
+      "allLink": "Hela flödet →"
+    },
+    "promises": {
+      "idea": {
+        "title": "Från idé till verklighet",
+        "body": "AI-guiden hjälper dig genom sex faser – och du bestämmer själv i varje steg."
+      },
+      "together": {
+        "title": "Tillsammans går det",
+        "body": "Hitta frivilliga, mentorer och andra eldsjälar – ingen behöver göra allt själv."
+      },
+      "nonprofit": {
+        "title": "Ideellt på riktigt",
+        "body": "En stiftelse som vill ge alla möjligheten att leva, må och göra gott."
+      }
+    },
+    "phases": {
+      "heading": "Från idé till impact, ett steg i taget",
+      "intro": "Varje projekt går igenom samma sex faser. Guiden visar vad som behövs i varje fas – du bestämmer takten.",
+      "now": "Just nu",
+      "empty": "Inga projekt här ännu",
+      "more": "+{count} till",
+      "descriptions": {
+        "idea": "Beskriv drömmen, testa idén och hitta de första som vill vara med.",
+        "startup": "Bygg teamet, planera första sprinten och kom igång på riktigt.",
+        "launch": "Testa i liten skala med riktiga användare och lär av resultatet.",
+        "establish": "Gör det som fungerar hållbart – arbetssätt, ansvar och finansiering.",
+        "scale": "Nå fler, på fler platser, med det ni vet fungerar.",
+        "impact": "Visa skillnaden ni gjort – och bestäm nästa steg."
+      }
+    },
+    "projects": {
+      "eyebrow": "Projekt",
+      "heading": "Hoppa in i ett projekt",
+      "allLink": "Se alla projekt →"
+    },
+    "ideas": {
+      "heading": "Eller tyck till om en idé",
+      "sub": "Rösta och kommentera – idéer med stöd kan bli projekt.",
+      "allLink": "Se alla idéer →"
+    },
+    "stats": {
+      "eyebrow": "Just nu",
+      "heading": "Det här händer på plattformen",
+      "raised": "insamlat",
+      "tasks": "avklarade uppgifter",
+      "tokens": "utdelade tokens",
+      "projects": "aktiva projekt"
+    },
+    "tools": {
+      "eyebrow": "Verktyg",
+      "heading": "Allt ett projekt behöver",
+      "intro": "Verktygen öppnas när projektet behöver dem – från första skissen till färdig verksamhet."
+    },
+    "closing": {
+      "heading": "Vi gör goda drömmar",
+      "headingHighlight": "verkliga.",
+      "body": "Leva, må och göra gott – det börjar med en dröm. Berätta om din, så hjälper vi dig ta första steget.",
+      "cta": "Berätta din dröm",
+      "imageAlt": "Pyramid med Leva, Må och Göra gott"
+    }
   }
 }
