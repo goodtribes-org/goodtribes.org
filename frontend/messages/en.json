@@ -4386,21 +4386,6 @@
       "tokens": "tokens awarded",
       "projects": "active projects"
     },
-    "tools": {
-      "eyebrow": "Tools",
-      "heading": "Everything a project needs",
-      "intro": "The tools appear in the right phase of your project – and the AI guide fills them in from what you've already told it.",
-      "items": {
-        "leanCanvas": "Social Lean Canvas",
-        "valueProposition": "Value proposition",
-        "whiteboard": "Whiteboard",
-        "kanban": "Kanban board",
-        "funding": "Crowdfunding",
-        "polls": "Polls",
-        "rewards": "Rewards",
-        "chatWiki": "Chat and wiki"
-      }
-    },
     "closing": {
       "heading": "We make good dreams",
       "headingHighlight": "come true.",

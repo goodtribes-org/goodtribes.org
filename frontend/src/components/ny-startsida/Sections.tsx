@@ -194,26 +194,10 @@ export async function PlatformStats({
 }
 
 // ─── 8. Tools ─────────────────────────────────────────────────────────────
-
-const TOOL_KEYS = ["leanCanvas", "valueProposition", "whiteboard", "kanban", "funding", "polls", "rewards", "chatWiki"] as const;
-const TOOL_COLORS = ["#F5B82E", "#F29A2A", "#EE7A26", "#E8531F", "#1FA37A", "#0F7A55", "#F5B82E", "#F29A2A"];
-
-export async function ToolsRow({ locale }: { locale: Locale }) {
-  const t = await getTranslations({ locale, namespace: "NewHomePage.tools" });
-  return (
-    <section className={`${wrap} flex flex-col gap-8 pt-[104px]`}>
-      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} intro={t("intro")} />
-      <div className="grid grid-cols-2 gap-3.5 md:grid-cols-4">
-        {TOOL_KEYS.map((key, i) => (
-          <div key={key} className="flex items-center gap-3 rounded-2xl border border-[#E4E4DF] bg-white px-5 py-[18px] text-[15px] font-semibold sm:text-[17px]" style={{ color: INK }}>
-            <span className="h-2.5 w-2.5 shrink-0 rounded-[3px]" style={{ background: TOOL_COLORS[i] }} />
-            {t(`items.${key}`)}
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
+//
+// The tools grid itself is @/components/showroom/ToolsGrid — the same one
+// shown on the plain HomePage — reused as-is rather than re-implemented
+// here.
 
 // ─── 9. Closing ───────────────────────────────────────────────────────────
 
