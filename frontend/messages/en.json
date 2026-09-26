@@ -4361,6 +4361,7 @@
       "allLink": "Full feed →"
     },
     "phases": {
+      "eyebrow": "How it works",
       "heading": "From idea to impact, one step at a time",
       "intro": "Every project goes through the same six phases. The guide shows where you are and what the next step is – you set the pace.",
       "now": "Right now · {count}",
