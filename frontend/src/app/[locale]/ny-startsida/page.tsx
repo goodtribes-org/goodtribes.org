@@ -14,7 +14,7 @@ import IdeaCard from "@/components/IdeaCardContainer";
 import FoundingCard from "@/components/ny-startsida/FoundingCard";
 import DreamHero from "@/components/ny-startsida/DreamHero";
 import {
-  Closing, IdeasHeader, INK, LiveStrip, PhaseJourney, PlatformStats, ProjectsHeader, Promises, ToolsRow, wrap, type JourneyPhase,
+  Closing, IdeasHeader, INK, LiveStrip, PhaseJourney, PlatformStats, ProjectsHeader, ToolsRow, wrap, type JourneyPhase,
 } from "@/components/ny-startsida/Sections";
 import { newHomeBodyFont } from "@/components/ny-startsida/fonts";
 
@@ -145,7 +145,6 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
       <style>{`html, body { overflow-x: clip; }`}</style>
       <DreamHero isLoggedIn={!!userId} />
       <LiveStrip locale={locale} items={activity.slice(0, 8).map((a) => ({ project: a.projectName, action: a.action }))} />
-      <Promises locale={locale} />
       <PhaseJourney locale={locale} phases={phases} />
 
       {(projects.length > 0 || ideaCards.length > 0) && (
