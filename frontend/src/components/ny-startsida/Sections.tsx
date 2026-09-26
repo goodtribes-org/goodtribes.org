@@ -225,35 +225,3 @@ export async function ToolsRow({ locale }: { locale: Locale }) {
     </section>
   );
 }
-
-// ─── 9. Closing ───────────────────────────────────────────────────────────
-
-export async function Closing({ locale }: { locale: Locale }) {
-  const t = await getTranslations({ locale, namespace: "NewHomePage.closing" });
-  return (
-    <section className={`${wrap} pt-[104px] pb-24`}>
-      <div className={`${card} flex flex-col items-center gap-8 p-6 sm:p-10 lg:flex-row lg:gap-14 lg:px-[72px] lg:py-14`}>
-        <img
-          src="/img/want-to-be-a-winner.png"
-          alt={t("imageAlt")}
-          width={1920}
-          height={1080}
-          className="h-auto w-full shrink-0 rounded-[20px] object-cover lg:h-[260px] lg:w-[520px]"
-        />
-        <div className="flex flex-col items-start gap-[22px]">
-          <H2 size={58}>
-            {t("heading")} <span style={{ color: "var(--nh-accent)" }}>{t("headingHighlight")}</span>
-          </H2>
-          <p className="m-0 text-lg leading-[1.6]" style={{ color: MUTED }}>{t("body")}</p>
-          <a
-            href="#drom"
-            className="inline-flex h-[58px] items-center gap-2.5 rounded-full px-7 text-lg font-semibold text-white no-underline"
-            style={{ background: "var(--nh-accent)" }}
-          >
-            {t("cta")}
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-}
