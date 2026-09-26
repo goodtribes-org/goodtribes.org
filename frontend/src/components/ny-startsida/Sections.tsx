@@ -84,43 +84,6 @@ export async function LiveStrip({ locale, items }: { locale: Locale; items: { pr
   );
 }
 
-// ─── 3. Three promises ────────────────────────────────────────────────────
-
-const PROMISE_ICONS = {
-  idea: <><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></>,
-  together: <><circle cx="8" cy="9" r="3" /><circle cx="16" cy="9" r="3" /><path d="M3 19c0-3 2.5-5 5-5s5 2 5 5" /><path d="M11 19c0-3 2.5-5 5-5s5 2 5 5" /></>,
-  nonprofit: <><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3c3 3 3 15 0 18" /><path d="M12 3c-3 3-3 15 0 18" /></>,
-};
-
-const PROMISES = [
-  { key: "idea", bg: "#FDE6DA", fg: "#C2410C" },
-  { key: "together", bg: "#D8F2E7", fg: "#0F7A55" },
-  { key: "nonprofit", bg: "#FCEFC7", fg: "#8A5A00" },
-] as const;
-
-export async function Promises({ locale }: { locale: Locale }) {
-  const t = await getTranslations({ locale, namespace: "NewHomePage.promises" });
-  return (
-    <section className={`${wrap} pb-24`}>
-      <div className="grid gap-5 md:grid-cols-3">
-        {PROMISES.map(({ key, bg, fg }) => (
-          <div key={key} className="flex flex-col gap-3 rounded-[22px] border border-[#E4E4DF] bg-white p-[30px]">
-            <span className="flex h-12 w-12 items-center justify-center rounded-[14px]" style={{ background: bg }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={fg} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                {PROMISE_ICONS[key]}
-              </svg>
-            </span>
-            <h3 className={`${newHomeDisplayFont.className} m-0 text-[25px] font-bold tracking-[-0.01em]`} style={{ color: INK }}>
-              {t(`${key}.title`)}
-            </h3>
-            <p className="m-0 text-[17px] leading-[1.55]" style={{ color: MUTED }}>{t(`${key}.body`)}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 // ─── 4. Phase journey ─────────────────────────────────────────────────────
 
 export type JourneyPhase = {
