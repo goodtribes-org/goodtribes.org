@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return { title: t("metaTitle"), robots: { index: false, follow: false } };
 }
 
-const PROJECT_CARDS = 4;
+const PROJECT_CARDS = 10;
 
 export default async function NewHomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: rawLocale } = await params;
@@ -126,7 +126,7 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
       {projects.length > 0 && (
         <section id="projekt" className={`${wrap} flex flex-col gap-9 pt-[104px]`}>
           <ProjectsHeader eyebrow={t("projects.eyebrow")} heading={t("projects.heading")} href="/projects" linkLabel={t("projects.allLink")} />
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
             {projects.map((p) => <ProjectCard key={p.slug} project={p} />)}
           </div>
         </section>
