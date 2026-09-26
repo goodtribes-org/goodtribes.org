@@ -8,14 +8,13 @@ import { routing } from "@/i18n/routing";
 import { fetchActivityItems } from "@/lib/activityFeed";
 import { resolveIdeaContent, resolveProjectContent } from "@/lib/contentTranslation";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
-import { getSiteCopyMap } from "@/lib/siteCopy";
 import { DISPLAY_PHASES, PROJECT_PHASE_LABEL, toDisplayPhase } from "@/lib/projectPhase";
 import ProjectCard from "@/components/ProjectCard";
 import IdeaCard from "@/components/IdeaCardContainer";
-import FoundingStory from "@/components/showroom/FoundingStory";
+import FoundingCard from "@/components/ny-startsida/FoundingCard";
 import DreamHero from "@/components/ny-startsida/DreamHero";
 import {
-  Closing, LiveStrip, ListHeader, card, PhaseJourney, PlatformStats, Promises, ToolsRow, type JourneyPhase,
+  Closing, IdeasHeader, INK, LiveStrip, PhaseJourney, PlatformStats, ProjectsHeader, Promises, ToolsRow, wrap, type JourneyPhase,
 } from "@/components/ny-startsida/Sections";
 import { newHomeBodyFont } from "@/components/ny-startsida/fonts";
 
@@ -31,7 +30,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 const PROJECT_CARDS = 4;
 const IDEA_CARDS = 3;
-const CHIPS_PER_PHASE = 4;
+const CHIPS_PER_PHASE = 6;
 
 export default async function NewHomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: rawLocale } = await params;
@@ -51,7 +50,7 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
 
   const [
     activity, allProjects, projectsBeyondIdea, ideaPhaseProjects, ideas,
-    pledgeSum, tokenSum, completedCards, completedSubtasks, copy,
+    pledgeSum, tokenSum, completedCards, completedSubtasks,
   ] = await Promise.all([
     fetchActivityItems(10),
     prisma.project.findMany({ where: live, select: { phase: true, title: true, slug: true }, orderBy: { updatedAt: "desc" } }),
@@ -85,7 +84,6 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
     prisma.tokenLedger.aggregate({ _sum: { tokens: true } }),
     prisma.kanbanCard.count({ where: { column: "DONE" } }),
     prisma.kanbanCardSubtask.count({ where: { done: true } }),
-    getSiteCopyMap(locale),
   ]);
 
   const cardProjects = [...projectsBeyondIdea, ...ideaPhaseProjects].slice(0, PROJECT_CARDS);
@@ -133,11 +131,12 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
     // Full-bleed like the old start page, so the page's own grey background
     // runs edge to edge inside the site layout's content column.
     <div
-      className={`${newHomeBodyFont.className} -mt-8 text-[#1c1c1a]`}
+      className={`${newHomeBodyFont.className} -mt-8`}
       style={{
         marginLeft: "calc(50% - 50vw)",
         width: "100vw",
         background: "#F6F6F4",
+        color: INK,
         ["--nh-accent" as string]: "#E8531F",
       }}
     >
@@ -149,21 +148,24 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
       <Promises locale={locale} />
       <PhaseJourney locale={locale} phases={phases} />
 
-      {projects.length > 0 && (
-        <section className="mx-auto max-w-6xl px-4 pb-10">
-          <ListHeader eyebrow={t("projects.eyebrow")} heading={t("projects.heading")} href="/projects" linkLabel={t("projects.allLink")} />
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {projects.map((p) => <ProjectCard key={p.slug} project={p} showStats={false} />)}
-          </div>
-        </section>
-      )}
-
-      {ideaCards.length > 0 && (
-        <section className="mx-auto max-w-6xl px-4 pb-14">
-          <ListHeader small heading={t("ideas.heading")} sub={t("ideas.sub")} href="/ideas" linkLabel={t("ideas.allLink")} />
-          <div className="grid gap-5 md:grid-cols-3">
-            {ideaCards.map((idea) => <IdeaCard key={idea.id} idea={idea} isLoggedIn={!!userId} />)}
-          </div>
+      {(projects.length > 0 || ideaCards.length > 0) && (
+        <section id="projekt" className={`${wrap} flex flex-col gap-9 pt-[104px]`}>
+          {projects.length > 0 && (
+            <>
+              <ProjectsHeader eyebrow={t("projects.eyebrow")} heading={t("projects.heading")} href="/projects" linkLabel={t("projects.allLink")} />
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                {projects.map((p) => <ProjectCard key={p.slug} project={p} showStats={false} />)}
+              </div>
+            </>
+          )}
+          {ideaCards.length > 0 && (
+            <>
+              <IdeasHeader heading={t("ideas.heading")} sub={t("ideas.sub")} href="/ideas" linkLabel={t("ideas.allLink")} />
+              <div className="grid gap-5 md:grid-cols-3">
+                {ideaCards.map((idea) => <IdeaCard key={idea.id} idea={idea} isLoggedIn={!!userId} />)}
+              </div>
+            </>
+          )}
         </section>
       )}
 
@@ -175,11 +177,7 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
         activeProjects={allProjects.length}
       />
 
-      <section className="mx-auto max-w-6xl px-4 pb-14">
-        <div className={`${card} px-6 sm:px-10`}>
-          <FoundingStory locale={locale} copy={copy} />
-        </div>
-      </section>
+      <FoundingCard locale={locale} />
 
       <ToolsRow locale={locale} />
       <Closing locale={locale} />

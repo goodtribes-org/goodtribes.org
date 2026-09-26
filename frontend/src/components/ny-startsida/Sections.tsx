@@ -1,29 +1,39 @@
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
-import {
-  ArrowRight, BarChart3, Coins, Gift, LayoutGrid, LayoutPanelLeft, Lightbulb, MessagesSquare, PenLine, Users, Globe,
-} from "lucide-react";
-import { PHASE_COLORS, type ProjectPhaseValue } from "@/lib/projectPhase";
+import type { ProjectPhaseValue } from "@/lib/projectPhase";
 import { newHomeDisplayFont } from "./fonts";
 
-// Sections of the new start page (/ny-startsida). Everything is server
-// rendered from data the page fetches; only the dream box is a client
-// component (DreamHero).
+// Sections of the new start page (/ny-startsida), following the design
+// proposal "Startsida – förslag med delar från gamla sidorna" (1440 px wide,
+// 64 px side padding). Everything here is server rendered; only the dream
+// box is a client component (DreamHero).
+
+// Palette from the design.
+export const INK = "#1B1F1D";
+export const MUTED = "#4A514D";
+export const SUBTLE = "#6B726E";
+export const BORDER = "#E4E4DF";
+export const LINK = "#C2410C";
+
+// Same outer width and side padding as the design: 1312 px of content on a
+// 1440 px screen.
+export const wrap = "mx-auto w-full max-w-[1440px] px-4 sm:px-8 lg:px-16";
+export const card = "rounded-[32px] border border-[#E4E4DF] bg-white";
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-xs font-semibold uppercase tracking-[.14em]" style={{ color: "var(--nh-accent)" }}>
+    <p className="m-0 text-sm font-bold uppercase tracking-[.12em]" style={{ color: LINK }}>
       {children}
     </p>
   );
 }
 
-function Heading({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+export function H2({ children, className = "", size = 52 }: { children: React.ReactNode; className?: string; size?: number }) {
   return (
     <h2
-      className={`${newHomeDisplayFont.className} font-bold tracking-tight text-[#1c1c1a] ${className}`}
-      style={{ fontSize: "clamp(1.75rem, 3.4vw, 2.5rem)", lineHeight: 1.08, letterSpacing: "-0.025em" }}
+      className={`${newHomeDisplayFont.className} m-0 font-extrabold ${className}`}
+      style={{ fontSize: `clamp(2rem, 4vw, ${size}px)`, lineHeight: 1.05, letterSpacing: "-0.03em", color: INK }}
     >
       {children}
     </h2>
@@ -32,13 +42,11 @@ function Heading({ children, className = "" }: { children: React.ReactNode; clas
 
 function SeeAll({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="shrink-0 text-sm font-semibold hover:underline" style={{ color: "var(--nh-accent)" }}>
+    <Link href={href} className="shrink-0 text-[17px] font-semibold no-underline hover:text-[#9A3412]" style={{ color: LINK }}>
       {children}
     </Link>
   );
 }
-
-export const card = "rounded-2xl border border-black/[.07] bg-white";
 
 // ─── 2. Live strip ────────────────────────────────────────────────────────
 
@@ -47,32 +55,30 @@ export async function LiveStrip({ locale, items }: { locale: Locale; items: { pr
   if (items.length === 0) return null;
   const track = [...items, ...items];
   return (
-    <div className="border-y border-black/[.07] bg-white">
+    <div className="mb-[72px] border-y border-[#E4E4DF] bg-white">
       <style>{`
-        @keyframes nh-live { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-        .nh-live-track { animation: nh-live 45s linear infinite; }
-        @media (prefers-reduced-motion: reduce) { .nh-live-track { animation: none; } }
+        @keyframes nh-marq { to { transform: translateX(-50%); } }
+        @media (prefers-reduced-motion: no-preference) { .nh-marq { animation: nh-marq 40s linear infinite; } }
       `}</style>
-      <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
-        <span className="flex shrink-0 items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#2f8f6f]">
-          <span className="h-2 w-2 rounded-full bg-[#2f8f6f]" />
-          {t("label")}
+      <div className={`${wrap} flex h-16 items-center gap-6 text-[15px]`}>
+        <span className="flex shrink-0 items-center gap-2 text-[13px] font-bold tracking-[.1em] text-[#1FA37A]">
+          <span className="h-[9px] w-[9px] rounded-full bg-[#1FA37A]" />
+          {t("label").toUpperCase()}
         </span>
-        <div
-          className="flex-1 overflow-hidden"
-          style={{ maskImage: "linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent)" }}
-        >
-          <div className="nh-live-track inline-flex whitespace-nowrap text-sm">
+        <div className="flex-grow overflow-hidden">
+          <div className="nh-marq flex w-max">
             {track.map((item, i) => (
-              <span key={i} className="mr-8 inline-flex items-center gap-2" aria-hidden={i >= items.length}>
-                <span className="h-1.5 w-1.5 rounded-full bg-[#f4b63f]" />
-                <span className="font-semibold text-[#1c1c1a]">{item.project}</span>
-                <span className="text-[#8a8a84]">{item.action}</span>
+              <span key={i} className="inline-flex items-center gap-3 whitespace-nowrap pr-10" aria-hidden={i >= items.length}>
+                <span className="h-1.5 w-1.5 rounded-full bg-[#F5B82E]" />
+                <span className="font-semibold" style={{ color: INK }}>{item.project}</span>
+                <span style={{ color: SUBTLE }}>{item.action}</span>
               </span>
             ))}
           </div>
         </div>
-        <SeeAll href="/feed">{t("allLink")}</SeeAll>
+        <Link href="/feed" className="hidden shrink-0 font-semibold no-underline sm:inline" style={{ color: LINK }}>
+          {t("allLink")}
+        </Link>
       </div>
     </div>
   );
@@ -80,25 +86,37 @@ export async function LiveStrip({ locale, items }: { locale: Locale; items: { pr
 
 // ─── 3. Three promises ────────────────────────────────────────────────────
 
+const PROMISE_ICONS = {
+  idea: <><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></>,
+  together: <><circle cx="8" cy="9" r="3" /><circle cx="16" cy="9" r="3" /><path d="M3 19c0-3 2.5-5 5-5s5 2 5 5" /><path d="M11 19c0-3 2.5-5 5-5s5 2 5 5" /></>,
+  nonprofit: <><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><path d="M12 3c3 3 3 15 0 18" /><path d="M12 3c-3 3-3 15 0 18" /></>,
+};
+
 const PROMISES = [
-  { key: "idea", icon: ArrowRight, bg: "#fde6dc", fg: "#E8531F" },
-  { key: "together", icon: Users, bg: "#dff1ea", fg: "#2f8f6f" },
-  { key: "nonprofit", icon: Globe, bg: "#fcefcf", fg: "#b7860b" },
+  { key: "idea", bg: "#FDE6DA", fg: "#C2410C" },
+  { key: "together", bg: "#D8F2E7", fg: "#0F7A55" },
+  { key: "nonprofit", bg: "#FCEFC7", fg: "#8A5A00" },
 ] as const;
 
 export async function Promises({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.promises" });
   return (
-    <section className="mx-auto grid max-w-6xl gap-5 px-4 py-14 md:grid-cols-3">
-      {PROMISES.map(({ key, icon: Icon, bg, fg }) => (
-        <div key={key} className={`${card} p-6`}>
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ background: bg, color: fg }}>
-            <Icon className="h-5 w-5" strokeWidth={2.2} />
-          </span>
-          <h3 className={`${newHomeDisplayFont.className} mt-4 text-xl font-bold text-[#1c1c1a]`}>{t(`${key}.title`)}</h3>
-          <p className="mt-2 text-[15px] leading-relaxed text-[#5b5b57]">{t(`${key}.body`)}</p>
-        </div>
-      ))}
+    <section className={`${wrap} pb-24`}>
+      <div className="grid gap-5 md:grid-cols-3">
+        {PROMISES.map(({ key, bg, fg }) => (
+          <div key={key} className="flex flex-col gap-3 rounded-[22px] border border-[#E4E4DF] bg-white p-[30px]">
+            <span className="flex h-12 w-12 items-center justify-center rounded-[14px]" style={{ background: bg }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={fg} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                {PROMISE_ICONS[key]}
+              </svg>
+            </span>
+            <h3 className={`${newHomeDisplayFont.className} m-0 text-[25px] font-bold tracking-[-0.01em]`} style={{ color: INK }}>
+              {t(`${key}.title`)}
+            </h3>
+            <p className="m-0 text-[17px] leading-[1.55]" style={{ color: MUTED }}>{t(`${key}.body`)}</p>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
@@ -121,45 +139,52 @@ const PHASE_KEYS: Record<JourneyPhase["value"], string> = {
   IMPACT: "impact",
 };
 
+// The design's warm-to-green scale, idea to impact.
+const PHASE_BARS = ["#F5B82E", "#F29A2A", "#EE7A26", "#E8531F", "#1FA37A", "#0F7A55"];
+
 export async function PhaseJourney({ locale, phases }: { locale: Locale; phases: JourneyPhase[] }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.phases" });
   return (
-    <section className="mx-auto max-w-6xl px-4 pb-14">
-      <div className={`${card} p-6 sm:p-10`}>
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <Heading className="max-w-md">{t("heading")}</Heading>
-          <p className="max-w-sm text-[15px] leading-relaxed text-[#5b5b57]">{t("intro")}</p>
+    <section id="resan" className={wrap}>
+      <div className={`${card} flex flex-col gap-[52px] p-6 sm:p-10 lg:px-16 lg:py-[72px]`}>
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-12">
+          <H2 className="max-w-[620px]">{t("heading")}</H2>
+          <p className="m-0 max-w-[480px] text-lg leading-[1.6]" style={{ color: MUTED }}>{t("intro")}</p>
         </div>
-        <ol className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-6 lg:gap-4">
+        <ol className="m-0 grid list-none gap-8 p-0 sm:grid-cols-2 lg:grid-cols-6 lg:gap-3.5">
           {phases.map((p, i) => {
-            const color = PHASE_COLORS[p.value];
             const rest = p.count - p.projects.length;
             return (
-              <li key={p.value} className="flex flex-col">
-                <span className="h-1 rounded-full" style={{ background: color }} />
-                <div className="mt-3 flex items-center gap-2">
+              <li key={p.value} className="flex min-w-0 flex-col gap-3.5">
+                <span className="h-2 rounded-full" style={{ background: PHASE_BARS[i] }} />
+                <div className="flex items-center gap-2.5">
                   <span
-                    className="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white"
-                    style={{ background: color }}
+                    className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full text-[15px] font-semibold"
+                    style={i === 0 ? { background: "var(--nh-accent)", color: "#FFFFFF" } : { background: "#F1F1EE", color: INK }}
                   >
                     {i + 1}
                   </span>
-                  <span className={`${newHomeDisplayFont.className} font-bold text-[#1c1c1a]`}>{p.label}</span>
+                  <span className={`${newHomeDisplayFont.className} text-2xl font-bold tracking-[-0.01em]`} style={{ color: INK }}>
+                    {p.label}
+                  </span>
                 </div>
-                <p className="mt-2 text-sm leading-snug text-[#5b5b57]">{t(`descriptions.${PHASE_KEYS[p.value]}`)}</p>
-                <p className="mt-4 text-[11px] font-semibold uppercase tracking-wider text-[#a3a39d]">{t("now")}</p>
-                <div className="mt-1.5 flex flex-col items-start gap-1">
-                  {p.projects.length === 0 && <span className="text-xs text-[#a3a39d]">{t("empty")}</span>}
+                <p className="m-0 text-base leading-normal" style={{ color: MUTED }}>{t(`descriptions.${PHASE_KEYS[p.value]}`)}</p>
+                <div className="flex flex-col gap-2 border-t border-dashed border-[#E4E4DF] pt-3.5">
+                  <p className="m-0 text-xs font-bold uppercase tracking-[.08em]" style={{ color: SUBTLE }}>
+                    {t("now", { count: p.count })}
+                  </p>
+                  {p.projects.length === 0 && <p className="m-0 text-[13px] text-[#8A918D]">{t("empty")}</p>}
                   {p.projects.map((proj) => (
                     <Link
                       key={proj.slug}
                       href={`/projects/${proj.slug}`}
-                      className="max-w-full truncate rounded-md bg-[#f1f1ee] px-2 py-0.5 text-xs text-[#3d3d39] hover:bg-[#e8e8e3]"
+                      className="block truncate rounded-full border border-[#E4E4DF] bg-[#F6F6F4] px-3 py-1.5 text-[13px] no-underline hover:bg-white"
+                      style={{ color: INK }}
                     >
                       {proj.title}
                     </Link>
                   ))}
-                  {rest > 0 && <span className="text-xs text-[#8a8a84]">{t("more", { count: rest })}</span>}
+                  {rest > 0 && <p className="m-0 text-[13px]" style={{ color: SUBTLE }}>{t("more", { count: rest })}</p>}
                 </div>
               </li>
             );
@@ -170,23 +195,28 @@ export async function PhaseJourney({ locale, phases }: { locale: Locale; phases:
   );
 }
 
-// ─── 5. Section header for projects and ideas ─────────────────────────────
+// ─── 5. Section headers for projects and ideas ────────────────────────────
 
-export function ListHeader({
-  eyebrow, heading, sub, href, linkLabel, small = false,
-}: {
-  eyebrow?: string; heading: string; sub?: string; href: string; linkLabel: string; small?: boolean;
-}) {
+export function ProjectsHeader({ eyebrow, heading, href, linkLabel }: { eyebrow: string; heading: string; href: string; linkLabel: string }) {
   return (
-    <div className="mb-5 flex items-end justify-between gap-4">
-      <div>
-        {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-        {small ? (
-          <h2 className={`${newHomeDisplayFont.className} mt-1 text-2xl font-bold tracking-tight text-[#1c1c1a]`}>{heading}</h2>
-        ) : (
-          <Heading className="mt-1">{heading}</Heading>
-        )}
-        {sub && <p className="mt-1 text-sm text-[#5b5b57]">{sub}</p>}
+    <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-col gap-3">
+        <Eyebrow>{eyebrow}</Eyebrow>
+        <H2>{heading}</H2>
+      </div>
+      <SeeAll href={href}>{linkLabel}</SeeAll>
+    </div>
+  );
+}
+
+export function IdeasHeader({ heading, sub, href, linkLabel }: { heading: string; sub: string; href: string; linkLabel: string }) {
+  return (
+    <div className="flex items-end justify-between gap-4 pt-10">
+      <div className="flex flex-col gap-2">
+        <h3 className={`${newHomeDisplayFont.className} m-0 text-[26px] font-extrabold tracking-[-0.02em] sm:text-[32px]`} style={{ color: INK }}>
+          {heading}
+        </h3>
+        <p className="m-0 text-[17px]" style={{ color: MUTED }}>{sub}</p>
       </div>
       <SeeAll href={href}>{linkLabel}</SeeAll>
     </div>
@@ -203,22 +233,24 @@ export async function PlatformStats({
   const t = await getTranslations({ locale, namespace: "NewHomePage.stats" });
   const n = (v: number) => v.toLocaleString(locale === "sv" ? "sv-SE" : "en-GB");
   const tiles = [
-    { value: `${n(totalRaised)} kr`, label: t("raised"), bg: "#fde6dc", fg: "#c2410c" },
-    { value: n(completedTasks), label: t("tasks"), bg: "#dff1ea", fg: "#1f7a5c" },
-    { value: n(totalTokens), label: t("tokens"), bg: "#fcefcf", fg: "#946c05" },
-    { value: n(activeProjects), label: t("projects"), bg: "#dde8f4", fg: "#2f6690" },
+    { value: `${n(totalRaised)} kr`, label: t("raised"), bg: "#FDE6DA", fg: "#9A3412" },
+    { value: n(completedTasks), label: t("tasks"), bg: "#D8F2E7", fg: "#0F5B40" },
+    { value: n(totalTokens), label: t("tokens"), bg: "#FCEFC7", fg: "#6B4510" },
+    { value: n(activeProjects), label: t("projects"), bg: "#E4ECF5", fg: "#12486C" },
   ];
   return (
-    <section className="mx-auto max-w-6xl px-4 pb-14">
-      <Eyebrow>{t("eyebrow")}</Eyebrow>
-      <Heading className="mt-1 mb-6">{t("heading")}</Heading>
+    <section className={`${wrap} flex flex-col gap-7 pt-[104px]`}>
+      <div className="flex flex-col gap-3">
+        <Eyebrow>{t("eyebrow")}</Eyebrow>
+        <H2>{t("heading")}</H2>
+      </div>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {tiles.map((tile) => (
-          <div key={tile.label} className="rounded-2xl px-5 py-5" style={{ background: tile.bg }}>
-            <p className={`${newHomeDisplayFont.className} text-3xl font-extrabold`} style={{ color: tile.fg }}>
+          <div key={tile.label} className="flex flex-col gap-1 rounded-[20px] p-[26px]" style={{ background: tile.bg }}>
+            <p className={`${newHomeDisplayFont.className} m-0 font-extrabold leading-[1.05]`} style={{ color: tile.fg, fontSize: "clamp(1.6rem, 3vw, 40px)" }}>
               {tile.value}
             </p>
-            <p className="mt-1 text-sm text-[#3d3d39]">{tile.label}</p>
+            <p className="m-0 text-[15px] text-[#3F4642]">{tile.label}</p>
           </div>
         ))}
       </div>
@@ -228,37 +260,25 @@ export async function PlatformStats({
 
 // ─── 8. Tools ─────────────────────────────────────────────────────────────
 
-// Labels come from the old start page's tool grid (HomePage.tools), so the
-// two pages always name the tools the same way.
-const TOOLS = [
-  { key: "leanCanvas", icon: LayoutGrid, dot: "#E8531F" },
-  { key: "valueProposition", icon: Lightbulb, dot: "#2f8f6f" },
-  { key: "whiteboard", icon: PenLine, dot: "#f4b63f" },
-  { key: "kanban", icon: LayoutPanelLeft, dot: "#2f6690" },
-  { key: "funding", icon: Coins, dot: "#E8531F" },
-  { key: "polls", icon: BarChart3, dot: "#2f8f6f" },
-  { key: "tokens", icon: Gift, dot: "#f4b63f" },
-  { key: "kanaler", icon: MessagesSquare, dot: "#2f6690" },
-] as const;
+const TOOL_KEYS = ["leanCanvas", "valueProposition", "whiteboard", "kanban", "funding", "polls", "rewards", "chatWiki"] as const;
+const TOOL_COLORS = ["#F5B82E", "#F29A2A", "#EE7A26", "#E8531F", "#1FA37A", "#0F7A55", "#F5B82E", "#F29A2A"];
 
 export async function ToolsRow({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.tools" });
-  const tt = await getTranslations({ locale, namespace: "HomePage.tools" });
   return (
-    <section className="mx-auto max-w-6xl px-4 pb-14">
-      <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
+    <section className={`${wrap} flex flex-col gap-8 pt-[104px]`}>
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-12">
+        <div className="flex flex-col gap-3">
           <Eyebrow>{t("eyebrow")}</Eyebrow>
-          <Heading className="mt-1">{t("heading")}</Heading>
+          <H2>{t("heading")}</H2>
         </div>
-        <p className="max-w-sm text-[15px] leading-relaxed text-[#5b5b57]">{t("intro")}</p>
+        <p className="m-0 max-w-[460px] text-lg leading-[1.6]" style={{ color: MUTED }}>{t("intro")}</p>
       </div>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {TOOLS.map(({ key, icon: Icon, dot }) => (
-          <div key={key} className={`${card} flex items-center gap-3 px-4 py-3`}>
-            <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: dot }} />
-            <Icon className="h-4 w-4 shrink-0 text-[#8a8a84]" strokeWidth={2} />
-            <span className="truncate text-sm font-semibold text-[#1c1c1a]">{tt(`${key}Label`)}</span>
+      <div className="grid grid-cols-2 gap-3.5 md:grid-cols-4">
+        {TOOL_KEYS.map((key, i) => (
+          <div key={key} className="flex items-center gap-3 rounded-2xl border border-[#E4E4DF] bg-white px-5 py-[18px] text-[15px] font-semibold sm:text-[17px]" style={{ color: INK }}>
+            <span className="h-2.5 w-2.5 shrink-0 rounded-[3px]" style={{ background: TOOL_COLORS[i] }} />
+            {t(`items.${key}`)}
           </div>
         ))}
       </div>
@@ -271,29 +291,26 @@ export async function ToolsRow({ locale }: { locale: Locale }) {
 export async function Closing({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.closing" });
   return (
-    <section className="mx-auto max-w-6xl px-4 pb-20">
-      <div className={`${card} grid items-center gap-8 overflow-hidden p-6 sm:p-10 md:grid-cols-2`}>
+    <section className={`${wrap} pt-[104px] pb-24`}>
+      <div className={`${card} flex flex-col items-center gap-8 p-6 sm:p-10 lg:flex-row lg:gap-14 lg:px-[72px] lg:py-14`}>
         <img
           src="/img/want-to-be-a-winner.png"
           alt={t("imageAlt")}
           width={1920}
           height={1080}
-          className="w-full rounded-xl object-cover"
+          className="h-auto w-full shrink-0 rounded-[20px] object-cover lg:h-[260px] lg:w-[520px]"
         />
-        <div>
-          <h2
-            className={`${newHomeDisplayFont.className} font-extrabold tracking-tight text-[#1c1c1a]`}
-            style={{ fontSize: "clamp(2rem, 4vw, 3rem)", lineHeight: 1.02, letterSpacing: "-0.03em" }}
-          >
+        <div className="flex flex-col items-start gap-[22px]">
+          <H2 size={58}>
             {t("heading")} <span style={{ color: "var(--nh-accent)" }}>{t("headingHighlight")}</span>
-          </h2>
-          <p className="mt-4 text-[15px] leading-relaxed text-[#5b5b57]">{t("body")}</p>
+          </H2>
+          <p className="m-0 text-lg leading-[1.6]" style={{ color: MUTED }}>{t("body")}</p>
           <a
             href="#drom"
-            className="mt-6 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white"
+            className="inline-flex h-[58px] items-center gap-2.5 rounded-full px-7 text-lg font-semibold text-white no-underline"
             style={{ background: "var(--nh-accent)" }}
           >
-            {t("cta")} <ArrowRight className="h-4 w-4" strokeWidth={2.4} />
+            {t("cta")}
           </a>
         </div>
       </div>
