@@ -14,11 +14,10 @@ import ProjectCard from "@/components/ProjectCard";
 import ActivityPulse from "@/components/ActivityPulse";
 import LeaderboardWidget from "@/components/LeaderboardWidget";
 import NewMembersWidget from "@/components/NewMembersWidget";
-import ToolsGrid from "@/components/showroom/ToolsGrid";
 import FoundingCard from "@/components/ny-startsida/FoundingCard";
 import DreamHero from "@/components/ny-startsida/DreamHero";
 import {
-  Closing, INK, LiveStrip, PhaseJourney, PlatformStats, ProjectsHeader, wrap, type JourneyPhase,
+  Closing, INK, LiveStrip, PhaseJourney, PlatformStats, ProjectsHeader, ToolsRow, wrap, type JourneyPhase,
 } from "@/components/ny-startsida/Sections";
 import { newHomeBodyFont } from "@/components/ny-startsida/fonts";
 
@@ -179,9 +178,7 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
 
       <FoundingCard locale={locale} />
 
-      <section className={`${wrap} pt-[104px]`}>
-        <ToolsGrid locale={locale} copy={{}} />
-      </section>
+      <ToolsRow locale={locale} />
       <Closing locale={locale} />
 
       <section className={`${wrap} pt-[104px] pb-24`}>
