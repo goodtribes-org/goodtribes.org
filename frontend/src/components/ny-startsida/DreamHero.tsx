@@ -61,7 +61,7 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
   }
 
   return (
-    <section id="drom" className="relative flex flex-col items-center gap-[26px] overflow-hidden px-4 pt-[72px] pb-24 text-center xl:min-h-[900px]">
+    <section id="drom" className="relative flex flex-col items-center gap-[26px] overflow-hidden px-4 pt-[72px] pb-24 text-center xl:min-h-[900px] xl:pt-[160px]">
       <style>{`
         @keyframes nh-grow { 0% { transform: scale(0); } 100% { transform: scale(1); } }
         @keyframes nh-ph { 0% { opacity: 0; transform: translateY(6px); } 12% { opacity: 1; transform: none; } 88% { opacity: 1; } 100% { opacity: 0; } }
@@ -87,10 +87,12 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
           </svg>
         </span>
       </h1>
-      <p className="relative z-[2] m-0 max-w-[520px] text-lg leading-[1.55] text-[#4A514D] sm:text-[21px] xl:mt-16">{t("intro")}</p>
+      <p className="relative z-[2] m-0 max-w-[520px] text-lg leading-[1.55] text-[#4A514D] sm:text-[21px]">{t("intro")}</p>
 
-      <div className="relative mt-4 w-full max-w-[960px] sm:mt-16 xl:mt-4">
-        {/* The trees at their own size above the ends of the box, trunks
+      <div className="relative mt-4 w-full max-w-[960px] sm:mt-16 xl:-mt-2">
+        {/* On wide screens the whole text block sits low, with the intro
+            between the tree crowns just above the box (xl:pt / xl:-mt).
+            The trees at their own size above the ends of the box, trunks
             tucked behind it. Only where there is room for them beside the
             intro text, which sits between them; they grow in on load (off
             under prefers-reduced-motion) and then stand still. */}
