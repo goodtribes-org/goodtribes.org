@@ -64,14 +64,10 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
     <section id="drom" className="relative flex flex-col items-center gap-[26px] overflow-hidden px-4 pt-[72px] pb-24 text-center xl:min-h-[900px]">
       <style>{`
         @keyframes nh-grow { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-        @keyframes nh-sway { 0%, 100% { transform: rotate(-1.2deg); } 50% { transform: rotate(1.2deg); } }
         @keyframes nh-ph { 0% { opacity: 0; transform: translateY(6px); } 12% { opacity: 1; transform: none; } 88% { opacity: 1; } 100% { opacity: 0; } }
         .nh-grow { transform-origin: 47% 100%; }
-        .nh-sway { transform-origin: 47% 100%; display: block; }
         @media (prefers-reduced-motion: no-preference) {
           .nh-grow { animation: nh-grow 1.4s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
-          .nh-sway { animation: nh-sway 5s ease-in-out infinite; }
-          .nh-sway-b { animation-duration: 6s; animation-delay: -2s; }
           .nh-ph { animation: nh-ph 3.2s ease-in-out infinite; }
         }
       `}</style>
@@ -91,18 +87,18 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
           </svg>
         </span>
       </h1>
-      <p className="relative z-[2] m-0 max-w-[520px] text-lg leading-[1.55] text-[#4A514D] sm:text-[21px]">{t("intro")}</p>
+      <p className="relative z-[2] m-0 max-w-[520px] text-lg leading-[1.55] text-[#4A514D] sm:text-[21px] xl:mt-16">{t("intro")}</p>
 
-      <div className="relative mt-4 w-full max-w-[960px] sm:mt-16">
+      <div className="relative mt-4 w-full max-w-[960px] sm:mt-16 xl:mt-4">
         {/* The trees at their own size above the ends of the box, trunks
             tucked behind it. Only where there is room for them beside the
-            intro text; they grow in on load and sway gently, both switched
-            off under prefers-reduced-motion. */}
+            intro text, which sits between them; they grow in on load (off
+            under prefers-reduced-motion) and then stand still. */}
         <div aria-hidden className="nh-grow pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% - 48px)", left: -105, width: 319, height: 312 }}>
-          <img className="nh-sway" src="/img/sandbox-tree-left.png" alt="" width={319} height={312} />
+          <img className="block" src="/img/sandbox-tree-left.png" alt="" width={319} height={312} />
         </div>
         <div aria-hidden className="nh-grow pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% - 60px)", left: 780, width: 316, height: 330 }}>
-          <img className="nh-sway nh-sway-b" src="/img/sandbox-tree-right.png" alt="" width={316} height={330} />
+          <img className="block" src="/img/sandbox-tree-right.png" alt="" width={316} height={330} />
         </div>
 
         <form
