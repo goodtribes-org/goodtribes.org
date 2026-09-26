@@ -6,15 +6,14 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { routing } from "@/i18n/routing";
 import { fetchActivityItems } from "@/lib/activityFeed";
-import { resolveIdeaContent, resolveProjectContent } from "@/lib/contentTranslation";
+import { resolveProjectContent } from "@/lib/contentTranslation";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import { DISPLAY_PHASES, PROJECT_PHASE_LABEL, toDisplayPhase } from "@/lib/projectPhase";
 import ProjectCard from "@/components/ProjectCard";
-import IdeaCard from "@/components/IdeaCardContainer";
 import FoundingCard from "@/components/ny-startsida/FoundingCard";
 import DreamHero from "@/components/ny-startsida/DreamHero";
 import {
-  Closing, IdeasHeader, INK, LiveStrip, PhaseJourney, PlatformStats, ProjectsHeader, ToolsRow, wrap, type JourneyPhase,
+  Closing, INK, LiveStrip, PhaseJourney, PlatformStats, ProjectsHeader, ToolsRow, wrap, type JourneyPhase,
 } from "@/components/ny-startsida/Sections";
 import { newHomeBodyFont } from "@/components/ny-startsida/fonts";
 
@@ -29,7 +28,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 const PROJECT_CARDS = 4;
-const IDEA_CARDS = 3;
 
 export default async function NewHomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: rawLocale } = await params;
@@ -48,7 +46,7 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
   const live = { hiddenAt: null, archivedAt: null };
 
   const [
-    activity, allProjects, projectsBeyondIdea, ideaPhaseProjects, ideas,
+    activity, allProjects, projectsBeyondIdea, ideaPhaseProjects,
     pledgeSum, tokenSum, completedCards, completedSubtasks,
   ] = await Promise.all([
     fetchActivityItems(10),
@@ -66,17 +64,6 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
       orderBy: { updatedAt: "desc" },
       take: PROJECT_CARDS,
       include: projectInclude,
-    }),
-    prisma.idea.findMany({
-      where: { status: "open" },
-      orderBy: [{ votes: { _count: "desc" } }, { createdAt: "desc" }],
-      take: IDEA_CARDS,
-      include: {
-        author: { select: { name: true } },
-        _count: { select: { votes: true, comments: true, endorsements: true } },
-        votes: userId ? { where: { userId }, select: { id: true } } : false,
-        translations,
-      },
     }),
     // Same figures as ImpactStatsWidget on /sandbox.
     prisma.fundingPledge.aggregate({ where: { pledgeStatus: "confirmed" }, _sum: { amount: true } }),
@@ -110,12 +97,6 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
     taskProgress: progressBySlug.get(p.slug) ?? { total: 0, done: 0 },
   }));
 
-  const ideaCards = ideas.map((idea) => ({
-    ...idea,
-    ...resolveIdeaContent(idea, idea.translations, locale),
-    myVoteId: idea.votes?.[0]?.id ?? null,
-  }));
-
   const phases: JourneyPhase[] = DISPLAY_PHASES.map((p) => ({
     value: p.value as JourneyPhase["value"],
     label: PROJECT_PHASE_LABEL[p.value],
@@ -142,24 +123,12 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
       <LiveStrip locale={locale} items={activity.slice(0, 8).map((a) => ({ project: a.projectName, action: a.action }))} />
       <PhaseJourney locale={locale} phases={phases} />
 
-      {(projects.length > 0 || ideaCards.length > 0) && (
+      {projects.length > 0 && (
         <section id="projekt" className={`${wrap} flex flex-col gap-9 pt-[104px]`}>
-          {projects.length > 0 && (
-            <>
-              <ProjectsHeader eyebrow={t("projects.eyebrow")} heading={t("projects.heading")} href="/projects" linkLabel={t("projects.allLink")} />
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                {projects.map((p) => <ProjectCard key={p.slug} project={p} showStats={false} />)}
-              </div>
-            </>
-          )}
-          {ideaCards.length > 0 && (
-            <>
-              <IdeasHeader heading={t("ideas.heading")} sub={t("ideas.sub")} href="/ideas" linkLabel={t("ideas.allLink")} />
-              <div className="grid gap-5 md:grid-cols-3">
-                {ideaCards.map((idea) => <IdeaCard key={idea.id} idea={idea} isLoggedIn={!!userId} />)}
-              </div>
-            </>
-          )}
+          <ProjectsHeader eyebrow={t("projects.eyebrow")} heading={t("projects.heading")} href="/projects" linkLabel={t("projects.allLink")} />
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {projects.map((p) => <ProjectCard key={p.slug} project={p} showStats={false} />)}
+          </div>
         </section>
       )}
 

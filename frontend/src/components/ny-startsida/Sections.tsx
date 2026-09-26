@@ -155,24 +155,10 @@ export async function PhaseJourney({ locale, phases }: { locale: Locale; phases:
   );
 }
 
-// ─── 5. Section headers for projects and ideas ────────────────────────────
+// ─── 5. Section header for projects ───────────────────────────────────────
 
 export function ProjectsHeader({ eyebrow, heading, href, linkLabel }: { eyebrow: string; heading: string; href: string; linkLabel: string }) {
   return <SectionHeader eyebrow={eyebrow} heading={heading} link={{ href, label: linkLabel }} />;
-}
-
-export function IdeasHeader({ heading, sub, href, linkLabel }: { heading: string; sub: string; href: string; linkLabel: string }) {
-  return (
-    <div className="flex items-end justify-between gap-4 pt-10">
-      <div className="flex flex-col gap-2">
-        <h3 className={`${newHomeDisplayFont.className} m-0 text-[26px] font-extrabold tracking-[-0.02em] sm:text-[32px]`} style={{ color: INK }}>
-          {heading}
-        </h3>
-        <p className="m-0 text-[17px]" style={{ color: MUTED }}>{sub}</p>
-      </div>
-      <SeeAll href={href}>{linkLabel}</SeeAll>
-    </div>
-  );
 }
 
 // ─── 6. Platform stats ────────────────────────────────────────────────────
