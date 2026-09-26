@@ -36,7 +36,9 @@ export async function GET() {
   }
 
   return NextResponse.json(
-    { status: healthy ? "ok" : "degraded", db: db.status, redis: redis.status },
+    // version: the commit the running image was built from (APP_VERSION, set
+    // in the Dockerfile) — the quick way to see whether a deploy rolled out.
+    { status: healthy ? "ok" : "degraded", db: db.status, redis: redis.status, version: process.env.APP_VERSION ?? "unknown" },
     { status: healthy ? 200 : 503 }
   )
 }
