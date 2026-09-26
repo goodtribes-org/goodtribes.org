@@ -21,7 +21,7 @@ export const LINK = "#C2410C";
 export const wrap = "mx-auto w-full max-w-[1440px] px-4 sm:px-8 lg:px-16";
 export const card = "rounded-[32px] border border-[#E4E4DF] bg-white";
 
-function Eyebrow({ children }: { children: React.ReactNode }) {
+export function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <p className="m-0 text-sm font-bold uppercase tracking-[.12em]" style={{ color: LINK }}>
       {children}
@@ -105,7 +105,6 @@ export type JourneyPhase = {
   value: Exclude<ProjectPhaseValue, "SPRINT">;
   label: string;
   count: number;
-  projects: { title: string; slug: string }[];
 };
 
 const PHASE_KEYS: Record<JourneyPhase["value"], string> = {
@@ -124,46 +123,32 @@ export async function PhaseJourney({ locale, phases }: { locale: Locale; phases:
   const t = await getTranslations({ locale, namespace: "NewHomePage.phases" });
   return (
     <section id="resan" className={`${wrap} flex flex-col gap-9`}>
-      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} intro={t("intro")} />
+      <div className="flex flex-col gap-3">
+        <Eyebrow>{t("eyebrow")}</Eyebrow>
+        <H2 className="max-w-[720px] sm:whitespace-nowrap">{t("heading")}</H2>
+      </div>
       <div className={`${card} p-6 sm:p-10 lg:px-16 lg:py-14`}>
         <ol className="m-0 grid list-none gap-8 p-0 sm:grid-cols-2 lg:grid-cols-6 lg:gap-3.5">
-          {phases.map((p, i) => {
-            const rest = p.count - p.projects.length;
-            return (
-              <li key={p.value} className="flex min-w-0 flex-col gap-3.5">
-                <span className="h-2 rounded-full" style={{ background: PHASE_BARS[i] }} />
-                <div className="flex items-center gap-2.5">
-                  <span
-                    className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full text-[15px] font-semibold"
-                    style={i === 0 ? { background: "var(--nh-accent)", color: "#FFFFFF" } : { background: "#F1F1EE", color: INK }}
-                  >
-                    {i + 1}
-                  </span>
-                  <span className={`${newHomeDisplayFont.className} text-2xl font-bold tracking-[-0.01em]`} style={{ color: INK }}>
-                    {p.label}
-                  </span>
-                </div>
-                <p className="m-0 text-base leading-normal" style={{ color: MUTED }}>{t(`descriptions.${PHASE_KEYS[p.value]}`)}</p>
-                <div className="flex flex-col gap-2 border-t border-dashed border-[#E4E4DF] pt-3.5">
-                  <p className="m-0 text-xs font-bold uppercase tracking-[.08em]" style={{ color: SUBTLE }}>
-                    {t("now", { count: p.count })}
-                  </p>
-                  {p.projects.length === 0 && <p className="m-0 text-[13px] text-[#8A918D]">{t("empty")}</p>}
-                  {p.projects.map((proj) => (
-                    <Link
-                      key={proj.slug}
-                      href={`/projects/${proj.slug}`}
-                      className="block truncate rounded-full border border-[#E4E4DF] bg-[#F6F6F4] px-3 py-1.5 text-[13px] no-underline hover:bg-white"
-                      style={{ color: INK }}
-                    >
-                      {proj.title}
-                    </Link>
-                  ))}
-                  {rest > 0 && <p className="m-0 text-[13px]" style={{ color: SUBTLE }}>{t("more", { count: rest })}</p>}
-                </div>
-              </li>
-            );
-          })}
+          {phases.map((p, i) => (
+            <li key={p.value} className="flex min-w-0 flex-col gap-3.5">
+              <span className="h-2 rounded-full" style={{ background: PHASE_BARS[i] }} />
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full text-[15px] font-semibold"
+                  style={{ background: PHASE_BARS[i], color: "#FFFFFF" }}
+                >
+                  {i + 1}
+                </span>
+                <span className={`${newHomeDisplayFont.className} text-2xl font-bold tracking-[-0.01em]`} style={{ color: INK }}>
+                  {p.label}
+                </span>
+              </div>
+              <p className="m-0 text-base leading-normal" style={{ color: MUTED }}>{t(`descriptions.${PHASE_KEYS[p.value]}`)}</p>
+              <p className="m-0 border-t border-dashed border-[#E4E4DF] pt-3.5 text-xs font-bold uppercase tracking-[.08em]" style={{ color: SUBTLE }}>
+                {t("now", { count: p.count })}
+              </p>
+            </li>
+          ))}
         </ol>
       </div>
     </section>

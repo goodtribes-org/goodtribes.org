@@ -30,7 +30,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 const PROJECT_CARDS = 4;
 const IDEA_CARDS = 3;
-const CHIPS_PER_PHASE = 6;
 
 export default async function NewHomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: rawLocale } = await params;
@@ -117,15 +116,11 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
     myVoteId: idea.votes?.[0]?.id ?? null,
   }));
 
-  const phases: JourneyPhase[] = DISPLAY_PHASES.map((p) => {
-    const inPhase = allProjects.filter((proj) => toDisplayPhase(proj.phase) === p.value);
-    return {
-      value: p.value as JourneyPhase["value"],
-      label: PROJECT_PHASE_LABEL[p.value],
-      count: inPhase.length,
-      projects: inPhase.slice(0, CHIPS_PER_PHASE).map(({ title, slug }) => ({ title, slug })),
-    };
-  });
+  const phases: JourneyPhase[] = DISPLAY_PHASES.map((p) => ({
+    value: p.value as JourneyPhase["value"],
+    label: PROJECT_PHASE_LABEL[p.value],
+    count: allProjects.filter((proj) => toDisplayPhase(proj.phase) === p.value).length,
+  }));
 
   return (
     // Full-bleed like the old start page, so the page's own grey background
