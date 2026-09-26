@@ -4386,21 +4386,6 @@
       "tokens": "tokens utdelade",
       "projects": "aktiva projekt"
     },
-    "tools": {
-      "eyebrow": "Verktyg",
-      "heading": "Allt ett projekt behöver",
-      "intro": "Verktygen dyker upp i rätt fas i ditt projekt – och AI-guiden fyller i dem utifrån det du redan berättat.",
-      "items": {
-        "leanCanvas": "Social Lean Canvas",
-        "valueProposition": "Värdeerbjudande",
-        "whiteboard": "Whiteboard",
-        "kanban": "Kanban-board",
-        "funding": "Crowdfunding",
-        "polls": "Omröstningar",
-        "rewards": "Belöningar",
-        "chatWiki": "Chatt och wiki"
-      }
-    },
     "closing": {
       "heading": "Vi gör goda drömmar",
       "headingHighlight": "verkliga.",
