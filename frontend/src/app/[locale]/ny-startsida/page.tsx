@@ -17,7 +17,7 @@ import NewMembersWidget from "@/components/NewMembersWidget";
 import FoundingCard from "@/components/ny-startsida/FoundingCard";
 import DreamHero from "@/components/ny-startsida/DreamHero";
 import {
-  Closing, INK, LiveStrip, PhaseJourney, PlatformStats, ProjectsHeader, ToolsRow, wrap, type JourneyPhase,
+  INK, LiveStrip, PhaseJourney, PlatformStats, ProjectsHeader, ToolsRow, wrap, type JourneyPhase,
 } from "@/components/ny-startsida/Sections";
 import { newHomeBodyFont } from "@/components/ny-startsida/fonts";
 
@@ -179,7 +179,6 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
       <FoundingCard locale={locale} />
 
       <ToolsRow locale={locale} />
-      <Closing locale={locale} />
 
       <section className={`${wrap} pt-[104px] pb-24`}>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
