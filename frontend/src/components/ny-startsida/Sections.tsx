@@ -48,6 +48,21 @@ function SeeAll({ href, children }: { href: string; children: React.ReactNode })
   );
 }
 
+// Every module opens the same way: eyebrow and heading outside the card,
+// optionally a short intro or a "see all" link on the right.
+export function SectionHeader({ eyebrow, heading, intro, link }: { eyebrow: string; heading: string; intro?: string; link?: { href: string; label: string } }) {
+  return (
+    <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-12">
+      <div className="flex flex-col gap-3">
+        <Eyebrow>{eyebrow}</Eyebrow>
+        <H2 className="max-w-[720px]">{heading}</H2>
+      </div>
+      {intro && <p className="m-0 max-w-[480px] text-lg leading-[1.6]" style={{ color: MUTED }}>{intro}</p>}
+      {link && <SeeAll href={link.href}>{link.label}</SeeAll>}
+    </div>
+  );
+}
+
 // ─── 2. Live strip ────────────────────────────────────────────────────────
 
 export async function LiveStrip({ locale, items }: { locale: Locale; items: { project: string; action: string }[] }) {
@@ -108,12 +123,9 @@ const PHASE_BARS = ["#F5B82E", "#F29A2A", "#EE7A26", "#E8531F", "#1FA37A", "#0F7
 export async function PhaseJourney({ locale, phases }: { locale: Locale; phases: JourneyPhase[] }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.phases" });
   return (
-    <section id="resan" className={wrap}>
-      <div className={`${card} flex flex-col gap-[52px] p-6 sm:p-10 lg:px-16 lg:py-[72px]`}>
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-12">
-          <H2 className="max-w-[620px]">{t("heading")}</H2>
-          <p className="m-0 max-w-[480px] text-lg leading-[1.6]" style={{ color: MUTED }}>{t("intro")}</p>
-        </div>
+    <section id="resan" className={`${wrap} flex flex-col gap-9`}>
+      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} intro={t("intro")} />
+      <div className={`${card} p-6 sm:p-10 lg:px-16 lg:py-14`}>
         <ol className="m-0 grid list-none gap-8 p-0 sm:grid-cols-2 lg:grid-cols-6 lg:gap-3.5">
           {phases.map((p, i) => {
             const rest = p.count - p.projects.length;
@@ -161,15 +173,7 @@ export async function PhaseJourney({ locale, phases }: { locale: Locale; phases:
 // ─── 5. Section headers for projects and ideas ────────────────────────────
 
 export function ProjectsHeader({ eyebrow, heading, href, linkLabel }: { eyebrow: string; heading: string; href: string; linkLabel: string }) {
-  return (
-    <div className="flex items-end justify-between gap-4">
-      <div className="flex flex-col gap-3">
-        <Eyebrow>{eyebrow}</Eyebrow>
-        <H2>{heading}</H2>
-      </div>
-      <SeeAll href={href}>{linkLabel}</SeeAll>
-    </div>
-  );
+  return <SectionHeader eyebrow={eyebrow} heading={heading} link={{ href, label: linkLabel }} />;
 }
 
 export function IdeasHeader({ heading, sub, href, linkLabel }: { heading: string; sub: string; href: string; linkLabel: string }) {
@@ -203,10 +207,7 @@ export async function PlatformStats({
   ];
   return (
     <section className={`${wrap} flex flex-col gap-7 pt-[104px]`}>
-      <div className="flex flex-col gap-3">
-        <Eyebrow>{t("eyebrow")}</Eyebrow>
-        <H2>{t("heading")}</H2>
-      </div>
+      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {tiles.map((tile) => (
           <div key={tile.label} className="flex flex-col gap-1 rounded-[20px] p-[26px]" style={{ background: tile.bg }}>
@@ -230,13 +231,7 @@ export async function ToolsRow({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.tools" });
   return (
     <section className={`${wrap} flex flex-col gap-8 pt-[104px]`}>
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-12">
-        <div className="flex flex-col gap-3">
-          <Eyebrow>{t("eyebrow")}</Eyebrow>
-          <H2>{t("heading")}</H2>
-        </div>
-        <p className="m-0 max-w-[460px] text-lg leading-[1.6]" style={{ color: MUTED }}>{t("intro")}</p>
-      </div>
+      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} intro={t("intro")} />
       <div className="grid grid-cols-2 gap-3.5 md:grid-cols-4">
         {TOOL_KEYS.map((key, i) => (
           <div key={key} className="flex items-center gap-3 rounded-2xl border border-[#E4E4DF] bg-white px-5 py-[18px] text-[15px] font-semibold sm:text-[17px]" style={{ color: INK }}>

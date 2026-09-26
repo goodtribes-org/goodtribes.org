@@ -5,7 +5,7 @@ import {
   STAT_CIRCLE_HIDE_APPROX_SYMBOL, STAT_CIRCLE_LABELS, STAT_CIRCLE_MERGE_INTO, STAT_CIRCLE_UNIT_OVERRIDES,
   formatStatNumber, sponsorLogosFor,
 } from "@/components/showroom/FoundingStory";
-import { H2, LINK, MUTED, SUBTLE, card, wrap } from "./Sections";
+import { MUTED, SUBTLE, SectionHeader, card, wrap } from "./Sections";
 import { newHomeDisplayFont } from "./fonts";
 
 // "Det började med datorer som skulle skrotas" in the design's layout: story
@@ -30,11 +30,10 @@ export default async function FoundingCard({ locale }: { locale: Locale }) {
     .filter((logo, i, all) => all.findIndex((l) => l.src === logo.src) === i);
 
   return (
-    <section className={`${wrap} pt-[104px]`}>
+    <section className={`${wrap} flex flex-col gap-9 pt-[104px]`}>
+      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} />
       <div className={`${card} flex flex-col items-center gap-10 p-6 sm:p-10 lg:flex-row lg:gap-16 lg:p-16`}>
         <div className="flex flex-1 flex-col gap-[18px]">
-          <p className="m-0 text-sm font-bold uppercase tracking-[.12em]" style={{ color: LINK }}>{t("eyebrow")}</p>
-          <H2 size={46}>{t("heading")}</H2>
           <p className="m-0 text-lg leading-[1.65]" style={{ color: MUTED }}>{t("body")}</p>
           {logos.length > 0 && (
             <div className="flex flex-wrap items-center gap-7 pt-2">
