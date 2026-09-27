@@ -126,10 +126,10 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
             tucked behind it. Only where there is room for them beside the
             intro text, which sits between them; they grow in on load (off
             under prefers-reduced-motion) and then stand still. */}
-        <div aria-hidden className="nh-grow pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% - 48px)", left: -105, width: 319, height: 312 }}>
+        <div aria-hidden className="nh-grow pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% - 40px)", left: -105, width: 319, height: 312 }}>
           <img className="block" src="/img/sandbox-tree-left.png" alt="" width={319} height={312} />
         </div>
-        <div aria-hidden className="nh-grow pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% - 60px)", left: 780, width: 316, height: 330 }}>
+        <div aria-hidden className="nh-grow pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% - 44px)", left: 780, width: 316, height: 330 }}>
           <img className="block" src="/img/sandbox-tree-right.png" alt="" width={316} height={330} />
         </div>
 
