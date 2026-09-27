@@ -123,7 +123,7 @@ const PHASE_BARS = ["#F5B82E", "#F29A2A", "#EE7A26", "#E8531F", "#1FA37A", "#0F7
 export async function PhaseJourney({ locale, phases }: { locale: Locale; phases: JourneyPhase[] }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.phases" });
   return (
-    <section id="resan" className={`${wrap} flex flex-col gap-9`}>
+    <section id="resan" className={`${wrap} flex flex-col gap-9 pt-[72px]`}>
       <div className="flex flex-col gap-3">
         <Eyebrow>{t("eyebrow")}</Eyebrow>
         <H2 className="max-w-[720px] sm:whitespace-nowrap">{t("heading")}</H2>
