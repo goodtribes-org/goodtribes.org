@@ -13,12 +13,14 @@ const INK = "#1B1F1D";
 const MUTED = "#4A514D";
 const LINK = "#C2410C";
 
+// Images deliberately shuffled relative to their step's text (requested):
+// 1<->5, 2->1, 4->2, 5->4, 3 unchanged.
 const STEPS = [
-  "do-you-have-a-dream.png",
   "Slide2.png",
-  "what-is-goodtribes.png",
   "want-a-change.png",
+  "what-is-goodtribes.png",
   "want-to-be-a-winner.png",
+  "do-you-have-a-dream.png",
 ] as const;
 
 export default async function StepsGrid({ locale }: { locale: Locale }) {
