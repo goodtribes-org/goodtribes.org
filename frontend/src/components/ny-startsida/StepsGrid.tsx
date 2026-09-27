@@ -2,13 +2,15 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
 import { newHomeDisplayFont } from "./fonts";
 
-// The "Fem steg" module: same content/images/translations as the plain
-// HomePage's StepsCarousel (@/components/showroom/StepsCarousel), shown as
-// 5 equal-weight standalone cards in a single row instead of an interactive
+// The "Fem steg" module: started as the same content/images as the plain
+// HomePage's StepsCarousel (@/components/showroom/StepsCarousel), forked
+// into its own NewHomePage.steps translations so this page's copy (e.g.
+// step0Label) can diverge without touching the live HomePage. Shown as 5
+// equal-weight standalone cards in a single row instead of an interactive
 // tab carousel — echoes the tool-tile grid further down the page
-// (ToolsRow). The step number is inline in the label ("1. Dröm") rather
-// than a badge over the image, and the image uses its native 16:9 aspect
-// ratio so object-cover doesn't have to crop it.
+// (ToolsRow). The step number is inline in the label ("1. Hitta din
+// dröm") rather than a badge over the image, and the image uses its
+// native 16:9 aspect ratio so object-cover doesn't have to crop it.
 const INK = "#1B1F1D";
 const MUTED = "#4A514D";
 const LINK = "#C2410C";
@@ -24,7 +26,7 @@ const STEPS = [
 ] as const;
 
 export default async function StepsGrid({ locale }: { locale: Locale }) {
-  const t = await getTranslations({ locale, namespace: "Showroom.stepsCarousel" });
+  const t = await getTranslations({ locale, namespace: "NewHomePage.steps" });
 
   return (
     <section className="mx-auto flex w-full max-w-[1440px] flex-col gap-9 px-4 pt-[72px] sm:px-8 lg:px-16">
