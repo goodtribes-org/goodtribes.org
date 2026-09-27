@@ -75,7 +75,7 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
   }
 
   return (
-    <section id="drom" className="relative flex flex-col items-center gap-[26px] overflow-hidden px-4 pt-12 pb-12 text-center xl:pt-20">
+    <section id="drom" className="relative flex flex-col items-center gap-[26px] overflow-x-clip overflow-y-visible px-4 pt-12 pb-12 text-center xl:pt-20">
       <style>{`
         @keyframes nh-grow { 0% { transform: scale(0); } 100% { transform: scale(1); } }
         @keyframes nh-ph { 0% { opacity: 0; transform: translateY(6px); } 12% { opacity: 1; transform: none; } 88% { opacity: 1; } 100% { opacity: 0; } }
