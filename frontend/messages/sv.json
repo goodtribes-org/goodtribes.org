@@ -4403,6 +4403,25 @@
       "heading": "Händer just nu",
       "subheading": "Senaste aktivitet på plattformen",
       "seeAllLink": "Se all aktivitet →"
+    },
+    "steps": {
+      "eyebrow": "Fem steg",
+      "heading": "Från idé till förändring",
+      "step0Label": "Hitta din dröm",
+      "step0Title": "Allt börjar med en dröm om en bättre värld",
+      "step0Body": "Stor eller liten — det är drömmen som sätter igång allt. Dela den, och GoodTribes hjälper dig ta första steget mot att göra den verklig.",
+      "step1Label": "Utforska",
+      "step1Title": "Hitta projekt som är rätt för dig och joina din Tribe",
+      "step1Body": "Sök på det du bryr dig om — bin, hav, tryggare kvarter, datorer till skolor. Gå med i tribe:n runt ett projekt, säg vad du kan bidra med och plocka en uppgift som passar din tid och kompetens.",
+      "step2Label": "Skapa",
+      "step2Title": "Gör din dröm till ett riktigt projekt",
+      "step2Body": "Lägg upp den — den blir ett projekt med egen sida, öppen budget och uppgifter från dag ett. Nu är den inte bara en tanke längre.",
+      "step3Label": "Förändra",
+      "step3Title": "Förändra världen genom små och stora insatser",
+      "step3Body": "En timme, en donerad dator, en kunskap som byts. All förändring underifrån börjar med en liten grupp människor som samverkar för sina gemensamma drömmar.",
+      "step4Label": "En bättre värld",
+      "step4Title": "Tillsammans mot en bättre värld",
+      "step4Body": "Varje förverkligad dröm är ett steg närmare en värld där alla får Leva Gott, Må Gott och Göra Gott — och ingen behöver göra det ensam."
     }
   }
 }
