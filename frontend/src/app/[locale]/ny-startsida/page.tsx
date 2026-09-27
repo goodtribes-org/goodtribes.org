@@ -14,6 +14,7 @@ import ProjectCard from "@/components/ProjectCard";
 import ActivityPulse from "@/components/ActivityPulse";
 import LeaderboardWidget from "@/components/LeaderboardWidget";
 import NewMembersWidget from "@/components/NewMembersWidget";
+import StepsSection from "@/components/ny-startsida/StepsSection";
 import FoundingCard from "@/components/ny-startsida/FoundingCard";
 import DreamHero from "@/components/ny-startsida/DreamHero";
 import {
@@ -167,6 +168,8 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
           </div>
         </section>
       )}
+
+      <StepsSection />
 
       <PlatformStats
         locale={locale}
