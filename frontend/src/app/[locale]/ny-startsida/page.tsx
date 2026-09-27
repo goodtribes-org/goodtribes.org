@@ -157,16 +157,17 @@ export default async function NewHomePage({ params }: { params: Promise<{ locale
       <style>{`html, body { overflow-x: clip; }`}</style>
       <DreamHero isLoggedIn={!!userId} />
       <LiveStrip locale={locale} items={activity.slice(0, 8).map((a) => ({ project: a.projectName, action: a.action }))} />
-      <PhaseJourney locale={locale} phases={phases} />
 
       {projects.length > 0 && (
-        <section id="projekt" className={`${wrap} flex flex-col gap-9 pt-[72px]`}>
+        <section id="projekt" className={`${wrap} flex flex-col gap-9`}>
           <ProjectsHeader eyebrow={t("projects.eyebrow")} heading={t("projects.heading")} href="/projects" linkLabel={t("projects.allLink")} />
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
             {projects.map((p) => <ProjectCard key={p.slug} project={p} />)}
           </div>
         </section>
       )}
+
+      <PhaseJourney locale={locale} phases={phases} />
 
       <PlatformStats
         locale={locale}
