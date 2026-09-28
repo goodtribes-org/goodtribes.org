@@ -4375,7 +4375,7 @@
     },
     "projects": {
       "eyebrow": "Projekt",
-      "heading": "Hjälp till i drömfabriken",
+      "heading": "Hjälp till i ett projekt",
       "allLink": "Se alla projekt →"
     },
     "stats": {
@@ -4413,9 +4413,9 @@
       "step1Label": "Våga ta klivet",
       "step1Title": "Våga testa och ta den vidare",
       "step1Body": "Du behöver inte ha alla svar. Dela drömmen och testa den i liten skala — GoodTribes AI-guide hjälper dig ta första steget.",
-      "step2Label": "Drömfabriken",
-      "step2Title": "Jobba på den i Drömfabriken",
-      "step2Body": "Drömfabriken är platsen där du samlar en tribe kring din dröm — människor som brinner för samma sak och vill hjälpa dig testa och forma den vidare.",
+      "step2Label": "Jobba tillsammans",
+      "step2Title": "Samla en tribe kring din dröm",
+      "step2Body": "Hitta människor som brinner för samma sak. Tillsammans blir idén starkare, och ingen behöver göra jobbet ensam.",
       "step3Label": "Förverkliga din dröm",
       "step3Title": "Gör drömmen till ett riktigt projekt",
       "step3Body": "Nu blir den ett riktigt projekt — med egen sida, öppen budget och uppgifter som gör att den faktiskt händer.",
