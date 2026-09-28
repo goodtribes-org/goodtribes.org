@@ -12,13 +12,9 @@ import {
   Plus,
   Compass,
   Sparkles,
-  User,
-  ShieldCheck,
   FolderKanban,
   type LucideIcon,
 } from "lucide-react";
-import { ACCOUNT_NAV_ITEMS } from "@/lib/accountNav";
-import { SITE_ADMIN_NAV } from "@/lib/siteAdminNav";
 
 type Item = { href: string; label: string };
 type Section = { key: string; title: string; icon: LucideIcon; items: Item[] };
@@ -51,7 +47,6 @@ export default function SideMenu() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const t = useTranslations("Nav");
-  const tAccount = useTranslations("Account");
   const tProject = useTranslations("ProjectSideNav");
 
   useEffect(() => setMounted(true), []);
@@ -74,7 +69,6 @@ export default function SideMenu() {
   }, [open]);
 
   const loggedIn = !!session?.user;
-  const isAdmin = loggedIn && session?.user?.siteRole !== "USER";
 
   const create: Section = {
     key: "create",
@@ -109,23 +103,6 @@ export default function SideMenu() {
     icon: Sparkles,
     items: [{ href: "/sandbox", label: t("sandboxHome") }],
   };
-  const account: Section | null = loggedIn
-    ? {
-        key: "account",
-        title: t("myAccount"),
-        icon: User,
-        items: ACCOUNT_NAV_ITEMS.map((i) => ({ href: i.href, label: tAccount(i.labelKey) })),
-      }
-    : null;
-  const admin: Section | null = isAdmin
-    ? {
-        key: "admin",
-        title: t("siteAdmin"),
-        icon: ShieldCheck,
-        items: [{ href: "/site-admin", label: tAccount("admin") }, ...SITE_ADMIN_NAV],
-      }
-    : null;
-
   const slug = projectSlugFrom(pathname);
   const project: Section | null = slug
     ? {
@@ -146,20 +123,11 @@ export default function SideMenu() {
 
   // Context section first: whatever area the user is in right now.
   let context: Section | null = project;
-  if (!context && admin && pathname.startsWith("/site-admin")) context = admin;
-  if (!context && account && account.items.some((i) => isActive(pathname, i.href))) context = account;
   if (!context && pathname.startsWith("/sandbox")) context = sandbox;
 
-  const rest = [create, discover, sandbox, account, admin].filter(
+  const rest = [create, discover, sandbox].filter(
     (s): s is Section => !!s && s !== context,
   );
-
-  // Collapse the long admin list unless the user is already in site-admin.
-  function initiallyOpen(s: Section) {
-    if (s === context) return true;
-    if (s.key === "admin") return false;
-    return true;
-  }
 
   const activeHref = [context, ...rest]
     .flatMap((s) => s?.items ?? [])
@@ -208,7 +176,7 @@ export default function SideMenu() {
           )}
 
           {rest.map((s) => (
-            <MenuSection key={s.key} section={s} activeHref={activeHref} defaultOpen={initiallyOpen(s)} />
+            <MenuSection key={s.key} section={s} activeHref={activeHref} defaultOpen />
           ))}
 
           <div className="mx-4 my-3 border-t border-muted-teal/20" />
