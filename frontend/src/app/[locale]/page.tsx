@@ -152,7 +152,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <StepsGrid locale={locale} />
 
       {projects.length > 0 && (
-        <section id="projekt" className={`${wrap} flex flex-col gap-9 pt-[48px]`}>
+        <section id="projekt" className={`${wrap} flex flex-col gap-6 pt-[48px]`}>
           <ProjectsHeader eyebrow={t("projects.eyebrow")} heading={t("projects.heading")} href="/projects" linkLabel={t("projects.allLink")} />
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
             {projects.map((p) => <ProjectCard key={p.slug} project={p} />)}
@@ -174,7 +174,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
       <ToolsRow locale={locale} />
 
-      <section className={`${wrap} flex flex-col gap-9 pt-[48px] pb-24`}>
+      <section className={`${wrap} flex flex-col gap-6 pt-[48px] pb-24`}>
         <SectionHeader eyebrow={t("community.eyebrow")} heading={t("community.title")} />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
           <div>

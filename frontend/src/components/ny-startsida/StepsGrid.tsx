@@ -29,7 +29,7 @@ export default async function StepsGrid({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.steps" });
 
   return (
-    <section className="mx-auto flex w-full max-w-[1440px] flex-col gap-9 px-4 sm:px-8 lg:px-16">
+    <section className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 px-4 sm:px-8 lg:px-16">
       <div className="flex flex-col gap-3">
         <p className="m-0 text-sm font-bold uppercase tracking-[.12em]" style={{ color: LINK }}>{t("eyebrow")}</p>
         <h2
