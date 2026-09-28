@@ -11,7 +11,6 @@ import {
   Home,
   Plus,
   Compass,
-  Sparkles,
   FolderKanban,
   type LucideIcon,
 } from "lucide-react";
@@ -97,12 +96,6 @@ export default function SideMenu() {
       { href: "/mentors", label: t("discoverMentors") },
     ],
   };
-  const sandbox: Section = {
-    key: "sandbox",
-    title: t("sandbox"),
-    icon: Sparkles,
-    items: [{ href: "/sandbox", label: t("sandboxHome") }],
-  };
   const slug = projectSlugFrom(pathname);
   const project: Section | null = slug
     ? {
@@ -122,10 +115,9 @@ export default function SideMenu() {
     : null;
 
   // Context section first: whatever area the user is in right now.
-  let context: Section | null = project;
-  if (!context && pathname.startsWith("/sandbox")) context = sandbox;
+  const context: Section | null = project;
 
-  const rest = [create, discover, sandbox].filter(
+  const rest = [create, discover].filter(
     (s): s is Section => !!s && s !== context,
   );
 
