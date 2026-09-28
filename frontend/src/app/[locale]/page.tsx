@@ -149,7 +149,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <style>{`html, body { overflow-x: clip; }`}</style>
       <DreamHero isLoggedIn={!!userId} />
       <LiveStrip locale={locale} items={activity.slice(0, 8).map((a) => ({ project: a.projectName, action: a.action }))} />
-      <PhaseJourney locale={locale} phases={phases} />
+      <StepsGrid locale={locale} />
 
       {projects.length > 0 && (
         <section id="projekt" className={`${wrap} flex flex-col gap-9 pt-[72px]`}>
@@ -160,7 +160,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </section>
       )}
 
-      <StepsGrid locale={locale} />
+      <PhaseJourney locale={locale} phases={phases} />
 
       <PlatformStats
         locale={locale}
