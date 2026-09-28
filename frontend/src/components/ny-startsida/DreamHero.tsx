@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { startDreamFromHome } from "@/app/[locale]/ny-startsida/actions";
+import { startDreamFromHome } from "@/app/[locale]/dream-actions";
 import { newHomeDisplayFont, newHomeScriptFont } from "./fonts";
 
 // Kept in sessionStorage across the login round trip, so a visitor who

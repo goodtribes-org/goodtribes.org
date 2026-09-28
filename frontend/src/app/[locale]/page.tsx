@@ -1,225 +1,202 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
-import ProjectCard from "@/components/ProjectCard";
-import SortToggle from "@/components/SortToggleContainer";
-import Pagination from "@/components/Pagination";
-import { toHeroSlideData } from "@/lib/heroSlides";
-import { isSiteAdmin } from "@/lib/authz";
-import { isValidProjectPhase, DISPLAY_PHASES, PROJECT_PHASE_LABEL, toDisplayPhase } from "@/lib/projectPhase";
-import { computeTaskProgressByProject } from "@/lib/taskProgress";
-import { routing } from "@/i18n/routing";
-import { hasLocale } from "next-intl";
-import { notFound } from "next/navigation";
+import { hasLocale, type Locale } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import { resolveProjectContent } from "@/lib/contentTranslation";
+import { notFound } from "next/navigation";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { routing } from "@/i18n/routing";
 import { fetchActivityItems } from "@/lib/activityFeed";
-import IdeaBand from "@/components/showroom/IdeaBand";
-import LiveTicker from "@/components/showroom/LiveTicker";
-import StepsCarousel from "@/components/showroom/StepsCarousel";
-import HomeHero from "@/components/showroom/HomeHero";
-import VisionMissionGoal from "@/components/showroom/VisionMissionGoal";
-import PhaseMap, { type PhaseMapStep } from "@/components/showroom/PhaseMap";
-import UsageNow from "@/components/showroom/UsageNow";
-import FoundingStory from "@/components/showroom/FoundingStory";
-import ToolsGrid from "@/components/showroom/ToolsGrid";
-import { getSiteCopyMap } from "@/lib/siteCopy";
-import { siteSansFont, showroomMonoFont } from "@/lib/fonts";
+import { resolveProjectContent } from "@/lib/contentTranslation";
+import { computeTaskProgressByProject } from "@/lib/taskProgress";
+import { DISPLAY_PHASES, PROJECT_PHASE_LABEL, toDisplayPhase } from "@/lib/projectPhase";
+import ProjectCard from "@/components/ProjectCard";
+import ActivityPulse from "@/components/ActivityPulse";
+import LeaderboardWidget from "@/components/LeaderboardWidget";
+import NewMembersWidget from "@/components/NewMembersWidget";
+import StepsGrid from "@/components/ny-startsida/StepsGrid";
+import FoundingCard from "@/components/ny-startsida/FoundingCard";
+import DreamHero from "@/components/ny-startsida/DreamHero";
+import {
+  INK, LiveStrip, PhaseJourney, PlatformStats, ProjectsHeader, SectionHeader, ToolsRow, wrap, type JourneyPhase,
+} from "@/components/ny-startsida/Sections";
+import { newHomeBodyFont } from "@/components/ny-startsida/fonts";
 
-const PAGE_SIZE = 8;
+const PROJECT_CARDS = 10;
 
-export default async function HomePage({
-  params,
-  searchParams,
-}: {
-  // Not `Locale`: middleware.ts's matcher excludes any path containing a dot
-  // (it's meant to skip static files), so a request like /wp-login.php reaches
-  // this route with that segment as the locale. Typing it as already-valid is
-  // what let an unchecked value reach toLocaleString() below.
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<{
-    sort?: string;
-    q?: string;
-    phase?: string;
-    category?: string;
-    sdg?: string;
-    page?: string;
-  }>;
-}) {
-  const { locale } = await params;
-  // Same guard as layout.tsx. It has to be repeated here because a layout and
-  // its page render concurrently — the layout's notFound() does not stop this
-  // component from running, so without this an invalid locale flows on into
-  // FoundingStory's toLocaleString(locale) and throws a RangeError (500)
-  // where a 404 belongs.
-  if (!hasLocale(routing.locales, locale)) notFound();
-  const t = await getTranslations({ locale, namespace: "HomePage" });
-  const { sort: sortParam, q, phase, category, sdg, page: pageStr } = await searchParams;
-  const sort = sortParam === "new" ? "new" : sortParam === "trending" ? "trending" : "top";
-  const sdgNum = sdg ? parseInt(sdg) : undefined;
-  const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
+async function getLeaderboard() {
+  // Ranks everyone with a name, same as a project's "Mest aktiva medlemmar" —
+  // showProfile only gates whether a row links to a public profile page (see
+  // LeaderboardWidget), not whether the ranking itself includes you.
+  const users = await prisma.user.findMany({
+    where: { name: { not: null as null } },
+    select: { id: true, name: true, image: true, showProfile: true },
+  });
+  if (users.length === 0) return [];
+  const userMap = new Map(users.map((u) => [u.id, u]));
+
+  const tokenGroups = await prisma.tokenLedger.groupBy({
+    by: ["userId"],
+    where: { userId: { in: users.map((u) => u.id) } },
+    _sum: { tokens: true },
+    orderBy: { _sum: { tokens: "desc" } },
+    take: 5,
+  });
+
+  return tokenGroups.map((g) => {
+    const user = userMap.get(g.userId)!;
+    return { id: user.id, name: user.name!, image: user.image, showProfile: user.showProfile, tokens: g._sum.tokens ?? 0 };
+  });
+}
+
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale: rawLocale } = await params;
+  if (!hasLocale(routing.locales, rawLocale)) notFound();
+  const locale: Locale = rawLocale;
+  const t = await getTranslations({ locale, namespace: "NewHomePage" });
 
   const session = await auth();
   const userId = session?.user?.id;
-
-  const where: Prisma.ProjectWhereInput = {
-    hiddenAt: null,
-    ...(q ? { OR: [
-      { title: { contains: q, mode: "insensitive" } },
-      { description: { contains: q, mode: "insensitive" } },
-    ]} : {}),
-    ...(phase && isValidProjectPhase(phase) ? { phase } : {}),
-    ...(category ? { category } : {}),
-    ...(sdgNum && !isNaN(sdgNum) ? { sdgGoals: { has: sdgNum } } : {}),
-  };
-
-  const orderBy =
-    sort === "top"       ? { members: { _count: "desc" as const } }
-    : sort === "trending" ? { updatedAt: "desc" as const }
-    : { createdAt: "desc" as const };
+  const translations = locale !== routing.defaultLocale ? { where: { locale } } : false;
+  const projectInclude = {
+    owner: { select: { name: true } },
+    members: { select: { id: true } },
+    translations,
+  } as const;
+  const live = { hiddenAt: null, archivedAt: null };
 
   const [
-    totalFiltered,
-    projects,
-    firstHeroSlide,
-    livePhaseProjects,
-    copy,
+    activity, allProjects, projectsBeyondIdea, ideaPhaseProjects,
+    pledgeSum, tokenSum, completedCards, completedSubtasks, leaderboard, newMembers,
   ] = await Promise.all([
-    prisma.project.count({ where }),
+    fetchActivityItems(10),
+    prisma.project.findMany({ where: live, select: { phase: true, title: true, slug: true }, orderBy: { updatedAt: "desc" } }),
+    // "Projects that have come some way": past the Idé phase, most recently
+    // active first. Topped up from the Idé phase below if there are too few.
     prisma.project.findMany({
-      where,
-      orderBy,
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-      include: {
-        owner: { select: { name: true } },
-        members: { select: { id: true } },
-        translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
-      },
-    }),
-    prisma.homeHeroSlide.findFirst({ where: { locale }, orderBy: { order: "asc" } }),
-    // Feeds the "Just nu i fabriken" phase map below — one unbounded scan is
-    // fine at today's project counts (same assumption fetchActivityItems
-    // already makes); revisit if this ever needs pagination.
-    prisma.project.findMany({
-      where: { hiddenAt: null, archivedAt: null },
-      select: { phase: true, title: true, slug: true, isSandbox: true },
+      where: { ...live, phase: { notIn: ["IDEA", "SPRINT"] } },
       orderBy: { updatedAt: "desc" },
+      take: PROJECT_CARDS,
+      include: projectInclude,
     }),
-    getSiteCopyMap(locale),
+    prisma.project.findMany({
+      where: { ...live, phase: { in: ["IDEA", "SPRINT"] } },
+      orderBy: { updatedAt: "desc" },
+      take: PROJECT_CARDS,
+      include: projectInclude,
+    }),
+    // Same figures as ImpactStatsWidget on /sandbox.
+    prisma.fundingPledge.aggregate({ where: { pledgeStatus: "confirmed" }, _sum: { amount: true } }),
+    prisma.tokenLedger.aggregate({ _sum: { tokens: true } }),
+    prisma.kanbanCard.count({ where: { column: "DONE" } }),
+    prisma.kanbanCardSubtask.count({ where: { done: true } }),
+    getLeaderboard(),
+    prisma.user.findMany({
+      where: { name: { not: null as null } },
+      orderBy: { createdAt: "desc" },
+      take: 6,
+      select: { id: true, name: true, image: true, showProfile: true },
+    }),
   ]);
 
-  const heroSlide = firstHeroSlide ? toHeroSlideData(firstHeroSlide) : null;
-  const canEditHero = userId ? await isSiteAdmin(userId) : false;
-
-  const [projectLikeCounts, taskProgressCards] = await Promise.all([
-    projects.length
+  const cardProjects = [...projectsBeyondIdea, ...ideaPhaseProjects].slice(0, PROJECT_CARDS);
+  const [likeCounts, taskCards] = await Promise.all([
+    cardProjects.length
       ? prisma.feedLike.groupBy({
           by: ["targetId"],
-          where: { targetType: "project", targetId: { in: projects.map((p) => p.id) } },
+          where: { targetType: "project", targetId: { in: cardProjects.map((p) => p.id) } },
           _count: true,
         })
       : Promise.resolve([]),
-    projects.length
+    cardProjects.length
       ? prisma.kanbanCard.findMany({
-          where: { projectSlug: { in: projects.map((p) => p.slug) } },
+          where: { projectSlug: { in: cardProjects.map((p) => p.slug) } },
           select: { projectSlug: true, column: true, subtasks: { select: { done: true } } },
         })
       : Promise.resolve([]),
   ]);
-  const likesByProjectId = new Map(projectLikeCounts.map((g) => [g.targetId, g._count]));
-  const taskProgressBySlug = computeTaskProgressByProject(taskProgressCards);
-  const projectsWithLikes = projects.map((p) => ({
+  const likesById = new Map(likeCounts.map((g) => [g.targetId, g._count]));
+  const progressBySlug = computeTaskProgressByProject(taskCards);
+  const projects = cardProjects.map((p) => ({
     ...p,
     ...resolveProjectContent(p, p.translations, locale),
-    likes: likesByProjectId.get(p.id) ?? 0,
-    taskProgress: taskProgressBySlug.get(p.slug) ?? { total: 0, done: 0 },
+    likes: likesById.get(p.id) ?? 0,
+    taskProgress: progressBySlug.get(p.slug) ?? { total: 0, done: 0 },
   }));
 
-  const c = (key: string) => copy[`HomePage.${key}`] ?? t(key);
-
-  const rawParams = { sort: sortParam, q, phase, category, sdg, page: pageStr };
-
-  const showroomActivity = await fetchActivityItems(10);
-  const recentActivity = showroomActivity.slice(0, 8);
-  const tickerItems = recentActivity.map((a) => `${a.projectName} — ${a.action}`);
-
-  const phaseMapSteps: PhaseMapStep[] = DISPLAY_PHASES.map((p) => {
-    const inBucket = livePhaseProjects.filter((proj) => toDisplayPhase(proj.phase) === p.value);
-    return {
-      value: p.value,
-      label: PROJECT_PHASE_LABEL[p.value],
-      count: inBucket.length,
-      chips: inBucket.slice(0, 6).map((proj) => ({ title: proj.title, slug: proj.slug, isSandbox: proj.isSandbox })),
-    };
-  });
+  const phases: JourneyPhase[] = DISPLAY_PHASES.map((p) => ({
+    value: p.value as JourneyPhase["value"],
+    label: PROJECT_PHASE_LABEL[p.value],
+    count: allProjects.filter((proj) => toDisplayPhase(proj.phase) === p.value).length,
+  }));
 
   return (
-    <div>
-      <HomeHero locale={locale} slide={heroSlide} canEdit={canEditHero} copy={copy} />
+    // Full-bleed, so the page's own grey background runs edge to edge inside
+    // the site layout's content column.
+    <div
+      className={`${newHomeBodyFont.className} -mt-8`}
+      style={{
+        marginLeft: "calc(50% - 50vw)",
+        width: "100vw",
+        background: "#F6F6F4",
+        color: INK,
+        ["--nh-accent" as string]: "#E8531F",
+      }}
+    >
+      {/* 100vw includes the scrollbar, so the full-bleed wrapper is a few
+          pixels wider than the page; clip that instead of letting it scroll. */}
+      <style>{`html, body { overflow-x: clip; }`}</style>
+      <DreamHero isLoggedIn={!!userId} />
+      <LiveStrip locale={locale} items={activity.slice(0, 8).map((a) => ({ project: a.projectName, action: a.action }))} />
+      <PhaseJourney locale={locale} phases={phases} />
 
-      <VisionMissionGoal locale={locale} copy={copy} />
-
-      <LiveTicker items={tickerItems} locale={locale} />
-
-      <section id="projects" className={siteSansFont.className} style={{ paddingTop: 40, paddingBottom: 40 }}>
-        <p className={showroomMonoFont.className} style={{ fontSize: 11, letterSpacing: ".14em", color: "var(--color-seagrass)" }}>
-          {c("exploreProjectsEyebrow").toUpperCase()}
-        </p>
-        <div className="flex items-center justify-between mb-4" style={{ marginTop: 8 }}>
-          <div className="flex items-center gap-3">
-            <h2 className="text-dark-slate" style={{ fontSize: 26, fontWeight: 600, letterSpacing: "-.01em" }}>
-              {c("exploreProjectsHeading")}{" "}
-              <span className="text-dark-slate/40" style={{ fontSize: 16, fontWeight: 400 }}>({totalFiltered})</span>
-            </h2>
-            <SortToggle sort={sort} q={q} phase={phase} category={category} sdg={sdg} basePath="/" />
+      {projects.length > 0 && (
+        <section id="projekt" className={`${wrap} flex flex-col gap-9 pt-[72px]`}>
+          <ProjectsHeader eyebrow={t("projects.eyebrow")} heading={t("projects.heading")} href="/projects" linkLabel={t("projects.allLink")} />
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+            {projects.map((p) => <ProjectCard key={p.slug} project={p} />)}
           </div>
-          <Link href="/projects" className="text-xs text-coral hover:underline">
-            {c("seeAllProjectsLink")}
-          </Link>
-        </div>
-        {projects.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <p className="text-dark-slate/50 mb-4">{c("noProjectsMatchFilters")}</p>
-            <Link href="/" className="text-coral hover:underline text-sm">
-              {c("clearFiltersLink")}
-            </Link>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
-              {projectsWithLikes.map((p) => <ProjectCard key={p.slug} project={p} showStats={false} />)}
+        </section>
+      )}
+
+      <StepsGrid locale={locale} />
+
+      <PlatformStats
+        locale={locale}
+        totalRaised={pledgeSum._sum.amount ?? 0}
+        completedTasks={completedCards + completedSubtasks}
+        totalTokens={Math.round(tokenSum._sum.tokens ?? 0)}
+        activeProjects={allProjects.length}
+      />
+
+      <FoundingCard locale={locale} />
+
+      <ToolsRow locale={locale} />
+
+      <section className={`${wrap} flex flex-col gap-9 pt-[72px] pb-24`}>
+        <SectionHeader eyebrow={t("community.eyebrow")} heading={t("community.title")} />
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+          <div>
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold" style={{ color: INK }}>{t("community.heading")}</h2>
+                <p className="mt-0.5 text-xs" style={{ color: "#6B726E" }}>{t("community.subheading")}</p>
+              </div>
+              <Link href="/feed" className="text-xs font-semibold hover:underline" style={{ color: "#C2410C" }}>
+                {t("community.seeAllLink")}
+              </Link>
             </div>
-            <Pagination
-              page={page}
-              total={totalFiltered}
-              perPage={PAGE_SIZE}
-              searchParams={rawParams}
-              basePath="/"
+            <ActivityPulse />
+          </div>
+          <div className="flex flex-col gap-6">
+            <LeaderboardWidget entries={leaderboard} />
+            <NewMembersWidget
+              members={newMembers.map((m) => ({ id: m.id, name: m.name!, image: m.image, showProfile: m.showProfile }))}
             />
-          </>
-        )}
+          </div>
+        </div>
       </section>
-
-      <section id="showroom-idea-band" className="relative" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-        <IdeaBand copy={copy} />
-      </section>
-
-      <StepsCarousel copy={copy} />
-
-      <PhaseMap locale={locale} steps={phaseMapSteps} copy={copy} />
-
-      {/* One concrete project first, then the tools in practice. Hides
-          itself when the configured project doesn't exist in this
-          environment. */}
-      <FoundingStory locale={locale} copy={copy} />
-
-      <UsageNow locale={locale} copy={copy} />
-
-      <ToolsGrid locale={locale} copy={copy} />
     </div>
   );
 }
