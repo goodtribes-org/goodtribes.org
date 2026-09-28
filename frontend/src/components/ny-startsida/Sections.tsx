@@ -71,7 +71,7 @@ export async function LiveStrip({ locale, items }: { locale: Locale; items: { pr
   if (items.length === 0) return null;
   const track = [...items, ...items];
   return (
-    <div className="mb-[72px] border-y border-[#E4E4DF] bg-white">
+    <div className="mb-[48px] border-y border-[#E4E4DF] bg-white">
       <style>{`
         @keyframes nh-marq { to { transform: translateX(-50%); } }
         @media (prefers-reduced-motion: no-preference) { .nh-marq { animation: nh-marq 40s linear infinite; } }
@@ -123,7 +123,7 @@ const PHASE_BARS = ["#F5B82E", "#F29A2A", "#EE7A26", "#E8531F", "#1FA37A", "#0F7
 export async function PhaseJourney({ locale, phases }: { locale: Locale; phases: JourneyPhase[] }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.phases" });
   return (
-    <section id="resan" className={`${wrap} flex flex-col gap-9 pt-[72px]`}>
+    <section id="resan" className={`${wrap} flex flex-col gap-9 pt-[48px]`}>
       <div className="flex flex-col gap-3">
         <Eyebrow>{t("eyebrow")}</Eyebrow>
         <H2 className="max-w-[720px] sm:whitespace-nowrap">{t("heading")}</H2>
@@ -178,7 +178,7 @@ export async function PlatformStats({
     { value: n(activeProjects), label: t("projects"), bg: "#E4ECF5", fg: "#12486C" },
   ];
   return (
-    <section className={`${wrap} flex flex-col gap-7 pt-[72px]`}>
+    <section className={`${wrap} flex flex-col gap-7 pt-[48px]`}>
       <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {tiles.map((tile) => (
@@ -204,7 +204,7 @@ export async function ToolsRow({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.tools" });
   const tItems = await getTranslations({ locale, namespace: "HomePage.tools" });
   return (
-    <section className={`${wrap} flex flex-col gap-9 pt-[72px]`}>
+    <section className={`${wrap} flex flex-col gap-9 pt-[48px]`}>
       <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} />
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {TOOLS.map((tool) => (
