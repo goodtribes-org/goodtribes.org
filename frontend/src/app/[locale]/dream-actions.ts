@@ -12,7 +12,7 @@ import { sendRoomMessage } from "@/app/[locale]/messages/actions";
 
 const MAX_DREAM_LENGTH = 2000;
 
-// The dream box on the new start page. It starts the same Drömsamtal as the
+// The dream box on the homepage. It starts the same Drömsamtal as the
 // start choice in /projects/new, except the visitor's text becomes the first
 // message, so the AI replies to it right away. That conversation is private
 // (an AI_INTAKE room only the initiator can read). No project exists until
@@ -27,7 +27,7 @@ export async function startDreamFromHome(text: string) {
   const userId = session?.user?.id;
   // The client saves the text before calling this, and it is restored after
   // login, so nothing the visitor wrote is lost on the way.
-  if (!userId) redirect("/login?callbackUrl=/ny-startsida");
+  if (!userId) redirect("/login?callbackUrl=/");
 
   const dream = text.trim().slice(0, MAX_DREAM_LENGTH);
   if (!dream) return;
