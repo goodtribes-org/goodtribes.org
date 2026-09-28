@@ -11,7 +11,10 @@ test.describe("homepage", () => {
     // href$= (suffix match), not an exact match: content negotiation serves
     // "/en/login" instead of "/login" here when the browser's locale isn't
     // Swedish (e.g. Playwright's default en-US), same route either way.
-    await expect(page.locator('a[href$="/login"]')).toBeVisible();
+    // Scoped to <header>: the homepage body also has its own "Log in" prompt
+    // (the community activity composer, shown to logged-out visitors), so an
+    // unscoped locator matches two elements.
+    await expect(page.locator('header a[href$="/login"]')).toBeVisible();
   });
 
   test("the English locale renders too", async ({ page }) => {
