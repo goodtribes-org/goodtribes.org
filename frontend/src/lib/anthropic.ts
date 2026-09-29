@@ -98,6 +98,44 @@ export function checkAiProjectBudget(projectId: string): Promise<boolean> {
   return checkRateLimit(`rl:ai:project:${projectId}`, aiProjectMonthlyLimit(), AI_PROJECT_BUDGET_WINDOW_SECONDS);
 }
 
+// Prompt-caching helpers (2026-09-29), for call sites that resend a growing
+// conversation history on every turn (aiThreadReply.ts, dreamReply.ts) — the
+// single biggest remaining spend lever after the model/rate-limit trims
+// done the same day (see CLAUDE.md's AI provider note), since those two
+// currently re-pay for the whole prior conversation every single turn.
+// Anthropic's "ephemeral" cache breakpoint lasts ~5 minutes and is a no-op
+// (not an error) on a miss — safe to always attach, worst case is "no
+// saving this time", never a broken response. Support is inherited from the
+// base SDK's typed surface (the Vertex client's MessagesResource type is a
+// direct Omit<> of the same Messages resource, see @anthropic-ai/vertex-sdk
+// client.d.ts) rather than confirmed against a live Vertex call, since the
+// quota needed to test that is still pending Google's review as of writing.
+const CACHE_CONTROL: AnthropicSdk.CacheControlEphemeral = { type: "ephemeral" };
+
+// A static system prompt, wrapped as a single cached block.
+export function cachedSystemBlock(text: string): AnthropicSdk.TextBlockParam[] {
+  return [{ type: "text", text, cache_control: CACHE_CONTROL }];
+}
+
+// Standard multi-turn caching pattern: mark the second-to-last message (the
+// last message of everything BEFORE this turn's new final message) with a
+// cache breakpoint. Next turn, that same prefix — now one message
+// shorter than the full history — is still a cache hit, and a new
+// breakpoint is set one message further along. No-ops (returns the
+// messages unchanged) when there's nothing meaningful to cache yet, or
+// when the target message isn't plain-string content already.
+export function withCacheBreakpoint(messages: AnthropicSdk.MessageParam[]): AnthropicSdk.MessageParam[] {
+  if (messages.length < 2) return messages;
+  const i = messages.length - 2;
+  const target = messages[i];
+  if (typeof target.content !== "string") return messages;
+  return messages.map((m, idx) =>
+    idx === i
+      ? { role: m.role, content: [{ type: "text", text: target.content as string, cache_control: CACHE_CONTROL }] }
+      : m,
+  );
+}
+
 // Returns null when the provider isn't configured (see isAiEnabled) instead
 // of constructing a client that would throw on first use.
 //

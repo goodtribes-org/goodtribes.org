@@ -1,4 +1,5 @@
 import { getAiClientFor } from "@/lib/aiMode";
+import { cachedSystemBlock, withCacheBreakpoint } from "@/lib/anthropic";
 import { prisma } from "@/lib/prisma";
 import { publishToRoom, publishToUser } from "@/lib/redis";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
@@ -143,8 +144,12 @@ export async function triggerAiThreadReply(room: Room, triggeredByUserId: string
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 1024,
-      system,
-      messages: threadMessages,
+      // Cached: the system prompt is fixed per room, and the growing thread
+      // history reuses its previous-turn prefix — every @AI reply after the
+      // first in a thread re-pays only for the newest messages instead of
+      // the whole history (see lib/anthropic.ts's cache helpers).
+      system: cachedSystemBlock(system),
+      messages: withCacheBreakpoint(threadMessages),
     });
 
     const text = response.content[0].type === "text" ? response.content[0].text : "";

@@ -1,6 +1,7 @@
 import type { Room } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getAiClientFor } from "@/lib/aiMode";
+import { withCacheBreakpoint } from "@/lib/anthropic";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { persistAiMessage } from "@/lib/aiThreadReply";
 import { escapeHtml } from "@/lib/renderBody";
@@ -64,22 +65,27 @@ export async function triggerDreamReply(room: Room, triggeredByUserId: string): 
 
     const previous = parseDreamState(dream.state);
     const openQuestions = parseOpenQuestions(dream.openQuestions);
-    const system =
-      DREAM_SYSTEM_PROMPT +
-      dreamProgressNote({
-        covered: previous.covered,
-        notes: previous.notes,
-        openQuestions,
-        aiQuestionCount: history.filter((m) => m.isAi).length,
-      });
+    const progressNote = dreamProgressNote({
+      covered: previous.covered,
+      notes: previous.notes,
+      openQuestions,
+      aiQuestionCount: history.filter((m) => m.isAi).length,
+    });
 
     const response = await gate.client.messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 1024,
-      system,
+      // DREAM_SYSTEM_PROMPT is fixed and cached; progressNote changes every
+      // turn (covered/notes/open questions), so it stays a separate,
+      // uncached block — caching it would just churn the cache for no
+      // benefit. Same reasoning as aiThreadReply.ts's cache_control use.
+      system: [
+        { type: "text", text: DREAM_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } },
+        { type: "text", text: progressNote },
+      ],
       tools: [DREAM_REPLY_TOOL],
       tool_choice: { type: "tool", name: DREAM_REPLY_TOOL.name },
-      messages: turns,
+      messages: withCacheBreakpoint(turns),
     });
 
     const toolUse = response.content.find((b) => b.type === "tool_use");
