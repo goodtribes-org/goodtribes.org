@@ -19,7 +19,11 @@ export async function estimateTask(
   const { client } = gate;
   try {
     const response = await client.messages.create({
-      model: "claude-sonnet-4-6",
+      // Downgraded from claude-sonnet-4-6 2026-09-29: short structured
+      // estimate (hours/confidence/reasoning), runs on every card creation
+      // with no dedicated button — Haiku is sufficient and much cheaper
+      // for this volume.
+      model: "claude-haiku-4-5",
       max_tokens: 200,
       system:
         'Du är en erfaren projektledare. Analysera följande arbetsuppgift och uppskatta hur många timmar den tar att slutföra för en kompetent person. Returnera ENBART giltig JSON utan markdown-formatering: { "hours": number, "confidence": "low|medium|high", "reasoning": string }',

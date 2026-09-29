@@ -86,7 +86,9 @@ export async function POST(req: Request) {
   const { client } = gate;
 
   const message = await client.messages.create({
-    model: "claude-sonnet-4-6",
+    // Downgraded from claude-sonnet-4-6 2026-09-29: pure structured JSON
+    // output (nodes/edges), no open-ended reasoning — Haiku is sufficient.
+    model: "claude-haiku-4-5",
     max_tokens: 1500,
     system: SYSTEM_PROMPT,
     messages: [{ role: "user", content: contentText }],
