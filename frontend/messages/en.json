@@ -3778,6 +3778,12 @@
     "projectManagerHint": "Let the AI create and suggest tasks in the project. Turn off and no tasks are created automatically.",
     "saveError": "Could not save — try again."
   },
+  "ChangeImpactHint": {
+    "heading": "You changed this — it may affect:",
+    "close": "Close",
+    "interviewGuide": "The interview guide",
+    "marketScan": "The market scan"
+  },
   "FieldProvenance": {
     "aiDraft": "AI draft",
     "aiDraftHint": "Written by the AI and not yet edited by a person.",

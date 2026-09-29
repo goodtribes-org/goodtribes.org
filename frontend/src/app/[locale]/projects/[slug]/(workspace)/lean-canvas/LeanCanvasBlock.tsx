@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import FieldProvenanceBadge from "@/components/ai/FieldProvenanceBadge";
 import AiSuggestionBox from "@/components/ai/AiSuggestionBox";
+import ChangeImpactHint from "@/components/ai/ChangeImpactHint";
 import { markAiSuggestionPartlyUsed } from "@/lib/actions/aiSuggestions";
 import type { ProvenanceInfo } from "@/lib/fieldProvenance";
 import { updateLeanCanvasBlock } from "./actions";
@@ -31,10 +32,15 @@ export default function LeanCanvasBlock({ projectSlug, field, area, label, hint,
   // "Använd delar": the editor opens with the suggestion to adapt; saving
   // then closes the suggestion and marks the field as an edited AI draft.
   const [draftFromSuggestion, setDraftFromSuggestion] = useState<string | null>(null);
+  // Konsekvenskontroll: after a save that actually changed the text, hint
+  // which other fields build on this one (lib/fieldDependencies.ts).
+  const [changed, setChanged] = useState(false);
 
   function handleSave(formData: FormData) {
     startTransition(async () => {
+      const changedText = String(formData.get("value") ?? "").trim() !== (value ?? "").trim();
       await updateLeanCanvasBlock(projectSlug, field, formData);
+      setChanged(changedText);
       if (draftFromSuggestion !== null && suggestion) await markAiSuggestionPartlyUsed(suggestion.id);
       setDraftFromSuggestion(null);
       setEditing(false);
@@ -110,6 +116,7 @@ export default function LeanCanvasBlock({ projectSlug, field, area, label, hint,
           {canEdit ? t("emptyEditable") : t("emptyReadOnly")}
         </p>
       )}
+      {changed && !editing && <ChangeImpactHint projectSlug={projectSlug} fieldKey={`leanCanvas.${field}`} onClose={() => setChanged(false)} />}
       {suggestion && !editing && (
         <AiSuggestionBox
           suggestion={suggestion}
