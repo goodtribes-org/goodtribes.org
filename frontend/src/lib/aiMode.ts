@@ -1,7 +1,16 @@
 import type AnthropicSdk from "@anthropic-ai/sdk";
 import type { AiMode, ProjectPhase } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { checkAiProjectBudget, checkAiRateLimit, createAnthropicClient, isAiEnabled } from "@/lib/anthropic";
+import {
+  checkAiProjectBudget,
+  checkAiProjectCallLimit,
+  checkAiRateLimit,
+  createAnthropicClient,
+  isAiEnabled,
+  recordAiProjectSpend,
+} from "@/lib/anthropic";
+import { costMicroUsd } from "@/lib/aiCost";
+import { logger } from "@/lib/logger";
 import { normalizeContentLocale, withLanguageClient } from "@/lib/aiLanguage";
 import { isKnownAiToolKey, type AiToolKey } from "@/lib/aiToolKeys";
 import { toDisplayPhase } from "@/lib/projectPhase";
@@ -169,10 +178,17 @@ export async function getAiClientFor(req: AiGateRequest): Promise<AiGateResult> 
   }
 
   if (req.userId && !(await checkAiRateLimit(req.userId))) return { ok: false, reason: "rate_limited", mode };
-  if (req.projectId && !(await checkAiProjectBudget(req.projectId))) return { ok: false, reason: "budget_exceeded", mode };
+  if (req.projectId) {
+    const [withinBudget, withinCallLimit] = await Promise.all([
+      checkAiProjectBudget(req.projectId),
+      checkAiProjectCallLimit(req.projectId),
+    ]);
+    if (!withinBudget || !withinCallLimit) return { ok: false, reason: "budget_exceeded", mode };
+  }
 
-  const client = await createAnthropicClient();
-  if (!client) return { ok: false, reason: "not_configured" };
+  const rawClient = await createAnthropicClient();
+  if (!rawClient) return { ok: false, reason: "not_configured" };
+  const client = withSpendMetering(rawClient, req.projectId, req.feature);
   if (!req.language) return { ok: true, client, mode };
   const locale =
     req.language === "project"
@@ -181,6 +197,41 @@ export async function getAiClientFor(req: AiGateRequest): Promise<AiGateResult> 
         : undefined
       : req.language;
   return { ok: true, client: withLanguageClient(client, normalizeContentLocale(locale)), mode };
+}
+
+// Charges every messages.create's real cost to the project's AI budget (see
+// checkAiProjectBudget) and logs it — also for calls with no project
+// (sandbox-seed, the idea feed), which only get logged. One gate can serve
+// many calls (runIdeaFill does every section and web search on one client),
+// which is exactly why the charge happens here per call and not at the gate.
+// Returns the SDK's own promise untouched (the charge hangs off a side
+// .then), so nothing about the call changes for the caller. Only
+// non-streaming messages.create is used in this app; a streamed response
+// has no usage block and is simply not charged.
+export function withSpendMetering(client: AnthropicSdk, projectId: string | null, feature: AiFeature): AnthropicSdk {
+  const create = client.messages.create.bind(client.messages) as (
+    params: AnthropicSdk.MessageCreateParams,
+    options?: AnthropicSdk.RequestOptions,
+  ) => Promise<unknown>;
+  const messages = Object.create(client.messages, {
+    create: {
+      value: (params: AnthropicSdk.MessageCreateParams, options?: AnthropicSdk.RequestOptions) => {
+        const result = create(params, options);
+        result.then(
+          (res) => {
+            const usage = (res as { usage?: AnthropicSdk.Usage } | null)?.usage;
+            if (!usage) return;
+            const cost = costMicroUsd(params.model, usage);
+            logger.info("ai call", { feature, projectId, model: params.model, costMicroUsd: cost });
+            if (projectId) void recordAiProjectSpend(projectId, cost);
+          },
+          () => {}, // the caller handles the error; a failed call isn't charged
+        );
+        return result;
+      },
+    },
+  });
+  return Object.create(client, { messages: { value: messages } }) as AnthropicSdk;
 }
 
 // Swedish user-facing message for a blocked call — same wording the call
