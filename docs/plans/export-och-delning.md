@@ -1,5 +1,7 @@
 # Plan: Export och delning av projektunderlag
 
+**Status: PAUSAD 2026-09-29 på Niklas begäran — inget byggt. Återuppta först när Niklas säger till.**
+
 Beslutad inriktning med Niklas 2026-09-29, efter jämförelsen med IdeaBuddy: deras export (PDF/Word/Excel och delningslänk) är en av de saker vi saknar helt. För våra användare är den extra viktig, eftersom bidragsansökningar, möten med kommunen och föreningsstämmor kräver dokument.
 
 **Mål:** med ett klick få ett snyggt, ärligt **projektunderlag** att bifoga, skriva ut eller skicka, och en länk att dela med mentorer och finansiärer.
