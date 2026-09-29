@@ -117,7 +117,10 @@ export async function reviewCanvas(projectSlug: string, entity: string): Promise
 
   try {
     const response = await gate.client.messages.create({
-      model: "claude-sonnet-4-6",
+      // Downgraded from claude-sonnet-4-6 2026-09-29: forced tool_choice
+      // caps this at max 3 short feedback points, a tightly constrained
+      // output — Haiku is sufficient.
+      model: "claude-haiku-4-5",
       max_tokens: 800,
       system: CANVAS_REVIEW_SYSTEM_PROMPT,
       tools: [CANVAS_REVIEW_TOOL],

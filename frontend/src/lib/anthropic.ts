@@ -68,11 +68,12 @@ async function createVertexClient(): Promise<AnthropicSdk> {
 // Every AI call spends real Anthropic API money, unlike the social actions
 // rate-limited in socialActionGuard.ts — capped per hour rather than per
 // minute, since a single automated/compromised account could otherwise run
-// up unbounded spend with no signal until the bill arrives. 20/hour covers
-// legitimate interactive use (kanban AI agent runs, maturity reports,
-// mindmap generation, AI thread replies, task estimates) with room to
-// spare, while bounding worst case per account.
-const AI_RATE_LIMIT = 20;
+// up unbounded spend with no signal until the bill arrives. Tightened from
+// 20 to 10/hour 2026-09-29 while running on a capped Vertex AI credit
+// balance (see CLAUDE.md's AI provider note) — still covers legitimate
+// interactive use with room to spare, while bounding worst case per account
+// harder during the capped-credit period.
+const AI_RATE_LIMIT = 10;
 const AI_RATE_LIMIT_WINDOW_SECONDS = 60 * 60;
 
 export function checkAiRateLimit(userId: string): Promise<boolean> {
@@ -82,13 +83,15 @@ export function checkAiRateLimit(userId: string): Promise<boolean> {
 // A ceiling per project on top of the per-user limit: the AI-guided start
 // and later the AI project manager can run many calls for one project
 // without anyone clicking, so a project gets a monthly budget of calls
-// (default 150 / 30 days — a Drömsamtal plus the Idé fill is ~15). Tunable
+// (default 60 / 30 days — a Drömsamtal plus the Idé fill is ~15, so this
+// still covers several full runs per project). Lowered from 150 to 60
+// 2026-09-29 alongside AI_RATE_LIMIT, same capped-credit reason. Tunable
 // via AI_PROJECT_MONTHLY_LIMIT. Fails open on a Redis outage, like every
 // rate limit here.
 const AI_PROJECT_BUDGET_WINDOW_SECONDS = 30 * 24 * 60 * 60;
 export function aiProjectMonthlyLimit(): number {
   const n = Number(process.env.AI_PROJECT_MONTHLY_LIMIT);
-  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 150;
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 60;
 }
 
 export function checkAiProjectBudget(projectId: string): Promise<boolean> {

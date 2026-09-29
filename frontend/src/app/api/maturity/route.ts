@@ -37,7 +37,11 @@ export async function POST(req: NextRequest) {
     {
       try {
         const response = await client.messages.create({
-          model: "claude-opus-4-8",
+          // Downgraded from claude-opus-4-8 2026-09-29: this writes ~400-600
+          // words of prose, not a scored rubric, so Sonnet (not Haiku) is the
+          // safe cost cut — cuts cost meaningfully without the quality risk
+          // of a much smaller model on open-ended strategic writing.
+          model: "claude-sonnet-4-6",
           max_tokens: 1024,
           system:
             "Du är en erfaren skalningsexpert för sociala projekt. Skriv ett konkret och inspirerande skalningsplan på svenska. Använd markdown-formatering.",
