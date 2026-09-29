@@ -54,11 +54,13 @@ export default function LeanCanvasBlock({ projectSlug, field, area, label, hint,
       className={`border-2 ${CANVAS_BLOCK_BORDER[status]} rounded-lg bg-white p-3 flex flex-col min-h-[150px] transition-colors`}
     >
       <div className="flex items-start justify-between gap-2 mb-1">
-        <div>
-          <h3 className="text-xs font-bold text-dark-slate uppercase tracking-wide">{label}</h3>
-          <p className="text-[10px] text-dark-slate/40 leading-tight mt-0.5">{hint}</p>
-          {provenance !== undefined && (
-            <div className="mt-1">
+        <div className="min-w-0">
+          {/* Vet/Antar right after the heading; who wrote it (AI-utkast)
+              isn't shown on the canvas — the border colour and the badge
+              already say what matters here: known, assumed or empty. */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <h3 className="text-xs font-bold text-dark-slate uppercase tracking-wide">{label}</h3>
+            {provenance !== undefined && (
               <FieldProvenanceBadge
                 projectSlug={projectSlug}
                 entity="leanCanvas"
@@ -67,9 +69,11 @@ export default function LeanCanvasBlock({ projectSlug, field, area, label, hint,
                 hasContent={!!value?.trim()}
                 canEdit={canEdit}
                 onStatusChange={setKnowledge}
+                showAuthor={false}
               />
-            </div>
-          )}
+            )}
+          </div>
+          <p className="text-[10px] text-dark-slate/40 leading-tight mt-0.5">{hint}</p>
         </div>
         {canEdit && !editing && (
           <button

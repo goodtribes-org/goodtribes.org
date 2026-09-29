@@ -22,6 +22,7 @@ export default function FieldProvenanceBadge({
   hasContent,
   canEdit,
   onStatusChange,
+  showAuthor = true,
 }: {
   projectSlug: string;
   entity: ProvenanceEntity;
@@ -32,6 +33,11 @@ export default function FieldProvenanceBadge({
   // Lets the surrounding block react to a toggle right away (e.g. its
   // border colour in LeanCanvasBlock).
   onStatusChange?: (status: FieldKnowledgeStatus) => void;
+  // false = the canvas blocks: only Vet/Antar is shown. An unreviewed AI
+  // draft's "AI-utkast" and "Ser bra ut" stay in the page but hidden
+  // (.ai-review-only), appearing only while AiDraftsNotice's "Visa dem" is
+  // on; "AI + granskat" isn't shown at all.
+  showAuthor?: boolean;
 }) {
   const t = useTranslations("FieldProvenance");
   const [status, setStatus] = useState<FieldKnowledgeStatus>(info?.status ?? "ANTAR");
@@ -65,6 +71,8 @@ export default function FieldProvenanceBadge({
     });
   }
 
+  const reviewOnly = showAuthor ? "" : "ai-review-only";
+
   const pillClass =
     status === "VET"
       ? "bg-seagrass/15 text-seagrass border-seagrass/40"
@@ -73,7 +81,7 @@ export default function FieldProvenanceBadge({
   return (
     <span className="inline-flex flex-wrap items-center gap-1" data-ai-draft={author === "AI" ? "" : undefined}>
       {author === "AI" && (
-        <span className="rounded-full border border-coral/40 bg-coral/10 px-1.5 py-px text-[10px] font-medium text-coral" title={t("aiDraftHint")}>
+        <span className={`rounded-full border border-coral/40 bg-coral/10 px-1.5 py-px text-[10px] font-medium text-coral ${reviewOnly}`} title={t("aiDraftHint")}>
           {t("aiDraft")}
         </span>
       )}
@@ -83,12 +91,12 @@ export default function FieldProvenanceBadge({
           onClick={approve}
           disabled={pending}
           title={t("approveHint")}
-          className="rounded-full border border-seagrass/40 bg-white px-1.5 py-px text-[10px] font-medium text-seagrass transition-colors hover:bg-seagrass/10 disabled:opacity-50"
+          className={`rounded-full border border-seagrass/40 bg-white px-1.5 py-px text-[10px] font-medium text-seagrass transition-colors hover:bg-seagrass/10 disabled:opacity-50 ${reviewOnly}`}
         >
           ✓ {t("approve")}
         </button>
       )}
-      {author === "AI_EDITED" && (
+      {showAuthor && author === "AI_EDITED" && (
         <span className="rounded-full border border-muted-teal/50 bg-dry-sage/20 px-1.5 py-px text-[10px] font-medium text-dark-slate/60" title={t("aiEditedHint")}>
           {t("aiEdited")}
         </span>
