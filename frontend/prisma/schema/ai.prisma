@@ -161,7 +161,7 @@ enum FieldKnowledgeStatus {
 enum FieldAuthor {
   USER
   AI
-  AI_EDITED // an AI draft a human has since edited
+  AI_EDITED // an AI draft a human has since reviewed — edited it, or approved it as-is ("Ser bra ut")
 }
 
 // Provenance per project field ("vet/antar" + who wrote it + sources), one
