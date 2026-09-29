@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, useTransition, type CSSProperties } from "react";
 import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
 import { getChecklistForPhase, PHASE_COLORS, type ProjectPhaseValue } from "@/lib/projectPhase";
@@ -9,6 +9,9 @@ interface Props {
   slug: string;
   phase: ProjectPhaseValue;
   completedKeys: string[];
+  // Done because the project's data shows it (lib/projectSignals.ts) — same
+  // as PhaseMenuBar, so the widget and the bars always agree.
+  autoDoneKeys?: string[];
   canEdit: boolean;
 }
 
@@ -18,16 +21,18 @@ interface Props {
 // Styled as "Din fasresa" so it visually pairs with the phase arrows above
 // (same per-phase color from PHASE_COLORS), instead of a generic
 // "Checklista: {phase}" label.
-export default function PhaseChecklistWidget({ slug, phase, completedKeys, canEdit }: Props) {
+export default function PhaseChecklistWidget({ slug, phase, completedKeys, autoDoneKeys = [], canEdit }: Props) {
   const tPhase = useTranslations("ProjectPhase");
   const tWidget = useTranslations("PhaseChecklistWidget");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
-  const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedKeys));
+  const [ticked, setTicked] = useState<Set<string>>(new Set(completedKeys));
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    setDoneKeys(new Set(completedKeys));
+    setTicked(new Set(completedKeys));
   }, [completedKeys]);
+  const auto = useMemo(() => new Set(autoDoneKeys), [autoDoneKeys]);
+  const doneKeys = useMemo(() => new Set([...ticked, ...auto]), [ticked, auto]);
 
   const checklist = getChecklistForPhase(phase);
   if (!checklist || checklist.length === 0) return null;
@@ -38,8 +43,8 @@ export default function PhaseChecklistWidget({ slug, phase, completedKeys, canEd
   const barStyle = { "--phase-color-full": phaseColor } as CSSProperties;
 
   function handleToggle(itemKey: string, done: boolean) {
-    if (!canEdit) return;
-    setDoneKeys((prev) => {
+    if (!canEdit || auto.has(itemKey)) return;
+    setTicked((prev) => {
       const next = new Set(prev);
       if (done) next.add(itemKey);
       else next.delete(itemKey);
@@ -52,7 +57,9 @@ export default function PhaseChecklistWidget({ slug, phase, completedKeys, canEd
     <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
       <h2 className="text-sm font-bold text-dark-slate">{tWidget("heading")}</h2>
       <div className="flex items-center justify-between mt-1 mb-2">
-        <span className="text-xs font-medium" style={{ color: phaseColor }}>
+        {/* Dark text, not the phase color: the warm scale's yellow and
+            orange are too light to read as text on white. */}
+        <span className="text-xs font-medium text-dark-slate/70">
           {tWidget("phaseProgress", { phase: tPhase(phase), done: doneCount, total: checklist.length })}
         </span>
       </div>
@@ -73,7 +80,7 @@ export default function PhaseChecklistWidget({ slug, phase, completedKeys, canEd
               <input
                 type="checkbox"
                 checked={done}
-                disabled={isPending || !canEdit}
+                disabled={isPending || !canEdit || auto.has(item.key)}
                 onChange={(e) => handleToggle(item.key, e.target.checked)}
                 className="accent-seagrass w-4 h-4 mt-0.5 flex-shrink-0"
               />

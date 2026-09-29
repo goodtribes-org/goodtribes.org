@@ -2929,6 +2929,11 @@
     "next_step_decided": "Besluta om nästa steg: fortsätta, replikera, eller avsluta ansvarsfullt"
   },
   "PhaseMenuBar": {
+    "navLabel": "Projektets faser",
+    "progressLabel": "{done} av {total} uppgifter klara",
+    "autoDone": "Klart — syns i projektets innehåll",
+    "autoDoneShort": "klart",
+    "nextStep": "Nästa steg:",
     "guideLinkLabel": "{phase} guiden",
     "overviewLinkLabel": "{phase} på en sida"
   },

@@ -213,19 +213,22 @@ export function numberChecklist(items: { key: string; parentKey?: string }[], ph
   });
 }
 
-// One fixed color per phase (cool → warm across the journey, idea to
-// impact), used by both PhaseMenuBar's arrows and PhaseChecklistWidget's
-// progress bar so the same phase always reads as the same color everywhere.
-// Deliberately separate from PROJECT_PHASES' own `color` field above, which
-// is a pastel Tailwind badge class for a different, lower-contrast use.
+// One fixed color per phase, used everywhere a phase is drawn (the phase
+// bars in PhaseMenuBar/PhaseProgressStrip, PhaseChecklistWidget's progress
+// bar, the new homepage's journey section) so the same phase always reads as
+// the same color. The warm-to-green scale from the new homepage design
+// (2026-09-29, docs/plans/fasframsteg-och-overblick.md): yellow → orange →
+// red while the idea is being built, green once it's established and
+// growing. Deliberately separate from PROJECT_PHASES' own `color` field
+// above, which is a pastel Tailwind badge class for a different use.
 export const PHASE_COLORS: Record<ProjectPhaseValue, string> = {
-  IDEA: "#2f6690",
-  SPRINT: "#2f6690",
-  PILOT: "#2f8f6f",
-  PRODUCTION: "#097809",
-  ESTABLISH: "#a68a1f",
-  SCALE: "#ff6600",
-  IMPACT: "#d10505",
+  IDEA: "#F5B82E",
+  SPRINT: "#F5B82E",
+  PILOT: "#F29A2A",
+  PRODUCTION: "#EE7A26",
+  ESTABLISH: "#E8531F",
+  SCALE: "#1FA37A",
+  IMPACT: "#0F7A55",
 };
 
 export function hexToRgba(hex: string, alpha: number): string {
