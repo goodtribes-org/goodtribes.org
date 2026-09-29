@@ -1,7 +1,7 @@
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
-import type { ProjectPhaseValue } from "@/lib/projectPhase";
+import { PHASE_COLORS, type ProjectPhaseValue } from "@/lib/projectPhase";
 import { TOOLS, COLOR_HEX } from "@/components/showroom/ToolsGrid";
 import { newHomeDisplayFont } from "./fonts";
 
@@ -117,8 +117,6 @@ const PHASE_KEYS: Record<JourneyPhase["value"], string> = {
   IMPACT: "impact",
 };
 
-// The design's warm-to-green scale, idea to impact.
-const PHASE_BARS = ["#F5B82E", "#F29A2A", "#EE7A26", "#E8531F", "#1FA37A", "#0F7A55"];
 
 export async function PhaseJourney({ locale, phases }: { locale: Locale; phases: JourneyPhase[] }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.phases" });
@@ -132,11 +130,11 @@ export async function PhaseJourney({ locale, phases }: { locale: Locale; phases:
         <ol className="m-0 grid list-none gap-8 p-0 sm:grid-cols-2 lg:grid-cols-6 lg:gap-3.5">
           {phases.map((p, i) => (
             <li key={p.value} className="flex min-w-0 flex-col gap-3.5">
-              <span className="h-2 rounded-full" style={{ background: PHASE_BARS[i] }} />
+              <span className="h-2 rounded-full" style={{ background: PHASE_COLORS[p.value] }} />
               <div className="flex items-center gap-2.5">
                 <span
                   className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full text-[15px] font-semibold"
-                  style={{ background: PHASE_BARS[i], color: "#FFFFFF" }}
+                  style={{ background: PHASE_COLORS[p.value], color: "#FFFFFF" }}
                 >
                   {i + 1}
                 </span>

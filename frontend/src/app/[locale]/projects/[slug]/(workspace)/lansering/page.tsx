@@ -16,6 +16,7 @@ import { DraftCta, FocusBox, GateClosed, OverviewHeader, TaskList, WikiHtml } fr
 import DraftButton from "../uppstart/DraftButton";
 import PilotSection from "./PilotSection";
 import PhaseGateSection from "../ide/PhaseGateSection";
+import PhaseProgressStrip from "../../PhaseProgressStrip";
 
 // Which section of this page each Lansering checklist step lives in.
 const STEP_ANCHOR: Record<string, string> = {
@@ -101,6 +102,7 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 py-6">
+      <PhaseProgressStrip projectId={project.id} slug={slug} viewing="PRODUCTION" />
       <OverviewHeader
         heading={t("heading")}
         intro={isLanseringFillInProgress(fill) ? t("introWriting") : t("intro")}

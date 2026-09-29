@@ -17,6 +17,7 @@ import Tooltip from "@/components/Tooltip";
 import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
 import ProjectTopNav from "./ProjectTopNav";
 import PhaseMenuBar from "./PhaseMenuBar";
+import { getAutoDoneKeys } from "@/lib/projectSignals";
 import OwnershipBanner from "@/components/OwnershipBanner";
 import { handwritingFontThin } from "@/lib/fonts";
 import { ProjectSandboxAnnouncer } from "@/components/SandboxIndicator";
@@ -243,6 +244,7 @@ export default async function ProjectDetailPage({
         select: { itemKey: true },
       }),
     ]);
+  const autoDoneKeys = await getAutoDoneKeys(project.id, slug);
 
   const raised =
     fundingCampaign?.pledges.reduce((s, p) => s + p.amount, 0) ?? 0;
@@ -446,8 +448,10 @@ export default async function ProjectDetailPage({
           slug={slug}
           phase={project.phase}
           completedKeys={checklistItems.map((c) => c.itemKey)}
+          autoDoneKeys={autoDoneKeys}
           canEdit={!!isOwnerOrAdmin}
           showOverviews={showOverviews}
+          showNextStep={isRealMember && !project.abandonedAt}
         />
         {showOverviews && isOwnerOrAdmin && !project.abandonedAt && (
           <Link
@@ -631,6 +635,7 @@ export default async function ProjectDetailPage({
             slug={slug}
             phase={project.phase}
             completedKeys={checklistItems.map((c) => c.itemKey)}
+            autoDoneKeys={autoDoneKeys}
             canEdit={isOwnerOrAdmin}
           />
           <Link
