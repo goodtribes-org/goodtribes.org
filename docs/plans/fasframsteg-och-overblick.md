@@ -6,7 +6,7 @@ Mål: användaren ska alltid se hur långt projektet har kommit, vad som återst
 
 ---
 
-## Del 1 — Fasstaplar som fylls på (huvudpunkten) — BYGGD, PR C1 (`feat/phase-progress-bars`)
+## Del 1 — Fasstaplar som fylls på (huvudpunkten) — BYGGD, PR C1 #148 (`feat/phase-progress-bars`)
 
 ### Design (Niklas förslag, bilden i konversationen)
 Sex kolumner: **stapel överst → numrerad cirkel + fasnamn**, i färgskalan från nya startsidan: gult → orange → rött → grönt (`PHASE_BARS` i `components/ny-startsida/Sections.tsx`: `#F5B82E #F29A2A #EE7A26 #E8531F #1FA37A #0F7A55`).
@@ -52,7 +52,7 @@ Senare faser har kvar manuella bockar tills vidare. Signaler för dem läggs til
 
 ---
 
-## Del 2 — "Det här är AI-utkast som behöver er blick"
+## Del 2 — "Det här är AI-utkast som behöver er blick" — BYGGD, PR C2 #149 (`feat/ai-drafts-review`)
 
 Vi fyller i allt direkt, som IdeaBuddy, men vi **märker** vad som är AI-utkast. Den styrkan ska synas.
 
@@ -61,7 +61,11 @@ Vi fyller i allt direkt, som IdeaBuddy, men vi **märker** vad som är AI-utkast
 - **En ny knapp per AI-fält, "Ser bra ut":** fältet räknas som genomgånget utan att någon behöver skriva om det.
   - **Val utan migration:** knappen sätter `author` till `AI_EDITED`. Kommentaren på enumen ändras till "ett AI-utkast som en människa har tagit ansvar för, redigerat eller godkänt".
   - **VET/ANTAR är oberoende:** att godkänna ett utkast betyder inte att innehållet är *bekräftat*. Det förblir ANTAR tills någon vet.
-- **Att redigera ett fält** räknas redan som genomgånget, via befintlig `markAiSuggestionPartlyUsed` och `recordHumanEdits`, som bör sätta `AI_EDITED`. Det ska kontrolleras vid bygget.
+- **Att redigera ett fält** räknas redan som genomgånget: `provenanceAfterHumanEdit` sätter `AI_EDITED`, vilket är kontrollerat.
+- **Byggt så här:**
+  - Raden visas på `/ide` för projektledningen, och inte medan AI:n fortfarande fyller i.
+  - "Visa dem" ramar in alla AI-utkast (`[data-ai-draft]`) och bläddrar till nästa vid varje klick.
+  - Etiketten "AI + redigerat" heter nu "AI + granskat".
 
 ---
 
