@@ -13,6 +13,7 @@ import type { Locale } from "next-intl";
 import { isFeatureEnabled } from "@/lib/featureFlags";
 import { getCanvasAiContext } from "@/lib/canvasAi";
 import CanvasAiBar from "@/components/ai/CanvasAiBar";
+import SectionIntro from "@/components/help/SectionIntro";
 
 export async function generateMetadata({
   params,
@@ -70,6 +71,7 @@ export default async function ValuePropositionPage({
         helpMoreLabel={t("helpGuideLink")}
         action={<ValuePropositionHistory projectSlug={slug} />}
       />
+      <SectionIntro introKey="valuePropositionPage" />
 
       {ai?.aiAvailable && <CanvasAiBar projectSlug={slug} entity="valueProposition" stepKey={ai.stepKey} mode={ai.mode} canEdit={canEdit} />}
       <ValuePropositionGrid

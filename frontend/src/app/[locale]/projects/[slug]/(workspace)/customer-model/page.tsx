@@ -14,6 +14,7 @@ import CanvasAiBar from "@/components/ai/CanvasAiBar";
 import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import LeanCanvasHistory from "../lean-canvas/LeanCanvasHistory";
 import CustomerModelGrid from "./CustomerModelGrid";
+import SectionIntro from "@/components/help/SectionIntro";
 
 export async function generateMetadata({
   params,
@@ -55,6 +56,7 @@ export default async function CustomerModelPage({
   return (
     <div>
       <WorkspacePageHeader title={t("pageHeading")} help={t("helpText")} action={<LeanCanvasHistory projectSlug={slug} />} />
+      <SectionIntro introKey="customerModelPage" />
 
       {ai?.aiAvailable && <CanvasAiBar projectSlug={slug} entity="leanCanvas" stepKey={ai.stepKey} mode={ai.mode} canEdit={canEdit} />}
       <CustomerModelGrid
