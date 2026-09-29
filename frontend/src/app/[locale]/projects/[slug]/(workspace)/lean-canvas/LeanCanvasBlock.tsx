@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import FieldProvenanceBadge from "@/components/ai/FieldProvenanceBadge";
 import AiSuggestionBox from "@/components/ai/AiSuggestionBox";
+import BlockIterateMenu from "@/components/ai/BlockIterateMenu";
 import { markAiSuggestionPartlyUsed } from "@/lib/actions/aiSuggestions";
 import type { ProvenanceInfo } from "@/lib/fieldProvenance";
 import { updateLeanCanvasBlock } from "./actions";
@@ -110,6 +111,7 @@ export default function LeanCanvasBlock({ projectSlug, field, area, label, hint,
           {canEdit ? t("emptyEditable") : t("emptyReadOnly")}
         </p>
       )}
+      {!editing && <BlockIterateMenu projectSlug={projectSlug} entity="leanCanvas" field={field} hasContent={!!value?.trim()} />}
       {suggestion && !editing && (
         <AiSuggestionBox
           suggestion={suggestion}
