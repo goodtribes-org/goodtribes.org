@@ -154,7 +154,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         />
       </OverviewSection>
 
-      <OverviewSection id="om" title={t("aboutHeading")} fill={fill.about} writingLabel={writing}>
+      <OverviewSection id="om" introKey="about" title={t("aboutHeading")} fill={fill.about} writingLabel={writing}>
         <AboutSection
           slug={slug}
           canEdit={canEdit}
@@ -170,12 +170,12 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         />
       </OverviewSection>
 
-      <OverviewSection id="mal" title={t("sdgHeading")} fill={fill.about} writingLabel={writing}>
+      <OverviewSection id="mal" introKey="sdg" title={t("sdgHeading")} fill={fill.about} writingLabel={writing}>
         <SdgSection slug={slug} goals={project.sdgGoals} provenance={projectProv.sdgGoals} canEdit={canEdit} />
       </OverviewSection>
 
       <OverviewSection
-        id="lean-canvas"
+        id="lean-canvas" introKey="leanCanvas"
         title={t("leanCanvasHeading")}
         fill={fill.leanCanvas}
         writingLabel={writing}
@@ -196,7 +196,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
       </OverviewSection>
 
       <OverviewSection
-        id="impactmodell"
+        id="impactmodell" introKey="impactModel"
         title={t("impactModelHeading")}
         fill={fill.impactModel}
         writingLabel={writing}
@@ -221,7 +221,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
       </OverviewSection>
 
       <OverviewSection
-        id="vardeerbjudande"
+        id="vardeerbjudande" introKey="valueProposition"
         title={t("valuePropositionHeading")}
         fill={fill.valueProposition}
         writingLabel={writing}
@@ -239,7 +239,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
       </OverviewSection>
 
       <OverviewSection
-        id="omvarld"
+        id="omvarld" introKey="marketScan"
         title={t("marketScanHeading")}
         fill={fill.marketScan === "skipped" ? undefined : fill.marketScan}
         writingLabel={t("writingMarketScan")}
@@ -288,7 +288,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
       )}
 
       <OverviewSection
-        id="intervjuer"
+        id="intervjuer" introKey="interviews"
         title={t("interviewsHeading")}
         badge={t("yourTurn")}
         fill={fill.interviewGuide === "skipped" ? undefined : fill.interviewGuide}
@@ -319,13 +319,13 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         />
       </OverviewSection>
 
-      <OverviewSection id="bjud-in" title={t("inviteHeading")} badge={t("yourTurn")} writingLabel={writing}>
+      <OverviewSection id="bjud-in" introKey="invite" title={t("inviteHeading")} badge={t("yourTurn")} writingLabel={writing}>
         <p className="mb-3 text-sm text-dark-slate/70">{t("inviteIntro")}</p>
         {canEdit ? <AddOrInviteMember projectId={project.id} slug={slug} /> : <p className="text-sm text-dark-slate/50">{t("inviteLeadsOnly")}</p>}
       </OverviewSection>
 
       {inIdeaPhase ? (
-        <OverviewSection id="fasgrind" title={t("gateHeading")} badge={t("yourTurn")} writingLabel={writing}>
+        <OverviewSection id="fasgrind" introKey="gate" title={t("gateHeading")} badge={t("yourTurn")} writingLabel={writing}>
           <PhaseGateSection
             gate="idea"
             slug={slug}
