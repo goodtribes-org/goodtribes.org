@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "../../(workspace)/edit/actions";
@@ -20,6 +20,9 @@ interface Props {
   projectTitle: string;
   items: ChecklistItemDef[];
   completedKeys: string[];
+  // Done because the project's data shows it (lib/projectSignals.ts) — shown
+  // as done like in PhaseMenuBar, and not untickable.
+  autoDoneKeys?: string[];
   // Set from the phase-menu checklist's `?step=<itemKey>` deep link (see
   // PhaseMenuBar.tsx) so clicking a checklist item's text lands directly on
   // that step instead of always step 0.
@@ -32,13 +35,16 @@ interface Props {
 // that toggles it done via the same action the project's edit page and
 // phase-menu checklist popover already use — so ticking it here is the
 // exact same thing as ticking it anywhere else in the app.
-export default function PhaseGuide({ slug, phase, phaseLabel, projectTitle, items, completedKeys, initialStepIndex }: Props) {
+export default function PhaseGuide({ slug, phase, phaseLabel, projectTitle, items, completedKeys, autoDoneKeys = [], initialStepIndex }: Props) {
   const t = useTranslations("PhaseGuide");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
+  const tMenu = useTranslations("PhaseMenuBar");
   const router = useRouter();
   const [step, setStep] = useState(initialStepIndex ?? 0);
   const [done, setDone] = useState<Set<string>>(new Set(completedKeys));
   const [isPending, startTransition] = useTransition();
+  const auto = useMemo(() => new Set(autoDoneKeys), [autoDoneKeys]);
+  const shown = useMemo(() => new Set([...done, ...auto]), [done, auto]);
 
   function goToProject() {
     router.push(`/projects/${slug}`);
@@ -63,7 +69,7 @@ export default function PhaseGuide({ slug, phase, phaseLabel, projectTitle, item
   // it (idempotent, no-op if already checked) instead of requiring a
   // separate checkbox click before "Nästa".
   function goNext() {
-    if (!done.has(current.key)) toggleItem(current.key);
+    if (!shown.has(current.key)) toggleItem(current.key);
     if (isLast) goToProject(); else setStep((s) => s + 1);
   }
 
@@ -86,7 +92,7 @@ export default function PhaseGuide({ slug, phase, phaseLabel, projectTitle, item
       <GuideStepIndicator
         steps={items.map((item) => ({ key: item.key, label: tChecklist(item.key) }))}
         currentIndex={step}
-        doneKeys={done}
+        doneKeys={shown}
         onStepClick={(i) => setStep(i)}
       />
 
@@ -104,12 +110,12 @@ export default function PhaseGuide({ slug, phase, phaseLabel, projectTitle, item
           <label className="flex items-center gap-2 cursor-pointer w-fit">
             <input
               type="checkbox"
-              checked={done.has(current.key)}
-              disabled={isPending}
+              checked={shown.has(current.key)}
+              disabled={isPending || auto.has(current.key)}
               onChange={() => toggleItem(current.key)}
               className="accent-seagrass w-4 h-4"
             />
-            <span className="text-sm text-dark-slate/80">{t("markDone")}</span>
+            <span className="text-sm text-dark-slate/80">{auto.has(current.key) ? tMenu("autoDone") : t("markDone")}</span>
           </label>
         </div>
         <div className="flex justify-between pt-2">
