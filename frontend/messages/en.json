@@ -3868,6 +3868,12 @@
       "tip": "Short-term outcomes should be visible within a year. They're the ones you measure first."
     }
   },
+  "ChangeImpactHint": {
+    "heading": "You changed this — it may affect:",
+    "close": "Close",
+    "interviewGuide": "The interview guide",
+    "marketScan": "The market scan"
+  },
   "FieldProvenance": {
     "approve": "Looks good",
     "approveHint": "You've read the draft and stand behind it as it is. It then counts as reviewed, but it's still an assumption until you know.",

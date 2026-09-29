@@ -3868,6 +3868,12 @@
       "tip": "Kortsiktiga resultat ska gå att se inom ett år. Det är dem ni mäter först."
     }
   },
+  "ChangeImpactHint": {
+    "heading": "Du ändrade det här — det kan påverka:",
+    "close": "Stäng",
+    "interviewGuide": "Intervjuguiden",
+    "marketScan": "Omvärldsbevakningen"
+  },
   "FieldProvenance": {
     "approve": "Ser bra ut",
     "approveHint": "Ni har läst utkastet och står för det som det är. Det räknas då som genomgånget, men är fortfarande ett antagande tills ni vet.",
