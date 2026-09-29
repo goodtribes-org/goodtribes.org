@@ -21,6 +21,7 @@ export default function FieldProvenanceBadge({
   info,
   hasContent,
   canEdit,
+  onStatusChange,
 }: {
   projectSlug: string;
   entity: ProvenanceEntity;
@@ -28,6 +29,9 @@ export default function FieldProvenanceBadge({
   info: ProvenanceInfo | undefined;
   hasContent: boolean;
   canEdit: boolean;
+  // Lets the surrounding block react to a toggle right away (e.g. its
+  // border colour in LeanCanvasBlock).
+  onStatusChange?: (status: FieldKnowledgeStatus) => void;
 }) {
   const t = useTranslations("FieldProvenance");
   const [status, setStatus] = useState<FieldKnowledgeStatus>(info?.status ?? "ANTAR");
@@ -39,11 +43,13 @@ export default function FieldProvenanceBadge({
     const next: FieldKnowledgeStatus = status === "VET" ? "ANTAR" : "VET";
     const prev = status;
     setStatus(next);
+    onStatusChange?.(next);
     startTransition(async () => {
       try {
         await setFieldStatus(projectSlug, entity, field, next);
       } catch {
         setStatus(prev);
+        onStatusChange?.(prev);
       }
     });
   }

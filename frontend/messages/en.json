@@ -3784,6 +3784,11 @@
     "next": "Next",
     "stop": "Stop highlighting"
   },
+  "CanvasStatusLegend": {
+    "known": "Done — you know",
+    "assumed": "Assumption — needs testing",
+    "empty": "Empty"
+  },
   "FieldProvenance": {
     "approve": "Looks good",
     "approveHint": "You've read the draft and stand behind it as it is. It then counts as reviewed, but it's still an assumption until you know.",
