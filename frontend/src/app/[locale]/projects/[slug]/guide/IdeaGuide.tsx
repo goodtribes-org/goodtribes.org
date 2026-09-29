@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -47,6 +47,9 @@ interface Props {
   initialImageUrl: string;
   initialSdgGoals: number[];
   completedKeys: string[];
+  // Done because the project's data shows it (lib/projectSignals.ts) — shown
+  // as done like in PhaseMenuBar, and not untickable.
+  autoDoneKeys?: string[];
   leanCanvas: LeanCanvas | null;
   valueProposition: ValueProposition | null;
   hasInterviews: boolean;
@@ -87,6 +90,7 @@ export default function IdeaGuide({
   initialImageUrl,
   initialSdgGoals,
   completedKeys,
+  autoDoneKeys = [],
   leanCanvas,
   valueProposition,
   hasInterviews,
@@ -103,9 +107,12 @@ export default function IdeaGuide({
 }: Props) {
   const t = useTranslations("IdeaGuide");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
+  const tMenu = useTranslations("PhaseMenuBar");
   const router = useRouter();
   const [step, setStep] = useState(initialStep ?? 0);
   const [done, setDone] = useState<Set<string>>(new Set(completedKeys));
+  const auto = useMemo(() => new Set(autoDoneKeys), [autoDoneKeys]);
+  const shown = useMemo(() => new Set([...done, ...auto]), [done, auto]);
   const [invitedSomeone, setInvitedSomeone] = useState(hasInvitedSomeone);
   const [title, setTitle] = useState(initialTitle);
   const [summary, setSummary] = useState(initialSummary);
@@ -223,6 +230,7 @@ export default function IdeaGuide({
   }
 
   function toggleSprintTask(itemKey: string) {
+    if (auto.has(itemKey)) return;
     const wasDone = done.has(itemKey);
     startTransition(async () => {
       await toggleChecklistItem(slug, "PILOT", itemKey, !wasDone);
@@ -235,7 +243,7 @@ export default function IdeaGuide({
   }
 
   function handleSprintFinish() {
-    const hasProgress = SPRINT_PREP_ITEMS.some((item) => done.has(item.key));
+    const hasProgress = SPRINT_PREP_ITEMS.some((item) => shown.has(item.key));
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "sprint_prepped", hasProgress);
       router.push(`/projects/${slug}`);
@@ -265,7 +273,7 @@ export default function IdeaGuide({
         <GuideStepIndicator
           steps={IDEA_GUIDE_STEPS.map((item) => ({ key: item.key, label: tChecklist(item.key) }))}
           currentIndex={step}
-          doneKeys={done}
+          doneKeys={shown}
           onStepClick={(i) => setStep(i)}
         />
 
@@ -634,7 +642,8 @@ export default function IdeaGuide({
           </a>
           <div className="flex flex-col gap-2">
             {SPRINT_PREP_ITEMS.map((item) => {
-              const isChecked = done.has(item.key);
+              const isChecked = shown.has(item.key);
+              const isAuto = auto.has(item.key);
               return (
                 <label
                   key={item.key}
@@ -644,11 +653,12 @@ export default function IdeaGuide({
                 >
                   <input
                     type="checkbox"
-                    checked={isChecked} onChange={() => toggleSprintTask(item.key)}
+                    checked={isChecked} disabled={isAuto} onChange={() => toggleSprintTask(item.key)}
                     className="accent-seagrass w-4 h-4 flex-shrink-0"
                   />
                   <span className={`text-sm ${isChecked ? "text-dark-slate font-medium" : "text-dark-slate/70"}`}>
                     {tChecklist(item.key)}
+                    {isAuto && <span className="ml-1.5 text-[10px] font-medium text-seagrass">{tMenu("autoDoneShort")}</span>}
                   </span>
                 </label>
               );

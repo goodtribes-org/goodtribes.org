@@ -52,6 +52,7 @@ export default async function PhaseGuidePage({
   const onePage = ONE_PAGE[phase] && journeyOn ? ONE_PAGE[phase] : null;
   const tOnePage = await getTranslations({ locale, namespace: onePage?.namespace ?? "UppstartOverview" });
 
+  const autoDoneKeys = await getAutoDoneKeys(project.id, slug);
   return (
     <div className="max-w-5xl mx-auto min-w-0 w-full">
       <div className="mb-8">
@@ -59,7 +60,7 @@ export default async function PhaseGuidePage({
           slug={slug}
           phase={project.phase}
           completedKeys={project.checklistItems.map((c) => c.itemKey)}
-          autoDoneKeys={await getAutoDoneKeys(project.id, slug)}
+          autoDoneKeys={autoDoneKeys}
           canEdit={true}
           showNextStep
           viewingPhase={phase}
@@ -82,6 +83,7 @@ export default async function PhaseGuidePage({
           projectTitle={project.title}
           items={INITIATIVE_CHECKLIST_ITEMS[phase]}
           completedKeys={project.checklistItems.map((c) => c.itemKey)}
+          autoDoneKeys={autoDoneKeys}
           initialStepIndex={Math.max(0, INITIATIVE_CHECKLIST_ITEMS[phase].findIndex((i) => i.key === step))}
         />
       </div>
