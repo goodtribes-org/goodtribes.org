@@ -2,8 +2,11 @@ name: Sandbox Seed
 
 on:
   schedule:
-    # Every day at 07:00 UTC
-    - cron: "0 7 * * *"
+    # Weekly (Mondays) at 07:00 UTC — reduced from daily 2026-09-29 while
+    # running on a capped Vertex AI credit balance (see CLAUDE.md's AI
+    # provider note); the route itself also caps to once per ~20h now
+    # regardless of this schedule.
+    - cron: "0 7 * * 1"
   workflow_dispatch: {}
 
 jobs:

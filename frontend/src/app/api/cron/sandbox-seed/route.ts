@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { createProjectRecord } from "@/lib/createProject";
 import { getAiClientFor } from "@/lib/aiMode";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 const SYSTEM_PROMPT = `Du är en kreativ idégenerator för GoodTribes, en plattform som kopplar
 volontärer och organisationer till projekt som bidrar till FN:s Agenda 2030.
@@ -32,8 +33,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // System job: no user (bounded by its daily schedule instead of a rate
-  // limit) and no project yet — only AI configuration applies.
+  // System job: no user and no project yet, so getAiClientFor's per-user/
+  // per-project checks don't apply. Was relying entirely on the external
+  // schedule (GitHub Actions cron) as its only throttle — added an explicit
+  // in-code cap 2026-09-29 (once per ~20h) as defense in depth, so this
+  // can't multiply spend if the workflow is ever re-enabled with a tighter
+  // schedule, re-triggered manually (workflow_dispatch), or double-fires.
+  const notRecentlyRun = await checkRateLimit("rl:cron:sandbox-seed", 1, 20 * 60 * 60);
+  if (!notRecentlyRun) {
+    return NextResponse.json({ ok: true, seeded: 0, note: "already ran recently" });
+  }
+
   const gate = await getAiClientFor({ feature: "sandbox-seed", kind: "agent", userId: null, projectId: null });
   if (!gate.ok) {
     return NextResponse.json({ ok: true, seeded: 0, note: "AI ej konfigurerad" });
@@ -43,7 +53,10 @@ export async function POST(request: Request) {
   let threads: { title: string; problemStatement: string; sdgGoals: number[] }[] = [];
   try {
     const message = await client.messages.create({
-      model: "claude-sonnet-4-6",
+      // Downgraded from claude-sonnet-4-6 2026-09-29: throwaway, low-stakes
+      // creative content (discardable sandbox seed ideas) — Haiku is
+      // sufficient for this.
+      model: "claude-haiku-4-5",
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: "Generera dagens 3 problemställningar." }],
