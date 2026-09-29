@@ -69,7 +69,7 @@ Vi fyller i allt direkt, som IdeaBuddy, men vi **märker** vad som är AI-utkast
 
 ---
 
-## Del 3 — Förklaringsrutor per sektion
+## Del 3 — Förklaringsrutor per sektion — BYGGD, PR C3 #150 (`feat/section-intros`)
 
 IdeaBuddy har en kort ruta per sektion ("Välkommen till …", vad man gör och ett tips) som går att stänga.
 
@@ -78,6 +78,7 @@ IdeaBuddy har en kort ruta per sektion ("Välkommen till …", vad man gör och 
   - Idé-översiktens sektioner: Kritikern, Antaganden, Canvas, Impactmodell, Värdeerbjudande, Omvärld, Intervjuer och Fasgrind.
   - Canvas-sidorna: Social Lean Canvas, Kundmodell, Värdeerbjudande och Impactmodell.
 - **Texter:** i `messages/sv.json` och `messages/en.json`, namnrymd `SectionIntro`. De skrivs för en ideell initiativtagare, inte för en startup ("vilka vill ni hjälpa", inte "vilka är era kunder"). Det ska inte vara en upprepning av `WorkspacePageHeader`s hjälpknapp; den finns kvar för den som vill läsa mer.
+- **Byggt så här:** 9 sektioner på Idé-översikten och 4 canvas-sidor. Sektionen Antaganden (#147) får sin ruta när #147 är mergad.
 - **Rundtur per fas:** valfri och senare. `SpotlightTour` finns redan (OrgTourGate, VolunteerTourGate), och en "Visa mig runt i Idéfasen" kan byggas på den. Den ingår inte i första PR:en.
 
 ---
