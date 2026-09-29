@@ -44,7 +44,7 @@ Ny ren funktion `lib/phaseProgress.ts`: `taskDone(key, signals, manualKeys) → 
 | `sprint_prepped` + delsteg | sprint skapad; delstegen följer sprintens steg om det finns data, annars manuellt |
 | `rough_budget_estimated` | `estimatedFundingNeed` satt |
 
-Senare faser har kvar manuella bockar tills vidare. Signaler för dem läggs till fas för fas (pilotkriterier, impactmått, partnerskap och så vidare), med samma mönster.
+**Senare faser (klart, `feat/phase-signals-later`):** Lansering, Etablera och Skala använder exakt samma regler som respektive fasgrind (`*GateCriteria` i `lib/phaseGate.ts`), och ett test håller trösklarna i synk. Pilotens go/no-go räknas när ett grindbeslut från Lansering finns. För Impact räknas bara DELIVERED-rapporter (levererad effekt), och rapporten måste vara verifierad för "extern verifiering". Firandet räknas när det finns anteckningar i uppföljningen. Det som ingen data kan visa, till exempel supporterbas och uppskalad process, är fortfarande manuella bockar.
 
 **Antaganden (PR #147):** när #147 är mergad räknas "De riskablaste antagandena testade" in i Idé-stapeln med regeln `riskyAssumptionsTested`. Tills dess ingår den inte, så att den här PR:en inte beror på #147.
 
