@@ -3787,11 +3787,19 @@
     "projectManagerHint": "Låt AI:n skapa och föreslå uppgifter i projektet. Stäng av så skapas inga uppgifter automatiskt.",
     "saveError": "Kunde inte spara — försök igen."
   },
+  "AiDraftsNotice": {
+    "summary": "<b>{drafts} av {filled} fält</b> är AI-utkast som ingen i teamet har gått igenom än.",
+    "show": "Visa dem",
+    "next": "Nästa",
+    "stop": "Sluta markera"
+  },
   "FieldProvenance": {
+    "approve": "Ser bra ut",
+    "approveHint": "Ni har läst utkastet och står för det som det är. Det räknas då som genomgånget, men är fortfarande ett antagande tills ni vet.",
     "aiDraft": "AI-utkast",
-    "aiDraftHint": "Skrivet av AI:n och ännu inte redigerat av en människa.",
-    "aiEdited": "AI + redigerat",
-    "aiEditedHint": "Ett AI-utkast som en människa har redigerat.",
+    "aiDraftHint": "Skrivet av AI:n och ännu inte genomgånget av någon i teamet.",
+    "aiEdited": "AI + granskat",
+    "aiEditedHint": "Ett AI-utkast som någon i teamet har gått igenom — redigerat eller godkänt.",
     "known": "Vet",
     "assumed": "Antar",
     "markKnown": "Markera som något ni vet",

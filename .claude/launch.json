@@ -4,14 +4,32 @@
     {
       "name": "frontend",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--workspace=frontend"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--workspace=frontend"
+      ],
       "port": 3000
     },
     {
       "name": "services",
       "runtimeExecutable": "docker",
-      "runtimeArgs": ["compose", "up", "postgres", "meilisearch"],
+      "runtimeArgs": [
+        "compose",
+        "up",
+        "postgres",
+        "meilisearch"
+      ],
       "port": 7700
+    },
+    {
+      "name": "frontend-3010",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "cd /home/niklas/GoodTribes/goodtribes.org && RESEND_API_KEY=\"$(grep '^RESEND_API_KEY=' .env | cut -d= -f2-)\" DATABASE_URL='postgresql://goodtribes:changeme@172.18.0.2:5432/goodtribes' REDIS_URL='redis://:changeme@172.18.0.6:6379' AUTH_SECRET=dev-local NEXTAUTH_URL=http://localhost:3010 S3_ENDPOINT=http://localhost:9000 S3_ACCESS_KEY=minioadmin S3_SECRET_KEY=minioadmin S3_PUBLIC_BUCKET=goodtribes-public S3_PRIVATE_BUCKET=goodtribes-private NEXT_PUBLIC_STORAGE_URL=http://localhost:9000/goodtribes-public PORT=3010 /home/niklas/.nvm/versions/node/v22.22.3/bin/npm run dev --workspace=frontend"
+      ],
+      "port": 3010
     }
   ]
 }

@@ -28,6 +28,8 @@ import RetryButton from "./RetryButton";
 import CritiqueBox from "./CritiqueBox";
 import AssumptionsSection from "./AssumptionsSection";
 import { sortAssumptions, statusHintsFromSynthesis } from "@/lib/assumptionRules";
+import AiDraftsNotice from "@/components/ai/AiDraftsNotice";
+import { getAiDraftCount } from "@/lib/aiDrafts";
 import InterviewSynthesisPanel from "./InterviewSynthesisPanel";
 import PhaseGateSection from "./PhaseGateSection";
 import { ideaGateCriteria, type GateBrief } from "@/lib/phaseGate";
@@ -84,6 +86,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
   ]);
   const assumptionRows = sortAssumptions(await prisma.assumption.findMany({ where: { projectId: project.id } }));
   const assumptionHints = statusHintsFromSynthesis(assumptionRows, synthesis?.content.verdicts ?? []);
+  const aiDrafts = canEdit ? await getAiDraftCount(project.id) : null;
   const inIdeaPhase = project.phase === "IDEA" || project.phase === "SPRINT";
   const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
   const decisionDate = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -116,6 +119,8 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
           {t("stepByStep")}
         </Link>
       </div>
+
+      {aiDrafts && !isFillInProgress(fill) && <AiDraftsNotice drafts={aiDrafts.drafts} filled={aiDrafts.filled} />}
 
       {(critique || fill.critique === "pending" || fill.critique === "running" || (canEdit && aiAvailable && project.leanCanvas)) && (
         <CritiqueBox
