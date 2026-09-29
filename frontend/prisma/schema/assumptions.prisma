@@ -1,0 +1,49 @@
+// Assumptions as the spine of the Idé phase (docs/plans/ide-iteration.md,
+// PR B). A FieldProvenance ANTAR only says "this whole canvas field is
+// unverified"; an Assumption is one concrete, testable belief behind it —
+// with a risk, a cheap test, and what testing it showed. The loop the Idé
+// phase is built around: assumption → test → learning → update.
+
+enum AssumptionRisk {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum AssumptionStatus {
+  UNTESTED
+  TESTING
+  SUPPORTED // the test backed it up
+  REFUTED // the test contradicted it
+}
+
+// Where the assumption came from — shown in the UI, and lets later tools
+// tell a team's own beliefs from AI proposals they accepted.
+enum AssumptionOrigin {
+  USER
+  AI // accepted from "Hitta antaganden"
+  CRITIQUE // made from a Kritikern point
+  INTERVIEW // made from an interview-synthesis verdict
+}
+
+model Assumption {
+  id           String           @id @default(cuid())
+  projectId    String
+  project      Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  text         String
+  // The canvas field it sits behind ("leanCanvas" + "customerSegments"),
+  // same keys as FieldProvenance. Optional: some assumptions span fields.
+  sourceEntity String?
+  sourceField  String?
+  risk         AssumptionRisk   @default(MEDIUM)
+  status       AssumptionStatus @default(UNTESTED)
+  testPlan     String?
+  evidence     String?
+  origin       AssumptionOrigin @default(USER)
+  createdById  String?
+  updatedById  String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([projectId, status])
+}

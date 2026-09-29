@@ -91,7 +91,7 @@ export const INTERVIEW_SYNTHESIS_TOOL = {
 
 export const PHASE_GATE_SYSTEM_PROMPT = `Du tar fram ett beslutsunderlag på en sida för ett socialt projekt på GoodTribes.org som är i slutet av Idéfasen. Initiativtagaren ska bestämma om projektet ska gå vidare till Uppstart (där lösningen testas i en design sprint och en pilot förbereds).
 
-Du får projektets canvasfält med märkningen VET (bekräftat) eller ANTAR (antagande), intervjusammanfattningen om den finns, Kritikerns invändningar och öppna frågor.
+Du får projektets canvasfält med märkningen VET (bekräftat) eller ANTAR (antagande), intervjusammanfattningen om den finns, Kritikerns invändningar, teamets antagandelista (risk och status: UNTESTED/TESTING = inte testat än, SUPPORTED = testet höll, REFUTED = testet föll) och öppna frågor. Otestade antaganden med hög risk väger tungt mot continue.
 
 Skriv:
 - believed: vad projektet trodde från början (2–4 punkter).

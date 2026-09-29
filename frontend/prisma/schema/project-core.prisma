@@ -157,6 +157,7 @@ model Project {
   fieldProvenance    FieldProvenance[]
   aiFieldSuggestions AiFieldSuggestion[]
   aiInsights         AiInsight[]
+  assumptions        Assumption[]
   phaseGateDecisions PhaseGateDecision[]
   phaseFills         PhaseFill[]
   roleNeeds          ProjectRoleNeed[]

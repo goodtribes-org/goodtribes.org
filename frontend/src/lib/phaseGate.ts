@@ -1,5 +1,6 @@
 import type { PhaseGateOutcome, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { riskyAssumptionsTested, sortAssumptions } from "@/lib/assumptionRules";
 import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { getAiClientFor } from "@/lib/aiMode";
 import { getFieldProvenance } from "@/lib/fieldProvenance";
@@ -33,6 +34,7 @@ export const IDEA_GATE_CRITERIA = [
   "value_proposition_created",
   "market_scan_partners",
   "target_audience_interviews",
+  "risky_assumptions_tested",
 ] as const;
 export type IdeaGateCriterion = (typeof IDEA_GATE_CRITERIA)[number];
 
@@ -41,20 +43,27 @@ export const MIN_INTERVIEWS = 3;
 export type GateCriteria = { key: string; met: boolean }[];
 
 export async function ideaGateCriteria(projectId: string, slug: string): Promise<{ criteria: GateCriteria; interviewCount: number }> {
-  const [done, interviewCount] = await Promise.all([
+  const [done, interviewCount, assumptions] = await Promise.all([
     prisma.initiativeChecklistItem.findMany({
       where: { projectId, completedAt: { not: null }, itemKey: { in: [...IDEA_GATE_CRITERIA] } },
       select: { itemKey: true },
     }),
     prisma.interviewLogEntry.count({ where: { projectSlug: slug } }),
+    prisma.assumption.findMany({ where: { projectId }, select: { id: true, risk: true, status: true, sourceEntity: true, sourceField: true, createdAt: true } }),
   ]);
   const doneKeys = new Set(done.map((d) => d.itemKey));
   return {
     interviewCount,
     criteria: IDEA_GATE_CRITERIA.map((key) => ({
       key,
-      // Interviews count by what's actually logged, not by a checkbox.
-      met: key === "target_audience_interviews" ? interviewCount >= MIN_INTERVIEWS : doneKeys.has(key),
+      // Interviews and assumptions count by what's actually there, not by a
+      // checkbox.
+      met:
+        key === "target_audience_interviews"
+          ? interviewCount >= MIN_INTERVIEWS
+          : key === "risky_assumptions_tested"
+            ? riskyAssumptionsTested(assumptions)
+            : doneKeys.has(key),
     })),
   };
 }
@@ -128,7 +137,7 @@ export async function runGateBrief(projectId: string, slug: string, userId: stri
   const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId, language: "project" });
   if (!gate.ok) throw new InsightError(gate.reason);
 
-  const [project, lcProv, vpProv, imProv, synthesis, critique, { interviewCount }] = await Promise.all([
+  const [project, lcProv, vpProv, imProv, synthesis, critique, { interviewCount }, assumptions] = await Promise.all([
     prisma.project.findUnique({
       where: { id: projectId },
       select: { title: true, summary: true, leanCanvas: true, valueProposition: true, impactModel: true, dreamConversation: { select: { openQuestions: true } } },
@@ -139,6 +148,7 @@ export async function runGateBrief(projectId: string, slug: string, userId: stri
     latestInsight<SynthesisContent>(projectId, "INTERVIEW_SYNTHESIS"),
     latestInsight<CritiqueContent>(projectId, "CRITIQUE"),
     ideaGateCriteria(projectId, slug),
+    prisma.assumption.findMany({ where: { projectId }, select: { id: true, text: true, risk: true, status: true, evidence: true, sourceEntity: true, sourceField: true, createdAt: true } }),
   ]);
   if (!project) throw new InsightError("not_found");
 
@@ -156,6 +166,11 @@ export async function runGateBrief(projectId: string, slug: string, userId: stri
       ? `Intervjusammanfattning (${synthesis.content.interviewCount} intervjuer):\nLärdomar: ${synthesis.content.learnings.join(" | ")}\nUtlåtanden: ${synthesis.content.verdicts.map((v) => `${v.field}=${v.verdict} (${v.reason})`).join(" | ")}`
       : "Ingen intervjusammanfattning finns.",
     critique ? `Kritikerns invändningar: ${critique.content.points.map((p) => p.text).join(" | ")}` : "",
+    assumptions.length
+      ? `Teamets antaganden [risk, status]:\n${sortAssumptions(assumptions)
+          .map((a) => `- [${a.risk}, ${a.status}] ${a.text}${a.evidence ? ` — belägg: ${a.evidence}` : ""}`)
+          .join("\n")}`
+      : "Teamet har inte skrivit ner några antaganden.",
     `Öppna frågor: ${parseOpenQuestions(project.dreamConversation?.openQuestions).join(" | ") || "inga"}`,
   ]
     .filter(Boolean)

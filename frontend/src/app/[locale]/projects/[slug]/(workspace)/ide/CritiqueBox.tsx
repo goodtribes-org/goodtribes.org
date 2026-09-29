@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import type { CritiquePoint } from "@/lib/ideaInsights";
 import { rerunCritique } from "./actions";
+import { assumptionFromCritique } from "@/lib/actions/assumptions";
 
 // Kritikern's objections at the top of the Idé overview — at most three,
 // each linking to the section it's about.
@@ -13,12 +14,17 @@ export default function CritiqueBox({
   points,
   fieldLabels,
   canEdit,
+  canMakeAssumptions = false,
+  existingAssumptions = [],
   writing,
 }: {
   slug: string;
   points: CritiquePoint[] | null;
   fieldLabels: Record<string, string>;
   canEdit: boolean;
+  // "Gör till antagande" needs no AI, so it has its own flag.
+  canMakeAssumptions?: boolean;
+  existingAssumptions?: string[];
   writing: boolean;
 }) {
   const t = useTranslations("IdeaOverview");
@@ -35,6 +41,15 @@ export default function CritiqueBox({
     );
   }
   if (!points?.length && !canEdit) return null;
+
+  function makeAssumption(text: string) {
+    setError(null);
+    startTransition(async () => {
+      const res = await assumptionFromCritique(slug, text);
+      if (res.error) setError(res.error);
+      else router.refresh();
+    });
+  }
 
   function rerun() {
     setError(null);
@@ -73,6 +88,14 @@ export default function CritiqueBox({
                     {fieldLabels[p.field]} →
                   </a>
                 )}
+                {canMakeAssumptions &&
+                  (existingAssumptions.includes(p.text) ? (
+                    <span className="ml-2 whitespace-nowrap text-xs text-dark-slate/40">✓ {t("critiqueIsAssumption")}</span>
+                  ) : (
+                    <button type="button" disabled={pending} onClick={() => makeAssumption(p.text)} className="ml-2 whitespace-nowrap text-xs font-medium text-coral hover:underline disabled:opacity-50">
+                      {t("critiqueMakeAssumption")}
+                    </button>
+                  ))}
               </span>
             </li>
           ))}

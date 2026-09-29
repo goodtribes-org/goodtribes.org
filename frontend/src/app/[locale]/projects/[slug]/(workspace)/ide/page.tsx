@@ -26,6 +26,8 @@ import SdgSection from "./SdgSection";
 import FillPoller from "./FillPoller";
 import RetryButton from "./RetryButton";
 import CritiqueBox from "./CritiqueBox";
+import AssumptionsSection from "./AssumptionsSection";
+import { sortAssumptions, statusHintsFromSynthesis } from "@/lib/assumptionRules";
 import InterviewSynthesisPanel from "./InterviewSynthesisPanel";
 import PhaseGateSection from "./PhaseGateSection";
 import { ideaGateCriteria, type GateBrief } from "@/lib/phaseGate";
@@ -79,6 +81,8 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
     prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: { in: ["IDEA", "SPRINT"] } }, orderBy: { createdAt: "desc" } }),
     getCanvasAiContext(project.id, "impactModel"),
   ]);
+  const assumptionRows = sortAssumptions(await prisma.assumption.findMany({ where: { projectId: project.id } }));
+  const assumptionHints = statusHintsFromSynthesis(assumptionRows, synthesis?.content.verdicts ?? []);
   const inIdeaPhase = project.phase === "IDEA" || project.phase === "SPRINT";
   const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
   const decisionDate = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -117,9 +121,31 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
           points={critique?.content.points ?? null}
           fieldLabels={fieldLabels}
           canEdit={canEdit && aiAvailable}
+          canMakeAssumptions={canEdit}
+          existingAssumptions={assumptionRows.map((a) => a.text)}
           writing={fill.critique === "pending" || fill.critique === "running"}
         />
       )}
+
+      <OverviewSection id="antaganden" title={t("assumptionsHeading")} badge={t("yourTurn")} writingLabel={writing}>
+        <AssumptionsSection
+          slug={slug}
+          assumptions={assumptionRows.map((a) => ({
+            id: a.id,
+            text: a.text,
+            risk: a.risk,
+            status: a.status,
+            testPlan: a.testPlan,
+            evidence: a.evidence,
+            fieldKey: a.sourceEntity && a.sourceField ? `${a.sourceEntity}.${a.sourceField}` : null,
+            origin: a.origin,
+          }))}
+          hints={assumptionHints}
+          fieldLabels={fieldLabels}
+          canEdit={canEdit}
+          canUseAi={canEdit && aiAvailable && leanCanvasAi.mode !== "MANUAL"}
+        />
+      </OverviewSection>
 
       <OverviewSection id="om" title={t("aboutHeading")} fill={fill.about} writingLabel={writing}>
         <AboutSection

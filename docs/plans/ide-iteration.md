@@ -18,7 +18,11 @@ Mål: Idéfasen ska vara en loop, *antagande → test → lärdom → uppdaterin
 
 Kvar att verifiera: ett riktigt anrop mot Claude/Vertex (den lokala AI-nyckeln saknar kredit och Vertex-kvoten var inte beviljad 2026-09-29) och ett klickflöde i webbläsaren.
 
-## PR B — Antaganden som ryggrad (nästa)
+## PR B — Antaganden som ryggrad (byggd på grenen `feat/assumptions`, utkast-PR, MERGA INTE än)
+
+**Merga först när produktionen driftsätter igen** (`curl https://goodtribes.org/api/health` visar ett `version`-fält) och den uppsamlade versionen är utrullad och kontrollerad. Merga den sedan ensam, eftersom den innehåller migrationen `20260929180000_assumptions`. Migrationen är rent additiv (tre enums och en tabell) och verifierad mot en tom Postgres med hela migrationskedjan.
+
+Punkterna 1–6 nedan är byggda. Punkt 7 (konsekvenskontroll) är inte byggd.
 
 I dag är ett "antagande" bara ett helt canvasfält med status ANTAR (`FieldProvenance`). Det räcker inte för att prioritera eller testa.
 
