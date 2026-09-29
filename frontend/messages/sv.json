@@ -3793,6 +3793,11 @@
     "next": "Nästa",
     "stop": "Sluta markera"
   },
+  "CanvasStatusLegend": {
+    "known": "Klart — ni vet",
+    "assumed": "Antagande — behöver testas",
+    "empty": "Tomt"
+  },
   "FieldProvenance": {
     "approve": "Ser bra ut",
     "approveHint": "Ni har läst utkastet och står för det som det är. Det räknas då som genomgånget, men är fortfarande ett antagande tills ni vet.",
