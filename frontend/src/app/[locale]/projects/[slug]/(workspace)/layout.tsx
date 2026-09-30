@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import ProjectTopNav from "../ProjectTopNav";
 import ProjectSideNav from "../ProjectSideNav";
+import HubTabs from "../HubTabs";
 import PhaseProgressStrip from "../PhaseProgressStrip";
 import { ProjectSandboxAnnouncer } from "@/components/SandboxIndicator";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
@@ -56,7 +57,10 @@ export default async function WorkspaceLayout({
           completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
           topOffset={0}
         />
-        <div className="flex-1 min-w-0 px-6">{children}</div>
+        <div className="flex-1 min-w-0 px-6">
+          <HubTabs slug={slug} isCommercial={isCommercialLegalType(project.legalType)} />
+          {children}
+        </div>
       </div>
     </>
   );

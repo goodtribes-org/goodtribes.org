@@ -12,13 +12,11 @@ import {
   Plus,
   Compass,
   FolderKanban,
-  Lock,
-  MessageCircle,
   Pin,
   PinOff,
   type LucideIcon,
 } from "lucide-react";
-import { buildProjectNavGroups, type Group, type NavItem } from "@/app/[locale]/projects/[slug]/ProjectTopNav";
+import { buildSimpleProjectNav } from "@/lib/projectSimpleNav";
 import { setProjectMenuPinned, useProjectMenuContext, useProjectMenuPinned, type ProjectMenuContext } from "@/lib/projectMenuStore";
 
 type Item = { href: string; label: string };
@@ -288,82 +286,21 @@ function MenuSection({
   );
 }
 
-// PROTOTYPE: the project's full tool menu inside the drawer — same groups as
-// the old tabs and the pinned rail (buildProjectNavGroups), phase-aware:
-// current-phase tools first, "tidiga" and locked later-phase tools after.
+// PROTOTYPE: the project's menu inside the drawer — seven entries
+// (lib/projectSimpleNav.ts). Merged entries open their first tab; HubTabs on
+// those pages reach the rest, and the phase tools live on the phase overview.
 function ProjectTools({ ctx, pinned, onPin }: { ctx: ProjectMenuContext; pinned: boolean; onPin: () => void }) {
   const t = useTranslations("Nav");
   const tProject = useTranslations("ProjectSideNav");
+  const tMenu = useTranslations("PhaseMenuBar");
+  const tPhase = useTranslations("ProjectPhase");
   const pathname = usePathname();
-  const base = `/projects/${ctx.slug}`;
-  const groups = buildProjectNavGroups(tProject, ctx);
-  const [closed, setClosed] = useState<Set<string>>(() => new Set(["community", "admin"]));
-
-  const hrefFor = (item: NavItem) => (item.getHref ? item.getHref(ctx.slug) : `${base}${item.href}`);
-  const activeFor = (href: string) => {
-    if (href === "/kanaler") return pathname.startsWith("/messages");
-    const full = `${base}${href}`;
-    return href === "" ? pathname === base : pathname === full || pathname.startsWith(`${full}/`);
-  };
-
-  const row = (label: string, href: string, Icon: LucideIcon, active: boolean) => (
-    <Link
-      key={href}
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={`flex items-center gap-2.5 mx-1 pl-4 pr-3 py-1.5 rounded-lg ${
-        active ? "bg-seagrass/10 text-seagrass font-semibold" : "text-dark-slate/75 hover:text-dark-slate hover:bg-dry-sage/20"
-      }`}
-    >
-      <Icon className="w-4 h-4 shrink-0" strokeWidth={2} />
-      <span className="truncate">{label}</span>
-    </Link>
+  const entries = buildSimpleProjectNav(
+    tProject as unknown as (k: string, v?: Record<string, string>) => string,
+    tMenu as unknown as (k: string, v?: Record<string, string>) => string,
+    (ph) => tPhase(ph as Parameters<typeof tPhase>[0]),
+    ctx,
   );
-
-  const group = (g: Group) => {
-    const Icon = g.icon;
-    const open = !closed.has(g.key);
-    return (
-      <div key={g.key} className="mt-1">
-        <button
-          type="button"
-          onClick={() => setClosed((prev) => { const n = new Set(prev); if (n.has(g.key)) n.delete(g.key); else n.add(g.key); return n; })}
-          aria-expanded={open}
-          className="w-full flex items-center gap-2 px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-widest text-dark-slate/45 hover:text-dark-slate/70"
-        >
-          <Icon className="w-3.5 h-3.5" />
-          <span className="flex-1 text-left">{g.label}</span>
-          <span className={`transition-transform ${open ? "rotate-180" : ""}`} aria-hidden>▾</span>
-        </button>
-        {open && (
-          <>
-            {g.items.map((i) => row(i.label, hrefFor(i), i.icon, activeFor(i.href)))}
-            {g.early && g.early.length > 0 && (
-              <>
-                <p className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-widest text-dark-slate/35">{tProject("earlyToolsGroupLabel")}</p>
-                {g.early.map((i) => row(i.label, hrefFor(i), i.icon, activeFor(i.href)))}
-              </>
-            )}
-            {g.locked && g.locked.length > 0 && (
-              <>
-                <p className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-widest text-dark-slate/35">{tProject("lockedHint")}</p>
-                {g.locked.map((i) => {
-                  const ItemIcon = i.icon;
-                  return (
-                    <div key={i.href} aria-disabled="true" className="flex items-center gap-2.5 mx-1 pl-4 pr-3 py-1.5 text-dark-slate/30 cursor-not-allowed">
-                      <ItemIcon className="w-4 h-4 shrink-0" strokeWidth={2} />
-                      <span className="flex-1 truncate">{i.label}</span>
-                      <Lock className="w-3.5 h-3.5 shrink-0" strokeWidth={2} />
-                    </div>
-                  );
-                })}
-              </>
-            )}
-          </>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className="mt-2 mx-2 rounded-xl bg-dry-sage/15 pb-2">
@@ -380,9 +317,23 @@ function ProjectTools({ ctx, pinned, onPin }: { ctx: ProjectMenuContext; pinned:
           {pinned ? <PinOff className="w-3 h-3" /> : <Pin className="w-3 h-3" />} {pinned ? "Lossa menyn" : "Fäst menyn"}
         </button>
       </div>
-      {row(tProject("navHome"), base, Home, activeFor(""))}
-      {row(tProject("navChat"), `/messages?project=${ctx.slug}`, MessageCircle, activeFor("/kanaler"))}
-      {groups.map(group)}
+      {entries.map((e) => {
+        const Icon = e.icon;
+        const active = e.matches(pathname);
+        return (
+          <Link
+            key={e.key}
+            href={e.href}
+            aria-current={active ? "page" : undefined}
+            className={`flex items-center gap-2.5 mx-1 pl-4 pr-3 py-2 rounded-lg ${
+              active ? "bg-seagrass/10 text-seagrass font-semibold" : "text-dark-slate/80 hover:text-dark-slate hover:bg-dry-sage/20"
+            }`}
+          >
+            <Icon className="w-4 h-4 shrink-0" strokeWidth={2} />
+            <span className="truncate">{e.label}</span>
+          </Link>
+        );
+      })}
     </div>
   );
 }
