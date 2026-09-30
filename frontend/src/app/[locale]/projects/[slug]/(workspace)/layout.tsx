@@ -47,8 +47,10 @@ export default async function WorkspaceLayout({
       />
       {/* Full-bleed, as before the side rail was removed: pages that fill the
           width (Att göra, Färdplan, ...) keep doing so; pages with their own
-          max-width still centre themselves. */}
-      <div className="flex" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+          max-width still centre themselves. On desktop it also cancels the
+          <main>'s top/bottom padding (pt-8/pb-12) and grows to fill it, so
+          the side menu runs from the header's line down to the footer's. */}
+      <div className="flex flex-1 lg:-mt-8 lg:-mb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
         <ProjectSideNav
           slug={slug}
           isOwner={isOwner}
@@ -57,7 +59,7 @@ export default async function WorkspaceLayout({
           completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
           topOffset={0}
         />
-        <div className="flex-1 min-w-0 px-6">
+        <div className="flex-1 min-w-0 px-6 lg:pt-8 lg:pb-12">
           <HubTabs slug={slug} isCommercial={isCommercialLegalType(project.legalType)} />
           {children}
         </div>
