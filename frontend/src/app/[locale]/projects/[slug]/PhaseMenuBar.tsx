@@ -169,7 +169,13 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
             <>
               {/* As close to the homepage's journey as the header allows: same
                   8px bar, same display font, bold; no number circle. */}
-              <span className="block h-2 w-full overflow-hidden rounded-full" style={{ background: hexToRgba(color, 0.2) }} aria-hidden>
+              {/* Outlined in the phase colour, so even an empty bar shows its
+                  full length and colour. */}
+              <span
+                className="block h-2.5 w-full overflow-hidden rounded-full border"
+                style={{ background: hexToRgba(color, 0.12), borderColor: dimmed ? hexToRgba(color, 0.55) : color }}
+                aria-hidden
+              >
                 <span className="block h-full rounded-full transition-[width] duration-500" style={{ width: `${pr.pct}%`, background: color }} />
               </span>
               <span className="mt-2 flex items-center gap-1">
