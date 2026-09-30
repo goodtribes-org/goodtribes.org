@@ -219,7 +219,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                     done. A ring outside a white gap marks the phase being worked
                     in; how far the others have come shows in their bars. */}
                 <span
-                  className="mx-[5px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white xl:h-6 xl:w-6 xl:text-xs"
+                  className="mx-[5px] flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white xl:h-7 xl:w-7 xl:text-[13px]"
                   style={{
                     background: color,
                     boxShadow: isCurrent ? `0 0 0 2px #fff, 0 0 0 3.5px ${color}` : undefined,
