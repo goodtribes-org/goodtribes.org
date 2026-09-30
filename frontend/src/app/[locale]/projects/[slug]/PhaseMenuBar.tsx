@@ -173,17 +173,19 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                   full length and colour. */}
               <span
                 className="block h-2.5 w-full overflow-hidden rounded-full border"
-                style={{ background: hexToRgba(color, 0.12), borderColor: dimmed ? hexToRgba(color, 0.55) : color }}
+                style={{ background: hexToRgba(color, 0.12), borderColor: color }}
                 aria-hidden
               >
                 <span className="block h-full rounded-full transition-[width] duration-500" style={{ width: `${pr.pct}%`, background: color }} />
               </span>
-              <span className="mt-2 flex items-center gap-1">
+              <span className="mt-2 flex items-center gap-2">
                 {/* Number circle, as on the homepage: phase colour with a white
                     number, ✓ once the phase is done; faded for later phases. */}
+                {/* Not started: an outlined circle (white, phase-colour border and
+                    number) instead of a faded fill, so later phases stay crisp. */}
                 <span
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white xl:h-6 xl:w-6 xl:text-xs ${isCurrent ? "mx-[3px] ring-2 ring-offset-1" : ""}`}
-                  style={{ background: color, opacity: dimmed ? 0.5 : 1, ["--tw-ring-color" as string]: color }}
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold xl:h-6 xl:w-6 xl:text-xs ${isCurrent ? "mx-[3px] ring-2 ring-offset-1" : ""} ${dimmed ? "border-[1.5px] bg-white" : "text-white"}`}
+                  style={dimmed ? { borderColor: color, color } : { background: color, ["--tw-ring-color" as string]: color }}
                   aria-hidden
                 >
                   {pr.complete ? "✓" : i + 1}
@@ -192,13 +194,13 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                     and icons: only the current phase keeps its name there, the
                     others show number + ▾ (name in the tooltip). */}
                 <span
-                  className={`${newHomeDisplayFont.className} truncate text-sm font-bold tracking-[-0.01em] xl:text-base ${isCurrent ? "text-dark-slate" : `hidden min-[1400px]:inline ${dimmed ? "text-dark-slate/45" : "text-dark-slate/75"}`}`}
+                  className={`${newHomeDisplayFont.className} truncate text-sm font-bold tracking-[-0.01em] xl:text-base ${isCurrent ? "text-dark-slate" : `hidden min-[1400px]:inline ${dimmed ? "text-dark-slate/60" : "text-dark-slate/75"}`}`}
                 >
                   {tPhase(p.value)}
                 </span>
                 <ChevronDown
                   aria-hidden
-                  className={`h-4 w-4 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""} ${isCurrent ? "text-dark-slate" : "text-dark-slate/40"}`}
+                  className={`h-4 w-4 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""} ${isCurrent ? "text-dark-slate" : "text-dark-slate/50"}`}
                   strokeWidth={2.5}
                 />
               </span>
