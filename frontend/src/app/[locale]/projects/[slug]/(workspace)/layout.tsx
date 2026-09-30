@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import ProjectTopNav from "../ProjectTopNav";
+import ProjectSideNav from "../ProjectSideNav";
+import PhaseProgressStrip from "../PhaseProgressStrip";
 import { ProjectSandboxAnnouncer } from "@/components/SandboxIndicator";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
@@ -40,12 +42,21 @@ export default async function WorkspaceLayout({
         isCommercial={isCommercialLegalType(project.legalType)}
         phase={project.phase}
         completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
+        phaseStrip={<PhaseProgressStrip projectId={project.id} slug={slug} viewing={project.phase} inHeader />}
       />
       {/* Full-bleed, as before the side rail was removed: pages that fill the
           width (Att göra, Färdplan, ...) keep doing so; pages with their own
           max-width still centre themselves. */}
-      <div className="flex-1 min-w-0 px-6" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
-        {children}
+      <div className="flex" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+        <ProjectSideNav
+          slug={slug}
+          isOwner={isOwner}
+          isCommercial={isCommercialLegalType(project.legalType)}
+          phase={project.phase}
+          completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
+          topOffset={0}
+        />
+        <div className="flex-1 min-w-0 px-6">{children}</div>
       </div>
     </>
   );
