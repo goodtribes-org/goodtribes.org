@@ -38,10 +38,11 @@ interface Props {
   variant?: "bars" | "chevrons" | "header";
 }
 
-// Header circles (Niklas, 2026-09-30): every circle's outline and number use
-// the same phase colour as the outline around its bar; a phase that has
-// started gets a light tint of that colour behind the number, one that
-// hasn't stays white.
+// Header circles (Niklas's choice, 2026-09-30): white number on the filled
+// circles of phases that have started; for phases not started, the number
+// takes the same phase colour as the circle's outline. Note: white on the
+// yellow/orange fills is below WCAG's 4.5:1 for small text (1.8–2.8:1), so
+// the circles rely on colour + position more than on reading the digit.
 const guideHref = (slug: string, phase: ProjectPhaseValue, step?: string) =>
   (phase === "IDEA" ? `/projects/${slug}/guide` : `/projects/${slug}/guide/${phase.toLowerCase()}`) + (step ? `?step=${step}` : "");
 
@@ -207,11 +208,11 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                 {/* Not started: an outlined circle (white, phase-colour border and
                     number) instead of a faded fill, so later phases stay crisp. */}
                 <span
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold xl:h-6 xl:w-6 xl:text-xs ${isCurrent ? "mx-[3px] ring-2 ring-offset-1" : ""} border`}
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold xl:h-6 xl:w-6 xl:text-xs ${isCurrent ? "mx-[3px] ring-2 ring-offset-1" : ""} ${dimmed ? "border-[1.5px] bg-white" : ""}`}
                   style={
                     dimmed
-                      ? { borderColor: color, color, background: "#ffffff" }
-                      : { borderColor: color, color, background: hexToRgba(color, 0.18), ["--tw-ring-color" as string]: color }
+                      ? { borderColor: color, color }
+                      : { background: color, color: "#ffffff", ["--tw-ring-color" as string]: color }
                   }
                   aria-hidden
                 >
