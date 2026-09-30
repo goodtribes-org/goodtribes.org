@@ -144,7 +144,7 @@ export default function SideMenu() {
         onClick={() => setOpen(false)}
         className="absolute inset-0 bg-dark-slate/30 animate-[fadeIn_150ms_ease-out]"
       />
-      <aside className="absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-xl flex flex-col animate-[slideIn_180ms_ease-out]">
+      <aside className="absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-[#FBFBF9] shadow-xl flex flex-col animate-[slideIn_180ms_ease-out]">
         <div className="flex items-center justify-between px-4 h-[74px] border-b border-muted-teal/30 shrink-0">
           <span className="font-semibold text-dark-slate">{t("menu")}</span>
           <button

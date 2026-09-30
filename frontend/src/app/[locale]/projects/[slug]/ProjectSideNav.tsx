@@ -52,7 +52,7 @@ export default function ProjectSideNav({
       title={iconOnly ? label : undefined}
       aria-label={iconOnly ? label : undefined}
       className={`flex items-center rounded-lg py-2 mx-2 text-sm border-l-4 transition-colors ${iconOnly ? "justify-center px-0" : "gap-3 pl-3 pr-2"} ${
-        active ? "border-coral bg-coral/10 text-dark-slate font-bold" : "border-transparent text-dark-slate/60 hover:bg-white hover:text-dark-slate"
+        active ? "border-coral bg-coral/10 text-dark-slate font-bold" : "border-transparent text-dark-slate/60 hover:bg-dark-slate/[0.05] hover:text-dark-slate"
       }`}
     >
       <Icon className="w-4 h-4 shrink-0" strokeWidth={2} />
@@ -60,13 +60,13 @@ export default function ProjectSideNav({
     </Link>
   );
 
-  const control = "flex items-center gap-1.5 rounded-lg p-1.5 text-[11px] font-medium text-dark-slate/45 hover:bg-white hover:text-dark-slate";
+  const control = "flex items-center gap-1.5 rounded-lg p-1.5 text-[11px] font-medium text-dark-slate/45 hover:bg-dark-slate/[0.05] hover:text-dark-slate";
 
   return (
     <nav aria-label={t("navGroupsLabel")} className={`hidden lg:block relative shrink-0 transition-[width] ${iconOnly ? "w-16" : "w-56"}`}>
       {/* The rail spans the full hero height on the project home, but its
           fill starts where the hero's background image ends. */}
-      <div className="absolute left-0 right-0 bottom-0 border-r border-muted-teal/20" style={{ top: `${topOffset}px`, backgroundColor: "#fbf8f4" }} />
+      <div className="absolute left-0 right-0 bottom-0 border-r border-[#E2E2E0]" style={{ top: `${topOffset}px`, backgroundColor: "#FBFBF9" }} />
       {topOffset > 0 && <div aria-hidden style={{ height: `${topOffset}px` }} />}
       <div className="sticky top-0 max-h-screen overflow-y-auto py-3" style={{ scrollbarWidth: "none" }}>
         <div className={`mb-1 flex items-center ${iconOnly ? "flex-col gap-1" : "justify-between px-3"}`}>
