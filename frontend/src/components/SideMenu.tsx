@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import {
@@ -171,19 +171,15 @@ export default function SideMenu() {
             <MenuSection key={s.key} section={s} activeHref={activeHref} defaultOpen />
           ))}
 
-          <div className="mx-4 my-3 border-t border-muted-teal/20" />
-          {loggedIn ? (
-            <button
-              type="button"
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="mx-2 px-3 py-2 text-left text-dark-slate/50 hover:text-dark-slate"
-            >
-              {t("logOut")}
-            </button>
-          ) : (
-            <Link href="/login" className="block mx-2 px-3 py-2 rounded-lg font-semibold text-seagrass hover:bg-dry-sage/20">
-              {t("signIn")}
-            </Link>
+          {/* Logging out lives in the profile menu (AuthNav, top right), not
+              here — this menu is for getting around. */}
+          {!loggedIn && (
+            <>
+              <div className="mx-4 my-3 border-t border-muted-teal/20" />
+              <Link href="/login" className="block mx-2 px-3 py-2 rounded-lg font-semibold text-seagrass hover:bg-dry-sage/20">
+                {t("signIn")}
+              </Link>
+            </>
           )}
         </nav>
       </aside>
