@@ -1,13 +1,5 @@
-"use client";
-
-import { useSandboxIndicator } from "./SandboxIndicator";
-
+// The site's green line under the header, the same on every page (Sandbox
+// included) and matching the line above the footer.
 export default function SiteHeader({ children }: { children: React.ReactNode }) {
-  const isSandbox = useSandboxIndicator();
-
-  return (
-    <header className={`relative z-30 bg-white/90 border-b shrink-0 ${isSandbox ? "border-[#b3450c]" : "border-seagrass"}`}>
-      {children}
-    </header>
-  );
+  return <header className="relative z-30 bg-white/90 border-b border-seagrass shrink-0">{children}</header>;
 }
