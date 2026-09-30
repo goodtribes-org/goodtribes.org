@@ -114,10 +114,12 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
         style={{ fontSize: "clamp(2.6rem, 6.4vw, 84px)", lineHeight: 1.02, letterSpacing: "-0.035em" }}
       >
         {t("heading")}{" "}
-        <span className="relative inline-block" style={{ color: "var(--nh-accent)" }}>
-          {t("headingHighlight")}
-          <svg width="100%" height="22" viewBox="0 0 300 22" preserveAspectRatio="none" fill="none" aria-hidden className="absolute left-0" style={{ bottom: -14 }}>
-            <path d="M4 14 C 80 4, 200 4, 296 12" stroke="#F5B82E" strokeWidth="7" strokeLinecap="round" />
+        <span className="relative inline-block isolate" style={{ color: "var(--nh-accent)" }}>
+          <span className="relative z-[1]">{t("headingHighlight")}</span>
+          {/* Same hand-drawn double brush stroke as the footer's tagline, in yellow */}
+          <svg viewBox="0 0 200 20" preserveAspectRatio="none" fill="none" aria-hidden className="pointer-events-none absolute left-[-3%] z-0 w-[106%]" style={{ bottom: "-0.26em", height: "0.4em" }}>
+            <path d="M3 13 C 40 9.5, 90 7, 140 7.5 C 165 7.8, 185 9, 197 10.5" stroke="#F5B82E" strokeWidth="5" strokeLinecap="round" />
+            <path d="M18 15.5 C 70 11.5, 130 10.5, 186 12.5" stroke="#F5B82E" strokeWidth="2.6" strokeLinecap="round" opacity="0.75" />
           </svg>
         </span>
       </h1>
