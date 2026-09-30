@@ -15,6 +15,7 @@ import OverviewSection from "../ide/OverviewSection";
 import PhaseGateSection from "../ide/PhaseGateSection";
 import DraftButton from "../uppstart/DraftButton";
 import { DraftCta, FieldGrid, FocusBox, GateClosed, OverviewHeader, TaskList, WikiHtml } from "../_overview/parts";
+import PhaseProgressStrip from "../../PhaseProgressStrip";
 
 const STEP_ANCHOR: Record<string, string> = {
   process_scaled_up: "drift",
@@ -106,6 +107,7 @@ export default async function EtableraOverviewPage({ params }: { params: Promise
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 py-6">
+      <PhaseProgressStrip projectId={project.id} slug={slug} viewing="ESTABLISH" />
       <OverviewHeader
         heading={t("heading")}
         intro={isEtableraFillInProgress(fill) ? t("introWriting") : t("intro")}
