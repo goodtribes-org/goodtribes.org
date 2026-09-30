@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
 import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, numberChecklist, overviewPathFor, PHASE_COLORS, hexToRgba, type ProjectPhaseValue } from "@/lib/projectPhase";
@@ -48,6 +48,8 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
   const [isPending, startTransition] = useTransition();
   const [openPhase, setOpenPhase] = useState<ProjectPhaseValue | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  // Unique clipPath ids when several arrow strips are on one page.
+  const idPrefix = useId().replace(/:/g, "");
 
   // Guide pages render their own step UI alongside this menu — when a step
   // gets marked done there, the server action revalidates this route too,
@@ -96,21 +98,35 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
           const isCurrent = i === currentIndex;
           const first = i === 0;
           const last = i === DISPLAY_PHASES.length - 1;
-          const clip = first
-            ? "polygon(0 0, calc(100% - 9px) 0, 100% 50%, calc(100% - 9px) 100%, 0 100%)"
+          // Drawn as SVG so the arrow can have an outline in its phase
+          // colour (a CSS border can't follow a clip-path). viewBox width
+          // 100, stretched to the arrow's width; the stroke stays 1.5px
+          // (non-scaling), the 9-unit notch reads as ~9px at header sizes.
+          const n = 9;
+          const shape = first
+            ? `M0.75,1 H${100 - n} L99.25,14 L${100 - n},27 H0.75 Z`
             : last
-              ? "polygon(0 0, 100% 0, 100% 100%, 0 100%, 9px 50%)"
-              : "polygon(0 0, calc(100% - 9px) 0, 100% 50%, calc(100% - 9px) 100%, 0 100%, 9px 50%)";
+              ? `M0.75,1 H99.25 V27 H0.75 L${n},14 Z`
+              : `M0.75,1 H${100 - n} L99.25,14 L${100 - n},27 H0.75 L${n},14 Z`;
+          const clipId = `${idPrefix}-phase-${i}`;
           return (
             <a
               key={p.value}
               href={`/projects/${slug}/${overviewPathFor(p.value)}`}
               aria-current={isCurrent ? "step" : undefined}
               title={t("progressLabel", { done: pr.done, total: pr.total })}
-              className={`relative flex h-7 min-w-0 flex-1 items-center justify-center overflow-hidden transition-opacity hover:opacity-85 ${first ? "" : "-ml-1.5"}`}
-              style={{ clipPath: clip, background: hexToRgba(color, isCurrent ? 0.28 : 0.16) }}
+              className={`relative flex h-7 min-w-0 flex-1 items-center justify-center transition-opacity hover:opacity-85 ${first ? "" : "-ml-1.5"}`}
             >
-              <span aria-hidden className="absolute inset-y-0 left-0 transition-[width] duration-500" style={{ width: `${pr.pct}%`, background: color }} />
+              <svg aria-hidden className="absolute inset-0 h-full w-full" viewBox="0 0 100 28" preserveAspectRatio="none">
+                <defs>
+                  <clipPath id={clipId}>
+                    <path d={shape} />
+                  </clipPath>
+                </defs>
+                <path d={shape} fill={hexToRgba(color, isCurrent ? 0.22 : 0.1)} />
+                <rect x="0" y="0" width={pr.pct} height="28" fill={color} clipPath={`url(#${clipId})`} className="transition-[width] duration-500" />
+                <path d={shape} fill="none" stroke={color} strokeWidth={isCurrent ? 2 : 1.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              </svg>
               <span className={`relative truncate px-3 text-xs ${isCurrent ? "font-bold text-dark-slate" : pr.done > 0 ? "font-semibold text-dark-slate/80" : "font-medium text-dark-slate/55"}`}>
                 {pr.complete ? "✓ " : ""}
                 {tPhase(p.value)}
