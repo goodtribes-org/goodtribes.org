@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import FieldProvenanceBadge from "@/components/ai/FieldProvenanceBadge";
 import AiSuggestionBox from "@/components/ai/AiSuggestionBox";
 import BlockIterateMenu from "@/components/ai/BlockIterateMenu";
+import ChangeImpactHint from "@/components/ai/ChangeImpactHint";
 import { markAiSuggestionPartlyUsed } from "@/lib/actions/aiSuggestions";
 import type { ProvenanceInfo } from "@/lib/fieldProvenance";
 import { CANVAS_BLOCK_BORDER, canvasBlockStatus } from "@/lib/canvasBlockStatus";
@@ -38,10 +39,15 @@ export default function LeanCanvasBlock({ projectSlug, field, area, label, hint,
   const [knowledge, setKnowledge] = useState(provenance?.status ?? null);
   useEffect(() => setKnowledge(provenance?.status ?? null), [provenance?.status]);
   const status = canvasBlockStatus(value, knowledge);
+  // Konsekvenskontroll: after a save that actually changed the text, hint
+  // which other fields build on this one (lib/fieldDependencies.ts).
+  const [changed, setChanged] = useState(false);
 
   function handleSave(formData: FormData) {
     startTransition(async () => {
+      const changedText = String(formData.get("value") ?? "").trim() !== (value ?? "").trim();
       await updateLeanCanvasBlock(projectSlug, field, formData);
+      setChanged(changedText);
       if (draftFromSuggestion !== null && suggestion) await markAiSuggestionPartlyUsed(suggestion.id);
       setDraftFromSuggestion(null);
       setEditing(false);
@@ -124,6 +130,7 @@ export default function LeanCanvasBlock({ projectSlug, field, area, label, hint,
         </p>
       )}
       {!editing && <BlockIterateMenu projectSlug={projectSlug} entity="leanCanvas" field={field} hasContent={!!value?.trim()} />}
+      {changed && !editing && <ChangeImpactHint projectSlug={projectSlug} fieldKey={`leanCanvas.${field}`} onClose={() => setChanged(false)} />}
       {suggestion && !editing && (
         <AiSuggestionBox
           suggestion={suggestion}
