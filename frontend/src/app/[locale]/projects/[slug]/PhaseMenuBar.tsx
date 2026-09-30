@@ -27,6 +27,8 @@ interface Props {
   // Thin variant for the top of the phase overview pages: no checklist
   // dropdowns, each phase links straight to its overview.
   compact?: boolean;
+  // PROTOTYPE: "chevrons" = förslag D, the phases as arrows in the header.
+  variant?: "bars" | "chevrons";
 }
 
 const guideHref = (slug: string, phase: ProjectPhaseValue, step?: string) =>
@@ -38,7 +40,7 @@ const guideHref = (slug: string, phase: ProjectPhaseValue, step?: string) =>
 // eller automatiskt klara), numret blir en bock när fasen är klar. Idé
 // täcker både IDEA och SPRINT (lib/projectPhase.ts). Klick på en fas fäller
 // ut dess checklista ("1.1 Beskriv projektet", …) som förut.
-export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys = [], canEdit, viewingPhase, showOverviews, showNextStep, compact }: Props) {
+export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys = [], canEdit, viewingPhase, showOverviews, showNextStep, compact, variant = "bars" }: Props) {
   const t = useTranslations("PhaseMenuBar");
   const tPhase = useTranslations("ProjectPhase");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
@@ -79,6 +81,47 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
       return nextSet;
     });
     startTransition(() => toggleChecklistItem(slug, p, itemKey, done));
+  }
+
+  if (variant === "chevrons") {
+    // Förslag D: one arrow per phase, overlapping so they read as a single
+    // journey. The arrow fills with the phase colour as its tasks get done
+    // (same progress as the bars); the current phase is bold and shows
+    // "3/7"; a finished phase gets ✓. Each arrow links to its overview.
+    return (
+      <nav aria-label={t("navLabel")} className="flex w-full items-stretch">
+        {DISPLAY_PHASES.map((p, i) => {
+          const pr = progress[i];
+          const color = PHASE_COLORS[p.value];
+          const isCurrent = i === currentIndex;
+          const first = i === 0;
+          const last = i === DISPLAY_PHASES.length - 1;
+          const clip = first
+            ? "polygon(0 0, calc(100% - 9px) 0, 100% 50%, calc(100% - 9px) 100%, 0 100%)"
+            : last
+              ? "polygon(0 0, 100% 0, 100% 100%, 0 100%, 9px 50%)"
+              : "polygon(0 0, calc(100% - 9px) 0, 100% 50%, calc(100% - 9px) 100%, 0 100%, 9px 50%)";
+          return (
+            <a
+              key={p.value}
+              href={`/projects/${slug}/${overviewPathFor(p.value)}`}
+              aria-current={isCurrent ? "step" : undefined}
+              title={t("progressLabel", { done: pr.done, total: pr.total })}
+              className={`relative flex h-7 min-w-0 flex-1 items-center justify-center overflow-hidden transition-opacity hover:opacity-85 ${first ? "" : "-ml-1.5"}`}
+              style={{ clipPath: clip, background: hexToRgba(color, isCurrent ? 0.28 : 0.16) }}
+            >
+              <span aria-hidden className="absolute inset-y-0 left-0 transition-[width] duration-500" style={{ width: `${pr.pct}%`, background: color }} />
+              <span className={`relative truncate px-3 text-xs ${isCurrent ? "font-bold text-dark-slate" : pr.done > 0 ? "font-semibold text-dark-slate/80" : "font-medium text-dark-slate/55"}`}>
+                {pr.complete ? "✓ " : ""}
+                {tPhase(p.value)}
+                {isCurrent && !pr.complete ? ` ${pr.done}/${pr.total}` : ""}
+              </span>
+              <span className="sr-only">{t("progressLabel", { done: pr.done, total: pr.total })}</span>
+            </a>
+          );
+        })}
+      </nav>
+    );
   }
 
   return (
