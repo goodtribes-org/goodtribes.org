@@ -19,7 +19,7 @@ export type CanvasAiEntity = "leanCanvas" | "valueProposition" | "impactModel";
 
 // The impact model has no checklist step of its own: it breaks down the
 // canvas's Impact block, so it follows the canvas step's AI mode.
-const STEP_FOR: Record<CanvasAiEntity, string> = {
+export const STEP_FOR: Record<CanvasAiEntity, string> = {
   leanCanvas: "lean_canvas_created",
   valueProposition: "value_proposition_created",
   impactModel: "lean_canvas_created",
