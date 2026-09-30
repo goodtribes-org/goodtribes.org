@@ -208,7 +208,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                 {/* Not started: an outlined circle (white, phase-colour border and
                     number) instead of a faded fill, so later phases stay crisp. */}
                 <span
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold xl:h-6 xl:w-6 xl:text-xs ${isCurrent ? "mx-[3px] ring-2 ring-offset-1" : ""} ${dimmed ? "border !font-medium" : ""}`}
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold xl:h-6 xl:w-6 xl:text-xs ${isCurrent ? "mx-[3px] ring-2 ring-offset-1" : ""} ${dimmed ? "border" : ""}`}
                   style={
                     dimmed
                       ? // Styled exactly like the bar above it: 1px outline and the
