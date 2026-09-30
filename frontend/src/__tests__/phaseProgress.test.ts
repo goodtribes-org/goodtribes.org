@@ -1,5 +1,5 @@
-import { autoDoneKeys, MIN_INTERVIEWS, nextStep, phaseProgress, type ProjectSignals } from "../lib/phaseProgress";
-import { MIN_INTERVIEWS as GATE_MIN_INTERVIEWS } from "../lib/phaseGate";
+import { autoDoneKeys, MIN_INTERVIEWS, MIN_LOG_ENTRIES, MIN_TEST_FEEDBACK, nextStep, phaseProgress, type ProjectSignals } from "../lib/phaseProgress";
+import { MIN_INTERVIEWS as GATE_MIN_INTERVIEWS, MIN_LOG_ENTRIES as GATE_MIN_LOG, MIN_TEST_FEEDBACK as GATE_MIN_FEEDBACK } from "../lib/phaseGate";
 
 jest.mock("../lib/prisma", () => ({ prisma: {} }));
 jest.mock("../lib/aiMode", () => ({ getAiClientFor: jest.fn() }));
@@ -18,6 +18,28 @@ const none: ProjectSignals = {
   sprintCount: 0,
   closedSprintSteps: [],
   fundingNeedSet: false,
+  testFeedbackCount: 0,
+  allRolesFilled: false,
+  pilotSuccessCriteria: false,
+  pilotLogEntries: 0,
+  pilotResultsSummary: false,
+  pilotGateDecided: false,
+  impactMetricCount: 0,
+  launchPlanWritten: false,
+  workflowsPage: false,
+  fundingApplied: false,
+  fundingSecured: false,
+  activePartnerships: 0,
+  playbookPage: false,
+  councilReviewCompleted: false,
+  replicationOpened: false,
+  scalingGoalsWritten: false,
+  geographiesWritten: false,
+  fundingAwarded: false,
+  approvedInstance: false,
+  deliveredReports: 0,
+  verifiedDeliveredReports: 0,
+  celebrationWritten: false,
 };
 
 describe("phaseProgress", () => {
@@ -60,8 +82,46 @@ describe("phaseProgress", () => {
     expect(keys).not.toContain("core_team_formed");
   });
 
-  it("uses the same interview threshold as the Idé gate", () => {
+  it("uses the same thresholds as the phase gates", () => {
     expect(MIN_INTERVIEWS).toBe(GATE_MIN_INTERVIEWS);
+    expect(MIN_TEST_FEEDBACK).toBe(GATE_MIN_FEEDBACK);
+    expect(MIN_LOG_ENTRIES).toBe(GATE_MIN_LOG);
+  });
+
+  it("later phases: marks tasks from the same data the gates use", () => {
+    const keys = autoDoneKeys({
+      ...none,
+      testFeedbackCount: 3,
+      allRolesFilled: true,
+      pilotSuccessCriteria: true,
+      pilotLogEntries: 2,
+      pilotGateDecided: true,
+      impactMetricCount: 1,
+      fundingApplied: true,
+      activePartnerships: 1,
+      scalingGoalsWritten: true,
+      deliveredReports: 1,
+      verifiedDeliveredReports: 0,
+    });
+    expect(keys).toEqual(
+      expect.arrayContaining([
+        "test_with_users",
+        "core_team_formed",
+        "pilot_success_criteria",
+        "pilot_go_no_go",
+        "impact_measurement_setup",
+        "stable_operations_funding",
+        "partnerships_formalized",
+        "scaling_goals_set",
+        "sdg_impact_measured",
+      ]),
+    );
+    // 2 log entries < 3; applied isn't secured; a report isn't verified.
+    expect(keys).not.toContain("pilot_executed_documented");
+    expect(keys).not.toContain("funding_secured");
+    expect(keys).not.toContain("impact_externally_verified");
+    // No key is listed twice (core_team_formed has two signals).
+    expect(new Set(keys).size).toBe(keys.length);
   });
 
   it("computes done/total/pct per display phase", () => {
