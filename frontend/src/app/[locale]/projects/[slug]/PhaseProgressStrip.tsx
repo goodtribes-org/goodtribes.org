@@ -30,7 +30,9 @@ export default async function PhaseProgressStrip({ projectId, slug, viewing, inH
       canEdit={inHeader && lead}
       showOverviews={inHeader}
       viewingPhase={viewing}
-      showNextStep={!inHeader && member && !project.abandonedAt}
+      // In the header "Nästa steg" sits at the top of the current phase's
+      // dropdown; elsewhere it's the line under the bars.
+      showNextStep={member && !project.abandonedAt}
       compact={!inHeader}
       variant={inHeader ? "header" : "bars"}
     />
