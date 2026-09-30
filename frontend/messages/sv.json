@@ -2928,6 +2928,11 @@
     "next_step_decided": "Besluta om nästa steg: fortsätta, replikera, eller avsluta ansvarsfullt"
   },
   "PhaseMenuBar": {
+    "navLabel": "Projektets faser",
+    "progressLabel": "{done} av {total} uppgifter klara",
+    "autoDone": "Klart — syns i projektets innehåll",
+    "autoDoneShort": "klart",
+    "nextStep": "Nästa steg:",
     "guideLinkLabel": "{phase} guiden",
     "overviewLinkLabel": "{phase} på en sida"
   },
@@ -3768,6 +3773,9 @@
     "inheritedHint": "ärvt",
     "standardHint": "standard",
     "settingsHeading": "AI i projektet",
+    "budgetUsed": "AI-kvot: {pct} % använd denna period",
+    "budgetResets": "fylls på {date}",
+    "budgetWarning": "Kvoten börjar ta slut — AI-anrop stoppas när den är förbrukad och startar igen när den fylls på.",
     "intro": "Du bestämmer hur mycket AI:n gör: för hela projektet, per fas eller per steg i guiden. Det mest specifika valet gäller. Att byta läge ändrar aldrig något som redan är skrivet.",
     "introDismiss": "Stäng",
     "projectModeHeading": "Projektets läge",
@@ -3844,6 +3852,25 @@
     "nextStepAddMore": "Vill du lägga till något? Skriv det i chatten först.",
     "nextStepBodyAgent": "Nu skapar AI:n ditt projekt och fyller i Idéfasen: beskrivning, globala mål, Social Lean Canvas, värdeerbjudande, omvärldsbevakning och en intervjuguide. Du ser allt på en sida och kan redigera det som inte stämmer.",
     "nextStepBodyAssist": "Nu skapas projektet med namn och beskrivning. Resten fyller du i själv i guiden, med AI:ns förslag bredvid fälten."
+  },
+  "BlockIterate": {
+    "open": "Förbättra",
+    "working": "AI:n tänker …",
+    "close": "Stäng",
+    "back": "Tillbaka",
+    "failed": "Kunde inte ta fram något just nu — försök igen.",
+    "mode_sharpen": "Skärp",
+    "mode_simplify": "Förenkla",
+    "mode_challenge": "Utmana mig",
+    "mode_ask": "Fråga mig",
+    "hint_sharpen": "Gör texten mer konkret — AI:n lägger platshållare där fakta saknas",
+    "hint_simplify": "Samma innehåll, enklare ord",
+    "hint_challenge": "Kritiska frågor att kunna svara på — texten ändras inte",
+    "hint_ask": "AI:n ställer några frågor och skriver ett förslag utifrån dina svar",
+    "questionsHeading": "Svara på det du kan",
+    "createSuggestion": "Skapa förslag",
+    "challengesHeading": "Frågor att fundera på",
+    "suggestionReady": "Förslaget ligger under fältet — välj om du vill använda det."
   },
   "AiSuggestion": {
     "label": "AI-förslag",

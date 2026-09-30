@@ -8,6 +8,8 @@ const toolFindUnique = jest.fn();
 const createAnthropicClient = jest.fn();
 const checkAiRateLimit = jest.fn();
 const checkAiProjectBudget = jest.fn();
+const checkAiProjectCallLimit = jest.fn();
+const recordAiProjectSpend = jest.fn();
 let aiEnabled = true;
 
 jest.mock("../lib/prisma", () => ({
@@ -22,6 +24,8 @@ jest.mock("../lib/anthropic", () => ({
   isAiEnabled: () => aiEnabled,
   checkAiRateLimit: (...a: unknown[]) => checkAiRateLimit(...a),
   checkAiProjectBudget: (...a: unknown[]) => checkAiProjectBudget(...a),
+  checkAiProjectCallLimit: (...a: unknown[]) => checkAiProjectCallLimit(...a),
+  recordAiProjectSpend: (...a: unknown[]) => recordAiProjectSpend(...a),
   createAnthropicClient: (...a: unknown[]) => createAnthropicClient(...a),
 }));
 
@@ -83,8 +87,10 @@ describe("getAiClientFor", () => {
 
   beforeEach(() => {
     aiEnabled = true;
-    [projectFindUnique, phaseFindUnique, stepFindUnique, toolFindUnique, createAnthropicClient, checkAiRateLimit, checkAiProjectBudget].forEach((m) => m.mockReset());
+    [projectFindUnique, phaseFindUnique, stepFindUnique, toolFindUnique, createAnthropicClient, checkAiRateLimit, checkAiProjectBudget, checkAiProjectCallLimit, recordAiProjectSpend].forEach((m) => m.mockReset());
+    fakeClient.messages.create.mockReset();
     checkAiProjectBudget.mockResolvedValue(true);
+    checkAiProjectCallLimit.mockResolvedValue(true);
     phaseFindUnique.mockResolvedValue(null);
     stepFindUnique.mockResolvedValue(null);
     toolFindUnique.mockResolvedValue(null);
@@ -138,6 +144,46 @@ describe("getAiClientFor", () => {
     await expect(getAiClientFor({ feature: "mindmap", kind: "assist", userId: "u1", projectId: "p1" })).resolves.toMatchObject({ ok: false, reason: "budget_exceeded" });
     expect(checkAiProjectBudget).toHaveBeenCalledWith("p1");
     expect(createAnthropicClient).not.toHaveBeenCalled();
+  });
+
+  it("the runaway-loop call limit also stops the project", async () => {
+    projectFindUnique.mockResolvedValue({ aiMode: "AGENT", phase: "IDEA" });
+    checkAiProjectCallLimit.mockResolvedValue(false);
+    await expect(getAiClientFor({ feature: "mindmap", kind: "assist", userId: "u1", projectId: "p1" })).resolves.toMatchObject({ ok: false, reason: "budget_exceeded" });
+    expect(createAnthropicClient).not.toHaveBeenCalled();
+  });
+
+  it("charges each call's real cost to the project, per call, not per gate", async () => {
+    projectFindUnique.mockResolvedValue({ aiMode: "AGENT", phase: "IDEA" });
+    fakeClient.messages.create.mockResolvedValue({ usage: { input_tokens: 1000, output_tokens: 200 } });
+    const gate = await getAiClientFor({ feature: "mindmap", kind: "assist", userId: "u1", projectId: "p1" });
+    if (!gate.ok) throw new Error("expected ok");
+    await gate.client.messages.create({ model: "claude-haiku-4-5", max_tokens: 100, messages: [] });
+    await gate.client.messages.create({ model: "claude-sonnet-4-6", max_tokens: 100, messages: [] });
+    await new Promise((r) => setImmediate(r));
+    // Haiku 1000×1 + 200×5 = 2000; Sonnet 4.6 1000×3 + 200×15 = 6000 (micro-dollars)
+    expect(recordAiProjectSpend.mock.calls).toEqual([["p1", 2000], ["p1", 6000]]);
+  });
+
+  it("returns the SDK's result unchanged and doesn't charge a failed call", async () => {
+    projectFindUnique.mockResolvedValue({ aiMode: "AGENT", phase: "IDEA" });
+    const response = { usage: { input_tokens: 10, output_tokens: 10 }, content: [] };
+    fakeClient.messages.create.mockResolvedValueOnce(response).mockRejectedValueOnce(new Error("boom"));
+    const gate = await getAiClientFor({ feature: "mindmap", kind: "assist", userId: "u1", projectId: "p1" });
+    if (!gate.ok) throw new Error("expected ok");
+    await expect(gate.client.messages.create({ model: "claude-haiku-4-5", max_tokens: 1, messages: [] })).resolves.toBe(response);
+    await expect(gate.client.messages.create({ model: "claude-haiku-4-5", max_tokens: 1, messages: [] })).rejects.toThrow("boom");
+    await new Promise((r) => setImmediate(r));
+    expect(recordAiProjectSpend).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls without a project are metered but never charged", async () => {
+    fakeClient.messages.create.mockResolvedValue({ usage: { input_tokens: 10, output_tokens: 10 } });
+    const gate = await getAiClientFor({ feature: "sandbox-seed", kind: "agent", userId: null, projectId: null });
+    if (!gate.ok) throw new Error("expected ok");
+    await gate.client.messages.create({ model: "claude-haiku-4-5", max_tokens: 1, messages: [] });
+    await new Promise((r) => setImmediate(r));
+    expect(recordAiProjectSpend).not.toHaveBeenCalled();
   });
 
   it("MANUAL doesn't spend the project's budget either", async () => {

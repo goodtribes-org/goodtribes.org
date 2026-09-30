@@ -2928,6 +2928,11 @@
     "next_step_decided": "Decide the next step: continue, replicate, or responsibly wind down"
   },
   "PhaseMenuBar": {
+    "navLabel": "Project phases",
+    "progressLabel": "{done} of {total} tasks done",
+    "autoDone": "Done — visible in the project's content",
+    "autoDoneShort": "done",
+    "nextStep": "Next step:",
     "guideLinkLabel": "{phase} guide",
     "overviewLinkLabel": "{phase} on one page"
   },
@@ -3768,6 +3773,9 @@
     "inheritedHint": "inherited",
     "standardHint": "default",
     "settingsHeading": "AI in this project",
+    "budgetUsed": "AI quota: {pct}% used this period",
+    "budgetResets": "refills {date}",
+    "budgetWarning": "The quota is running low — AI calls stop when it is used up and resume when it refills.",
     "intro": "You decide how much the AI does: for the whole project, per phase or per guide step. The most specific choice applies. Changing mode never changes anything already written.",
     "introDismiss": "Close",
     "projectModeHeading": "Project mode",
@@ -3844,6 +3852,25 @@
     "nextStepAddMore": "Want to add something? Write it in the chat first.",
     "nextStepBodyAgent": "Now the AI creates your project and fills in the Idea phase: description, global goals, Social Lean Canvas, value proposition, market scan and an interview guide. You see it all on one page and can edit anything that's off.",
     "nextStepBodyAssist": "Now the project is created with a name and description. You fill in the rest yourself in the guide, with the AI's suggestions next to the fields."
+  },
+  "BlockIterate": {
+    "open": "Improve",
+    "working": "The AI is thinking …",
+    "close": "Close",
+    "back": "Back",
+    "failed": "Couldn't come up with anything right now — try again.",
+    "mode_sharpen": "Sharpen",
+    "mode_simplify": "Simplify",
+    "mode_challenge": "Challenge me",
+    "mode_ask": "Ask me",
+    "hint_sharpen": "Make the text more concrete — the AI adds placeholders where facts are missing",
+    "hint_simplify": "Same content, simpler words",
+    "hint_challenge": "Critical questions to be able to answer — the text isn't changed",
+    "hint_ask": "The AI asks a few questions and writes a suggestion from your answers",
+    "questionsHeading": "Answer what you can",
+    "createSuggestion": "Create suggestion",
+    "challengesHeading": "Questions to think about",
+    "suggestionReady": "The suggestion is below the field — choose whether to use it."
   },
   "AiSuggestion": {
     "label": "AI suggestion",
