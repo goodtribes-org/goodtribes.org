@@ -222,7 +222,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                   className="mx-[5px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white xl:h-6 xl:w-6 xl:text-xs"
                   style={{
                     background: color,
-                    boxShadow: isCurrent ? `0 0 0 2px #fff, 0 0 0 4.5px ${color}` : undefined,
+                    boxShadow: isCurrent ? `0 0 0 2px #fff, 0 0 0 3.5px ${color}` : undefined,
                   }}
                   aria-hidden
                 >
