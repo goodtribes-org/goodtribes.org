@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import FieldProvenanceBadge from "@/components/ai/FieldProvenanceBadge";
 import AiSuggestionBox from "@/components/ai/AiSuggestionBox";
+import BlockIterateMenu from "@/components/ai/BlockIterateMenu";
 import ChangeImpactHint from "@/components/ai/ChangeImpactHint";
 import { markAiSuggestionPartlyUsed } from "@/lib/actions/aiSuggestions";
 import type { ProvenanceInfo } from "@/lib/fieldProvenance";
@@ -116,6 +117,7 @@ export default function ValuePropositionBlock({ projectSlug, field, side, label,
           {canEdit ? t("emptyEditable") : t("emptyReadOnly")}
         </p>
       )}
+      {!editing && <BlockIterateMenu projectSlug={projectSlug} entity="valueProposition" field={field} hasContent={!!value?.trim()} />}
       {changed && !editing && <ChangeImpactHint projectSlug={projectSlug} fieldKey={`valueProposition.${field}`} onClose={() => setChanged(false)} />}
       {suggestion && !editing && (
         <AiSuggestionBox

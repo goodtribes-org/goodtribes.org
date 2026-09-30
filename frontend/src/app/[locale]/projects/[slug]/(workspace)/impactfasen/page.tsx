@@ -15,6 +15,7 @@ import OverviewSection from "../ide/OverviewSection";
 import DraftButton from "../uppstart/DraftButton";
 import { DraftCta, FieldGrid, FocusBox, OverviewHeader, TaskList, WikiHtml } from "../_overview/parts";
 import NextStepSection from "./NextStepSection";
+import PhaseProgressStrip from "../../PhaseProgressStrip";
 
 const STEP_ANCHOR: Record<string, string> = {
   sdg_impact_measured: "resultat",
@@ -84,6 +85,7 @@ export default async function ImpactOverviewPage({ params }: { params: Promise<{
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 py-6">
+      <PhaseProgressStrip projectId={project.id} slug={slug} viewing="IMPACT" />
       <OverviewHeader
         heading={t("heading")}
         intro={isImpactFillInProgress(fill) ? t("introWriting") : t("intro")}

@@ -16,6 +16,8 @@ import type { Locale } from "next-intl";
 import { isFeatureEnabled } from "@/lib/featureFlags";
 import { getCanvasAiContext } from "@/lib/canvasAi";
 import CanvasAiBar from "@/components/ai/CanvasAiBar";
+import { CanvasIterateProvider } from "@/components/ai/BlockIterateMenu";
+import SectionIntro from "@/components/help/SectionIntro";
 
 export async function generateMetadata({
   params,
@@ -85,15 +87,18 @@ export default async function LeanCanvasPage({
         helpMoreLabel={t("helpGuideLink")}
         action={<LeanCanvasHistory projectSlug={slug} />}
       />
+      <SectionIntro introKey="leanCanvasPage" />
 
       {ai?.aiAvailable && <CanvasAiBar projectSlug={slug} entity="leanCanvas" stepKey={ai.stepKey} mode={ai.mode} canEdit={canEdit} />}
-      <LeanCanvasGrid
-        projectSlug={slug}
-        canvas={canvas}
-        canEdit={canEdit}
-        provenance={ai?.provenance}
-        suggestions={ai?.suggestions}
-      />
+      <CanvasIterateProvider enabled={!!ai?.aiAvailable && ai.mode !== "MANUAL" && canEdit}>
+        <LeanCanvasGrid
+          projectSlug={slug}
+          canvas={canvas}
+          canEdit={canEdit}
+          provenance={ai?.provenance}
+          suggestions={ai?.suggestions}
+        />
+      </CanvasIterateProvider>
       <p className="mt-2 text-sm">
         <Link href={`/projects/${slug}/customer-model`} className="text-coral hover:underline">
           {t("customerModelLink")}

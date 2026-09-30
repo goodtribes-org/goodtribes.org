@@ -19,6 +19,7 @@ import { DraftCta, FieldGrid, FocusBox, GateClosed, OverviewHeader, TaskList, Wi
 import RolesSection from "./RolesSection";
 import DraftButton from "./DraftButton";
 import PhaseGateSection from "../ide/PhaseGateSection";
+import PhaseProgressStrip from "../../PhaseProgressStrip";
 
 // Which section of this page each Uppstart checklist step lives in.
 const STEP_ANCHOR: Record<string, string> = {
@@ -113,6 +114,7 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 py-6">
+      <PhaseProgressStrip projectId={project.id} slug={slug} viewing="PILOT" />
       <OverviewHeader
         heading={t("heading")}
         intro={isUppstartFillInProgress(fill) ? t("introWriting") : t("intro")}

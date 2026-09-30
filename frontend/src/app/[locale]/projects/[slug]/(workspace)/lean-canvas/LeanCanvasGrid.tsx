@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import CanvasStatusLegend from "@/components/CanvasStatusLegend";
 import type { ProvenanceInfo } from "@/lib/fieldProvenance";
 import LeanCanvasBlock from "./LeanCanvasBlock";
 import { LEAN_CANVAS_BLOCKS, LEAN_CANVAS_GRID_CSS } from "./fields";
@@ -39,6 +40,7 @@ export default function LeanCanvasGrid({ projectSlug, canvas, canEdit, provenanc
           />
         ))}
       </div>
+      <CanvasStatusLegend />
     </>
   );
 }

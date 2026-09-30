@@ -156,3 +156,19 @@
 /* SideMenu drawer (components/SideMenu.tsx) */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+
+/* Author pills that only show while reviewing AI drafts (the canvas blocks,
+   FieldProvenanceBadge showAuthor={false}). */
+.ai-review-only {
+  display: none;
+}
+.review-ai-drafts .ai-review-only {
+  display: inline-flex;
+}
+
+/* AiDraftsNotice "Visa dem": outline every unreviewed AI draft's marker. */
+.review-ai-drafts [data-ai-draft] {
+  outline: 2px solid var(--color-coral);
+  outline-offset: 3px;
+  border-radius: 9999px;
+}

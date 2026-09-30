@@ -15,6 +15,7 @@ import { getCanvasAiContext } from "@/lib/canvasAi";
 import { parseOpenQuestions } from "@/lib/dreamConversation";
 import { isFillInProgress, parseFillStatus, withStaleAsFailed } from "@/lib/ideaFill";
 import CanvasAiBar from "@/components/ai/CanvasAiBar";
+import { CanvasIterateProvider } from "@/components/ai/BlockIterateMenu";
 import LeanCanvasGrid from "../lean-canvas/LeanCanvasGrid";
 import ValuePropositionGrid from "../value-proposition/ValuePropositionGrid";
 import ImpactModelChain from "../impact-model/ImpactModelChain";
@@ -25,11 +26,14 @@ import SdgSection from "./SdgSection";
 import FillPoller from "./FillPoller";
 import RetryButton from "./RetryButton";
 import CritiqueBox from "./CritiqueBox";
+import AiDraftsNotice from "@/components/ai/AiDraftsNotice";
+import { getAiDraftCount } from "@/lib/aiDrafts";
 import InterviewSynthesisPanel from "./InterviewSynthesisPanel";
 import PhaseGateSection from "./PhaseGateSection";
 import { ideaGateCriteria, type GateBrief } from "@/lib/phaseGate";
 import { currentAssumptions, latestInsight, type CritiqueContent, type SynthesisContent } from "@/lib/ideaInsights";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
+import PhaseProgressStrip from "../../PhaseProgressStrip";
 
 // The Idé phase on one page, top to bottom — what the AI produced after
 // Drömsamtalet (in AGENT mode), shown as plain content with vet/antar and an
@@ -78,6 +82,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
     prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: { in: ["IDEA", "SPRINT"] } }, orderBy: { createdAt: "desc" } }),
     getCanvasAiContext(project.id, "impactModel"),
   ]);
+  const aiDrafts = canEdit ? await getAiDraftCount(project.id) : null;
   const inIdeaPhase = project.phase === "IDEA" || project.phase === "SPRINT";
   const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
   const decisionDate = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -98,6 +103,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 py-6">
+      <PhaseProgressStrip projectId={project.id} slug={slug} viewing="IDEA" />
       {isFillInProgress(fill) && <FillPoller />}
 
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -110,6 +116,8 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         </Link>
       </div>
 
+      {aiDrafts && !isFillInProgress(fill) && <AiDraftsNotice drafts={aiDrafts.drafts} filled={aiDrafts.filled} />}
+
       {(critique || fill.critique === "pending" || fill.critique === "running" || (canEdit && aiAvailable && project.leanCanvas)) && (
         <CritiqueBox
           slug={slug}
@@ -120,7 +128,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         />
       )}
 
-      <OverviewSection id="om" title={t("aboutHeading")} fill={fill.about} writingLabel={writing}>
+      <OverviewSection id="om" introKey="about" title={t("aboutHeading")} fill={fill.about} writingLabel={writing}>
         <AboutSection
           slug={slug}
           canEdit={canEdit}
@@ -136,12 +144,12 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         />
       </OverviewSection>
 
-      <OverviewSection id="mal" title={t("sdgHeading")} fill={fill.about} writingLabel={writing}>
+      <OverviewSection id="mal" introKey="sdg" title={t("sdgHeading")} fill={fill.about} writingLabel={writing}>
         <SdgSection slug={slug} goals={project.sdgGoals} provenance={projectProv.sdgGoals} canEdit={canEdit} />
       </OverviewSection>
 
       <OverviewSection
-        id="lean-canvas"
+        id="lean-canvas" introKey="leanCanvas"
         title={t("leanCanvasHeading")}
         fill={fill.leanCanvas}
         writingLabel={writing}
@@ -150,17 +158,19 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         {leanCanvasAi.aiAvailable && (
           <CanvasAiBar projectSlug={slug} entity="leanCanvas" stepKey={leanCanvasAi.stepKey} mode={leanCanvasAi.mode} canEdit={canEdit} />
         )}
-        <LeanCanvasGrid
-          projectSlug={slug}
-          canvas={project.leanCanvas}
-          canEdit={canEdit}
-          provenance={leanCanvasAi.provenance}
-          suggestions={leanCanvasAi.suggestions}
-        />
+        <CanvasIterateProvider enabled={canEdit && leanCanvasAi.aiAvailable && leanCanvasAi.mode !== "MANUAL"}>
+          <LeanCanvasGrid
+            projectSlug={slug}
+            canvas={project.leanCanvas}
+            canEdit={canEdit}
+            provenance={leanCanvasAi.provenance}
+            suggestions={leanCanvasAi.suggestions}
+          />
+        </CanvasIterateProvider>
       </OverviewSection>
 
       <OverviewSection
-        id="impactmodell"
+        id="impactmodell" introKey="impactModel"
         title={t("impactModelHeading")}
         fill={fill.impactModel}
         writingLabel={writing}
@@ -171,35 +181,39 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
           </Link>
         }
       >
-        <ImpactModelChain
-          projectSlug={slug}
-          model={project.impactModel}
-          canvasImpact={project.leanCanvas?.impact ?? null}
-          legacyProblem={project.leanCanvas?.problem?.trim() || null}
-          canEdit={canEdit}
-          ai={impactModelAi}
-          canvasAi={leanCanvasAi}
-        />
+        <CanvasIterateProvider enabled={canEdit && impactModelAi.aiAvailable && impactModelAi.mode !== "MANUAL"}>
+          <ImpactModelChain
+            projectSlug={slug}
+            model={project.impactModel}
+            canvasImpact={project.leanCanvas?.impact ?? null}
+            legacyProblem={project.leanCanvas?.problem?.trim() || null}
+            canEdit={canEdit}
+            ai={impactModelAi}
+            canvasAi={leanCanvasAi}
+          />
+        </CanvasIterateProvider>
       </OverviewSection>
 
       <OverviewSection
-        id="vardeerbjudande"
+        id="vardeerbjudande" introKey="valueProposition"
         title={t("valuePropositionHeading")}
         fill={fill.valueProposition}
         writingLabel={writing}
         failedNote={<>{t("failedCanvas")}{retry("valueProposition")}</>}
       >
-        <ValuePropositionGrid
-          projectSlug={slug}
-          canvas={project.valueProposition}
-          canEdit={canEdit}
-          provenance={valuePropositionAi.provenance}
-          suggestions={valuePropositionAi.suggestions}
-        />
+        <CanvasIterateProvider enabled={canEdit && valuePropositionAi.aiAvailable && valuePropositionAi.mode !== "MANUAL"}>
+          <ValuePropositionGrid
+            projectSlug={slug}
+            canvas={project.valueProposition}
+            canEdit={canEdit}
+            provenance={valuePropositionAi.provenance}
+            suggestions={valuePropositionAi.suggestions}
+          />
+        </CanvasIterateProvider>
       </OverviewSection>
 
       <OverviewSection
-        id="omvarld"
+        id="omvarld" introKey="marketScan"
         title={t("marketScanHeading")}
         fill={fill.marketScan === "skipped" ? undefined : fill.marketScan}
         writingLabel={t("writingMarketScan")}
@@ -248,7 +262,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
       )}
 
       <OverviewSection
-        id="intervjuer"
+        id="intervjuer" introKey="interviews"
         title={t("interviewsHeading")}
         badge={t("yourTurn")}
         fill={fill.interviewGuide === "skipped" ? undefined : fill.interviewGuide}
@@ -279,13 +293,13 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         />
       </OverviewSection>
 
-      <OverviewSection id="bjud-in" title={t("inviteHeading")} badge={t("yourTurn")} writingLabel={writing}>
+      <OverviewSection id="bjud-in" introKey="invite" title={t("inviteHeading")} badge={t("yourTurn")} writingLabel={writing}>
         <p className="mb-3 text-sm text-dark-slate/70">{t("inviteIntro")}</p>
         {canEdit ? <AddOrInviteMember projectId={project.id} slug={slug} /> : <p className="text-sm text-dark-slate/50">{t("inviteLeadsOnly")}</p>}
       </OverviewSection>
 
       {inIdeaPhase ? (
-        <OverviewSection id="fasgrind" title={t("gateHeading")} badge={t("yourTurn")} writingLabel={writing}>
+        <OverviewSection id="fasgrind" introKey="gate" title={t("gateHeading")} badge={t("yourTurn")} writingLabel={writing}>
           <PhaseGateSection
             gate="idea"
             slug={slug}

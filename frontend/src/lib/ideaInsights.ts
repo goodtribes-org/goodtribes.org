@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getAiClientFor } from "@/lib/aiMode";
 import { getFieldProvenance } from "@/lib/fieldProvenance";
 import { logger } from "@/lib/logger";
+import { namesAreGrounded } from "@/lib/grounding";
 import { LEAN_CANVAS_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
 import { IMPACT_MODEL_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
@@ -44,15 +45,9 @@ function str(v: unknown): string {
 export type CritiquePoint = { text: string; field: string | null; severity: "high" | "medium" };
 export type CritiqueContent = { points: CritiquePoint[] };
 
-// "Hitta aldrig på fakta", enforced rather than trusted: a point that names
-// an organisation, tool or person not found in what the Critic was given is
-// dropped. The model lists its own names (the prompt asks it to); a name
-// counts as found if it appears in the source text, ignoring case.
-export function namesAreGrounded(names: unknown, source: string): boolean {
-  if (!Array.isArray(names)) return true;
-  const haystack = source.toLowerCase();
-  return names.every((n) => typeof n !== "string" || !n.trim() || haystack.includes(n.trim().toLowerCase()));
-}
+// namesAreGrounded lives in lib/grounding.ts (shared with block iteration,
+// which must not pull in this module's Prisma/AI imports); re-exported here.
+export { namesAreGrounded } from "@/lib/grounding";
 
 export function coerceCritique(raw: unknown, source?: string): CritiqueContent {
   const points = Array.isArray((raw as { points?: unknown })?.points) ? (raw as { points: unknown[] }).points : [];
