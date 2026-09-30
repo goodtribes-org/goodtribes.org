@@ -41,8 +41,8 @@ interface Props {
 }
 
 // Header look (Niklas's choice, 2026-09-30): homepage style — full-colour bars
-// with a thin white progress line, filled circles with white numbers, a thin
-// ring on started phases and a thicker one on the phase being worked in. Note: white on the
+// with a thin white progress line, filled circles with white numbers, and a
+// ring only on the phase being worked in. Note: white on the
 // yellow/orange fills is below WCAG's 4.5:1 for small text (1.8–2.8:1), so
 // the circles rely on colour + position more than on reading the digit.
 const guideHref = (slug: string, phase: ProjectPhaseValue, step?: string) =>
@@ -183,9 +183,10 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
           variant === "header"
             ? ({
                 "--phase-cols": DISPLAY_PHASES.map((_, i) => (i === activeIndex ? "minmax(0,2.2fr)" : "minmax(0,1fr)")).join(" "),
-                // From 1500px every phase shows its name, so the active one
-                // (name + "1/10") only gets a little extra room.
-                "--phase-cols-wide": DISPLAY_PHASES.map((_, i) => (i === activeIndex ? "minmax(0,1.3fr)" : "minmax(0,1fr)")).join(" "),
+                // From 1500px every phase shows its name: each column sizes to
+                // its own content (Lansering is the longest), and the space
+                // left over is shared out, so no name gets cut off.
+                "--phase-cols-wide": DISPLAY_PHASES.map(() => "auto").join(" "),
               } as React.CSSProperties)
             : undefined
         }
@@ -200,33 +201,28 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
           const itemNumbers = checklist ? numberChecklist(checklist, i + 1) : [];
           const isOpen = openPhase === p.value;
           const dimmed = isFuture && pr.done === 0;
-          const started = !dimmed;
 
           const headerStyle = variant === "header";
           const column = headerStyle ? (
             <>
               {/* As on the homepage: a full-colour bar; the tasks done show as
-                  a thin white line along its middle (inset 4px, so an empty
+                  a thin white line along its middle (inset 3px, so an empty
                   phase is just the plain bar). */}
-              <span className="relative block h-3 w-full rounded-full" style={{ background: color }} aria-hidden>
+              <span className="relative block h-2 w-full rounded-full" style={{ background: color }} aria-hidden>
                 <span
-                  className="absolute left-1 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-white transition-[width] duration-500"
-                  style={{ width: `calc((100% - 0.5rem) * ${pr.pct / 100})` }}
+                  className="absolute left-[3px] top-1/2 h-[2px] -translate-y-1/2 rounded-full bg-white transition-[width] duration-500"
+                  style={{ width: `calc((100% - 6px) * ${pr.pct / 100})` }}
                 />
               </span>
               <span className="mt-2 flex items-center gap-2">
                 {/* Number circle, as on the homepage: filled, white number, ✓ once
-                    done. A ring outside a white gap marks the phase: thin when
-                    started, thicker for the phase being worked in. */}
+                    done. A ring outside a white gap marks the phase being worked
+                    in; how far the others have come shows in their bars. */}
                 <span
                   className="mx-[5px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white xl:h-6 xl:w-6 xl:text-xs"
                   style={{
                     background: color,
-                    boxShadow: isCurrent
-                      ? `0 0 0 2px #fff, 0 0 0 4.5px ${color}`
-                      : started
-                        ? `0 0 0 2px #fff, 0 0 0 3.5px ${color}`
-                        : undefined,
+                    boxShadow: isCurrent ? `0 0 0 2px #fff, 0 0 0 4.5px ${color}` : undefined,
                   }}
                   aria-hidden
                 >
@@ -236,7 +232,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                     and icons: only the current phase keeps its name there, the
                     others show number + ▾ (name in the tooltip). */}
                 <span
-                  className={`${newHomeDisplayFont.className} truncate text-sm font-bold tracking-[-0.01em] xl:text-base ${isCurrent ? "" : "hidden min-[1500px]:inline"} text-dark-slate`}
+                  className={`${newHomeDisplayFont.className} truncate text-[13px] font-bold tracking-[-0.01em] xl:text-sm ${isCurrent ? "" : "hidden min-[1500px]:inline"} text-dark-slate`}
                 >
                   {tPhase(p.value)}
                 </span>
