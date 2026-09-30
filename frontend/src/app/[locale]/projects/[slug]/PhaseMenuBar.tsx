@@ -1,5 +1,7 @@
 "use client";
 
+import type React from "react";
+
 import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
@@ -35,6 +37,23 @@ interface Props {
   // nummer, fasnamnet följt av ▾ som fäller ut fasens arbetsuppgifter.
   variant?: "bars" | "chevrons" | "header";
 }
+
+// Readable number colours for the header's circles (11–12px text, so WCAG
+// asks for ≥4.5:1). White on the phase colours ranges 1.8–3.7:1 except on
+// Impact (5.3:1), so filled circles get a near-black number (#2A1A05:
+// 4.6–9.4:1) and only Impact keeps white. Outlined (not started) circles use
+// a darkened shade of the phase colour on white (6.2–8.1:1).
+const PHASE_INK: Record<string, string> = {
+  IDEA: "#6B4A00",
+  SPRINT: "#6B4A00",
+  PILOT: "#7A4306",
+  PRODUCTION: "#8A3C0A",
+  ESTABLISH: "#A33311",
+  SCALE: "#0F6E56",
+  IMPACT: "#0F6B4B",
+};
+const FILL_INK = "#2A1A05";
+const WHITE_NUMBER_ON_FILL = new Set(["IMPACT"]);
 
 const guideHref = (slug: string, phase: ProjectPhaseValue, step?: string) =>
   (phase === "IDEA" ? `/projects/${slug}/guide` : `/projects/${slug}/guide/${phase.toLowerCase()}`) + (step ? `?step=${step}` : "");
@@ -152,7 +171,24 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
 
   return (
     <div ref={menuRef}>
-      <nav aria-label={t("navLabel")} className={`grid grid-cols-3 sm:grid-cols-6 ${compact ? "gap-x-2 gap-y-3" : variant === "header" ? "gap-x-2.5 gap-y-3" : "gap-x-3 gap-y-5"}`}>
+      <nav
+        aria-label={t("navLabel")}
+        className={`grid ${
+          variant === "header"
+            ? // Header only (lg+): own column rule, without sm:grid-cols-6,
+              // whose media query would otherwise override it.
+              "gap-x-2.5 gap-y-3 [grid-template-columns:var(--phase-cols)] min-[1400px]:[grid-template-columns:repeat(6,minmax(0,1fr))]"
+            : `grid-cols-3 sm:grid-cols-6 ${compact ? "gap-x-2 gap-y-3" : "gap-x-3 gap-y-5"}`
+        }`}
+        // In the header, below ~1400px only the current phase shows its name
+        // and "3/7", so its column gets extra room there; from 1400px all six
+        // names show and the columns are equal again.
+        style={
+          variant === "header"
+            ? ({ "--phase-cols": DISPLAY_PHASES.map((_, i) => (i === currentIndex ? "minmax(0,1.7fr)" : "minmax(0,1fr)")).join(" ") } as React.CSSProperties)
+            : undefined
+        }
+      >
         {DISPLAY_PHASES.map((p, i) => {
           const pr = progress[i];
           const color = PHASE_COLORS[p.value];
@@ -184,8 +220,12 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                 {/* Not started: an outlined circle (white, phase-colour border and
                     number) instead of a faded fill, so later phases stay crisp. */}
                 <span
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold xl:h-6 xl:w-6 xl:text-xs ${isCurrent ? "mx-[3px] ring-2 ring-offset-1" : ""} ${dimmed ? "border-[1.5px] bg-white" : "text-white"}`}
-                  style={dimmed ? { borderColor: color, color } : { background: color, ["--tw-ring-color" as string]: color }}
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold xl:h-6 xl:w-6 xl:text-xs ${isCurrent ? "mx-[3px] ring-2 ring-offset-1" : ""} ${dimmed ? "border-[1.5px] bg-white" : ""}`}
+                  style={
+                    dimmed
+                      ? { borderColor: color, color: PHASE_INK[p.value] }
+                      : { background: color, color: WHITE_NUMBER_ON_FILL.has(p.value) ? "#ffffff" : FILL_INK, ["--tw-ring-color" as string]: color }
+                  }
                   aria-hidden
                 >
                   {pr.complete ? "✓" : i + 1}
@@ -198,6 +238,11 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                 >
                   {tPhase(p.value)}
                 </span>
+                {isCurrent && !pr.complete && (
+                  <span className="shrink-0 text-xs font-semibold tabular-nums text-dark-slate/55">
+                    {pr.done}/{pr.total}
+                  </span>
+                )}
                 <ChevronDown
                   aria-hidden
                   className={`h-4 w-4 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""} ${isCurrent ? "text-dark-slate" : "text-dark-slate/50"}`}
@@ -267,7 +312,8 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                   aria-expanded={isOpen}
                   aria-current={isViewing ? "step" : undefined}
                   title={`${tPhase(p.value)} — ${t("progressLabel", { done: pr.done, total: pr.total })}`}
-                  className="block w-full min-w-0 text-left"
+                  className={`block w-full min-w-0 text-left ${headerStyle ? "-mx-1.5 -my-1 rounded-lg px-1.5 py-1 transition-colors hover:bg-[var(--phase-hover)]" : ""}`}
+                  style={headerStyle ? ({ "--phase-hover": hexToRgba(color, 0.12), width: "calc(100% + 0.75rem)" } as React.CSSProperties) : undefined}
                 >
                   {column}
                 </button>
@@ -288,6 +334,18 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                       style={{ left: menuPos.left, top: menuPos.top }}
                       className="fixed z-[10001] w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-muted-teal/20 bg-white shadow-lg animate-[fadeIn_0.12s_ease-out]"
                     >
+                      {next && isCurrent && (
+                        <a
+                          href={next.href ? `/projects/${slug}/${next.href}` : guideHref(slug, phase, next.key)}
+                          className="block border-b border-muted-teal/10 px-3.5 py-2.5 transition-colors hover:bg-coral/10"
+                          style={{ background: hexToRgba(color, 0.14) }}
+                        >
+                          <span className="block text-[11px] font-semibold uppercase tracking-wide text-dark-slate/55">{t("nextStep")}</span>
+                          <span className="mt-0.5 block text-sm font-semibold text-dark-slate">
+                            {tChecklist(next.key)} <span aria-hidden>→</span>
+                          </span>
+                        </a>
+                      )}
                   {showOverviews && (
                     <a
                       href={`/projects/${slug}/${overviewPathFor(p.value)}`}
@@ -410,7 +468,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
         })}
       </nav>
 
-      {next && (
+      {next && variant !== "header" && (
         <p className={`${compact ? "mt-2 text-xs" : "mt-4 text-sm"} text-dark-slate/70`}>
           <span className="font-semibold text-dark-slate">{t("nextStep")}</span>{" "}
           <a href={next.href ? `/projects/${slug}/${next.href}` : guideHref(slug, phase, next.key)} className="font-medium text-seagrass hover:underline">
