@@ -8,9 +8,9 @@ import { redisPub } from "@/lib/redis";
 // "every rate-limited action hangs for ~20s" — worse than no rate limiting
 // at all. Race against a short timeout so a Redis outage degrades instantly,
 // same fail-open intent as the .catch(() => {}) convention in redis.ts.
-const CHECK_TIMEOUT_MS = 250;
+export const RATE_LIMIT_TIMEOUT_MS = 250;
 
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+export function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error("rate limit check timed out")), ms);
     promise.then(
@@ -33,7 +33,7 @@ export async function checkRateLimit(key: string, limit: number, windowSeconds: 
         if (c === 1) await redisPub.expire(key, windowSeconds);
         return c;
       })(),
-      CHECK_TIMEOUT_MS
+      RATE_LIMIT_TIMEOUT_MS
     );
     return count <= limit;
   } catch {

@@ -98,4 +98,4 @@ Enligt CLAUDE.md: `tsc`, lint och `npm test`. Enhetstester för `taskDone` och f
 - **Färger:** den nya skalan gäller överallt (`PHASE_COLORS`). Checklist-widgetens rubriktext är mörk, eftersom gult och orange inte går att läsa som text på vitt.
 
 ## Kvar efter C1
-- **Guidesidorna** (`IdeaGuide` och `PhaseGuide`) visar fortfarande bara manuella bockar i sina egna steglistor. Fasmenyn ovanför dem visar automatiskt klara steg. De bör få `autoDoneKeys` på samma sätt.
+- ~~**Guidesidorna** visar bara manuella bockar.~~ **Klart** (`feat/guide-auto-done`): `IdeaGuide` och `PhaseGuide` får `autoDoneKeys`, så stegindikatorn och bockarna följer samma data som fasstaplarna. Automatiskt klara steg går inte att avbocka.

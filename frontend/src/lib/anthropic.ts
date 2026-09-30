@@ -1,5 +1,6 @@
 import type AnthropicSdk from "@anthropic-ai/sdk";
-import { checkRateLimit } from "@/lib/rateLimit";
+import { redisPub } from "@/lib/redis";
+import { checkRateLimit, RATE_LIMIT_TIMEOUT_MS, withTimeout } from "@/lib/rateLimit";
 
 // Which platform serves the Claude models. "anthropic" (default) is the
 // first-party Claude API, keyed by ANTHROPIC_API_KEY. "vertex" is Claude on
@@ -82,19 +83,84 @@ export function checkAiRateLimit(userId: string): Promise<boolean> {
 
 // A ceiling per project on top of the per-user limit: the AI-guided start
 // and later the AI project manager can run many calls for one project
-// without anyone clicking, so a project gets a monthly budget of calls
-// (default 60 / 30 days — a Drömsamtal plus the Idé fill is ~15, so this
-// still covers several full runs per project). Lowered from 150 to 60
-// 2026-09-29 alongside AI_RATE_LIMIT, same capped-credit reason. Tunable
-// via AI_PROJECT_MONTHLY_LIMIT. Fails open on a Redis outage, like every
-// rate limit here.
+// without anyone clicking, so each project gets a monthly AI budget.
+//
+// Since 2026-09-29 the budget is weighted by what the calls actually cost
+// (docs/plans/viktad-ai-budget.md): getAiClientFor's client charges every
+// messages.create's real cost (lib/aiCost.ts) to the project, and the gate
+// only checks there's budget left before a call. Before that it counted
+// gate calls, so a cheap Haiku tweak cost as much budget as anything else,
+// while a whole Idé fill (one gate, many web-searching calls) counted as 1.
+// A call or fill started with budget left is allowed to finish, so the
+// budget can be overshot by at most one run — better than cutting a fill
+// off halfway. Tunable via AI_PROJECT_MONTHLY_BUDGET_USD. Fails open on a
+// Redis outage, like every rate limit here.
 const AI_PROJECT_BUDGET_WINDOW_SECONDS = 30 * 24 * 60 * 60;
-export function aiProjectMonthlyLimit(): number {
-  const n = Number(process.env.AI_PROJECT_MONTHLY_LIMIT);
-  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 60;
+const DEFAULT_PROJECT_BUDGET_USD = 2;
+
+export function aiProjectMonthlyBudgetMicroUsd(): number {
+  const n = Number(process.env.AI_PROJECT_MONTHLY_BUDGET_USD);
+  return Math.round((Number.isFinite(n) && n > 0 ? n : DEFAULT_PROJECT_BUDGET_USD) * 1_000_000);
 }
 
-export function checkAiProjectBudget(projectId: string): Promise<boolean> {
+const spendKey = (projectId: string) => `ai:spend:project:${projectId}`;
+
+export async function getAiProjectSpend(projectId: string): Promise<number> {
+  try {
+    const v = await withTimeout(redisPub.get(spendKey(projectId)), RATE_LIMIT_TIMEOUT_MS);
+    return Number(v) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function checkAiProjectBudget(projectId: string): Promise<boolean> {
+  return (await getAiProjectSpend(projectId)) < aiProjectMonthlyBudgetMicroUsd();
+}
+
+// Same fixed 30-day window as the old call counter: the first charge in a
+// window sets the expiry.
+export async function recordAiProjectSpend(projectId: string, microUsd: number): Promise<void> {
+  if (microUsd <= 0) return;
+  try {
+    await withTimeout(
+      (async () => {
+        const total = await redisPub.incrby(spendKey(projectId), microUsd);
+        if (total === microUsd) await redisPub.expire(spendKey(projectId), AI_PROJECT_BUDGET_WINDOW_SECONDS);
+      })(),
+      RATE_LIMIT_TIMEOUT_MS,
+    );
+  } catch {
+    // fail open — a lost charge only makes the budget slightly generous
+  }
+}
+
+// For the AI settings UI: share of the budget used, and when the window
+// resets (null before the first charge). Shown as a percentage, never in
+// dollars — the dollar figure is a weight, not the invoice (see aiCost.ts).
+export async function getAiProjectBudgetStatus(projectId: string): Promise<{ usedPct: number; resetsAt: Date | null }> {
+  try {
+    const [spend, ttl] = await withTimeout(
+      Promise.all([getAiProjectSpend(projectId), redisPub.ttl(spendKey(projectId))]),
+      RATE_LIMIT_TIMEOUT_MS,
+    );
+    const usedPct = Math.min(100, Math.round((spend / aiProjectMonthlyBudgetMicroUsd()) * 100));
+    return { usedPct, resetsAt: ttl > 0 ? new Date(Date.now() + ttl * 1000) : null };
+  } catch {
+    return { usedPct: 0, resetsAt: null };
+  }
+}
+
+// The old per-project call counter, kept only as a runaway-loop backstop
+// (a bug firing thousands of tiny calls would barely dent a cost budget).
+// Default 500 / 30 days — far above normal use. Tunable via
+// AI_PROJECT_MONTHLY_LIMIT.
+export function aiProjectMonthlyLimit(): number {
+  const n = Number(process.env.AI_PROJECT_MONTHLY_LIMIT);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 500;
+}
+
+export function checkAiProjectCallLimit(projectId: string): Promise<boolean> {
   return checkRateLimit(`rl:ai:project:${projectId}`, aiProjectMonthlyLimit(), AI_PROJECT_BUDGET_WINDOW_SECONDS);
 }
 
