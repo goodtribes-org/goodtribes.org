@@ -103,16 +103,16 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
         }
       `}</style>
 
-      <p className={`${heroTaglineFont.className} relative text-[32px] leading-none sm:text-[40px]`} style={{ color: "#C2410C", fontWeight: 400 }}>
+      <p className={`${heroTaglineFont.className} relative text-[32px] leading-none text-dark-slate sm:text-[40px]`} style={{ fontWeight: 400 }}>
         {t.rich("overline", {
-          // Hand-drawn black brush stroke, drawn behind the word so its
+          // Hand-drawn coral brush stroke, drawn behind the word so its
           // descenders stay on top — same stroke as the footer's tagline.
           u: (chunks) => (
             <span className="relative inline-block isolate">
               <span className="relative z-[1]">{chunks}</span>
               <svg aria-hidden viewBox="0 0 200 20" preserveAspectRatio="none" fill="none" className="pointer-events-none absolute left-[-4%] z-0 w-[108%]" style={{ bottom: "-0.26em", height: "0.4em" }}>
-                <path d="M3 13 C 40 9.5, 90 7, 140 7.5 C 165 7.8, 185 9, 197 10.5" stroke="#1A1A1A" strokeWidth="5" strokeLinecap="round" />
-                <path d="M18 15.5 C 70 11.5, 130 10.5, 186 12.5" stroke="#1A1A1A" strokeWidth="2.6" strokeLinecap="round" opacity="0.75" />
+                <path d="M3 13 C 40 9.5, 90 7, 140 7.5 C 165 7.8, 185 9, 197 10.5" stroke="var(--color-coral)" strokeWidth="5" strokeLinecap="round" />
+                <path d="M18 15.5 C 70 11.5, 130 10.5, 186 12.5" stroke="var(--color-coral)" strokeWidth="2.6" strokeLinecap="round" opacity="0.75" />
               </svg>
             </span>
           ),
