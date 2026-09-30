@@ -3,7 +3,8 @@
 import { Link, usePathname } from "@/i18n/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronDown, Home, Lock, MessageCircle, type LucideIcon } from "lucide-react";
+import { ChevronDown, Home, Lock, MessageCircle, PinOff, type LucideIcon } from "lucide-react";
+import { setProjectMenuPinned, useProjectMenuPinned } from "@/lib/projectMenuStore";
 import type { ProjectPhaseValue } from "@/lib/projectPhase";
 import { buildProjectNavGroups, type Group, type NavItem } from "./ProjectTopNav";
 
@@ -37,6 +38,8 @@ export default function ProjectSideNav({
   const base = `/projects/${slug}`;
   const groups = buildProjectNavGroups(t, { phase, completedChecklistKeys, isOwner, isCommercial });
   const [closed, setClosed] = useState<Set<string>>(() => new Set(INITIALLY_CLOSED));
+  // PROTOTYPE: the rail only shows once pinned from the ☰ drawer.
+  const pinned = useProjectMenuPinned();
 
   function isActive(href: string) {
     if (href === "/kanaler") return pathname.startsWith("/messages");
@@ -130,6 +133,8 @@ export default function ProjectSideNav({
     );
   }
 
+  if (!pinned) return null;
+
   return (
     <nav aria-label={t("navGroupsLabel")} className="hidden lg:block relative shrink-0 w-56">
       {/* The rail spans the full hero height, but its fill starts where the
@@ -140,6 +145,13 @@ export default function ProjectSideNav({
       />
       {topOffset > 0 && <div aria-hidden style={{ height: `${topOffset}px` }} />}
       <div className="sticky top-0 max-h-screen overflow-y-auto py-3" style={{ scrollbarWidth: "none" }}>
+        <button
+          type="button"
+          onClick={() => setProjectMenuPinned(false)}
+          className="mb-1 ml-5 flex items-center gap-1.5 text-[11px] font-medium text-dark-slate/40 hover:text-dark-slate"
+        >
+          <PinOff className="h-3.5 w-3.5" strokeWidth={2} /> Lossa menyn
+        </button>
         <div className="space-y-0.5">
           {row(t("navHome"), base, Home, isActive(""))}
           {row(t("navChat"), `/messages?project=${slug}`, MessageCircle, isActive("/kanaler"))}
