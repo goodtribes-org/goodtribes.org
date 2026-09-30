@@ -119,9 +119,9 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
 
       <p
         className={`${heroTaglineFont.className} nh-write relative text-[32px] leading-none sm:text-[40px]`}
-        style={{ color: "var(--color-leaf)", fontWeight: 400, transform: "rotate(-2deg)" }}
+        style={{ color: "var(--color-navy)", fontWeight: 400, transform: "rotate(-2deg)" }}
       >
-        {/* The logo's leaf green and no underline, so the heading's
+        {/* The logo's blue and no underline, so the heading's
             "förändra?" stays the one accent on the hero. Each word gets its
             own small tilt and baseline shift, the whole line leans slightly
             uphill and is "written" in left to right, so it feels handwritten.
