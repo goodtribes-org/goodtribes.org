@@ -1,6 +1,7 @@
 "use client";
 
 import type React from "react";
+import { setProjectMenuContext } from "@/lib/projectMenuStore";
 
 import { Link, usePathname } from "@/i18n/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -213,6 +214,14 @@ export default function ProjectTopNav({
   const [menuPos, setMenuPos] = useState<{ left: number; top: number } | null>(null);
 
   useEffect(() => setOpenKey(null), [pathname]);
+
+  // PROTOTYPE: let the ☰ drawer (SideMenu) show this project's full tool menu.
+  const checklistKey = (completedChecklistKeys ?? []).join(",");
+  useEffect(() => {
+    setProjectMenuContext({ slug, phase, completedChecklistKeys, isOwner, isCommercial });
+    return () => setProjectMenuContext(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug, phase, checklistKey, isOwner, isCommercial]);
 
   useEffect(() => {
     if (!openKey) return;

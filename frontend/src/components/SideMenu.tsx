@@ -12,8 +12,14 @@ import {
   Plus,
   Compass,
   FolderKanban,
+  Lock,
+  MessageCircle,
+  Pin,
+  PinOff,
   type LucideIcon,
 } from "lucide-react";
+import { buildProjectNavGroups, type Group, type NavItem } from "@/app/[locale]/projects/[slug]/ProjectTopNav";
+import { setProjectMenuPinned, useProjectMenuContext, useProjectMenuPinned, type ProjectMenuContext } from "@/lib/projectMenuStore";
 
 type Item = { href: string; label: string };
 type Section = { key: string; title: string; icon: LucideIcon; items: Item[] };
@@ -68,6 +74,10 @@ export default function SideMenu() {
   }, [open]);
 
   const loggedIn = !!session?.user;
+  // PROTOTYPE: the project page publishes its context (projectMenuStore), so
+  // the drawer can hold that project's full, phase-aware tool menu.
+  const projectContext = useProjectMenuContext();
+  const pinned = useProjectMenuPinned();
 
   const create: Section = {
     key: "create",
@@ -160,15 +170,28 @@ export default function SideMenu() {
             {t("home")}
           </Link>
 
-          {context && (
-            <MenuSection section={context} activeHref={activeHref} highlighted defaultOpen />
-          )}
-          {project && context === project && (
-            <p className="mx-5 mt-1 mb-2 text-[11px] text-dark-slate/40">{t("projectAllSections")}</p>
+          {projectContext && projectContext.slug === slug ? (
+            <ProjectTools
+              ctx={projectContext}
+              pinned={pinned}
+              onPin={() => {
+                setProjectMenuPinned(!pinned);
+                setOpen(false);
+              }}
+            />
+          ) : (
+            <>
+              {context && <MenuSection section={context} activeHref={activeHref} highlighted defaultOpen />}
+              {project && context === project && (
+                <p className="mx-5 mt-1 mb-2 text-[11px] text-dark-slate/40">{t("projectAllSections")}</p>
+              )}
+            </>
           )}
 
           {rest.map((s) => (
-            <MenuSection key={s.key} section={s} activeHref={activeHref} defaultOpen />
+            // Inside a project the site-wide sections start folded, so the
+            // project's tools stay at the top without a long scroll.
+            <MenuSection key={s.key} section={s} activeHref={activeHref} defaultOpen={!projectContext} />
           ))}
 
           <div className="mx-4 my-3 border-t border-muted-teal/20" />
@@ -200,7 +223,11 @@ export default function SideMenu() {
         data-tour="nav-discover"
         className="shrink-0 p-2 -ml-1 rounded-lg text-dark-slate/70 hover:text-dark-slate hover:bg-dry-sage/20 border border-transparent hover:border-muted-teal/40 transition-colors"
       >
-        <Menu className="w-5 h-5" />
+        <span className="flex items-center gap-1.5">
+          <Menu className="w-5 h-5" />
+          {/* PROTOTYPE: a visible label on wide screens — a bare ☰ is easy to miss on desktop. */}
+          <span className="hidden lg:inline text-sm font-medium">{t("menu")}</span>
+        </span>
       </button>
       {/* Portal to <body>: SiteHeader is its own z-30 stacking context, which
           would otherwise trap the drawer underneath page content/overlays. */}
@@ -257,6 +284,105 @@ function MenuSection({
             </Link>
           );
         })}
+    </div>
+  );
+}
+
+// PROTOTYPE: the project's full tool menu inside the drawer — same groups as
+// the old tabs and the pinned rail (buildProjectNavGroups), phase-aware:
+// current-phase tools first, "tidiga" and locked later-phase tools after.
+function ProjectTools({ ctx, pinned, onPin }: { ctx: ProjectMenuContext; pinned: boolean; onPin: () => void }) {
+  const t = useTranslations("Nav");
+  const tProject = useTranslations("ProjectSideNav");
+  const pathname = usePathname();
+  const base = `/projects/${ctx.slug}`;
+  const groups = buildProjectNavGroups(tProject, ctx);
+  const [closed, setClosed] = useState<Set<string>>(() => new Set(["community", "admin"]));
+
+  const hrefFor = (item: NavItem) => (item.getHref ? item.getHref(ctx.slug) : `${base}${item.href}`);
+  const activeFor = (href: string) => {
+    if (href === "/kanaler") return pathname.startsWith("/messages");
+    const full = `${base}${href}`;
+    return href === "" ? pathname === base : pathname === full || pathname.startsWith(`${full}/`);
+  };
+
+  const row = (label: string, href: string, Icon: LucideIcon, active: boolean) => (
+    <Link
+      key={href}
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={`flex items-center gap-2.5 mx-1 pl-4 pr-3 py-1.5 rounded-lg ${
+        active ? "bg-seagrass/10 text-seagrass font-semibold" : "text-dark-slate/75 hover:text-dark-slate hover:bg-dry-sage/20"
+      }`}
+    >
+      <Icon className="w-4 h-4 shrink-0" strokeWidth={2} />
+      <span className="truncate">{label}</span>
+    </Link>
+  );
+
+  const group = (g: Group) => {
+    const Icon = g.icon;
+    const open = !closed.has(g.key);
+    return (
+      <div key={g.key} className="mt-1">
+        <button
+          type="button"
+          onClick={() => setClosed((prev) => { const n = new Set(prev); if (n.has(g.key)) n.delete(g.key); else n.add(g.key); return n; })}
+          aria-expanded={open}
+          className="w-full flex items-center gap-2 px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-widest text-dark-slate/45 hover:text-dark-slate/70"
+        >
+          <Icon className="w-3.5 h-3.5" />
+          <span className="flex-1 text-left">{g.label}</span>
+          <span className={`transition-transform ${open ? "rotate-180" : ""}`} aria-hidden>▾</span>
+        </button>
+        {open && (
+          <>
+            {g.items.map((i) => row(i.label, hrefFor(i), i.icon, activeFor(i.href)))}
+            {g.early && g.early.length > 0 && (
+              <>
+                <p className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-widest text-dark-slate/35">{tProject("earlyToolsGroupLabel")}</p>
+                {g.early.map((i) => row(i.label, hrefFor(i), i.icon, activeFor(i.href)))}
+              </>
+            )}
+            {g.locked && g.locked.length > 0 && (
+              <>
+                <p className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-widest text-dark-slate/35">{tProject("lockedHint")}</p>
+                {g.locked.map((i) => {
+                  const ItemIcon = i.icon;
+                  return (
+                    <div key={i.href} aria-disabled="true" className="flex items-center gap-2.5 mx-1 pl-4 pr-3 py-1.5 text-dark-slate/30 cursor-not-allowed">
+                      <ItemIcon className="w-4 h-4 shrink-0" strokeWidth={2} />
+                      <span className="flex-1 truncate">{i.label}</span>
+                      <Lock className="w-3.5 h-3.5 shrink-0" strokeWidth={2} />
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="mt-2 mx-2 rounded-xl bg-dry-sage/15 pb-2">
+      <div className="flex items-center justify-between gap-2 px-3 pt-2 pb-1">
+        <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-seagrass">
+          <FolderKanban className="w-4 h-4" /> {t("thisProject")}
+        </span>
+        <button
+          type="button"
+          onClick={onPin}
+          title={pinned ? "Visa projektmenyn bara här i menyn igen" : "Håll projektmenyn öppen till vänster på projektsidorna"}
+          className="hidden lg:flex items-center gap-1 rounded-full border border-muted-teal/40 bg-white px-2 py-0.5 text-[11px] font-medium text-dark-slate/60 hover:text-dark-slate"
+        >
+          {pinned ? <PinOff className="w-3 h-3" /> : <Pin className="w-3 h-3" />} {pinned ? "Lossa menyn" : "Fäst menyn"}
+        </button>
+      </div>
+      {row(tProject("navHome"), base, Home, activeFor(""))}
+      {row(tProject("navChat"), `/messages?project=${ctx.slug}`, MessageCircle, activeFor("/kanaler"))}
+      {groups.map(group)}
     </div>
   );
 }
