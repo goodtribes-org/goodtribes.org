@@ -275,19 +275,6 @@ export default async function LocaleLayout({
                   </nav>
                 </div>
               </div>
-              <div className="border-t border-muted-teal/20">
-                <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between text-[11px] text-dark-slate/40">
-                  <p>© {new Date().getFullYear()} GoodTribes Foundation · {t("copyrightNote")}</p>
-                  <a
-                    href="#top"
-                    className="inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0"
-                    style={{ width: 26, height: 26, background: "var(--color-coral)", color: "white" }}
-                    aria-label={t("backToTop")}
-                  >
-                    ↑
-                  </a>
-                </div>
-              </div>
             </SiteFooter>
           </SandboxProvider>
           </UserEventsProvider>
