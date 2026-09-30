@@ -26,7 +26,7 @@ import { SandboxProvider } from "@/components/SandboxIndicator";
 import { auth } from "@/auth";
 import { isSiteAdmin } from "@/lib/authz";
 import { getFooterPages } from "@/lib/sitePages";
-import { newHomeScriptFont } from "@/components/ny-startsida/fonts";
+import { heroTaglineFont } from "@/lib/fonts";
 
 const APP_URL = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
 
@@ -195,8 +195,17 @@ export default async function LocaleLayout({
                     unoptimized
                     className="object-contain"
                   />
-                  <h2 className={`${newHomeScriptFont.className} text-dark-slate font-semibold leading-none`} style={{ fontSize: "clamp(28px,3.4vw,44px)", whiteSpace: "nowrap" }}>
-                    Vi gör goda drömmar <span style={{ color: "var(--color-coral)" }}>verkliga</span>.
+                  <h2 className={`${heroTaglineFont.className} text-dark-slate leading-none`} style={{ fontSize: "clamp(26px,3vw,40px)", fontWeight: 400, whiteSpace: "nowrap" }}>
+                    Vi gör goda drömmar{" "}
+                    <span className="relative inline-block">
+                      verkliga
+                      {/* Hand-drawn coral brush stroke, like the underline on goodtribes.org's hero */}
+                      <svg aria-hidden viewBox="0 0 200 20" preserveAspectRatio="none" fill="none" className="absolute left-[-4%] w-[108%] pointer-events-none" style={{ bottom: "-0.28em", height: "0.4em" }}>
+                        <path d="M3 13 C 40 9.5, 90 7, 140 7.5 C 165 7.8, 185 9, 197 10.5" stroke="var(--color-coral)" strokeWidth="5" strokeLinecap="round" />
+                        <path d="M18 15.5 C 70 11.5, 130 10.5, 186 12.5" stroke="var(--color-coral)" strokeWidth="2.6" strokeLinecap="round" opacity="0.75" />
+                      </svg>
+                    </span>
+                    .
                   </h2>
                 </div>
 
