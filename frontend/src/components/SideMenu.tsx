@@ -171,16 +171,8 @@ export default function SideMenu() {
             <MenuSection key={s.key} section={s} activeHref={activeHref} defaultOpen />
           ))}
 
-          {/* Logging out lives in the profile menu (AuthNav, top right), not
-              here — this menu is for getting around. */}
-          {!loggedIn && (
-            <>
-              <div className="mx-4 my-3 border-t border-muted-teal/20" />
-              <Link href="/login" className="block mx-2 px-3 py-2 rounded-lg font-semibold text-seagrass hover:bg-dry-sage/20">
-                {t("signIn")}
-              </Link>
-            </>
-          )}
+          {/* Signing in and out lives top right (AuthNav: the "Logga in"
+              button, or the profile menu) — this menu is for getting around. */}
         </nav>
       </aside>
     </div>
