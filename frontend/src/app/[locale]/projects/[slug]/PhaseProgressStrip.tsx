@@ -29,6 +29,7 @@ export default async function PhaseProgressStrip({ projectId, slug, viewing, inH
       viewingPhase={viewing}
       showNextStep={!inHeader && member && !project.abandonedAt}
       compact
+      variant={inHeader ? "chevrons" : "bars"}
     />
   );
   return inHeader ? <div className="w-full">{bar}</div> : <div className="lg:hidden">{bar}</div>;
