@@ -67,6 +67,7 @@ export default async function IdeaGuidePage({
   const canStartDream =
     aiAvailable && !dream && (await resolveAiMode({ projectId: project.id, feature: "dream-conversation", stepKey: "dream_defined" })).mode !== "MANUAL";
 
+  const autoDoneKeys = await getAutoDoneKeys(project.id, slug);
   return (
     <div className="max-w-5xl mx-auto min-w-0 w-full">
       <div className="mb-8">
@@ -74,7 +75,7 @@ export default async function IdeaGuidePage({
           slug={slug}
           phase={project.phase}
           completedKeys={project.checklistItems.map((c) => c.itemKey)}
-          autoDoneKeys={await getAutoDoneKeys(project.id, slug)}
+          autoDoneKeys={autoDoneKeys}
           canEdit={true}
           showNextStep
           viewingPhase="IDEA"
@@ -92,6 +93,7 @@ export default async function IdeaGuidePage({
         initialImageUrl={project.imageUrl ?? ""}
         initialSdgGoals={project.sdgGoals}
         completedKeys={project.checklistItems.map((c) => c.itemKey)}
+        autoDoneKeys={autoDoneKeys}
         leanCanvas={project.leanCanvas}
         valueProposition={project.valueProposition}
         hasInterviews={interviewCount > 0}
