@@ -71,3 +71,34 @@ export function setProjectMenuPinned(next: boolean) {
 export function useProjectMenuPinned(): boolean {
   return useSyncExternalStore(subscribe, readPinned, () => false);
 }
+
+// "Hela menyn / bara symboler" for the pinned rail, like the original left
+// menu had (removed in 1c1a37db): per viewer, localStorage, try/catch.
+const ICON_ONLY_KEY = "projectMenuIconOnly";
+let iconOnly: boolean | null = null;
+
+function readIconOnly(): boolean {
+  if (iconOnly === null) {
+    try {
+      iconOnly = window.localStorage.getItem(ICON_ONLY_KEY) === "1";
+    } catch {
+      iconOnly = false;
+    }
+  }
+  return iconOnly;
+}
+
+export function setProjectMenuIconOnly(next: boolean) {
+  iconOnly = next;
+  try {
+    if (next) window.localStorage.setItem(ICON_ONLY_KEY, "1");
+    else window.localStorage.removeItem(ICON_ONLY_KEY);
+  } catch {
+    // ignore
+  }
+  emit();
+}
+
+export function useProjectMenuIconOnly(): boolean {
+  return useSyncExternalStore(subscribe, readIconOnly, () => false);
+}

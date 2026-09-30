@@ -3,8 +3,8 @@
 import { Link, usePathname } from "@/i18n/navigation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronDown, Home, Lock, MessageCircle, PinOff, type LucideIcon } from "lucide-react";
-import { setProjectMenuPinned, useProjectMenuPinned } from "@/lib/projectMenuStore";
+import { ChevronDown, Home, Lock, MessageCircle, PanelLeftClose, PanelLeftOpen, PinOff, type LucideIcon } from "lucide-react";
+import { setProjectMenuIconOnly, setProjectMenuPinned, useProjectMenuIconOnly, useProjectMenuPinned } from "@/lib/projectMenuStore";
 import type { ProjectPhaseValue } from "@/lib/projectPhase";
 import { buildProjectNavGroups, type Group, type NavItem } from "./ProjectTopNav";
 
@@ -40,6 +40,9 @@ export default function ProjectSideNav({
   const [closed, setClosed] = useState<Set<string>>(() => new Set(INITIALLY_CLOSED));
   // PROTOTYPE: the rail only shows once pinned from the ☰ drawer.
   const pinned = useProjectMenuPinned();
+  // "Hela menyn" (w-56, labels) or "bara symboler" (w-16, icons with the
+  // label as tooltip) — the viewer's choice, as on the original left menu.
+  const iconOnly = useProjectMenuIconOnly();
 
   function isActive(href: string) {
     if (href === "/kanaler") return pathname.startsWith("/messages");
@@ -60,7 +63,7 @@ export default function ProjectSideNav({
   }
 
   const rowClass = (active: boolean) =>
-    `flex items-center gap-3 rounded-lg py-1.5 mx-2 pl-3 pr-2 text-sm border-l-4 transition-colors ${
+    `flex items-center rounded-lg py-1.5 mx-2 text-sm border-l-4 transition-colors ${iconOnly ? "justify-center px-0" : "gap-3 pl-3 pr-2"} ${
       active
         ? "border-coral bg-coral/10 text-dark-slate font-bold"
         : "border-transparent text-dark-slate/60 hover:bg-white hover:text-dark-slate"
@@ -69,14 +72,15 @@ export default function ProjectSideNav({
   function row(label: string, href: string, icon: LucideIcon, active: boolean) {
     const Icon = icon;
     return (
-      <Link key={href} href={href} className={rowClass(active)} aria-current={active ? "page" : undefined}>
+      <Link key={href} href={href} className={rowClass(active)} aria-current={active ? "page" : undefined} title={iconOnly ? label : undefined} aria-label={iconOnly ? label : undefined}>
         <Icon className="w-4 h-4 shrink-0" strokeWidth={2} />
-        <span className="truncate">{label}</span>
+        {!iconOnly && <span className="truncate">{label}</span>}
       </Link>
     );
   }
 
   function subheading(text: string) {
+    if (iconOnly) return <div className="mx-4 my-1.5 border-t border-dashed border-muted-teal/30" aria-hidden />;
     return (
       <p className="px-5 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-widest text-dark-slate/40">{text}</p>
     );
@@ -84,7 +88,39 @@ export default function ProjectSideNav({
 
   function renderGroup(group: Group) {
     const Icon = group.icon;
-    const open = !closed.has(group.key);
+    // Icon-only: no labels to click, so every group is simply shown.
+    const open = iconOnly || !closed.has(group.key);
+    if (iconOnly) {
+      return (
+        <div key={group.key} className="pt-2">
+          <div className="flex justify-center py-1 text-dark-slate/35" title={group.label} aria-label={group.label}>
+            <Icon className="w-3.5 h-3.5" strokeWidth={2} />
+          </div>
+          <div className="space-y-0.5 mt-0.5">
+            {group.items.map((item) => row(item.label, hrefFor(item), item.icon, isActive(item.href)))}
+            {group.early && group.early.length > 0 && (
+              <>
+                {subheading(t("earlyToolsGroupLabel"))}
+                {group.early.map((item) => row(item.label, hrefFor(item), item.icon, isActive(item.href)))}
+              </>
+            )}
+            {group.locked && group.locked.length > 0 && (
+              <>
+                {subheading(t("lockedHint"))}
+                {group.locked.map((item) => {
+                  const ItemIcon = item.icon;
+                  return (
+                    <div key={item.href} aria-disabled="true" title={`${item.label} — ${t("lockedHint")}`} className="flex justify-center rounded-lg py-1.5 mx-2 text-dark-slate/25 cursor-not-allowed">
+                      <ItemIcon className="w-4 h-4 shrink-0" strokeWidth={2} />
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }
     return (
       <div key={group.key} className="pt-2">
         <button
@@ -136,7 +172,7 @@ export default function ProjectSideNav({
   if (!pinned) return null;
 
   return (
-    <nav aria-label={t("navGroupsLabel")} className="hidden lg:block relative shrink-0 w-56">
+    <nav aria-label={t("navGroupsLabel")} className={`hidden lg:block relative shrink-0 transition-[width] ${iconOnly ? "w-16" : "w-56"}`}>
       {/* The rail spans the full hero height, but its fill starts where the
           hero's background image ends, so the items line up with the content. */}
       <div
@@ -145,13 +181,28 @@ export default function ProjectSideNav({
       />
       {topOffset > 0 && <div aria-hidden style={{ height: `${topOffset}px` }} />}
       <div className="sticky top-0 max-h-screen overflow-y-auto py-3" style={{ scrollbarWidth: "none" }}>
-        <button
-          type="button"
-          onClick={() => setProjectMenuPinned(false)}
-          className="mb-1 ml-5 flex items-center gap-1.5 text-[11px] font-medium text-dark-slate/40 hover:text-dark-slate"
-        >
-          <PinOff className="h-3.5 w-3.5" strokeWidth={2} /> Lossa menyn
-        </button>
+        <div className={`mb-1 flex items-center ${iconOnly ? "flex-col gap-1" : "justify-between px-3"}`}>
+          <button
+            type="button"
+            onClick={() => setProjectMenuIconOnly(!iconOnly)}
+            title={iconOnly ? "Visa hela menyn" : "Visa bara symboler"}
+            aria-label={iconOnly ? "Visa hela menyn" : "Visa bara symboler"}
+            className="flex items-center gap-1.5 rounded-lg p-1.5 text-[11px] font-medium text-dark-slate/45 hover:bg-white hover:text-dark-slate"
+          >
+            {iconOnly ? <PanelLeftOpen className="h-4 w-4" strokeWidth={2} /> : <PanelLeftClose className="h-4 w-4" strokeWidth={2} />}
+            {!iconOnly && "Bara symboler"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setProjectMenuPinned(false)}
+            title="Lossa menyn"
+            aria-label="Lossa menyn"
+            className="flex items-center gap-1.5 rounded-lg p-1.5 text-[11px] font-medium text-dark-slate/45 hover:bg-white hover:text-dark-slate"
+          >
+            <PinOff className="h-3.5 w-3.5" strokeWidth={2} />
+            {!iconOnly && "Lossa"}
+          </button>
+        </div>
         <div className="space-y-0.5">
           {row(t("navHome"), base, Home, isActive(""))}
           {row(t("navChat"), `/messages?project=${slug}`, MessageCircle, isActive("/kanaler"))}
