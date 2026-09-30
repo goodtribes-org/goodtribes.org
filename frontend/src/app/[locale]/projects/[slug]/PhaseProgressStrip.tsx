@@ -8,7 +8,7 @@ import PhaseMenuBar from "./PhaseMenuBar";
 // The thin phase bars at the top of each phase overview (/ide, /uppstart,
 // …), so progress shows where the work is actually done — not only on the
 // project page. Fetches its own data so each overview needs one line.
-export default async function PhaseProgressStrip({ projectId, slug, viewing }: { projectId: string; slug: string; viewing: ProjectPhaseValue }) {
+export default async function PhaseProgressStrip({ projectId, slug, viewing, inHeader = false }: { projectId: string; slug: string; viewing: ProjectPhaseValue; inHeader?: boolean }) {
   const session = await auth();
   const [project, ticked, autoDoneKeys, member] = await Promise.all([
     prisma.project.findUnique({ where: { id: projectId }, select: { phase: true, abandonedAt: true } }),
@@ -17,7 +17,9 @@ export default async function PhaseProgressStrip({ projectId, slug, viewing }: {
     session?.user?.id ? isRealMember(projectId, session.user.id) : false,
   ]);
   if (!project) return null;
-  return (
+  // PROTOTYPE: in the header (wide screens) without "Nästa steg"; the in-page
+  // copy is then only for narrow screens, where the header shows the tabs.
+  const bar = (
     <PhaseMenuBar
       slug={slug}
       phase={project.phase}
@@ -25,8 +27,9 @@ export default async function PhaseProgressStrip({ projectId, slug, viewing }: {
       autoDoneKeys={autoDoneKeys}
       canEdit={false}
       viewingPhase={viewing}
-      showNextStep={member && !project.abandonedAt}
+      showNextStep={!inHeader && member && !project.abandonedAt}
       compact
     />
   );
+  return inHeader ? <div className="w-full">{bar}</div> : <div className="lg:hidden">{bar}</div>;
 }
