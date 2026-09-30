@@ -6,6 +6,16 @@ on:
     types:
       - completed
 
+# One deploy at a time. Merging several PRs in a row fires one Docker Publish
+# per commit and so one deploy per build; run in parallel they raced each
+# other's push to goodtribes-org/deploy ("rejected ... fetch first", seen
+# 2026-09-30 when #145–#154 were merged back to back). Queued, not cancelled:
+# a newer deploy waiting in the group replaces an older one still pending,
+# and the stale-build check below skips any that are no longer main's tip.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -26,7 +36,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      # Only deploy the build of main's current tip. Builds finish out of
+      # order, and the image tag below is the triggering build's commit, so
+      # an older build finishing last would roll the manifest back to an
+      # older image. Skipping it is safe: main's tip has its own build, which
+      # deploys when it finishes. This also keeps the chart (checked out
+      # above from main's tip) and the image tag from the same commit.
+      - name: Skip if this build is no longer main's tip
+        id: freshness
+        env:
+          BUILD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          MAIN_SHA=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$BUILD_SHA" != "$MAIN_SHA" ]; then
+            echo "::notice::Skipping deploy of $BUILD_SHA: main is now at $MAIN_SHA, whose own build deploys it."
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Check out Manifest
+        if: steps.freshness.outputs.stale != 'true'
         uses: actions/checkout@v7
         with:
           repository: goodtribes-org/deploy
@@ -35,6 +65,7 @@ jobs:
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Deploy
+        if: steps.freshness.outputs.stale != 'true'
         uses: WyriHaximus/github-action-helm3@v4
         with:
           exec: |
@@ -49,6 +80,7 @@ jobs:
             cat manifest/goodtribes/goodtribes.yaml
 
       - name: GIT commit and push all changed files
+        if: steps.freshness.outputs.stale != 'true'
         env:
           CI_COMMIT_MESSAGE: Continuous Integration Build Artifacts
           CI_COMMIT_AUTHOR: Continuous Integration
@@ -62,6 +94,7 @@ jobs:
           git push
 
       - name: Apply to cluster
+        if: steps.freshness.outputs.stale != 'true'
         env:
           KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_DATA }}
         run: |
