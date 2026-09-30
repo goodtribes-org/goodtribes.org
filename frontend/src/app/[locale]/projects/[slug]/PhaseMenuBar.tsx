@@ -152,7 +152,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
 
   return (
     <div ref={menuRef}>
-      <nav aria-label={t("navLabel")} className={`grid grid-cols-3 sm:grid-cols-6 ${compact ? "gap-x-2 gap-y-3" : variant === "header" ? "gap-x-3.5 gap-y-3" : "gap-x-3 gap-y-5"}`}>
+      <nav aria-label={t("navLabel")} className={`grid grid-cols-3 sm:grid-cols-6 ${compact ? "gap-x-2 gap-y-3" : variant === "header" ? "gap-x-2.5 gap-y-3" : "gap-x-3 gap-y-5"}`}>
         {DISPLAY_PHASES.map((p, i) => {
           const pr = progress[i];
           const color = PHASE_COLORS[p.value];
@@ -179,10 +179,21 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                 <span className="block h-full rounded-full transition-[width] duration-500" style={{ width: `${pr.pct}%`, background: color }} />
               </span>
               <span className="mt-2 flex items-center gap-1">
+                {/* Number circle, as on the homepage: phase colour with a white
+                    number, ✓ once the phase is done; faded for later phases. */}
                 <span
-                  className={`${newHomeDisplayFont.className} truncate text-[15px] font-bold tracking-[-0.01em] xl:text-lg ${isCurrent ? "text-dark-slate" : dimmed ? "text-dark-slate/45" : "text-dark-slate/75"}`}
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white xl:h-6 xl:w-6 xl:text-xs ${isCurrent ? "mx-[3px] ring-2 ring-offset-1" : ""}`}
+                  style={{ background: color, opacity: dimmed ? 0.5 : 1, ["--tw-ring-color" as string]: color }}
+                  aria-hidden
                 >
-                  {pr.complete ? "✓ " : ""}
+                  {pr.complete ? "✓" : i + 1}
+                </span>
+                {/* Below ~1400px the header can't fit six names beside the logo
+                    and icons: only the current phase keeps its name there, the
+                    others show number + ▾ (name in the tooltip). */}
+                <span
+                  className={`${newHomeDisplayFont.className} truncate text-sm font-bold tracking-[-0.01em] xl:text-base ${isCurrent ? "text-dark-slate" : `hidden min-[1400px]:inline ${dimmed ? "text-dark-slate/45" : "text-dark-slate/75"}`}`}
+                >
                   {tPhase(p.value)}
                 </span>
                 <ChevronDown
@@ -253,7 +264,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                   }}
                   aria-expanded={isOpen}
                   aria-current={isViewing ? "step" : undefined}
-                  title={t("progressLabel", { done: pr.done, total: pr.total })}
+                  title={`${tPhase(p.value)} — ${t("progressLabel", { done: pr.done, total: pr.total })}`}
                   className="block w-full min-w-0 text-left"
                 >
                   {column}

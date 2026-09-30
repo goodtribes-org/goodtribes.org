@@ -351,7 +351,7 @@ export default function ProjectTopNav({
       {headerSlot &&
         createPortal(
           <>
-            {phaseStrip && <div className="hidden lg:flex h-full w-[720px] xl:w-[860px] max-w-full items-center">{phaseStrip}</div>}
+            {phaseStrip && <div className="hidden lg:flex h-full w-[760px] xl:w-[900px] max-w-full items-center">{phaseStrip}</div>}
             <nav
               ref={navRef}
               data-project-nav
