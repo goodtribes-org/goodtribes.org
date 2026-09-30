@@ -15,6 +15,7 @@ import { getCanvasAiContext } from "@/lib/canvasAi";
 import { parseOpenQuestions } from "@/lib/dreamConversation";
 import { isFillInProgress, parseFillStatus, withStaleAsFailed } from "@/lib/ideaFill";
 import CanvasAiBar from "@/components/ai/CanvasAiBar";
+import { CanvasIterateProvider } from "@/components/ai/BlockIterateMenu";
 import LeanCanvasGrid from "../lean-canvas/LeanCanvasGrid";
 import ValuePropositionGrid from "../value-proposition/ValuePropositionGrid";
 import ImpactModelChain from "../impact-model/ImpactModelChain";
@@ -150,13 +151,15 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         {leanCanvasAi.aiAvailable && (
           <CanvasAiBar projectSlug={slug} entity="leanCanvas" stepKey={leanCanvasAi.stepKey} mode={leanCanvasAi.mode} canEdit={canEdit} />
         )}
-        <LeanCanvasGrid
-          projectSlug={slug}
-          canvas={project.leanCanvas}
-          canEdit={canEdit}
-          provenance={leanCanvasAi.provenance}
-          suggestions={leanCanvasAi.suggestions}
-        />
+        <CanvasIterateProvider enabled={canEdit && leanCanvasAi.aiAvailable && leanCanvasAi.mode !== "MANUAL"}>
+          <LeanCanvasGrid
+            projectSlug={slug}
+            canvas={project.leanCanvas}
+            canEdit={canEdit}
+            provenance={leanCanvasAi.provenance}
+            suggestions={leanCanvasAi.suggestions}
+          />
+        </CanvasIterateProvider>
       </OverviewSection>
 
       <OverviewSection
@@ -171,15 +174,17 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
           </Link>
         }
       >
-        <ImpactModelChain
-          projectSlug={slug}
-          model={project.impactModel}
-          canvasImpact={project.leanCanvas?.impact ?? null}
-          legacyProblem={project.leanCanvas?.problem?.trim() || null}
-          canEdit={canEdit}
-          ai={impactModelAi}
-          canvasAi={leanCanvasAi}
-        />
+        <CanvasIterateProvider enabled={canEdit && impactModelAi.aiAvailable && impactModelAi.mode !== "MANUAL"}>
+          <ImpactModelChain
+            projectSlug={slug}
+            model={project.impactModel}
+            canvasImpact={project.leanCanvas?.impact ?? null}
+            legacyProblem={project.leanCanvas?.problem?.trim() || null}
+            canEdit={canEdit}
+            ai={impactModelAi}
+            canvasAi={leanCanvasAi}
+          />
+        </CanvasIterateProvider>
       </OverviewSection>
 
       <OverviewSection
@@ -189,13 +194,15 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         writingLabel={writing}
         failedNote={<>{t("failedCanvas")}{retry("valueProposition")}</>}
       >
-        <ValuePropositionGrid
-          projectSlug={slug}
-          canvas={project.valueProposition}
-          canEdit={canEdit}
-          provenance={valuePropositionAi.provenance}
-          suggestions={valuePropositionAi.suggestions}
-        />
+        <CanvasIterateProvider enabled={canEdit && valuePropositionAi.aiAvailable && valuePropositionAi.mode !== "MANUAL"}>
+          <ValuePropositionGrid
+            projectSlug={slug}
+            canvas={project.valueProposition}
+            canEdit={canEdit}
+            provenance={valuePropositionAi.provenance}
+            suggestions={valuePropositionAi.suggestions}
+          />
+        </CanvasIterateProvider>
       </OverviewSection>
 
       <OverviewSection
