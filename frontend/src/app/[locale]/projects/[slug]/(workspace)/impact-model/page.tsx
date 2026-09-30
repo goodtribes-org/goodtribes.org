@@ -14,6 +14,7 @@ import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import ImpactModelChain from "./ImpactModelChain";
 import ImpactModelAiBar from "./ImpactModelAiBar";
 import ImpactModelHistory from "./ImpactModelHistory";
+import { CanvasIterateProvider } from "@/components/ai/BlockIterateMenu";
 
 export async function generateMetadata({
   params,
@@ -62,15 +63,17 @@ export default async function ImpactModelPage({
       <WorkspacePageHeader title={t("pageHeading")} help={t("helpText")} action={<ImpactModelHistory projectSlug={slug} />} />
 
       {ai?.aiAvailable && <ImpactModelAiBar projectSlug={slug} stepKey={ai.stepKey} mode={ai.mode} canEdit={canEdit} />}
-      <ImpactModelChain
-        projectSlug={slug}
-        model={project.impactModel}
-        canvasImpact={project.leanCanvas?.impact ?? null}
-        legacyProblem={project.leanCanvas?.problem?.trim() || null}
-        canEdit={canEdit}
-        ai={ai ?? undefined}
-        canvasAi={canvasAi ?? undefined}
-      />
+      <CanvasIterateProvider enabled={!!ai?.aiAvailable && ai.mode !== "MANUAL" && canEdit}>
+        <ImpactModelChain
+          projectSlug={slug}
+          model={project.impactModel}
+          canvasImpact={project.leanCanvas?.impact ?? null}
+          legacyProblem={project.leanCanvas?.problem?.trim() || null}
+          canEdit={canEdit}
+          ai={ai ?? undefined}
+          canvasAi={canvasAi ?? undefined}
+        />
+      </CanvasIterateProvider>
 
       <p className="mt-2 text-xs text-dark-slate/40">
         {t("impactShared")}{" "}
