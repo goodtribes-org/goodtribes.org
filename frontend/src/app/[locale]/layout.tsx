@@ -201,7 +201,7 @@ export default async function LocaleLayout({
                       <span className="relative z-[1]">verkliga</span>
                       {/* Hand-drawn coral brush stroke, like the underline on goodtribes.org's hero —
                           drawn behind the word so descenders (the g) stay on top */}
-                      <svg aria-hidden viewBox="0 0 200 20" preserveAspectRatio="none" fill="none" className="absolute left-[-4%] w-[108%] pointer-events-none z-0" style={{ bottom: "-0.36em", height: "0.4em" }}>
+                      <svg aria-hidden viewBox="0 0 200 20" preserveAspectRatio="none" fill="none" className="absolute left-[-4%] w-[108%] pointer-events-none z-0" style={{ bottom: "-0.26em", height: "0.4em" }}>
                         <path d="M3 13 C 40 9.5, 90 7, 140 7.5 C 165 7.8, 185 9, 197 10.5" stroke="var(--color-coral)" strokeWidth="5" strokeLinecap="round" />
                         <path d="M18 15.5 C 70 11.5, 130 10.5, 186 12.5" stroke="var(--color-coral)" strokeWidth="2.6" strokeLinecap="round" opacity="0.75" />
                       </svg>
