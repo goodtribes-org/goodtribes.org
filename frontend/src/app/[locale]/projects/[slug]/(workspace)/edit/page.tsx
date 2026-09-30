@@ -11,6 +11,7 @@ import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import type { Locale } from "next-intl";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { getProjectAiSettings } from "@/lib/aiMode";
+import { getAiProjectBudgetStatus } from "@/lib/anthropic";
 import AiModeSettings from "./AiModeSettings";
 
 
@@ -73,9 +74,9 @@ export default async function EditProjectPage({
   // AI mode settings ship dark behind the ai-project-start flag, and only
   // appear once an Anthropic key is configured (they'd control nothing
   // otherwise).
-  const aiSettings = (await isAiProjectStartAvailable(session.user.id))
-    ? await getProjectAiSettings(project.id)
-    : null;
+  const [aiSettings, aiBudget] = (await isAiProjectStartAvailable(session.user.id))
+    ? await Promise.all([getProjectAiSettings(project.id), getAiProjectBudgetStatus(project.id)])
+    : [null, null];
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -125,7 +126,13 @@ export default async function EditProjectPage({
           createdAt: i.createdAt.toISOString(),
         }))}
       />
-      {aiSettings && <AiModeSettings slug={slug} initial={aiSettings} />}
+      {aiSettings && aiBudget && (
+        <AiModeSettings
+          slug={slug}
+          initial={aiSettings}
+          budget={{ usedPct: aiBudget.usedPct, resetsAt: aiBudget.resetsAt?.toISOString() ?? null }}
+        />
+      )}
       {isOwner && (
         <div className="mt-12 pt-8 border-t border-red-200">
           <h2 className="text-sm font-semibold text-red-700 mb-2">{t("dangerZoneHeading")}</h2>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import type { AiMode } from "@prisma/client";
 import AiModePicker from "@/components/ai/AiModePicker";
 import { DISPLAY_PHASES } from "@/lib/projectPhase";
@@ -20,8 +20,11 @@ const MODE_KEYS: Record<AiMode, { label: string; desc: string }> = {
 // Project-level AI settings on the project's edit page: the project's mode,
 // optional per-phase overrides, and the AI project manager switch. Each
 // change saves immediately (optimistic), like the checklist toggles above.
-export default function AiModeSettings({ slug, initial }: { slug: string; initial: ProjectAiSettings }) {
+export type AiBudgetStatus = { usedPct: number; resetsAt: string | null };
+
+export default function AiModeSettings({ slug, initial, budget }: { slug: string; initial: ProjectAiSettings; budget: AiBudgetStatus }) {
   const t = useTranslations("AiMode");
+  const format = useFormatter();
   const tPhase = useTranslations("ProjectPhase");
   const [projectMode, setProjectModeState] = useState<AiMode | null>(initial.projectMode);
   const [phaseModes, setPhaseModes] = useState(initial.phaseModes);
@@ -85,6 +88,17 @@ export default function AiModeSettings({ slug, initial }: { slug: string; initia
   return (
     <section className="mt-12 pt-8 border-t border-muted-teal/30" aria-labelledby="ai-settings-heading">
       <h2 id="ai-settings-heading" className="text-lg font-semibold text-dark-slate">{t("settingsHeading")}</h2>
+
+      <div className="mt-3">
+        <p className="text-xs text-dark-slate/70">
+          {t("budgetUsed", { pct: budget.usedPct })}
+          {budget.resetsAt && <> · {t("budgetResets", { date: format.dateTime(new Date(budget.resetsAt), { day: "numeric", month: "short" }) })}</>}
+        </p>
+        <div className="mt-1 h-1.5 w-full max-w-xs rounded-full bg-muted-teal/20" role="progressbar" aria-valuenow={budget.usedPct} aria-valuemin={0} aria-valuemax={100}>
+          <div className={`h-full rounded-full ${budget.usedPct >= 80 ? "bg-red-500" : "bg-seagrass"}`} style={{ width: `${budget.usedPct}%` }} />
+        </div>
+        {budget.usedPct >= 80 && <p className="mt-1 text-xs text-red-700">{t("budgetWarning")}</p>}
+      </div>
 
       {showIntro && (
         <div className="mt-3 flex items-start gap-3 rounded-lg bg-seagrass/10 border border-seagrass/30 p-3 text-sm text-dark-slate/80">
