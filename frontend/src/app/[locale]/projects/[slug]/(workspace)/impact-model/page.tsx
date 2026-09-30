@@ -15,6 +15,7 @@ import ImpactModelChain from "./ImpactModelChain";
 import ImpactModelAiBar from "./ImpactModelAiBar";
 import ImpactModelHistory from "./ImpactModelHistory";
 import { CanvasIterateProvider } from "@/components/ai/BlockIterateMenu";
+import SectionIntro from "@/components/help/SectionIntro";
 
 export async function generateMetadata({
   params,
@@ -61,6 +62,7 @@ export default async function ImpactModelPage({
   return (
     <div>
       <WorkspacePageHeader title={t("pageHeading")} help={t("helpText")} action={<ImpactModelHistory projectSlug={slug} />} />
+      <SectionIntro introKey="impactModelPage" />
 
       {ai?.aiAvailable && <ImpactModelAiBar projectSlug={slug} stepKey={ai.stepKey} mode={ai.mode} canEdit={canEdit} />}
       <CanvasIterateProvider enabled={!!ai?.aiAvailable && ai.mode !== "MANUAL" && canEdit}>

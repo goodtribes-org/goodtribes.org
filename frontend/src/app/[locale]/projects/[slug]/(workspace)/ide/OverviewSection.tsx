@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
 import type { FillState } from "@/lib/ideaFill";
+import { SectionHeaderWithIntro, type SectionIntroKey } from "@/components/help/SectionIntro";
 
 // One section of the Idé overview: a heading, an optional action (Edit,
-// Manage …), and either the content, a placeholder while the AI is still
+// Manage …), an optional "how to do this" intro box (introKey — see
+// components/help/SectionIntro.tsx), and either the content, a placeholder while the AI is still
 // writing it, or a short note when the AI couldn't do it.
 export default function OverviewSection({
   id,
@@ -12,6 +14,7 @@ export default function OverviewSection({
   fill,
   writingLabel,
   failedNote,
+  introKey,
   children,
 }: {
   id: string;
@@ -21,22 +24,27 @@ export default function OverviewSection({
   fill?: FillState;
   writingLabel: string;
   failedNote?: ReactNode;
+  introKey?: SectionIntroKey;
   children: ReactNode;
 }) {
   const writing = fill === "pending" || fill === "running";
   return (
     <section id={id} aria-labelledby={`${id}-heading`} className="scroll-mt-24 rounded-2xl border border-muted-teal/30 bg-white p-5">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <h2 id={`${id}-heading`} className="text-lg font-semibold text-dark-slate">
-            {title}
-          </h2>
-          {badge && (
-            <span className="rounded-full bg-coral/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-coral">{badge}</span>
-          )}
+      {introKey ? (
+        <SectionHeaderWithIntro id={id} title={title} badge={badge} action={writing ? undefined : action} introKey={introKey} />
+      ) : (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <h2 id={`${id}-heading`} className="text-lg font-semibold text-dark-slate">
+              {title}
+            </h2>
+            {badge && (
+              <span className="rounded-full bg-coral/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-coral">{badge}</span>
+            )}
+          </div>
+          {!writing && action}
         </div>
-        {!writing && action}
-      </div>
+      )}
       {writing ? (
         <div aria-live="polite" className="flex flex-col gap-2">
           <p className="text-sm text-dark-slate/60">{writingLabel}</p>
