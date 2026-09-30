@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { isLeadRole } from "@/lib/authz";
 import { INITIATIVE_CHECKLIST_ITEMS, type ProjectPhaseValue } from "@/lib/projectPhase";
 import PhaseGuide from "./PhaseGuide";
+import { getAutoDoneKeys } from "@/lib/projectSignals";
 import PhaseMenuBar from "../../PhaseMenuBar";
 import { Link } from "@/i18n/navigation";
 import { isFeatureEnabled } from "@/lib/featureFlags";
@@ -58,7 +59,9 @@ export default async function PhaseGuidePage({
           slug={slug}
           phase={project.phase}
           completedKeys={project.checklistItems.map((c) => c.itemKey)}
+          autoDoneKeys={await getAutoDoneKeys(project.id, slug)}
           canEdit={true}
+          showNextStep
           viewingPhase={phase}
           showOverviews={journeyOn}
         />

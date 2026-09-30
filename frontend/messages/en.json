@@ -2928,6 +2928,11 @@
     "next_step_decided": "Decide the next step: continue, replicate, or responsibly wind down"
   },
   "PhaseMenuBar": {
+    "navLabel": "Project phases",
+    "progressLabel": "{done} of {total} tasks done",
+    "autoDone": "Done — visible in the project's content",
+    "autoDoneShort": "done",
+    "nextStep": "Next step:",
     "guideLinkLabel": "{phase} guide",
     "overviewLinkLabel": "{phase} on one page"
   },
