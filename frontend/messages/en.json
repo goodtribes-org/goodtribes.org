@@ -3797,6 +3797,76 @@
     "assumed": "Assumption — needs testing",
     "empty": "Empty"
   },
+  "SectionIntro": {
+    "tipLabel": "Tip:",
+    "close": "Close the tip",
+    "reopen": "Show the tip again",
+    "about": {
+      "title": "Tell people about the project",
+      "body": "Describe in a few sentences what you want to change and for whom. This is the first thing others see, both people who want to help and people who might fund you.",
+      "tip": "Write it the way you'd tell a neighbour. Concrete and short beats fine words."
+    },
+    "sdg": {
+      "title": "Which global goals do you contribute to?",
+      "body": "The global goals (Agenda 2030) make it easier for others to find you and for funders to see where you fit. Pick the one or two goals you contribute to most, not every goal that fits a little.",
+      "tip": "Many foundations and municipalities sort their calls by the global goals."
+    },
+    "leanCanvas": {
+      "title": "The idea on one page",
+      "body": "The Social Lean Canvas captures the whole idea: the problem, who you help, the solution, how it sustains itself and what difference it makes. Every box is a guess until you've tested it.",
+      "tip": "Start with Purpose and Customer segments. The rest gets easier once you know who it's for."
+    },
+    "impactModel": {
+      "title": "How does what you do lead to change?",
+      "body": "The impact model is your theory of change: the problem you face, who takes part, what you do, and what changes in the short, medium and long term. The last step is the same as the canvas's Impact box.",
+      "tip": "Ask yourselves at every step: \"And then what?\" It exposes gaps in the chain."
+    },
+    "valueProposition": {
+      "title": "What do you do for the people you want to help?",
+      "body": "On the right, describe the people you want to help: what they're trying to get done, what's hard and what they wish for. On the left, what you offer and how it relieves or helps. It works when the two sides fit.",
+      "tip": "Start from what they say themselves in the interviews, not from what you think they need."
+    },
+    "marketScan": {
+      "title": "Who's already out there?",
+      "body": "Other organisations, similar initiatives, trends and rules that affect you. Not to compete, but to find partners and avoid reinventing the wheel.",
+      "tip": "An organisation doing something similar may become your most important partner."
+    },
+    "interviews": {
+      "title": "Talk to the people it's about",
+      "body": "The interviews are the most important thing you do in the Idea phase. This is where assumptions meet reality. Three to five conversations are often enough to see whether you're on the right track.",
+      "tip": "Ask how things are today, not whether they'd like your idea. People are too kind to ideas."
+    },
+    "invite": {
+      "title": "Nobody changes the world alone",
+      "body": "Invite the people who want to be part of it now: friends, colleagues, or someone with a skill you're missing. More perspectives early make the idea better.",
+      "tip": "Ask someone outside your bubble for honest criticism. It's worth more than ten thumbs up."
+    },
+    "gate": {
+      "title": "Time to decide the next step",
+      "body": "This is where you stop and look at what you've learned. You decide for yourselves whether to go ahead, adjust, change direction or pause. The criteria are a support, not a lock.",
+      "tip": "Pausing or changing direction is a good decision too, if it's based on what you've learned."
+    },
+    "leanCanvasPage": {
+      "title": "How to use the Social Lean Canvas",
+      "body": "Fill in the boxes in whatever order feels natural. It doesn't all have to be done at once. The canvas is a living document you update as you learn more.",
+      "tip": "Mark each box as Known or Assumed. What's Assumed is what you need to test."
+    },
+    "customerModelPage": {
+      "title": "The customer model: who is it for?",
+      "body": "Here you go deeper into who you want to help: who needs you most (the early adopters) and what they do today instead (the alternatives).",
+      "tip": "Early adopters are the people with the most urgent version of the problem. Start with them."
+    },
+    "valuePropositionPage": {
+      "title": "How to use the value proposition",
+      "body": "Start on the right with the people you want to help, then fill in what you offer on the left. The arrows between the sides show whether the offer meets a real need.",
+      "tip": "A good offer solves a few important problems really well, not everything a little."
+    },
+    "impactModelPage": {
+      "title": "How to build your impact model",
+      "body": "Go from left to right: the problem, the participants, the activities, then the outcomes in the short, medium and long term. This is your plan for change, not a result you've already achieved.",
+      "tip": "Short-term outcomes should be visible within a year. They're the ones you measure first."
+    }
+  },
   "FieldProvenance": {
     "approve": "Looks good",
     "approveHint": "You've read the draft and stand behind it as it is. It then counts as reviewed, but it's still an assumption until you know.",

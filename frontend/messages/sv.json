@@ -3797,6 +3797,76 @@
     "assumed": "Antagande — behöver testas",
     "empty": "Tomt"
   },
+  "SectionIntro": {
+    "tipLabel": "Tips:",
+    "close": "Stäng tipset",
+    "reopen": "Visa tipset igen",
+    "about": {
+      "title": "Berätta om projektet",
+      "body": "Här beskriver ni i några meningar vad ni vill förändra och för vem. Det här är det första andra ser, både de som vill hjälpa till och de som kan finansiera.",
+      "tip": "Skriv som du skulle berätta för en granne. Konkret och kort slår fina ord."
+    },
+    "sdg": {
+      "title": "Vilka globala mål bidrar ni till?",
+      "body": "De globala målen (Agenda 2030) gör det lättare för andra att hitta er och för finansiärer att se var ni passar in. Välj de ett eller två mål ni bidrar mest till, inte alla som passar lite.",
+      "tip": "Många fonder och kommuner sorterar sina utlysningar efter de globala målen."
+    },
+    "leanCanvas": {
+      "title": "Idén på en sida",
+      "body": "Social Lean Canvas fångar hela idén: problemet, vilka ni hjälper, lösningen, hur det bär sig och vilken skillnad det gör. Varje ruta är en gissning tills ni har testat den.",
+      "tip": "Börja med Syfte och Kundsegment. Resten blir lättare när ni vet vem ni gör det för."
+    },
+    "impactModel": {
+      "title": "Hur leder det ni gör till förändring?",
+      "body": "Impactmodellen är er förändringsteori: vilket problem ni möter, vilka som deltar, vad ni gör, och vad som förändras på kort, medellång och lång sikt. Sista steget är samma som canvasens Impact-ruta.",
+      "tip": "Fråga er för varje steg: \"Och sedan då?\" Det avslöjar glapp i kedjan."
+    },
+    "valueProposition": {
+      "title": "Vad gör ni för dem ni vill hjälpa?",
+      "body": "Till höger beskriver ni dem ni vill hjälpa: vad de försöker få gjort, vad som är svårt och vad de önskar. Till vänster vad ni erbjuder och hur det lättar eller hjälper. Bra när de två sidorna passar ihop.",
+      "tip": "Utgå från vad de själva säger i intervjuerna, inte från vad ni tror att de behöver."
+    },
+    "marketScan": {
+      "title": "Vilka finns redan där ute?",
+      "body": "Andra organisationer, liknande initiativ, trender och regler som påverkar er. Inte för att konkurrera, utan för att hitta samarbetspartners och slippa uppfinna hjulet igen.",
+      "tip": "En organisation som gör något liknande kan bli er viktigaste partner."
+    },
+    "interviews": {
+      "title": "Prata med dem det gäller",
+      "body": "Intervjuerna är det viktigaste ni gör i Idéfasen. Det är här antagandena möter verkligheten. Tre till fem samtal räcker ofta för att se om ni är på rätt spår.",
+      "tip": "Fråga om hur det är i dag, inte om de skulle gilla er idé. Folk är för snälla mot idéer."
+    },
+    "invite": {
+      "title": "Ingen förändrar världen ensam",
+      "body": "Bjud in dem som vill vara med redan nu: vänner, kollegor eller någon med en kompetens ni saknar. Fler perspektiv tidigt gör idén bättre.",
+      "tip": "Be någon utanför er bubbla om ärlig kritik. Det är värt mer än tio tummar upp."
+    },
+    "gate": {
+      "title": "Dags att bestämma nästa steg",
+      "body": "Här stannar ni upp och tittar på vad ni har lärt er. Ni bestämmer själva om ni går vidare, justerar, byter riktning eller pausar. Kriterierna är ett stöd, inte ett lås.",
+      "tip": "Att pausa eller byta riktning är också ett bra beslut, om det bygger på det ni lärt er."
+    },
+    "leanCanvasPage": {
+      "title": "Så använder ni Social Lean Canvas",
+      "body": "Fyll i rutorna i den ordning som känns naturlig. Allt behöver inte vara klart på en gång. Canvasen är ett levande dokument som ni uppdaterar när ni lär er mer.",
+      "tip": "Märk varje ruta som Vet eller Antar. Det som är Antar är det ni behöver testa."
+    },
+    "customerModelPage": {
+      "title": "Kundmodellen: vem gör ni det för?",
+      "body": "Här går ni djupare i vilka ni vill hjälpa: vilka som behöver er mest (de första användarna) och vad de gör i dag i stället (alternativen).",
+      "tip": "De första användarna är de som har problemet mest akut. Börja med dem."
+    },
+    "valuePropositionPage": {
+      "title": "Så använder ni värdeerbjudandet",
+      "body": "Börja på högersidan med dem ni vill hjälpa, och fyll sedan i vad ni erbjuder på vänstersidan. Pilarna mellan sidorna visar om erbjudandet möter ett verkligt behov.",
+      "tip": "Ett bra erbjudande löser ett fåtal viktiga problem riktigt bra, inte allt lite grann."
+    },
+    "impactModelPage": {
+      "title": "Så bygger ni er impactmodell",
+      "body": "Gå från vänster till höger: problemet, deltagarna, aktiviteterna, och sedan resultaten på kort, medellång och lång sikt. Det här är er plan för förändring, inte ett resultat ni redan uppnått.",
+      "tip": "Kortsiktiga resultat ska gå att se inom ett år. Det är dem ni mäter först."
+    }
+  },
   "FieldProvenance": {
     "approve": "Ser bra ut",
     "approveHint": "Ni har läst utkastet och står för det som det är. Det räknas då som genomgånget, men är fortfarande ett antagande tills ni vet.",
