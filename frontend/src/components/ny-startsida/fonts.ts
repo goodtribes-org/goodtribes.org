@@ -1,9 +1,11 @@
-import { Bricolage_Grotesque, Caveat, Figtree } from "next/font/google";
+import localFont from "next/font/local";
 
-// Only the new start page (/ny-startsida) uses these. They live here rather
-// than in lib/fonts.ts so that no other page pulls in their @font-face rules.
-// Variable, with the optical-size axis, like the design: large headings get
-// the narrower display cut automatically (font-optical-sizing: auto).
-export const newHomeDisplayFont = Bricolage_Grotesque({ subsets: ["latin"], axes: ["opsz"] });
-export const newHomeBodyFont = Figtree({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
-export const newHomeScriptFont = Caveat({ subsets: ["latin"], weight: ["600"] });
+// Only the new start page uses these. They live here rather than in
+// lib/fonts.ts so that no other page pulls in their @font-face rules.
+// Self-hosted (src/fonts/, see its README) rather than next/font/google.
+// Bricolage Grotesque is variable with the optical-size axis, like the
+// design: large headings get the narrower display cut automatically
+// (font-optical-sizing: auto).
+export const newHomeDisplayFont = localFont({ src: "../../fonts/BricolageGrotesque-latin.woff2", weight: "200 800", display: "swap" });
+export const newHomeBodyFont = localFont({ src: "../../fonts/Figtree-latin.woff2", weight: "400 700", display: "swap" });
+export const newHomeScriptFont = localFont({ src: "../../fonts/Caveat-latin.woff2", weight: "600", display: "swap" });
