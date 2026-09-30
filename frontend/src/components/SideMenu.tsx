@@ -217,11 +217,7 @@ export default function SideMenu() {
         data-tour="nav-discover"
         className="shrink-0 p-2 -ml-1 rounded-lg text-dark-slate/70 hover:text-dark-slate hover:bg-dry-sage/20 border border-transparent hover:border-muted-teal/40 transition-colors"
       >
-        <span className="flex items-center gap-1.5">
-          <Menu className="w-5 h-5" />
-          {/* PROTOTYPE: a visible label on wide screens — a bare ☰ is easy to miss on desktop. */}
-          <span className="hidden lg:inline text-sm font-medium">{t("menu")}</span>
-        </span>
+        <Menu className="w-5 h-5" />
       </button>
       {/* Portal to <body>: SiteHeader is its own z-30 stacking context, which
           would otherwise trap the drawer underneath page content/overlays. */}
