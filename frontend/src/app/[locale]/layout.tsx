@@ -26,6 +26,7 @@ import { SandboxProvider } from "@/components/SandboxIndicator";
 import { auth } from "@/auth";
 import { isSiteAdmin } from "@/lib/authz";
 import { getFooterPages } from "@/lib/sitePages";
+import { newHomeScriptFont } from "@/components/ny-startsida/fonts";
 
 const APP_URL = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
 
@@ -194,7 +195,7 @@ export default async function LocaleLayout({
                     unoptimized
                     className="object-contain"
                   />
-                  <h2 className="text-dark-slate font-semibold" style={{ fontSize: "clamp(20px,2.6vw,34px)", letterSpacing: "-.01em", whiteSpace: "nowrap" }}>
+                  <h2 className={`${newHomeScriptFont.className} text-dark-slate font-semibold leading-none`} style={{ fontSize: "clamp(28px,3.4vw,44px)", whiteSpace: "nowrap" }}>
                     Vi gör goda drömmar <span style={{ color: "var(--color-coral)" }}>verkliga</span>.
                   </h2>
                 </div>
