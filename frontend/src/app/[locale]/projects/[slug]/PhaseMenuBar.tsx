@@ -173,15 +173,20 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
           variant === "header"
             ? // Header only (lg+): own column rule, without sm:grid-cols-6,
               // whose media query would otherwise override it.
-              "gap-x-2.5 gap-y-3 [grid-template-columns:var(--phase-cols)] min-[1400px]:[grid-template-columns:repeat(6,minmax(0,1fr))]"
+              "gap-x-2.5 gap-y-3 [grid-template-columns:var(--phase-cols)] min-[1500px]:[grid-template-columns:var(--phase-cols-wide)]"
             : `grid-cols-3 sm:grid-cols-6 ${compact ? "gap-x-2 gap-y-3" : "gap-x-3 gap-y-5"}`
         }`}
-        // In the header, below ~1400px only the current phase shows its name
-        // and "3/7", so its column gets extra room there; from 1400px all six
+        // In the header, below ~1500px only the current phase shows its name
+        // and "3/7", so its column gets extra room there; from 1500px all six
         // names show and the columns are equal again.
         style={
           variant === "header"
-            ? ({ "--phase-cols": DISPLAY_PHASES.map((_, i) => (i === activeIndex ? "minmax(0,1.7fr)" : "minmax(0,1fr)")).join(" ") } as React.CSSProperties)
+            ? ({
+                "--phase-cols": DISPLAY_PHASES.map((_, i) => (i === activeIndex ? "minmax(0,2.2fr)" : "minmax(0,1fr)")).join(" "),
+                // From 1500px every phase shows its name, so the active one
+                // (name + "1/10") only gets a little extra room.
+                "--phase-cols-wide": DISPLAY_PHASES.map((_, i) => (i === activeIndex ? "minmax(0,1.3fr)" : "minmax(0,1fr)")).join(" "),
+              } as React.CSSProperties)
             : undefined
         }
       >
@@ -228,16 +233,17 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                 >
                   {pr.complete ? "✓" : i + 1}
                 </span>
-                {/* Below ~1400px the header can't fit six names beside the logo
+                {/* Below ~1500px the header can't fit six names beside the logo
                     and icons: only the current phase keeps its name there, the
                     others show number + ▾ (name in the tooltip). */}
                 <span
-                  className={`${newHomeDisplayFont.className} truncate text-sm font-bold tracking-[-0.01em] xl:text-base ${isCurrent ? "text-dark-slate" : `hidden min-[1400px]:inline ${dimmed ? "text-dark-slate/60" : "text-dark-slate/75"}`}`}
+                  className={`${newHomeDisplayFont.className} truncate text-sm font-bold tracking-[-0.01em] xl:text-base ${isCurrent ? "text-dark-slate" : `hidden min-[1500px]:inline ${dimmed ? "text-dark-slate/60" : "text-dark-slate/75"}`}`}
                 >
                   {tPhase(p.value)}
                 </span>
                 {isCurrent && !pr.complete && (
-                  <span className="shrink-0 text-xs font-semibold tabular-nums text-dark-slate/55">
+                  // Hidden on the narrowest header widths (in the tooltip there).
+                  <span className="hidden shrink-0 text-xs font-semibold tabular-nums text-dark-slate/55 min-[1200px]:inline">
                     {pr.done}/{pr.total}
                   </span>
                 )}
