@@ -11,6 +11,18 @@ import { newHomeDisplayFont } from "./fonts";
 // goes in the URL.
 const DRAFT_KEY = "gt:new-home-dream";
 const EXAMPLE_COUNT = 4;
+
+// Small per-word tilt (deg) and baseline shift (em) so the tagline reads as
+// written by hand on paper rather than typeset in a straight line. Fixed
+// values, not random, so server and client render the same thing.
+const TAGLINE_WOBBLE: [number, number][] = [
+  [-3, 0.02],
+  [1.5, -0.04],
+  [-1, 0.03],
+  [2.5, -0.02],
+  [-2, 0.05],
+  [1, -0.03],
+];
 // Matches the placeholder's fade animation (nh-ph below), so each example
 // fades in, stays and fades out once.
 const EXAMPLE_INTERVAL_MS = 3200;
@@ -94,20 +106,42 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
           88%  { opacity: 0.4; }
           100% { transform: translate(12px, -470px) rotate(4deg) scale(1.6); opacity: 0; }
         }
+        @keyframes nh-write { 0% { clip-path: inset(-30% 100% -30% -5%); } 100% { clip-path: inset(-30% -5% -30% -5%); } }
         .nh-grow { transform-origin: 47% 100%; }
         @media (prefers-reduced-motion: no-preference) {
           .nh-grow { animation: nh-grow 1.4s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+          .nh-write { animation: nh-write 1.6s cubic-bezier(0.45, 0.05, 0.35, 1) 0.2s both; }
           .nh-ph { animation: nh-ph 3.2s ease-in-out infinite; }
           .nh-fly-up-a { animation: nh-fly-up-a 14s ease-in-out infinite; }
           .nh-fly-up-b { animation: nh-fly-up-b 16s ease-in-out infinite; }
         }
       `}</style>
 
-      <p className={`${heroTaglineFont.className} relative text-[32px] leading-none sm:text-[40px]`} style={{ color: "var(--color-leaf)", fontWeight: 400 }}>
+      <p
+        className={`${heroTaglineFont.className} nh-write relative text-[32px] leading-none sm:text-[40px]`}
+        style={{ color: "var(--color-leaf)", fontWeight: 400, transform: "rotate(-2deg)" }}
+      >
         {/* The logo's leaf green and no underline, so the heading's
-            "förändra?" stays the one accent on the hero. The message keeps
-            its <u> marker so an underline is easy to bring back. */}
-        {t.rich("overline", { u: (chunks) => chunks })}
+            "förändra?" stays the one accent on the hero. Each word gets its
+            own small tilt and baseline shift, the whole line leans slightly
+            uphill and is "written" in left to right, so it feels handwritten.
+            The message's <u> marker is stripped here — an underline is easy
+            to bring back. */}
+        {t
+          .raw("overline")
+          .replace(/<\/?u>/g, "")
+          .split(" ")
+          .map((word: string, i: number, words: string[]) => {
+            const [deg, dy] = TAGLINE_WOBBLE[i % TAGLINE_WOBBLE.length];
+            return (
+              <span key={i}>
+                <span className="inline-block" style={{ transform: `translateY(${dy}em) rotate(${deg}deg)` }}>
+                  {word}
+                </span>
+                {i < words.length - 1 && " "}
+              </span>
+            );
+          })}
       </p>
       <h1
         className={`${newHomeDisplayFont.className} relative m-0 max-w-[900px] font-extrabold`}
