@@ -13,6 +13,7 @@ import type { Locale } from "next-intl";
 import { isFeatureEnabled } from "@/lib/featureFlags";
 import { getCanvasAiContext } from "@/lib/canvasAi";
 import CanvasAiBar from "@/components/ai/CanvasAiBar";
+import { CanvasIterateProvider } from "@/components/ai/BlockIterateMenu";
 import SectionIntro from "@/components/help/SectionIntro";
 
 export async function generateMetadata({
@@ -74,13 +75,15 @@ export default async function ValuePropositionPage({
       <SectionIntro introKey="valuePropositionPage" />
 
       {ai?.aiAvailable && <CanvasAiBar projectSlug={slug} entity="valueProposition" stepKey={ai.stepKey} mode={ai.mode} canEdit={canEdit} />}
-      <ValuePropositionGrid
-        projectSlug={slug}
-        canvas={canvas}
-        canEdit={canEdit}
-        provenance={ai?.provenance}
-        suggestions={ai?.suggestions}
-      />
+      <CanvasIterateProvider enabled={!!ai?.aiAvailable && ai.mode !== "MANUAL" && canEdit}>
+        <ValuePropositionGrid
+          projectSlug={slug}
+          canvas={canvas}
+          canEdit={canEdit}
+          provenance={ai?.provenance}
+          suggestions={ai?.suggestions}
+        />
+      </CanvasIterateProvider>
     </div>
   );
 }

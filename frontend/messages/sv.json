@@ -2928,6 +2928,11 @@
     "next_step_decided": "Besluta om nästa steg: fortsätta, replikera, eller avsluta ansvarsfullt"
   },
   "PhaseMenuBar": {
+    "navLabel": "Projektets faser",
+    "progressLabel": "{done} av {total} uppgifter klara",
+    "autoDone": "Klart — syns i projektets innehåll",
+    "autoDoneShort": "klart",
+    "nextStep": "Nästa steg:",
     "guideLinkLabel": "{phase} guiden",
     "overviewLinkLabel": "{phase} på en sida"
   },
@@ -3768,6 +3773,9 @@
     "inheritedHint": "ärvt",
     "standardHint": "standard",
     "settingsHeading": "AI i projektet",
+    "budgetUsed": "AI-kvot: {pct} % använd denna period",
+    "budgetResets": "fylls på {date}",
+    "budgetWarning": "Kvoten börjar ta slut — AI-anrop stoppas när den är förbrukad och startar igen när den fylls på.",
     "intro": "Du bestämmer hur mycket AI:n gör: för hela projektet, per fas eller per steg i guiden. Det mest specifika valet gäller. Att byta läge ändrar aldrig något som redan är skrivet.",
     "introDismiss": "Stäng",
     "projectModeHeading": "Projektets läge",
@@ -3777,6 +3785,17 @@
     "projectManagerLabel": "AI-projektledare",
     "projectManagerHint": "Låt AI:n skapa och föreslå uppgifter i projektet. Stäng av så skapas inga uppgifter automatiskt.",
     "saveError": "Kunde inte spara — försök igen."
+  },
+  "AiDraftsNotice": {
+    "summary": "<b>{drafts} av {filled} fält</b> är AI-utkast som ingen i teamet har gått igenom än.",
+    "show": "Visa dem",
+    "next": "Nästa",
+    "stop": "Sluta markera"
+  },
+  "CanvasStatusLegend": {
+    "known": "Klart — ni vet",
+    "assumed": "Antagande — behöver testas",
+    "empty": "Tomt"
   },
   "SectionIntro": {
     "tipLabel": "Tips:",
@@ -3849,10 +3868,12 @@
     }
   },
   "FieldProvenance": {
+    "approve": "Ser bra ut",
+    "approveHint": "Ni har läst utkastet och står för det som det är. Det räknas då som genomgånget, men är fortfarande ett antagande tills ni vet.",
     "aiDraft": "AI-utkast",
-    "aiDraftHint": "Skrivet av AI:n och ännu inte redigerat av en människa.",
-    "aiEdited": "AI + redigerat",
-    "aiEditedHint": "Ett AI-utkast som en människa har redigerat.",
+    "aiDraftHint": "Skrivet av AI:n och ännu inte genomgånget av någon i teamet.",
+    "aiEdited": "AI + granskat",
+    "aiEditedHint": "Ett AI-utkast som någon i teamet har gått igenom — redigerat eller godkänt.",
     "known": "Vet",
     "assumed": "Antar",
     "markKnown": "Markera som något ni vet",
@@ -3901,6 +3922,25 @@
     "nextStepAddMore": "Vill du lägga till något? Skriv det i chatten först.",
     "nextStepBodyAgent": "Nu skapar AI:n ditt projekt och fyller i Idéfasen: beskrivning, globala mål, Social Lean Canvas, värdeerbjudande, omvärldsbevakning och en intervjuguide. Du ser allt på en sida och kan redigera det som inte stämmer.",
     "nextStepBodyAssist": "Nu skapas projektet med namn och beskrivning. Resten fyller du i själv i guiden, med AI:ns förslag bredvid fälten."
+  },
+  "BlockIterate": {
+    "open": "Förbättra",
+    "working": "AI:n tänker …",
+    "close": "Stäng",
+    "back": "Tillbaka",
+    "failed": "Kunde inte ta fram något just nu — försök igen.",
+    "mode_sharpen": "Skärp",
+    "mode_simplify": "Förenkla",
+    "mode_challenge": "Utmana mig",
+    "mode_ask": "Fråga mig",
+    "hint_sharpen": "Gör texten mer konkret — AI:n lägger platshållare där fakta saknas",
+    "hint_simplify": "Samma innehåll, enklare ord",
+    "hint_challenge": "Kritiska frågor att kunna svara på — texten ändras inte",
+    "hint_ask": "AI:n ställer några frågor och skriver ett förslag utifrån dina svar",
+    "questionsHeading": "Svara på det du kan",
+    "createSuggestion": "Skapa förslag",
+    "challengesHeading": "Frågor att fundera på",
+    "suggestionReady": "Förslaget ligger under fältet — välj om du vill använda det."
   },
   "AiSuggestion": {
     "label": "AI-förslag",

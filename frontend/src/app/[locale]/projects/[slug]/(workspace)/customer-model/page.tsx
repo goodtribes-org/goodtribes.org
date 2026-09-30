@@ -14,6 +14,7 @@ import CanvasAiBar from "@/components/ai/CanvasAiBar";
 import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import LeanCanvasHistory from "../lean-canvas/LeanCanvasHistory";
 import CustomerModelGrid from "./CustomerModelGrid";
+import { CanvasIterateProvider } from "@/components/ai/BlockIterateMenu";
 import SectionIntro from "@/components/help/SectionIntro";
 
 export async function generateMetadata({
@@ -59,13 +60,15 @@ export default async function CustomerModelPage({
       <SectionIntro introKey="customerModelPage" />
 
       {ai?.aiAvailable && <CanvasAiBar projectSlug={slug} entity="leanCanvas" stepKey={ai.stepKey} mode={ai.mode} canEdit={canEdit} />}
-      <CustomerModelGrid
-        projectSlug={slug}
-        canvas={project.leanCanvas}
-        canEdit={canEdit}
-        provenance={ai?.provenance}
-        suggestions={ai?.suggestions}
-      />
+      <CanvasIterateProvider enabled={!!ai?.aiAvailable && ai.mode !== "MANUAL" && canEdit}>
+        <CustomerModelGrid
+          projectSlug={slug}
+          canvas={project.leanCanvas}
+          canEdit={canEdit}
+          provenance={ai?.provenance}
+          suggestions={ai?.suggestions}
+        />
+      </CanvasIterateProvider>
 
       <p className="mt-2 text-xs text-dark-slate/40">
         {t("shared")}{" "}

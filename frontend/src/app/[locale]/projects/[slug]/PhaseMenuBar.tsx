@@ -1,14 +1,19 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
-import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, numberChecklist, overviewPathFor, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, numberChecklist, overviewPathFor, PHASE_COLORS, hexToRgba, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { nextStep, phaseProgress } from "@/lib/phaseProgress";
 
 interface Props {
   slug: string;
   phase: ProjectPhaseValue;
+  // Ticked by a human (InitiativeChecklistItem).
   completedKeys: string[];
+  // Shown as done because the project's own data says so (lib/projectSignals.ts
+  // — "3 intervjuer loggade"); can't be unticked, since it isn't a tick.
+  autoDoneKeys?: string[];
   canEdit: boolean;
   // Set on guide pages so the pill for the guide being read gets a ring —
   // independent of `phase` (the project's actual current phase, still shown
@@ -17,18 +22,27 @@ interface Props {
   // Link each phase's dropdown to its one-page overview (flag
   // ai-project-start is on for this viewer).
   showOverviews?: boolean;
+  // "Nästa steg: …" under the bars — for members, not for every visitor.
+  showNextStep?: boolean;
+  // Thin variant for the top of the phase overview pages: no checklist
+  // dropdowns, each phase links straight to its overview.
+  compact?: boolean;
 }
 
-// Fas- och stegmeny (PRD 4d) — en platt meny under hero, "1. Idé", "2. Pilot"
-// osv. Idé täcker både IDEA och SPRINT (se lib/projectPhase.ts — sammanslaget
-// på UI-nivå, inget separat "Sprint"-steg längre). Varje fas har en
-// checklista och går att klicka på för att fälla ut en undermeny med
-// numrerade delsteg ("1.1 Beskriv idén", "1.2 ...").
-export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, viewingPhase, showOverviews }: Props) {
+const guideHref = (slug: string, phase: ProjectPhaseValue, step?: string) =>
+  (phase === "IDEA" ? `/projects/${slug}/guide` : `/projects/${slug}/guide/${phase.toLowerCase()}`) + (step ? `?step=${step}` : "");
+
+// Fasstaplarna (docs/plans/fasframsteg-och-overblick.md): sex kolumner —
+// stapel, numrerad cirkel, fasnamn — i fasens färg (PHASE_COLORS, gult →
+// grönt). Stapeln fylls i takt med att fasens uppgifter blir klara (ibockade
+// eller automatiskt klara), numret blir en bock när fasen är klar. Idé
+// täcker både IDEA och SPRINT (lib/projectPhase.ts). Klick på en fas fäller
+// ut dess checklista ("1.1 Beskriv projektet", …) som förut.
+export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys = [], canEdit, viewingPhase, showOverviews, showNextStep, compact }: Props) {
   const t = useTranslations("PhaseMenuBar");
   const tPhase = useTranslations("ProjectPhase");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
-  const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedKeys));
+  const [ticked, setTicked] = useState<Set<string>>(new Set(completedKeys));
   const [isPending, startTransition] = useTransition();
   const [openPhase, setOpenPhase] = useState<ProjectPhaseValue | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -38,12 +52,15 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
   // so pick up the fresh completedKeys instead of staying stuck on the set
   // this component first mounted with.
   useEffect(() => {
-    setDoneKeys(new Set(completedKeys));
+    setTicked(new Set(completedKeys));
   }, [completedKeys]);
 
-  const displayPhase = toDisplayPhase(phase);
-  const currentIndex = DISPLAY_PHASES.findIndex((p) => p.value === displayPhase);
+  const auto = useMemo(() => new Set(autoDoneKeys), [autoDoneKeys]);
+  const doneKeys = useMemo(() => new Set([...ticked, ...auto]), [ticked, auto]);
+  const progress = phaseProgress(doneKeys);
+  const currentIndex = DISPLAY_PHASES.findIndex((p) => p.value === toDisplayPhase(phase));
   const viewingDisplayPhase = viewingPhase ? toDisplayPhase(viewingPhase) : null;
+  const next = showNextStep ? nextStep(phase, doneKeys) : null;
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -54,173 +71,150 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
   }, [openPhase]);
 
   function handleToggle(p: ProjectPhaseValue, itemKey: string, done: boolean) {
-    if (!canEdit) return;
-    setDoneKeys((prev) => {
-      const next = new Set(prev);
-      if (done) next.add(itemKey); else next.delete(itemKey);
-      return next;
+    if (!canEdit || auto.has(itemKey)) return;
+    setTicked((prev) => {
+      const nextSet = new Set(prev);
+      if (done) nextSet.add(itemKey);
+      else nextSet.delete(itemKey);
+      return nextSet;
     });
     startTransition(() => toggleChecklistItem(slug, p, itemKey, done));
   }
 
-  // Klar-andel per fas — driver linjen som kommer efter fasens ord (t.ex.
-  // 3 av 4 punkter klara = linjen är 75% grön, 25% grå). Beräknas för alla
-  // faser i förväg eftersom linjen framför fas i visar fas i-1:s andel.
-  const phaseProgress = DISPLAY_PHASES.map((p) => {
-    const items = getChecklistForPhase(p.value) ?? [];
-    const done = items.filter((item) => doneKeys.has(item.key)).length;
-    const total = items.length;
-    return { total, pct: total > 0 ? Math.round((done / total) * 100) : 0, complete: total > 0 && done === total };
-  });
-
   return (
     <div ref={menuRef}>
-      <nav className="flex flex-wrap sm:flex-nowrap items-center gap-y-3 text-sm w-full">
+      <nav aria-label={t("navLabel")} className={`grid grid-cols-3 sm:grid-cols-6 ${compact ? "gap-x-2 gap-y-3" : "gap-x-3 gap-y-5"}`}>
         {DISPLAY_PHASES.map((p, i) => {
+          const pr = progress[i];
+          const color = PHASE_COLORS[p.value];
           const isCurrent = i === currentIndex;
-          const isPast = i < currentIndex;
-          const isReached = i <= currentIndex;
+          const isFuture = i > currentIndex;
           const isViewing = p.value === viewingDisplayPhase;
           const checklist = getChecklistForPhase(p.value);
           const itemNumbers = checklist ? numberChecklist(checklist, i + 1) : [];
           const isOpen = openPhase === p.value;
-          const canEditThis = canEdit;
+          const dimmed = isFuture && pr.done === 0;
 
-          // När en fas egen checklista är 100% klar blir dess prick och namn
-          // gröna — oavsett om fasen faktiskt är aktiv än. Utöver det tänds
-          // NÄSTA fas i förskott (prick grön, namn svart) — men bara om ALLA
-          // faser fram till och med denna är helt klara, inte bara den
-          // närmast föregående.
-          const isOwnPhaseComplete = phaseProgress[i].complete;
-          const unlockedByPrevPhase = i > 0 && phaseProgress.slice(0, i).every((pp) => pp.complete);
-          const dotIsGreen = isReached || unlockedByPrevPhase || isOwnPhaseComplete;
-
-          const labelClass = isOwnPhaseComplete
-            ? "text-seagrass font-bold"
-            : unlockedByPrevPhase
-              ? "text-black font-bold"
-              : isCurrent
-                ? "text-dark-slate font-bold"
-                : isPast
-                  ? "text-seagrass/70 font-semibold hover:text-seagrass"
-                  : "text-dark-slate/35 font-semibold hover:text-dark-slate/60";
-
-          const itemContent = (
+          const column = (
             <>
               <span
-                className={`w-2.5 h-2.5 rounded-full flex-shrink-0 border transition-colors mr-1.5 ${
-                  dotIsGreen ? "bg-seagrass border-seagrass" : "bg-white border-dark-slate/25"
-                }`}
-                aria-hidden="true"
-              />
-              <span className={`uppercase tracking-wide text-xs transition-colors ${labelClass}`}>{tPhase(p.value)}</span>
-              <svg
-                className={`w-3 h-3 flex-shrink-0 opacity-50 transition-transform ${isOpen ? "rotate-180" : ""} ${
-                  isOwnPhaseComplete
-                    ? "text-seagrass"
-                    : unlockedByPrevPhase
-                      ? "text-black"
-                      : isCurrent
-                        ? "text-dark-slate"
-                        : isPast
-                          ? "text-seagrass/70"
-                          : "text-dark-slate/35"
-                }`}
-                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                className={`block w-full overflow-hidden rounded-full ${compact ? "h-1.5" : "h-2"}`}
+                style={{ background: hexToRgba(color, 0.2) }}
+                aria-hidden
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-              </svg>
+                <span className="block h-full rounded-full transition-[width] duration-500" style={{ width: `${pr.pct}%`, background: color }} />
+              </span>
+              <span className={`flex items-center ${compact ? "mt-1.5 gap-1.5" : "mt-2.5 gap-1.5 sm:gap-2"}`}>
+                <span
+                  className={`flex shrink-0 items-center justify-center rounded-full font-semibold text-white ${compact ? "h-5 w-5 text-[11px]" : "h-6 w-6 text-xs sm:h-7 sm:w-7 sm:text-sm"} ${
+                    isCurrent || isViewing ? "ring-2 ring-offset-2" : ""
+                  }`}
+                  style={{ background: color, opacity: dimmed ? 0.45 : 1, ["--tw-ring-color" as string]: color }}
+                  aria-hidden
+                >
+                  {pr.complete ? "✓" : i + 1}
+                </span>
+                <span
+                  className={`truncate ${compact ? "text-xs" : "text-[13px] sm:text-base"} ${isCurrent ? "font-bold text-dark-slate" : dimmed ? "font-semibold text-dark-slate/45" : "font-semibold text-dark-slate/80"}`}
+                >
+                  {tPhase(p.value)}
+                </span>
+              </span>
+              <span className="sr-only">{t("progressLabel", { done: pr.done, total: pr.total })}</span>
             </>
           );
 
+          if (compact) {
+            return (
+              <a
+                key={p.value}
+                href={`/projects/${slug}/${overviewPathFor(p.value)}`}
+                aria-current={isViewing ? "page" : undefined}
+                title={t("progressLabel", { done: pr.done, total: pr.total })}
+                className="block min-w-0 rounded-md hover:opacity-80"
+              >
+                {column}
+              </a>
+            );
+          }
+
           return (
-            <Fragment key={p.value}>
-              {i > 0 && (
-                <div
-                  className="hidden sm:block flex-1 h-0.5 mx-1 rounded-full"
-                  style={{
-                    background: `linear-gradient(to right, var(--color-seagrass) ${phaseProgress[i - 1].pct}%, color-mix(in srgb, var(--color-dark-slate) 20%, transparent) ${phaseProgress[i - 1].pct}% 100%)`,
-                  }}
-                  aria-hidden="true"
-                />
+            // z-30 while open: the bars wrap onto two rows below sm, and a
+            // dropdown on the first row would otherwise lose to a later
+            // column's stacking context on the second.
+            <div key={p.value} className={`relative min-w-0 ${isOpen ? "z-30" : "z-10"}`}>
+              {checklist ? (
+                <button
+                  type="button"
+                  onClick={() => setOpenPhase((prev) => (prev === p.value ? null : p.value))}
+                  aria-expanded={isOpen}
+                  aria-current={isViewing ? "step" : undefined}
+                  title={t("progressLabel", { done: pr.done, total: pr.total })}
+                  className="block w-full min-w-0 text-left"
+                >
+                  {column}
+                </button>
+              ) : (
+                <span aria-current={isViewing ? "step" : undefined} className="block min-w-0">
+                  {column}
+                </span>
               )}
-              {/* z-30 while open, not just on the inner dropdown: the phase
-                  bar wraps onto two rows on narrow viewports (flex-wrap
-                  below sm), and a nested z-20 on the dropdown alone is
-                  scoped to this wrapper's own stacking context — it still
-                  loses to a later sibling phase's z-10 wrapper on the row
-                  below, which paints on top by DOM order on a z-index tie.
-                  Elevating the whole wrapper while open fixes that. */}
-              <div className={`relative flex items-center shrink-0 ${isOpen ? "z-30" : "z-10"}`}>
-                {checklist ? (
-                  <button
-                    type="button"
-                    onClick={() => setOpenPhase((prev) => (prev === p.value ? null : p.value))}
-                    aria-expanded={isOpen}
-                    aria-current={isViewing ? "step" : undefined}
-                    className="flex items-center px-1.5 py-1 rounded-full transition-colors"
-                  >
-                    {itemContent}
-                  </button>
-                ) : (
-                  <span aria-current={isViewing ? "step" : undefined} className="flex items-center px-1.5 py-1">
-                    {itemContent}
-                  </span>
-                )}
 
               {isOpen && checklist && (
-                <div className="absolute left-0 top-full mt-2 w-72 bg-white border border-muted-teal/20 rounded-xl shadow-lg z-20 overflow-hidden animate-[fadeIn_0.12s_ease-out]">
+                <div
+                  className={`absolute top-full mt-2 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-muted-teal/20 bg-white shadow-lg animate-[fadeIn_0.12s_ease-out] ${
+                    // Right-aligned in the last column (3 per row on phones,
+                    // 6 from sm) so the dropdown never runs off-screen.
+                    i % 3 === 2 ? "right-0" : "left-0"
+                  } ${i >= 4 ? "sm:left-auto sm:right-0" : "sm:left-0 sm:right-auto"}`}
+                >
                   {showOverviews && (
                     <a
                       href={`/projects/${slug}/${overviewPathFor(p.value)}`}
-                      className="flex items-center justify-between px-3.5 py-2.5 text-sm font-semibold text-seagrass border-b border-muted-teal/10 hover:bg-seagrass/5 transition-colors"
+                      className="flex items-center justify-between border-b border-muted-teal/10 px-3.5 py-2.5 text-sm font-semibold text-seagrass transition-colors hover:bg-seagrass/5"
                     >
                       {t("overviewLinkLabel", { phase: tPhase(p.value) })} <span aria-hidden>→</span>
                     </a>
                   )}
                   <a
-                    href={p.value === "IDEA" ? `/projects/${slug}/guide` : `/projects/${slug}/guide/${p.value.toLowerCase()}`}
-                    className="block px-3.5 pt-3 pb-2 text-xs font-semibold text-dark-slate/40 uppercase tracking-wide border-b border-muted-teal/10 hover:text-seagrass transition-colors"
+                    href={guideHref(slug, p.value)}
+                    className="block border-b border-muted-teal/10 px-3.5 pb-2 pt-3 text-xs font-semibold uppercase tracking-wide text-dark-slate/40 transition-colors hover:text-seagrass"
                   >
                     {t("guideLinkLabel", { phase: tPhase(p.value) })}
                   </a>
                   <div className="py-1">
                     {checklist.map((item, j) => {
                       const done = doneKeys.has(item.key);
+                      const isAuto = auto.has(item.key);
+                      const editable = canEdit && !isAuto;
                       return (
-                        <div key={item.key} className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-seagrass/5 transition-colors">
+                        <div key={item.key} className="flex items-center gap-2.5 px-3.5 py-2 transition-colors hover:bg-seagrass/5">
                           <button
                             type="button"
-                            disabled={isPending || !canEditThis}
+                            disabled={isPending || !editable}
                             onClick={() => handleToggle(p.value, item.key, !done)}
                             aria-checked={done}
                             role="checkbox"
-                            className={`w-4 h-4 rounded-[4px] flex items-center justify-center flex-shrink-0 transition-colors ${
+                            title={isAuto ? t("autoDone") : undefined}
+                            className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-[4px] transition-colors ${
                               done ? "bg-seagrass" : "border border-muted-teal/50 bg-white"
-                            } ${canEditThis ? "" : "cursor-default"}`}
+                            } ${editable ? "" : "cursor-default"}`}
                           >
                             {done && (
-                              <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="h-2.5 w-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                               </svg>
                             )}
                           </button>
                           <span className={`text-sm ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/80"}`}>
-                            <span className={`font-medium ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/40"}`}>
-                              {itemNumbers[j]}
-                            </span>{" "}
+                            <span className={`font-medium ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/40"}`}>{itemNumbers[j]}</span>{" "}
                             <a
-                              href={
-                                item.href
-                                  ? `/projects/${slug}/${item.href}`
-                                  : p.value === "IDEA"
-                                    ? `/projects/${slug}/guide?step=${item.key}`
-                                    : `/projects/${slug}/guide/${p.value.toLowerCase()}?step=${item.key}`
-                              }
+                              href={item.href ? `/projects/${slug}/${item.href}` : guideHref(slug, p.value, item.key)}
                               className={`hover:underline ${done ? "text-dark-slate/30 line-through" : ""}`}
                             >
                               {tChecklist(item.key)}
                             </a>
+                            {isAuto && <span className="ml-1.5 whitespace-nowrap text-[10px] font-medium text-seagrass no-underline">{t("autoDoneShort")}</span>}
                           </span>
                         </div>
                       );
@@ -228,29 +222,19 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, view
                   </div>
                 </div>
               )}
-              </div>
-            </Fragment>
+            </div>
           );
         })}
-        {/* Mållinje efter Impact — andelsfärgad som mellan faserna, men i
-            orange, avslutat med en orange prick (samma storlek som fasernas)
-            som markerar målet bortom Impact. Pricken är bara ihålig med
-            orange kant tills Impacts checklista är 100% klar, då fylls
-            den helt. */}
-        <div
-          className="hidden sm:block flex-1 h-0.5 mx-1 rounded-full"
-          style={{
-            background: `linear-gradient(to right, #f97316 ${phaseProgress[phaseProgress.length - 1].pct}%, color-mix(in srgb, var(--color-dark-slate) 20%, transparent) ${phaseProgress[phaseProgress.length - 1].pct}% 100%)`,
-          }}
-          aria-hidden="true"
-        />
-        <span
-          className={`w-2.5 h-2.5 rounded-full flex-shrink-0 border ${
-            phaseProgress[phaseProgress.length - 1].complete ? "bg-orange-500 border-orange-500" : "bg-white border-orange-500"
-          }`}
-          aria-hidden="true"
-        />
       </nav>
+
+      {next && (
+        <p className={`${compact ? "mt-2 text-xs" : "mt-4 text-sm"} text-dark-slate/70`}>
+          <span className="font-semibold text-dark-slate">{t("nextStep")}</span>{" "}
+          <a href={next.href ? `/projects/${slug}/${next.href}` : guideHref(slug, phase, next.key)} className="font-medium text-seagrass hover:underline">
+            {tChecklist(next.key)} →
+          </a>
+        </p>
+      )}
     </div>
   );
 }
