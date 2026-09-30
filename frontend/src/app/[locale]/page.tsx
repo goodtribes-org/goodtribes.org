@@ -139,7 +139,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       style={{
         marginLeft: "calc(50% - 50vw)",
         width: "100vw",
-        background: "#F6F6F4",
+        background: "#FCFCFB",
         color: INK,
         ["--nh-accent" as string]: "#E8531F",
       }}
