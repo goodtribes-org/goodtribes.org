@@ -4457,7 +4457,7 @@
   "NewHomePage": {
     "metaTitle": "GoodTribes – Vad drömmer du om att förändra?",
     "hero": {
-      "overline": "Vi gör goda drömmar verkliga.",
+      "overline": "Vi gör goda drömmar <u>verkliga</u>.",
       "heading": "Vad drömmer du om att",
       "headingHighlight": "förändra?",
       "intro": "GoodTribes är platsen där människor tillsammans förverkligar idéer som gör världen bättre. Berätta om din dröm, så tar AI-guiden dig hela vägen från idé till verklig skillnad.",
