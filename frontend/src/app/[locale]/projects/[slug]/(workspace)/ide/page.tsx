@@ -31,6 +31,7 @@ import PhaseGateSection from "./PhaseGateSection";
 import { ideaGateCriteria, type GateBrief } from "@/lib/phaseGate";
 import { currentAssumptions, latestInsight, type CritiqueContent, type SynthesisContent } from "@/lib/ideaInsights";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
+import PhaseProgressStrip from "../../PhaseProgressStrip";
 
 // The Idé phase on one page, top to bottom — what the AI produced after
 // Drömsamtalet (in AGENT mode), shown as plain content with vet/antar and an
@@ -99,6 +100,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 py-6">
+      <PhaseProgressStrip projectId={project.id} slug={slug} viewing="IDEA" />
       {isFillInProgress(fill) && <FillPoller />}
 
       <div className="flex flex-wrap items-end justify-between gap-3">

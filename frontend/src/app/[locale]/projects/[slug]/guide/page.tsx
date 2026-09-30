@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { isLeadRole } from "@/lib/authz";
 import IdeaGuide from "./IdeaGuide";
+import { getAutoDoneKeys } from "@/lib/projectSignals";
 import PhaseMenuBar from "../PhaseMenuBar";
 import { IDEA_GUIDE_STEPS } from "@/lib/ideaGuideSteps";
 import { isFeatureEnabled } from "@/lib/featureFlags";
@@ -73,7 +74,9 @@ export default async function IdeaGuidePage({
           slug={slug}
           phase={project.phase}
           completedKeys={project.checklistItems.map((c) => c.itemKey)}
+          autoDoneKeys={await getAutoDoneKeys(project.id, slug)}
           canEdit={true}
+          showNextStep
           viewingPhase="IDEA"
           showOverviews={aiFeatures}
         />
