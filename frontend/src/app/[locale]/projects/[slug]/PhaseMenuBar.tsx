@@ -8,6 +8,8 @@ import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
 import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, numberChecklist, overviewPathFor, PHASE_COLORS, hexToRgba, type ProjectPhaseValue } from "@/lib/projectPhase";
 import { nextStep, phaseProgress } from "@/lib/phaseProgress";
+import { activePhaseFor } from "@/lib/phaseForPath";
+import { usePathname } from "@/i18n/navigation";
 import { ChevronDown } from "lucide-react";
 import { newHomeDisplayFont } from "@/components/ny-startsida/fonts";
 
@@ -78,6 +80,12 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
   const doneKeys = useMemo(() => new Set([...ticked, ...auto]), [ticked, auto]);
   const progress = phaseProgress(doneKeys);
   const currentIndex = DISPLAY_PHASES.findIndex((p) => p.value === toDisplayPhase(phase));
+  // In the header the active phase follows the page: working in a tool of
+  // another phase (e.g. Designsprints → Uppstart) makes that phase active;
+  // pages outside any phase keep the project's own phase active.
+  const pathname = usePathname();
+  const activeIndex =
+    variant === "header" ? DISPLAY_PHASES.findIndex((p) => p.value === activePhaseFor(pathname, slug, phase)) : currentIndex;
   const viewingDisplayPhase = viewingPhase ? toDisplayPhase(viewingPhase) : null;
   const next = showNextStep ? nextStep(phase, doneKeys) : null;
 
@@ -173,14 +181,14 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
         // names show and the columns are equal again.
         style={
           variant === "header"
-            ? ({ "--phase-cols": DISPLAY_PHASES.map((_, i) => (i === currentIndex ? "minmax(0,1.7fr)" : "minmax(0,1fr)")).join(" ") } as React.CSSProperties)
+            ? ({ "--phase-cols": DISPLAY_PHASES.map((_, i) => (i === activeIndex ? "minmax(0,1.7fr)" : "minmax(0,1fr)")).join(" ") } as React.CSSProperties)
             : undefined
         }
       >
         {DISPLAY_PHASES.map((p, i) => {
           const pr = progress[i];
           const color = PHASE_COLORS[p.value];
-          const isCurrent = i === currentIndex;
+          const isCurrent = i === activeIndex;
           const isFuture = i > currentIndex;
           const isViewing = p.value === viewingDisplayPhase;
           const checklist = getChecklistForPhase(p.value);
@@ -324,7 +332,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                       style={{ left: menuPos.left, top: menuPos.top }}
                       className="fixed z-[10001] w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-muted-teal/20 bg-white shadow-lg animate-[fadeIn_0.12s_ease-out]"
                     >
-                      {next && isCurrent && (
+                      {next && i === currentIndex && (
                         <a
                           href={next.href ? `/projects/${slug}/${next.href}` : guideHref(slug, phase, next.key)}
                           className="block border-b border-muted-teal/10 px-3.5 py-2.5 transition-colors hover:bg-coral/10"
