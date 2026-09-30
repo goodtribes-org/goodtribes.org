@@ -3786,11 +3786,19 @@
     "projectManagerHint": "Let the AI create and suggest tasks in the project. Turn off and no tasks are created automatically.",
     "saveError": "Could not save — try again."
   },
+  "AiDraftsNotice": {
+    "summary": "<b>{drafts} of {filled} fields</b> are AI drafts nobody in the team has reviewed yet.",
+    "show": "Show them",
+    "next": "Next",
+    "stop": "Stop highlighting"
+  },
   "FieldProvenance": {
+    "approve": "Looks good",
+    "approveHint": "You've read the draft and stand behind it as it is. It then counts as reviewed, but it's still an assumption until you know.",
     "aiDraft": "AI draft",
-    "aiDraftHint": "Written by the AI and not yet edited by a person.",
-    "aiEdited": "AI + edited",
-    "aiEditedHint": "An AI draft a person has edited.",
+    "aiDraftHint": "Written by the AI and not yet reviewed by anyone in the team.",
+    "aiEdited": "AI + reviewed",
+    "aiEditedHint": "An AI draft someone in the team has reviewed — edited or approved.",
     "known": "Known",
     "assumed": "Assumed",
     "markKnown": "Mark as something you know",
