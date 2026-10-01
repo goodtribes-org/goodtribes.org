@@ -1,8 +1,6 @@
 import type { Viewport } from "next";
-import { Inter } from "next/font/google";
+import { siteSansFont as inter } from "@/lib/fonts";
 import "../globals.css";
-
-const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 
 export const viewport: Viewport = {
   width: "device-width",

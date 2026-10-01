@@ -1,26 +1,19 @@
-import { Kalam, Instrument_Serif, DM_Sans, JetBrains_Mono, Inter, Satisfy } from "next/font/google";
+import localFont from "next/font/local";
+
+// Self-hosted (src/fonts/, see its README) rather than next/font/google: the
+// Google fetch at build time intermittently broke the CI Docker build.
 
 // The site's base sans font (also applied to <html> in the root layout) —
-// shared here so the homepage "showroom" sections use the exact same Inter
-// instance instead of loading a second copy of it.
-export const siteSansFont = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
+// shared here so the homepage "showroom" sections and the offline page use
+// the exact same Inter instance instead of loading a second copy of it.
+export const siteSansFont = localFont({ src: "../fonts/Inter-latin.woff2", weight: "400 800", display: "swap" });
 
-// Script font for the homepage hero's main tagline only ("Vi gör goda
-// drömmar verkliga.") — picked for a softer, more flowing/curly feel than
-// the plain sans used for the rest of the hero and showroom sections.
-export const heroTaglineFont = Satisfy({ subsets: ["latin"], weight: ["400"] });
+// Script font for "Vi gör goda drömmar verkliga." — the start page hero's
+// tagline and the footer's.
+export const heroTaglineFont = localFont({ src: "../fonts/Satisfy-latin.woff2", weight: "400", display: "swap" });
 
-// Shared handwriting-style display font for hero headings (homepage +
-// per-project), so both stay in sync instead of loading separate instances.
-export const handwritingFont = Kalam({ subsets: ["latin"], weight: ["700"] });
+// Thin handwriting font for the Polaroid caption on project pages.
+export const handwritingFontThin = localFont({ src: "../fonts/Kalam-latin.woff2", weight: "400", display: "swap" });
 
-// Thinner variant (same family) for the Polaroid-caption use — the bold
-// weight above reads as a thick marker at small sizes.
-export const handwritingFontThin = Kalam({ subsets: ["latin"], weight: ["400"] });
-
-// The homepage "showroom" sections (idea band through end-CTA) use a
-// distinct three-font system per the design handoff: serif display
-// headings, a grotesque body/UI font, and a mono font for eyebrows/labels.
-export const displaySerifFont = Instrument_Serif({ subsets: ["latin"], weight: ["400"] });
-export const showroomBodyFont = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "700"] });
-export const showroomMonoFont = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500"] });
+// Mono font for the homepage "showroom" sections' eyebrows/labels.
+export const showroomMonoFont = localFont({ src: "../fonts/JetBrainsMono-latin.woff2", weight: "400 500", display: "swap" });
