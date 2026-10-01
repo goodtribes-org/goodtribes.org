@@ -3,13 +3,26 @@
 import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { startDreamFromHome } from "@/app/[locale]/dream-actions";
-import { newHomeDisplayFont, newHomeScriptFont } from "./fonts";
+import { heroTaglineFont } from "@/lib/fonts";
+import { newHomeDisplayFont } from "./fonts";
 
 // Kept in sessionStorage across the login round trip, so a visitor who
 // writes their dream before logging in finds it again afterwards. It never
 // goes in the URL.
 const DRAFT_KEY = "gt:new-home-dream";
 const EXAMPLE_COUNT = 4;
+
+// Small per-word tilt (deg) and baseline shift (em) so the tagline reads as
+// written by hand on paper rather than typeset in a straight line. Fixed
+// values, not random, so server and client render the same thing.
+const TAGLINE_WOBBLE: [number, number][] = [
+  [-3, 0.02],
+  [1.5, -0.04],
+  [-1, 0.03],
+  [2.5, -0.02],
+  [-2, 0.05],
+  [1, -0.03],
+];
 // Matches the placeholder's fade animation (nh-ph below), so each example
 // fades in, stays and fades out once.
 const EXAMPLE_INTERVAL_MS = 3200;
@@ -93,27 +106,54 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
           88%  { opacity: 0.4; }
           100% { transform: translate(12px, -470px) rotate(4deg) scale(1.6); opacity: 0; }
         }
+        @keyframes nh-write { 0% { clip-path: inset(-30% 100% -30% -5%); } 100% { clip-path: inset(-30% -5% -30% -5%); } }
         .nh-grow { transform-origin: 47% 100%; }
         @media (prefers-reduced-motion: no-preference) {
           .nh-grow { animation: nh-grow 1.4s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+          .nh-write { animation: nh-write 1.6s cubic-bezier(0.45, 0.05, 0.35, 1) 0.2s both; }
           .nh-ph { animation: nh-ph 3.2s ease-in-out infinite; }
           .nh-fly-up-a { animation: nh-fly-up-a 14s ease-in-out infinite; }
           .nh-fly-up-b { animation: nh-fly-up-b 16s ease-in-out infinite; }
         }
       `}</style>
 
-      <p className={`${newHomeScriptFont.className} relative text-[32px] leading-none sm:text-[40px]`} style={{ color: "#C2410C" }}>
-        {t("overline")}
+      <p
+        className={`${heroTaglineFont.className} nh-write relative text-[32px] leading-none sm:text-[40px]`}
+        style={{ color: "var(--color-navy)", fontWeight: 400, transform: "rotate(-2deg)" }}
+      >
+        {/* The logo's blue and no underline, so the heading's
+            "förändra?" stays the one accent on the hero. Each word gets its
+            own small tilt and baseline shift, the whole line leans slightly
+            uphill and is "written" in left to right, so it feels handwritten.
+            The message's <u> marker is stripped here — an underline is easy
+            to bring back. */}
+        {t
+          .raw("overline")
+          .replace(/<\/?u>/g, "")
+          .split(" ")
+          .map((word: string, i: number, words: string[]) => {
+            const [deg, dy] = TAGLINE_WOBBLE[i % TAGLINE_WOBBLE.length];
+            return (
+              <span key={i}>
+                <span className="inline-block" style={{ transform: `translateY(${dy}em) rotate(${deg}deg)` }}>
+                  {word}
+                </span>
+                {i < words.length - 1 && " "}
+              </span>
+            );
+          })}
       </p>
       <h1
         className={`${newHomeDisplayFont.className} relative m-0 max-w-[900px] font-extrabold`}
         style={{ fontSize: "clamp(2.6rem, 6.4vw, 84px)", lineHeight: 1.02, letterSpacing: "-0.035em" }}
       >
         {t("heading")}{" "}
-        <span className="relative inline-block" style={{ color: "var(--nh-accent)" }}>
-          {t("headingHighlight")}
-          <svg width="100%" height="22" viewBox="0 0 300 22" preserveAspectRatio="none" fill="none" aria-hidden className="absolute left-0" style={{ bottom: -14 }}>
-            <path d="M4 14 C 80 4, 200 4, 296 12" stroke="#F5B82E" strokeWidth="7" strokeLinecap="round" />
+        <span className="relative inline-block isolate" style={{ color: "var(--nh-accent)" }}>
+          <span className="relative z-[1]">{t("headingHighlight")}</span>
+          {/* Same hand-drawn double brush stroke as the footer's tagline, in yellow */}
+          <svg viewBox="0 0 200 20" preserveAspectRatio="none" fill="none" aria-hidden className="pointer-events-none absolute left-[-3%] z-0 w-[106%]" style={{ bottom: "-0.26em", height: "0.4em" }}>
+            <path d="M3 13 C 40 9.5, 90 7, 140 7.5 C 165 7.8, 185 9, 197 10.5" stroke="#F5B82E" strokeWidth="5" strokeLinecap="round" />
+            <path d="M18 15.5 C 70 11.5, 130 10.5, 186 12.5" stroke="#F5B82E" strokeWidth="2.6" strokeLinecap="round" opacity="0.75" />
           </svg>
         </span>
       </h1>

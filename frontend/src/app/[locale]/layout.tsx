@@ -28,6 +28,7 @@ import { SandboxProvider } from "@/components/SandboxIndicator";
 import { auth } from "@/auth";
 import { isSiteAdmin } from "@/lib/authz";
 import { getFooterPages } from "@/lib/sitePages";
+import { heroTaglineFont } from "@/lib/fonts";
 
 const APP_URL = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
 
@@ -140,8 +141,8 @@ export default async function LocaleLayout({
   };
 
   return (
-    <html lang={locale} className={`bg-[#F6F6F4] ${siteSansFont.className}`}>
-      <body className="min-h-screen overflow-x-clip bg-[#F6F6F4] text-dark-slate flex flex-col">
+    <html lang={locale} className={`bg-[#FCFCFB] ${siteSansFont.className}`}>
+      <body className="min-h-screen overflow-x-clip bg-[#FCFCFB] text-dark-slate flex flex-col">
         {/* Static, locally-constructed object — no user input reaches this __html. */}
         <script
           type="application/ld+json"
@@ -201,8 +202,18 @@ export default async function LocaleLayout({
                     unoptimized
                     className="object-contain"
                   />
-                  <h2 className="text-dark-slate font-semibold" style={{ fontSize: "clamp(20px,2.6vw,34px)", letterSpacing: "-.01em", whiteSpace: "nowrap" }}>
-                    Vi gör goda drömmar <span style={{ color: "var(--color-coral)" }}>verkliga</span>.
+                  <h2 className={`${heroTaglineFont.className} text-dark-slate leading-none`} style={{ fontSize: "clamp(26px,3vw,40px)", fontWeight: 400, whiteSpace: "nowrap" }}>
+                    Vi gör goda drömmar{" "}
+                    <span className="relative inline-block isolate">
+                      <span className="relative z-[1]">verkliga</span>
+                      {/* Hand-drawn coral brush stroke, like the underline on goodtribes.org's hero —
+                          drawn behind the word so descenders (the g) stay on top */}
+                      <svg aria-hidden viewBox="0 0 200 20" preserveAspectRatio="none" fill="none" className="absolute left-[-4%] w-[108%] pointer-events-none z-0" style={{ bottom: "-0.26em", height: "0.4em" }}>
+                        <path d="M3 13 C 40 9.5, 90 7, 140 7.5 C 165 7.8, 185 9, 197 10.5" stroke="var(--color-coral)" strokeWidth="5" strokeLinecap="round" />
+                        <path d="M18 15.5 C 70 11.5, 130 10.5, 186 12.5" stroke="var(--color-coral)" strokeWidth="2.6" strokeLinecap="round" opacity="0.75" />
+                      </svg>
+                    </span>
+                    .
                   </h2>
                 </div>
 
@@ -280,19 +291,6 @@ export default async function LocaleLayout({
                     ))}
                     <Link href="/suggestions" className="hover:text-seagrass transition-colors">{t("suggestions")}</Link>
                   </nav>
-                </div>
-              </div>
-              <div className="border-t border-muted-teal/20">
-                <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between text-[11px] text-dark-slate/40">
-                  <p>© {new Date().getFullYear()} GoodTribes Foundation · {t("copyrightNote")}</p>
-                  <a
-                    href="#top"
-                    className="inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0"
-                    style={{ width: 26, height: 26, background: "var(--color-coral)", color: "white" }}
-                    aria-label={t("backToTop")}
-                  >
-                    ↑
-                  </a>
                 </div>
               </div>
             </SiteFooter>

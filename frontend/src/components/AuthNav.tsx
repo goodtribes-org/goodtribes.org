@@ -84,8 +84,13 @@ export default function AuthNav() {
   }
 
   return (
-    <div className="hidden md:flex items-center gap-3">
-      <Link href="/login" className="font-bold text-dark-slate/70 hover:text-seagrass text-sm whitespace-nowrap">
+    // A clear button, on every screen size: it's the only way to sign in
+    // now that the ☰ menu no longer has a "Logga in" row.
+    <div className="flex items-center">
+      <Link
+        href="/login"
+        className="whitespace-nowrap rounded-full bg-coral px-3.5 py-1.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-watermelon focus:outline-none focus-visible:ring-2 focus-visible:ring-coral focus-visible:ring-offset-2 sm:px-4"
+      >
         {t("signIn")}
       </Link>
     </div>

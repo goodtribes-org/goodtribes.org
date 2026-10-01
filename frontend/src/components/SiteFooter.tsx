@@ -1,19 +1,4 @@
-"use client";
-
-import { useSandboxIndicator } from "./SandboxIndicator";
-
+// Same light grey line as the left menu's edge (#E2E2E0), on every page.
 export default function SiteFooter({ children }: { children: React.ReactNode }) {
-  const isSandbox = useSandboxIndicator();
-
-  return (
-    <footer
-      className="shrink-0 bg-[#fbf8f4]"
-      style={{
-        borderTop: isSandbox ? "1px solid #b3450c" : "1px solid transparent",
-        borderImage: isSandbox ? undefined : "linear-gradient(90deg, var(--color-coral), var(--color-seagrass), var(--color-navy)) 1",
-      }}
-    >
-      {children}
-    </footer>
-  );
+  return <footer className="shrink-0 border-t border-[#E2E2E0] bg-[#FBFBF9]">{children}</footer>;
 }

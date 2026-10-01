@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import {
@@ -12,8 +12,12 @@ import {
   Plus,
   Compass,
   FolderKanban,
+  Pin,
+  PinOff,
   type LucideIcon,
 } from "lucide-react";
+import { buildSimpleProjectNav } from "@/lib/projectSimpleNav";
+import { setProjectMenuPinned, useProjectMenuContext, useProjectMenuPinned, type ProjectMenuContext } from "@/lib/projectMenuStore";
 
 type Item = { href: string; label: string };
 type Section = { key: string; title: string; icon: LucideIcon; items: Item[] };
@@ -68,6 +72,10 @@ export default function SideMenu() {
   }, [open]);
 
   const loggedIn = !!session?.user;
+  // PROTOTYPE: the project page publishes its context (projectMenuStore), so
+  // the drawer can hold that project's full, phase-aware tool menu.
+  const projectContext = useProjectMenuContext();
+  const pinned = useProjectMenuPinned();
 
   const create: Section = {
     key: "create",
@@ -136,7 +144,7 @@ export default function SideMenu() {
         onClick={() => setOpen(false)}
         className="absolute inset-0 bg-dark-slate/30 animate-[fadeIn_150ms_ease-out]"
       />
-      <aside className="absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-xl flex flex-col animate-[slideIn_180ms_ease-out]">
+      <aside className="absolute left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-[#FBFBF9] shadow-xl flex flex-col animate-[slideIn_180ms_ease-out]">
         <div className="flex items-center justify-between px-4 h-[74px] border-b border-muted-teal/30 shrink-0">
           <span className="font-semibold text-dark-slate">{t("menu")}</span>
           <button
@@ -160,31 +168,32 @@ export default function SideMenu() {
             {t("home")}
           </Link>
 
-          {context && (
-            <MenuSection section={context} activeHref={activeHref} highlighted defaultOpen />
-          )}
-          {project && context === project && (
-            <p className="mx-5 mt-1 mb-2 text-[11px] text-dark-slate/40">{t("projectAllSections")}</p>
+          {projectContext && projectContext.slug === slug ? (
+            <ProjectTools
+              ctx={projectContext}
+              pinned={pinned}
+              onPin={() => {
+                setProjectMenuPinned(!pinned);
+                setOpen(false);
+              }}
+            />
+          ) : (
+            <>
+              {context && <MenuSection section={context} activeHref={activeHref} highlighted defaultOpen />}
+              {project && context === project && (
+                <p className="mx-5 mt-1 mb-2 text-[11px] text-dark-slate/40">{t("projectAllSections")}</p>
+              )}
+            </>
           )}
 
           {rest.map((s) => (
-            <MenuSection key={s.key} section={s} activeHref={activeHref} defaultOpen />
+            // Inside a project the site-wide sections start folded, so the
+            // project's tools stay at the top without a long scroll.
+            <MenuSection key={s.key} section={s} activeHref={activeHref} defaultOpen={!projectContext} />
           ))}
 
-          <div className="mx-4 my-3 border-t border-muted-teal/20" />
-          {loggedIn ? (
-            <button
-              type="button"
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="mx-2 px-3 py-2 text-left text-dark-slate/50 hover:text-dark-slate"
-            >
-              {t("logOut")}
-            </button>
-          ) : (
-            <Link href="/login" className="block mx-2 px-3 py-2 rounded-lg font-semibold text-seagrass hover:bg-dry-sage/20">
-              {t("signIn")}
-            </Link>
-          )}
+          {/* Signing in and out lives top right (AuthNav: the "Logga in"
+              button, or the profile menu) — this menu is for getting around. */}
         </nav>
       </aside>
     </div>
@@ -257,6 +266,58 @@ function MenuSection({
             </Link>
           );
         })}
+    </div>
+  );
+}
+
+// PROTOTYPE: the project's menu inside the drawer — seven entries
+// (lib/projectSimpleNav.ts). Merged entries open their first tab; HubTabs on
+// those pages reach the rest, and the phase tools live on the phase overview.
+function ProjectTools({ ctx, pinned, onPin }: { ctx: ProjectMenuContext; pinned: boolean; onPin: () => void }) {
+  const t = useTranslations("Nav");
+  const tProject = useTranslations("ProjectSideNav");
+  const tMenu = useTranslations("PhaseMenuBar");
+  const tPhase = useTranslations("ProjectPhase");
+  const pathname = usePathname();
+  const entries = buildSimpleProjectNav(
+    tProject as unknown as (k: string, v?: Record<string, string>) => string,
+    tMenu as unknown as (k: string, v?: Record<string, string>) => string,
+    (ph) => tPhase(ph as Parameters<typeof tPhase>[0]),
+    ctx,
+  );
+
+  return (
+    <div className="mt-2 mx-2 rounded-xl bg-dry-sage/15 pb-2">
+      <div className="flex items-center justify-between gap-2 px-3 pt-2 pb-1">
+        <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-seagrass">
+          <FolderKanban className="w-4 h-4" /> {t("thisProject")}
+        </span>
+        <button
+          type="button"
+          onClick={onPin}
+          title={pinned ? "Visa projektmenyn bara här i menyn igen" : "Håll projektmenyn öppen till vänster på projektsidorna"}
+          className="hidden lg:flex items-center gap-1 rounded-full border border-muted-teal/40 bg-white px-2 py-0.5 text-[11px] font-medium text-dark-slate/60 hover:text-dark-slate"
+        >
+          {pinned ? <PinOff className="w-3 h-3" /> : <Pin className="w-3 h-3" />} {pinned ? "Lossa menyn" : "Fäst menyn"}
+        </button>
+      </div>
+      {entries.map((e) => {
+        const Icon = e.icon;
+        const active = e.matches(pathname);
+        return (
+          <Link
+            key={e.key}
+            href={e.href}
+            aria-current={active ? "page" : undefined}
+            className={`flex items-center gap-2.5 mx-1 pl-4 pr-3 py-2 rounded-lg ${
+              active ? "bg-seagrass/10 text-seagrass font-semibold" : "text-dark-slate/80 hover:text-dark-slate hover:bg-dry-sage/20"
+            }`}
+          >
+            <Icon className="w-4 h-4 shrink-0" strokeWidth={2} />
+            <span className="truncate">{e.label}</span>
+          </Link>
+        );
+      })}
     </div>
   );
 }

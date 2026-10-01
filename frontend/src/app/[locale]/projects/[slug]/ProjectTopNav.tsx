@@ -1,5 +1,8 @@
 "use client";
 
+import type React from "react";
+import { setProjectMenuContext } from "@/lib/projectMenuStore";
+
 import { Link, usePathname } from "@/i18n/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -52,7 +55,7 @@ import {
 import type { ProjectPhaseValue } from "@/lib/projectPhase";
 import { groupNavItemsByPhase } from "@/lib/navPhaseGrouping";
 
-type NavItem = {
+export type NavItem = {
   label: string;
   href: string;
   icon: LucideIcon;
@@ -126,7 +129,7 @@ function adminItems(t: T): NavItem[] {
   ];
 }
 
-type Group = {
+export type Group = {
   key: string;
   label: string;
   icon: LucideIcon;
@@ -134,6 +137,46 @@ type Group = {
   early?: NavItem[];
   locked?: NavItem[];
 };
+
+/**
+ * The project menu's groups, shared by the tabs in the header (ProjectTopNav)
+ * and the side rail on the project home (ProjectSideNav).
+ */
+export function buildProjectNavGroups(
+  t: T,
+  {
+    phase,
+    completedChecklistKeys,
+    isOwner,
+    isCommercial,
+  }: { phase?: ProjectPhaseValue; completedChecklistKeys?: string[]; isOwner?: boolean; isCommercial?: boolean },
+): Group[] {
+  // phase is optional (e.g. /messages?project=… doesn't know it) — without it
+  // every phase tool is shown as available rather than guessing a phase.
+  const phased = phase
+    ? groupNavItemsByPhase(phaseItems(t), phase, completedChecklistKeys ?? [])
+    : { current: phaseItems(t), early: [] as NavItem[], locked: [] as NavItem[] };
+
+  return [
+    { key: "work", label: t("groupWork"), icon: Briefcase, items: workItems(t) },
+    { key: "docs", label: t("groupDocs"), icon: FileText, items: docItems(t) },
+    {
+      key: "phase",
+      label: t("groupPhaseTools"),
+      icon: Wrench,
+      items: phased.current,
+      early: phased.early,
+      locked: phased.locked,
+    },
+    {
+      key: "community",
+      label: t("toolsGroupLabel"),
+      icon: Users2,
+      items: communityItems(t).filter((i) => !i.commercialOnly || isCommercial),
+    },
+    ...(isOwner ? [{ key: "admin", label: t("adminGroupLabel"), icon: Settings, items: adminItems(t) }] : []),
+  ];
+}
 
 // Empty element in the site header ([locale]/layout.tsx) the tabs portal into.
 export const PROJECT_NAV_SLOT_ID = "project-nav-slot";
@@ -152,6 +195,7 @@ export default function ProjectTopNav({
   isCommercial,
   phase,
   completedChecklistKeys,
+  phaseStrip,
 }: {
   slug: string;
   title: string;
@@ -159,6 +203,9 @@ export default function ProjectTopNav({
   isCommercial?: boolean;
   phase?: ProjectPhaseValue;
   completedChecklistKeys?: string[];
+  // PROTOTYPE (proto/phases-top-tools-left): the phase bars in the header on
+  // wide screens; the tool tabs move to ProjectSideNav there.
+  phaseStrip?: React.ReactNode;
 }) {
   const pathname = usePathname();
   const t = useTranslations("ProjectSideNav");
@@ -167,6 +214,14 @@ export default function ProjectTopNav({
   const [menuPos, setMenuPos] = useState<{ left: number; top: number } | null>(null);
 
   useEffect(() => setOpenKey(null), [pathname]);
+
+  // PROTOTYPE: let the ☰ drawer (SideMenu) show this project's full tool menu.
+  const checklistKey = (completedChecklistKeys ?? []).join(",");
+  useEffect(() => {
+    setProjectMenuContext({ slug, phase, completedChecklistKeys, isOwner, isCommercial });
+    return () => setProjectMenuContext(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug, phase, checklistKey, isOwner, isCommercial]);
 
   useEffect(() => {
     if (!openKey) return;
@@ -203,31 +258,7 @@ export default function ProjectTopNav({
     return item.getHref ? item.getHref(slug) : `${base}${item.href}`;
   }
 
-  // phase is optional (e.g. /messages?project=… doesn't know it) — without it
-  // every phase tool is shown as available rather than guessing a phase.
-  const phased = phase
-    ? groupNavItemsByPhase(phaseItems(t), phase, completedChecklistKeys ?? [])
-    : { current: phaseItems(t), early: [] as NavItem[], locked: [] as NavItem[] };
-
-  const groups: Group[] = [
-    { key: "work", label: t("groupWork"), icon: Briefcase, items: workItems(t) },
-    { key: "docs", label: t("groupDocs"), icon: FileText, items: docItems(t) },
-    {
-      key: "phase",
-      label: t("groupPhaseTools"),
-      icon: Wrench,
-      items: phased.current,
-      early: phased.early,
-      locked: phased.locked,
-    },
-    {
-      key: "community",
-      label: t("toolsGroupLabel"),
-      icon: Users2,
-      items: communityItems(t).filter((i) => !i.commercialOnly || isCommercial),
-    },
-    ...(isOwner ? [{ key: "admin", label: t("adminGroupLabel"), icon: Settings, items: adminItems(t) }] : []),
-  ];
+  const groups = buildProjectNavGroups(t, { phase, completedChecklistKeys, isOwner, isCommercial });
 
   function toggle(key: string, button: HTMLButtonElement) {
     if (openKey === key) {
@@ -319,16 +350,19 @@ export default function ProjectTopNav({
         )}
       {headerSlot &&
         createPortal(
-          <nav
-            ref={navRef}
-            data-project-nav
-            aria-label={t("navGroupsLabel")}
-            className="flex shrink-0 items-stretch h-full gap-0.5"
-          >
-            {groups.slice(0, 1).map((g) => renderGroupTab(g))}
-            {directTab(t("navChat"), `/messages?project=${slug}`, MessageCircle, isActive("/kanaler"))}
-            {groups.slice(1).map((g) => renderGroupTab(g))}
-          </nav>,
+          <>
+            {phaseStrip && <div className="hidden lg:flex h-full w-[760px] xl:w-[900px] max-w-full items-center">{phaseStrip}</div>}
+            <nav
+              ref={navRef}
+              data-project-nav
+              aria-label={t("navGroupsLabel")}
+              className={`${phaseStrip ? "lg:hidden " : ""}flex shrink-0 items-stretch h-full gap-0.5`}
+            >
+              {groups.slice(0, 1).map((g) => renderGroupTab(g))}
+              {directTab(t("navChat"), `/messages?project=${slug}`, MessageCircle, isActive("/kanaler"))}
+              {groups.slice(1).map((g) => renderGroupTab(g))}
+            </nav>
+          </>,
           headerSlot,
         )}
 
