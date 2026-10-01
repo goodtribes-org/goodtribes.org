@@ -12,7 +12,8 @@ export default function ShareButton({
   url: string;
   title: string;
   text?: string;
-  variant?: "icon" | "button";
+  // "header": a plain share icon sized like the site header's other icons.
+  variant?: "icon" | "button" | "header";
 }) {
   const t = useTranslations("ShareButton");
   const [open, setOpen] = useState(false);
@@ -54,7 +55,22 @@ export default function ShareButton({
 
   return (
     <div className="relative inline-block">
-      {variant === "icon" ? (
+      {variant === "header" ? (
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className="relative p-1 text-dark-slate/60 hover:text-dark-slate transition-colors"
+          title={t("shareTitle")}
+          aria-label={t("shareTitle")}
+          aria-expanded={open}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true">
+            <circle cx="18" cy="5" r="2.5" />
+            <circle cx="6" cy="12" r="2.5" />
+            <circle cx="18" cy="19" r="2.5" />
+            <path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4" />
+          </svg>
+        </button>
+      ) : variant === "icon" ? (
         <button
           onClick={() => setOpen((o) => !o)}
           className="text-xs text-dark-slate/40 hover:text-coral transition-colors flex items-center gap-1"
@@ -73,7 +89,7 @@ export default function ShareButton({
       )}
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-80 border border-muted-teal/40 rounded-lg p-4 bg-white shadow-lg">
+        <div className="absolute right-0 z-50 mt-2 w-80 border border-muted-teal/40 rounded-lg p-4 bg-white shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-dark-slate">{t("shareTitle")}</h3>
             <button

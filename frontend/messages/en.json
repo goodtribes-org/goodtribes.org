@@ -159,6 +159,8 @@
     "cancel": "Cancel"
   },
   "ProjectCard": {
+    "seekingHelp": "Looking for help",
+    "seekingHelpTitle": "Looking for: {skills}",
     "byAuthor": "by",
     "unknownAuthor": "Unknown",
     "noDescriptionYet": "No description yet.",
@@ -171,7 +173,8 @@
     "phaseIdea": "Idea",
     "phaseActive": "Active",
     "phaseImpact": "Impact",
-    "phaseArchived": "Archived"
+    "phaseArchived": "Archived",
+    "startedProject": "{name} – started the project"
   },
   "FlagContent": {
     "reasonOffensive": "Offensive content",
@@ -852,6 +855,12 @@
     "suggestWithAiButton": "✨ Suggest with AI",
     "aiBadge": "AI",
     "skillsNeededLabel": "Skills needed",
+    "skillsNeededHint": "Pick what you need help with, or add something that's missing.",
+    "addSkillPlaceholder": "Add a skill, e.g. App developer",
+    "addSkillButton": "Add",
+    "newSkillBadge": "new",
+    "removeNewSkill": "Remove {name}",
+    "noSkillsYet": "No skills yet – add the first one below.",
     "saveChangesButton": "Save changes",
     "githubColumnMapHeading": "GitHub status → column",
     "githubColumnMapHint": "Each Status on the board ends up in the column you choose here. Closed issues and merged pull requests always end up in Done.",
@@ -4470,7 +4479,8 @@
       },
       "note": "Free account needed for the AI guide · The conversation is private until you create the project yourself",
       "restored": "Welcome back! Your dream is still here, press the arrow to start.",
-      "submit": "Start with the AI guide"
+      "submit": "Start with the AI guide",
+      "helpInstead": "Would you rather help out? See projects looking for people →"
     },
     "live": {
       "label": "Live",
@@ -4495,30 +4505,38 @@
       "allLink": "See all projects →"
     },
     "stats": {
-      "eyebrow": "Our impact",
-      "heading": "What's happening on the platform",
-      "raised": "raised in total",
-      "tasks": "tasks completed",
-      "tokens": "tokens awarded",
-      "projects": "active projects"
+      "eyebrow": "Together",
+      "heading": "What we've done together",
+      "raised": "raised together",
+      "tasks": "tasks we've completed",
+      "tokens": "tokens we've given each other",
+      "projects": "projects we're running right now"
     },
     "founding": {
-      "eyebrow": "How far an idea can go",
-      "heading": "Infos: Datordonation",
+      "eyebrow": "Our story",
+      "heading": "Where it all began",
       "storyHeading": "It started with computers that were going to be scrapped",
       "body": "Perfectly working computers are replaced after three or four years – while preschools, schools and non-profits lack equipment. Infos Datordonation solved both problems: the computers were securely wiped, got new software and went on to schools including Tensta, Rinkeby and Skärholmen and to organisations such as Amnesty, Greenpeace and Save the Children. That work led to the founding of the GoodTribes Foundation, so that more good ideas can help build a better world.",
       "supportLabel": "Made possible by"
     },
-    "tools": {
-      "eyebrow": "Tools",
-      "heading": "Everything you need, already built in"
-    },
     "community": {
-      "eyebrow": "Goodtribes community",
+      "eyebrow": "We are GoodTribes",
       "title": "Be part of something bigger",
       "heading": "Happening now",
       "subheading": "Latest activity on the platform",
-      "seeAllLink": "See all activity →"
+      "seeAllLink": "See all activity →",
+      "peopleHeading": "We are {count} people making this happen together",
+      "meetAll": "Meet everyone →",
+      "wallTitle": "Newest in the community",
+      "wallBody": "Developers, designers, teachers, retirees and students – everyone who puts in an hour here makes a dream a little more real.",
+      "join": "Join us",
+      "recentTitle": "What we've done lately",
+      "thank": "Thank",
+      "someone": "Someone",
+      "startedProject": "started {project}",
+      "sharedIdea": "shared a new idea: {title}",
+      "reachedMilestone": "reached a milestone in {project}: {title}",
+      "inProject": "{action} in {project}"
     },
     "steps": {
       "eyebrow": "Five steps",
@@ -4539,5 +4557,12 @@
       "step4Title": "Together you create a better world",
       "step4Body": "Every realized dream gives you and others the chance to Live Well, Feel Good, and Do Good."
     }
+  },
+  "HeaderTools": {
+    "tools": "Tools",
+    "toolsHeading": "The tools in every project",
+    "toolsIntro": "Every project gets these tools, completely free.",
+    "trySandbox": "Try them in the Sandbox",
+    "startProject": "Start a project"
   }
 }

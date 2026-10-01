@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 import { SdgIcon } from "@/components/SdgIcon";
 import { sdgIconPath, SDG_COLORS } from "@/lib/sdg";
 import { isCommercialLegalType } from "@/lib/legalType";
+import { toProxyUrl } from "@/lib/storageUrl";
 
 export type ProjectCardData = {
   slug: string;
@@ -19,7 +20,28 @@ export type ProjectCardData = {
   owner: { name: string | null };
   members: { id: string }[];
   taskProgress: { total: number; done: number };
+  // What the project itself picked under "Kompetenser som behövs" on its edit
+  // page. Non-empty means it is asking for help, and the card says so.
+  neededSkills?: { skill: { name: string } }[];
+  // The people in the project, whoever started it first. When given, the card
+  // shows them as small faces under the title instead of "av: namn".
+  people?: { id: string; name: string | null; image: string | null }[];
 };
+
+const MAX_FACES = 6;
+
+function Face({ person, title, starter }: { person: { name: string | null; image: string | null }; title: string; starter: boolean }) {
+  // Whoever started the project gets a green ring.
+  const ring = starter ? "0 0 0 2px #FFFFFF, 0 0 0 4px #097809" : "0 0 0 2px #FFFFFF";
+  const initials = (person.name ?? "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  return person.image ? (
+    <img src={toProxyUrl(person.image)} alt={title} title={title} className="h-6 w-6 shrink-0 rounded-full object-cover" style={{ boxShadow: ring }} />
+  ) : (
+    <span title={title} className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#DCEAE0] text-[9px] font-bold text-[#24533A]" style={{ boxShadow: ring }}>
+      {initials}
+    </span>
+  );
+}
 
 export default function ProjectCard({
   project,
@@ -54,6 +76,7 @@ export default function ProjectCard({
   const primarySdg = project.sdgGoals[0];
   const tint = effectiveVariant === "sandbox" ? "#f59e0b" : primarySdg ? SDG_COLORS[primarySdg] : "#43aa8b";
   const stageLabel = project.archivedAt ? t("phaseArchived") : PHASE_LABEL[project.phase] ?? project.phase;
+  const seekingSkills = project.neededSkills?.map((s) => s.skill.name) ?? [];
 
   return (
     <a
@@ -97,12 +120,48 @@ export default function ProjectCard({
             </svg>
           )}
         </span>
+        {seekingSkills.length > 0 && (
+          <span
+            title={t("seekingHelpTitle", { skills: seekingSkills.join(", ") })}
+            className="absolute bottom-2 left-2 flex items-center gap-1 rounded-full bg-coral px-2 py-1 text-[11px] font-bold text-white shadow-sm"
+          >
+            {/* raised hand */}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5" aria-hidden="true">
+              <path d="M18 11V6a2 2 0 0 0-4 0v5" />
+              <path d="M14 10V4a2 2 0 0 0-4 0v6" />
+              <path d="M10 10.5V6a2 2 0 0 0-4 0v8" />
+              <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+            </svg>
+            {t("seekingHelp")}
+          </span>
+        )}
       </div>
       <div className="p-3 flex flex-col flex-1">
-        <p className="font-bold text-dark-slate text-sm leading-tight mb-0.5">{project.title}</p>
-        <p className="text-xs text-dark-slate/50 mb-2">
-          {t("byAuthor")} <span className="text-coral">{project.owner.name ?? t("unknownAuthor")}</span>
-        </p>
+        {project.people ? (
+          <>
+            <p className="font-bold text-dark-slate text-sm leading-tight mb-2">{project.title}</p>
+            <div className="mb-2 flex items-center gap-1.5 pl-1">
+              {project.people.slice(0, MAX_FACES).map((person, i) => (
+                <Face
+                  key={person.id}
+                  person={person}
+                  starter={i === 0}
+                  title={i === 0 ? t("startedProject", { name: person.name ?? t("unknownAuthor") }) : (person.name ?? "")}
+                />
+              ))}
+              {project.people.length > MAX_FACES && (
+                <span className="ml-0.5 text-[11px] font-semibold text-dark-slate/50">+{project.people.length - MAX_FACES}</span>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="font-bold text-dark-slate text-sm leading-tight mb-0.5">{project.title}</p>
+            <p className="text-xs text-dark-slate/50 mb-2">
+              {t("byAuthor")} <span className="text-coral">{project.owner.name ?? t("unknownAuthor")}</span>
+            </p>
+          </>
+        )}
         <p className="text-xs text-dark-slate/70 leading-snug mb-2 line-clamp-3 flex-1">
           {project.summary ?? project.description ?? t("noDescriptionYet")}
         </p>

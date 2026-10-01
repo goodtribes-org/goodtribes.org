@@ -129,6 +129,7 @@ export default async function SandboxPage({
       include: {
         owner: { select: { name: true } },
         members: { select: { id: true } },
+        neededSkills: { select: { skill: { select: { name: true } } } },
         translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
       },
     }),
