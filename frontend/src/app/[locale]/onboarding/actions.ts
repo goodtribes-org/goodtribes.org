@@ -26,6 +26,6 @@ export async function saveOnboarding(formData: FormData) {
   } else if (goal === "join") {
     redirect("/dashboard#match");
   } else {
-    redirect("/workplace");
+    redirect("/my-goodtribes");
   }
 }

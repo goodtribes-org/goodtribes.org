@@ -13,6 +13,7 @@ export default function robots(): MetadataRoute.Robots {
           "/settings",
           "/dashboard",
           "/workplace",
+          "/my-goodtribes",
           "/notifications",
           "/invite/",
         ],

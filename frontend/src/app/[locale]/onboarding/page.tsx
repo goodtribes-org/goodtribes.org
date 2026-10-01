@@ -26,7 +26,7 @@ export default async function OnboardingPage({ params }: { params: Promise<{ loc
     select: { onboardingDone: true },
   });
 
-  if (user?.onboardingDone) redirect("/workplace");
+  if (user?.onboardingDone) redirect("/my-goodtribes");
 
   return (
     <main className="min-h-screen bg-warm-white py-16 px-4">

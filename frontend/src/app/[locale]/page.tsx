@@ -4,6 +4,7 @@ import Link from "next/link";
 import { hasLocale, type Locale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { routing } from "@/i18n/routing";
@@ -11,9 +12,12 @@ import { fetchActivityItems, type PulseItem } from "@/lib/activityFeed";
 import { resolveProjectContent } from "@/lib/contentTranslation";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import { getThanksState } from "@/lib/thanks";
+import { getYourTribe } from "@/lib/yourTribe";
 import { DISPLAY_PHASES, PROJECT_PHASE_LABEL, toDisplayPhase } from "@/lib/projectPhase";
 import ProjectCard from "@/components/ProjectCard";
 import Community from "@/components/ny-startsida/Community";
+import YourTribe from "@/components/ny-startsida/YourTribe";
+import { YOUR_TRIBE_COLLAPSED_COOKIE } from "@/lib/yourTribeCookie";
 import FoundingCard from "@/components/ny-startsida/FoundingCard";
 import DreamHero from "@/components/ny-startsida/DreamHero";
 import {
@@ -111,7 +115,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   }));
   const events = activity.filter(isMeaningful);
   const communityEvents = events.slice(0, 6);
-  const thanks = await getThanksState(communityEvents, userId ?? null);
+  const [thanks, yourTribe] = await Promise.all([
+    getThanksState(communityEvents, userId ?? null),
+    userId ? getYourTribe(userId) : Promise.resolve(null),
+  ]);
 
   const phases: JourneyPhase[] = DISPLAY_PHASES.map((p) => ({
     value: p.value as JourneyPhase["value"],
@@ -135,6 +142,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       {/* 100vw includes the scrollbar, so the full-bleed wrapper is a few
           pixels wider than the page; clip that instead of letting it scroll. */}
       <style>{`html, body { overflow-x: clip; }`}</style>
+      {/* Logged in: your own view first — what's waiting, your projects, thanks you got */}
+      {yourTribe && (
+        <YourTribe
+          locale={locale}
+          name={session?.user?.name ?? null}
+          data={yourTribe}
+          initialCollapsed={(await cookies()).get(YOUR_TRIBE_COLLAPSED_COOKIE)?.value === "1"}
+        />
+      )}
       <DreamHero isLoggedIn={!!userId} />
       {/* A second way in, for people who'd rather help than start something */}
       <div className="-mt-6 flex justify-center px-4 pb-6">
