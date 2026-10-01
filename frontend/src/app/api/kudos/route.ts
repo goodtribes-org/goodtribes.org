@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     type: "kudos_received",
     title: t("kudosNotificationTitle", { name: session.user.name ?? t("someone") }),
     body: message.trim(),
-    url: "/workplace?tab=kudos",
+    url: "/my-goodtribes?tab=kudos",
   });
 
   return NextResponse.json({ success: true });

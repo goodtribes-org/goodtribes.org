@@ -1,72 +1,120 @@
 const memberFindMany = jest.fn();
 const cardFindMany = jest.fn();
-const notificationCount = jest.fn();
-const kudosFindMany = jest.fn();
-const kudosCount = jest.fn();
-const activityGroupBy = jest.fn();
 const joinFindMany = jest.fn();
+const notificationCount = jest.fn();
+const kudosCount = jest.fn();
+const activityFindMany = jest.fn();
+const activityFindFirst = jest.fn();
+const messageFindMany = jest.fn();
+const messageFindFirst = jest.fn();
+const blogFindMany = jest.fn();
+const blogFindFirst = jest.fn();
+const checklistFindMany = jest.fn();
+const getAutoDoneKeys = jest.fn();
 
 jest.mock("../lib/prisma", () => ({
   prisma: {
     projectMember: { findMany: (a: unknown) => memberFindMany(a) },
     kanbanCard: { findMany: (a: unknown) => cardFindMany(a) },
-    notification: { count: (a: unknown) => notificationCount(a) },
-    kudos: { findMany: (a: unknown) => kudosFindMany(a), count: (a: unknown) => kudosCount(a) },
-    activityEvent: { groupBy: (a: unknown) => activityGroupBy(a) },
     projectJoinRequest: { findMany: (a: unknown) => joinFindMany(a) },
+    notification: { count: (a: unknown) => notificationCount(a) },
+    kudos: { count: (a: unknown) => kudosCount(a) },
+    activityEvent: { findMany: (a: unknown) => activityFindMany(a), findFirst: (a: unknown) => activityFindFirst(a) },
+    message: { findMany: (a: unknown) => messageFindMany(a), findFirst: (a: unknown) => messageFindFirst(a) },
+    blogPost: { findMany: (a: unknown) => blogFindMany(a), findFirst: (a: unknown) => blogFindFirst(a) },
+    initiativeChecklistItem: { findMany: (a: unknown) => checklistFindMany(a) },
   },
 }));
+jest.mock("../lib/projectSignals", () => ({ getAutoDoneKeys: (...a: unknown[]) => getAutoDoneKeys(...a) }));
+// lib/authz pulls in @/auth (and its connections) — only the role list is needed here.
+jest.mock("../lib/authz", () => ({ PROJECT_LEAD_ROLES: ["FOUNDER", "ADMIN"] }));
 
-import { getYourTribe } from "../lib/yourTribe";
+import { getYourTribe, pulseStatus, weeklyCounts } from "../lib/yourTribe";
 
-const project = (id: string) => ({ id, slug: id, title: id, phase: "IDEA", imageUrl: null, updatedAt: new Date() });
+const DAY = 86_400_000;
+const NOW = new Date("2026-10-01T12:00:00Z").getTime();
+const daysAgo = (n: number) => new Date(NOW - n * DAY);
+const project = (id: string) => ({ id, slug: id, title: id, phase: "IDEA", imageUrl: null });
 
 beforeEach(() => {
   jest.clearAllMocks();
   memberFindMany.mockResolvedValue([
-    { role: "FOUNDER", project: project("led") },
-    { role: "MEMBER", project: project("joined") },
+    { role: "FOUNDER", project: project("quiet") },
+    { role: "MEMBER", project: project("busy") },
   ]);
   cardFindMany.mockResolvedValue([]);
-  notificationCount.mockResolvedValue(0);
-  kudosFindMany.mockResolvedValue([]);
-  kudosCount.mockResolvedValue(0);
-  activityGroupBy.mockResolvedValue([{ projectId: "joined", _count: 4 }]);
   joinFindMany.mockResolvedValue([]);
+  notificationCount.mockResolvedValue(0);
+  kudosCount.mockResolvedValue(0);
+  activityFindMany.mockResolvedValue([
+    { projectId: "busy", createdAt: daysAgo(1) },
+    { projectId: "busy", createdAt: daysAgo(2) },
+    { projectId: "busy", createdAt: daysAgo(9) },
+  ]);
+  messageFindMany.mockResolvedValue([]);
+  blogFindMany.mockResolvedValue([]);
+  activityFindFirst.mockImplementation(({ where }: { where: { projectId: string } }) =>
+    Promise.resolve(where.projectId === "busy" ? { type: "task_completed", payload: { title: "X" }, createdAt: daysAgo(1), user: { name: "Anna" } } : null),
+  );
+  messageFindFirst.mockResolvedValue(null);
+  blogFindFirst.mockResolvedValue(null);
+  checklistFindMany.mockResolvedValue([]);
+  getAutoDoneKeys.mockResolvedValue([]);
+});
+
+describe("pulse helpers", () => {
+  it("status follows the last activity: ≤7 days moving, ≤14 slowing, else still", () => {
+    expect(pulseStatus(daysAgo(3), NOW)).toBe("moving");
+    expect(pulseStatus(daysAgo(10), NOW)).toBe("slowing");
+    expect(pulseStatus(daysAgo(30), NOW)).toBe("still");
+    expect(pulseStatus(null, NOW)).toBe("still");
+  });
+
+  it("buckets dates per week, oldest first, the last week ending now", () => {
+    expect(weeklyCounts([daysAgo(1), daysAgo(2), daysAgo(9), daysAgo(40)], NOW)).toEqual([0, 0, 1, 2]);
+  });
 });
 
 describe("getYourTribe", () => {
-  it("leaves followers out of 'your projects'", async () => {
-    await getYourTribe("me");
-    expect(memberFindMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ userId: "me", role: { not: "FOLLOWER" } }) }));
+  it("puts the most active project first and gives each its weekly bars and status", async () => {
+    const data = await getYourTribe("me", NOW);
+    expect(data.pulse.map((p) => p.id)).toEqual(["busy", "quiet"]);
+    expect(data.pulse[0]).toMatchObject({ status: "moving", total: 3, weeks: [0, 0, 1, 2] });
+    expect(data.pulse[0].last).toMatchObject({ type: "activity", who: "Anna", activityType: "task_completed" });
+    expect(data.pulse[1]).toMatchObject({ status: "still", total: 0, last: null });
   });
 
-  it("counts only what the others did lately, not your own events", async () => {
-    const data = await getYourTribe("me");
-    const where = activityGroupBy.mock.calls[0][0].where;
-    expect(where.userId).toEqual({ not: "me" });
-    expect(where.projectId).toEqual({ in: ["led", "joined"] });
-    expect(data.projects.find((p) => p.id === "joined")?.recentByOthers).toBe(4);
-    expect(data.projects.find((p) => p.id === "led")?.recentByOthers).toBe(0);
+  it("leaves followers out", async () => {
+    await getYourTribe("me", NOW);
+    expect(memberFindMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ role: { not: "FOLLOWER" } }) }));
   });
 
-  it("asks for join requests only for projects you lead", async () => {
-    const data = await getYourTribe("me");
-    expect(joinFindMany).toHaveBeenCalledWith(expect.objectContaining({ where: { projectId: { in: ["led"] }, status: "pending" } }));
-    expect(data.projects.find((p) => p.id === "led")?.isLead).toBe(true);
-    expect(data.projects.find((p) => p.id === "joined")?.isLead).toBe(false);
+  it("ranks to-dos: overdue, due soon, join requests, next steps, other tasks", async () => {
+    cardFindMany.mockResolvedValue([
+      { id: "later", title: "Later", dueDate: null, project: { slug: "busy", title: "busy" } },
+      { id: "soon", title: "Soon", dueDate: new Date(NOW + 2 * DAY), project: { slug: "busy", title: "busy" } },
+      { id: "late", title: "Late", dueDate: daysAgo(1), project: { slug: "busy", title: "busy" } },
+    ]);
+    joinFindMany.mockResolvedValue([{ id: "jr", user: { name: "Bo" }, project: { slug: "quiet", title: "quiet" } }]);
+    const data = await getYourTribe("me", NOW);
+    expect(data.todos.map((t) => `${t.kind}:${t.id}`)).toEqual(["task:late", "task:soon", "joinRequest:jr", "nextStep:step-quiet", "task:later"]);
+    expect(data.todos[0]).toMatchObject({ overdue: true });
+    expect(data.todos[3]).toMatchObject({ project: "quiet", projectStill: true });
   });
 
-  it("lists only open tasks assigned to you", async () => {
-    await getYourTribe("me");
-    expect(cardFindMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ assigneeId: "me", column: { not: "DONE" } }) }));
+  it("asks for join requests and next steps only for projects you lead", async () => {
+    const data = await getYourTribe("me", NOW);
+    expect(joinFindMany).toHaveBeenCalledWith(expect.objectContaining({ where: { projectId: { in: ["quiet"] }, status: "pending" } }));
+    expect(getAutoDoneKeys).toHaveBeenCalledTimes(1);
+    expect(getAutoDoneKeys).toHaveBeenCalledWith("quiet", "quiet");
+    expect(data.todos.filter((t) => t.kind === "nextStep")).toHaveLength(1);
   });
 
   it("skips the follow-up queries when you're in no project", async () => {
     memberFindMany.mockResolvedValue([]);
-    const data = await getYourTribe("me");
-    expect(activityGroupBy).not.toHaveBeenCalled();
+    const data = await getYourTribe("me", NOW);
+    expect(activityFindMany).not.toHaveBeenCalled();
     expect(joinFindMany).not.toHaveBeenCalled();
-    expect(data.projects).toEqual([]);
+    expect(data.pulse).toEqual([]);
   });
 });
