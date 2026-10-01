@@ -11,6 +11,8 @@ import Image from "next/image";
 import SessionProvider from "@/components/SessionProvider";
 import AuthNav from "@/components/AuthNav";
 import SearchButton from "@/components/SearchButton";
+import HeaderShareButton from "@/components/HeaderShareButton";
+import ToolsMenu from "@/components/ToolsMenu";
 import NotificationBell from "@/components/NotificationBell";
 import MessagesLink from "@/components/MessagesLink";
 import PresenceHeartbeat from "@/components/PresenceHeartbeat";
@@ -179,6 +181,11 @@ export default async function LocaleLayout({
                 {session?.user && <MessagesLink />}
                 {session?.user && <NotificationBell />}
                 {session?.user && <PresenceHeartbeat />}
+                {/* Share + tools: from sm up only — on a phone the header is already full */}
+                <div className="hidden sm:contents">
+                  <HeaderShareButton />
+                  <ToolsMenu />
+                </div>
                 <AuthNav />
               </nav>
             </SiteHeader>

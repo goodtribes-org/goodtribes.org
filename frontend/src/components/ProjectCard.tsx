@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 import { SdgIcon } from "@/components/SdgIcon";
 import { sdgIconPath, SDG_COLORS } from "@/lib/sdg";
 import { isCommercialLegalType } from "@/lib/legalType";
+import { toProxyUrl } from "@/lib/storageUrl";
 
 export type ProjectCardData = {
   slug: string;
@@ -22,7 +23,25 @@ export type ProjectCardData = {
   // What the project itself picked under "Kompetenser som behövs" on its edit
   // page. Non-empty means it is asking for help, and the card says so.
   neededSkills?: { skill: { name: string } }[];
+  // The people in the project, whoever started it first. When given, the card
+  // shows them as small faces under the title instead of "av: namn".
+  people?: { id: string; name: string | null; image: string | null }[];
 };
+
+const MAX_FACES = 6;
+
+function Face({ person, title, starter }: { person: { name: string | null; image: string | null }; title: string; starter: boolean }) {
+  // Whoever started the project gets a green ring.
+  const ring = starter ? "0 0 0 2px #FFFFFF, 0 0 0 4px #097809" : "0 0 0 2px #FFFFFF";
+  const initials = (person.name ?? "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  return person.image ? (
+    <img src={toProxyUrl(person.image)} alt={title} title={title} className="h-6 w-6 shrink-0 rounded-full object-cover" style={{ boxShadow: ring }} />
+  ) : (
+    <span title={title} className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#DCEAE0] text-[9px] font-bold text-[#24533A]" style={{ boxShadow: ring }}>
+      {initials}
+    </span>
+  );
+}
 
 export default function ProjectCard({
   project,
@@ -118,10 +137,31 @@ export default function ProjectCard({
         )}
       </div>
       <div className="p-3 flex flex-col flex-1">
-        <p className="font-bold text-dark-slate text-sm leading-tight mb-0.5">{project.title}</p>
-        <p className="text-xs text-dark-slate/50 mb-2">
-          {t("byAuthor")} <span className="text-coral">{project.owner.name ?? t("unknownAuthor")}</span>
-        </p>
+        {project.people ? (
+          <>
+            <p className="font-bold text-dark-slate text-sm leading-tight mb-2">{project.title}</p>
+            <div className="mb-2 flex items-center gap-1.5 pl-1">
+              {project.people.slice(0, MAX_FACES).map((person, i) => (
+                <Face
+                  key={person.id}
+                  person={person}
+                  starter={i === 0}
+                  title={i === 0 ? t("startedProject", { name: person.name ?? t("unknownAuthor") }) : (person.name ?? "")}
+                />
+              ))}
+              {project.people.length > MAX_FACES && (
+                <span className="ml-0.5 text-[11px] font-semibold text-dark-slate/50">+{project.people.length - MAX_FACES}</span>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="font-bold text-dark-slate text-sm leading-tight mb-0.5">{project.title}</p>
+            <p className="text-xs text-dark-slate/50 mb-2">
+              {t("byAuthor")} <span className="text-coral">{project.owner.name ?? t("unknownAuthor")}</span>
+            </p>
+          </>
+        )}
         <p className="text-xs text-dark-slate/70 leading-snug mb-2 line-clamp-3 flex-1">
           {project.summary ?? project.description ?? t("noDescriptionYet")}
         </p>
