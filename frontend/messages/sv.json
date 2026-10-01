@@ -4531,7 +4531,6 @@
       "wallBody": "Utvecklare, formgivare, lärare, pensionärer och studenter – alla som lägger en timme här gör en dröm lite mer verklig.",
       "join": "Bli en av oss",
       "recentTitle": "Det här har vi gjort på sistone",
-      "thank": "Tacka",
       "someone": "Någon",
       "startedProject": "startade {project}",
       "sharedIdea": "delade en ny idé: {title}",
@@ -4564,5 +4563,34 @@
     "toolsIntro": "Alla projekt får de här verktygen, helt gratis.",
     "trySandbox": "Prova i Sandbox",
     "startProject": "Starta ett projekt"
+  },
+  "Thanks": {
+    "someone": "Någon",
+    "notificationTitle": "{name} tackade dig",
+    "notificationBody": {
+      "startedProject": "för att du startade {project}.",
+      "sharedIdea": "för idén ”{title}”.",
+      "reachedMilestone": "för milstolpen ”{title}” i {project}.",
+      "wroteBlogPost": "för inlägget ”{title}” i {project}.",
+      "completedTask": "för att du slutförde ”{title}” i {project}.",
+      "joinedProject": "för att du gick med i {project}.",
+      "contributed": "för ditt bidrag i {project}."
+    },
+    "thank": "Tacka",
+    "thanked": "Tackat",
+    "thanksCount": "{count, plural, one {# tack} other {# tack}}",
+    "loginToThank": "Logga in för att tacka",
+    "ownContribution": "Ditt eget bidrag",
+    "error": "Det gick inte att tacka just nu.",
+    "kudosMessage": {
+      "startedProject": "Tack för att du startade {project}!",
+      "sharedIdea": "Tack för idén ”{title}”!",
+      "reachedMilestone": "Tack för milstolpen ”{title}” i {project}!",
+      "wroteBlogPost": "Tack för inlägget ”{title}” i {project}!",
+      "completedTask": "Tack för att du slutförde ”{title}” i {project}!",
+      "joinedProject": "Tack för att du gick med i {project}!",
+      "contributed": "Tack för ditt bidrag i {project}!"
+    },
+    "kudosNotificationTitle": "{name} gav dig kudos"
   }
 }
