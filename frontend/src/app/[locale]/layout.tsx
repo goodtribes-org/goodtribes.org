@@ -13,6 +13,7 @@ import AuthNav from "@/components/AuthNav";
 import SearchButton from "@/components/SearchButton";
 import HeaderShareButton from "@/components/HeaderShareButton";
 import ToolsMenu from "@/components/ToolsMenu";
+import PersonalBar from "@/components/PersonalBar";
 import NotificationBell from "@/components/NotificationBell";
 import MessagesLink from "@/components/MessagesLink";
 import PresenceHeartbeat from "@/components/PresenceHeartbeat";
@@ -294,6 +295,8 @@ export default async function LocaleLayout({
                 </div>
               </div>
             </SiteFooter>
+            {/* Personal bar along the bottom of every page: Att göra · Kalender · Följer · Aktivitet · Tack & kudos */}
+            {session?.user && <PersonalBar />}
           </SandboxProvider>
           </UserEventsProvider>
           </SessionProvider>
