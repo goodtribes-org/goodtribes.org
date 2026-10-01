@@ -110,6 +110,24 @@ describe("getYourTribe", () => {
     expect(data.todos.filter((t) => t.kind === "nextStep")).toHaveLength(1);
   });
 
+  it("without lastEvents, skips the per-project lookups but keeps status, order and to-dos", async () => {
+    const full = await getYourTribe("me", NOW);
+    jest.clearAllMocks();
+    const light = await getYourTribe("me", NOW, { lastEvents: false });
+    expect(activityFindFirst).not.toHaveBeenCalled();
+    expect(messageFindFirst).not.toHaveBeenCalled();
+    expect(blogFindFirst).not.toHaveBeenCalled();
+    expect(light.pulse.map((p) => [p.id, p.status, p.last])).toEqual([["busy", "moving", null], ["quiet", "still", null]]);
+    expect(light.pulse.map((p) => p.id)).toEqual(full.pulse.map((p) => p.id));
+    expect(light.todoTotal).toBe(full.todoTotal);
+  });
+
+  it("reads 'slowing' from the weekly window alone, too", async () => {
+    activityFindMany.mockResolvedValue([{ projectId: "busy", createdAt: daysAgo(10) }]);
+    const light = await getYourTribe("me", NOW, { lastEvents: false });
+    expect(light.pulse.find((p) => p.id === "busy")?.status).toBe("slowing");
+  });
+
   it("skips the follow-up queries when you're in no project", async () => {
     memberFindMany.mockResolvedValue([]);
     const data = await getYourTribe("me", NOW);
