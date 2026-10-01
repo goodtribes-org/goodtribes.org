@@ -21,6 +21,13 @@ export const LINK = "#C2410C";
 export const wrap = "mx-auto w-full max-w-[1440px] px-4 sm:px-8 lg:px-16";
 export const card = "rounded-[32px] border border-[#E4E4DF] bg-white";
 
+// A horizontal, snap-scrolling row on phones that becomes a normal grid from
+// `sm` up — for the start page's project cards and phases. Put SWIPE_ROW on
+// the list (plus its sm/lg column classes) and SWIPE_ITEM on each child.
+export const SWIPE_ROW =
+  "-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0";
+export const SWIPE_ITEM = "w-[78%] shrink-0 snap-start sm:w-auto";
+
 export function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <p className="m-0 text-sm font-bold uppercase tracking-[.12em]" style={{ color: LINK }}>
@@ -119,13 +126,14 @@ const PHASE_KEYS: Record<JourneyPhase["value"], string> = {
 
 // The pictures from the former "Fem steg" module (StepsGrid), which this
 // section replaced: one journey instead of two that told the same story.
+// Impact's is hero-banner.png cropped (slide-number badge removed) to match.
 const PHASE_IMAGES: Record<JourneyPhase["value"], string> = {
   IDEA: "do-you-have-a-dream.png",
   PILOT: "what-is-goodtribes.png",
   PRODUCTION: "want-a-change.png",
   ESTABLISH: "Slide2.png",
   SCALE: "want-to-be-a-winner.png",
-  IMPACT: "growth-leaves.png",
+  IMPACT: "phase-impact.jpg",
 };
 
 export async function PhaseJourney({ locale, phases }: { locale: Locale; phases: JourneyPhase[] }) {
@@ -136,9 +144,11 @@ export async function PhaseJourney({ locale, phases }: { locale: Locale; phases:
         <Eyebrow>{t("eyebrow")}</Eyebrow>
         <H2 className="max-w-[720px]">{t("heading")}</H2>
       </div>
-      <ol className="m-0 grid list-none gap-5 p-0 sm:grid-cols-2 lg:grid-cols-6">
+      {/* On a phone the phases are a row you swipe (one card and a peek of
+          the next), so six stacked picture cards don't make the page endless. */}
+      <ol className={`m-0 list-none p-0 ${SWIPE_ROW} sm:grid-cols-2 lg:grid-cols-6`}>
         {phases.map((p, i) => (
-          <li key={p.value} className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[#E4E4DF] bg-white">
+          <li key={p.value} className={`flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[#E4E4DF] bg-white ${SWIPE_ITEM}`}>
             <div className="relative aspect-video">
               <img src={`/img/${PHASE_IMAGES[p.value]}`} alt="" className="absolute inset-0 h-full w-full object-cover" />
             </div>

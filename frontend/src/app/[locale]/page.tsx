@@ -21,7 +21,7 @@ import { YOUR_TRIBE_COLLAPSED_COOKIE } from "@/lib/yourTribeCookie";
 import FoundingCard from "@/components/ny-startsida/FoundingCard";
 import DreamHero from "@/components/ny-startsida/DreamHero";
 import {
-  INK, LiveStrip, PhaseJourney, PlatformStats, SectionHeader, wrap, type JourneyPhase,
+  INK, LiveStrip, PhaseJourney, PlatformStats, SectionHeader, SWIPE_ITEM, SWIPE_ROW, wrap, type JourneyPhase,
 } from "@/components/ny-startsida/Sections";
 import { newHomeBodyFont } from "@/components/ny-startsida/fonts";
 
@@ -169,8 +169,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       {projects.length > 0 && (
         <section id="projekt" className={`${wrap} flex flex-col gap-6 pt-[48px]`}>
           <SectionHeader eyebrow={t("projects.eyebrow")} heading={t("projects.heading")} link={{ href: "/projects", label: t("projects.allLink") }} />
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
-            {projects.map((p) => <ProjectCard key={p.slug} project={p} />)}
+          <div className={`${SWIPE_ROW} sm:grid-cols-2 lg:grid-cols-5`}>
+            {projects.map((p) => (
+              <div key={p.slug} className={`flex ${SWIPE_ITEM}`}>
+                <ProjectCard project={p} />
+              </div>
+            ))}
           </div>
         </section>
       )}
