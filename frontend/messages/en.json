@@ -4466,7 +4466,7 @@
   "NewHomePage": {
     "metaTitle": "GoodTribes – What do you dream of changing?",
     "hero": {
-      "overline": "We make good dreams come true.",
+      "overline": "We make good dreams <u>come true</u>.",
       "heading": "What do you dream of",
       "headingHighlight": "changing?",
       "intro": "GoodTribes is where people come together to make ideas that improve the world happen. Tell us about your dream, and the AI guide takes you all the way from idea to real change.",
