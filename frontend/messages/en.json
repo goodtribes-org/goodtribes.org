@@ -159,6 +159,8 @@
     "cancel": "Cancel"
   },
   "ProjectCard": {
+    "seekingHelp": "Looking for help",
+    "seekingHelpTitle": "Looking for: {skills}",
     "byAuthor": "by",
     "unknownAuthor": "Unknown",
     "noDescriptionYet": "No description yet.",

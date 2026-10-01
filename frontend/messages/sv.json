@@ -159,6 +159,8 @@
     "cancel": "Avbryt"
   },
   "ProjectCard": {
+    "seekingHelp": "Söker hjälp",
+    "seekingHelpTitle": "Söker: {skills}",
     "byAuthor": "av",
     "unknownAuthor": "Okänd",
     "noDescriptionYet": "Ingen beskrivning ännu.",

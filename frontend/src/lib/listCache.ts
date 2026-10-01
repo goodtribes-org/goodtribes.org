@@ -73,6 +73,7 @@ export const getCachedProjectsPage = unstable_cache(
         include: {
           owner: { select: { name: true } },
           members: { select: { id: true } },
+          neededSkills: { select: { skill: { select: { name: true } } } },
           translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
         },
       }),
