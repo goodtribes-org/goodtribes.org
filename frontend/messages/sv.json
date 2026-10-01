@@ -173,7 +173,8 @@
     "phaseIdea": "Idéfas",
     "phaseActive": "Aktivt",
     "phaseImpact": "Impact",
-    "phaseArchived": "Avslutat"
+    "phaseArchived": "Avslutat",
+    "startedProject": "{name} – startade projektet"
   },
   "FlagContent": {
     "reasonOffensive": "Stötande innehåll",
@@ -4478,7 +4479,8 @@
       },
       "note": "Gratis konto krävs för AI-guiden · Samtalet är privat tills du själv skapar projektet",
       "restored": "Välkommen tillbaka! Din dröm finns kvar, tryck på pilen för att börja.",
-      "submit": "Börja med AI-guiden"
+      "submit": "Börja med AI-guiden",
+      "helpInstead": "Vill du hellre hjälpa till? Se projekt som söker folk →"
     },
     "live": {
       "label": "Live",
@@ -4503,30 +4505,38 @@
       "allLink": "Se alla projekt →"
     },
     "stats": {
-      "eyebrow": "Vår påverkan",
-      "heading": "Det här händer på plattformen",
-      "raised": "insamlat totalt",
-      "tasks": "avklarade uppgifter",
-      "tokens": "tokens utdelade",
-      "projects": "aktiva projekt"
+      "eyebrow": "Tillsammans",
+      "heading": "Det här har vi gjort tillsammans",
+      "raised": "har vi samlat in",
+      "tasks": "uppgifter har vi klarat av",
+      "tokens": "tokens har vi delat ut till varandra",
+      "projects": "projekt driver vi just nu"
     },
     "founding": {
-      "eyebrow": "Så långt kan en idé nå",
-      "heading": "Infos: Datordonation",
+      "eyebrow": "Vår historia",
+      "heading": "Där allt började",
       "storyHeading": "Det började med datorer som skulle skrotas",
       "body": "Fullt fungerande datorer byts ut efter tre, fyra år – samtidigt som förskolor, skolor och ideella organisationer saknar utrustning. Infos Datordonation löste båda problemen: datorerna raderades säkert, fick nya program och gick vidare till skolor i bland annat Tensta, Rinkeby och Skärholmen och till organisationer som Amnesty, Greenpeace och Rädda barnen. Ur det arbetet grundades Stiftelsen GoodTribes, så att fler goda idéer ska kunna bidra till en bättre värld.",
       "supportLabel": "Möjliggjort av"
     },
-    "tools": {
-      "eyebrow": "Verktyg",
-      "heading": "Allt du behöver, redan inbyggt"
-    },
     "community": {
-      "eyebrow": "Goodtribes community",
+      "eyebrow": "Vi är GoodTribes",
       "title": "Var en del av något större",
       "heading": "Händer just nu",
       "subheading": "Senaste aktivitet på plattformen",
-      "seeAllLink": "Se all aktivitet →"
+      "seeAllLink": "Se all aktivitet →",
+      "peopleHeading": "Vi är {count} eldsjälar som gör det här tillsammans",
+      "meetAll": "Möt alla →",
+      "wallTitle": "Senast med i gemenskapen",
+      "wallBody": "Utvecklare, formgivare, lärare, pensionärer och studenter – alla som lägger en timme här gör en dröm lite mer verklig.",
+      "join": "Bli en av oss",
+      "recentTitle": "Det här har vi gjort på sistone",
+      "thank": "Tacka",
+      "someone": "Någon",
+      "startedProject": "startade {project}",
+      "sharedIdea": "delade en ny idé: {title}",
+      "reachedMilestone": "nådde en milstolpe i {project}: {title}",
+      "inProject": "{action} i {project}"
     },
     "steps": {
       "eyebrow": "Fem steg",
@@ -4547,5 +4557,12 @@
       "step4Title": "Tillsammans skapar ni en bättre värld",
       "step4Body": "Varje förverkligad dröm ger dig och andra möjligheten att Leva Gott, Må Gott och Göra Gott."
     }
+  },
+  "HeaderTools": {
+    "tools": "Verktyg",
+    "toolsHeading": "Verktygen i varje projekt",
+    "toolsIntro": "Alla projekt får de här verktygen, helt gratis.",
+    "trySandbox": "Prova i Sandbox",
+    "startProject": "Starta ett projekt"
   }
 }

@@ -17,6 +17,8 @@ export type PulseItem = {
   projectName: string;
   projectHref?: string | null;
   action: string;
+  // For activityEvent items: the raw event type (member_joined, task_completed, …).
+  activityType?: string;
   body?: string;
   subtasks?: { title: string; done: boolean }[];
   imageUrl?: string | null;
@@ -270,7 +272,7 @@ export async function fetchActivityItems(
           ? payload.subtasks
           : undefined;
       return {
-        id: `activity-${a.id}`, targetType: "activityEvent", targetId: a.id,
+        id: `activity-${a.id}`, targetType: "activityEvent", targetId: a.id, activityType: a.type,
         avatarName: a.user.name, avatarImage: a.user.image, projectImage: project.imageUrl,
         projectName: project.title, projectHref: `/projects/${project.slug}`, projectId: project.id,
         action,
