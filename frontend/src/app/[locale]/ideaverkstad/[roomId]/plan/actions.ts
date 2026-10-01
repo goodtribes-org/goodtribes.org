@@ -203,6 +203,7 @@ export async function approveAiProjectPlan(planId: string, roomId: string, conti
               description: t.description || null,
               createdById: aiUser.id,
               createdByAi: true,
+              phase: "IDEA",
             })),
           }),
         ]

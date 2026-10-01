@@ -304,6 +304,9 @@ model PhaseGateDecision {
   outcome     PhaseGateOutcome
   note        String?          @db.Text
   missing     String[]         @default([])
+  // Cards for this phase still not Done when the decision was made — going
+  // ahead with open work is allowed, it's just on record (like `missing`).
+  openTaskCount Int?
   decidedById String
   createdAt   DateTime         @default(now())
 
