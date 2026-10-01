@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { findOrCreateSkill, normalizeSkillNames, MAX_NEW_SKILLS_PER_SAVE } from "@/lib/skills";
 import { prisma } from "@/lib/prisma"
 import { recordHumanEdits } from "@/lib/fieldProvenance";
 import { revalidatePath } from "next/cache";
@@ -134,6 +135,9 @@ export async function updateProject(slug: string, formData: FormData) {
   const imageUrl = (formData.get("imageUrl") as string | null)?.trim() || null;
   const orgId = (formData.get("orgId") as string | null)?.trim() || null;
   const skillIds = formData.getAll("skillIds") as string[];
+  // Skills the project typed in itself ("Lägg till kompetens") — created in
+  // the shared catalogue if they don't exist yet, then linked like the rest.
+  const newSkillNames = normalizeSkillNames(formData.getAll("newSkillNames") as string[]).slice(0, MAX_NEW_SKILLS_PER_SAVE);
 
   await prisma.project.update({
     where: { slug },
@@ -141,11 +145,16 @@ export async function updateProject(slug: string, formData: FormData) {
   });
   await recordHumanEdits(project.id, "project", project, { title, summary, description, category, tags, sdgGoals }, session.user.id);
 
+  const createdSkills = await Promise.all(
+    newSkillNames.map((name) => findOrCreateSkill({ name, tag: "övrigt", description: "" })),
+  );
+  const allSkillIds = [...new Set([...skillIds, ...createdSkills.map((s) => s.id)])];
+
   await prisma.$transaction([
     prisma.projectSkill.deleteMany({ where: { projectId: project.id } }),
-    ...(skillIds.length > 0
+    ...(allSkillIds.length > 0
       ? [prisma.projectSkill.createMany({
-          data: skillIds.map((skillId) => ({ projectId: project.id, skillId })),
+          data: allSkillIds.map((skillId) => ({ projectId: project.id, skillId })),
           skipDuplicates: true,
         })]
       : []),

@@ -3,7 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
-import { slugify } from "@/lib/slugify";
+import { findOrCreateSkill } from "@/lib/skills";
 import { MEMBERS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 
 
@@ -17,25 +17,7 @@ export async function addSkill(formData: FormData) {
 
   if (!name || !tag || !description) return;
 
-  const baseSlug = slugify(name);
-  let slug = baseSlug;
-  let attempt = 1;
-
-  while (true) {
-    const existing = await prisma.skill.findUnique({ where: { slug } });
-    if (!existing) break;
-    if (existing.name.toLowerCase() === name.toLowerCase()) {
-      slug = existing.slug;
-      break;
-    }
-    slug = `${baseSlug}-${++attempt}`;
-  }
-
-  const skill = await prisma.skill.upsert({
-    where: { name },
-    create: { name, tag, description, slug },
-    update: {},
-  });
+  const skill = await findOrCreateSkill({ name, tag, description });
 
   await prisma.userSkill.upsert({
     where: { userId_skillId: { userId: session.user.id, skillId: skill.id } },
