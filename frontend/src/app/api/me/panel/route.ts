@@ -64,12 +64,19 @@ export async function GET(request: Request) {
     ].slice(0, TAKE);
   } else if (panel === "activity") {
     const known = ["task_completed", "task_created", "task_moved", "member_joined", "todo_completed", "milestone_added", "milestone_completed"];
-    items = (await getMyRecentActivity(userId, TAKE)).map((e) => ({
+    const tActivity = await getTranslations({ locale, namespace: "ActivityFeed" });
+    items = (await getMyRecentActivity(userId, TAKE)).map((e) => {
+      const payload = e.payload as { title?: string; tool?: string } | null;
+      return {
       id: e.id,
-      title: t(`activity.${known.includes(e.type) ? e.type : "other"}`, { title: (e.payload as { title?: string } | null)?.title ?? "" }),
+      title:
+        e.type === "tool_edited" && payload?.tool && tActivity.has(`tools.${payload.tool}`)
+          ? t("activity.tool_edited", { tool: tActivity(`tools.${payload.tool}`) })
+          : t(`activity.${known.includes(e.type) ? e.type : "other"}`, { title: payload?.title ?? "" }),
       meta: `${e.project?.title ?? ""} · ${fmt.format(e.createdAt)}`,
       href: e.project ? `/projects/${e.project.slug}` : "/my-goodtribes?tab=activity",
-    }));
+      };
+    });
   } else if (panel === "kudos") {
     items = (await getMyKudos(userId, TAKE)).map((k) => ({
       id: k.id, title: k.message, meta: `${k.fromUser.name ?? tFeed("someone")} · ${fmt.format(k.createdAt)}`, href: "/my-goodtribes?tab=kudos",

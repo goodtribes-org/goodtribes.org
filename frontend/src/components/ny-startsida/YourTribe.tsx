@@ -27,6 +27,7 @@ export default async function YourTribe({
 }) {
   const t = await getTranslations({ locale, namespace: "YourTribe" });
   const tStep = await getTranslations({ locale, namespace: "ProjectPhaseChecklist" });
+  const tFeed = await getTranslations({ locale, namespace: "ActivityFeed" });
   const dateFmt = new Intl.DateTimeFormat(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short" });
   const relFmt = new Intl.RelativeTimeFormat(locale === "sv" ? "sv" : "en", { numeric: "auto" });
   const ago = (d: Date) => {
@@ -39,6 +40,7 @@ export default async function YourTribe({
     const who = e.who ?? t("someone");
     if (e.type === "message") return t("last.message", { who });
     if (e.type === "blogPost") return t("last.blogPost", { who, title: e.title });
+    if (e.activityType === "tool_edited" && e.tool && tFeed.has(`tools.${e.tool}`)) return t("last.tool_edited", { who, tool: tFeed(`tools.${e.tool}`) });
     const known = ["task_completed", "task_created", "task_moved", "member_joined", "todo_completed", "milestone_added", "milestone_completed"];
     const key = known.includes(e.activityType) ? e.activityType : "other";
     return t(`last.${key}`, { who, title: e.title ?? "" });

@@ -3056,7 +3056,18 @@
     "commentedOnIdea": "kommenterade på idén \"{title}\"",
     "postsPseudoProjectName": "Inlägg",
     "ideasPseudoProjectName": "Idéer",
-    "someone": "Någon"
+    "someone": "Någon",
+    "tools": {
+      "project": "projektbeskrivningen",
+      "leanCanvas": "Social Lean Canvas",
+      "valueProposition": "värdeerbjudandet",
+      "impactModel": "impactmodellen",
+      "interviews": "intervjuerna",
+      "marketScan": "omvärldsbevakningen",
+      "wiki": "wikin",
+      "polls": "omröstningarna"
+    },
+    "toolEdited": "arbetade i {tool}"
   },
   "MembersFilter": {
     "filterBySkill": "Filtrera efter kompetens",
@@ -3204,7 +3215,12 @@
     "tabTasks": "Mina uppgifter",
     "tabCalendar": "Kalender",
     "tabFollowing": "Följer",
-    "tabFind": "Hitta ett projekt"
+    "tabFind": "Hitta ett projekt",
+    "activityTaskCompleted": "Slutförde en uppgift i {project}",
+    "activityTaskCreated": "Skapade en uppgift i {project}",
+    "activityTaskMoved": "Flyttade en uppgift i {project}",
+    "activityToolEdited": "Arbetade i verktygen i {project}",
+    "activityOther": "Uppdaterade {project}"
   },
   "MentorsPage": {
     "pageDescription": "Hitta en mentor inom GoodTribes-nätverket",
@@ -4644,7 +4660,8 @@
       "todo_completed": "{who} checkade av en punkt",
       "milestone_added": "{who} lade till milstolpen ”{title}”",
       "milestone_completed": "{who} nådde milstolpen ”{title}”",
-      "other": "{who} uppdaterade projektet"
+      "other": "{who} uppdaterade projektet",
+      "tool_edited": "{who} arbetade i {tool}"
     }
   },
   "MyGoodTribes": {
@@ -4707,7 +4724,8 @@
       "todo_completed": "Checkade av en punkt",
       "milestone_added": "La till milstolpen ”{title}”",
       "milestone_completed": "Nådde milstolpen ”{title}”",
-      "other": "Uppdaterade projektet"
+      "other": "Uppdaterade projektet",
+      "tool_edited": "Arbetade i {tool}"
     },
     "kudos": {
       "label": "Tack & kudos",

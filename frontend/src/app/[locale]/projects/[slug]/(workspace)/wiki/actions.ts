@@ -1,5 +1,6 @@
 "use server";
 
+import { logToolWork } from "@/lib/toolWork";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
@@ -13,7 +14,7 @@ async function requireMember(projectSlug: string, userId: string) {
   const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
   if (!project) return null;
   const role = await getProjectRole(project.id, userId);
-  return role ? { role } : null;
+  return role ? { role, projectId: project.id } : null;
 }
 
 // Walks the tree under rootId so a page can never be re-parented into one
@@ -82,6 +83,7 @@ export async function createWikiPage(projectSlug: string, formData: FormData): P
   await prisma.wikiPage.create({
     data: { projectSlug, slug: pageSlug, title, content, parentId, order: (maxOrder._max.order ?? -1) + 1, createdById: session.user.id },
   });
+  await logToolWork(member.projectId, session.user.id, "wiki");
 
   revalidatePath(`/projects/${projectSlug}/wiki`);
   redirect(`/projects/${projectSlug}/wiki/${pageSlug}`);
@@ -108,6 +110,7 @@ export async function updateWikiPage(id: string, projectSlug: string, formData: 
       ...("parentId" in parentResult ? { parentId: parentResult.parentId } : {}),
     },
   });
+  await logToolWork(member.projectId, session.user.id, "wiki");
 
   revalidatePath(`/projects/${projectSlug}/wiki`);
 }
