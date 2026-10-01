@@ -159,6 +159,8 @@
     "cancel": "Cancel"
   },
   "ProjectCard": {
+    "seekingHelp": "Looking for help",
+    "seekingHelpTitle": "Looking for: {skills}",
     "byAuthor": "by",
     "unknownAuthor": "Unknown",
     "noDescriptionYet": "No description yet.",
@@ -171,7 +173,8 @@
     "phaseIdea": "Idea",
     "phaseActive": "Active",
     "phaseImpact": "Impact",
-    "phaseArchived": "Archived"
+    "phaseArchived": "Archived",
+    "startedProject": "{name} – started the project"
   },
   "FlagContent": {
     "reasonOffensive": "Offensive content",
@@ -852,6 +855,12 @@
     "suggestWithAiButton": "✨ Suggest with AI",
     "aiBadge": "AI",
     "skillsNeededLabel": "Skills needed",
+    "skillsNeededHint": "Pick what you need help with, or add something that's missing.",
+    "addSkillPlaceholder": "Add a skill, e.g. App developer",
+    "addSkillButton": "Add",
+    "newSkillBadge": "new",
+    "removeNewSkill": "Remove {name}",
+    "noSkillsYet": "No skills yet – add the first one below.",
     "saveChangesButton": "Save changes",
     "githubColumnMapHeading": "GitHub status → column",
     "githubColumnMapHint": "Each Status on the board ends up in the column you choose here. Closed issues and merged pull requests always end up in Done.",
@@ -2928,6 +2937,11 @@
     "next_step_decided": "Decide the next step: continue, replicate, or responsibly wind down"
   },
   "PhaseMenuBar": {
+    "navLabel": "Project phases",
+    "progressLabel": "{done} of {total} tasks done",
+    "autoDone": "Done — visible in the project's content",
+    "autoDoneShort": "done",
+    "nextStep": "Next step:",
     "guideLinkLabel": "{phase} guide",
     "overviewLinkLabel": "{phase} on one page"
   },
@@ -3768,6 +3782,9 @@
     "inheritedHint": "inherited",
     "standardHint": "default",
     "settingsHeading": "AI in this project",
+    "budgetUsed": "AI quota: {pct}% used this period",
+    "budgetResets": "refills {date}",
+    "budgetWarning": "The quota is running low — AI calls stop when it is used up and resume when it refills.",
     "intro": "You decide how much the AI does: for the whole project, per phase or per guide step. The most specific choice applies. Changing mode never changes anything already written.",
     "introDismiss": "Close",
     "projectModeHeading": "Project mode",
@@ -3778,11 +3795,100 @@
     "projectManagerHint": "Let the AI create and suggest tasks in the project. Turn off and no tasks are created automatically.",
     "saveError": "Could not save — try again."
   },
+  "AiDraftsNotice": {
+    "summary": "<b>{drafts} of {filled} fields</b> are AI drafts nobody in the team has reviewed yet.",
+    "show": "Show them",
+    "next": "Next",
+    "stop": "Stop highlighting"
+  },
+  "CanvasStatusLegend": {
+    "known": "Done — you know",
+    "assumed": "Assumption — needs testing",
+    "empty": "Empty"
+  },
+  "SectionIntro": {
+    "tipLabel": "Tip:",
+    "close": "Close the tip",
+    "reopen": "Show the tip again",
+    "about": {
+      "title": "Tell people about the project",
+      "body": "Describe in a few sentences what you want to change and for whom. This is the first thing others see, both people who want to help and people who might fund you.",
+      "tip": "Write it the way you'd tell a neighbour. Concrete and short beats fine words."
+    },
+    "sdg": {
+      "title": "Which global goals do you contribute to?",
+      "body": "The global goals (Agenda 2030) make it easier for others to find you and for funders to see where you fit. Pick the one or two goals you contribute to most, not every goal that fits a little.",
+      "tip": "Many foundations and municipalities sort their calls by the global goals."
+    },
+    "leanCanvas": {
+      "title": "The idea on one page",
+      "body": "The Social Lean Canvas captures the whole idea: the problem, who you help, the solution, how it sustains itself and what difference it makes. Every box is a guess until you've tested it.",
+      "tip": "Start with Purpose and Customer segments. The rest gets easier once you know who it's for."
+    },
+    "impactModel": {
+      "title": "How does what you do lead to change?",
+      "body": "The impact model is your theory of change: the problem you face, who takes part, what you do, and what changes in the short, medium and long term. The last step is the same as the canvas's Impact box.",
+      "tip": "Ask yourselves at every step: \"And then what?\" It exposes gaps in the chain."
+    },
+    "valueProposition": {
+      "title": "What do you do for the people you want to help?",
+      "body": "On the right, describe the people you want to help: what they're trying to get done, what's hard and what they wish for. On the left, what you offer and how it relieves or helps. It works when the two sides fit.",
+      "tip": "Start from what they say themselves in the interviews, not from what you think they need."
+    },
+    "marketScan": {
+      "title": "Who's already out there?",
+      "body": "Other organisations, similar initiatives, trends and rules that affect you. Not to compete, but to find partners and avoid reinventing the wheel.",
+      "tip": "An organisation doing something similar may become your most important partner."
+    },
+    "interviews": {
+      "title": "Talk to the people it's about",
+      "body": "The interviews are the most important thing you do in the Idea phase. This is where assumptions meet reality. Three to five conversations are often enough to see whether you're on the right track.",
+      "tip": "Ask how things are today, not whether they'd like your idea. People are too kind to ideas."
+    },
+    "invite": {
+      "title": "Nobody changes the world alone",
+      "body": "Invite the people who want to be part of it now: friends, colleagues, or someone with a skill you're missing. More perspectives early make the idea better.",
+      "tip": "Ask someone outside your bubble for honest criticism. It's worth more than ten thumbs up."
+    },
+    "gate": {
+      "title": "Time to decide the next step",
+      "body": "This is where you stop and look at what you've learned. You decide for yourselves whether to go ahead, adjust, change direction or pause. The criteria are a support, not a lock.",
+      "tip": "Pausing or changing direction is a good decision too, if it's based on what you've learned."
+    },
+    "leanCanvasPage": {
+      "title": "How to use the Social Lean Canvas",
+      "body": "Fill in the boxes in whatever order feels natural. It doesn't all have to be done at once. The canvas is a living document you update as you learn more.",
+      "tip": "Mark each box as Known or Assumed. What's Assumed is what you need to test."
+    },
+    "customerModelPage": {
+      "title": "The customer model: who is it for?",
+      "body": "Here you go deeper into who you want to help: who needs you most (the early adopters) and what they do today instead (the alternatives).",
+      "tip": "Early adopters are the people with the most urgent version of the problem. Start with them."
+    },
+    "valuePropositionPage": {
+      "title": "How to use the value proposition",
+      "body": "Start on the right with the people you want to help, then fill in what you offer on the left. The arrows between the sides show whether the offer meets a real need.",
+      "tip": "A good offer solves a few important problems really well, not everything a little."
+    },
+    "impactModelPage": {
+      "title": "How to build your impact model",
+      "body": "Go from left to right: the problem, the participants, the activities, then the outcomes in the short, medium and long term. This is your plan for change, not a result you've already achieved.",
+      "tip": "Short-term outcomes should be visible within a year. They're the ones you measure first."
+    }
+  },
+  "ChangeImpactHint": {
+    "heading": "You changed this — it may affect:",
+    "close": "Close",
+    "interviewGuide": "The interview guide",
+    "marketScan": "The market scan"
+  },
   "FieldProvenance": {
+    "approve": "Looks good",
+    "approveHint": "You've read the draft and stand behind it as it is. It then counts as reviewed, but it's still an assumption until you know.",
     "aiDraft": "AI draft",
-    "aiDraftHint": "Written by the AI and not yet edited by a person.",
-    "aiEdited": "AI + edited",
-    "aiEditedHint": "An AI draft a person has edited.",
+    "aiDraftHint": "Written by the AI and not yet reviewed by anyone in the team.",
+    "aiEdited": "AI + reviewed",
+    "aiEditedHint": "An AI draft someone in the team has reviewed — edited or approved.",
     "known": "Known",
     "assumed": "Assumed",
     "markKnown": "Mark as something you know",
@@ -3831,6 +3937,25 @@
     "nextStepAddMore": "Want to add something? Write it in the chat first.",
     "nextStepBodyAgent": "Now the AI creates your project and fills in the Idea phase: description, global goals, Social Lean Canvas, value proposition, market scan and an interview guide. You see it all on one page and can edit anything that's off.",
     "nextStepBodyAssist": "Now the project is created with a name and description. You fill in the rest yourself in the guide, with the AI's suggestions next to the fields."
+  },
+  "BlockIterate": {
+    "open": "Improve",
+    "working": "The AI is thinking …",
+    "close": "Close",
+    "back": "Back",
+    "failed": "Couldn't come up with anything right now — try again.",
+    "mode_sharpen": "Sharpen",
+    "mode_simplify": "Simplify",
+    "mode_challenge": "Challenge me",
+    "mode_ask": "Ask me",
+    "hint_sharpen": "Make the text more concrete — the AI adds placeholders where facts are missing",
+    "hint_simplify": "Same content, simpler words",
+    "hint_challenge": "Critical questions to be able to answer — the text isn't changed",
+    "hint_ask": "The AI asks a few questions and writes a suggestion from your answers",
+    "questionsHeading": "Answer what you can",
+    "createSuggestion": "Create suggestion",
+    "challengesHeading": "Questions to think about",
+    "suggestionReady": "The suggestion is below the field — choose whether to use it."
   },
   "AiSuggestion": {
     "label": "AI suggestion",
@@ -4341,7 +4466,7 @@
   "NewHomePage": {
     "metaTitle": "GoodTribes – What do you dream of changing?",
     "hero": {
-      "overline": "We make good dreams come true.",
+      "overline": "We make good dreams <u>come true</u>.",
       "heading": "What do you dream of",
       "headingHighlight": "changing?",
       "intro": "GoodTribes is where people come together to make ideas that improve the world happen. Tell us about your dream, and the AI guide takes you all the way from idea to real change.",
@@ -4354,7 +4479,8 @@
       },
       "note": "Free account needed for the AI guide · The conversation is private until you create the project yourself",
       "restored": "Welcome back! Your dream is still here, press the arrow to start.",
-      "submit": "Start with the AI guide"
+      "submit": "Start with the AI guide",
+      "helpInstead": "Would you rather help out? See projects looking for people →"
     },
     "live": {
       "label": "Live",
@@ -4379,30 +4505,38 @@
       "allLink": "See all projects →"
     },
     "stats": {
-      "eyebrow": "Our impact",
-      "heading": "What's happening on the platform",
-      "raised": "raised in total",
-      "tasks": "tasks completed",
-      "tokens": "tokens awarded",
-      "projects": "active projects"
+      "eyebrow": "Together",
+      "heading": "What we've done together",
+      "raised": "raised together",
+      "tasks": "tasks we've completed",
+      "tokens": "tokens we've given each other",
+      "projects": "projects we're running right now"
     },
     "founding": {
-      "eyebrow": "How far an idea can go",
-      "heading": "Infos: Datordonation",
+      "eyebrow": "Our story",
+      "heading": "Where it all began",
       "storyHeading": "It started with computers that were going to be scrapped",
       "body": "Perfectly working computers are replaced after three or four years – while preschools, schools and non-profits lack equipment. Infos Datordonation solved both problems: the computers were securely wiped, got new software and went on to schools including Tensta, Rinkeby and Skärholmen and to organisations such as Amnesty, Greenpeace and Save the Children. That work led to the founding of the GoodTribes Foundation, so that more good ideas can help build a better world.",
       "supportLabel": "Made possible by"
     },
-    "tools": {
-      "eyebrow": "Tools",
-      "heading": "Everything you need, already built in"
-    },
     "community": {
-      "eyebrow": "Goodtribes community",
+      "eyebrow": "We are GoodTribes",
       "title": "Be part of something bigger",
       "heading": "Happening now",
       "subheading": "Latest activity on the platform",
-      "seeAllLink": "See all activity →"
+      "seeAllLink": "See all activity →",
+      "peopleHeading": "We are {count} people making this happen together",
+      "meetAll": "Meet everyone →",
+      "wallTitle": "Newest in the community",
+      "wallBody": "Developers, designers, teachers, retirees and students – everyone who puts in an hour here makes a dream a little more real.",
+      "join": "Join us",
+      "recentTitle": "What we've done lately",
+      "thank": "Thank",
+      "someone": "Someone",
+      "startedProject": "started {project}",
+      "sharedIdea": "shared a new idea: {title}",
+      "reachedMilestone": "reached a milestone in {project}: {title}",
+      "inProject": "{action} in {project}"
     },
     "steps": {
       "eyebrow": "Five steps",
@@ -4423,5 +4557,12 @@
       "step4Title": "Together you create a better world",
       "step4Body": "Every realized dream gives you and others the chance to Live Well, Feel Good, and Do Good."
     }
+  },
+  "HeaderTools": {
+    "tools": "Tools",
+    "toolsHeading": "The tools in every project",
+    "toolsIntro": "Every project gets these tools, completely free.",
+    "trySandbox": "Try them in the Sandbox",
+    "startProject": "Start a project"
   }
 }

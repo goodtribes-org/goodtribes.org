@@ -19,13 +19,14 @@ fonts are kept variable, and Bricolage Grotesque keeps its `opsz` axis.
 | `JetBrainsMono-latin.woff2` | JetBrains Mono | 400–500 (variable) | `JetBrainsMono-OFL.txt` |
 | `BricolageGrotesque-latin.woff2` | Bricolage Grotesque | 200–800, opsz 12–96 (variable) | `BricolageGrotesque-OFL.txt` |
 | `Figtree-latin.woff2` | Figtree | 400–700 (variable) | `Figtree-OFL.txt` |
-| `Caveat-latin.woff2` | Caveat | 600 | `Caveat-OFL.txt` |
+| `Satisfy-latin.woff2` | Satisfy | 400 | `Satisfy-LICENSE.txt` (Apache 2.0) |
 
-All are under the SIL Open Font License 1.1, which allows bundling and
-serving them. The license and copyright notice must travel with the files,
-so keep the matching `*-OFL.txt` next to each font.
+All but Satisfy are under the SIL Open Font License 1.1; Satisfy is under
+the Apache License 2.0. Both allow bundling and serving them. The license
+must travel with the files, so keep the matching `*-OFL.txt` /
+`*-LICENSE.txt` next to each font.
 
 To add a font: download its woff2 from the Google Fonts CSS API
-(`https://fonts.googleapis.com/css2?family=…`, latin block), add the OFL file
-from `github.com/google/fonts/tree/main/ofl/<family>`, and declare it with
+(`https://fonts.googleapis.com/css2?family=…`, latin block), add its license file
+from `github.com/google/fonts/tree/main/<ofl|apache>/<family>`, and declare it with
 `localFont` next to the others.

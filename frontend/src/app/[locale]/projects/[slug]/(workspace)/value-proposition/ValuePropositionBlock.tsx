@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import FieldProvenanceBadge from "@/components/ai/FieldProvenanceBadge";
 import AiSuggestionBox from "@/components/ai/AiSuggestionBox";
+import BlockIterateMenu from "@/components/ai/BlockIterateMenu";
+import ChangeImpactHint from "@/components/ai/ChangeImpactHint";
 import { markAiSuggestionPartlyUsed } from "@/lib/actions/aiSuggestions";
 import type { ProvenanceInfo } from "@/lib/fieldProvenance";
 import { updateValuePropositionBlock } from "./actions";
@@ -31,10 +33,15 @@ export default function ValuePropositionBlock({ projectSlug, field, side, label,
   // "Använd delar": the editor opens with the suggestion to adapt; saving
   // then closes the suggestion and marks the field as an edited AI draft.
   const [draftFromSuggestion, setDraftFromSuggestion] = useState<string | null>(null);
+  // Konsekvenskontroll: after a save that actually changed the text, hint
+  // which other fields build on this one (lib/fieldDependencies.ts).
+  const [changed, setChanged] = useState(false);
 
   function handleSave(formData: FormData) {
     startTransition(async () => {
+      const changedText = String(formData.get("value") ?? "").trim() !== (value ?? "").trim();
       await updateValuePropositionBlock(projectSlug, field, formData);
+      setChanged(changedText);
       if (draftFromSuggestion !== null && suggestion) await markAiSuggestionPartlyUsed(suggestion.id);
       setDraftFromSuggestion(null);
       setEditing(false);
@@ -110,6 +117,8 @@ export default function ValuePropositionBlock({ projectSlug, field, side, label,
           {canEdit ? t("emptyEditable") : t("emptyReadOnly")}
         </p>
       )}
+      {!editing && <BlockIterateMenu projectSlug={projectSlug} entity="valueProposition" field={field} hasContent={!!value?.trim()} />}
+      {changed && !editing && <ChangeImpactHint projectSlug={projectSlug} fieldKey={`valueProposition.${field}`} onClose={() => setChanged(false)} />}
       {suggestion && !editing && (
         <AiSuggestionBox
           suggestion={suggestion}

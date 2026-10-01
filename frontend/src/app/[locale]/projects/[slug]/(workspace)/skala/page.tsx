@@ -15,6 +15,7 @@ import OverviewSection from "../ide/OverviewSection";
 import PhaseGateSection from "../ide/PhaseGateSection";
 import DraftButton from "../uppstart/DraftButton";
 import { DraftCta, FieldGrid, FocusBox, GateClosed, OverviewHeader, TaskList, WikiHtml } from "../_overview/parts";
+import PhaseProgressStrip from "../../PhaseProgressStrip";
 
 const STEP_ANCHOR: Record<string, string> = {
   scale_vs_fork_decided: "val",
@@ -88,6 +89,7 @@ export default async function SkalaOverviewPage({ params }: { params: Promise<{ 
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 py-6">
+      <PhaseProgressStrip projectId={project.id} slug={slug} viewing="SCALE" />
       <OverviewHeader
         heading={t("heading")}
         intro={isSkalaFillInProgress(fill) ? t("introWriting") : t("intro")}

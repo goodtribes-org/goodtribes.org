@@ -8,4 +8,3 @@ import localFont from "next/font/local";
 // (font-optical-sizing: auto).
 export const newHomeDisplayFont = localFont({ src: "../../fonts/BricolageGrotesque-latin.woff2", weight: "200 800", display: "swap" });
 export const newHomeBodyFont = localFont({ src: "../../fonts/Figtree-latin.woff2", weight: "400 700", display: "swap" });
-export const newHomeScriptFont = localFont({ src: "../../fonts/Caveat-latin.woff2", weight: "600", display: "swap" });

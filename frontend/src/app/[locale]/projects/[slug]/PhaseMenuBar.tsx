@@ -1,14 +1,26 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState, useTransition } from "react";
+import type React from "react";
+
+import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
-import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, numberChecklist, overviewPathFor, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, numberChecklist, overviewPathFor, PHASE_COLORS, hexToRgba, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { nextStep, phaseProgress } from "@/lib/phaseProgress";
+import { activePhaseFor } from "@/lib/phaseForPath";
+import { usePathname } from "@/i18n/navigation";
+import { ChevronDown } from "lucide-react";
+import { newHomeDisplayFont } from "@/components/ny-startsida/fonts";
 
 interface Props {
   slug: string;
   phase: ProjectPhaseValue;
+  // Ticked by a human (InitiativeChecklistItem).
   completedKeys: string[];
+  // Shown as done because the project's own data says so (lib/projectSignals.ts
+  // — "3 intervjuer loggade"); can't be unticked, since it isn't a tick.
+  autoDoneKeys?: string[];
   canEdit: boolean;
   // Set on guide pages so the pill for the guide being read gets a ring —
   // independent of `phase` (the project's actual current phase, still shown
@@ -17,240 +29,452 @@ interface Props {
   // Link each phase's dropdown to its one-page overview (flag
   // ai-project-start is on for this viewer).
   showOverviews?: boolean;
+  // "Nästa steg: …" under the bars — for members, not for every visitor.
+  showNextStep?: boolean;
+  // Thin variant for the top of the phase overview pages: no checklist
+  // dropdowns, each phase links straight to its overview.
+  compact?: boolean;
+  // PROTOTYPE: "chevrons" = förslag D, the phases as arrows in the header.
+  // "header" = förslag från startsidans design: stapel överst, inget
+  // nummer, fasnamnet följt av ▾ som fäller ut fasens arbetsuppgifter.
+  variant?: "bars" | "chevrons" | "header";
 }
 
-// Fas- och stegmeny (PRD 4d) — en platt meny under hero, "1. Idé", "2. Pilot"
-// osv. Idé täcker både IDEA och SPRINT (se lib/projectPhase.ts — sammanslaget
-// på UI-nivå, inget separat "Sprint"-steg längre). Varje fas har en
-// checklista och går att klicka på för att fälla ut en undermeny med
-// numrerade delsteg ("1.1 Beskriv idén", "1.2 ...").
-export default function PhaseMenuBar({ slug, phase, completedKeys, canEdit, viewingPhase, showOverviews }: Props) {
+// Header look (Niklas's choice, 2026-09-30): homepage style — full-colour bars
+// with a thin white progress line, filled circles with white numbers, and a
+// ring only on the phase being worked in. Note: white on the
+// yellow/orange fills is below WCAG's 4.5:1 for small text (1.8–2.8:1), so
+// the circles rely on colour + position more than on reading the digit.
+const guideHref = (slug: string, phase: ProjectPhaseValue, step?: string) =>
+  (phase === "IDEA" ? `/projects/${slug}/guide` : `/projects/${slug}/guide/${phase.toLowerCase()}`) + (step ? `?step=${step}` : "");
+
+// Fasstaplarna (docs/plans/fasframsteg-och-overblick.md): sex kolumner —
+// stapel, numrerad cirkel, fasnamn — i fasens färg (PHASE_COLORS, gult →
+// grönt). Stapeln fylls i takt med att fasens uppgifter blir klara (ibockade
+// eller automatiskt klara), numret blir en bock när fasen är klar. Idé
+// täcker både IDEA och SPRINT (lib/projectPhase.ts). Klick på en fas fäller
+// ut dess checklista ("1.1 Beskriv projektet", …) som förut.
+export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys = [], canEdit, viewingPhase, showOverviews, showNextStep, compact, variant = "bars" }: Props) {
   const t = useTranslations("PhaseMenuBar");
   const tPhase = useTranslations("ProjectPhase");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
-  const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedKeys));
+  const [ticked, setTicked] = useState<Set<string>>(new Set(completedKeys));
   const [isPending, startTransition] = useTransition();
   const [openPhase, setOpenPhase] = useState<ProjectPhaseValue | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  // The header variant's dropdown is portalled out of the header.
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [menuPos, setMenuPos] = useState<{ left: number; top: number } | null>(null);
+  // Unique clipPath ids when several arrow strips are on one page.
+  const idPrefix = useId().replace(/:/g, "");
 
   // Guide pages render their own step UI alongside this menu — when a step
   // gets marked done there, the server action revalidates this route too,
   // so pick up the fresh completedKeys instead of staying stuck on the set
   // this component first mounted with.
   useEffect(() => {
-    setDoneKeys(new Set(completedKeys));
+    setTicked(new Set(completedKeys));
   }, [completedKeys]);
 
-  const displayPhase = toDisplayPhase(phase);
-  const currentIndex = DISPLAY_PHASES.findIndex((p) => p.value === displayPhase);
+  const auto = useMemo(() => new Set(autoDoneKeys), [autoDoneKeys]);
+  const doneKeys = useMemo(() => new Set([...ticked, ...auto]), [ticked, auto]);
+  const progress = phaseProgress(doneKeys);
+  const currentIndex = DISPLAY_PHASES.findIndex((p) => p.value === toDisplayPhase(phase));
+  // In the header the active phase follows the page: working in a tool of
+  // another phase (e.g. Designsprints → Uppstart) makes that phase active;
+  // pages outside any phase keep the project's own phase active.
+  const pathname = usePathname();
+  const activeIndex =
+    variant === "header" ? DISPLAY_PHASES.findIndex((p) => p.value === activePhaseFor(pathname, slug, phase)) : currentIndex;
   const viewingDisplayPhase = viewingPhase ? toDisplayPhase(viewingPhase) : null;
+  const next = showNextStep ? nextStep(phase, doneKeys) : null;
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpenPhase(null);
+      const target = e.target as Node;
+      if (menuRef.current?.contains(target) || dropdownRef.current?.contains(target)) return;
+      setOpenPhase(null);
     }
     if (openPhase) document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, [openPhase]);
 
   function handleToggle(p: ProjectPhaseValue, itemKey: string, done: boolean) {
-    if (!canEdit) return;
-    setDoneKeys((prev) => {
-      const next = new Set(prev);
-      if (done) next.add(itemKey); else next.delete(itemKey);
-      return next;
+    if (!canEdit || auto.has(itemKey)) return;
+    setTicked((prev) => {
+      const nextSet = new Set(prev);
+      if (done) nextSet.add(itemKey);
+      else nextSet.delete(itemKey);
+      return nextSet;
     });
     startTransition(() => toggleChecklistItem(slug, p, itemKey, done));
   }
 
-  // Klar-andel per fas — driver linjen som kommer efter fasens ord (t.ex.
-  // 3 av 4 punkter klara = linjen är 75% grön, 25% grå). Beräknas för alla
-  // faser i förväg eftersom linjen framför fas i visar fas i-1:s andel.
-  const phaseProgress = DISPLAY_PHASES.map((p) => {
-    const items = getChecklistForPhase(p.value) ?? [];
-    const done = items.filter((item) => doneKeys.has(item.key)).length;
-    const total = items.length;
-    return { total, pct: total > 0 ? Math.round((done / total) * 100) : 0, complete: total > 0 && done === total };
-  });
+  if (variant === "chevrons") {
+    // Förslag D: one arrow per phase, overlapping so they read as a single
+    // journey. The arrow fills with the phase colour as its tasks get done
+    // (same progress as the bars); the current phase is bold and shows
+    // "3/7"; a finished phase gets ✓. Each arrow links to its overview.
+    return (
+      <nav aria-label={t("navLabel")} className="flex w-full items-stretch">
+        {DISPLAY_PHASES.map((p, i) => {
+          const pr = progress[i];
+          const color = PHASE_COLORS[p.value];
+          const isCurrent = i === currentIndex;
+          const first = i === 0;
+          const last = i === DISPLAY_PHASES.length - 1;
+          // Drawn as SVG so the arrow can have an outline in its phase
+          // colour (a CSS border can't follow a clip-path). viewBox width
+          // 100, stretched to the arrow's width; the stroke stays 1.5px
+          // (non-scaling), the 9-unit notch reads as ~9px at header sizes.
+          const n = 9;
+          const shape = first
+            ? `M0.75,1 H${100 - n} L99.25,14 L${100 - n},27 H0.75 Z`
+            : last
+              ? `M0.75,1 H99.25 V27 H0.75 L${n},14 Z`
+              : `M0.75,1 H${100 - n} L99.25,14 L${100 - n},27 H0.75 L${n},14 Z`;
+          const clipId = `${idPrefix}-phase-${i}`;
+          return (
+            <a
+              key={p.value}
+              href={`/projects/${slug}/${overviewPathFor(p.value)}`}
+              aria-current={isCurrent ? "step" : undefined}
+              title={t("progressLabel", { done: pr.done, total: pr.total })}
+              className={`relative flex h-7 min-w-0 flex-1 items-center justify-center transition-opacity hover:opacity-85 ${first ? "" : "-ml-1.5"}`}
+            >
+              <svg aria-hidden className="absolute inset-0 h-full w-full" viewBox="0 0 100 28" preserveAspectRatio="none">
+                <defs>
+                  <clipPath id={clipId}>
+                    <path d={shape} />
+                  </clipPath>
+                </defs>
+                <path d={shape} fill={hexToRgba(color, isCurrent ? 0.22 : 0.1)} />
+                <rect x="0" y="0" width={pr.pct} height="28" fill={color} clipPath={`url(#${clipId})`} className="transition-[width] duration-500" />
+                <path d={shape} fill="none" stroke={color} strokeWidth={isCurrent ? 2 : 1.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              </svg>
+              <span className={`relative truncate px-3 text-xs ${isCurrent ? "font-bold text-dark-slate" : pr.done > 0 ? "font-semibold text-dark-slate/80" : "font-medium text-dark-slate/55"}`}>
+                {pr.complete ? "✓ " : ""}
+                {tPhase(p.value)}
+                {isCurrent && !pr.complete ? ` ${pr.done}/${pr.total}` : ""}
+              </span>
+              <span className="sr-only">{t("progressLabel", { done: pr.done, total: pr.total })}</span>
+            </a>
+          );
+        })}
+      </nav>
+    );
+  }
 
   return (
     <div ref={menuRef}>
-      <nav className="flex flex-wrap sm:flex-nowrap items-center gap-y-3 text-sm w-full">
+      <nav
+        aria-label={t("navLabel")}
+        className={`grid ${
+          variant === "header"
+            ? // Header only (lg+): own column rule, without sm:grid-cols-6,
+              // whose media query would otherwise override it.
+              "gap-x-2.5 gap-y-3 [grid-template-columns:var(--phase-cols)] min-[1500px]:[grid-template-columns:var(--phase-cols-wide)]"
+            : `grid-cols-3 sm:grid-cols-6 ${compact ? "gap-x-2 gap-y-3" : "gap-x-3 gap-y-5"}`
+        }`}
+        // In the header, below ~1500px only the current phase shows its name
+        // and "3/7", so its column gets extra room there; from 1500px all six
+        // names show and the columns are equal again.
+        style={
+          variant === "header"
+            ? ({
+                "--phase-cols": DISPLAY_PHASES.map((_, i) => (i === activeIndex ? "minmax(0,2.2fr)" : "minmax(0,1fr)")).join(" "),
+                // From 1500px every phase shows its name: each column sizes to
+                // its own content (Lansering is the longest), and the space
+                // left over is shared out, so no name gets cut off.
+                "--phase-cols-wide": DISPLAY_PHASES.map(() => "auto").join(" "),
+              } as React.CSSProperties)
+            : undefined
+        }
+      >
         {DISPLAY_PHASES.map((p, i) => {
-          const isCurrent = i === currentIndex;
-          const isPast = i < currentIndex;
-          const isReached = i <= currentIndex;
+          const pr = progress[i];
+          const color = PHASE_COLORS[p.value];
+          const isCurrent = i === activeIndex;
+          const isFuture = i > currentIndex;
           const isViewing = p.value === viewingDisplayPhase;
           const checklist = getChecklistForPhase(p.value);
           const itemNumbers = checklist ? numberChecklist(checklist, i + 1) : [];
           const isOpen = openPhase === p.value;
-          const canEditThis = canEdit;
+          const dimmed = isFuture && pr.done === 0;
 
-          // När en fas egen checklista är 100% klar blir dess prick och namn
-          // gröna — oavsett om fasen faktiskt är aktiv än. Utöver det tänds
-          // NÄSTA fas i förskott (prick grön, namn svart) — men bara om ALLA
-          // faser fram till och med denna är helt klara, inte bara den
-          // närmast föregående.
-          const isOwnPhaseComplete = phaseProgress[i].complete;
-          const unlockedByPrevPhase = i > 0 && phaseProgress.slice(0, i).every((pp) => pp.complete);
-          const dotIsGreen = isReached || unlockedByPrevPhase || isOwnPhaseComplete;
-
-          const labelClass = isOwnPhaseComplete
-            ? "text-seagrass font-bold"
-            : unlockedByPrevPhase
-              ? "text-black font-bold"
-              : isCurrent
-                ? "text-dark-slate font-bold"
-                : isPast
-                  ? "text-seagrass/70 font-semibold hover:text-seagrass"
-                  : "text-dark-slate/35 font-semibold hover:text-dark-slate/60";
-
-          const itemContent = (
+          const headerStyle = variant === "header";
+          const column = headerStyle ? (
+            <>
+              {/* As on the homepage: a full-colour bar; the tasks done show as
+                  a thin white line along its middle (inset 3px, so an empty
+                  phase is just the plain bar). */}
+              <span className="relative block h-2 w-full rounded-full" style={{ background: color }} aria-hidden>
+                <span
+                  className="absolute left-[3px] top-1/2 h-[2px] -translate-y-1/2 rounded-full bg-white transition-[width] duration-500"
+                  style={{ width: `calc((100% - 6px) * ${pr.pct / 100})` }}
+                />
+              </span>
+              <span className="mt-2 flex items-center gap-2">
+                {/* Number circle, as on the homepage: filled, white number, ✓ once
+                    done. A ring outside a white gap marks the phase being worked
+                    in; how far the others have come shows in their bars. */}
+                <span
+                  className="mx-[5px] flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white xl:h-7 xl:w-7 xl:text-[13px]"
+                  style={{
+                    background: color,
+                    boxShadow: isCurrent ? `0 0 0 2px #fff, 0 0 0 3.5px ${color}` : undefined,
+                  }}
+                  aria-hidden
+                >
+                  {pr.complete ? "✓" : i + 1}
+                </span>
+                {/* Below ~1500px the header can't fit six names beside the logo
+                    and icons: only the current phase keeps its name there, the
+                    others show number + ▾ (name in the tooltip). */}
+                <span
+                  className={`${newHomeDisplayFont.className} truncate text-[13px] font-bold tracking-[-0.01em] xl:text-sm ${isCurrent ? "" : "hidden min-[1500px]:inline"} text-dark-slate`}
+                >
+                  {tPhase(p.value)}
+                </span>
+                {isCurrent && !pr.complete && (
+                  // Hidden on the narrowest header widths (in the tooltip there).
+                  <span className="hidden shrink-0 text-xs font-semibold tabular-nums text-dark-slate/55 min-[1200px]:inline">
+                    {pr.done}/{pr.total}
+                  </span>
+                )}
+                <ChevronDown
+                  aria-hidden
+                  className={`h-4 w-4 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""} ${isCurrent ? "text-dark-slate" : "text-dark-slate/50"}`}
+                  strokeWidth={2.5}
+                />
+              </span>
+              <span className="sr-only">{t("progressLabel", { done: pr.done, total: pr.total })}</span>
+            </>
+          ) : (
             <>
               <span
-                className={`w-2.5 h-2.5 rounded-full flex-shrink-0 border transition-colors mr-1.5 ${
-                  dotIsGreen ? "bg-seagrass border-seagrass" : "bg-white border-dark-slate/25"
-                }`}
-                aria-hidden="true"
-              />
-              <span className={`uppercase tracking-wide text-xs transition-colors ${labelClass}`}>{tPhase(p.value)}</span>
-              <svg
-                className={`w-3 h-3 flex-shrink-0 opacity-50 transition-transform ${isOpen ? "rotate-180" : ""} ${
-                  isOwnPhaseComplete
-                    ? "text-seagrass"
-                    : unlockedByPrevPhase
-                      ? "text-black"
-                      : isCurrent
-                        ? "text-dark-slate"
-                        : isPast
-                          ? "text-seagrass/70"
-                          : "text-dark-slate/35"
-                }`}
-                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                className={`block w-full overflow-hidden rounded-full ${compact ? "h-1.5" : "h-2"}`}
+                style={{ background: hexToRgba(color, 0.2) }}
+                aria-hidden
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-              </svg>
+                <span className="block h-full rounded-full transition-[width] duration-500" style={{ width: `${pr.pct}%`, background: color }} />
+              </span>
+              <span className={`flex items-center ${compact ? "mt-1.5 gap-1.5" : "mt-2.5 gap-1.5 sm:gap-2"}`}>
+                <span
+                  className={`flex shrink-0 items-center justify-center rounded-full font-semibold text-white ${compact ? "h-5 w-5 text-[11px]" : "h-6 w-6 text-xs sm:h-7 sm:w-7 sm:text-sm"} ${
+                    isCurrent || isViewing ? "ring-2 ring-offset-2" : ""
+                  }`}
+                  style={{ background: color, opacity: dimmed ? 0.45 : 1, ["--tw-ring-color" as string]: color }}
+                  aria-hidden
+                >
+                  {pr.complete ? "✓" : i + 1}
+                </span>
+                <span
+                  className={`truncate ${compact ? "text-xs" : "text-[13px] sm:text-base"} ${isCurrent ? "font-bold text-dark-slate" : dimmed ? "font-semibold text-dark-slate/45" : "font-semibold text-dark-slate/80"}`}
+                >
+                  {tPhase(p.value)}
+                </span>
+              </span>
+              <span className="sr-only">{t("progressLabel", { done: pr.done, total: pr.total })}</span>
             </>
           );
 
-          return (
-            <Fragment key={p.value}>
-              {i > 0 && (
-                <div
-                  className="hidden sm:block flex-1 h-0.5 mx-1 rounded-full"
-                  style={{
-                    background: `linear-gradient(to right, var(--color-seagrass) ${phaseProgress[i - 1].pct}%, color-mix(in srgb, var(--color-dark-slate) 20%, transparent) ${phaseProgress[i - 1].pct}% 100%)`,
-                  }}
-                  aria-hidden="true"
-                />
-              )}
-              {/* z-30 while open, not just on the inner dropdown: the phase
-                  bar wraps onto two rows on narrow viewports (flex-wrap
-                  below sm), and a nested z-20 on the dropdown alone is
-                  scoped to this wrapper's own stacking context — it still
-                  loses to a later sibling phase's z-10 wrapper on the row
-                  below, which paints on top by DOM order on a z-index tie.
-                  Elevating the whole wrapper while open fixes that. */}
-              <div className={`relative flex items-center shrink-0 ${isOpen ? "z-30" : "z-10"}`}>
-                {checklist ? (
-                  <button
-                    type="button"
-                    onClick={() => setOpenPhase((prev) => (prev === p.value ? null : p.value))}
-                    aria-expanded={isOpen}
-                    aria-current={isViewing ? "step" : undefined}
-                    className="flex items-center px-1.5 py-1 rounded-full transition-colors"
-                  >
-                    {itemContent}
-                  </button>
-                ) : (
-                  <span aria-current={isViewing ? "step" : undefined} className="flex items-center px-1.5 py-1">
-                    {itemContent}
-                  </span>
-                )}
+          if (compact) {
+            return (
+              <a
+                key={p.value}
+                href={`/projects/${slug}/${overviewPathFor(p.value)}`}
+                aria-current={isViewing ? "page" : undefined}
+                title={t("progressLabel", { done: pr.done, total: pr.total })}
+                className="block min-w-0 rounded-md hover:opacity-80"
+              >
+                {column}
+              </a>
+            );
+          }
 
-              {isOpen && checklist && (
-                <div className="absolute left-0 top-full mt-2 w-72 bg-white border border-muted-teal/20 rounded-xl shadow-lg z-20 overflow-hidden animate-[fadeIn_0.12s_ease-out]">
+          return (
+            // z-30 while open: the bars wrap onto two rows below sm, and a
+            // dropdown on the first row would otherwise lose to a later
+            // column's stacking context on the second.
+            <div key={p.value} className={`relative min-w-0 ${isOpen ? "z-30" : "z-10"}`}>
+              {checklist ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    if (headerStyle) {
+                      const r = e.currentTarget.getBoundingClientRect();
+                      setMenuPos({ left: Math.min(r.left, window.innerWidth - 300), top: r.bottom + 8 });
+                    }
+                    setOpenPhase((prev) => (prev === p.value ? null : p.value));
+                  }}
+                  aria-expanded={isOpen}
+                  aria-current={isViewing ? "step" : undefined}
+                  title={`${tPhase(p.value)} — ${t("progressLabel", { done: pr.done, total: pr.total })}`}
+                  className={`block w-full min-w-0 text-left ${headerStyle ? "-mx-1.5 -my-1 rounded-lg px-1.5 py-1 transition-colors hover:bg-[var(--phase-hover)]" : ""}`}
+                  style={headerStyle ? ({ "--phase-hover": hexToRgba(color, 0.12), width: "calc(100% + 0.75rem)" } as React.CSSProperties) : undefined}
+                >
+                  {column}
+                </button>
+              ) : (
+                <span aria-current={isViewing ? "step" : undefined} className="block min-w-0">
+                  {column}
+                </span>
+              )}
+
+              {isOpen && checklist && (headerStyle
+                ? menuPos &&
+                  createPortal(
+                    // In the header: portalled to <body> with a fixed
+                    // position, since the site header clips anything that
+                    // hangs below it (same approach as ProjectTopNav's menus).
+                    <div
+                      ref={dropdownRef}
+                      style={{ left: menuPos.left, top: menuPos.top }}
+                      className="fixed z-[10001] w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-muted-teal/20 bg-white shadow-lg animate-[fadeIn_0.12s_ease-out]"
+                    >
+                      {next && i === currentIndex && (
+                        <a
+                          href={next.href ? `/projects/${slug}/${next.href}` : guideHref(slug, phase, next.key)}
+                          className="block border-b border-muted-teal/10 px-3.5 py-2.5 transition-colors hover:bg-coral/10"
+                          style={{ background: hexToRgba(color, 0.14) }}
+                        >
+                          <span className="block text-[11px] font-semibold uppercase tracking-wide text-dark-slate/55">{t("nextStep")}</span>
+                          <span className="mt-0.5 block text-sm font-semibold text-dark-slate">
+                            {tChecklist(next.key)} <span aria-hidden>→</span>
+                          </span>
+                        </a>
+                      )}
                   {showOverviews && (
                     <a
                       href={`/projects/${slug}/${overviewPathFor(p.value)}`}
-                      className="flex items-center justify-between px-3.5 py-2.5 text-sm font-semibold text-seagrass border-b border-muted-teal/10 hover:bg-seagrass/5 transition-colors"
+                      className="flex items-center justify-between border-b border-muted-teal/10 px-3.5 py-2.5 text-sm font-semibold text-seagrass transition-colors hover:bg-seagrass/5"
                     >
                       {t("overviewLinkLabel", { phase: tPhase(p.value) })} <span aria-hidden>→</span>
                     </a>
                   )}
                   <a
-                    href={p.value === "IDEA" ? `/projects/${slug}/guide` : `/projects/${slug}/guide/${p.value.toLowerCase()}`}
-                    className="block px-3.5 pt-3 pb-2 text-xs font-semibold text-dark-slate/40 uppercase tracking-wide border-b border-muted-teal/10 hover:text-seagrass transition-colors"
+                    href={guideHref(slug, p.value)}
+                    className="block border-b border-muted-teal/10 px-3.5 pb-2 pt-3 text-xs font-semibold uppercase tracking-wide text-dark-slate/40 transition-colors hover:text-seagrass"
                   >
                     {t("guideLinkLabel", { phase: tPhase(p.value) })}
                   </a>
                   <div className="py-1">
                     {checklist.map((item, j) => {
                       const done = doneKeys.has(item.key);
+                      const isAuto = auto.has(item.key);
+                      const editable = canEdit && !isAuto;
                       return (
-                        <div key={item.key} className="flex items-center gap-2.5 px-3.5 py-2 hover:bg-seagrass/5 transition-colors">
+                        <div key={item.key} className="flex items-center gap-2.5 px-3.5 py-2 transition-colors hover:bg-seagrass/5">
                           <button
                             type="button"
-                            disabled={isPending || !canEditThis}
+                            disabled={isPending || !editable}
                             onClick={() => handleToggle(p.value, item.key, !done)}
                             aria-checked={done}
                             role="checkbox"
-                            className={`w-4 h-4 rounded-[4px] flex items-center justify-center flex-shrink-0 transition-colors ${
+                            title={isAuto ? t("autoDone") : undefined}
+                            className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-[4px] transition-colors ${
                               done ? "bg-seagrass" : "border border-muted-teal/50 bg-white"
-                            } ${canEditThis ? "" : "cursor-default"}`}
+                            } ${editable ? "" : "cursor-default"}`}
                           >
                             {done && (
-                              <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="h-2.5 w-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                               </svg>
                             )}
                           </button>
                           <span className={`text-sm ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/80"}`}>
-                            <span className={`font-medium ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/40"}`}>
-                              {itemNumbers[j]}
-                            </span>{" "}
+                            <span className={`font-medium ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/40"}`}>{itemNumbers[j]}</span>{" "}
                             <a
-                              href={
-                                item.href
-                                  ? `/projects/${slug}/${item.href}`
-                                  : p.value === "IDEA"
-                                    ? `/projects/${slug}/guide?step=${item.key}`
-                                    : `/projects/${slug}/guide/${p.value.toLowerCase()}?step=${item.key}`
-                              }
+                              href={item.href ? `/projects/${slug}/${item.href}` : guideHref(slug, p.value, item.key)}
                               className={`hover:underline ${done ? "text-dark-slate/30 line-through" : ""}`}
                             >
                               {tChecklist(item.key)}
                             </a>
+                            {isAuto && <span className="ml-1.5 whitespace-nowrap text-[10px] font-medium text-seagrass no-underline">{t("autoDoneShort")}</span>}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                    </div>,
+                    document.body,
+                  )
+                : (
+                <div
+                  className={`absolute top-full mt-2 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-muted-teal/20 bg-white shadow-lg animate-[fadeIn_0.12s_ease-out] ${
+                    // Right-aligned in the last column (3 per row on phones,
+                    // 6 from sm) so the dropdown never runs off-screen.
+                    i % 3 === 2 ? "right-0" : "left-0"
+                  } ${i >= 4 ? "sm:left-auto sm:right-0" : "sm:left-0 sm:right-auto"}`}
+                >
+                  {showOverviews && (
+                    <a
+                      href={`/projects/${slug}/${overviewPathFor(p.value)}`}
+                      className="flex items-center justify-between border-b border-muted-teal/10 px-3.5 py-2.5 text-sm font-semibold text-seagrass transition-colors hover:bg-seagrass/5"
+                    >
+                      {t("overviewLinkLabel", { phase: tPhase(p.value) })} <span aria-hidden>→</span>
+                    </a>
+                  )}
+                  <a
+                    href={guideHref(slug, p.value)}
+                    className="block border-b border-muted-teal/10 px-3.5 pb-2 pt-3 text-xs font-semibold uppercase tracking-wide text-dark-slate/40 transition-colors hover:text-seagrass"
+                  >
+                    {t("guideLinkLabel", { phase: tPhase(p.value) })}
+                  </a>
+                  <div className="py-1">
+                    {checklist.map((item, j) => {
+                      const done = doneKeys.has(item.key);
+                      const isAuto = auto.has(item.key);
+                      const editable = canEdit && !isAuto;
+                      return (
+                        <div key={item.key} className="flex items-center gap-2.5 px-3.5 py-2 transition-colors hover:bg-seagrass/5">
+                          <button
+                            type="button"
+                            disabled={isPending || !editable}
+                            onClick={() => handleToggle(p.value, item.key, !done)}
+                            aria-checked={done}
+                            role="checkbox"
+                            title={isAuto ? t("autoDone") : undefined}
+                            className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-[4px] transition-colors ${
+                              done ? "bg-seagrass" : "border border-muted-teal/50 bg-white"
+                            } ${editable ? "" : "cursor-default"}`}
+                          >
+                            {done && (
+                              <svg className="h-2.5 w-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                          <span className={`text-sm ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/80"}`}>
+                            <span className={`font-medium ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/40"}`}>{itemNumbers[j]}</span>{" "}
+                            <a
+                              href={item.href ? `/projects/${slug}/${item.href}` : guideHref(slug, p.value, item.key)}
+                              className={`hover:underline ${done ? "text-dark-slate/30 line-through" : ""}`}
+                            >
+                              {tChecklist(item.key)}
+                            </a>
+                            {isAuto && <span className="ml-1.5 whitespace-nowrap text-[10px] font-medium text-seagrass no-underline">{t("autoDoneShort")}</span>}
                           </span>
                         </div>
                       );
                     })}
                   </div>
                 </div>
-              )}
-              </div>
-            </Fragment>
+              ))}
+            </div>
           );
         })}
-        {/* Mållinje efter Impact — andelsfärgad som mellan faserna, men i
-            orange, avslutat med en orange prick (samma storlek som fasernas)
-            som markerar målet bortom Impact. Pricken är bara ihålig med
-            orange kant tills Impacts checklista är 100% klar, då fylls
-            den helt. */}
-        <div
-          className="hidden sm:block flex-1 h-0.5 mx-1 rounded-full"
-          style={{
-            background: `linear-gradient(to right, #f97316 ${phaseProgress[phaseProgress.length - 1].pct}%, color-mix(in srgb, var(--color-dark-slate) 20%, transparent) ${phaseProgress[phaseProgress.length - 1].pct}% 100%)`,
-          }}
-          aria-hidden="true"
-        />
-        <span
-          className={`w-2.5 h-2.5 rounded-full flex-shrink-0 border ${
-            phaseProgress[phaseProgress.length - 1].complete ? "bg-orange-500 border-orange-500" : "bg-white border-orange-500"
-          }`}
-          aria-hidden="true"
-        />
       </nav>
+
+      {next && variant !== "header" && (
+        <p className={`${compact ? "mt-2 text-xs" : "mt-4 text-sm"} text-dark-slate/70`}>
+          <span className="font-semibold text-dark-slate">{t("nextStep")}</span>{" "}
+          <a href={next.href ? `/projects/${slug}/${next.href}` : guideHref(slug, phase, next.key)} className="font-medium text-seagrass hover:underline">
+            {tChecklist(next.key)} →
+          </a>
+        </p>
+      )}
     </div>
   );
 }

@@ -8,6 +8,10 @@ import localFont from "next/font/local";
 // the exact same Inter instance instead of loading a second copy of it.
 export const siteSansFont = localFont({ src: "../fonts/Inter-latin.woff2", weight: "400 800", display: "swap" });
 
+// Script font for "Vi gör goda drömmar verkliga." — the start page hero's
+// tagline and the footer's.
+export const heroTaglineFont = localFont({ src: "../fonts/Satisfy-latin.woff2", weight: "400", display: "swap" });
+
 // Thin handwriting font for the Polaroid caption on project pages.
 export const handwritingFontThin = localFont({ src: "../fonts/Kalam-latin.woff2", weight: "400", display: "swap" });
 

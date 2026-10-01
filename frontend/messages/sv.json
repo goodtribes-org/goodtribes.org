@@ -159,6 +159,8 @@
     "cancel": "Avbryt"
   },
   "ProjectCard": {
+    "seekingHelp": "Söker hjälp",
+    "seekingHelpTitle": "Söker: {skills}",
     "byAuthor": "av",
     "unknownAuthor": "Okänd",
     "noDescriptionYet": "Ingen beskrivning ännu.",
@@ -171,7 +173,8 @@
     "phaseIdea": "Idéfas",
     "phaseActive": "Aktivt",
     "phaseImpact": "Impact",
-    "phaseArchived": "Avslutat"
+    "phaseArchived": "Avslutat",
+    "startedProject": "{name} – startade projektet"
   },
   "FlagContent": {
     "reasonOffensive": "Stötande innehåll",
@@ -852,6 +855,12 @@
     "suggestWithAiButton": "✨ Föreslå med AI",
     "aiBadge": "AI",
     "skillsNeededLabel": "Kompetenser som behövs",
+    "skillsNeededHint": "Välj det ni behöver hjälp med, eller lägg till något som saknas.",
+    "addSkillPlaceholder": "Lägg till kompetens, t.ex. Apputvecklare",
+    "addSkillButton": "Lägg till",
+    "newSkillBadge": "ny",
+    "removeNewSkill": "Ta bort {name}",
+    "noSkillsYet": "Inga kompetenser ännu – lägg till den första nedan.",
     "saveChangesButton": "Spara ändringar",
     "githubColumnMapHeading": "GitHub-status → kolumn",
     "githubColumnMapHint": "Varje Status på tavlan hamnar i den kolumn du väljer här. Stängda issues och mergade pull requests hamnar alltid i Done.",
@@ -2928,6 +2937,11 @@
     "next_step_decided": "Besluta om nästa steg: fortsätta, replikera, eller avsluta ansvarsfullt"
   },
   "PhaseMenuBar": {
+    "navLabel": "Projektets faser",
+    "progressLabel": "{done} av {total} uppgifter klara",
+    "autoDone": "Klart — syns i projektets innehåll",
+    "autoDoneShort": "klart",
+    "nextStep": "Nästa steg:",
     "guideLinkLabel": "{phase} guiden",
     "overviewLinkLabel": "{phase} på en sida"
   },
@@ -3768,6 +3782,9 @@
     "inheritedHint": "ärvt",
     "standardHint": "standard",
     "settingsHeading": "AI i projektet",
+    "budgetUsed": "AI-kvot: {pct} % använd denna period",
+    "budgetResets": "fylls på {date}",
+    "budgetWarning": "Kvoten börjar ta slut — AI-anrop stoppas när den är förbrukad och startar igen när den fylls på.",
     "intro": "Du bestämmer hur mycket AI:n gör: för hela projektet, per fas eller per steg i guiden. Det mest specifika valet gäller. Att byta läge ändrar aldrig något som redan är skrivet.",
     "introDismiss": "Stäng",
     "projectModeHeading": "Projektets läge",
@@ -3778,11 +3795,100 @@
     "projectManagerHint": "Låt AI:n skapa och föreslå uppgifter i projektet. Stäng av så skapas inga uppgifter automatiskt.",
     "saveError": "Kunde inte spara — försök igen."
   },
+  "AiDraftsNotice": {
+    "summary": "<b>{drafts} av {filled} fält</b> är AI-utkast som ingen i teamet har gått igenom än.",
+    "show": "Visa dem",
+    "next": "Nästa",
+    "stop": "Sluta markera"
+  },
+  "CanvasStatusLegend": {
+    "known": "Klart — ni vet",
+    "assumed": "Antagande — behöver testas",
+    "empty": "Tomt"
+  },
+  "SectionIntro": {
+    "tipLabel": "Tips:",
+    "close": "Stäng tipset",
+    "reopen": "Visa tipset igen",
+    "about": {
+      "title": "Berätta om projektet",
+      "body": "Här beskriver ni i några meningar vad ni vill förändra och för vem. Det här är det första andra ser, både de som vill hjälpa till och de som kan finansiera.",
+      "tip": "Skriv som du skulle berätta för en granne. Konkret och kort slår fina ord."
+    },
+    "sdg": {
+      "title": "Vilka globala mål bidrar ni till?",
+      "body": "De globala målen (Agenda 2030) gör det lättare för andra att hitta er och för finansiärer att se var ni passar in. Välj de ett eller två mål ni bidrar mest till, inte alla som passar lite.",
+      "tip": "Många fonder och kommuner sorterar sina utlysningar efter de globala målen."
+    },
+    "leanCanvas": {
+      "title": "Idén på en sida",
+      "body": "Social Lean Canvas fångar hela idén: problemet, vilka ni hjälper, lösningen, hur det bär sig och vilken skillnad det gör. Varje ruta är en gissning tills ni har testat den.",
+      "tip": "Börja med Syfte och Kundsegment. Resten blir lättare när ni vet vem ni gör det för."
+    },
+    "impactModel": {
+      "title": "Hur leder det ni gör till förändring?",
+      "body": "Impactmodellen är er förändringsteori: vilket problem ni möter, vilka som deltar, vad ni gör, och vad som förändras på kort, medellång och lång sikt. Sista steget är samma som canvasens Impact-ruta.",
+      "tip": "Fråga er för varje steg: \"Och sedan då?\" Det avslöjar glapp i kedjan."
+    },
+    "valueProposition": {
+      "title": "Vad gör ni för dem ni vill hjälpa?",
+      "body": "Till höger beskriver ni dem ni vill hjälpa: vad de försöker få gjort, vad som är svårt och vad de önskar. Till vänster vad ni erbjuder och hur det lättar eller hjälper. Bra när de två sidorna passar ihop.",
+      "tip": "Utgå från vad de själva säger i intervjuerna, inte från vad ni tror att de behöver."
+    },
+    "marketScan": {
+      "title": "Vilka finns redan där ute?",
+      "body": "Andra organisationer, liknande initiativ, trender och regler som påverkar er. Inte för att konkurrera, utan för att hitta samarbetspartners och slippa uppfinna hjulet igen.",
+      "tip": "En organisation som gör något liknande kan bli er viktigaste partner."
+    },
+    "interviews": {
+      "title": "Prata med dem det gäller",
+      "body": "Intervjuerna är det viktigaste ni gör i Idéfasen. Det är här antagandena möter verkligheten. Tre till fem samtal räcker ofta för att se om ni är på rätt spår.",
+      "tip": "Fråga om hur det är i dag, inte om de skulle gilla er idé. Folk är för snälla mot idéer."
+    },
+    "invite": {
+      "title": "Ingen förändrar världen ensam",
+      "body": "Bjud in dem som vill vara med redan nu: vänner, kollegor eller någon med en kompetens ni saknar. Fler perspektiv tidigt gör idén bättre.",
+      "tip": "Be någon utanför er bubbla om ärlig kritik. Det är värt mer än tio tummar upp."
+    },
+    "gate": {
+      "title": "Dags att bestämma nästa steg",
+      "body": "Här stannar ni upp och tittar på vad ni har lärt er. Ni bestämmer själva om ni går vidare, justerar, byter riktning eller pausar. Kriterierna är ett stöd, inte ett lås.",
+      "tip": "Att pausa eller byta riktning är också ett bra beslut, om det bygger på det ni lärt er."
+    },
+    "leanCanvasPage": {
+      "title": "Så använder ni Social Lean Canvas",
+      "body": "Fyll i rutorna i den ordning som känns naturlig. Allt behöver inte vara klart på en gång. Canvasen är ett levande dokument som ni uppdaterar när ni lär er mer.",
+      "tip": "Märk varje ruta som Vet eller Antar. Det som är Antar är det ni behöver testa."
+    },
+    "customerModelPage": {
+      "title": "Kundmodellen: vem gör ni det för?",
+      "body": "Här går ni djupare i vilka ni vill hjälpa: vilka som behöver er mest (de första användarna) och vad de gör i dag i stället (alternativen).",
+      "tip": "De första användarna är de som har problemet mest akut. Börja med dem."
+    },
+    "valuePropositionPage": {
+      "title": "Så använder ni värdeerbjudandet",
+      "body": "Börja på högersidan med dem ni vill hjälpa, och fyll sedan i vad ni erbjuder på vänstersidan. Pilarna mellan sidorna visar om erbjudandet möter ett verkligt behov.",
+      "tip": "Ett bra erbjudande löser ett fåtal viktiga problem riktigt bra, inte allt lite grann."
+    },
+    "impactModelPage": {
+      "title": "Så bygger ni er impactmodell",
+      "body": "Gå från vänster till höger: problemet, deltagarna, aktiviteterna, och sedan resultaten på kort, medellång och lång sikt. Det här är er plan för förändring, inte ett resultat ni redan uppnått.",
+      "tip": "Kortsiktiga resultat ska gå att se inom ett år. Det är dem ni mäter först."
+    }
+  },
+  "ChangeImpactHint": {
+    "heading": "Du ändrade det här — det kan påverka:",
+    "close": "Stäng",
+    "interviewGuide": "Intervjuguiden",
+    "marketScan": "Omvärldsbevakningen"
+  },
   "FieldProvenance": {
+    "approve": "Ser bra ut",
+    "approveHint": "Ni har läst utkastet och står för det som det är. Det räknas då som genomgånget, men är fortfarande ett antagande tills ni vet.",
     "aiDraft": "AI-utkast",
-    "aiDraftHint": "Skrivet av AI:n och ännu inte redigerat av en människa.",
-    "aiEdited": "AI + redigerat",
-    "aiEditedHint": "Ett AI-utkast som en människa har redigerat.",
+    "aiDraftHint": "Skrivet av AI:n och ännu inte genomgånget av någon i teamet.",
+    "aiEdited": "AI + granskat",
+    "aiEditedHint": "Ett AI-utkast som någon i teamet har gått igenom — redigerat eller godkänt.",
     "known": "Vet",
     "assumed": "Antar",
     "markKnown": "Markera som något ni vet",
@@ -3831,6 +3937,25 @@
     "nextStepAddMore": "Vill du lägga till något? Skriv det i chatten först.",
     "nextStepBodyAgent": "Nu skapar AI:n ditt projekt och fyller i Idéfasen: beskrivning, globala mål, Social Lean Canvas, värdeerbjudande, omvärldsbevakning och en intervjuguide. Du ser allt på en sida och kan redigera det som inte stämmer.",
     "nextStepBodyAssist": "Nu skapas projektet med namn och beskrivning. Resten fyller du i själv i guiden, med AI:ns förslag bredvid fälten."
+  },
+  "BlockIterate": {
+    "open": "Förbättra",
+    "working": "AI:n tänker …",
+    "close": "Stäng",
+    "back": "Tillbaka",
+    "failed": "Kunde inte ta fram något just nu — försök igen.",
+    "mode_sharpen": "Skärp",
+    "mode_simplify": "Förenkla",
+    "mode_challenge": "Utmana mig",
+    "mode_ask": "Fråga mig",
+    "hint_sharpen": "Gör texten mer konkret — AI:n lägger platshållare där fakta saknas",
+    "hint_simplify": "Samma innehåll, enklare ord",
+    "hint_challenge": "Kritiska frågor att kunna svara på — texten ändras inte",
+    "hint_ask": "AI:n ställer några frågor och skriver ett förslag utifrån dina svar",
+    "questionsHeading": "Svara på det du kan",
+    "createSuggestion": "Skapa förslag",
+    "challengesHeading": "Frågor att fundera på",
+    "suggestionReady": "Förslaget ligger under fältet — välj om du vill använda det."
   },
   "AiSuggestion": {
     "label": "AI-förslag",
@@ -4341,7 +4466,7 @@
   "NewHomePage": {
     "metaTitle": "GoodTribes – Vad drömmer du om att förändra?",
     "hero": {
-      "overline": "Vi gör goda drömmar verkliga.",
+      "overline": "Vi gör goda drömmar <u>verkliga</u>.",
       "heading": "Vad drömmer du om att",
       "headingHighlight": "förändra?",
       "intro": "GoodTribes är platsen där människor tillsammans förverkligar idéer som gör världen bättre. Berätta om din dröm, så tar AI-guiden dig hela vägen från idé till verklig skillnad.",
@@ -4354,7 +4479,8 @@
       },
       "note": "Gratis konto krävs för AI-guiden · Samtalet är privat tills du själv skapar projektet",
       "restored": "Välkommen tillbaka! Din dröm finns kvar, tryck på pilen för att börja.",
-      "submit": "Börja med AI-guiden"
+      "submit": "Börja med AI-guiden",
+      "helpInstead": "Vill du hellre hjälpa till? Se projekt som söker folk →"
     },
     "live": {
       "label": "Live",
@@ -4379,30 +4505,38 @@
       "allLink": "Se alla projekt →"
     },
     "stats": {
-      "eyebrow": "Vår påverkan",
-      "heading": "Det här händer på plattformen",
-      "raised": "insamlat totalt",
-      "tasks": "avklarade uppgifter",
-      "tokens": "tokens utdelade",
-      "projects": "aktiva projekt"
+      "eyebrow": "Tillsammans",
+      "heading": "Det här har vi gjort tillsammans",
+      "raised": "har vi samlat in",
+      "tasks": "uppgifter har vi klarat av",
+      "tokens": "tokens har vi delat ut till varandra",
+      "projects": "projekt driver vi just nu"
     },
     "founding": {
-      "eyebrow": "Så långt kan en idé nå",
-      "heading": "Infos: Datordonation",
+      "eyebrow": "Vår historia",
+      "heading": "Där allt började",
       "storyHeading": "Det började med datorer som skulle skrotas",
       "body": "Fullt fungerande datorer byts ut efter tre, fyra år – samtidigt som förskolor, skolor och ideella organisationer saknar utrustning. Infos Datordonation löste båda problemen: datorerna raderades säkert, fick nya program och gick vidare till skolor i bland annat Tensta, Rinkeby och Skärholmen och till organisationer som Amnesty, Greenpeace och Rädda barnen. Ur det arbetet grundades Stiftelsen GoodTribes, så att fler goda idéer ska kunna bidra till en bättre värld.",
       "supportLabel": "Möjliggjort av"
     },
-    "tools": {
-      "eyebrow": "Verktyg",
-      "heading": "Allt du behöver, redan inbyggt"
-    },
     "community": {
-      "eyebrow": "Goodtribes community",
+      "eyebrow": "Vi är GoodTribes",
       "title": "Var en del av något större",
       "heading": "Händer just nu",
       "subheading": "Senaste aktivitet på plattformen",
-      "seeAllLink": "Se all aktivitet →"
+      "seeAllLink": "Se all aktivitet →",
+      "peopleHeading": "Vi är {count} eldsjälar som gör det här tillsammans",
+      "meetAll": "Möt alla →",
+      "wallTitle": "Senast med i gemenskapen",
+      "wallBody": "Utvecklare, formgivare, lärare, pensionärer och studenter – alla som lägger en timme här gör en dröm lite mer verklig.",
+      "join": "Bli en av oss",
+      "recentTitle": "Det här har vi gjort på sistone",
+      "thank": "Tacka",
+      "someone": "Någon",
+      "startedProject": "startade {project}",
+      "sharedIdea": "delade en ny idé: {title}",
+      "reachedMilestone": "nådde en milstolpe i {project}: {title}",
+      "inProject": "{action} i {project}"
     },
     "steps": {
       "eyebrow": "Fem steg",
@@ -4423,5 +4557,12 @@
       "step4Title": "Tillsammans skapar ni en bättre värld",
       "step4Body": "Varje förverkligad dröm ger dig och andra möjligheten att Leva Gott, Må Gott och Göra Gott."
     }
+  },
+  "HeaderTools": {
+    "tools": "Verktyg",
+    "toolsHeading": "Verktygen i varje projekt",
+    "toolsIntro": "Alla projekt får de här verktygen, helt gratis.",
+    "trySandbox": "Prova i Sandbox",
+    "startProject": "Starta ett projekt"
   }
 }
