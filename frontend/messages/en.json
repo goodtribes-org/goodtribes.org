@@ -29,7 +29,8 @@
     "discoverIdeas": "Idea feed",
     "thisProject": "This project",
     "projectAllSections": "All project pages are in the project bar at the top of the page",
-    "siteAdmin": "Site admin"
+    "siteAdmin": "Site admin",
+    "greeting": "Hi {name}! 👋"
   },
   "Account": {
     "profile": "Profile",
@@ -4601,30 +4602,15 @@
     "kudosNotificationTitle": "{name} gave you kudos"
   },
   "YourTribe": {
-    "eyebrow": "Your tribe",
-    "greeting": "Hi {name}!",
-    "greetingNoName": "Welcome back!",
     "someone": "Someone",
     "today": "today",
-    "unread": "{count, plural, one {🔔 # unread notification} other {🔔 # unread notifications}}",
-    "newKudos": "{count, plural, one {# new thanks} other {# new thanks}} this week",
-    "myGoodTribes": "My GoodTribes →",
-    "showMore": "Show more ↓",
-    "showLess": "Show less ↑",
-    "summaryTodos": "{count} to do",
-    "summaryMoving": "{count, plural, one {# project moving} other {# projects moving}}",
-    "summaryCalmer": "{count} calmer",
     "todoTitle": "To do",
     "todoEmpty": "Nothing is waiting for you right now – nice work. Have a look at your projects' pulse.",
-    "joinRequest": "<b>{name}</b> wants to join {project}",
     "waitingForAnswer": "Waiting for your answer",
     "due": "due {date}",
     "overdueSince": "overdue since {date}",
     "nextStep": "Next step",
     "nextStepStill": "Next step · the project is standing still",
-    "moreTodos": "{count} more in My GoodTribes →",
-    "pulseTitle": "Your projects' pulse",
-    "pulseHint": "activity per week, last {weeks} weeks",
     "status": {
       "moving": "Moving",
       "slowing": "Slowing down",
@@ -4633,7 +4619,6 @@
     "projectsEmpty": "You're not in a project yet.",
     "findProject": "Find a project →",
     "noActivityYet": "no activity yet",
-    "weeklyAria": "Activity per week, oldest first: {counts}",
     "last": {
       "message": "{who} wrote in the chat",
       "blogPost": "{who} published “{title}”",
@@ -4680,38 +4665,23 @@
     "loading": "Loading…",
     "showAll": "Show all in My GoodTribes →",
     "todoCount": "{count} to do",
-    "joinRequest": "{name} wants to join",
+    "joinRequest": "{name} wants to join {project}",
+    "nextStep": "{project}: {step}",
     "milestone": "Milestone: {title}",
-    "followedProject": "Project you follow",
-    "followedIdea": "Idea you follow",
-    "likedProject": "Project you liked",
     "todo": {
       "label": "To do",
       "empty": "Nothing is waiting for you right now."
+    },
+    "projects": {
+      "label": "My projects",
+      "empty": "You're not in a project yet."
     },
     "calendar": {
       "label": "Calendar",
       "empty": "Nothing booked ahead in your projects."
     },
-    "following": {
-      "label": "Following",
-      "empty": "You don't follow any projects or ideas yet."
-    },
-    "kudos": {
-      "label": "Thanks & kudos",
-      "empty": "When someone thanks you, it shows up here."
-    },
-    "activity": {
-      "label": "Activity",
-      "empty": "No activity yet.",
-      "task_completed": "Completed “{title}”",
-      "task_created": "Created “{title}”",
-      "task_moved": "Moved “{title}”",
-      "member_joined": "Joined",
-      "todo_completed": "Ticked off an item",
-      "milestone_added": "Added the milestone “{title}”",
-      "milestone_completed": "Reached the milestone “{title}”",
-      "other": "Updated the project"
-    }
+    "projectsMoving": "{moving} of {total} moving",
+    "projectsMovingAria": "{count, plural, one {# project moving} other {# projects moving}}",
+    "weeklyAria": "Activity per week, oldest first: {counts}"
   }
 }

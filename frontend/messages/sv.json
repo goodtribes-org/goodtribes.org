@@ -29,7 +29,8 @@
     "discoverIdeas": "Idéflödet",
     "thisProject": "Det här projektet",
     "projectAllSections": "Alla projektsidor finns i projektmenyn överst på sidan",
-    "siteAdmin": "Webbplatsadmin"
+    "siteAdmin": "Webbplatsadmin",
+    "greeting": "Hej {name}! 👋"
   },
   "Account": {
     "profile": "Profil",
@@ -4601,30 +4602,15 @@
     "kudosNotificationTitle": "{name} gav dig kudos"
   },
   "YourTribe": {
-    "eyebrow": "Din tribe",
-    "greeting": "Hej {name}!",
-    "greetingNoName": "Välkommen tillbaka!",
     "someone": "Någon",
     "today": "i dag",
-    "unread": "{count, plural, one {🔔 # oläst notis} other {🔔 # olästa notiser}}",
-    "newKudos": "{count, plural, one {# nytt tack} other {# nya tack}} den senaste veckan",
-    "myGoodTribes": "Mitt GoodTribes →",
-    "showMore": "Visa mer ↓",
-    "showLess": "Visa mindre ↑",
-    "summaryTodos": "{count} att göra",
-    "summaryMoving": "{count, plural, one {# projekt i rörelse} other {# projekt i rörelse}}",
-    "summaryCalmer": "{count} lugnare",
     "todoTitle": "Att göra",
     "todoEmpty": "Inget som väntar på dig just nu – bra jobbat. Kolla gärna pulsen i projekten bredvid.",
-    "joinRequest": "<b>{name}</b> vill gå med i {project}",
     "waitingForAnswer": "Väntar på ditt svar",
     "due": "klar senast {date}",
     "overdueSince": "försenad sedan {date}",
     "nextStep": "Nästa steg",
     "nextStepStill": "Nästa steg · projektet står still",
-    "moreTodos": "{count} till i Mitt GoodTribes →",
-    "pulseTitle": "Pulsen i dina projekt",
-    "pulseHint": "aktivitet per vecka, senaste {weeks} veckorna",
     "status": {
       "moving": "I rörelse",
       "slowing": "Saktar in",
@@ -4633,7 +4619,6 @@
     "projectsEmpty": "Du är inte med i något projekt än.",
     "findProject": "Hitta ett projekt →",
     "noActivityYet": "ingen aktivitet än",
-    "weeklyAria": "Aktivitet per vecka, äldst först: {counts}",
     "last": {
       "message": "{who} skrev i chatten",
       "blogPost": "{who} publicerade ”{title}”",
@@ -4680,38 +4665,23 @@
     "loading": "Laddar…",
     "showAll": "Visa allt i Mitt GoodTribes →",
     "todoCount": "{count} att göra",
-    "joinRequest": "{name} vill gå med",
+    "joinRequest": "{name} vill gå med i {project}",
+    "nextStep": "{project}: {step}",
     "milestone": "Milstolpe: {title}",
-    "followedProject": "Projekt du följer",
-    "followedIdea": "Idé du följer",
-    "likedProject": "Projekt du gillat",
     "todo": {
       "label": "Att göra",
       "empty": "Inget väntar på dig just nu."
+    },
+    "projects": {
+      "label": "Mina projekt",
+      "empty": "Du är inte med i något projekt än."
     },
     "calendar": {
       "label": "Kalender",
       "empty": "Inget inbokat framåt i dina projekt."
     },
-    "following": {
-      "label": "Följer",
-      "empty": "Du följer inga projekt eller idéer än."
-    },
-    "activity": {
-      "label": "Aktivitet",
-      "empty": "Ingen aktivitet än.",
-      "task_completed": "Slutförde ”{title}”",
-      "task_created": "Skapade ”{title}”",
-      "task_moved": "Flyttade ”{title}”",
-      "member_joined": "Gick med",
-      "todo_completed": "Checkade av en punkt",
-      "milestone_added": "La till milstolpen ”{title}”",
-      "milestone_completed": "Nådde milstolpen ”{title}”",
-      "other": "Uppdaterade projektet"
-    },
-    "kudos": {
-      "label": "Tack & kudos",
-      "empty": "När någon tackar dig syns det här."
-    }
+    "projectsMoving": "{moving} av {total} i rörelse",
+    "projectsMovingAria": "{count, plural, one {# projekt i rörelse} other {# projekt i rörelse}}",
+    "weeklyAria": "Aktivitet per vecka, äldst först: {counts}"
   }
 }

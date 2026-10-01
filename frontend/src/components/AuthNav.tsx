@@ -29,7 +29,11 @@ export default function AuthNav() {
     const initials = name.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
 
     return (
-      <div ref={ref} className="hidden md:block relative shrink-0">
+      <div ref={ref} className="hidden md:flex items-center gap-3 relative shrink-0">
+        {/* A short welcome next to your picture — only where there's room */}
+        {session.user.name && (
+          <span className="hidden lg:inline text-sm text-dark-slate whitespace-nowrap">{t("greeting", { name: session.user.name.split(" ")[0] })}</span>
+        )}
         <button
           onClick={() => setOpen((v) => !v)}
           title={name}
