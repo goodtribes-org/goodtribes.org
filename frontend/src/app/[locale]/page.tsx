@@ -62,6 +62,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const projectInclude = {
     owner: { select: { name: true } },
     members: { select: { id: true } },
+    neededSkills: { select: { skill: { select: { name: true } } } },
     translations,
   } as const;
   const live = { hiddenAt: null, archivedAt: null };
