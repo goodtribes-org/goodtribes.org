@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 
-// Data for "Mitt GoodTribes" (/my-goodtribes) and the personal bar along the
-// bottom of every page (components/PersonalBar.tsx, via /api/me/panel) — one
-// place, so the tab and its quick panel always show the same thing.
+// Data for "Mitt GoodTribes" (/my-goodtribes) tabs; the calendar also feeds
+// the personal bar's quick panel (components/PersonalBar.tsx, via
+// /api/me/panel), so the tab and the panel always show the same thing.
 
 const liveProject = { hiddenAt: null, archivedAt: null };
 
@@ -84,36 +84,4 @@ export async function getMyFollowing(userId: string) {
     ? await prisma.project.findMany({ where: { id: { in: likes.map((l) => l.targetId) }, ...liveProject }, select: { id: true, slug: true, title: true, phase: true } })
     : [];
   return { projects: followed.map((f) => f.project), ideas: ideas.map((f) => f.idea), liked };
-}
-
-// What you did lately, and the thanks/kudos you got — for the bar's quick panels.
-export async function getMyRecentActivity(userId: string, take = 8) {
-  return prisma.activityEvent.findMany({
-    where: { userId, projectId: { not: null } },
-    select: { id: true, type: true, payload: true, createdAt: true, project: { select: { slug: true, title: true } } },
-    orderBy: { createdAt: "desc" },
-    take,
-  });
-}
-
-export async function getMyKudos(userId: string, take = 6) {
-  return prisma.kudos.findMany({
-    where: { toUserId: userId },
-    select: { id: true, message: true, createdAt: true, fromUser: { select: { name: true } } },
-    orderBy: { createdAt: "desc" },
-    take,
-  });
-}
-
-// The number on the bar's "Att göra": open assigned tasks + join requests to
-// projects you lead.
-export async function countMyTodos(userId: string) {
-  const leadIds = (
-    await prisma.projectMember.findMany({ where: { userId, role: { in: ["FOUNDER", "ADMIN"] }, project: liveProject }, select: { projectId: true } })
-  ).map((m) => m.projectId);
-  const [tasks, requests] = await Promise.all([
-    prisma.kanbanCard.count({ where: { assigneeId: userId, column: { not: "DONE" }, project: liveProject } }),
-    leadIds.length ? prisma.projectJoinRequest.count({ where: { projectId: { in: leadIds }, status: "pending" } }) : Promise.resolve(0),
-  ]);
-  return tasks + requests;
 }
