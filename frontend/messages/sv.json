@@ -4592,5 +4592,27 @@
       "contributed": "Tack för ditt bidrag i {project}!"
     },
     "kudosNotificationTitle": "{name} gav dig kudos"
+  },
+  "YourTribe": {
+    "eyebrow": "Din tribe",
+    "greeting": "Hej {name}!",
+    "greetingNoName": "Välkommen tillbaka!",
+    "unread": "{count, plural, one {# oläst notis} other {# olästa notiser}}",
+    "waitingTitle": "Väntar på dig",
+    "waitingEmpty": "Inget väntar på dig just nu. Ta en uppgift i ett projekt så dyker den upp här.",
+    "joinRequest": "{name} vill gå med i {project}",
+    "due": "klar senast {date}",
+    "someone": "Någon",
+    "projectsTitle": "Dina projekt",
+    "projectsEmpty": "Du är inte med i något projekt än.",
+    "findProject": "Hitta ett projekt att hjälpa till i →",
+    "allProjects": "Alla {count} →",
+    "youLead": "du leder",
+    "recent": "{count} nytt",
+    "recentHint": "Vad de andra gjort de senaste {days} dagarna",
+    "kudosTitle": "Tack och kudos till dig",
+    "kudosEmpty": "När någon tackar dig för något du gjort syns det här.",
+    "kudosRecent": "{count, plural, one {# nytt tack} other {# nya tack}} de senaste {days} dagarna",
+    "allKudos": "Alla {count} →"
   }
 }

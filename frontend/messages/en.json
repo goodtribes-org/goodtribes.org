@@ -4592,5 +4592,27 @@
       "contributed": "Thanks for your contribution to {project}!"
     },
     "kudosNotificationTitle": "{name} gave you kudos"
+  },
+  "YourTribe": {
+    "eyebrow": "Your tribe",
+    "greeting": "Hi {name}!",
+    "greetingNoName": "Welcome back!",
+    "unread": "{count, plural, one {# unread notification} other {# unread notifications}}",
+    "waitingTitle": "Waiting for you",
+    "waitingEmpty": "Nothing is waiting for you right now. Take a task in a project and it shows up here.",
+    "joinRequest": "{name} wants to join {project}",
+    "due": "due {date}",
+    "someone": "Someone",
+    "projectsTitle": "Your projects",
+    "projectsEmpty": "You're not in a project yet.",
+    "findProject": "Find a project to help out in →",
+    "allProjects": "All {count} →",
+    "youLead": "you lead",
+    "recent": "{count} new",
+    "recentHint": "What the others did in the last {days} days",
+    "kudosTitle": "Thanks and kudos for you",
+    "kudosEmpty": "When someone thanks you for something you did, it shows up here.",
+    "kudosRecent": "{count, plural, one {# new thanks} other {# new thanks}} in the last {days} days",
+    "allKudos": "All {count} →"
   }
 }
