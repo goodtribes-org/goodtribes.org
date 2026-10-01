@@ -10,6 +10,7 @@ import { routing } from "@/i18n/routing";
 import { fetchActivityItems, type PulseItem } from "@/lib/activityFeed";
 import { resolveProjectContent } from "@/lib/contentTranslation";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
+import { getThanksState } from "@/lib/thanks";
 import { DISPLAY_PHASES, PROJECT_PHASE_LABEL, toDisplayPhase } from "@/lib/projectPhase";
 import ProjectCard from "@/components/ProjectCard";
 import Community from "@/components/ny-startsida/Community";
@@ -109,6 +110,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     people: [p.owner, ...p.members.map((m) => m.user).filter((u) => u.id !== p.owner.id)],
   }));
   const events = activity.filter(isMeaningful);
+  const communityEvents = events.slice(0, 6);
+  const thanks = await getThanksState(communityEvents, userId ?? null);
 
   const phases: JourneyPhase[] = DISPLAY_PHASES.map((p) => ({
     value: p.value as JourneyPhase["value"],
@@ -160,8 +163,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         locale={locale}
         memberCount={memberCount}
         newestMembers={newMembers}
-        events={events.slice(0, 6)}
-        isLoggedIn={!!userId}
+        events={communityEvents}
+        viewerId={userId ?? null}
+        thanks={thanks}
       />
 
       <PhaseJourney locale={locale} phases={phases} />

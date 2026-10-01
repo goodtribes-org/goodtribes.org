@@ -43,9 +43,19 @@ model Kudos {
   projectId  String?
   project    Project? @relation("ProjectKudos", fields: [projectId], references: [id], onDelete: SetNull)
   message    String
+  // Set when this is a one-click "♥ Tacka" for something in the feed (the
+  // start page's "Det här har vi gjort på sistone"): which item it thanks
+  // for — targetType is project | idea | milestone | blogPost | activityEvent,
+  // see lib/thanks.ts. Null for a kudos written from someone's profile.
+  // One thanks per giver per item; NULLs don't collide, so written kudos are
+  // unaffected by the unique key.
+  targetType String?
+  targetId   String?
   createdAt  DateTime @default(now())
 
+  @@unique([fromUserId, targetType, targetId])
   @@index([toUserId])
+  @@index([targetType, targetId])
 }
 
 model UserStreak {

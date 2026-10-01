@@ -4531,7 +4531,6 @@
       "wallBody": "Developers, designers, teachers, retirees and students – everyone who puts in an hour here makes a dream a little more real.",
       "join": "Join us",
       "recentTitle": "What we've done lately",
-      "thank": "Thank",
       "someone": "Someone",
       "startedProject": "started {project}",
       "sharedIdea": "shared a new idea: {title}",
@@ -4564,5 +4563,34 @@
     "toolsIntro": "Every project gets these tools, completely free.",
     "trySandbox": "Try them in the Sandbox",
     "startProject": "Start a project"
+  },
+  "Thanks": {
+    "someone": "Someone",
+    "notificationTitle": "{name} thanked you",
+    "notificationBody": {
+      "startedProject": "for starting {project}.",
+      "sharedIdea": "for the idea “{title}”.",
+      "reachedMilestone": "for the milestone “{title}” in {project}.",
+      "wroteBlogPost": "for the post “{title}” in {project}.",
+      "completedTask": "for completing “{title}” in {project}.",
+      "joinedProject": "for joining {project}.",
+      "contributed": "for your contribution to {project}."
+    },
+    "thank": "Thank",
+    "thanked": "Thanked",
+    "thanksCount": "{count, plural, one {# thanks} other {# thanks}}",
+    "loginToThank": "Log in to say thanks",
+    "ownContribution": "Your own contribution",
+    "error": "Couldn't say thanks right now.",
+    "kudosMessage": {
+      "startedProject": "Thanks for starting {project}!",
+      "sharedIdea": "Thanks for the idea “{title}”!",
+      "reachedMilestone": "Thanks for the milestone “{title}” in {project}!",
+      "wroteBlogPost": "Thanks for the post “{title}” in {project}!",
+      "completedTask": "Thanks for completing “{title}” in {project}!",
+      "joinedProject": "Thanks for joining {project}!",
+      "contributed": "Thanks for your contribution to {project}!"
+    },
+    "kudosNotificationTitle": "{name} gave you kudos"
   }
 }

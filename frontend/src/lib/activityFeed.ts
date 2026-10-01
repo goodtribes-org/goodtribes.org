@@ -10,6 +10,8 @@ export type PulseItem = {
   id: string;
   targetType: string;
   targetId: string;
+  // Who did it — e.g. to hide "♥ Tacka" on your own contributions.
+  actorId?: string;
   avatarName: string | null;
   avatarImage: string | null;
   projectImage?: string | null;
@@ -79,7 +81,7 @@ export async function fetchActivityItems(
         take: LIMIT,
         select: {
           id: true, body: true, imageUrl: true, createdAt: true,
-          author: { select: { name: true, image: true } },
+          author: { select: { id: true, name: true, image: true } },
         },
       }),
       prisma.blogPost.findMany({
@@ -88,7 +90,7 @@ export async function fetchActivityItems(
         take: LIMIT,
         select: {
           id: true, title: true, projectSlug: true, createdAt: true,
-          author: { select: { name: true, image: true } },
+          author: { select: { id: true, name: true, image: true } },
           project: { select: { id: true, title: true, imageUrl: true } },
         },
       }),
@@ -100,7 +102,7 @@ export async function fetchActivityItems(
         take: LIMIT,
         select: {
           id: true, title: true, updatedAt: true,
-          createdBy: { select: { name: true, image: true } },
+          createdBy: { select: { id: true, name: true, image: true } },
           project: { select: { id: true, title: true, slug: true, imageUrl: true } },
         },
       }),
@@ -112,7 +114,7 @@ export async function fetchActivityItems(
             take: LIMIT,
             select: {
               id: true, title: true, slug: true, createdAt: true, imageUrl: true,
-              owner: { select: { name: true, image: true } },
+              owner: { select: { id: true, name: true, image: true } },
             },
           }),
       opts
@@ -123,7 +125,7 @@ export async function fetchActivityItems(
             take: LIMIT,
             select: {
               id: true, title: true, problem: true, solution: true, createdAt: true,
-              author: { select: { name: true, image: true } },
+              author: { select: { id: true, name: true, image: true } },
             },
           }),
       prisma.activityEvent.findMany({
@@ -135,7 +137,7 @@ export async function fetchActivityItems(
         take: LIMIT * 2,
         select: {
           id: true, type: true, payload: true, createdAt: true,
-          user: { select: { name: true, image: true } },
+          user: { select: { id: true, name: true, image: true } },
           project: { select: { id: true, title: true, slug: true, imageUrl: true } },
         },
       }),
@@ -151,7 +153,7 @@ export async function fetchActivityItems(
         take: LIMIT,
         select: {
           id: true, body: true, roomId: true, createdAt: true,
-          author: { select: { name: true, image: true } },
+          author: { select: { id: true, name: true, image: true } },
           room: { select: { project: { select: { id: true, title: true, slug: true, imageUrl: true } } } },
         },
       }),
@@ -164,7 +166,7 @@ export async function fetchActivityItems(
         take: LIMIT,
         select: {
           id: true, body: true, createdAt: true,
-          author: { select: { name: true, image: true } },
+          author: { select: { id: true, name: true, image: true } },
           card: {
             select: {
               id: true, title: true, projectSlug: true,
@@ -181,7 +183,7 @@ export async function fetchActivityItems(
             take: LIMIT,
             select: {
               id: true, content: true, createdAt: true,
-              author: { select: { name: true, image: true } },
+              author: { select: { id: true, name: true, image: true } },
               idea: { select: { id: true, title: true } },
             },
           }),
@@ -199,7 +201,7 @@ export async function fetchActivityItems(
   const items: PulseItem[] = [
     ...feedPosts.map((p) => ({
       id: `post-${p.id}`, targetType: "feedPost", targetId: p.id,
-      avatarName: p.author.name, avatarImage: p.author.image,
+      actorId: p.author.id, avatarName: p.author.name, avatarImage: p.author.image,
       projectName: t("postsPseudoProjectName"), projectHref: null, projectId: null,
       action: t("wrotePost"),
       body: p.body,
@@ -208,21 +210,21 @@ export async function fetchActivityItems(
     })),
     ...blogPosts.map((p) => ({
       id: `blog-${p.id}`, targetType: "blogPost", targetId: p.id,
-      avatarName: p.author.name, avatarImage: p.author.image, projectImage: p.project.imageUrl,
+      actorId: p.author.id, avatarName: p.author.name, avatarImage: p.author.image, projectImage: p.project.imageUrl,
       projectName: p.project.title, projectHref: `/projects/${p.projectSlug}`, projectId: p.project.id,
       action: t("postedUpdate"),
       href: `/projects/${p.projectSlug}/updates#post-${p.id}`, date: p.createdAt,
     })),
     ...milestones.map((m) => ({
       id: `milestone-${m.id}`, targetType: "milestone", targetId: m.id,
-      avatarName: m.createdBy.name, avatarImage: m.createdBy.image, projectImage: m.project.imageUrl,
+      actorId: m.createdBy.id, avatarName: m.createdBy.name, avatarImage: m.createdBy.image, projectImage: m.project.imageUrl,
       projectName: m.project.title, projectHref: `/projects/${m.project.slug}`, projectId: m.project.id,
       action: t("milestoneCompleted", { title: m.title }),
       href: `/projects/${m.project.slug}/calendar#milestone-${m.id}`, date: m.updatedAt,
     })),
     ...projects.map((p) => ({
       id: `project-${p.id}`, targetType: "project", targetId: p.id,
-      avatarName: p.owner.name, avatarImage: p.owner.image, projectImage: p.imageUrl,
+      actorId: p.owner.id, avatarName: p.owner.name, avatarImage: p.owner.image, projectImage: p.imageUrl,
       projectName: p.title, projectHref: `/projects/${p.slug}`, projectId: p.id,
       action: t("newProjectCreated"),
       href: `/projects/${p.slug}`, date: p.createdAt,
@@ -233,7 +235,7 @@ export async function fetchActivityItems(
       if (i.solution) parts.push(`${t("ideaSolutionLabel")} ${i.solution}`);
       return {
         id: `idea-${i.id}`, targetType: "idea", targetId: i.id,
-        avatarName: i.author.name, avatarImage: i.author.image,
+        actorId: i.author.id, avatarName: i.author.name, avatarImage: i.author.image,
         projectName: t("ideasPseudoProjectName"), projectHref: "/ideas", projectId: null,
         action: t("newIdea", { title: i.title }),
         body: parts.length > 0 ? parts.join(" ") : undefined,
@@ -273,7 +275,7 @@ export async function fetchActivityItems(
           : undefined;
       return {
         id: `activity-${a.id}`, targetType: "activityEvent", targetId: a.id, activityType: a.type,
-        avatarName: a.user.name, avatarImage: a.user.image, projectImage: project.imageUrl,
+        actorId: a.user.id, avatarName: a.user.name, avatarImage: a.user.image, projectImage: project.imageUrl,
         projectName: project.title, projectHref: `/projects/${project.slug}`, projectId: project.id,
         action,
         body,
@@ -286,7 +288,7 @@ export async function fetchActivityItems(
       return {
         id: `msg-${m.id}`, targetType: "channelMessage", targetId: m.id,
         projectSlug: project.slug,
-        avatarName: m.author.name, avatarImage: m.author.image, projectImage: project.imageUrl,
+        actorId: m.author.id, avatarName: m.author.name, avatarImage: m.author.image, projectImage: project.imageUrl,
         projectName: project.title, projectHref: `/projects/${project.slug}`, projectId: project.id,
         action: t("sentMessage"),
         body: htmlToPreviewText(m.body),
@@ -297,7 +299,7 @@ export async function fetchActivityItems(
       id: `kcomment-${c.id}`, targetType: "kanbanCardComment", targetId: c.id,
       cardId: c.card.id,
       projectSlug: c.card.projectSlug,
-      avatarName: c.author.name, avatarImage: c.author.image, projectImage: c.card.project.imageUrl,
+      actorId: c.author.id, avatarName: c.author.name, avatarImage: c.author.image, projectImage: c.card.project.imageUrl,
       projectName: c.card.project.title, projectHref: `/projects/${c.card.projectSlug}`, projectId: c.card.project.id,
       action: t("commentedOnCard", { title: c.card.title }),
       body: htmlToPreviewText(c.body),
@@ -305,7 +307,7 @@ export async function fetchActivityItems(
     })),
     ...ideaComments.map((c) => ({
       id: `icomment-${c.id}`, targetType: "ideaComment", targetId: c.id,
-      avatarName: c.author.name, avatarImage: c.author.image,
+      actorId: c.author.id, avatarName: c.author.name, avatarImage: c.author.image,
       projectName: t("ideasPseudoProjectName"), projectHref: "/ideas", projectId: null,
       action: t("commentedOnIdea", { title: c.idea.title }),
       body: c.content,

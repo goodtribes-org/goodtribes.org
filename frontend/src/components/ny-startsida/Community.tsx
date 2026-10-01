@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
 import type { PulseItem } from "@/lib/activityFeed";
 import { toProxyUrl } from "@/lib/storageUrl";
+import ThankButton from "@/components/ThankButton";
 import { INK, LINK, MUTED, SUBTLE, SectionHeader, card, wrap } from "./Sections";
 import { newHomeDisplayFont } from "./fonts";
 
@@ -32,10 +33,13 @@ function prefixOf(template: string) {
 }
 
 export default async function Community({
-  locale, memberCount, newestMembers, events, isLoggedIn,
+  locale, memberCount, newestMembers, events, viewerId, thanks,
 }: {
-  locale: Locale; memberCount: number; newestMembers: Person[]; events: PulseItem[]; isLoggedIn: boolean;
+  locale: Locale; memberCount: number; newestMembers: Person[]; events: PulseItem[]; viewerId: string | null;
+  // From getThanksState (lib/thanks.ts), keyed `${targetType}:${targetId}`.
+  thanks: { counts: Map<string, number>; thanked: Set<string> };
 }) {
+  const isLoggedIn = !!viewerId;
   const t = await getTranslations({ locale, namespace: "NewHomePage.community" });
   const tFeed = await getTranslations({ locale, namespace: "ActivityFeed" });
   const ideaPrefix = prefixOf(tFeed("newIdea", { title: "\u0000" }));
@@ -85,13 +89,14 @@ export default async function Community({
                   </p>
                   <p className="m-0 mt-0.5 text-xs" style={{ color: SUBTLE }}>{dateFormat.format(a.date)}</p>
                 </div>
-                <Link
-                  href={a.href ?? "/feed"}
-                  className="shrink-0 rounded-full border border-[#E4E4DF] bg-white px-3 py-1 text-[13px] font-semibold hover:border-[#E8531F]"
-                  style={{ color: LINK }}
-                >
-                  ♥ {t("thank")}
-                </Link>
+                <ThankButton
+                  targetType={a.targetType}
+                  targetId={a.targetId}
+                  initialCount={thanks.counts.get(`${a.targetType}:${a.targetId}`) ?? 0}
+                  initialThanked={thanks.thanked.has(`${a.targetType}:${a.targetId}`)}
+                  isLoggedIn={isLoggedIn}
+                  isOwn={!!viewerId && a.actorId === viewerId}
+                />
               </li>
             ))}
           </ul>
