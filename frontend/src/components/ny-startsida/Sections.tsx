@@ -2,7 +2,6 @@ import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
 import { PHASE_COLORS, type ProjectPhaseValue } from "@/lib/projectPhase";
-import { TOOLS, COLOR_HEX } from "@/components/showroom/ToolsGrid";
 import { newHomeDisplayFont } from "./fonts";
 
 // Sections of the new start page (/ny-startsida), following the design
@@ -118,46 +117,49 @@ const PHASE_KEYS: Record<JourneyPhase["value"], string> = {
 };
 
 
+// The pictures from the former "Fem steg" module (StepsGrid), which this
+// section replaced: one journey instead of two that told the same story.
+const PHASE_IMAGES: Record<JourneyPhase["value"], string> = {
+  IDEA: "do-you-have-a-dream.png",
+  PILOT: "what-is-goodtribes.png",
+  PRODUCTION: "want-a-change.png",
+  ESTABLISH: "Slide2.png",
+  SCALE: "want-to-be-a-winner.png",
+  IMPACT: "growth-leaves.png",
+};
+
 export async function PhaseJourney({ locale, phases }: { locale: Locale; phases: JourneyPhase[] }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.phases" });
   return (
     <section id="resan" className={`${wrap} flex flex-col gap-6 pt-[48px]`}>
       <div className="flex flex-col gap-3">
         <Eyebrow>{t("eyebrow")}</Eyebrow>
-        <H2 className="max-w-[720px] sm:whitespace-nowrap">{t("heading")}</H2>
+        <H2 className="max-w-[720px]">{t("heading")}</H2>
       </div>
-      <div className={`${card} p-6 sm:p-10 lg:px-16 lg:py-14`}>
-        <ol className="m-0 grid list-none gap-8 p-0 sm:grid-cols-2 lg:grid-cols-6 lg:gap-3.5">
-          {phases.map((p, i) => (
-            <li key={p.value} className="flex min-w-0 flex-col gap-3.5">
-              <span className="h-2 rounded-full" style={{ background: PHASE_COLORS[p.value] }} />
-              <div className="flex items-center gap-2.5">
-                <span
-                  className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full text-[15px] font-semibold"
-                  style={{ background: PHASE_COLORS[p.value], color: "#FFFFFF" }}
-                >
+      <ol className="m-0 grid list-none gap-5 p-0 sm:grid-cols-2 lg:grid-cols-6">
+        {phases.map((p, i) => (
+          <li key={p.value} className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[#E4E4DF] bg-white">
+            <div className="relative aspect-video">
+              <img src={`/img/${PHASE_IMAGES[p.value]}`} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            </div>
+            <span className="h-1.5" style={{ background: PHASE_COLORS[p.value] }} />
+            <div className="flex flex-1 flex-col gap-2 p-4">
+              <div className="flex items-center gap-2">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold text-white" style={{ background: PHASE_COLORS[p.value] }}>
                   {i + 1}
                 </span>
-                <span className={`${newHomeDisplayFont.className} text-2xl font-bold tracking-[-0.01em]`} style={{ color: INK }}>
-                  {p.label}
-                </span>
+                <span className={`${newHomeDisplayFont.className} text-lg font-bold`} style={{ color: INK }}>{p.label}</span>
               </div>
-              <p className="m-0 text-base leading-normal" style={{ color: MUTED }}>{t(`descriptions.${PHASE_KEYS[p.value]}`)}</p>
-              <p className="m-0 border-t border-dashed border-[#E4E4DF] pt-3.5 text-xs font-bold uppercase tracking-[.08em]" style={{ color: SUBTLE }}>
+              <p className="m-0 flex-1 text-sm leading-snug" style={{ color: MUTED }}>{t(`descriptions.${PHASE_KEYS[p.value]}`)}</p>
+              <p className="m-0 border-t border-dashed border-[#E4E4DF] pt-2.5 text-[11px] font-bold uppercase tracking-[.08em]" style={{ color: SUBTLE }}>
                 {t("now", { count: p.count })}
               </p>
-            </li>
-          ))}
-        </ol>
-      </div>
+            </div>
+          </li>
+        ))}
+      </ol>
     </section>
   );
-}
-
-// ─── 5. Section header for projects ───────────────────────────────────────
-
-export function ProjectsHeader({ eyebrow, heading, href, linkLabel }: { eyebrow: string; heading: string; href: string; linkLabel: string }) {
-  return <SectionHeader eyebrow={eyebrow} heading={heading} link={{ href, label: linkLabel }} />;
 }
 
 // ─── 6. Platform stats ────────────────────────────────────────────────────
@@ -185,38 +187,6 @@ export async function PlatformStats({
               {tile.value}
             </p>
             <p className="m-0 text-[15px] text-[#3F4642]">{tile.label}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// ─── 8. Tools ─────────────────────────────────────────────────────────────
-//
-// Same 16 tools and icons as @/components/showroom/ToolsGrid (the plain
-// HomePage's version), restyled to this page's own card language — spaced,
-// individually rounded tiles instead of a hairline-divided grid.
-
-export async function ToolsRow({ locale }: { locale: Locale }) {
-  const t = await getTranslations({ locale, namespace: "NewHomePage.tools" });
-  const tItems = await getTranslations({ locale, namespace: "HomePage.tools" });
-  return (
-    <section className={`${wrap} flex flex-col gap-6 pt-[48px]`}>
-      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} />
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {TOOLS.map((tool) => (
-          <div key={tool.key} className="flex flex-col gap-2.5 rounded-2xl border border-[#E4E4DF] bg-white p-5">
-            <div
-              className="flex h-9 w-9 items-center justify-center rounded-lg"
-              style={{ background: `color-mix(in oklab, ${COLOR_HEX[tool.color]} 12%, white)` }}
-            >
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={COLOR_HEX[tool.color]} strokeWidth={2}>
-                {tool.path}
-              </svg>
-            </div>
-            <p className="m-0 text-[15px] font-bold" style={{ color: INK }}>{tItems(`${tool.key}Label`)}</p>
-            <p className="m-0 text-[13px] leading-snug" style={{ color: MUTED }}>{tItems(`${tool.key}Body`)}</p>
           </div>
         ))}
       </div>
