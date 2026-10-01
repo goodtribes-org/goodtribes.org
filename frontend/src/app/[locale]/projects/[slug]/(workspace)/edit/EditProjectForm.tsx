@@ -15,6 +15,7 @@ import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_NUMBERS, SDG_LABELS_EN } from "@/lib/sdg";
 import { getNextPhase, isValidProjectPhase, getChecklistForPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 import { CATEGORIES } from "@/lib/categories";
+import { MAX_NEW_SKILLS_PER_SAVE, MAX_SKILL_NAME_LENGTH } from "@/lib/skillLimits";
 
 interface Props {
   slug: string;
@@ -70,6 +71,9 @@ export default function EditProjectForm({ slug, projectId, showTranslationSugges
   const [isTogglingChecklist, startTogglingChecklist] = useTransition();
   const [isMappingPending, startMappingTransition] = useTransition();
   const [doneKeys, setDoneKeys] = useState<Set<string>>(new Set(completedChecklistKeys));
+  const [selectedSkillIds, setSelectedSkillIds] = useState<Set<string>>(new Set(currentSkillIds));
+  const [newSkills, setNewSkills] = useState<string[]>([]);
+  const [skillDraft, setSkillDraft] = useState("");
   const imageInputRef = useRef<HTMLInputElement>(null);
   const nextPhase = isValidProjectPhase(initial.phase) ? getNextPhase(initial.phase) : null;
   const checklist = isValidProjectPhase(initial.phase) ? getChecklistForPhase(initial.phase) : null;
@@ -104,6 +108,22 @@ export default function EditProjectForm({ slug, projectId, showTranslationSugges
         setSelected(new Set(result.goals));
       }
     });
+  }
+
+  // Adds what's typed in "Lägg till kompetens": ticks an existing skill with
+  // the same name (any letter case) instead of creating a duplicate,
+  // otherwise queues it as a new one that's created on save.
+  function addSkillDraft() {
+    const name = skillDraft.replace(/\s+/g, " ").trim();
+    if (!name) return;
+    const key = name.toLocaleLowerCase("sv");
+    const existing = skills.find((s) => s.name.toLocaleLowerCase("sv") === key);
+    if (existing) {
+      setSelectedSkillIds((prev) => new Set(prev).add(existing.id));
+    } else if (!newSkills.some((n) => n.toLocaleLowerCase("sv") === key) && newSkills.length < MAX_NEW_SKILLS_PER_SAVE) {
+      setNewSkills((prev) => [...prev, name]);
+    }
+    setSkillDraft("");
   }
 
   function handleSubmit(formData: FormData) {
@@ -427,29 +447,79 @@ export default function EditProjectForm({ slug, projectId, showTranslationSugges
         </div>
       </div>
 
-      {skills.length > 0 && (
-        <div>
-          <label className="block text-sm font-medium text-dark-slate mb-2">
-            {t("skillsNeededLabel")} <span className="text-dark-slate/50 font-normal">{t("optionalSuffix")}</span>
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {skills.map((s) => (
-              <label key={s.id} className="cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="skillIds"
-                  value={s.id}
-                  defaultChecked={currentSkillIds.includes(s.id)}
-                  className="sr-only peer"
-                />
-                <span className="inline-block px-3 py-1 rounded-full border border-muted-teal text-sm text-dark-slate/70 transition-all peer-checked:border-seagrass peer-checked:bg-seagrass/10 peer-checked:text-seagrass hover:border-dark-slate/40">
-                  {s.name}
-                </span>
-              </label>
-            ))}
-          </div>
+      <div>
+        <label htmlFor="new-skill" className="block text-sm font-medium text-dark-slate mb-1">
+          {t("skillsNeededLabel")} <span className="text-dark-slate/50 font-normal">{t("optionalSuffix")}</span>
+        </label>
+        <p className="text-xs text-dark-slate/50 mb-2">{t("skillsNeededHint")}</p>
+        <div className="flex flex-wrap gap-2">
+          {skills.map((s) => (
+            <label key={s.id} className="cursor-pointer">
+              <input
+                type="checkbox"
+                name="skillIds"
+                value={s.id}
+                checked={selectedSkillIds.has(s.id)}
+                onChange={(e) =>
+                  setSelectedSkillIds((prev) => {
+                    const next = new Set(prev);
+                    if (e.target.checked) next.add(s.id);
+                    else next.delete(s.id);
+                    return next;
+                  })
+                }
+                className="sr-only peer"
+              />
+              <span className="inline-block px-3 py-1 rounded-full border border-muted-teal text-sm text-dark-slate/70 transition-all peer-checked:border-seagrass peer-checked:bg-seagrass/10 peer-checked:text-seagrass hover:border-dark-slate/40">
+                {s.name}
+              </span>
+            </label>
+          ))}
+          {newSkills.map((name) => (
+            <span key={name} className="inline-flex items-center gap-1 px-3 py-1 rounded-full border border-seagrass bg-seagrass/10 text-sm text-seagrass">
+              <input type="hidden" name="newSkillNames" value={name} />
+              {name}
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-seagrass/70">{t("newSkillBadge")}</span>
+              <button
+                type="button"
+                onClick={() => setNewSkills((prev) => prev.filter((n) => n !== name))}
+                aria-label={t("removeNewSkill", { name })}
+                className="ml-0.5 text-seagrass/70 hover:text-watermelon"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+          {skills.length === 0 && newSkills.length === 0 && (
+            <span className="text-sm text-dark-slate/50 py-1">{t("noSkillsYet")}</span>
+          )}
         </div>
-      )}
+        <div className="mt-3 flex gap-2">
+          <input
+            id="new-skill"
+            type="text"
+            value={skillDraft}
+            maxLength={MAX_SKILL_NAME_LENGTH}
+            onChange={(e) => setSkillDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addSkillDraft();
+              }
+            }}
+            placeholder={t("addSkillPlaceholder")}
+            className="flex-1 min-w-0 border border-muted-teal rounded-md px-3 py-1.5 text-sm text-dark-slate focus:outline-none focus:ring-2 focus:ring-seagrass"
+          />
+          <button
+            type="button"
+            onClick={addSkillDraft}
+            disabled={!skillDraft.trim()}
+            className="rounded-md border border-seagrass px-3 py-1.5 text-sm font-medium text-seagrass hover:bg-seagrass/10 disabled:opacity-40"
+          >
+            {t("addSkillButton")}
+          </button>
+        </div>
+      </div>
 
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={isPending}
