@@ -4813,6 +4813,24 @@
     },
     "projectStillIn": "Projektet är fortfarande i fasen {phase}."
   },
+  "WelcomePage": {
+    "pageTitle": "Välkommen",
+    "heading": "Välkommen till GoodTribes!",
+    "headingContinue": "Välkommen! En sak bara, sedan fortsätter du.",
+    "intro": "Vad heter du?",
+    "nameLabel": "För- och efternamn",
+    "namePlaceholder": "t.ex. Anna Andersson",
+    "nameHint": "På GoodTribes använder vi riktiga namn, så att alla vet vem de samarbetar med. Namnet syns för andra i projekten du är med i.",
+    "goalLabel": "Vad vill du göra först?",
+    "goals": {
+      "start": "Starta ett projekt",
+      "join": "Hjälpa till i ett projekt",
+      "explore": "Titta runt"
+    },
+    "continue": "Fortsätt →",
+    "moreLater": "Resten av profilen kan du fylla i när du vill.",
+    "fullProfile": "Fyll i hela profilen"
+  },
   "HowItWorks": {
     "pageTitle": "Så fungerar det",
     "waysHeading": "Tre sätt att vara med",

@@ -4813,6 +4813,24 @@
     },
     "projectStillIn": "The project is still in the {phase} phase."
   },
+  "WelcomePage": {
+    "pageTitle": "Welcome",
+    "heading": "Welcome to GoodTribes!",
+    "headingContinue": "Welcome! Just one thing, then you're on your way.",
+    "intro": "What's your name?",
+    "nameLabel": "First and last name",
+    "namePlaceholder": "e.g. Anna Andersson",
+    "nameHint": "On GoodTribes we use real names, so everyone knows who they're working with. Your name is shown to others in the projects you're part of.",
+    "goalLabel": "What would you like to do first?",
+    "goals": {
+      "start": "Start a project",
+      "join": "Help out in a project",
+      "explore": "Look around"
+    },
+    "continue": "Continue →",
+    "moreLater": "You can fill in the rest of your profile whenever you like.",
+    "fullProfile": "Fill in the full profile"
+  },
   "HowItWorks": {
     "pageTitle": "How it works",
     "waysHeading": "Three ways to take part",
