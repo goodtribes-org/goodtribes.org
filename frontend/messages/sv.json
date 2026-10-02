@@ -2950,7 +2950,8 @@
     "nextStep": "Nästa steg:",
     "guideLinkLabel": "{phase} guiden",
     "overviewLinkLabel": "{phase} på en sida",
-    "subStepsLabel": "{done}/{total} delsteg"
+    "subStepsLabel": "{done}/{total} delsteg",
+    "cardsLabel": "Kanban: {done} av {total} uppgifter klara"
   },
   "PhaseChecklistWidget": {
     "heading": "Din fasresa",

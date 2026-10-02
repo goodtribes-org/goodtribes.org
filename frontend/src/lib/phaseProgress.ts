@@ -173,6 +173,13 @@ export function phaseStepProgress(doneKeys: ReadonlySet<string>): PhaseStepProgr
   });
 }
 
+// A phase is finished when all its steps are done and none of its kanban
+// cards (lib/phaseWork.ts's getPhaseCardCounts) is still open: its bar then
+// turns solid and its circle shows ✓. Without card counts, steps alone.
+export function isPhaseFinished(progress: Pick<PhaseProgress, "complete">, cards?: { done: number; total: number }): boolean {
+  return progress.complete && (!cards || cards.done === cards.total);
+}
+
 // "Nästa steg": the first unfinished task, in checklist order, of the phase
 // the project is in. A parent step (Design Sprint) is skipped while its own
 // sub-steps are what's left, so the line names something concrete to do.

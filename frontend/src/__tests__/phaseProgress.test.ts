@@ -1,4 +1,4 @@
-import { autoDoneKeys, MIN_INTERVIEWS, MIN_LOG_ENTRIES, MIN_TEST_FEEDBACK, nextStep, phaseProgress, phaseStepProgress, phaseSteps, type ProjectSignals } from "../lib/phaseProgress";
+import { autoDoneKeys, MIN_INTERVIEWS, MIN_LOG_ENTRIES, MIN_TEST_FEEDBACK, isPhaseFinished, nextStep, phaseProgress, phaseStepProgress, phaseSteps, type ProjectSignals } from "../lib/phaseProgress";
 import { MIN_INTERVIEWS as GATE_MIN_INTERVIEWS, MIN_LOG_ENTRIES as GATE_MIN_LOG, MIN_TEST_FEEDBACK as GATE_MIN_FEEDBACK } from "../lib/phaseGate";
 
 jest.mock("../lib/prisma", () => ({ prisma: {} }));
@@ -165,5 +165,12 @@ describe("phaseProgress", () => {
   it("counts steps done and fills by fraction", () => {
     const p = phaseStepProgress(new Set(["core_team_formed", "map_understand", "sketch_solutions"]))[1];
     expect(p).toMatchObject({ done: 1, total: 5, pct: 28, complete: false });
+  });
+
+  it("a phase is finished only when its steps and its kanban cards are done", () => {
+    expect(isPhaseFinished({ complete: true })).toBe(true);
+    expect(isPhaseFinished({ complete: true }, { done: 3, total: 3 })).toBe(true);
+    expect(isPhaseFinished({ complete: true }, { done: 2, total: 3 })).toBe(false);
+    expect(isPhaseFinished({ complete: false }, { done: 3, total: 3 })).toBe(false);
   });
 });

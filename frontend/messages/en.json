@@ -2950,7 +2950,8 @@
     "nextStep": "Next step:",
     "guideLinkLabel": "{phase} guide",
     "overviewLinkLabel": "{phase} on one page",
-    "subStepsLabel": "{done}/{total} sub-steps"
+    "subStepsLabel": "{done}/{total} sub-steps",
+    "cardsLabel": "Kanban: {done} of {total} tasks done"
   },
   "PhaseChecklistWidget": {
     "heading": "Your phase journey",
