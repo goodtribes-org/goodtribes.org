@@ -111,6 +111,35 @@ export const TASKS_TOOL = {
   },
 };
 
+// TASKS_TOOL plus a "step" per task: which of the phase's steps the task is
+// work for, so the card lands tagged on the board (see lib/phaseWork.ts).
+// Optional — a task that fits no step just stays tied to the phase.
+export function tasksToolFor(steps: { key: string; label: string }[]) {
+  const items = TASKS_TOOL.input_schema.properties.tasks.items;
+  return {
+    ...TASKS_TOOL,
+    input_schema: {
+      ...TASKS_TOOL.input_schema,
+      properties: {
+        tasks: {
+          ...TASKS_TOOL.input_schema.properties.tasks,
+          items: {
+            ...items,
+            properties: {
+              ...items.properties,
+              step: {
+                type: "string",
+                enum: steps.map((s) => s.key),
+                description: `Vilket steg i fasen uppgiften hör till: ${steps.map((s) => `${s.key} = ${s.label}`).join("; ")}.`,
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+}
+
 // ─── Projektplan ────────────────────────────────────────────────────────────
 
 export const PLAN_SYSTEM_PROMPT = `${PHASE_CONTEXT}

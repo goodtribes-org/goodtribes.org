@@ -1,9 +1,11 @@
+import { stepKeysFor } from "@/lib/phaseWork";
+import { getChecklistForPhase } from "@/lib/projectPhase";
 import { prisma } from "@/lib/prisma";
 import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { latestInsight } from "@/lib/ideaInsights";
 import type { GateBrief } from "@/lib/phaseGate";
 import { coerceTasks } from "@/lib/uppstartFill";
-import { TASKS_TOOL } from "@/lib/prompts/uppstartFill";
+import { tasksToolFor } from "@/lib/prompts/uppstartFill";
 import {
   addAiCards,
   callFillTool,
@@ -113,9 +115,9 @@ export async function startSkalaFill(p: { projectId: string; projectSlug: string
         await createWikiPage(slug, "skalningsval", t.titleScaleChoice, html, aiUserId);
       },
       tasks: async ({ client, context, aiUserId }) => {
-        const tasks = coerceTasks(await callFillTool(client, SKALA_TASKS_SYSTEM_PROMPT, TASKS_TOOL, context));
+        const tasks = coerceTasks(await callFillTool(client, SKALA_TASKS_SYSTEM_PROMPT, tasksToolFor(getChecklistForPhase("SCALE")), context), stepKeysFor("SCALE"));
         if (!tasks.length) throw new Error("no tasks");
-        await addAiCards(slug, tasks, aiUserId);
+        await addAiCards(slug, "SCALE", tasks, aiUserId);
       },
     },
   });

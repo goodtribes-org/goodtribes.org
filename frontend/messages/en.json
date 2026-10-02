@@ -1636,7 +1636,10 @@
     "cancelButton": "Cancel",
     "deleteConfirmPrompt": "Are you sure?",
     "deleteConfirmYes": "Yes, delete",
-    "deleteButton": "Delete"
+    "deleteButton": "Delete",
+    "stepLabel": "Phase / step",
+    "stepNone": "No phase",
+    "stepPhaseOnly": "The whole phase"
   },
   "KanbanCardItem": {
     "agentOptionWriter": "✍️  Writer — drafts write-ups, texts, reports",
@@ -4149,7 +4152,17 @@
       "outcomeDesc_PAUSE": "Put the project on hold. It can be picked up again later.",
       "confirm_CONTINUE": "Confirm: move on to Impact",
       "closed": "Scale was closed on {date} with the decision to move on to Impact."
-    }
+    },
+    "workHeading": "The work in this phase",
+    "workBoardLink": "Open the board →",
+    "workNone": "No tasks are tied to this phase yet. Tasks you or the AI create in the phase show up here.",
+    "workDone": "{done} of {total} tasks done",
+    "workMore": "+ {count} more on the board",
+    "workEarlierOpen": "{count, plural, one {# task from an earlier phase isn't done.} other {# tasks from earlier phases aren't done.}}",
+    "workWishlist": "{count, plural, one {# task is on the wishlist.} other {# tasks are on the wishlist.}}",
+    "workUntagged": "{count, plural, one {# open task isn't tied to a phase — pick one on the card.} other {# open tasks aren't tied to a phase — pick one on the cards.}}",
+    "wentWithOpenTasks": "{count, plural, one {# task wasn't done.} other {# tasks weren't done.}}",
+    "openTasksWarning": "{count, plural, one {# task in this phase isn't done. It stays on the board and is noted with the decision.} other {# tasks in this phase aren't done. They stay on the board and are noted with the decision.}}"
   },
   "UppstartOverview": {
     "heading": "Start-up",

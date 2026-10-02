@@ -6,6 +6,7 @@ import { getCanvasFieldLabels } from "@/lib/canvasFieldLabels";
 import type { Locale } from "next-intl";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getPhaseWork, gateWork } from "@/lib/phaseWork";
 import { Link } from "@/i18n/navigation";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isFeatureEnabled } from "@/lib/featureFlags";
@@ -85,6 +86,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
   const aiDrafts = canEdit ? await getAiDraftCount(project.id) : null;
   const inIdeaPhase = project.phase === "IDEA" || project.phase === "SPRINT";
   const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
+  const work = await getPhaseWork(slug, "IDEA");
   const decisionDate = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
   const interviewCount = interviews.length;
 
@@ -308,10 +310,11 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
             brief={gateBrief?.content ?? null}
             lastDecision={
               lastDecision
-                ? { outcome: lastDecision.outcome, date: decisionDate(lastDecision.createdAt), missing: lastDecision.missing.map(criterionLabel) }
+                ? { outcome: lastDecision.outcome, date: decisionDate(lastDecision.createdAt), missing: lastDecision.missing.map(criterionLabel), openTaskCount: lastDecision.openTaskCount }
                 : null
             }
             fieldLabels={fieldLabels}
+            work={gateWork(work, criterionLabel)}
             canEdit={canEdit}
             isFounder={isFounder}
             aiAvailable={aiAvailable}

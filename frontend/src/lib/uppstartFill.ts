@@ -1,3 +1,5 @@
+import { stepKeysFor } from "@/lib/phaseWork";
+import { getChecklistForPhase } from "@/lib/projectPhase";
 import { prisma } from "@/lib/prisma";
 import {
   addAiCards,
@@ -26,7 +28,7 @@ import {
   SPRINT_SYSTEM_PROMPT,
   SPRINT_TOOL,
   TASKS_SYSTEM_PROMPT,
-  TASKS_TOOL,
+  tasksToolFor,
 } from "@/lib/prompts/uppstartFill";
 
 // ─── Fill status (drives the Uppstart page's placeholders) ─────────────────
@@ -65,8 +67,18 @@ export function coerceRoles(raw: unknown) {
   return titled((raw as { roles?: unknown } | null)?.roles, 5);
 }
 
-export function coerceTasks(raw: unknown) {
-  return titled((raw as { tasks?: unknown } | null)?.tasks, 7);
+// With `steps`, each task keeps the step the AI tied it to — if it is one
+// of them; anything else is dropped (the card stays tied to the phase only).
+export function coerceTasks(raw: unknown, steps: readonly string[] = []): { title: string; description: string; stepKey: string | null }[] {
+  const list = (raw as { tasks?: unknown } | null)?.tasks;
+  return (Array.isArray(list) ? list : [])
+    .map((x) => {
+      const o = (x ?? {}) as Record<string, unknown>;
+      const step = str(o.step);
+      return { title: str(o.title).slice(0, 200), description: str(o.description), stepKey: steps.includes(step) ? step : null };
+    })
+    .filter((x) => x.title)
+    .slice(0, 7);
 }
 
 export type SprintPlan = {
@@ -227,9 +239,9 @@ export async function startUppstartFill(p: UppstartFillParams): Promise<void> {
       },
 
       tasks: async ({ client, context, aiUserId }) => {
-        const tasks = coerceTasks(await callFillTool(client, TASKS_SYSTEM_PROMPT, TASKS_TOOL, context));
+        const tasks = coerceTasks(await callFillTool(client, TASKS_SYSTEM_PROMPT, tasksToolFor(getChecklistForPhase("PILOT")), context), stepKeysFor("PILOT"));
         if (!tasks.length) throw new Error("no tasks");
-        await addAiCards(slug, tasks, aiUserId);
+        await addAiCards(slug, "PILOT", tasks, aiUserId);
         await markStepDone(p.projectId, "PILOT", "kanban_seeded", p.userId);
       },
 
