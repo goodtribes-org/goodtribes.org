@@ -7,6 +7,68 @@ import type { Locale } from "next-intl";
 // locale — see getSitePage in sitePages.ts for the fallback chain (exact
 // locale row → this default for that locale → sv default).
 export const DEFAULT_SITE_PAGES: Record<SitePageSlug, Record<Locale, { title: string; body: string }>> = {
+  // "Så fungerar det" (/how-it-works). Phase headings get fixed anchors
+  // (#idea, #startup …) at render time, see HOW_IT_WORKS_ANCHORS.
+  "how-it-works": {
+    sv: {
+      title: "Så fungerar GoodTribes",
+      body: `
+        <p>GoodTribes är platsen där människor tillsammans förverkligar idéer som gör världen bättre. Någon har en dröm, andra hjälper till med det de kan, och projektet tar sig steg för steg från idé till verklig skillnad.</p>
+        <h2>Resan: sex faser</h2>
+        <p>Varje projekt går igenom samma sex faser. Varje fas har några steg med verktyg som hjälper er på vägen.</p>
+        <h3>1. Idé</h3>
+        <p>Formulera drömmen och vem den hjälper.</p>
+        <ul><li>Beskriv projektet och vilken skillnad det ska göra</li><li>Fyll i Social Lean Canvas</li><li>Prata med dem ni vill hjälpa, och se vad som redan finns</li></ul>
+        <h3>2. Uppstart</h3>
+        <p>Samla ett team och gör en plan.</p>
+        <ul><li>Bilda ett kärnteam och fördela roller</li><li>Gör en designsprint och bygg en första prototyp</li><li>Planera och avgränsa piloten</li></ul>
+        <h3>3. Lansering</h3>
+        <p>Testa i liten skala och lär er.</p>
+        <ul><li>Bestäm vad som räknas som lyckat</li><li>Genomför piloten och skriv ner vad ni lär er</li><li>Utvärdera: gå vidare eller inte</li></ul>
+        <h3>4. Etablera</h3>
+        <p>Bygg rutiner och hitta resurser.</p>
+        <ul><li>Bygg stabil drift och återkommande finansiering</li><li>Gör partnerskap och samarbeten formella</li><li>Skriv ner hur ni gör, så att andra kan göra likadant</li></ul>
+        <h3>5. Skala</h3>
+        <p>Nå fler människor och platser.</p>
+        <ul><li>Välj: växa själva, eller låta andra starta en egen kopia</li><li>Sätt mätbara mål och hitta nya platser och målgrupper</li><li>Bygg lokala team</li></ul>
+        <h3>6. Impact</h3>
+        <p>Mät och visa skillnaden ni gör.</p>
+        <ul><li>Mät och rapportera skillnaden ni gör</li><li>Låt någon utomstående granska resultatet</li><li>Fira, och bestäm nästa steg: fortsätta, låta andra göra om det eller avsluta</li></ul>
+        <p><strong>I slutet av varje fas tar ni ett beslut tillsammans: fortsätta, justera, byta riktning eller pausa. Ni ser vad som är gjort och vad som återstår, men ni bestämmer själva. Inget är låst.</strong></p>
+        <h2>AI-guiden</h2><p>Om du vill kan AI:n hjälpa till. Den fyller i utkast utifrån det du berättar, och allt den skriver märks som utkast. Du skriver över det du vill, och du kan skruva ner eller stänga av AI:n när som helst.</p>
+        <h2>Ditt bidrag syns</h2><p>När du gör klart uppgifter i ett projekt får du Tribe Tokens. De visar vad du har bidragit med och ger dig röst i projektets omröstningar. Den som uppskattar något du gjort kan också tacka dig direkt.</p>
+      `,
+    },
+    en: {
+      title: "How GoodTribes works",
+      body: `
+        <p>GoodTribes is where people turn ideas that make the world better into reality, together. Someone has a dream, others help with what they can, and the project moves step by step from idea to real change.</p>
+        <h2>The journey: six phases</h2>
+        <p>Every project goes through the same six phases. Each phase has a few steps, with tools to help you along.</p>
+        <h3>1. Idea</h3>
+        <p>Put the dream into words, and who it helps.</p>
+        <ul><li>Describe the project and the change it should make</li><li>Fill in the Social Lean Canvas</li><li>Talk to the people you want to help, and see what already exists</li></ul>
+        <h3>2. Start-up</h3>
+        <p>Gather a team and make a plan.</p>
+        <ul><li>Form a core team and share out roles</li><li>Run a design sprint and build a first prototype</li><li>Plan the pilot and set its limits</li></ul>
+        <h3>3. Launch</h3>
+        <p>Test on a small scale and learn.</p>
+        <ul><li>Decide what counts as success</li><li>Run the pilot and write down what you learn</li><li>Evaluate: go on or not</li></ul>
+        <h3>4. Establish</h3>
+        <p>Build routines and find resources.</p>
+        <ul><li>Build stable operations and recurring funding</li><li>Make partnerships and collaborations formal</li><li>Write down how you work, so others can do the same</li></ul>
+        <h3>5. Scale</h3>
+        <p>Reach more people and places.</p>
+        <ul><li>Choose: grow yourselves, or let others start their own copy</li><li>Set measurable goals and find new places and audiences</li><li>Build local teams</li></ul>
+        <h3>6. Impact</h3>
+        <p>Measure and show the change you make.</p>
+        <ul><li>Measure and report the change you make</li><li>Have someone outside review the results</li><li>Celebrate, and decide the next step: carry on, let others repeat it, or close</li></ul>
+        <p><strong>At the end of each phase you decide together: carry on, adjust, change direction or pause. You see what&#x27;s done and what&#x27;s left, but it&#x27;s your call. Nothing is locked.</strong></p>
+        <h2>The AI guide</h2><p>If you like, the AI can help. It drafts from what you tell it, and everything it writes is marked as a draft. Overwrite whatever you like, and turn the AI down or off at any time.</p>
+        <h2>Your contribution shows</h2><p>When you finish tasks in a project you earn Tribe Tokens. They show what you&#x27;ve contributed and give you a vote in the project&#x27;s polls. Anyone who appreciates something you did can also thank you directly.</p>
+      `,
+    },
+  },
   about: {
     sv: {
       title: "Vilka är GoodTribes?",
