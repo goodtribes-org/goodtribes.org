@@ -30,7 +30,8 @@
     "thisProject": "Det här projektet",
     "projectAllSections": "Alla projektsidor finns i projektmenyn överst på sidan",
     "siteAdmin": "Webbplatsadmin",
-    "greeting": "Hej {name}! 👋"
+    "greeting": "Hej {name}! 👋",
+    "howItWorks": "Så fungerar det"
   },
   "Account": {
     "profile": "Profil",
@@ -62,7 +63,8 @@
     "organisationBlurb": "Allt du behöver veta om stiftelsen bakom GoodTribes.org.",
     "footerCta": "Förverkliga en dröm",
     "backToTop": "Tillbaka till toppen",
-    "contactDetailsTitle": "Kontaktuppgifter"
+    "contactDetailsTitle": "Kontaktuppgifter",
+    "how-it-works": "Så fungerar det"
   },
   "Install": {
     "prompt": "Installera GoodTribes för snabbare åtkomst, även offline.",
@@ -4572,7 +4574,8 @@
         "establish": "Bygg rutiner och hitta resurser.",
         "scale": "Nå fler människor och platser.",
         "impact": "Mät och visa skillnaden ni gör."
-      }
+      },
+      "readMore": "Läs mer om hur det fungerar →"
     },
     "projects": {
       "eyebrow": "Projekt",
@@ -4809,5 +4812,27 @@
       "IMPACT": "Här mäter och redovisar ni vilken skillnad projektet faktiskt gjort, får resultatet granskat och bestämmer nästa steg: fortsätta, replikera eller avsluta ansvarsfullt."
     },
     "projectStillIn": "Projektet är fortfarande i fasen {phase}."
+  },
+  "HowItWorks": {
+    "pageTitle": "Så fungerar det",
+    "waysHeading": "Tre sätt att vara med",
+    "ways": {
+      "start": {
+        "title": "Starta ett projekt",
+        "text": "Har du en idé? Börja med AI-guiden, eller fyll i allt själv.",
+        "cta": "Starta →"
+      },
+      "join": {
+        "title": "Hjälp till i ett projekt",
+        "text": "Se vilka projekt som söker någon med just din kompetens, och gå med.",
+        "cta": "Se projekten →"
+      },
+      "idea": {
+        "title": "Dela en idé",
+        "text": "Inte redo att starta själv? Lägg ut idén så att andra kan bygga vidare på den.",
+        "cta": "Dela en idé →"
+      }
+    },
+    "description": "GoodTribes är platsen där människor tillsammans förverkligar idéer som gör världen bättre. Någon har en dröm, andra hjälper till med det de kan, och projektet tar sig steg för steg från idé till verklig skillnad."
   }
 }

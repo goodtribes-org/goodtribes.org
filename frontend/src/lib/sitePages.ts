@@ -44,6 +44,7 @@ export interface FooterPage {
 // even before a site admin has saved a first edit (see getSitePage above) —
 // a DB row (from an edit, or from being reordered) overrides title/order.
 const FIXED_FOOTER_META: Record<SitePageSlug, { href: string; order: number }> = {
+  "how-it-works": { href: "/how-it-works", order: -4 },
   about: { href: "/about", order: -3 },
   privacy: { href: "/privacy", order: -2 },
   terms: { href: "/terms", order: -1 },
