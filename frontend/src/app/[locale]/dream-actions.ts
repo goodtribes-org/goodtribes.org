@@ -19,9 +19,9 @@ const MAX_DREAM_LENGTH = 2000;
 // the visitor approves the summary, the same flow as today.
 //
 // It is kept separate from startDreamConversation so the existing flow stays
-// untouched. The mode is ASSIST ("AI:n hjälper mig"), the one where the
-// visitor decides every step; it can be changed later in the project's AI
-// settings.
+// untouched. The mode is AGENT ("Låt AI:n göra jobbet"), the one AI option
+// the start offers: the AI drafts, the visitor overwrites what they like,
+// and AI can be turned down or off later in the project's AI settings.
 export async function startDreamFromHome(text: string) {
   const session = await auth();
   const userId = session?.user?.id;
@@ -38,7 +38,7 @@ export async function startDreamFromHome(text: string) {
 
   const room = await prisma.room.create({ data: { type: "AI_INTAKE" } });
   await prisma.roomParticipant.create({ data: { roomId: room.id, userId } });
-  await prisma.dreamConversation.create({ data: { roomId: room.id, userId, aiMode: "ASSIST" } });
+  await prisma.dreamConversation.create({ data: { roomId: room.id, userId, aiMode: "AGENT" } });
 
   const aiUser = await getAiParticipantUser();
   const opener = DREAM_OPENER.split(/\n{2,}/).map((p) => `<p>${escapeHtml(p)}</p>`).join("");
