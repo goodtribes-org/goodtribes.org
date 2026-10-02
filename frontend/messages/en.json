@@ -1636,7 +1636,10 @@
     "cancelButton": "Cancel",
     "deleteConfirmPrompt": "Are you sure?",
     "deleteConfirmYes": "Yes, delete",
-    "deleteButton": "Delete"
+    "deleteButton": "Delete",
+    "stepLabel": "Phase / step",
+    "stepNone": "No phase",
+    "stepPhaseOnly": "The whole phase"
   },
   "KanbanCardItem": {
     "agentOptionWriter": "✍️  Writer — drafts write-ups, texts, reports",
@@ -2373,7 +2376,7 @@
   },
   "NewProjectGuide": {
     "heading": "Quick start — New project",
-    "contextNoteDefault": "An optional walkthrough of the idea phase's sub-steps. Skip anytime — nothing here is required.",
+    "contextNoteDefault": "A walk through the Idea phase's steps. A name, summary and description are needed to create the project – you can skip the rest and fill it in later.",
     "coverImageLabel": "Cover image",
     "optionalLabel": "(optional)",
     "projectNameLabel": "Project name",
@@ -2390,7 +2393,9 @@
     "tagsLabel": "Tags",
     "tagsHelper": "(comma-separated)",
     "submittingButton": "Creating…",
-    "nextButton": "Next →"
+    "nextButton": "Next →",
+    "categoryNoneOption": "— none —",
+    "tagsPlaceholder": "climate, youth"
   },
   "WorkspaceProposePartnershipForm": {
     "genericError": "Couldn't find an organisation with that slug, or something else went wrong.",
@@ -2941,12 +2946,14 @@
   },
   "PhaseMenuBar": {
     "navLabel": "Project phases",
-    "progressLabel": "{done} of {total} tasks done",
+    "progressLabel": "{done} of {total} steps done",
     "autoDone": "Done — visible in the project's content",
     "autoDoneShort": "done",
     "nextStep": "Next step:",
     "guideLinkLabel": "{phase} guide",
-    "overviewLinkLabel": "{phase} on one page"
+    "overviewLinkLabel": "{phase} on one page",
+    "subStepsLabel": "{done}/{total} sub-steps",
+    "cardsLabel": "Kanban: {done} of {total} tasks done"
   },
   "PhaseChecklistWidget": {
     "heading": "Your phase journey",
@@ -3803,12 +3810,6 @@
     "projectManagerHint": "Let the AI create and suggest tasks in the project. Turn off and no tasks are created automatically.",
     "saveError": "Could not save — try again."
   },
-  "AiDraftsNotice": {
-    "summary": "<b>{drafts} of {filled} fields</b> are AI drafts nobody in the team has reviewed yet.",
-    "show": "Show them",
-    "next": "Next",
-    "stop": "Stop highlighting"
-  },
   "CanvasStatusLegend": {
     "known": "Done — you know",
     "assumed": "Assumption — needs testing",
@@ -3891,14 +3892,16 @@
     "marketScan": "The market scan"
   },
   "FieldProvenance": {
-    "approve": "Looks good",
-    "approveHint": "You've read the draft and stand behind it as it is. It then counts as reviewed, but it's still an assumption until you know.",
-    "aiDraft": "AI draft",
-    "aiDraftHint": "Written by the AI and not yet reviewed by anyone in the team.",
-    "aiEdited": "AI + reviewed",
-    "aiEditedHint": "An AI draft someone in the team has reviewed — edited or approved.",
-    "known": "Known",
-    "assumed": "Assumed",
+    "known": "You said it",
+    "knownHint": "It came from you, or you've confirmed it.",
+    "aiGuess": "AI's guess",
+    "aiGuessHint": "The AI drew this conclusion. Is it right?",
+    "assumed": "Assumption",
+    "assumedHint": "An assumption to test, for example in the interviews.",
+    "confirm": "That's right",
+    "confirmHint": "You know it's right. It then counts as something you know.",
+    "keep": "Not sure, test it",
+    "keepHint": "Keep it as an assumption and test it, for example in the interviews.",
     "markKnown": "Mark as something you know",
     "markAssumed": "Mark as an assumption"
   },
@@ -3977,6 +3980,30 @@
     "close": "Close",
     "switchToAssist": "Want some help? Switch to AI helps me"
   },
+  "IdeaStart": {
+    "summaryHeading": "The AI has drafted the whole Idea phase",
+    "summaryBody": "From your conversation, the AI has written the canvas, impact model and value proposition. Most of it is guesses you need to test. That's the point: the Idea phase is about finding out what's true.",
+    "said": "{count, plural, one {thing you said yourself} other {things you said yourself}}",
+    "guessed": "{count, plural, one {thing the AI guesses} other {things the AI guesses}}",
+    "heading": "Start here, in this order",
+    "intro": "Three things. The rest of the page can wait.",
+    "critiqueStep": "Read the main thing the Critic found",
+    "critiqueAll": "Read all objections →",
+    "critiqueNone": "The Critic hasn't read the draft yet.",
+    "guessesStep": "Check the guesses the whole idea rests on",
+    "guessesIntro": "Is what the AI wrote right? Answer these first.",
+    "guessesMore": "{count, plural, one {# more guess further down.} other {# more guesses further down.}}",
+    "guessesDone": "You've answered all of the AI's guesses. What's still an assumption, you test in the interviews.",
+    "edit": "Edit",
+    "keep": "Not sure, test in the interviews",
+    "answerFailed": "Couldn't save. Try again.",
+    "interviewsStep": "Talk to 3–5 people in your target group",
+    "interviewsBody": "Only you can do this, and it's the most important part of the Idea phase. The interviews decide which guesses hold.",
+    "interviewsLogged": "{count, plural, one {# interview logged so far.} other {# interviews logged so far.}}",
+    "openGuide": "Open the interview guide →",
+    "logInterview": "Log an interview →",
+    "fold": "Fold"
+  },
   "IdeaOverview": {
     "heading": "The Idea phase",
     "intro": "Here's everything the AI produced for your project. It's all marked as drafts — read through and press Edit wherever something is off. Last come the things only you can do.",
@@ -4052,7 +4079,12 @@
     "gateHeading": "Phase gate: ready for Start-up?",
     "gateClosed": "The Idea phase was closed on {date} with the decision to move on.",
     "gateClosedLink": "To Start-up →",
-    "impactModelHeading": "Impact model"
+    "impactModelHeading": "Impact model",
+    "allHeading": "Everything the AI produced",
+    "foldedCanvas": "{fields, plural, one {# box} other {# boxes}} · {guesses, plural, =0 {no guesses} one {# guess} other {# guesses}}",
+    "foldedCritique": "{count, plural, =0 {no objections yet} one {# objection} other {# objections}}",
+    "foldedSdg": "{count, plural, =0 {no goals chosen} one {# goal} other {# goals}}",
+    "foldedMarketScan": "{count, plural, =0 {no actors yet} one {# actor} other {# actors}}"
   },
   "PhaseGate": {
     "intro": "The Idea phase is done when you know enough to start testing the solution. Here you see what's done, what the evidence says — and you make the call. You can move on even if something is missing; it's just noted.",
@@ -4149,7 +4181,18 @@
       "outcomeDesc_PAUSE": "Put the project on hold. It can be picked up again later.",
       "confirm_CONTINUE": "Confirm: move on to Impact",
       "closed": "Scale was closed on {date} with the decision to move on to Impact."
-    }
+    },
+    "workHeading": "The work in this phase",
+    "workBoardLink": "Open the board →",
+    "workNone": "No tasks are tied to this phase yet. Tasks you or the AI create in the phase show up here.",
+    "workNoneStarted": "None of the phase’s tasks has been started yet.",
+    "workDone": "{done} of {total} tasks done",
+    "workMore": "+ {count} more on the board",
+    "workEarlierOpen": "{count, plural, one {# task from an earlier phase isn't done.} other {# tasks from earlier phases aren't done.}}",
+    "workWishlist": "{count, plural, one {# task is on the wishlist.} other {# tasks are on the wishlist.}}",
+    "workUntagged": "{count, plural, one {# open task isn't tied to a phase — pick one on the card.} other {# open tasks aren't tied to a phase — pick one on the cards.}}",
+    "wentWithOpenTasks": "{count, plural, one {# task wasn't done.} other {# tasks weren't done.}}",
+    "openTasksWarning": "{count, plural, one {# task in this phase isn't done. It stays on the board and is noted with the decision.} other {# tasks in this phase aren't done. They stay on the board and are noted with the decision.}}"
   },
   "UppstartOverview": {
     "heading": "Start-up",
@@ -4682,6 +4725,64 @@
     },
     "projectsMoving": "{moving} of {total} moving",
     "projectsMovingAria": "{count, plural, one {# project moving} other {# projects moving}}",
-    "weeklyAria": "Activity per week, oldest first: {counts}"
+    "weeklyAria": "Activity per week, oldest first: {counts}",
+    "help": "Help"
+  },
+  "HelpPanel": {
+    "label": "Help",
+    "close": "Close",
+    "tabs": {
+      "guides": "Guides",
+      "contact": "Contact us"
+    },
+    "searchPlaceholder": "Search the guides",
+    "noMatch": "No guide matches.",
+    "askUs": "Ask us instead →",
+    "guides": {
+      "gettingStarted": {
+        "title": "Getting started with GoodTribes",
+        "text": "What GoodTribes is and how it works: ideas become projects run by volunteers, step by step through six phases."
+      },
+      "startProject": {
+        "title": "Start a project",
+        "text": "Describe your idea and the AI helps you with a first draft. Everything can be changed, and you invite others when you're ready."
+      },
+      "findProject": {
+        "title": "Find a project to help with",
+        "text": "Browse the projects and see which ones are looking for your skills. Ask to join with one click."
+      },
+      "myGoodTribes": {
+        "title": "My GoodTribes",
+        "text": "Your own overview: what you need to do, how your projects are doing, what you follow and who has thanked you."
+      },
+      "academy": {
+        "title": "GoodTribes Academy",
+        "text": "Short courses in project management, crowdfunding, community and impact – for when you want to learn more."
+      },
+      "codeOfConduct": {
+        "title": "Code of conduct",
+        "text": "How we treat each other on GoodTribes, and what happens if someone breaks the rules."
+      }
+    },
+    "contact": {
+      "heading": "Can't find what you're looking for?",
+      "text": "Send a question or a suggestion to the people who run GoodTribes. Only we can see what you write, and you'll see our reply on the same page.",
+      "cta": "Send a question"
+    },
+    "thisPage": "About this page",
+    "projectPhase": "The project is in the {phase} phase",
+    "pagePhase": "This page belongs to the {phase} phase",
+    "nextStep": "Next step: {step}",
+    "phaseGuide": "Read the {phase} guide",
+    "moreGuides": "More guides",
+    "phases": {
+      "IDEA": "Here you put the dream into words, who it helps and how it could work: Social Lean Canvas, value proposition, interviews and market scan. The aim is to understand the problem before you build anything.",
+      "PILOT": "Here you form the core team, test the solution in a Design Sprint and plan the pilot.",
+      "PRODUCTION": "Here you run the pilot, log what happens and evaluate the results – and get the solution ready for more people.",
+      "ESTABLISH": "Here you turn what worked in the pilot into stable operations: recurring funding, partnerships, a supporter base and a playbook others can follow.",
+      "SCALE": "Here the project grows to more places or groups – by the project itself growing, by others replicating the model, or by someone forking it.",
+      "IMPACT": "Here you measure and report the difference the project has actually made, get the results reviewed and decide what's next: continue, replicate or close responsibly."
+    },
+    "projectStillIn": "The project is still in the {phase} phase."
   }
 }

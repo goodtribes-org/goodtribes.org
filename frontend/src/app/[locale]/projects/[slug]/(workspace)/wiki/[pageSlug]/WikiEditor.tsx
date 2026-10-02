@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import RichTextEditor from "@/components/RichTextEditor";
 
 interface Props {
@@ -28,6 +29,7 @@ function toEditableHtml(raw: string): string {
 }
 
 export default function WikiEditor({ page, projectSlug, canEdit, canDelete, renderedHtml, updateAction, deleteAction, parentOptions }: Props) {
+  const t = useTranslations("WikiEditor");
   const [editing, setEditing] = useState(false);
   const [content, setContent] = useState(() => toEditableHtml(page.content));
   const [isPending, startTransition] = useTransition();
@@ -41,7 +43,7 @@ export default function WikiEditor({ page, projectSlug, canEdit, canDelete, rend
   }
 
   function handleDelete() {
-    if (!confirm("Delete this page? This cannot be undone.")) return;
+    if (!confirm(t("confirmDelete"))) return;
     startDeleting(async () => {
       await deleteAction(page.id, projectSlug);
     });
@@ -61,13 +63,13 @@ export default function WikiEditor({ page, projectSlug, canEdit, canDelete, rend
         <input type="hidden" name="content" value={content} />
         <RichTextEditor content={content} onChange={setContent} />
         <div>
-          <label className="block text-xs text-dark-slate/50 mb-1">Överordnad sida</label>
+          <label className="block text-xs text-dark-slate/50 mb-1">{t("parentPageLabel")}</label>
           <select
             name="parentId"
             defaultValue={page.parentId ?? ""}
             className="w-full sm:w-64 text-sm border border-muted-teal rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-coral bg-white"
           >
-            <option value="">Ingen (toppnivå)</option>
+            <option value="">{t("noneTopLevelOption")}</option>
             {parentOptions.map((p) => (
               <option key={p.id} value={p.id}>{p.title}</option>
             ))}
@@ -79,14 +81,14 @@ export default function WikiEditor({ page, projectSlug, canEdit, canDelete, rend
             disabled={isPending}
             className="bg-coral text-white text-sm font-medium px-4 py-1.5 rounded hover:bg-watermelon disabled:opacity-50 transition-colors"
           >
-            {isPending ? "Saving…" : "Save"}
+            {isPending ? t("saving") : t("save")}
           </button>
           <button
             type="button"
             onClick={() => { setContent(toEditableHtml(page.content)); setEditing(false); }}
             className="text-sm text-dark-slate/50 px-3 py-1.5 rounded hover:text-dark-slate transition-colors"
           >
-            Cancel
+            {t("cancel")}
           </button>
         </div>
       </form>
@@ -103,7 +105,7 @@ export default function WikiEditor({ page, projectSlug, canEdit, canDelete, rend
               onClick={() => setEditing(true)}
               className="text-xs text-dark-slate/50 hover:text-dark-slate border border-muted-teal/40 px-3 py-1 rounded transition-colors"
             >
-              Edit
+              {t("edit")}
             </button>
             {canDelete && (
               <button
@@ -111,7 +113,7 @@ export default function WikiEditor({ page, projectSlug, canEdit, canDelete, rend
                 disabled={isDeleting}
                 className="text-xs text-dark-slate/30 hover:text-watermelon disabled:opacity-50 transition-colors"
               >
-                Delete
+                {t("delete")}
               </button>
             )}
           </div>
@@ -126,7 +128,7 @@ export default function WikiEditor({ page, projectSlug, canEdit, canDelete, rend
           />
         ) : (
           <p className="text-sm text-dark-slate/40 italic">
-            {canEdit ? "This page is empty. Click Edit to add content." : "No content yet."}
+            {canEdit ? t("emptyEditable") : t("emptyReadonly")}
           </p>
         )}
       </div>

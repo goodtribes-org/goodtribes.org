@@ -46,6 +46,9 @@ export type Card = {
   claimedAt?: Date | string | null;
   createdById: string;
   createdByAi?: boolean;
+  // Which phase/step of the journey the card is work for (lib/phaseWork.ts).
+  phase?: string | null;
+  stepKey?: string | null;
   createdAt: Date | string;
   updatedAt: Date | string;
   createdBy: CardCreator | null;

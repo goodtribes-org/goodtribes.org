@@ -56,15 +56,23 @@ export function MessageComposer({ roomId, threadParentId, onSent, mentionables, 
   function submit() {
     const canSubmit = !isEmpty(body) || attachments.length > 0;
     if (!canSubmit || isPending) return;
+    // Empty the field as soon as the message is sent, not when the server
+    // action returns — the message itself shows up over SSE right away, and
+    // text left in the field reads as "not sent". Put it back on failure.
+    const sentBody = body;
+    const sentAttachments = attachments;
+    setBody("");
+    setEditorKey((k) => k + 1);
+    setAttachments([]);
+    setError(null);
     startTransition(async () => {
       try {
-        await sendRoomMessage(roomId, body, threadParentId, attachments.map((a) => a.id));
-        setBody("");
-        setEditorKey((k) => k + 1);
-        setAttachments([]);
-        setError(null);
+        await sendRoomMessage(roomId, sentBody, threadParentId, sentAttachments.map((a) => a.id));
         onSent?.();
       } catch (e) {
+        setBody(sentBody);
+        setEditorKey((k) => k + 1);
+        setAttachments(sentAttachments);
         const message = e instanceof Error ? e.message : null;
         setError(message && !UNTRANSLATED_ERRORS.has(message) ? message : t("sendError"));
       }
@@ -105,6 +113,7 @@ export function MessageComposer({ roomId, threadParentId, onSent, mentionables, 
         content={body}
         onChange={handleChange}
         compact
+        ariaLabel={t("placeholder")}
         mentionables={mentionables}
         collapsibleToolbar
         onSubmit={submit}
