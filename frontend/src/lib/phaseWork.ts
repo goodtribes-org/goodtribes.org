@@ -84,6 +84,26 @@ export async function getPhaseWork(projectSlug: string, rawPhase: ProjectPhase):
   return { done: count(["DONE"]), open: count(OPEN_COLUMNS), wishlist: count(["BACKLOG"]), openCards, earlierOpen, untagged };
 }
 
+// For the phase bars: per phase, how many of its committed cards (not
+// wishlist) are done. One query for all phases.
+export type PhaseCardCount = { done: number; total: number };
+
+export async function getPhaseCardCounts(projectSlug: string): Promise<Partial<Record<CardPhase, PhaseCardCount>>> {
+  const rows = await prisma.kanbanCard.groupBy({
+    by: ["phase", "column"],
+    where: { projectSlug, source: { not: "github" }, phase: { not: null }, column: { in: [...OPEN_COLUMNS, "DONE"] } },
+    _count: { _all: true },
+  });
+  const counts: Partial<Record<CardPhase, PhaseCardCount>> = {};
+  for (const r of rows) {
+    if (!r.phase) continue;
+    const c = (counts[cardPhaseFor(r.phase)] ??= { done: 0, total: 0 });
+    c.total += r._count._all;
+    if (r.column === "DONE") c.done += r._count._all;
+  }
+  return counts;
+}
+
 // For the gate decision record: open cards for the phase being decided.
 export async function countOpenPhaseTasks(tx: Prisma.TransactionClient, projectSlug: string, rawPhase: ProjectPhase): Promise<number> {
   return tx.kanbanCard.count({
