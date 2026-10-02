@@ -6,7 +6,8 @@ export const authConfig = {
   trustHost: true,
   pages: {
     signIn: "/login",
-    newUser: "/profile/setup",
+    // A short "Vad heter du?" step, then back to the callbackUrl.
+    newUser: "/welcome",
     error: "/login",
   },
   providers: [],
