@@ -3910,8 +3910,8 @@
     "marketScan": "The market scan"
   },
   "FieldProvenance": {
-    "known": "You know this",
-    "knownHint": "It comes from you, or you've confirmed it.",
+    "known": "You know",
+    "knownHint": "The AI suggested it and you've confirmed it's right.",
     "aiGuess": "AI's guess",
     "aiGuessHint": "The AI drew this conclusion. Is it right?",
     "assumed": "Assumption",
@@ -3921,7 +3921,9 @@
     "keep": "Not sure, test it",
     "keepHint": "Keep it as an assumption and test it, for example in the interviews.",
     "markKnown": "Mark as something you know",
-    "markAssumed": "Mark as an assumption"
+    "markAssumed": "Mark as an assumption",
+    "said": "You said",
+    "saidHint": "It comes from you: someone wrote it, or said it in the dream conversation."
   },
   "ProjectStart": {
     "heading": "Start a new project",

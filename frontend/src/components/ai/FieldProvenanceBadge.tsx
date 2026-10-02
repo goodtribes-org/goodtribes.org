@@ -8,7 +8,11 @@ import { approveAiDraft, confirmAiGuess, setFieldStatus } from "@/lib/actions/fi
 
 /**
  * One label per field, saying who stands behind the text:
- * - "Ni vet det" — known (vet): it came from the person, or they confirmed it.
+ * - "Du sa" — known (vet) because it came from a person: written by
+ *   someone in the team, or what the initiativtagare said in Drömsamtalet
+ *   (an AI write with basis "user").
+ * - "Ni vet" — known because the team confirmed an AI draft ("Stämmer"),
+ *   or reviewed/edited one and marked it as known.
  * - "AI:n gissar" — an AI draft nobody in the team has answered yet.
  * - "Antagande" — an assumption the team holds (written by a person, or an
  *   AI draft they kept as something to test).
@@ -70,8 +74,11 @@ export default function FieldProvenanceBadge({
   const confirm = () => run({ status: "VET", author: "AI_EDITED" }, () => confirmAiGuess(projectSlug, entity, field));
   const keep = () => run({ status: "ANTAR", author: "AI_EDITED" }, () => approveAiDraft(projectSlug, entity, field));
 
-  const label = status === "VET" ? t("known") : isGuess ? t("aiGuess") : t("assumed");
-  const hint = status === "VET" ? t("knownHint") : isGuess ? t("aiGuessHint") : t("assumedHint");
+  // Known from a person (Du sa) or confirmed by the team (Ni vet): an AI
+  // draft someone answered or reviewed is AI_EDITED.
+  const knownKey = author === "AI_EDITED" ? "known" : "said";
+  const label = status === "VET" ? t(knownKey) : isGuess ? t("aiGuess") : t("assumed");
+  const hint = status === "VET" ? t(`${knownKey}Hint`) : isGuess ? t("aiGuessHint") : t("assumedHint");
   const pillClass =
     status === "VET"
       ? "bg-seagrass/15 text-seagrass border-seagrass/40"
