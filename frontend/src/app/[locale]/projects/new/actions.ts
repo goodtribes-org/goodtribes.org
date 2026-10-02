@@ -10,6 +10,7 @@ import { linkPromotedProject } from "@/lib/promoteIdea";
 import { parseProjectInput } from "@/lib/github";
 import { syncProjectBoardInBackground } from "@/lib/githubSync";
 import { markChecklistDone } from "../[slug]/guide/actions";
+import { IDEA_GUIDE_STEPS } from "@/lib/ideaGuideSteps";
 
 // projectId is passed from the edit form (an existing project follows its
 // AI mode); new-project creation has no project yet.
@@ -89,5 +90,7 @@ export async function createProject(formData: FormData) {
       .catch(() => null);
   }
 
-  redirect(`/projects/${project.slug}/guide`);
+  // Step 0 (this form) is done: the guide carries on at the next step,
+  // not back at the start.
+  redirect(`/projects/${project.slug}/guide?step=${IDEA_GUIDE_STEPS[1].key}`);
 }

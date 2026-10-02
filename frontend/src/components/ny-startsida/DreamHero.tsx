@@ -6,10 +6,25 @@ import { startDreamFromHome } from "@/app/[locale]/dream-actions";
 import { heroTaglineFont } from "@/lib/fonts";
 import { newHomeDisplayFont } from "./fonts";
 
-// Kept in sessionStorage across the login round trip, so a visitor who
-// writes their dream before logging in finds it again afterwards. It never
-// goes in the URL.
+// Kept in localStorage across the login round trip, so a visitor who writes
+// their dream before logging in finds it again afterwards — the magic link
+// usually opens in a new tab, where sessionStorage would be empty. It never
+// goes in the URL. Logged in again within DRAFT_CONTINUE_MS, the
+// conversation starts by itself (that's what they asked for before logging
+// in); an older draft is only put back in the box.
 const DRAFT_KEY = "gt:new-home-dream";
+const DRAFT_CONTINUE_MS = 2 * 60 * 60 * 1000;
+
+function readDraft(): { text: string; at: number } | null {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw) as { text?: unknown; at?: unknown };
+    return typeof d.text === "string" && d.text ? { text: d.text, at: typeof d.at === "number" ? d.at : 0 } : null;
+  } catch {
+    return null;
+  }
+}
 const EXAMPLE_COUNT = 4;
 
 // Small per-word tilt (deg) and baseline shift (em) so the tagline reads as
@@ -58,15 +73,21 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [pending, startTransition] = useTransition();
 
   useEffect(() => {
-    try {
-      const draft = sessionStorage.getItem(DRAFT_KEY);
-      if (draft) {
-        setText(draft);
-        setRestored(true);
-      }
-    } catch {
-      // Storage blocked: the visitor simply types again.
+    // Storage blocked or empty: the visitor simply types again.
+    const draft = readDraft();
+    if (!draft) return;
+    setText(draft.text);
+    setRestored(true);
+    if (isLoggedIn && Date.now() - draft.at < DRAFT_CONTINUE_MS) {
+      try {
+        localStorage.removeItem(DRAFT_KEY);
+      } catch {}
+      startTransition(async () => {
+        await startDreamFromHome(draft.text);
+      });
     }
+    // Once, on arrival — not again when the box is edited.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -79,8 +100,8 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
     const dream = text.trim();
     if (!dream || pending) return;
     try {
-      if (isLoggedIn) sessionStorage.removeItem(DRAFT_KEY);
-      else sessionStorage.setItem(DRAFT_KEY, dream);
+      if (isLoggedIn) localStorage.removeItem(DRAFT_KEY);
+      else localStorage.setItem(DRAFT_KEY, JSON.stringify({ text: dream, at: Date.now() }));
     } catch {}
     startTransition(async () => {
       await startDreamFromHome(dream);

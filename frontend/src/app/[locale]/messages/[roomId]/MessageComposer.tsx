@@ -105,6 +105,7 @@ export function MessageComposer({ roomId, threadParentId, onSent, mentionables, 
         content={body}
         onChange={handleChange}
         compact
+        ariaLabel={t("placeholder")}
         mentionables={mentionables}
         collapsibleToolbar
         onSubmit={submit}

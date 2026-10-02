@@ -8,10 +8,8 @@ import { escapeHtml } from "@/lib/renderBody";
 import { logger } from "@/lib/logger";
 import { mergeDreamState, parseDreamState, parseOpenQuestions } from "@/lib/dreamConversation";
 import { DREAM_REPLY_TOOL, DREAM_SYSTEM_PROMPT, dreamProgressNote } from "@/lib/prompts/dreamConversation";
+import { htmlToText } from "@/lib/htmlToText";
 
-function stripHtml(body: string): string {
-  return body.replace(/<[^>]*>/g, "").trim();
-}
 
 export function dreamConversationUrl(roomId: string): string {
   return `/projects/new/samtal/${roomId}`;
@@ -59,7 +57,7 @@ export async function triggerDreamReply(room: Room, triggeredByUserId: string): 
     // The conversation must start with a user turn, but a Drömsamtal starts
     // with the coach's opener — keep the opener (the model needs to know what
     // it asked) behind a neutral first user turn.
-    const turns = history.map((m) => ({ role: (m.isAi ? "assistant" : "user") as "assistant" | "user", content: stripHtml(m.body) }));
+    const turns = history.map((m) => ({ role: (m.isAi ? "assistant" : "user") as "assistant" | "user", content: htmlToText(m.body) }));
     if (turns[0]?.role === "assistant") turns.unshift({ role: "user", content: "(Personen öppnade Drömsamtalet.)" });
     if (turns[turns.length - 1]?.role !== "user") return;
 
