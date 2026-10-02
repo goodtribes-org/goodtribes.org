@@ -4697,6 +4697,64 @@
     },
     "projectsMoving": "{moving} of {total} moving",
     "projectsMovingAria": "{count, plural, one {# project moving} other {# projects moving}}",
-    "weeklyAria": "Activity per week, oldest first: {counts}"
+    "weeklyAria": "Activity per week, oldest first: {counts}",
+    "help": "Help"
+  },
+  "HelpPanel": {
+    "label": "Help",
+    "close": "Close",
+    "tabs": {
+      "guides": "Guides",
+      "contact": "Contact us"
+    },
+    "searchPlaceholder": "Search the guides",
+    "noMatch": "No guide matches.",
+    "askUs": "Ask us instead →",
+    "guides": {
+      "gettingStarted": {
+        "title": "Getting started with GoodTribes",
+        "text": "What GoodTribes is and how it works: ideas become projects run by volunteers, step by step through six phases."
+      },
+      "startProject": {
+        "title": "Start a project",
+        "text": "Describe your idea and the AI helps you with a first draft. Everything can be changed, and you invite others when you're ready."
+      },
+      "findProject": {
+        "title": "Find a project to help with",
+        "text": "Browse the projects and see which ones are looking for your skills. Ask to join with one click."
+      },
+      "myGoodTribes": {
+        "title": "My GoodTribes",
+        "text": "Your own overview: what you need to do, how your projects are doing, what you follow and who has thanked you."
+      },
+      "academy": {
+        "title": "GoodTribes Academy",
+        "text": "Short courses in project management, crowdfunding, community and impact – for when you want to learn more."
+      },
+      "codeOfConduct": {
+        "title": "Code of conduct",
+        "text": "How we treat each other on GoodTribes, and what happens if someone breaks the rules."
+      }
+    },
+    "contact": {
+      "heading": "Can't find what you're looking for?",
+      "text": "Send a question or a suggestion to the people who run GoodTribes. Only we can see what you write, and you'll see our reply on the same page.",
+      "cta": "Send a question"
+    },
+    "thisPage": "About this page",
+    "projectPhase": "The project is in the {phase} phase",
+    "pagePhase": "This page belongs to the {phase} phase",
+    "nextStep": "Next step: {step}",
+    "phaseGuide": "Read the {phase} guide",
+    "moreGuides": "More guides",
+    "phases": {
+      "IDEA": "Here you put the dream into words, who it helps and how it could work: Social Lean Canvas, value proposition, interviews and market scan. The aim is to understand the problem before you build anything.",
+      "PILOT": "Here you form the core team, test the solution in a Design Sprint and plan the pilot.",
+      "PRODUCTION": "Here you run the pilot, log what happens and evaluate the results – and get the solution ready for more people.",
+      "ESTABLISH": "Here you turn what worked in the pilot into stable operations: recurring funding, partnerships, a supporter base and a playbook others can follow.",
+      "SCALE": "Here the project grows to more places or groups – by the project itself growing, by others replicating the model, or by someone forking it.",
+      "IMPACT": "Here you measure and report the difference the project has actually made, get the results reviewed and decide what's next: continue, replicate or close responsibly."
+    },
+    "projectStillIn": "The project is still in the {phase} phase."
   }
 }
