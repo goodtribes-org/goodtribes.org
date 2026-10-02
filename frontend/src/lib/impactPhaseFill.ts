@@ -1,11 +1,13 @@
 import type { NextStepDecision, Prisma } from "@prisma/client";
+import { stepKeysFor } from "@/lib/phaseWork";
+import { getChecklistForPhase } from "@/lib/projectPhase";
 import { prisma } from "@/lib/prisma";
 import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { getAiClientFor } from "@/lib/aiMode";
 import { InsightError, latestInsight } from "@/lib/ideaInsights";
 import type { GateBrief } from "@/lib/phaseGate";
 import { coerceTasks } from "@/lib/uppstartFill";
-import { TASKS_TOOL } from "@/lib/prompts/uppstartFill";
+import { tasksToolFor } from "@/lib/prompts/uppstartFill";
 import {
   addAiCards,
   callFillTool,
@@ -183,9 +185,9 @@ export async function startImpactFill(p: { projectId: string; projectSlug: strin
       verification: followupField("externalVerificationNotes", VERIFICATION_SYSTEM_PROMPT, "verifiering"),
       celebration: followupField("celebrationNotes", CELEBRATION_SYSTEM_PROMPT, "fira"),
       tasks: async ({ client, context, aiUserId }) => {
-        const tasks = coerceTasks(await callFillTool(client, IMPACT_TASKS_SYSTEM_PROMPT, TASKS_TOOL, context));
+        const tasks = coerceTasks(await callFillTool(client, IMPACT_TASKS_SYSTEM_PROMPT, tasksToolFor(getChecklistForPhase("IMPACT")), context), stepKeysFor("IMPACT"));
         if (!tasks.length) throw new Error("no tasks");
-        await addAiCards(slug, tasks, aiUserId);
+        await addAiCards(slug, "IMPACT", tasks, aiUserId);
       },
     },
   });

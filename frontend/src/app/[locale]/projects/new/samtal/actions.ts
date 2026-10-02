@@ -240,6 +240,7 @@ export async function createProjectFromDream(roomId: string) {
             title: q.length > 120 ? `${q.slice(0, 117)}…` : q,
             description: "Öppen fråga från Drömsamtalet.",
             column: "BACKLOG",
+            phase: "IDEA",
             order: i,
             createdById: aiUser.id,
             createdByAi: true,

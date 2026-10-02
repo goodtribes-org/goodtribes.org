@@ -1636,7 +1636,10 @@
     "cancelButton": "Avbryt",
     "deleteConfirmPrompt": "Är du säker?",
     "deleteConfirmYes": "Ja, ta bort",
-    "deleteButton": "Ta bort"
+    "deleteButton": "Ta bort",
+    "stepLabel": "Fas / steg",
+    "stepNone": "Ingen fas",
+    "stepPhaseOnly": "Hela fasen"
   },
   "KanbanCardItem": {
     "agentOptionWriter": "✍️  Skribent — skriver utkast, texter, rapporter",
@@ -4150,7 +4153,17 @@
       "outcomeDesc_PAUSE": "Lägg projektet vilande. Det kan tas upp igen senare.",
       "confirm_CONTINUE": "Bekräfta: gå vidare till Impact",
       "closed": "Skala avslutades {date} med beslutet att gå vidare till Impact."
-    }
+    },
+    "workHeading": "Arbetet i fasen",
+    "workBoardLink": "Öppna tavlan →",
+    "workNone": "Inga uppgifter är kopplade till fasen än. Uppgifter som AI:n eller ni skapar i fasen hamnar här.",
+    "workDone": "{done} av {total} uppgifter klara",
+    "workMore": "+ {count} till på tavlan",
+    "workEarlierOpen": "{count, plural, one {# uppgift från en tidigare fas är inte klar.} other {# uppgifter från tidigare faser är inte klara.}}",
+    "workWishlist": "{count, plural, one {# uppgift ligger på önskelistan.} other {# uppgifter ligger på önskelistan.}}",
+    "workUntagged": "{count, plural, one {# öppen uppgift är inte kopplad till någon fas — välj fas på kortet.} other {# öppna uppgifter är inte kopplade till någon fas — välj fas på korten.}}",
+    "wentWithOpenTasks": "{count, plural, one {# uppgift var inte klar.} other {# uppgifter var inte klara.}}",
+    "openTasksWarning": "{count, plural, one {# uppgift i fasen är inte klar. Den ligger kvar på tavlan och noteras med beslutet.} other {# uppgifter i fasen är inte klara. De ligger kvar på tavlan och noteras med beslutet.}}"
   },
   "UppstartOverview": {
     "heading": "Uppstart",
