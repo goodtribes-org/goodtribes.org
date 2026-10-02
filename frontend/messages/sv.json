@@ -3910,14 +3910,14 @@
     "marketScan": "Omvärldsbevakningen"
   },
   "FieldProvenance": {
-    "known": "Du sa det",
-    "knownHint": "Det kommer från dig, eller så har du bekräftat det.",
+    "known": "Ni vet det",
+    "knownHint": "Det kommer från er, eller så har ni bekräftat det.",
     "aiGuess": "AI:n gissar",
     "aiGuessHint": "AI:n har dragit den här slutsatsen. Stämmer den?",
     "assumed": "Antagande",
     "assumedHint": "Ett antagande som behöver testas, till exempel i intervjuerna.",
     "confirm": "Stämmer",
-    "confirmHint": "Du vet att det stämmer. Det räknas då som något ni vet.",
+    "confirmHint": "Ni vet att det stämmer. Det räknas då som något ni vet.",
     "keep": "Vet inte, testa",
     "keepHint": "Behåll det som ett antagande och testa det, till exempel i intervjuerna.",
     "markKnown": "Markera som något ni vet",
@@ -4008,7 +4008,7 @@
   "IdeaStart": {
     "summaryHeading": "AI:n har gjort ett första utkast av hela Idéfasen",
     "summaryBody": "Utifrån ditt samtal har AI:n skrivit canvas, impactmodell och värdeerbjudande. Det mesta är gissningar som du behöver testa. Det är meningen: Idéfasen handlar om att ta reda på vad som stämmer.",
-    "said": "{count, plural, one {sak du sa själv} other {saker du sa själv}}",
+    "said": "{count, plural, one {sak ni vet} other {saker ni vet}}",
     "guessed": "{count, plural, one {sak AI:n gissar} other {saker AI:n gissar}}",
     "heading": "Börja här, i den här ordningen",
     "intro": "Tre saker. Resten av sidan kan vänta.",
