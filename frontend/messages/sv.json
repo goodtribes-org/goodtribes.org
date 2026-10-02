@@ -3969,7 +3969,8 @@
     "nextStepWait": "Det tar några sekunder.",
     "nextStepAddMore": "Vill du lägga till något? Skriv det i chatten först.",
     "nextStepBodyAgent": "Nu skapar AI:n ditt projekt och fyller i Idéfasen: beskrivning, globala mål, Social Lean Canvas, värdeerbjudande, omvärldsbevakning och en intervjuguide. Du ser allt på en sida och kan redigera det som inte stämmer.",
-    "nextStepBodyAssist": "Nu skapas projektet med namn och beskrivning. Resten fyller du i själv i guiden, med AI:ns förslag bredvid fälten."
+    "nextStepBodyAssist": "Nu skapas projektet med namn och beskrivning. Resten fyller du i själv i guiden, med AI:ns förslag bredvid fälten.",
+    "deleteShort": "Radera"
   },
   "BlockIterate": {
     "open": "Förbättra",

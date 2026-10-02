@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { startDreamConversation } from "./samtal/actions";
+import DeleteDreamButton from "./DeleteDreamButton";
 
 type InProgress = { roomId: string; updatedAt: Date; coveredCount: number };
 
@@ -20,10 +21,11 @@ export default async function ProjectStartChoice({ inProgress }: { inProgress: I
           <p className="text-sm font-semibold text-dark-slate">{t("resumeHeading")}</p>
           <ul className="mt-2 flex flex-col gap-1.5">
             {inProgress.map((c) => (
-              <li key={c.roomId}>
+              <li key={c.roomId} className="flex items-baseline justify-between gap-3">
                 <Link href={`/projects/new/samtal/${c.roomId}`} className="text-sm font-medium text-seagrass hover:underline">
                   {t("resumeLink", { covered: c.coveredCount, date: c.updatedAt.toLocaleDateString("sv-SE") })}
                 </Link>
+                <DeleteDreamButton roomId={c.roomId} />
               </li>
             ))}
           </ul>

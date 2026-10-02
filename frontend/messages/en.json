@@ -3969,7 +3969,8 @@
     "nextStepWait": "It takes a few seconds.",
     "nextStepAddMore": "Want to add something? Write it in the chat first.",
     "nextStepBodyAgent": "Now the AI creates your project and fills in the Idea phase: description, global goals, Social Lean Canvas, value proposition, market scan and an interview guide. You see it all on one page and can edit anything that's off.",
-    "nextStepBodyAssist": "Now the project is created with a name and description. You fill in the rest yourself in the guide, with the AI's suggestions next to the fields."
+    "nextStepBodyAssist": "Now the project is created with a name and description. You fill in the rest yourself in the guide, with the AI's suggestions next to the fields.",
+    "deleteShort": "Delete"
   },
   "BlockIterate": {
     "open": "Improve",
