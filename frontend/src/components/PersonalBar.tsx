@@ -7,11 +7,14 @@
 // to Mitt GoodTribes — a quick look without leaving the page. On a phone it's
 // a regular bottom tab bar. Following, your own activity and thanks live in
 // Mitt GoodTribes only: they're not things you act on (thanks also notify).
+// "Hjälp" sits apart at the right end (on a phone, as the last tab): guides
+// and a way to ask us (HelpPanel).
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import type { PanelItem, PanelPulse } from "@/app/api/me/panel/route";
+import HelpPanel from "./HelpPanel";
 
 const ITEMS = [
   { key: "todo", tab: "tasks", icon: <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" /> },
@@ -30,7 +33,7 @@ export default function PersonalBar() {
   const t = useTranslations("PersonalBar");
   const locale = useLocale();
   const pathname = usePathname();
-  const [open, setOpen] = useState<Key | null>(null);
+  const [open, setOpen] = useState<Key | "help" | null>(null);
   const [items, setItems] = useState<Partial<Record<Key, PanelItem[]>>>({});
   const [counts, setCounts] = useState({ todo: 0, moving: 0 });
   const barRef = useRef<HTMLDivElement>(null);
@@ -58,7 +61,7 @@ export default function PersonalBar() {
 
   useEffect(() => {
     if (!open) return;
-    load(open);
+    if (open !== "help") load(open);
     function onDown(e: MouseEvent) {
       if (barRef.current && !barRef.current.contains(e.target as Node)) setOpen(null);
     }
@@ -74,7 +77,7 @@ export default function PersonalBar() {
   }, [open, load]);
 
   const current = ITEMS.find((i) => i.key === open);
-  const list = open ? items[open] : undefined;
+  const list = open && open !== "help" ? items[open] : undefined;
   const maxWeek = Math.max(1, ...(items.projects ?? []).flatMap((i) => i.pulse?.weeks ?? []));
 
   return (
@@ -129,7 +132,12 @@ export default function PersonalBar() {
             </Link>
           </div>
         )}
-        <nav aria-label={t("aria")} className="border-t border-[#E2E2E0] bg-[#FBFBF9]/95 backdrop-blur">
+        {open === "help" && (
+          <div className="mx-auto mb-2 w-[calc(100%-1rem)] max-w-sm sm:mr-4">
+            <HelpPanel onClose={() => setOpen(null)} />
+          </div>
+        )}
+        <nav aria-label={t("aria")} className="relative border-t border-[#E2E2E0] bg-[#FBFBF9]/95 backdrop-blur">
           <ul className="mx-auto flex max-w-3xl list-none justify-around gap-1 p-0 sm:justify-center sm:gap-2">
             {ITEMS.map((i) => (
               <li key={i.key}>
@@ -156,6 +164,21 @@ export default function PersonalBar() {
                 </button>
               </li>
             ))}
+            <li className="sm:absolute sm:inset-y-0 sm:right-4 sm:flex sm:items-center">
+              <button
+                type="button"
+                onClick={() => setOpen((o) => (o === "help" ? null : "help"))}
+                aria-expanded={open === "help"}
+                className={`relative flex flex-col items-center gap-0.5 px-4 py-2 text-[11px] sm:flex-row sm:gap-1.5 sm:px-3 sm:py-3 sm:text-sm ${open === "help" ? "font-semibold text-dark-slate" : "text-dark-slate/70 hover:text-dark-slate"}`}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-[18px] w-[18px] sm:h-4 sm:w-4" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M9.1 9a3 3 0 015.8 1c0 2-3 3-3 3M12 17h.01" />
+                </svg>
+                {t("help")}
+                {open === "help" && <span className="absolute inset-x-2 bottom-0 h-0.5 rounded bg-[#E8531F]" aria-hidden="true" />}
+              </button>
+            </li>
           </ul>
         </nav>
       </div>
