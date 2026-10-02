@@ -2376,7 +2376,7 @@
   },
   "NewProjectGuide": {
     "heading": "Snabbstart — Nytt projekt",
-    "contextNoteDefault": "En valfri genomgång av idé-fasens delsteg. Hoppa över när som helst — inget här krävs.",
+    "contextNoteDefault": "En genomgång av Idéfasens steg. Namn, sammanfattning och beskrivning behövs för att skapa projektet – resten kan du hoppa över och fylla i senare.",
     "coverImageLabel": "Omslagsbild",
     "optionalLabel": "(valfritt)",
     "projectNameLabel": "Projektnamn",
@@ -2393,7 +2393,9 @@
     "tagsLabel": "Taggar",
     "tagsHelper": "(kommaseparerat)",
     "submittingButton": "Skapar…",
-    "nextButton": "Nästa →"
+    "nextButton": "Nästa →",
+    "categoryNoneOption": "— ingen —",
+    "tagsPlaceholder": "klimat, unga"
   },
   "WorkspaceProposePartnershipForm": {
     "genericError": "Hittade ingen organisation med den slugen, eller något annat gick fel.",

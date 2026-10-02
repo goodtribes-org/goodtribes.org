@@ -84,6 +84,8 @@ export default async function DreamConversationPage({ params }: { params: Promis
         currentUserId={userId}
         canPost={access.canPost && dream.status === "in_progress"}
         mentionables={[]}
+        // The heading and progress bar sit above the chat here.
+        heightClass="h-[calc(100dvh-420px)] min-h-[340px]"
       />
 
       <DreamNextStep roomId={roomId} initial={initialProgress} aiMode={dream.aiMode === "ASSIST" ? "ASSIST" : "AGENT"} />
