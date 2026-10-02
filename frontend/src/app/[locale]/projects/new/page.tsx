@@ -22,22 +22,30 @@ export default async function NewProjectPage({
   searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ from?: string; fromThread?: string; title?: string; manual?: string }>;
+  searchParams: Promise<{ from?: string; fromThread?: string; title?: string; manual?: string; ai?: string }>;
 }) {
   const { locale } = await params;
   const [session, t] = await Promise.all([
     auth(),
     getTranslations({ locale, namespace: "NewProjectPage" }),
   ]);
-  if (!session?.user?.id) redirect(`/${locale}/login?callbackUrl=${encodeURIComponent(`/${locale}/projects/new`)}`);
+  const { from: ideaId, fromThread, title: titleParam, manual, ai } = await searchParams;
+  if (!session?.user?.id) {
+    // Keep "utan AI" through the login, or the visitor lands on the choice.
+    const back = `/${locale}/projects/new${ai === "off" ? "?ai=off" : ""}`;
+    redirect(`/${locale}/login?callbackUrl=${encodeURIComponent(back)}`);
+  }
 
-  const { from: ideaId, fromThread, title: titleParam, manual } = await searchParams;
+  // "Starta ett projekt utan AI" (?ai=off): straight to Snabbstart, and the
+  // project is created with AI switched off. Plain ?manual=1 is also the
+  // fallback when AI isn't available, so it leaves the mode unset.
+  const withoutAi = ai === "off";
 
   // Vägvalet (behind the ai-project-start flag): a plain "Nytt projekt"
   // first asks how much the AI should do. Promoting an idea or a thread, or
-  // choosing "Jag gör allt själv" (?manual=1), goes straight to Snabbstart.
+  // choosing to do it without AI (?ai=off), goes straight to Snabbstart.
   // Without an Anthropic key there is no vägval — straight to Snabbstart.
-  if (!ideaId && !fromThread && !manual && (await isAiProjectStartAvailable(session.user.id))) {
+  if (!ideaId && !fromThread && !manual && !withoutAi && (await isAiProjectStartAvailable(session.user.id))) {
     const inProgress = await prisma.dreamConversation.findMany({
       where: { userId: session.user.id, status: "in_progress" },
       orderBy: { updatedAt: "desc" },
@@ -99,6 +107,7 @@ export default async function NewProjectPage({
         initial={initial}
         ideaId={ideaId}
         fromThread={fromThreadValid ? fromThread : undefined}
+        withoutAi={withoutAi}
         contextNote={
           fromIdea
             ? t("fromIdeaNote")

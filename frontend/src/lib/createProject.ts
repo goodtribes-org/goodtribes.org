@@ -1,3 +1,4 @@
+import type { AiMode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slugify";
 import { indexDocuments } from "@/lib/meili";
@@ -22,6 +23,10 @@ export type CreateProjectParams = {
   // The language the project is written in; defaults to the creator's
   // locale in a request, Swedish otherwise (crons).
   contentLocale?: string;
+  // The project-wide AI mode. Left unset, the project is a "legacy" one
+  // (aiMode = NULL); "Starta utan AI" sets MANUAL so the AI stays out
+  // until someone switches it on.
+  aiMode?: AiMode | null;
 };
 
 // Shared core of project creation — slug-retry, the Project row itself, the
@@ -38,7 +43,7 @@ export async function createProjectRecord(params: CreateProjectParams) {
     // Every new project — whether from the full creation form or idea
     // promotion — starts in the sandbox by default. Founders apply to
     // graduate out (see requestSandboxGraduation) once it's ready.
-    isSandbox = true, skillIds = [],
+    isSandbox = true, skillIds = [], aiMode = null,
   } = params;
   const legalType = params.legalType && isCreatableLegalType(params.legalType) ? params.legalType : "NONPROFIT_UMBRELLA";
 
@@ -54,6 +59,7 @@ export async function createProjectRecord(params: CreateProjectParams) {
           ownerId, isSandbox, contentLocale,
           ...(imageUrl ? { imageUrl } : {}),
           ...(orgId ? { orgId } : {}),
+          ...(aiMode ? { aiMode } : {}),
         },
       });
       await prisma.projectMember.create({ data: { projectId: project.id, userId: ownerId, role: "FOUNDER" } });

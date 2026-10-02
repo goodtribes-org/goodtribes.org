@@ -48,10 +48,13 @@ export async function createProject(formData: FormData) {
   const fromThreadId = (formData.get("fromThread") as string | null)?.trim() || null;
   const legalTypeRaw = (formData.get("legalType") as string | null)?.trim() || "";
   const skillIds = formData.getAll("skillIds") as string[];
+  // Started via "utan AI" — the project begins with AI switched off.
+  const withoutAi = formData.get("aiMode") === "MANUAL";
 
   const project = await createProjectRecord({
     title, slogan, summary, description, category, tags, sdgGoals, imageUrl, orgId,
     legalType: legalTypeRaw, ownerId: userId, skillIds,
+    aiMode: withoutAi ? "MANUAL" : null,
   });
 
   // This form already covers everything the guide's "Beskriv projektet"
