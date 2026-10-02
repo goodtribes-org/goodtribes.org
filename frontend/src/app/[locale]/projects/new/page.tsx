@@ -29,7 +29,7 @@ export default async function NewProjectPage({
     auth(),
     getTranslations({ locale, namespace: "NewProjectPage" }),
   ]);
-  if (!session?.user?.id) redirect("/login");
+  if (!session?.user?.id) redirect(`/${locale}/login?callbackUrl=${encodeURIComponent(`/${locale}/projects/new`)}`);
 
   const { from: ideaId, fromThread, title: titleParam, manual } = await searchParams;
 

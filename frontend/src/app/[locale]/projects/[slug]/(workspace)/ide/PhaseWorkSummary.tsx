@@ -28,7 +28,9 @@ export default function PhaseWorkSummary({ slug, work }: { slug: string; work: G
       </div>
 
       {total === 0 ? (
-        <p className="mt-2 text-dark-slate/60">{t("workNone")}</p>
+        // Cards still on the wishlist are tied to the phase too — the line
+        // below counts them, so don't also claim there are none.
+        <p className="mt-2 text-dark-slate/60">{t(work.wishlist > 0 ? "workNoneStarted" : "workNone")}</p>
       ) : (
         <>
           <p className="mt-2 text-dark-slate/80">{t("workDone", { done: work.done, total })}</p>
