@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { persistAiMessage } from "@/lib/aiThreadReply";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
@@ -28,7 +29,7 @@ async function postDreamOpener(roomId: string) {
 
 async function requireUser(): Promise<string> {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  if (!session?.user?.id) redirect(await localized(`/login?callbackUrl=${encodeURIComponent(await localized("/projects/new"))}`));
   return session.user.id;
 }
 
@@ -36,9 +37,16 @@ async function requireUser(): Promise<string> {
 // "Jag gör allt själv" never gets here — it goes straight to the manual
 // Snabbstart. The chosen mode is stored now and becomes the project's
 // aiMode once the summary is approved.
+
+// These actions redirect with next/navigation, which knows nothing about the
+// locale — without the prefix a visitor on /en lands on the Swedish page.
+async function localized(path: string): Promise<string> {
+  return `/${await getLocale()}${path}`;
+}
+
 export async function startDreamConversation(mode: string) {
   const userId = await requireUser();
-  if (!(await isAiProjectStartAvailable(userId))) redirect("/projects/new?manual=1");
+  if (!(await isAiProjectStartAvailable(userId))) redirect(await localized("/projects/new?manual=1"));
   if (mode !== "AGENT" && mode !== "ASSIST") throw new Error("Ogiltigt val");
 
   const room = await prisma.room.create({ data: { type: "AI_INTAKE" } });
@@ -49,7 +57,7 @@ export async function startDreamConversation(mode: string) {
 
   await postDreamOpener(room.id);
 
-  redirect(`/projects/new/samtal/${room.id}`);
+  redirect(await localized(`/projects/new/samtal/${room.id}`));
 }
 
 // "Prata med AI:n" from Snabbstart: a Drömsamtal for a project that already
@@ -58,14 +66,14 @@ export async function startDreamConversation(mode: string) {
 // a follow-up conversation at phase changes is a later step.
 export async function startDreamConversationForProject(projectSlug: string) {
   const userId = await requireUser();
-  if (!(await isAiProjectStartAvailable(userId))) redirect(`/projects/${projectSlug}/guide`);
+  if (!(await isAiProjectStartAvailable(userId))) redirect(await localized(`/projects/${projectSlug}/guide`));
   const project = await prisma.project.findUnique({
     where: { slug: projectSlug },
     select: { id: true, dreamConversation: { select: { roomId: true } } },
   });
   if (!project) throw new Error("Projektet hittades inte");
   if (!(await hasProjectRole(project.id, userId, PROJECT_LEAD_ROLES))) throw new Error("Forbidden");
-  if (project.dreamConversation) redirect(`/projects/new/samtal/${project.dreamConversation.roomId}`);
+  if (project.dreamConversation) redirect(await localized(`/projects/new/samtal/${project.dreamConversation.roomId}`));
 
   // The conversation itself is "assist"-level help, so a MANUAL project
   // (or step) doesn't get it; AGENT stays AGENT, anything else assists.
@@ -78,7 +86,7 @@ export async function startDreamConversationForProject(projectSlug: string) {
     data: { roomId: room.id, userId, aiMode: mode === "AGENT" ? "AGENT" : "ASSIST", projectId: project.id },
   });
   await postDreamOpener(room.id);
-  redirect(`/projects/new/samtal/${room.id}`);
+  redirect(await localized(`/projects/new/samtal/${room.id}`));
 }
 
 async function requireOwnDream(roomId: string, userId: string) {
@@ -116,7 +124,7 @@ export async function deleteDreamConversation(roomId: string) {
   const userId = await requireUser();
   await requireOwnDream(roomId, userId);
   await prisma.room.delete({ where: { id: roomId } });
-  redirect("/projects/new");
+  redirect(await localized("/projects/new"));
 }
 
 // ─── Creating the project and filling in the Idé phase ─────────────────────
@@ -132,7 +140,7 @@ export async function deleteDreamConversation(roomId: string) {
 // suggestions).
 export async function createProjectFromDream(roomId: string) {
   const userId = await requireUser();
-  if (!(await isAiProjectStartAvailable(userId))) redirect("/projects/new?manual=1");
+  if (!(await isAiProjectStartAvailable(userId))) redirect(await localized("/projects/new?manual=1"));
   const dream = await requireOwnDream(roomId, userId);
 
   // Claim the conversation first so a double click can't create two projects.
@@ -143,7 +151,7 @@ export async function createProjectFromDream(roomId: string) {
   if (claimed.count !== 1) {
     // Already created (e.g. a second click, or back-button): go to it.
     const done = dream.projectId ? await prisma.project.findUnique({ where: { id: dream.projectId }, select: { slug: true } }) : null;
-    if (done) redirect(dream.aiMode === "AGENT" ? `/projects/${done.slug}/ide` : `/projects/${done.slug}/guide`);
+    if (done) redirect(await localized(dream.aiMode === "AGENT" ? `/projects/${done.slug}/ide` : `/projects/${done.slug}/guide`));
     throw new Error("Projektet håller redan på att skapas");
   }
 
@@ -260,7 +268,7 @@ export async function createProjectFromDream(roomId: string) {
     // The rest of phase 1 fills in while the user already looks at it.
     void runIdeaFill({ dreamId: dream.id, projectId: project.id, projectSlug: project.slug, mode, transcript, userId });
 
-    redirect(agent ? `/projects/${project.slug}/ide` : `/projects/${project.slug}/guide`);
+    redirect(await localized(agent ? `/projects/${project.slug}/ide` : `/projects/${project.slug}/guide`));
   } catch (err) {
     // redirect() works by throwing — let it through untouched.
     if (err && typeof err === "object" && "digest" in err && String((err as { digest: unknown }).digest).startsWith("NEXT_REDIRECT")) throw err;

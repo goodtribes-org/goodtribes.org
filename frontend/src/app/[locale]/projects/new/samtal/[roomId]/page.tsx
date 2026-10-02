@@ -16,9 +16,9 @@ import DreamNextStep from "./DreamNextStep";
 export default async function DreamConversationPage({ params }: { params: Promise<{ locale: Locale; roomId: string }> }) {
   const { locale, roomId } = await params;
   const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  if (!session?.user?.id) redirect(`/${locale}/login?callbackUrl=${encodeURIComponent(`/${locale}/projects/new/samtal/${roomId}`)}`);
   const userId = session.user.id;
-  if (!(await isAiProjectStartAvailable(userId))) redirect("/projects/new");
+  if (!(await isAiProjectStartAvailable(userId))) redirect(`/${locale}/projects/new`);
 
   const [dream, access, t] = await Promise.all([
     prisma.dreamConversation.findUnique({ where: { roomId } }),
