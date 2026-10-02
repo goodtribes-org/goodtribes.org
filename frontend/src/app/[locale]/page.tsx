@@ -136,8 +136,16 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           pixels wider than the page; clip that instead of letting it scroll. */}
       <style>{`html, body { overflow-x: clip; }`}</style>
       <DreamHero isLoggedIn={!!userId} />
-      {/* A second way in, for people who'd rather help than start something */}
-      <div className="-mt-6 flex justify-center px-4 pb-6">
+      {/* Other ways in: start a project without AI, straight to Snabbstart
+          (the dream box above is the AI way in), or help out. */}
+      <div className="-mt-6 flex flex-wrap justify-center gap-2 px-4 pb-6">
+        <Link
+          href="/projects/new?ai=off"
+          className="inline-flex items-center rounded-full border border-[#E8531F] bg-white px-4 py-2 text-[15px] font-semibold hover:bg-[#FFF4EE]"
+          style={{ color: INK }}
+        >
+          {t("hero.startProject")}
+        </Link>
         <Link
           href="/projects"
           className="inline-flex items-center rounded-full border border-[#E4E4DF] bg-white px-4 py-2 text-[15px] font-semibold hover:border-[#C2410C]"

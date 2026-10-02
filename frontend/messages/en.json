@@ -3923,17 +3923,23 @@
   },
   "ProjectStart": {
     "heading": "Start a new project",
-    "intro": "How much do you want the AI to do? You can change it at any time, for the whole project or for individual steps.",
+    "intro": "Do you want help from the AI, or do it yourself? Both lead to the same kind of project, and you can change your mind at any time.",
     "recommended": "Recommended",
     "agentTitle": "Let the AI do the work",
     "agentDesc": "Answer a few short questions about your idea. The AI then fills in the whole Idea phase for you, and you review and edit it on one page.",
     "assistTitle": "The AI helps me",
     "assistDesc": "Answer a few short questions about your idea. You fill in the guide yourself, with the AI's suggestions next to each field.",
-    "manualTitle": "I'll do it all myself",
-    "manualDesc": "Go straight to the guide and fill in everything yourself, without AI.",
+    "manualTitle": "I'll do it myself",
+    "manualDesc": "Go straight to the guide and fill in the project yourself. No conversation, no AI suggestions.",
     "changeLater": "The conversation takes a few minutes and can be paused. Everything the AI writes is marked as a draft and can be changed.",
     "resumeHeading": "Continue the conversation",
-    "resumeLink": "Conversation in progress ({covered} of 6 areas) — last {date}"
+    "resumeLink": "Conversation in progress ({covered} of 6 areas) — last {date}",
+    "aiTitle": "With the AI guide",
+    "aiDesc": "You tell us about your idea in a short conversation. Choose how much the AI should do:",
+    "manualPoint1": "You write everything in your own words",
+    "manualPoint2": "AI is switched off in the project",
+    "manualPoint3": "You can switch AI on later if you like",
+    "manualCta": "Start without AI →"
   },
   "DreamConversation": {
     "heading": "The dream conversation",
@@ -4547,7 +4553,8 @@
       "note": "Free account needed for the AI guide · The conversation is private until you create the project yourself",
       "restored": "Welcome back! Your dream is still here, press the arrow to start.",
       "submit": "Start with the AI guide",
-      "helpInstead": "Would you rather help out? See projects looking for people →"
+      "helpInstead": "Would you rather help out? See projects looking for people →",
+      "startProject": "Start a project without AI →"
     },
     "live": {
       "label": "Live",

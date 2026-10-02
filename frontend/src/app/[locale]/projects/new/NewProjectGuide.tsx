@@ -15,13 +15,15 @@ interface Props {
   ideaId?: string;
   fromThread?: string;
   contextNote?: string;
+  // Started via "utan AI": the project is created with AI switched off.
+  withoutAi?: boolean;
 }
 
 // Step 1 of the idea-phase guide ("Beskriv projektet"/dream_defined) —
 // creates the Project and saves its full description in one submit, so
 // there's no separate bare "just a title" page before the guide begins
 // (see [slug]/guide/IdeaGuide.tsx for the remaining steps).
-export default function NewProjectGuide({ initial = {}, ideaId, fromThread, contextNote }: Props) {
+export default function NewProjectGuide({ initial = {}, ideaId, fromThread, contextNote, withoutAi = false }: Props) {
   const t = useTranslations("NewProjectGuide");
   const tCategory = useTranslations("Categories");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
@@ -54,6 +56,7 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
       >
         {ideaId && <input type="hidden" name="ideaId" value={ideaId} />}
         {fromThread && <input type="hidden" name="fromThread" value={fromThread} />}
+        {withoutAi && <input type="hidden" name="aiMode" value="MANUAL" />}
         {(initial.sdgGoals ?? []).map((n) => (
           <input key={n} type="hidden" name="sdgGoals" value={n} />
         ))}
