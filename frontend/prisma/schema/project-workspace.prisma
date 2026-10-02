@@ -62,6 +62,13 @@ model KanbanCard {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  // Which phase and step of the journey this card is work for (stepKey =
+  // an INITIATIVE_CHECKLIST_ITEMS key of that phase). Lets a phase gate show
+  // the work behind it, not just the documents. Null = not tied to a phase
+  // (older cards, GitHub mirrors). SPRINT is never written — it's merged into IDEA.
+  phase       ProjectPhase?
+  stepKey     String?
+
   // GitHub mirror. source="github" cards are owned by the sync job and are
   // immutable in the app — see assertNotGithubCard() in src/lib/githubSync.ts.
   source          String    @default("manual")
@@ -95,6 +102,7 @@ model KanbanCard {
 
   @@unique([projectSlug, githubItemId])
   @@index([projectSlug, column])
+  @@index([projectSlug, phase])
   @@index([openToPublic, assigneeId])
   @@index([projectSlug, source])
 }

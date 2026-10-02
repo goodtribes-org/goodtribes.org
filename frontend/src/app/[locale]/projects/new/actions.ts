@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { suggestSdgGoals } from "@/lib/claude";
 import { logOrgActivity } from "@/lib/activity";
 import { createProjectRecord } from "@/lib/createProject";
@@ -10,6 +11,7 @@ import { linkPromotedProject } from "@/lib/promoteIdea";
 import { parseProjectInput } from "@/lib/github";
 import { syncProjectBoardInBackground } from "@/lib/githubSync";
 import { markChecklistDone } from "../[slug]/guide/actions";
+import { IDEA_GUIDE_STEPS } from "@/lib/ideaGuideSteps";
 
 // projectId is passed from the edit form (an existing project follows its
 // AI mode); new-project creation has no project yet.
@@ -24,7 +26,7 @@ export async function getSdgSuggestions(
 
 export async function createProject(formData: FormData) {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  if (!session?.user?.id) redirect(`/${await getLocale()}/login`);
 
   const userId = session.user.id;
   const title = (formData.get("title") as string).trim();
@@ -89,5 +91,7 @@ export async function createProject(formData: FormData) {
       .catch(() => null);
   }
 
-  redirect(`/projects/${project.slug}/guide`);
+  // Step 0 (this form) is done: the guide carries on at the next step,
+  // not back at the start.
+  redirect(`/${await getLocale()}/projects/${project.slug}/guide?step=${IDEA_GUIDE_STEPS[1].key}`);
 }

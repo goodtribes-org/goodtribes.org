@@ -14,6 +14,7 @@ import { snapshotImpactModel } from "@/lib/impactModelVersions";
 import { LEAN_CANVAS_FIELDS, LEAN_CANVAS_STORED_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
 import { IMPACT_MODEL_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
+import { htmlToText } from "@/lib/htmlToText";
 import {
   BASICS_SYSTEM_PROMPT,
   BASICS_TOOL,
@@ -217,7 +218,7 @@ export async function buildTranscript(roomId: string): Promise<string> {
     select: { isAi: true, body: true },
   });
   return history
-    .map((m) => `${m.isAi ? "Idécoachen" : "Initiativtagaren"}: ${m.body.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()}`)
+    .map((m) => `${m.isAi ? "Idécoachen" : "Initiativtagaren"}: ${htmlToText(m.body).replace(/\n/g, " ")}`)
     .join("\n");
 }
 

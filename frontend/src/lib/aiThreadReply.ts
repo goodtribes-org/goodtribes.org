@@ -6,6 +6,7 @@ import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { getNotificationRecipients } from "@/lib/rooms";
 import { escapeHtml } from "@/lib/renderBody";
 import type { Room } from "@prisma/client";
+import { htmlToText } from "@/lib/htmlToText";
 
 const SYSTEM_PROMPT = `Du är en kreativ problemlösare och projektdesigner med djup kunskap
 om globala samhällsutmaningar, social innovation och Agenda 2030.
@@ -32,9 +33,6 @@ Var kort och konkret i varje svar — en fråga eller ett konstaterande i taget,
 
 VIKTIGT: Skriv ALDRIG rå JSON eller kod i dina svar i den här dialogen — bara vanlig konversation. Ett separat, senare steg genererar den faktiska planen.`;
 
-function stripHtml(body: string): string {
-  return body.replace(/<[^>]*>/g, "").trim();
-}
 
 async function buildSystemPrompt(room: Room): Promise<string> {
   if (room.type === "AI_INTAKE") return AI_INTAKE_SYSTEM_PROMPT;
@@ -67,7 +65,7 @@ export async function persistAiMessage(roomId: string, body: string, aiUserId: s
     const recipients = await getNotificationRecipients(room, aiUserId);
     if (recipients.length > 0) {
       const title = "AI svarade i Idéverkstaden";
-      const notifBody = stripHtml(body).slice(0, 120);
+      const notifBody = htmlToText(body).slice(0, 120);
       const url = `/ideaverkstad/${roomId}`;
       await prisma.notification
         .createMany({
@@ -137,7 +135,7 @@ export async function triggerAiThreadReply(room: Room, triggeredByUserId: string
 
     const threadMessages = history.map((m) => ({
       role: (m.isAi ? "assistant" : "user") as "assistant" | "user",
-      content: `${m.author.name ?? "Någon"}: ${stripHtml(m.body)}`,
+      content: `${m.author.name ?? "Någon"}: ${htmlToText(m.body)}`,
     }));
 
     const system = await buildSystemPrompt(room);

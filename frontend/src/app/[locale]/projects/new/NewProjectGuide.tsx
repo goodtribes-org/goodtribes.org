@@ -7,7 +7,7 @@ import FileUpload from "@/components/FileUpload";
 import RichTextEditor from "@/components/RichTextEditor";
 import GuideStepIndicator from "@/components/GuideStepIndicator";
 import { IDEA_GUIDE_STEPS } from "@/lib/ideaGuideSteps";
-import { CATEGORIES } from "@/lib/categories";
+import { CATEGORIES, CATEGORY_KEYS } from "@/lib/categories";
 import { CREATABLE_LEGAL_TYPES } from "@/lib/legalType";
 
 interface Props {
@@ -23,6 +23,8 @@ interface Props {
 // (see [slug]/guide/IdeaGuide.tsx for the remaining steps).
 export default function NewProjectGuide({ initial = {}, ideaId, fromThread, contextNote }: Props) {
   const t = useTranslations("NewProjectGuide");
+  const tCategory = useTranslations("Categories");
+  const tChecklist = useTranslations("ProjectPhaseChecklist");
   const [submitting, setSubmitting] = useState(false);
   const [imageUrl, setImageUrl] = useState(initial.imageUrl ?? "");
   const [description, setDescription] = useState(initial.description ?? "");
@@ -36,7 +38,7 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
         {contextNote ?? t("contextNoteDefault")}
       </p>
 
-      <GuideStepIndicator steps={IDEA_GUIDE_STEPS} currentIndex={0} doneKeys={new Set()} />
+      <GuideStepIndicator steps={IDEA_GUIDE_STEPS.map((item) => ({ key: item.key, label: tChecklist(item.key) }))} currentIndex={0} doneKeys={new Set()} />
 
       <form
         action={createProject}
@@ -159,8 +161,8 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
               defaultValue={initial.category ?? ""}
               className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral bg-white"
             >
-              <option value="">— none —</option>
-              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+              <option value="">{t("categoryNoneOption")}</option>
+              {CATEGORIES.map((c) => <option key={c} value={c}>{tCategory(CATEGORY_KEYS[c])}</option>)}
             </select>
           </div>
           <div>
@@ -171,7 +173,7 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
               id="tags"
               name="tags"
               type="text"
-              placeholder="climate, youth"
+              placeholder={t("tagsPlaceholder")}
               defaultValue={initial.tags?.join(", ") ?? ""}
               className="w-full border border-muted-teal rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-coral"
             />

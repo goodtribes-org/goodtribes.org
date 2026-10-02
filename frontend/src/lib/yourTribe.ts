@@ -3,9 +3,10 @@ import { PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { getProjectJourney } from "@/lib/projectJourney";
 import { toDisplayPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 
-// "Din tribe": a logged-in member's own view at the top of the start page. It
-// answers two questions — what should I do ("Att göra"), and are my projects
-// moving or standing still ("Pulsen i dina projekt").
+// A logged-in member's own view, answering two questions — what should I do
+// ("Att göra"), and are my projects moving or standing still (the pulse). Used
+// by the personal bar along the bottom of every page (via /api/me/panel) and
+// by Mitt GoodTribes' overview.
 
 export const PULSE_WEEKS = 4;
 // Last activity within MOVING_DAYS → "I rörelse"; within SLOWING_DAYS →
@@ -57,7 +58,12 @@ function todoRank(t: TodoItem, now: number): number {
   return t.projectStill ? 3 : 4;
 }
 
-export async function getYourTribe(userId: string, now = Date.now()) {
+// `lastEvents: false` skips the per-project "latest thing that happened"
+// lookups (one query trio per project) — for callers that only need counts
+// and statuses, like the bar's badges refreshed on every navigation. Status
+// doesn't need them: it only looks back SLOWING_DAYS, well inside the
+// PULSE_WEEKS window the weekly counts already cover.
+export async function getYourTribe(userId: string, now = Date.now(), { lastEvents: withLastEvents = true } = {}) {
   const since = new Date(now - PULSE_WEEKS * 7 * DAY);
   const liveProject = { hiddenAt: null, archivedAt: null };
 
@@ -98,7 +104,7 @@ export async function getYourTribe(userId: string, now = Date.now()) {
       : Promise.resolve([]),
     // The latest thing that happened in each project, of any age.
     Promise.all(
-      projects.map(async (p) => {
+      (withLastEvents ? projects : []).map(async (p) => {
         const [a, m, b] = await Promise.all([
           prisma.activityEvent.findFirst({ where: { projectId: p.id }, orderBy: { createdAt: "desc" }, select: { type: true, payload: true, createdAt: true, user: { select: { name: true } } } }),
           prisma.message.findFirst({ where: { room: { projectId: p.id } }, orderBy: { createdAt: "desc" }, select: { createdAt: true, author: { select: { name: true } } } }),
@@ -124,15 +130,20 @@ export async function getYourTribe(userId: string, now = Date.now()) {
   const pulse = projects
     .map((p) => {
       const last = lastByProject.get(p.id) ?? null;
-      const weeks = weeklyCounts(datesByProject.get(p.id) ?? [], now);
+      const dates = datesByProject.get(p.id) ?? [];
+      const weeks = weeklyCounts(dates, now);
+      const recentAt = dates.length ? Math.max(...dates.map((d) => d.getTime())) : 0;
       return {
         id: p.id, slug: p.slug, title: p.title, imageUrl: p.imageUrl, isLead: p.isLead,
         phase: toDisplayPhase(p.phase as ProjectPhaseValue),
-        weeks, total: weeks.reduce((s, n) => s + n, 0), last, status: pulseStatus(last?.at ?? null, now),
+        weeks, total: weeks.reduce((s, n) => s + n, 0), last, recentAt,
+        status: pulseStatus(last?.at ?? (recentAt ? new Date(recentAt) : null), now),
       };
     })
-    // Most active first — seeing the projects that move is encouraging.
-    .sort((a, b) => b.total - a.total || (b.last?.at.getTime() ?? 0) - (a.last?.at.getTime() ?? 0));
+    // Most active first — seeing the projects that move is encouraging. Only
+    // window data decides the order, so it's the same with or without
+    // lastEvents (and the bar's count matches its list).
+    .sort((a, b) => b.total - a.total || b.recentAt - a.recentAt || a.title.localeCompare(b.title));
 
   // Next step in projects you lead (the most active ones, up to MAX_NEXT_STEPS).
   const steps = await Promise.all(

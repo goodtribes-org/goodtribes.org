@@ -1,11 +1,14 @@
 import type { ReactNode } from "react";
 import type { FillState } from "@/lib/ideaFill";
 import { SectionHeaderWithIntro, type SectionIntroKey } from "@/components/help/SectionIntro";
+import CollapsibleSection from "./CollapsibleSection";
 
 // One section of the Idé overview: a heading, an optional action (Edit,
 // Manage …), an optional "how to do this" intro box (introKey — see
 // components/help/SectionIntro.tsx), and either the content, a placeholder while the AI is still
-// writing it, or a short note when the AI couldn't do it.
+// writing it, or a short note when the AI couldn't do it. With `folded` it
+// starts as one row (title + that summary) that opens on click or on a link
+// to it — see CollapsibleSection.
 export default function OverviewSection({
   id,
   title,
@@ -15,6 +18,7 @@ export default function OverviewSection({
   writingLabel,
   failedNote,
   introKey,
+  folded,
   children,
 }: {
   id: string;
@@ -25,11 +29,12 @@ export default function OverviewSection({
   writingLabel: string;
   failedNote?: ReactNode;
   introKey?: SectionIntroKey;
+  folded?: { summary: string };
   children: ReactNode;
 }) {
   const writing = fill === "pending" || fill === "running";
-  return (
-    <section id={id} aria-labelledby={`${id}-heading`} className="scroll-mt-24 rounded-2xl border border-muted-teal/30 bg-white p-5">
+  const section = (
+    <section id={folded ? undefined : id} aria-labelledby={`${id}-heading`} className="scroll-mt-24 rounded-2xl border border-muted-teal/30 bg-white p-5">
       {introKey ? (
         <SectionHeaderWithIntro id={id} title={title} badge={badge} action={writing ? undefined : action} introKey={introKey} />
       ) : (
@@ -61,5 +66,12 @@ export default function OverviewSection({
         children
       )}
     </section>
+  );
+  return folded ? (
+    <CollapsibleSection id={id} title={title} summary={folded.summary}>
+      {section}
+    </CollapsibleSection>
+  ) : (
+    section
   );
 }

@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getPhaseWork, gateWork } from "@/lib/phaseWork";
 import { Link } from "@/i18n/navigation";
 import { hasProjectRole, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isFeatureEnabled } from "@/lib/featureFlags";
@@ -75,6 +76,7 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
       prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: "PRODUCTION" }, orderBy: { createdAt: "desc" } }),
     ]);
   const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
+  const work = await getPhaseWork(slug, "PRODUCTION");
   const decisionDate = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
 
   const fill: LanseringFillStatus = fillRow ? parseLanseringStatus(fillRow.status, fillRow.updatedAt) : {};
@@ -268,10 +270,11 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
             brief={gateBrief?.content ?? null}
             lastDecision={
               gateDecision
-                ? { outcome: gateDecision.outcome, date: decisionDate(gateDecision.createdAt), missing: gateDecision.missing.map(criterionLabel) }
+                ? { outcome: gateDecision.outcome, date: decisionDate(gateDecision.createdAt), missing: gateDecision.missing.map(criterionLabel), openTaskCount: gateDecision.openTaskCount }
                 : null
             }
             fieldLabels={{}}
+            work={gateWork(work, criterionLabel)}
             canEdit={canEdit}
             isFounder={isFounder}
             aiAvailable={aiAvailable}

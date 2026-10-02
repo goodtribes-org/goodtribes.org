@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { signOut } from "next-auth/react";
-import { acceptAgreements } from "@/app/[locale]/agreements-actions";
+import { acceptAgreements, acceptAgreementsFromSignup } from "@/app/[locale]/agreements-actions";
+import { hasSignupConsentCookie } from "@/lib/signupConsent";
 import LocaleSwitcher from "@/components/LocaleSwitcher";
 
 // Paths a logged-in user must still be able to reach without the gate
@@ -23,11 +24,27 @@ export default function ConsentGate({ needsAgreementConsent }: { needsAgreementC
   const [agreedCodeOfConduct, setAgreedCodeOfConduct] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  // A new user who just ticked both boxes on the signup form: record that
+  // instead of asking again. Hidden while it's checked, shown if it fails.
+  const [checkingSignup, setCheckingSignup] = useState(true);
+
+  useEffect(() => {
+    if (!needsAgreementConsent || !hasSignupConsentCookie(document.cookie)) {
+      setCheckingSignup(false);
+      return;
+    }
+    acceptAgreementsFromSignup()
+      .then((result) => {
+        if (result.ok) router.refresh();
+        else setCheckingSignup(false);
+      })
+      .catch(() => setCheckingSignup(false));
+  }, [needsAgreementConsent, router]);
 
   const strippedPath = pathname.replace(/^\/(sv|en)(?=\/|$)/, "") || "/";
   const isExempt = EXEMPT_PATHS.some((p) => strippedPath === p || strippedPath.startsWith(`${p}/`));
 
-  if (!needsAgreementConsent || isExempt) return null;
+  if (!needsAgreementConsent || isExempt || checkingSignup) return null;
 
   const bothAgreed = agreedParticipantAgreement && agreedCodeOfConduct;
 

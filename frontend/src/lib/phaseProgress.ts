@@ -140,6 +140,46 @@ export function phaseProgress(doneKeys: ReadonlySet<string>): PhaseProgress[] {
   });
 }
 
+// The phase bars are split into one segment per main step. A step with
+// sub-steps (Design Sprint in Uppstart, "Säkra finansiering" in Etablera) is
+// one segment that fills as its sub-steps get done, so the count reads
+// "1/5 steg" rather than mixing steps and sub-steps. A step is done when it
+// was ticked itself or when all its sub-steps are.
+export type PhaseStep = { key: string; frac: number; done: boolean; subDone: number; subTotal: number };
+
+export type PhaseStepProgress = PhaseProgress & { steps: PhaseStep[] };
+
+export function phaseSteps(phase: ProjectPhaseValue, doneKeys: ReadonlySet<string>): PhaseStep[] {
+  const items = getChecklistForPhase(phase) ?? [];
+  return items
+    .filter((i) => !i.parentKey)
+    .map((i) => {
+      const subs = items.filter((s) => s.parentKey === i.key);
+      const subDone = subs.filter((s) => doneKeys.has(s.key)).length;
+      const done = doneKeys.has(i.key) || (subs.length > 0 && subDone === subs.length);
+      const frac = done ? 1 : subs.length ? subDone / subs.length : 0;
+      return { key: i.key, frac, done, subDone, subTotal: subs.length };
+    });
+}
+
+// Same shape as phaseProgress, counted in steps (see phaseSteps).
+export function phaseStepProgress(doneKeys: ReadonlySet<string>): PhaseStepProgress[] {
+  return DISPLAY_PHASES.map((p) => {
+    const steps = phaseSteps(p.value, doneKeys);
+    const done = steps.filter((s) => s.done).length;
+    const total = steps.length;
+    const filled = steps.reduce((sum, s) => sum + s.frac, 0);
+    return { phase: p.value, done, total, pct: total ? Math.round((filled / total) * 100) : 0, complete: total > 0 && done === total, steps };
+  });
+}
+
+// A phase is finished when all its steps are done and none of its kanban
+// cards (lib/phaseWork.ts's getPhaseCardCounts) is still open: its bar then
+// turns solid and its circle shows ✓. Without card counts, steps alone.
+export function isPhaseFinished(progress: Pick<PhaseProgress, "complete">, cards?: { done: number; total: number }): boolean {
+  return progress.complete && (!cards || cards.done === cards.total);
+}
+
 // "Nästa steg": the first unfinished task, in checklist order, of the phase
 // the project is in. A parent step (Design Sprint) is skipped while its own
 // sub-steps are what's left, so the line names something concrete to do.
