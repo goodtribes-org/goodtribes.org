@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import type { GateBrief } from "@/lib/phaseGate";
 import { decideIdeaGate, generateGateBrief } from "./actions";
+import PhaseWorkSummary, { type GateWork } from "./PhaseWorkSummary";
 import { decideUppstartGate, generateUppstartGateBrief } from "../uppstart/actions";
 import { decideLanseringGate, generateLanseringGateBrief } from "../lansering/actions";
 import { decideEtableraGate, generateEtableraGateBrief } from "../etablera/actions";
@@ -44,6 +45,7 @@ export default function PhaseGateSection({
   countNote,
   brief,
   lastDecision,
+  work,
   fieldLabels,
   canEdit,
   isFounder,
@@ -55,7 +57,9 @@ export default function PhaseGateSection({
   // A count shown after one criterion, e.g. "(3 av 3)" for interviews.
   countNote?: { key: string; text: string };
   brief: GateBrief | null;
-  lastDecision: { outcome: Outcome; date: string; missing: string[] } | null;
+  lastDecision: { outcome: Outcome; date: string; missing: string[]; openTaskCount?: number | null } | null;
+  // The phase's kanban cards — the work behind the documents above.
+  work?: GateWork;
   fieldLabels: Record<string, string>;
   canEdit: boolean;
   isFounder: boolean;
@@ -116,10 +120,13 @@ export default function PhaseGateSection({
         ))}
       </ul>
 
+      {work && <PhaseWorkSummary slug={slug} work={work} />}
+
       {lastDecision && (
         <p className="rounded-lg border border-muted-teal/40 bg-dry-sage/15 px-3 py-2 text-sm text-dark-slate/75">
           {t("lastDecision", { date: lastDecision.date, outcome: t(`outcome_${lastDecision.outcome}`) })}
           {lastDecision.missing.length > 0 && ` ${t("wentWithout", { items: lastDecision.missing.join(", ") })}`}
+          {!!lastDecision.openTaskCount && ` ${t("wentWithOpenTasks", { count: lastDecision.openTaskCount })}`}
         </p>
       )}
 
@@ -241,6 +248,11 @@ export default function PhaseGateSection({
               {choice === "CONTINUE" && missing.length > 0 && (
                 <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
                   {t("missingWarning", { items: missing.map((m) => m.label).join(", ") })}
+                </p>
+              )}
+              {choice === "CONTINUE" && !!work?.open && (
+                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                  {t("openTasksWarning", { count: work.open })}
                 </p>
               )}
               <label className="text-sm text-dark-slate/70">

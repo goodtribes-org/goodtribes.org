@@ -26,6 +26,15 @@ import {
   type Subtask,
 } from "./kanbanShared";
 import { CATEGORY_LABEL_KEYS } from "@/lib/kanbanCategories";
+import { DISPLAY_PHASES, getChecklistForPhase } from "@/lib/projectPhase";
+
+// The phase/step select encodes both in one value: "" = no phase,
+// "PILOT" = the whole phase, "PILOT:core_team_formed" = a step in it.
+const stepValue = (phase?: string | null, stepKey?: string | null) => (phase ? (stepKey ? `${phase}:${stepKey}` : phase) : "");
+function parseStepValue(v: string) {
+  const [phase, stepKey] = v.split(":");
+  return { phase: phase || null, stepKey: stepKey || null };
+}
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), { ssr: false });
 
@@ -61,7 +70,11 @@ function CardDetailModalImpl({
   const t = useTranslations("Kanban");
   const tCard = useTranslations("KanbanCardModal");
   const tShared = useTranslations("KanbanShared");
+  const tPhase = useTranslations("ProjectPhase");
+  const tStep = useTranslations("ProjectPhaseChecklist");
   const [title, setTitle] = useState(card.title);
+  const initialStep = stepValue(card.phase, card.stepKey);
+  const [step, setStep] = useState(initialStep);
   const [description, setDescription] = useState(card.description ?? "");
   const [priority, setPriority] = useState(card.priority);
   const [category, setCategory] = useState(card.category ?? "");
@@ -186,6 +199,7 @@ function CardDetailModalImpl({
             assigneeId: assigneeId || null,
             startDate: startDate || null,
             dueDate: dueDate || null,
+            ...(step !== initialStep ? { step: parseStepValue(step) } : {}),
           });
         } catch { /* server error — optimistic update stays, page won't crash */ }
       });
@@ -195,6 +209,7 @@ function CardDetailModalImpl({
         priority,
         category: category || null,
         assigneeId: assigneeId || null,
+        ...parseStepValue(step),
       });
     }
     onClose();
@@ -295,6 +310,36 @@ function CardDetailModalImpl({
               <p className="text-xs text-red-400 mt-1">{tCard("categoryRequiredHint")}</p>
             )}
             </div>
+
+            {/* New cards get the project's current phase on the server. */}
+            {!isNew && (
+              <>
+                <span className="text-gray-400 pt-1">{tCard("stepLabel")}</span>
+                {canEdit && isMember ? (
+                  <select
+                    value={step}
+                    onChange={(e) => setStep(e.target.value)}
+                    className="border border-gray-200 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:border-blue-400 bg-white max-w-full"
+                  >
+                    <option value="">{tCard("stepNone")}</option>
+                    {DISPLAY_PHASES.map((p) => (
+                      <optgroup key={p.value} label={tPhase(p.value)}>
+                        <option value={p.value}>{tPhase(p.value)} — {tCard("stepPhaseOnly")}</option>
+                        {getChecklistForPhase(p.value).map((i) => (
+                          <option key={i.key} value={`${p.value}:${i.key}`}>{tPhase(p.value)} — {tStep(i.key as Parameters<typeof tStep>[0])}</option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                ) : (
+                  <p className="text-sm text-gray-500 pt-1">
+                    {card.phase
+                      ? [tPhase(card.phase), card.stepKey ? tStep(card.stepKey as Parameters<typeof tStep>[0]) : null].filter(Boolean).join(" — ")
+                      : tCard("stepNone")}
+                  </p>
+                )}
+              </>
+            )}
 
             <span className="text-gray-400 pt-1">{tCard("assigneeLabel")}</span>
             {isMember || isNew ? (

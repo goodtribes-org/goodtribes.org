@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { cardPhaseAfterGate, countOpenPhaseTasks } from "@/lib/phaseWork";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
@@ -156,6 +157,7 @@ export async function decideIdeaGate(projectSlug: string, outcome: string, note:
   const cards = cardsForDecision(decision, synthesis?.content ?? null, brief?.content ?? null, labelFor, draftText(project.contentLocale));
 
   await prisma.$transaction(async (tx) => {
+    const openTaskCount = await countOpenPhaseTasks(tx, project.slug, project.phase);
     await tx.phaseGateDecision.create({
       data: {
         projectId: project.id,
@@ -163,6 +165,7 @@ export async function decideIdeaGate(projectSlug: string, outcome: string, note:
         outcome: decision,
         note: note.trim() || null,
         missing: missingCriteria(criteria),
+        openTaskCount,
         decidedById: userId,
       },
     });
@@ -176,6 +179,7 @@ export async function decideIdeaGate(projectSlug: string, outcome: string, note:
           order: i,
           createdById: aiUser.id,
           createdByAi: true,
+          phase: cardPhaseAfterGate(project.phase, decision),
         })),
       });
     }
