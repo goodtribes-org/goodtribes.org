@@ -50,6 +50,10 @@ type Props = {
   initialMessages: MessageRow[];
   currentUserId: string | null;
   canPost: boolean;
+  // The chat column's height. The default fits /messages, where the chat is
+  // the whole page; pages with content above it pass a shorter one so the
+  // composer stays on screen.
+  heightClass?: string;
   mentionables?: MentionItem[];
 };
 
@@ -92,7 +96,7 @@ function typingLabel(names: string[], t: ReturnType<typeof useTranslations>): st
   return t("typingSeveralLabel");
 }
 
-export function RoomShell({ room, initialMessages, currentUserId, canPost, mentionables }: Props) {
+export function RoomShell({ room, initialMessages, currentUserId, canPost, mentionables, heightClass = "h-[calc(100dvh-220px)]" }: Props) {
   const t = useTranslations("Messages");
   const tRoom = useTranslations("RoomShell");
   const locale = useLocale();
@@ -309,7 +313,7 @@ export function RoomShell({ room, initialMessages, currentUserId, canPost, menti
 
   return (
     <div className="flex">
-      <div className={`${activeThread ? "hidden md:flex" : "flex"} flex-col h-[calc(100dvh-220px)] bg-white flex-1 min-w-0`}>
+      <div className={`${activeThread ? "hidden md:flex" : "flex"} flex-col ${heightClass} bg-white flex-1 min-w-0`}>
         <div className="flex items-center gap-2 px-5 py-3 border-b border-gray-200 shrink-0">
           <Link href="/messages" className="md:hidden text-sm text-dark-slate/50 hover:text-seagrass mr-1">
             ←

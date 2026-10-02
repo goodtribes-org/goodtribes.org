@@ -2376,7 +2376,7 @@
   },
   "NewProjectGuide": {
     "heading": "Quick start — New project",
-    "contextNoteDefault": "An optional walkthrough of the idea phase's sub-steps. Skip anytime — nothing here is required.",
+    "contextNoteDefault": "A walk through the Idea phase's steps. A name, summary and description are needed to create the project – you can skip the rest and fill it in later.",
     "coverImageLabel": "Cover image",
     "optionalLabel": "(optional)",
     "projectNameLabel": "Project name",
@@ -2393,7 +2393,9 @@
     "tagsLabel": "Tags",
     "tagsHelper": "(comma-separated)",
     "submittingButton": "Creating…",
-    "nextButton": "Next →"
+    "nextButton": "Next →",
+    "categoryNoneOption": "— none —",
+    "tagsPlaceholder": "climate, youth"
   },
   "WorkspaceProposePartnershipForm": {
     "genericError": "Couldn't find an organisation with that slug, or something else went wrong.",

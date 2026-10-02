@@ -70,6 +70,7 @@ export default function RichTextEditor({
   collapsibleToolbar,
   onSubmit,
   trailingControls,
+  ariaLabel,
 }: {
   content: string;
   onChange: (html: string) => void;
@@ -82,6 +83,9 @@ export default function RichTextEditor({
   // caller that uses collapsibleToolbar — so they read as one control group
   // instead of a separate row of differently-styled buttons outside the box.
   trailingControls?: React.ReactNode;
+  // Name for screen readers: the editable area is a plain div otherwise,
+  // announced as nothing at all.
+  ariaLabel?: string;
 }) {
   const t = useTranslations("RichTextEditor");
   const locale = useLocale();
@@ -139,6 +143,7 @@ export default function RichTextEditor({
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
       attributes: {
+        ...(ariaLabel ? { role: "textbox", "aria-multiline": "true", "aria-label": ariaLabel } : {}),
         class:
           `prose max-w-none focus:outline-none ${
             isPillMode ? "min-h-[20px] py-0.5 px-0" : compact ? "min-h-[44px] p-2" : "min-h-[240px] p-4"
