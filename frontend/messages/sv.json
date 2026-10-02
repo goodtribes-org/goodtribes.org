@@ -3810,12 +3810,6 @@
     "projectManagerHint": "Låt AI:n skapa och föreslå uppgifter i projektet. Stäng av så skapas inga uppgifter automatiskt.",
     "saveError": "Kunde inte spara — försök igen."
   },
-  "AiDraftsNotice": {
-    "summary": "<b>{drafts} av {filled} fält</b> är AI-utkast som ingen i teamet har gått igenom än.",
-    "show": "Visa dem",
-    "next": "Nästa",
-    "stop": "Sluta markera"
-  },
   "CanvasStatusLegend": {
     "known": "Klart — ni vet",
     "assumed": "Antagande — behöver testas",
@@ -3898,14 +3892,16 @@
     "marketScan": "Omvärldsbevakningen"
   },
   "FieldProvenance": {
-    "approve": "Ser bra ut",
-    "approveHint": "Ni har läst utkastet och står för det som det är. Det räknas då som genomgånget, men är fortfarande ett antagande tills ni vet.",
-    "aiDraft": "AI-utkast",
-    "aiDraftHint": "Skrivet av AI:n och ännu inte genomgånget av någon i teamet.",
-    "aiEdited": "AI + granskat",
-    "aiEditedHint": "Ett AI-utkast som någon i teamet har gått igenom — redigerat eller godkänt.",
-    "known": "Vet",
-    "assumed": "Antar",
+    "known": "Du sa det",
+    "knownHint": "Det kommer från dig, eller så har du bekräftat det.",
+    "aiGuess": "AI:n gissar",
+    "aiGuessHint": "AI:n har dragit den här slutsatsen. Stämmer den?",
+    "assumed": "Antagande",
+    "assumedHint": "Ett antagande som behöver testas, till exempel i intervjuerna.",
+    "confirm": "Stämmer",
+    "confirmHint": "Du vet att det stämmer. Det räknas då som något ni vet.",
+    "keep": "Vet inte, testa",
+    "keepHint": "Behåll det som ett antagande och testa det, till exempel i intervjuerna.",
     "markKnown": "Markera som något ni vet",
     "markAssumed": "Markera som ett antagande"
   },
@@ -3984,6 +3980,30 @@
     "close": "Stäng",
     "switchToAssist": "Vill du ha hjälp? Byt till AI hjälper mig"
   },
+  "IdeaStart": {
+    "summaryHeading": "AI:n har gjort ett första utkast av hela Idéfasen",
+    "summaryBody": "Utifrån ditt samtal har AI:n skrivit canvas, impactmodell och värdeerbjudande. Det mesta är gissningar som du behöver testa. Det är meningen: Idéfasen handlar om att ta reda på vad som stämmer.",
+    "said": "{count, plural, one {sak du sa själv} other {saker du sa själv}}",
+    "guessed": "{count, plural, one {sak AI:n gissar} other {saker AI:n gissar}}",
+    "heading": "Börja här, i den här ordningen",
+    "intro": "Tre saker. Resten av sidan kan vänta.",
+    "critiqueStep": "Läs det viktigaste Kritikern hittade",
+    "critiqueAll": "Läs alla invändningar →",
+    "critiqueNone": "Kritikern har inte läst utkastet än.",
+    "guessesStep": "Kolla de gissningar som hela idén vilar på",
+    "guessesIntro": "Stämmer det AI:n skrivit? Svara på de här först.",
+    "guessesMore": "{count, plural, one {# gissning till väntar längre ner.} other {# gissningar till väntar längre ner.}}",
+    "guessesDone": "Du har svarat på alla AI:ns gissningar. Det som fortfarande är antaganden testar du i intervjuerna.",
+    "edit": "Ändra",
+    "keep": "Vet inte, testa i intervjuerna",
+    "answerFailed": "Det gick inte att spara. Försök igen.",
+    "interviewsStep": "Prata med 3–5 personer i målgruppen",
+    "interviewsBody": "Det här kan bara du göra, och det är det viktigaste i Idéfasen. Intervjuerna avgör vilka gissningar som stämmer.",
+    "interviewsLogged": "{count, plural, one {# intervju loggad hittills.} other {# intervjuer loggade hittills.}}",
+    "openGuide": "Öppna intervjuguiden →",
+    "logInterview": "Logga en intervju →",
+    "fold": "Fäll ihop"
+  },
   "IdeaOverview": {
     "heading": "Idéfasen",
     "intro": "Här är allt AI:n tagit fram för ditt projekt. Allt är märkt som utkast — läs igenom och tryck Redigera där något inte stämmer. Sist kommer det bara du kan göra.",
@@ -4059,7 +4079,12 @@
     "gateHeading": "Fasgrind: redo för Uppstart?",
     "gateClosed": "Idéfasen avslutades {date} med beslutet att gå vidare.",
     "gateClosedLink": "Till Uppstart →",
-    "impactModelHeading": "Impactmodell"
+    "impactModelHeading": "Impactmodell",
+    "allHeading": "Allt AI:n har tagit fram",
+    "foldedCanvas": "{fields, plural, one {# ruta} other {# rutor}} · {guesses, plural, =0 {inga gissningar} one {# gissning} other {# gissningar}}",
+    "foldedCritique": "{count, plural, =0 {inga invändningar än} one {# invändning} other {# invändningar}}",
+    "foldedSdg": "{count, plural, =0 {inga mål valda} one {# mål} other {# mål}}",
+    "foldedMarketScan": "{count, plural, =0 {inga aktörer än} one {# aktör} other {# aktörer}}"
   },
   "PhaseGate": {
     "intro": "Idéfasen är klar när ni vet tillräckligt för att börja testa lösningen. Här ser ni vad som är gjort, vad underlaget säger — och ni fattar beslutet. Ni kan gå vidare även om något saknas; det noteras bara.",

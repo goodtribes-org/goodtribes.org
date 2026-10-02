@@ -76,7 +76,6 @@ export default function LeanCanvasBlock({ projectSlug, field, area, label, hint,
                 hasContent={!!value?.trim()}
                 canEdit={canEdit}
                 onStatusChange={setKnowledge}
-                showAuthor={false}
               />
             )}
           </div>
