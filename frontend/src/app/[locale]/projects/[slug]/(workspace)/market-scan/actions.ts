@@ -1,5 +1,6 @@
 "use server";
 
+import { logToolWork } from "@/lib/toolWork";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -38,6 +39,7 @@ export async function addMarketScanEntry(
     include: { createdBy: { select: { id: true, name: true } } },
   });
 
+  await logToolWork(project.id, session.user.id, "marketScan");
   revalidatePath(`/projects/${projectSlug}/market-scan`);
   return { entry };
 }
