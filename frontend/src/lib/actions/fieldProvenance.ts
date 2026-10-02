@@ -44,3 +44,23 @@ export async function approveAiDraft(projectSlug: string, entity: string, field:
   });
   revalidatePath(`/projects/${projectSlug}`, "layout");
 }
+
+// "Stämmer" on an AI guess: the person knows this is right. Both at once —
+// the draft counts as reviewed (like "Ser bra ut") and the content as known.
+// Its counterpart, "keep it as an assumption to test", is approveAiDraft.
+export async function confirmAiGuess(projectSlug: string, entity: string, field: string) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+  if (!isProvenanceField(entity, field)) throw new Error("Okänt fält");
+
+  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
+  if (!project) throw new Error("Projektet hittades inte");
+  if (!(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) throw new Error("Forbidden");
+
+  await setFieldKnowledgeStatus(project.id, entity, field, "VET", session.user.id);
+  await prisma.fieldProvenance.updateMany({
+    where: { projectId: project.id, entity, field, author: "AI" },
+    data: { author: "AI_EDITED", updatedById: session.user.id },
+  });
+  revalidatePath(`/projects/${projectSlug}`, "layout");
+}

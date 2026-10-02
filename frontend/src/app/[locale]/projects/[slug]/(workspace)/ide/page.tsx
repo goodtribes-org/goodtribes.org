@@ -27,8 +27,12 @@ import SdgSection from "./SdgSection";
 import FillPoller from "./FillPoller";
 import RetryButton from "./RetryButton";
 import CritiqueBox from "./CritiqueBox";
-import AiDraftsNotice from "@/components/ai/AiDraftsNotice";
-import { getAiDraftCount } from "@/lib/aiDrafts";
+import { pickGuesses } from "@/lib/ideaStart";
+import StartHere from "./StartHere";
+import CollapsibleSection from "./CollapsibleSection";
+import { LEAN_CANVAS_FIELDS } from "../lean-canvas/fields";
+import { VALUE_PROPOSITION_FIELDS } from "../value-proposition/fields";
+import { IMPACT_MODEL_FIELDS } from "../impact-model/fields";
 import InterviewSynthesisPanel from "./InterviewSynthesisPanel";
 import PhaseGateSection from "./PhaseGateSection";
 import { ideaGateCriteria, type GateBrief } from "@/lib/phaseGate";
@@ -83,7 +87,6 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
     prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: { in: ["IDEA", "SPRINT"] } }, orderBy: { createdAt: "desc" } }),
     getCanvasAiContext(project.id, "impactModel"),
   ]);
-  const aiDrafts = canEdit ? await getAiDraftCount(project.id) : null;
   const inIdeaPhase = project.phase === "IDEA" || project.phase === "SPRINT";
   const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
   const work = await getPhaseWork(slug, "IDEA");
@@ -96,6 +99,41 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
   const retry = (section: string) => (canEdit ? <RetryButton slug={slug} section={section} /> : null);
   const openQuestions = parseOpenQuestions(project.dreamConversation?.openQuestions);
   const writing = t("writing");
+  // "Börja här" and the folded sections are for the team, once the AI has
+  // filled the phase in from Drömsamtalet. Everyone else, a project started
+  // by hand, or a fill still running sees every section open, as before.
+  const canvases = [
+    { entity: "leanCanvas", fields: LEAN_CANVAS_FIELDS, row: project.leanCanvas, prov: leanCanvasAi.provenance },
+    { entity: "valueProposition", fields: VALUE_PROPOSITION_FIELDS, row: project.valueProposition, prov: valuePropositionAi.provenance },
+    { entity: "impactModel", fields: IMPACT_MODEL_FIELDS, row: project.impactModel, prov: impactModelAi.provenance },
+  ] as const;
+  const filledCount = (c: (typeof canvases)[number]) =>
+    c.fields.filter((f) => {
+      const v = (c.row as Record<string, unknown> | null)?.[f];
+      return typeof v === "string" && v.trim() !== "";
+    }).length;
+  const totalFilled = canvases.reduce((n, c) => n + filledCount(c), 0);
+  const showStart = canEdit && !!project.dreamConversation && !isFillInProgress(fill) && totalFilled > 0;
+  const provenanceByKey = Object.fromEntries(
+    canvases.flatMap((c) => Object.entries(c.prov).map(([f, info]) => [`${c.entity}.${f}`, info])),
+  );
+  const topCritique = critique?.content.points.find((p) => p.severity === "high") ?? critique?.content.points[0] ?? null;
+  const unanswered = pickGuesses(assumptions, provenanceByKey, topCritique?.field ?? null, assumptions.length);
+  const canvasSummary = (entity: string) => {
+    const c = canvases.find((x) => x.entity === entity)!;
+    return t("foldedCanvas", { fields: filledCount(c), guesses: assumptions.filter((a) => a.key.startsWith(`${entity}.`)).length });
+  };
+  const fold = (summary: string) => (showStart ? { summary } : undefined);
+  const critiqueBox = (critique || fill.critique === "pending" || fill.critique === "running" || (canEdit && aiAvailable && project.leanCanvas)) && (
+    <CritiqueBox
+      slug={slug}
+      points={critique?.content.points ?? null}
+      fieldLabels={fieldLabels}
+      canEdit={canEdit && aiAvailable}
+      writing={fill.critique === "pending" || fill.critique === "running"}
+    />
+  );
+
   const typeLabel: Record<string, string> = {
     COMPETITOR: t("scanCompetitor"),
     PARTNER_PROSPECT: t("scanPartner"),
@@ -118,19 +156,32 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         </Link>
       </div>
 
-      {aiDrafts && !isFillInProgress(fill) && <AiDraftsNotice drafts={aiDrafts.drafts} filled={aiDrafts.filled} />}
-
-      {(critique || fill.critique === "pending" || fill.critique === "running" || (canEdit && aiAvailable && project.leanCanvas)) && (
-        <CritiqueBox
-          slug={slug}
-          points={critique?.content.points ?? null}
-          fieldLabels={fieldLabels}
-          canEdit={canEdit && aiAvailable}
-          writing={fill.critique === "pending" || fill.critique === "running"}
-        />
+      {showStart ? (
+        <>
+          <StartHere
+            locale={locale}
+            slug={slug}
+            said={totalFilled - assumptions.length}
+            guessed={assumptions.length}
+            guesses={unanswered.slice(0, 3)}
+            unansweredCount={unanswered.length}
+            topCritique={topCritique?.text ?? null}
+            fieldLabels={fieldLabels}
+            interviewCount={interviewCount}
+            hasInterviewGuide={!!interviewGuide}
+          />
+          <h2 className="mt-3 text-lg font-semibold text-dark-slate">{t("allHeading")}</h2>
+          {critiqueBox && (
+            <CollapsibleSection id="kritikern" title={t("critiqueHeading")} summary={t("foldedCritique", { count: critique?.content.points.length ?? 0 })}>
+              {critiqueBox}
+            </CollapsibleSection>
+          )}
+        </>
+      ) : (
+        critiqueBox
       )}
 
-      <OverviewSection id="om" introKey="about" title={t("aboutHeading")} fill={fill.about} writingLabel={writing}>
+      <OverviewSection id="om" introKey="about" title={t("aboutHeading")} fill={fill.about} writingLabel={writing} folded={fold(project.title)}>
         <AboutSection
           slug={slug}
           canEdit={canEdit}
@@ -146,7 +197,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         />
       </OverviewSection>
 
-      <OverviewSection id="mal" introKey="sdg" title={t("sdgHeading")} fill={fill.about} writingLabel={writing}>
+      <OverviewSection id="mal" introKey="sdg" title={t("sdgHeading")} fill={fill.about} writingLabel={writing} folded={fold(t("foldedSdg", { count: project.sdgGoals.length }))}>
         <SdgSection slug={slug} goals={project.sdgGoals} provenance={projectProv.sdgGoals} canEdit={canEdit} />
       </OverviewSection>
 
@@ -156,6 +207,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         fill={fill.leanCanvas}
         writingLabel={writing}
         failedNote={<>{t("failedCanvas")}{retry("leanCanvas")}</>}
+        folded={fold(canvasSummary("leanCanvas"))}
       >
         {leanCanvasAi.aiAvailable && (
           <CanvasAiBar projectSlug={slug} entity="leanCanvas" stepKey={leanCanvasAi.stepKey} mode={leanCanvasAi.mode} canEdit={canEdit} />
@@ -177,6 +229,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         fill={fill.impactModel}
         writingLabel={writing}
         failedNote={<>{t("failedCanvas")}{retry("impactModel")}</>}
+        folded={fold(canvasSummary("impactModel"))}
         action={
           <Link href={`/projects/${slug}/impact-model`} className="text-sm font-medium text-dark-slate/50 hover:text-coral">
             {t("open")}
@@ -202,6 +255,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         fill={fill.valueProposition}
         writingLabel={writing}
         failedNote={<>{t("failedCanvas")}{retry("valueProposition")}</>}
+        folded={fold(canvasSummary("valueProposition"))}
       >
         <CanvasIterateProvider enabled={canEdit && valuePropositionAi.aiAvailable && valuePropositionAi.mode !== "MANUAL"}>
           <ValuePropositionGrid
@@ -220,6 +274,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         fill={fill.marketScan === "skipped" ? undefined : fill.marketScan}
         writingLabel={t("writingMarketScan")}
         failedNote={<>{t("failedMarketScan")}{retry("marketScan")}</>}
+        folded={fold(t("foldedMarketScan", { count: marketScan.length }))}
         action={
           <Link href={`/projects/${slug}/market-scan`} className="text-sm font-medium text-dark-slate/50 hover:text-coral">
             {canEdit ? t("manage") : t("open")}
