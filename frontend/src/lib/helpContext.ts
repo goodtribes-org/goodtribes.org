@@ -63,7 +63,7 @@ export function helpContextFor(path: string): HelpContext {
 // The general guides, in the order shown when nothing on the page says
 // otherwise. A guide that belongs to the page you're on moves to the top.
 export const GUIDES = [
-  { key: "gettingStarted", href: "/about" },
+  { key: "gettingStarted", href: "/how-it-works" },
   { key: "startProject", href: "/projects/new" },
   { key: "findProject", href: "/projects" },
   { key: "myGoodTribes", href: "/my-goodtribes" },
@@ -82,6 +82,7 @@ const GUIDE_FOR_PATH: [prefix: string, guide: GuideKey][] = [
   ["/workplace", "myGoodTribes"],
   ["/academy", "academy"],
   ["/code-of-conduct", "codeOfConduct"],
+  ["/how-it-works", "gettingStarted"],
   ["/about", "gettingStarted"],
 ];
 

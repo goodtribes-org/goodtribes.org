@@ -9,6 +9,7 @@ import {
   Menu,
   X,
   Home,
+  Lightbulb,
   Plus,
   Compass,
   FolderKanban,
@@ -166,6 +167,15 @@ export default function SideMenu() {
           >
             <Home className="w-4 h-4" />
             {t("home")}
+          </Link>
+          <Link
+            href="/how-it-works"
+            className={`flex items-center gap-3 mx-2 px-3 py-2 rounded-lg ${
+              pathname === "/how-it-works" ? "bg-seagrass/10 text-seagrass font-semibold" : "text-dark-slate/80 hover:bg-dry-sage/20"
+            }`}
+          >
+            <Lightbulb className="w-4 h-4" />
+            {t("howItWorks")}
           </Link>
 
           {projectContext && projectContext.slug === slug ? (

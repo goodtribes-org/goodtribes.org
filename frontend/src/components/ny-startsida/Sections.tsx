@@ -143,12 +143,14 @@ export async function PhaseJourney({ locale, phases }: { locale: Locale; phases:
       <div className="flex flex-col gap-3">
         <Eyebrow>{t("eyebrow")}</Eyebrow>
         <H2 className="max-w-[720px]">{t("heading")}</H2>
+        <Link href="/how-it-works" className="text-[15px] font-semibold hover:underline" style={{ color: LINK }}>{t("readMore")}</Link>
       </div>
       {/* On a phone the phases are a row you swipe (one card and a peek of
           the next), so six stacked picture cards don't make the page endless. */}
       <ol className={`m-0 list-none p-0 ${SWIPE_ROW} sm:grid-cols-2 lg:grid-cols-6`}>
         {phases.map((p, i) => (
-          <li key={p.value} className={`flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[#E4E4DF] bg-white ${SWIPE_ITEM}`}>
+          <li key={p.value} className={`flex min-w-0 ${SWIPE_ITEM}`}>
+            <Link href={`/how-it-works#${PHASE_KEYS[p.value]}`} className="flex w-full flex-col overflow-hidden rounded-2xl border border-[#E4E4DF] bg-white transition-colors hover:border-[#C2410C]">
             <div className="relative aspect-video">
               <img src={`/img/${PHASE_IMAGES[p.value]}`} alt="" className="absolute inset-0 h-full w-full object-cover" />
             </div>
@@ -165,6 +167,7 @@ export async function PhaseJourney({ locale, phases }: { locale: Locale; phases:
                 {t("now", { count: p.count })}
               </p>
             </div>
+            </Link>
           </li>
         ))}
       </ol>

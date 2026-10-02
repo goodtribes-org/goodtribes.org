@@ -30,7 +30,8 @@
     "thisProject": "This project",
     "projectAllSections": "All project pages are in the project bar at the top of the page",
     "siteAdmin": "Site admin",
-    "greeting": "Hi {name}! 👋"
+    "greeting": "Hi {name}! 👋",
+    "howItWorks": "How it works"
   },
   "Account": {
     "profile": "Profile",
@@ -62,7 +63,8 @@
     "organisationBlurb": "Everything you need to know about the foundation behind GoodTribes.org.",
     "footerCta": "Make a dream real",
     "backToTop": "Back to top",
-    "contactDetailsTitle": "Contact details"
+    "contactDetailsTitle": "Contact details",
+    "how-it-works": "How it works"
   },
   "Install": {
     "prompt": "Install GoodTribes for quicker access, even offline.",
@@ -4572,7 +4574,8 @@
         "establish": "Build routines and find resources.",
         "scale": "Reach more people and places.",
         "impact": "Measure and show the difference you make."
-      }
+      },
+      "readMore": "Read more about how it works →"
     },
     "projects": {
       "eyebrow": "Projects",
@@ -4827,5 +4830,27 @@
     "continue": "Continue →",
     "moreLater": "You can fill in the rest of your profile whenever you like.",
     "fullProfile": "Fill in the full profile"
+  },
+  "HowItWorks": {
+    "pageTitle": "How it works",
+    "waysHeading": "Three ways to take part",
+    "ways": {
+      "start": {
+        "title": "Start a project",
+        "text": "Got an idea? Start with the AI guide, or fill in everything yourself.",
+        "cta": "Start →"
+      },
+      "join": {
+        "title": "Help out in a project",
+        "text": "See which projects are looking for someone with your skills, and join.",
+        "cta": "See the projects →"
+      },
+      "idea": {
+        "title": "Share an idea",
+        "text": "Not ready to start yourself? Post the idea so others can build on it.",
+        "cta": "Share an idea →"
+      }
+    },
+    "description": "GoodTribes is where people turn ideas that make the world better into reality, together. Someone has a dream, others help with what they can, and the project moves step by step from idea to real change."
   }
 }

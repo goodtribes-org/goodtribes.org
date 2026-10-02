@@ -11,13 +11,14 @@ import { logger } from "@/lib/logger";
 import type { Locale } from "next-intl";
 
 // The pages the app has always shipped with fixed routes for
-// (/about, /privacy, /terms, /code-of-conduct, /participant-agreement).
+// (/about, /privacy, /terms, /code-of-conduct, /participant-agreement,
+// /how-it-works).
 // They may or may not have a SitePage row yet for a given locale (see
 // getSitePage's fallback contract) — when they don't, updateSitePage
 // creates one on first save. Any other slug is a footer-created custom
 // page (see createFooterPage) and must already exist (in some locale) to
 // be updated.
-const FIXED_SLUGS = ["about", "privacy", "terms", "code-of-conduct", "participant-agreement"] as const;
+const FIXED_SLUGS = ["about", "privacy", "terms", "code-of-conduct", "participant-agreement", "how-it-works"] as const;
 export type SitePageSlug = (typeof FIXED_SLUGS)[number];
 
 type OkOrError = { error: string } | { ok: true };
