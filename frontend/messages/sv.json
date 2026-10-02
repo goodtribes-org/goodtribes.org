@@ -670,7 +670,7 @@
     "mostActiveMembersHeading": "Mest aktiva medlemmar",
     "viewAllTokensLink": "Alla →",
     "pointsAbbreviation": "p",
-    "columnBacklog": "Wishlist",
+    "columnBacklog": "Önskelista",
     "columnTodo": "Att göra",
     "columnDoing": "Pågår",
     "columnReview": "Granskas",
@@ -1690,7 +1690,7 @@
     "categoryStrategi": "Strategi",
     "categoryAdministration": "Admin",
     "categoryCommunity": "Community",
-    "columnBacklog": "Wishlist",
+    "columnBacklog": "Önskelista",
     "columnTodo": "Att göra",
     "columnDoing": "Pågår",
     "columnReview": "Granskning",
@@ -1717,7 +1717,7 @@
     "timeDaysAgo": "{days} d sedan"
   },
   "GanttView": {
-    "columnBacklog": "Wishlist",
+    "columnBacklog": "Önskelista",
     "columnTodo": "Att göra",
     "columnDoing": "Pågående",
     "columnReview": "Granskning",
@@ -1789,7 +1789,7 @@
   "WikiPageDetail": {
     "pageTitle": "{pageTitle} — {projectTitle} Wiki",
     "sidebarHeading": "Wiki",
-    "helpText": "Wikin är projektets samlade dokumentation, organiserad som sidor i en trädstruktur — klicka på pilarna i sidopanelen för att fälla ut undersidor. Alla projektmedlemmar kan redigera en sida via Edit-knappen. Ägare och admin kan skapa nya sidor och ta bort dem, och kan flytta en sida under en annan överordnad sida i redigeringsläget.",
+    "helpText": "Wikin är projektets samlade dokumentation, organiserad som sidor i en trädstruktur — klicka på pilarna i sidopanelen för att fälla ut undersidor. Alla projektmedlemmar kan redigera en sida via Redigera-knappen. Ägare och admin kan skapa nya sidor och ta bort dem, och kan flytta en sida under en annan överordnad sida i redigeringsläget.",
     "lastEditedBy": "Senast redigerad av {name}",
     "unknownUser": "Okänd",
     "backToProject": "← {title}"
@@ -4160,6 +4160,7 @@
     "workHeading": "Arbetet i fasen",
     "workBoardLink": "Öppna tavlan →",
     "workNone": "Inga uppgifter är kopplade till fasen än. Uppgifter som AI:n eller ni skapar i fasen hamnar här.",
+    "workNoneStarted": "Ingen av fasens uppgifter är påbörjad än.",
     "workDone": "{done} av {total} uppgifter klara",
     "workMore": "+ {count} till på tavlan",
     "workEarlierOpen": "{count, plural, one {# uppgift från en tidigare fas är inte klar.} other {# uppgifter från tidigare faser är inte klara.}}",
