@@ -8,10 +8,15 @@ import { checkRateLimit, RATE_LIMIT_TIMEOUT_MS, withTimeout } from "@/lib/rateLi
 // by GOOGLE_VERTEX_PROJECT_ID plus a service account — see
 // createAnthropicClient. Same models, same messages.create surface; the one
 // thing Vertex lacks that we could use is the Batch API.
-export type AiProvider = "anthropic" | "vertex";
+// "relay" (development only, lib/aiRelay.ts) hands every call to whoever
+// answers files in AI_RELAY_DIR, so the AI flows can be tested without API
+// credit.
+export type AiProvider = "anthropic" | "vertex" | "relay";
 
 export function aiProvider(): AiProvider {
-  return process.env.AI_PROVIDER?.trim().toLowerCase() === "vertex" ? "vertex" : "anthropic";
+  const p = process.env.AI_PROVIDER?.trim().toLowerCase();
+  if (p === "relay" && process.env.NODE_ENV === "development") return "relay";
+  return p === "vertex" ? "vertex" : "anthropic";
 }
 
 // Every AI feature is gated on this and must degrade gracefully when it's
@@ -19,7 +24,9 @@ export function aiProvider(): AiProvider {
 // note. Centralized so a call site can't forget the check the way
 // /api/maturity's report generation once did.
 export function isAiEnabled(): boolean {
-  return aiProvider() === "vertex" ? !!process.env.GOOGLE_VERTEX_PROJECT_ID : !!process.env.ANTHROPIC_API_KEY;
+  const provider = aiProvider();
+  if (provider === "relay") return true;
+  return provider === "vertex" ? !!process.env.GOOGLE_VERTEX_PROJECT_ID : !!process.env.ANTHROPIC_API_KEY;
 }
 
 // Vertex names dated model snapshots with "@" ("claude-haiku-4-5@20251001")
@@ -211,6 +218,7 @@ export function withCacheBreakpoint(messages: AnthropicSdk.MessageParam[]): Anth
 // fails if anything other than lib/aiMode.ts imports this.
 export async function createAnthropicClient(): Promise<AnthropicSdk | null> {
   if (!isAiEnabled()) return null;
+  if (aiProvider() === "relay") return (await import("@/lib/aiRelay")).createRelayClient();
   if (aiProvider() === "vertex") return createVertexClient();
   const Anthropic = (await import("@anthropic-ai/sdk")).default;
   return new Anthropic();
