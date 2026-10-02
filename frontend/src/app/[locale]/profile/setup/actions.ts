@@ -4,7 +4,6 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
 import { indexDocuments } from "@/lib/meili";
-import { sendEmail } from "@/lib/email";
 import { MEMBERS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 
 
@@ -75,29 +74,8 @@ export async function saveProfile(formData: FormData) {
     ]);
   }
 
-  if (isFirstSetup) {
-    const base = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
-    await sendEmail({
-      to: session.user.email,
-      subject: "Welcome to GoodTribes!",
-      html: `
-        <p>Hi ${name || "there"},</p>
-        <p>Welcome to GoodTribes — a platform for people who want to make a real difference.</p>
-        <p>Here's what you can do next:</p>
-        <ul style="line-height:2;">
-          <li>🔍 <a href="${base}/projects">Browse projects</a> and join one that inspires you</li>
-          <li>💡 <a href="${base}/ideas/new">Share an idea</a> you want to see in the world</li>
-          <li>👥 <a href="${base}/members">Explore members</a> with skills like yours</li>
-        </ul>
-        <p style="margin-top:24px;">
-          <a href="${base}/projects" style="background:#E85D4A;color:white;padding:10px 24px;border-radius:4px;text-decoration:none;display:inline-block;">
-            Explore GoodTribes →
-          </a>
-        </p>
-        <p style="color:#888;font-size:12px;margin-top:32px;">GoodTribes.org — making the world better, together.</p>
-      `,
-    });
-  }
+  // No welcome mail here: the createUser event in auth.ts already sends
+  // one, in the person's language, on their first sign-in.
 
   redirect(isFirstSetup ? "/onboarding" : "/profile");
 }
