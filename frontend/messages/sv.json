@@ -2944,12 +2944,14 @@
   },
   "PhaseMenuBar": {
     "navLabel": "Projektets faser",
-    "progressLabel": "{done} av {total} uppgifter klara",
+    "progressLabel": "{done} av {total} steg klara",
     "autoDone": "Klart — syns i projektets innehåll",
     "autoDoneShort": "klart",
     "nextStep": "Nästa steg:",
     "guideLinkLabel": "{phase} guiden",
-    "overviewLinkLabel": "{phase} på en sida"
+    "overviewLinkLabel": "{phase} på en sida",
+    "subStepsLabel": "{done}/{total} delsteg",
+    "cardsLabel": "Kanban: {done} av {total} uppgifter klara"
   },
   "PhaseChecklistWidget": {
     "heading": "Din fasresa",
