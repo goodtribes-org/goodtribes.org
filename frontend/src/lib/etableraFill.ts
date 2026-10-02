@@ -1,9 +1,11 @@
+import { stepKeysFor } from "@/lib/phaseWork";
+import { getChecklistForPhase } from "@/lib/projectPhase";
 import { prisma } from "@/lib/prisma";
 import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { latestInsight } from "@/lib/ideaInsights";
 import type { GateBrief } from "@/lib/phaseGate";
 import { coerceTasks } from "@/lib/uppstartFill";
-import { TASKS_TOOL } from "@/lib/prompts/uppstartFill";
+import { tasksToolFor } from "@/lib/prompts/uppstartFill";
 import {
   addAiCards,
   callFillTool,
@@ -170,9 +172,9 @@ export async function startEtableraFill(p: { projectId: string; projectSlug: str
       partners: wikiSection("partnerskap", (t) => t.titlePartnerships, PARTNERSHIPS_SYSTEM_PROMPT, PARTNERSHIPS_TOOL, partnershipsHtml),
       playbook: wikiSection("playbook", (t) => t.titlePlaybook, PLAYBOOK_SYSTEM_PROMPT, PLAYBOOK_TOOL, playbookHtml, "playbook_documented"),
       tasks: async ({ client, context, aiUserId }) => {
-        const tasks = coerceTasks(await callFillTool(client, ETABLERA_TASKS_SYSTEM_PROMPT, TASKS_TOOL, context));
+        const tasks = coerceTasks(await callFillTool(client, ETABLERA_TASKS_SYSTEM_PROMPT, tasksToolFor(getChecklistForPhase("ESTABLISH")), context), stepKeysFor("ESTABLISH"));
         if (!tasks.length) throw new Error("no tasks");
-        await addAiCards(slug, tasks, aiUserId);
+        await addAiCards(slug, "ESTABLISH", tasks, aiUserId);
       },
     },
   });

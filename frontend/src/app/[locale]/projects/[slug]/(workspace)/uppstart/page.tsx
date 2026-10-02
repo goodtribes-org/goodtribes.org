@@ -4,6 +4,7 @@ import { getCanvasFieldLabels } from "@/lib/canvasFieldLabels";
 import type { Locale } from "next-intl";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getPhaseWork, gateWork } from "@/lib/phaseWork";
 import { Link } from "@/i18n/navigation";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isFeatureEnabled } from "@/lib/featureFlags";
@@ -104,6 +105,7 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
     return i === currentSprintIndex ? "current" : "upcoming";
   };
   const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
+  const work = await getPhaseWork(slug, "PILOT");
   const decisionDate = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
   const planFields = [
     ["goal", t("planGoal")],
@@ -256,10 +258,11 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
             brief={gateBrief?.content ?? null}
             lastDecision={
               gateDecision
-                ? { outcome: gateDecision.outcome, date: decisionDate(gateDecision.createdAt), missing: gateDecision.missing.map(criterionLabel) }
+                ? { outcome: gateDecision.outcome, date: decisionDate(gateDecision.createdAt), missing: gateDecision.missing.map(criterionLabel), openTaskCount: gateDecision.openTaskCount }
                 : null
             }
             fieldLabels={fieldLabels}
+            work={gateWork(work, criterionLabel)}
             canEdit={canEdit}
             isFounder={isFounder}
             aiAvailable={aiAvailable}

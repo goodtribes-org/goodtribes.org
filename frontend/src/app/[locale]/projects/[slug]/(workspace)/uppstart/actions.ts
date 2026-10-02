@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { cardPhaseAfterGate, countOpenPhaseTasks } from "@/lib/phaseWork";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
@@ -165,8 +166,9 @@ export async function decideUppstartGate(projectSlug: string, outcome: string, n
   const proposedCriteria = decision === "CONTINUE" && !evaluation?.successCriteria?.trim() ? brief?.content.successCriteria ?? [] : [];
 
   await prisma.$transaction(async (tx) => {
+    const openTaskCount = await countOpenPhaseTasks(tx, project.slug, "PILOT");
     await tx.phaseGateDecision.create({
-      data: { projectId: project.id, fromPhase: "PILOT", outcome: decision, note: note.trim() || null, missing: missingCriteria(criteria), decidedById: userId },
+      data: { projectId: project.id, fromPhase: "PILOT", outcome: decision, note: note.trim() || null, missing: missingCriteria(criteria), openTaskCount, decidedById: userId },
     });
     if (cards.length) {
       const max = await tx.kanbanCard.aggregate({ where: { projectSlug: project.slug, column: "TODO" }, _max: { order: true } });
@@ -179,6 +181,7 @@ export async function decideUppstartGate(projectSlug: string, outcome: string, n
           order: (max._max.order ?? -1) + 1 + i,
           createdById: aiUser.id,
           createdByAi: true,
+          phase: cardPhaseAfterGate("PILOT", decision),
         })),
       });
     }

@@ -1,5 +1,6 @@
 import type { PhaseGateOutcome, Prisma, ProjectPhase } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { cardPhaseAfterGate, countOpenPhaseTasks } from "@/lib/phaseWork";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { aiGateMessage, type AiGateBlockReason } from "@/lib/aiMode";
@@ -44,6 +45,7 @@ export async function recordGateDecision(p: {
 }) {
   const aiUser = p.cards.length ? await getAiParticipantUser() : null;
   await prisma.$transaction(async (tx) => {
+    const openTaskCount = await countOpenPhaseTasks(tx, p.project.slug, p.fromPhase);
     await tx.phaseGateDecision.create({
       data: {
         projectId: p.project.id,
@@ -51,6 +53,7 @@ export async function recordGateDecision(p: {
         outcome: p.decision,
         note: p.note.trim() || null,
         missing: missingCriteria(p.criteria),
+        openTaskCount,
         decidedById: p.userId,
       },
     });
@@ -65,6 +68,7 @@ export async function recordGateDecision(p: {
           order: (max._max.order ?? -1) + 1 + i,
           createdById: aiUser.id,
           createdByAi: true,
+          phase: cardPhaseAfterGate(p.fromPhase, p.decision),
         })),
       });
     }
