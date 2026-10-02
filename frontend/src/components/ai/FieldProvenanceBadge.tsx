@@ -8,7 +8,7 @@ import { approveAiDraft, confirmAiGuess, setFieldStatus } from "@/lib/actions/fi
 
 /**
  * One label per field, saying who stands behind the text:
- * - "Du sa det" — known (vet): it came from the person, or they confirmed it.
+ * - "Ni vet det" — known (vet): it came from the person, or they confirmed it.
  * - "AI:n gissar" — an AI draft nobody in the team has answered yet.
  * - "Antagande" — an assumption the team holds (written by a person, or an
  *   AI draft they kept as something to test).
