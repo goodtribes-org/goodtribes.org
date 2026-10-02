@@ -4851,6 +4851,8 @@
         "cta": "Share an idea →"
       }
     },
-    "description": "GoodTribes is where people turn ideas that make the world better into reality, together. Someone has a dream, others help with what they can, and the project moves step by step from idea to real change."
+    "description": "GoodTribes is where people turn ideas that make the world better into reality, together. Someone has a dream, others help with what they can, and the project moves step by step from idea to real change.",
+    "ctaStart": "Start a project",
+    "ctaBrowse": "See the projects"
   }
 }

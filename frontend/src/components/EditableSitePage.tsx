@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import RichTextEditor from "@/components/RichTextEditor";
 import { updateSitePage } from "@/app/[locale]/site-pages-actions";
@@ -13,9 +13,14 @@ interface Props {
   title: string;
   body: string;
   titleClassName?: string;
+  // A designed view of the body (e.g. /how-it-works' cards), shown instead
+  // of the plain article when not editing; the pencil still edits `body`.
+  display?: ReactNode;
+  // Width of the read view; the editor stays max-w-2xl.
+  className?: string;
 }
 
-export default function EditableSitePage({ slug, locale, canEdit, title, body, titleClassName }: Props) {
+export default function EditableSitePage({ slug, locale, canEdit, title, body, titleClassName, display, className }: Props) {
   const t = useTranslations("SitePageEditor");
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(title);
@@ -66,7 +71,7 @@ export default function EditableSitePage({ slug, locale, canEdit, title, body, t
   }
 
   return (
-    <div className="max-w-2xl">
+    <div className={className ?? "max-w-2xl"}>
       <div className="flex items-start justify-between gap-4 mb-6">
         <h1 className={`font-bold text-dark-slate min-w-0 break-words ${titleClassName ?? "text-3xl"}`}>{title}</h1>
         {canEdit && (
@@ -80,13 +85,13 @@ export default function EditableSitePage({ slug, locale, canEdit, title, body, t
           </button>
         )}
       </div>
-      <article
+      {display ?? <article
         className="prose prose-sm max-w-none text-dark-slate/80 leading-relaxed
           prose-headings:text-dark-slate
           prose-a:text-coral prose-a:no-underline hover:prose-a:underline
           prose-strong:text-dark-slate"
         dangerouslySetInnerHTML={{ __html: body }}
-      />
+      />}
     </div>
   );
 }
