@@ -4851,6 +4851,8 @@
         "cta": "Dela en idé →"
       }
     },
-    "description": "GoodTribes är platsen där människor tillsammans förverkligar idéer som gör världen bättre. Någon har en dröm, andra hjälper till med det de kan, och projektet tar sig steg för steg från idé till verklig skillnad."
+    "description": "GoodTribes är platsen där människor tillsammans förverkligar idéer som gör världen bättre. Någon har en dröm, andra hjälper till med det de kan, och projektet tar sig steg för steg från idé till verklig skillnad.",
+    "ctaStart": "Starta ett projekt",
+    "ctaBrowse": "Se projekten"
   }
 }
