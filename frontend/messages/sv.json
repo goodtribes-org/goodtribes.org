@@ -3910,8 +3910,8 @@
     "marketScan": "Omvärldsbevakningen"
   },
   "FieldProvenance": {
-    "known": "Ni vet det",
-    "knownHint": "Det kommer från er, eller så har ni bekräftat det.",
+    "known": "Ni vet",
+    "knownHint": "AI:n föreslog det och ni har bekräftat att det stämmer.",
     "aiGuess": "AI:n gissar",
     "aiGuessHint": "AI:n har dragit den här slutsatsen. Stämmer den?",
     "assumed": "Antagande",
@@ -3921,7 +3921,9 @@
     "keep": "Vet inte, testa",
     "keepHint": "Behåll det som ett antagande och testa det, till exempel i intervjuerna.",
     "markKnown": "Markera som något ni vet",
-    "markAssumed": "Markera som ett antagande"
+    "markAssumed": "Markera som ett antagande",
+    "said": "Du sa",
+    "saidHint": "Det kommer från er: någon skrev det, eller sa det i Drömsamtalet."
   },
   "ProjectStart": {
     "heading": "Starta ett nytt projekt",
