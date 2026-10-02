@@ -1,3 +1,5 @@
+import { stepKeysFor } from "@/lib/phaseWork";
+import { getChecklistForPhase } from "@/lib/projectPhase";
 import { prisma } from "@/lib/prisma";
 import { getAiClientFor } from "@/lib/aiMode";
 import { escapeHtml } from "@/lib/renderBody";
@@ -16,7 +18,7 @@ import {
   wikiPageExists,
   type PhaseFillState,
 } from "@/lib/phaseFill";
-import { TASKS_TOOL } from "@/lib/prompts/uppstartFill";
+import { tasksToolFor } from "@/lib/prompts/uppstartFill";
 import {
   IMPACT_METRICS_SYSTEM_PROMPT,
   IMPACT_METRICS_TOOL,
@@ -265,9 +267,9 @@ export async function startLanseringFill(p: LanseringFillParams): Promise<void> 
       },
 
       tasks: async ({ client, context, aiUserId }) => {
-        const tasks = coerceTasks(await callFillTool(client, LANSERING_TASKS_SYSTEM_PROMPT, TASKS_TOOL, context));
+        const tasks = coerceTasks(await callFillTool(client, LANSERING_TASKS_SYSTEM_PROMPT, tasksToolFor(getChecklistForPhase("PRODUCTION")), context), stepKeysFor("PRODUCTION"));
         if (!tasks.length) throw new Error("no tasks");
-        await addAiCards(slug, tasks, aiUserId);
+        await addAiCards(slug, "PRODUCTION", tasks, aiUserId);
       },
     },
   });

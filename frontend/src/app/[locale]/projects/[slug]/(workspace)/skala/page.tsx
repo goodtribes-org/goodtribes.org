@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getPhaseWork, gateWork } from "@/lib/phaseWork";
 import { Link } from "@/i18n/navigation";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isFeatureEnabled } from "@/lib/featureFlags";
@@ -72,6 +73,7 @@ export default async function SkalaOverviewPage({ params }: { params: Promise<{ 
   const notYet = ["IDEA", "SPRINT", "PILOT", "PRODUCTION", "ESTABLISH"].includes(project.phase);
   const writing = t("writing");
   const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
+  const work = await getPhaseWork(slug, "SCALE");
   const decisionDate = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
   const retry = (section: string) =>
     canEdit && aiAvailable ? (
@@ -155,8 +157,9 @@ export default async function SkalaOverviewPage({ params }: { params: Promise<{ 
             slug={slug}
             criteria={gate.criteria.map((c) => ({ ...c, label: criterionLabel(c.key) }))}
             brief={gateBrief?.content ?? null}
-            lastDecision={gateDecision ? { outcome: gateDecision.outcome, date: decisionDate(gateDecision.createdAt), missing: gateDecision.missing.map(criterionLabel) } : null}
+            lastDecision={gateDecision ? { outcome: gateDecision.outcome, date: decisionDate(gateDecision.createdAt), missing: gateDecision.missing.map(criterionLabel), openTaskCount: gateDecision.openTaskCount } : null}
             fieldLabels={{}}
+            work={gateWork(work, criterionLabel)}
             canEdit={canEdit}
             isFounder={isFounder}
             aiAvailable={aiAvailable}

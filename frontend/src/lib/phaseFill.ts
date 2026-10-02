@@ -1,6 +1,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import type { Prisma, ProjectPhase } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { cardPhaseFor, isStepOf } from "@/lib/phaseWork";
 import { logger } from "@/lib/logger";
 import { getAiClientFor } from "@/lib/aiMode";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
@@ -119,12 +120,29 @@ export async function markStepDone(projectId: string, phase: ProjectPhase, itemK
   });
 }
 
-export async function addAiCards(projectSlug: string, cards: { title: string; description: string }[], authorId: string) {
+// Cards are tagged with the phase they're work for, and with a step when
+// the AI tied one to it (only a step of that phase is kept).
+export async function addAiCards(
+  projectSlug: string,
+  phase: ProjectPhase,
+  cards: { title: string; description: string; stepKey?: string | null }[],
+  authorId: string,
+) {
   if (!cards.length) return;
   const maxOrder = await prisma.kanbanCard.aggregate({ where: { projectSlug, column: "TODO" }, _max: { order: true } });
   const start = (maxOrder._max.order ?? -1) + 1;
   await prisma.kanbanCard.createMany({
-    data: cards.map((c, i) => ({ projectSlug, title: c.title, description: c.description || null, column: "TODO", order: start + i, createdById: authorId, createdByAi: true })),
+    data: cards.map((c, i) => ({
+      projectSlug,
+      title: c.title,
+      description: c.description || null,
+      column: "TODO",
+      order: start + i,
+      createdById: authorId,
+      createdByAi: true,
+      phase: cardPhaseFor(phase),
+      stepKey: isStepOf(phase, c.stepKey) ? c.stepKey : null,
+    })),
   });
 }
 

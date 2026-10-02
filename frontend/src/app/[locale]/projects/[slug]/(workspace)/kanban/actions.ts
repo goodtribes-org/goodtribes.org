@@ -16,6 +16,7 @@ import {
   GITHUB_CARD_LOCKED_MESSAGE,
 } from "@/lib/githubSync";
 import { getPriorityTokenValue } from "@/lib/priorityTokens";
+import { cardPhaseFor, validCardStep, type CardStep } from "@/lib/phaseWork";
 
 async function isProjectLead(projectSlug: string, userId: string): Promise<boolean> {
   const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
@@ -34,12 +35,15 @@ export async function createCard(
   startDate?: string,
   subtasks?: string[],
   category?: string,
+  // Omitted = the project's current phase; null = not tied to a phase.
+  step?: CardStep | null,
 ) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
   if (!category || !isValidCategory(category)) return { error: "Kategori krävs" };
 
-  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
+  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true, phase: true } });
+  const cardStep = step === undefined ? { phase: project ? cardPhaseFor(project.phase) : null, stepKey: null } : validCardStep(step);
   const canSetPriority = project ? await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES) : false;
 
   const cleanedSubtasks = subtasks?.map((t) => t.trim()).filter(Boolean) ?? [];
@@ -66,6 +70,7 @@ export async function createCard(
       priority: canSetPriority ? (priority || "normal") : "normal",
       category: category || null,
       assigneeId: assigneeId || null,
+      ...cardStep,
     },
   });
 
@@ -142,6 +147,8 @@ export async function promoteSubtaskToCard(subtaskId: string) {
       createdById: session.user.id,
       priority: subtask.card.priority,
       category: subtask.card.category,
+      phase: subtask.card.phase,
+      stepKey: subtask.card.stepKey,
     },
   });
 
@@ -379,7 +386,7 @@ export async function toggleSubtask(subtaskId: string, done: boolean) {
 
 export async function updateCard(
   cardId: string,
-  data: { title?: string; description?: string | null; dueDate?: string | null; startDate?: string | null; priority?: string; assigneeId?: string | null; category?: string | null },
+  data: { title?: string; description?: string | null; dueDate?: string | null; startDate?: string | null; priority?: string; assigneeId?: string | null; category?: string | null; step?: CardStep | null },
 ) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
@@ -394,6 +401,11 @@ export async function updateCard(
     if (!(await isProjectLead(card.projectSlug, userId))) {
       return { error: "Only project founders/admins can set priority" };
     }
+  }
+
+  if (data.step !== undefined) {
+    const project = await prisma.project.findUnique({ where: { slug: card.projectSlug }, select: { id: true } });
+    if (!project || !(await isRealMember(project.id, userId))) return { error: "Only project members can change the phase" };
   }
 
   let assigneeIsMember = false;
@@ -419,6 +431,7 @@ export async function updateCard(
         ? { lockedTokenValue: getPriorityTokenValue(data.priority!) }
         : {}),
       ...(data.category !== undefined ? { category: data.category || null } : {}),
+      ...(data.step !== undefined ? validCardStep(data.step) : {}),
       ...(data.assigneeId !== undefined
         ? {
             assigneeId: data.assigneeId || null,

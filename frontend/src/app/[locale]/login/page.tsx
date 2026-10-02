@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { Link } from "@/i18n/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import LoginForm from "./LoginForm";
 
 export default async function LoginPage({
@@ -14,6 +14,9 @@ export default async function LoginPage({
 
   const params = await searchParams;
   const t = await getTranslations("Auth");
+  // A locale-prefixed default, so the emails NextAuth sends can tell which
+  // language the person signed up in (see lib/authEmails.ts).
+  const callbackUrl = params.callbackUrl ?? `/${await getLocale()}`;
 
   return (
     <div className="max-w-sm mx-auto mt-16">
@@ -26,11 +29,11 @@ export default async function LoginPage({
         </div>
       )}
 
-      <LoginForm callbackUrl={params.callbackUrl ?? "/"} />
+      <LoginForm callbackUrl={callbackUrl} />
 
       <p className="mt-6 text-sm text-dark-slate/60 text-center">
         {t("newHere")}{" "}
-        <Link href="/signup" className="text-coral hover:text-seagrass underline underline-offset-4">
+        <Link href={params.callbackUrl ? `/signup?callbackUrl=${encodeURIComponent(params.callbackUrl)}` : "/signup"} className="text-coral hover:text-seagrass underline underline-offset-4">
           {t("createAccountLink")}
         </Link>
       </p>

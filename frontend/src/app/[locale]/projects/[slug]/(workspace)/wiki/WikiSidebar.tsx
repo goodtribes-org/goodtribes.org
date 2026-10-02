@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { createWikiPage } from "./actions";
 
 export interface WikiSidebarPage {
@@ -40,6 +41,7 @@ export default function WikiSidebar({
   canCreate: boolean;
 }) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const t = useTranslations("WikiSidebar");
   const tree = useMemo(() => buildTree(pages), [pages]);
 
   function toggle(id: string) {
@@ -61,7 +63,7 @@ export default function WikiSidebar({
             <button
               type="button"
               onClick={() => toggle(node.id)}
-              aria-label={isCollapsed ? "Expandera" : "Fäll ihop"}
+              aria-label={isCollapsed ? t("expandLabel") : t("collapseLabel")}
               className="w-4 h-4 shrink-0 flex items-center justify-center text-dark-slate/40 hover:text-dark-slate"
             >
               <span className={`inline-block transition-transform text-[9px] ${isCollapsed ? "" : "rotate-90"}`}>▶</span>
@@ -98,7 +100,7 @@ export default function WikiSidebar({
             type="text"
             required
             maxLength={200}
-            placeholder="New page…"
+            placeholder={t("newPagePlaceholder")}
             className="w-full text-xs border border-muted-teal/40 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-coral placeholder-dark-slate/30"
           />
           <select
@@ -106,7 +108,7 @@ export default function WikiSidebar({
             defaultValue=""
             className="w-full text-xs border border-muted-teal/40 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-coral text-dark-slate/60 bg-white"
           >
-            <option value="">Ingen överordnad sida</option>
+            <option value="">{t("noParentOption")}</option>
             {pages.map((p) => (
               <option key={p.id} value={p.id}>{p.title}</option>
             ))}

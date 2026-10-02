@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
+import { SIGNUP_CONSENT_COOKIE, SIGNUP_CONSENT_MAX_AGE } from "@/lib/signupConsent";
 
 export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
   const t = useTranslations("Auth");
@@ -23,6 +24,9 @@ export default function SignupForm({ callbackUrl }: { callbackUrl: string }) {
     if (!bothAgreed) return;
     setLoading(true);
     setError(false);
+    // The account doesn't exist until the magic link is opened, so remember
+    // the acceptance for that first page load (acceptAgreementsFromSignup).
+    document.cookie = `${SIGNUP_CONSENT_COOKIE}=${encodeURIComponent(email.trim().toLowerCase())}; path=/; max-age=${SIGNUP_CONSENT_MAX_AGE}; samesite=lax`;
     const res = await signIn("resend", { email, redirect: false, callbackUrl });
     setLoading(false);
     if (res?.error) {

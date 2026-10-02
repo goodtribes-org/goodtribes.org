@@ -8,10 +8,13 @@ import { escapeHtml } from "@/lib/renderBody";
 import { logger } from "@/lib/logger";
 import { mergeDreamState, parseDreamState, parseOpenQuestions } from "@/lib/dreamConversation";
 import { DREAM_REPLY_TOOL, DREAM_SYSTEM_PROMPT, dreamProgressNote } from "@/lib/prompts/dreamConversation";
+import { htmlToText } from "@/lib/htmlToText";
+import { publishToRoom } from "@/lib/redis";
 
-function stripHtml(body: string): string {
-  return body.replace(/<[^>]*>/g, "").trim();
-}
+// The room's typing indicator expires after 4 s, so repeat it while the
+// model works. The AI's own message clears it, like any author's.
+const AI_TYPING_INTERVAL_MS = 3000;
+
 
 export function dreamConversationUrl(roomId: string): string {
   return `/projects/new/samtal/${roomId}`;
@@ -30,6 +33,9 @@ function toHtml(text: string): string {
 // Fire-and-forget from sendRoomMessage, like triggerAiThreadReply.
 export async function triggerDreamReply(room: Room, triggeredByUserId: string): Promise<void> {
   const aiUser = await getAiParticipantUser();
+  const showTyping = () => publishToRoom(room.id, { type: "typing", userId: aiUser.id, name: aiUser.name ?? "AI" });
+  showTyping();
+  const typing = setInterval(showTyping, AI_TYPING_INTERVAL_MS);
 
   try {
     const dream = await prisma.dreamConversation.findUnique({ where: { roomId: room.id } });
@@ -59,7 +65,7 @@ export async function triggerDreamReply(room: Room, triggeredByUserId: string): 
     // The conversation must start with a user turn, but a Drömsamtal starts
     // with the coach's opener — keep the opener (the model needs to know what
     // it asked) behind a neutral first user turn.
-    const turns = history.map((m) => ({ role: (m.isAi ? "assistant" : "user") as "assistant" | "user", content: stripHtml(m.body) }));
+    const turns = history.map((m) => ({ role: (m.isAi ? "assistant" : "user") as "assistant" | "user", content: htmlToText(m.body) }));
     if (turns[0]?.role === "assistant") turns.unshift({ role: "user", content: "(Personen öppnade Drömsamtalet.)" });
     if (turns[turns.length - 1]?.role !== "user") return;
 
@@ -102,5 +108,7 @@ export async function triggerDreamReply(room: Room, triggeredByUserId: string): 
   } catch (err) {
     logger.error("dream-conversation: reply failed", { roomId: room.id, err: String(err) });
     await persistAiMessage(room.id, "<p>Något gick fel på min sida — skriv gärna ditt svar igen.</p>", aiUser.id).catch(() => {});
+  } finally {
+    clearInterval(typing);
   }
 }
