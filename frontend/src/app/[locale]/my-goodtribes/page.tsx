@@ -16,11 +16,13 @@ import OverviewTab from "./OverviewTab";
 import TasksTab from "./TasksTab";
 import CalendarTab from "./CalendarTab";
 import FollowingTab from "./FollowingTab";
+import FindTab from "./FindTab";
+import type { Locale } from "next-intl";
 
 // Mitt GoodTribes — the member's own area, in the profile menu. It replaced
 // Arbetsrum (/workplace, which now redirects here with the same tab) and adds
-// tasks, calendar and following. "Hitta ett projekt" still lives on
-// /dashboard (matching by skills and goals); the tab row links there.
+// tasks, calendar and following. "Hitta ett projekt" (matching by skills
+// and goals) is the last tab — it was /dashboard, which now redirects here.
 
 export const metadata: Metadata = { title: "Mitt GoodTribes" };
 
@@ -32,6 +34,7 @@ const TABS = [
   { key: "activity", labelKey: "tabActivity" },
   { key: "kudos", labelKey: "tabKudos" },
   { key: "tokens", labelKey: "tabTokens" },
+  { key: "find", labelKey: "tabFind" },
 ] as const;
 const MENTOR_TAB = { key: "mentor-inbox", labelKey: "tabMentorInbox" } as const;
 type TabKey = (typeof TABS)[number]["key"] | "mentor-inbox";
@@ -41,7 +44,7 @@ export default async function MyGoodTribesPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; skill?: string }>;
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "WorkplacePage" });
@@ -55,7 +58,7 @@ export default async function MyGoodTribesPage({
     prisma.user.findUnique({ where: { id: userId }, select: { tourDismissedAt: true } }),
   ]);
   const tabs = [...TABS, ...(mentorProfile?.verified ? [MENTOR_TAB] : [])];
-  const { tab: requested } = await searchParams;
+  const { tab: requested, skill } = await searchParams;
   const activeTab: TabKey = (tabs.find((x) => x.key === requested)?.key ?? "overview") as TabKey;
 
   return (
@@ -88,11 +91,6 @@ export default async function MyGoodTribesPage({
               </Link>
             </li>
           ))}
-          <li>
-            <Link href="/dashboard#match" className="block whitespace-nowrap rounded-xl px-3.5 py-2 text-[15px] text-[#C2410C] hover:bg-[#FFF4EC]">
-              {t("tabFind")} →
-            </Link>
-          </li>
         </ul>
       </nav>
 
@@ -103,6 +101,9 @@ export default async function MyGoodTribesPage({
       {activeTab === "activity" && <ActivityTab userId={userId} t={t} />}
       {activeTab === "tokens" && <TokensTab userId={userId} t={t} />}
       {activeTab === "kudos" && <KudosTab userId={userId} t={t} />}
+      {activeTab === "find" && (
+        <FindTab userId={userId} locale={locale as Locale} skillSlug={skill} onboardingDone={!!session.user.onboardingDone} hasName={!!session.user.name} />
+      )}
       {activeTab === "mentor-inbox" && mentorProfile?.verified && <MentorTab mentorId={mentorProfile.id} t={t} locale={locale} />}
     </div>
   );

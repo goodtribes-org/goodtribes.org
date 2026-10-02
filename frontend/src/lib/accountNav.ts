@@ -5,9 +5,9 @@ export interface AccountNavItem {
 
 export const ACCOUNT_NAV_ITEMS: AccountNavItem[] = [
   { href: "/profile", labelKey: "profile" },
-  // Mitt GoodTribes replaced Arbetsrum (/workplace redirects there);
-  // Dashboard's matching is "Hitta ett projekt".
+  // Mitt GoodTribes replaced Arbetsrum and Dashboard (both redirect there);
+  // "Hitta ett projekt" is its matching tab.
   { href: "/my-goodtribes", labelKey: "myGoodTribes" },
-  { href: "/dashboard", labelKey: "findProject" },
+  { href: "/my-goodtribes?tab=find", labelKey: "findProject" },
   { href: "/settings", labelKey: "settings" },
 ];
