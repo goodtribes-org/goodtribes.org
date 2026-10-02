@@ -3925,21 +3925,21 @@
     "heading": "Start a new project",
     "intro": "Do you want help from the AI, or do it yourself? Both lead to the same kind of project, and you can change your mind at any time.",
     "recommended": "Recommended",
-    "agentTitle": "Let the AI do the work",
-    "agentDesc": "Answer a few short questions about your idea. The AI then fills in the whole Idea phase for you, and you review and edit it on one page.",
-    "assistTitle": "The AI helps me",
-    "assistDesc": "Answer a few short questions about your idea. You fill in the guide yourself, with the AI's suggestions next to each field.",
     "manualTitle": "I'll do it myself",
     "manualDesc": "Go straight to the guide and fill in the project yourself. No conversation, no AI suggestions.",
-    "changeLater": "The conversation takes a few minutes and can be paused. Everything the AI writes is marked as a draft and can be changed.",
+    "changeLater": "The conversation takes a few minutes and can be paused.",
     "resumeHeading": "Continue the conversation",
     "resumeLink": "Conversation in progress ({covered} of 6 areas) — last {date}",
     "aiTitle": "With the AI guide",
-    "aiDesc": "You tell us about your idea in a short conversation. Choose how much the AI should do:",
+    "aiDesc": "Tell us about your idea in a short conversation. The AI then fills in a first draft of the Idea phase for you.",
     "manualPoint1": "You write everything in your own words",
     "manualPoint2": "AI is switched off in the project",
     "manualPoint3": "You can switch AI on later if you like",
-    "manualCta": "Start without AI →"
+    "manualCta": "Start without AI →",
+    "aiPoint1": "Overwrite whatever you like in your own words",
+    "aiPoint2": "Everything the AI writes is marked as a draft",
+    "aiPoint3": "Turn the AI down or off at any time",
+    "aiCta": "Start with the AI guide →"
   },
   "DreamConversation": {
     "heading": "The dream conversation",
@@ -3969,7 +3969,8 @@
     "nextStepWait": "It takes a few seconds.",
     "nextStepAddMore": "Want to add something? Write it in the chat first.",
     "nextStepBodyAgent": "Now the AI creates your project and fills in the Idea phase: description, global goals, Social Lean Canvas, value proposition, market scan and an interview guide. You see it all on one page and can edit anything that's off.",
-    "nextStepBodyAssist": "Now the project is created with a name and description. You fill in the rest yourself in the guide, with the AI's suggestions next to the fields."
+    "nextStepBodyAssist": "Now the project is created with a name and description. You fill in the rest yourself in the guide, with the AI's suggestions next to the fields.",
+    "deleteShort": "Delete"
   },
   "BlockIterate": {
     "open": "Improve",

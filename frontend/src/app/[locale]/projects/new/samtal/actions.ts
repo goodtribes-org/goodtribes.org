@@ -18,6 +18,7 @@ import { buildTranscript, generateBasics, runIdeaFill, statusFor } from "@/lib/i
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { markChecklistDone } from "@/app/[locale]/projects/[slug]/guide/actions";
 import { requestContentLocale } from "@/lib/aiLanguage";
+import { deleteDocument } from "@/lib/meili";
 
 // A fixed opener, not an AI call — the first model call happens on the
 // user's first reply (see triggerDreamReply).
@@ -118,12 +119,16 @@ export async function getDreamProgress(roomId: string): Promise<DreamProgress> {
 
 // The conversation can contain personal information, so the initiativtagare
 // can delete it outright: the room (and with it every message, the
-// participant row and the DreamConversation row) is removed. A project
-// already created from it is not affected.
+// participant row and the DreamConversation row) is removed, and the
+// messages leave the search index too. A project already created from it
+// is not affected. Used from the conversation page and from "Fortsätt
+// samtalet" on /projects/new.
 export async function deleteDreamConversation(roomId: string) {
   const userId = await requireUser();
   await requireOwnDream(roomId, userId);
+  const messages = await prisma.message.findMany({ where: { roomId }, select: { id: true } });
   await prisma.room.delete({ where: { id: roomId } });
+  for (const m of messages) void deleteDocument("messages", m.id);
   redirect(await localized("/projects/new"));
 }
 
