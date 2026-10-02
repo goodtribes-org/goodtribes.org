@@ -1,5 +1,6 @@
 "use server";
 
+import { logToolWork } from "@/lib/toolWork";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -33,6 +34,7 @@ export async function addInterviewLogEntry(
     include: { createdBy: { select: { id: true, name: true } } },
   });
 
+  await logToolWork(project.id, session.user.id, "interviews");
   revalidatePath(`/projects/${projectSlug}/interviews`);
   return { entry };
 }

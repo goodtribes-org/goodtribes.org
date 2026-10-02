@@ -244,7 +244,7 @@ export async function fetchActivityItems(
     }),
     ...activities.map((a) => {
       const payload = a.payload as unknown as {
-        title?: string; cardId?: string; description?: string | null;
+        title?: string; cardId?: string; description?: string | null; tool?: string;
         fromColumn?: string; toColumn?: string;
         subtasks?: { title: string; done: boolean }[];
       } | null;
@@ -260,6 +260,8 @@ export async function fetchActivityItems(
               title: payload.title,
               column: columnLabel[payload.toColumn ?? ""] ?? payload.toColumn ?? "",
             })
+          : a.type === "tool_edited" && payload?.tool && t.has(`tools.${payload.tool}`)
+          ? t("toolEdited", { tool: t(`tools.${payload.tool}`) })
           : activityLabel[a.type] ?? t("genericActivity");
       const href =
         isCardActivity && payload?.cardId

@@ -1,4 +1,5 @@
 import type { FieldAuthor, FieldKnowledgeStatus, Prisma } from "@prisma/client";
+import { logToolWork } from "@/lib/toolWork";
 import { prisma } from "@/lib/prisma";
 import { LEAN_CANVAS_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
@@ -102,6 +103,8 @@ export async function recordHumanEdits(
       });
     }),
   );
+  // A human edit is work in the tool — counts in the project's pulse.
+  await logToolWork(projectId, userId, entity);
 }
 
 // Call when AI writes a field (always after checking canAiWrite). status

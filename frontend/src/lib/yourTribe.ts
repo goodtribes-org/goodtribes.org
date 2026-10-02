@@ -26,7 +26,7 @@ export type TodoItem =
   | { kind: "nextStep"; id: string; project: string; step: string; href: string; projectStill: boolean };
 
 export type LastEvent =
-  | { type: "activity"; who: string | null; activityType: string; title?: string; at: Date }
+  | { type: "activity"; who: string | null; activityType: string; title?: string; tool?: string; at: Date }
   | { type: "message"; who: string | null; at: Date }
   | { type: "blogPost"; who: string | null; title: string; at: Date };
 
@@ -111,7 +111,10 @@ export async function getYourTribe(userId: string, now = Date.now(), { lastEvent
           prisma.blogPost.findFirst({ where: { projectSlug: p.slug }, orderBy: { createdAt: "desc" }, select: { title: true, createdAt: true, author: { select: { name: true } } } }),
         ]);
         const candidates: LastEvent[] = [];
-        if (a) candidates.push({ type: "activity", who: a.user.name, activityType: a.type, title: (a.payload as { title?: string } | null)?.title, at: a.createdAt });
+        if (a) {
+          const payload = a.payload as { title?: string; tool?: string } | null;
+          candidates.push({ type: "activity", who: a.user.name, activityType: a.type, title: payload?.title, tool: payload?.tool, at: a.createdAt });
+        }
         if (m) candidates.push({ type: "message", who: m.author.name, at: m.createdAt });
         if (b) candidates.push({ type: "blogPost", who: b.author.name, title: b.title, at: b.createdAt });
         candidates.sort((x, y) => y.at.getTime() - x.at.getTime());
