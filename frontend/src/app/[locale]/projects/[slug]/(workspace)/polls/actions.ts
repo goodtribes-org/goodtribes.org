@@ -1,5 +1,6 @@
 "use server";
 
+import { logToolWork } from "@/lib/toolWork";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache";
@@ -69,6 +70,7 @@ export async function createPoll(formData: FormData, projectSlug: string) {
       },
     },
   });
+  await logToolWork(project.id, session.user.id, "polls");
 
   revalidatePath(`/projects/${projectSlug}/polls`);
   redirect(`/projects/${projectSlug}/polls/${poll.id}`);

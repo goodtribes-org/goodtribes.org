@@ -3064,7 +3064,18 @@
     "commentedOnIdea": "commented on the idea \"{title}\"",
     "postsPseudoProjectName": "Post",
     "ideasPseudoProjectName": "Ideas",
-    "someone": "Someone"
+    "someone": "Someone",
+    "tools": {
+      "project": "the project description",
+      "leanCanvas": "the Social Lean Canvas",
+      "valueProposition": "the value proposition",
+      "impactModel": "the impact model",
+      "interviews": "the interviews",
+      "marketScan": "the market scan",
+      "wiki": "the wiki",
+      "polls": "the polls"
+    },
+    "toolEdited": "worked on {tool}"
   },
   "MembersFilter": {
     "filterBySkill": "Filter by skill",
@@ -3212,7 +3223,12 @@
     "tabTasks": "My tasks",
     "tabCalendar": "Calendar",
     "tabFollowing": "Following",
-    "tabFind": "Find a project"
+    "tabFind": "Find a project",
+    "activityTaskCompleted": "Completed a task in {project}",
+    "activityTaskCreated": "Created a task in {project}",
+    "activityTaskMoved": "Moved a task in {project}",
+    "activityToolEdited": "Worked on the tools in {project}",
+    "activityOther": "Updated {project}"
   },
   "MentorsPage": {
     "pageDescription": "Find a mentor in the GoodTribes network",
@@ -4672,7 +4688,8 @@
       "todo_completed": "{who} ticked off an item",
       "milestone_added": "{who} added the milestone “{title}”",
       "milestone_completed": "{who} reached the milestone “{title}”",
-      "other": "{who} updated the project"
+      "other": "{who} updated the project",
+      "tool_edited": "{who} worked on {tool}"
     }
   },
   "MyGoodTribes": {

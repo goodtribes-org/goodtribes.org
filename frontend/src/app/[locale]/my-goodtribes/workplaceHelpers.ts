@@ -48,6 +48,10 @@ const ACTIVITY_ICON: Record<string, string> = {
   update_posted: "✍️",
   milestone_added: "🎯",
   milestone_completed: "✅",
+  task_completed: "☑️",
+  task_created: "📝",
+  task_moved: "➡️",
+  tool_edited: "🛠️",
 };
 
 export function activityIcon(type: string): string {
@@ -64,8 +68,16 @@ export function activityDescription(t: T, type: string, projectTitle: string): s
       return t("activityMilestoneAdded", { project: projectTitle });
     case "milestone_completed":
       return t("activityMilestoneCompleted", { project: projectTitle });
+    case "task_completed":
+      return t("activityTaskCompleted", { project: projectTitle });
+    case "task_created":
+      return t("activityTaskCreated", { project: projectTitle });
+    case "task_moved":
+      return t("activityTaskMoved", { project: projectTitle });
+    case "tool_edited":
+      return t("activityToolEdited", { project: projectTitle });
     default:
-      return `${type} ${projectTitle}`;
+      return t("activityOther", { project: projectTitle });
   }
 }
 
