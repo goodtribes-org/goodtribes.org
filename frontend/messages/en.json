@@ -3910,8 +3910,8 @@
     "marketScan": "The market scan"
   },
   "FieldProvenance": {
-    "known": "You said it",
-    "knownHint": "It came from you, or you've confirmed it.",
+    "known": "You know this",
+    "knownHint": "It comes from you, or you've confirmed it.",
     "aiGuess": "AI's guess",
     "aiGuessHint": "The AI drew this conclusion. Is it right?",
     "assumed": "Assumption",
@@ -4008,7 +4008,7 @@
   "IdeaStart": {
     "summaryHeading": "The AI has drafted the whole Idea phase",
     "summaryBody": "From your conversation, the AI has written the canvas, impact model and value proposition. Most of it is guesses you need to test. That's the point: the Idea phase is about finding out what's true.",
-    "said": "{count, plural, one {thing you said yourself} other {things you said yourself}}",
+    "said": "{count, plural, one {thing you know} other {things you know}}",
     "guessed": "{count, plural, one {thing the AI guesses} other {things the AI guesses}}",
     "heading": "Start here, in this order",
     "intro": "Three things. The rest of the page can wait.",
