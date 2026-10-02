@@ -34,7 +34,7 @@ export const DEFAULT_SITE_PAGES: Record<SitePageSlug, Record<Locale, { title: st
         <h3>6. Impact</h3>
         <p>Mät och visa skillnaden ni gör.</p>
         <ul><li>Mät och rapportera skillnaden ni gör</li><li>Låt någon utomstående granska resultatet</li><li>Fira, och bestäm nästa steg: fortsätta, låta andra göra om det eller avsluta</li></ul>
-        <p><strong>I slutet av varje fas tar ni ett beslut tillsammans: fortsätta, justera, byta riktning eller pausa. Ni ser vad som är gjort och vad som återstår, men ni bestämmer själva. Inget är låst.</strong></p>
+        <blockquote><p>I slutet av varje fas tar ni ett beslut tillsammans: fortsätta, justera, byta riktning eller pausa. Ni ser vad som är gjort och vad som återstår, men ni bestämmer själva. Inget är låst.</p></blockquote>
         <h2>AI-guiden</h2><p>Om du vill kan AI:n hjälpa till. Den fyller i utkast utifrån det du berättar, och allt den skriver märks som utkast. Du skriver över det du vill, och du kan skruva ner eller stänga av AI:n när som helst.</p>
         <h2>Ditt bidrag syns</h2><p>När du gör klart uppgifter i ett projekt får du Tribe Tokens. De visar vad du har bidragit med och ger dig röst i projektets omröstningar. Den som uppskattar något du gjort kan också tacka dig direkt.</p>
       `,
@@ -63,7 +63,7 @@ export const DEFAULT_SITE_PAGES: Record<SitePageSlug, Record<Locale, { title: st
         <h3>6. Impact</h3>
         <p>Measure and show the change you make.</p>
         <ul><li>Measure and report the change you make</li><li>Have someone outside review the results</li><li>Celebrate, and decide the next step: carry on, let others repeat it, or close</li></ul>
-        <p><strong>At the end of each phase you decide together: carry on, adjust, change direction or pause. You see what&#x27;s done and what&#x27;s left, but it&#x27;s your call. Nothing is locked.</strong></p>
+        <blockquote><p>At the end of each phase you decide together: carry on, adjust, change direction or pause. You see what&#x27;s done and what&#x27;s left, but it&#x27;s your call. Nothing is locked.</p></blockquote>
         <h2>The AI guide</h2><p>If you like, the AI can help. It drafts from what you tell it, and everything it writes is marked as a draft. Overwrite whatever you like, and turn the AI down or off at any time.</p>
         <h2>Your contribution shows</h2><p>When you finish tasks in a project you earn Tribe Tokens. They show what you&#x27;ve contributed and give you a vote in the project&#x27;s polls. Anyone who appreciates something you did can also thank you directly.</p>
       `,
