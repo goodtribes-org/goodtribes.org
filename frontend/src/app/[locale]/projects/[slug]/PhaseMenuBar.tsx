@@ -7,7 +7,7 @@ import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
 import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, numberChecklist, overviewPathFor, PHASE_COLORS, hexToRgba, type ProjectPhaseValue } from "@/lib/projectPhase";
-import { nextStep, phaseProgress } from "@/lib/phaseProgress";
+import { nextStep, phaseStepProgress, type PhaseStep } from "@/lib/phaseProgress";
 import { activePhaseFor } from "@/lib/phaseForPath";
 import { usePathname } from "@/i18n/navigation";
 import { ChevronDown } from "lucide-react";
@@ -78,7 +78,8 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
 
   const auto = useMemo(() => new Set(autoDoneKeys), [autoDoneKeys]);
   const doneKeys = useMemo(() => new Set([...ticked, ...auto]), [ticked, auto]);
-  const progress = phaseProgress(doneKeys);
+  // Counted in steps: each bar is one segment per main step (phaseSteps).
+  const progress = phaseStepProgress(doneKeys);
   const currentIndex = DISPLAY_PHASES.findIndex((p) => p.value === toDisplayPhase(phase));
   // In the header the active phase follows the page: working in a tool of
   // another phase (e.g. Designsprints → Uppstart) makes that phase active;
@@ -88,6 +89,10 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
     variant === "header" ? DISPLAY_PHASES.findIndex((p) => p.value === activePhaseFor(pathname, slug, phase)) : currentIndex;
   const viewingDisplayPhase = viewingPhase ? toDisplayPhase(viewingPhase) : null;
   const next = showNextStep ? nextStep(phase, doneKeys) : null;
+  // The segment ringed in the project's own phase: its first unfinished step.
+  const nextSegmentKey = progress[currentIndex]?.steps.find((s) => !s.done)?.key ?? null;
+  const stepTitle = (s: PhaseStep) =>
+    `${tChecklist(s.key)}${s.subTotal ? ` — ${t("subStepsLabel", { done: s.subDone, total: s.subTotal })}` : ""}${s.done ? " ✓" : ""}`;
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -205,15 +210,21 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
           const headerStyle = variant === "header";
           const column = headerStyle ? (
             <>
-              {/* As on the homepage: a full-colour bar; the tasks done show as
-                  a thin white line along its middle (inset 3px, so an empty
-                  phase is just the plain bar). */}
-              <span className="relative block h-2 w-full rounded-full" style={{ background: color }} aria-hidden>
-                <span
-                  className="absolute left-[3px] top-1/2 h-[2px] -translate-y-1/2 rounded-full bg-white transition-[width] duration-500"
-                  style={{ width: `calc((100% - 6px) * ${pr.pct / 100})` }}
-                />
-              </span>
+              {/* One segment per step (Niklas's choice, 2026-10-02): a done
+                  step in the phase colour, an open one tinted, the next step
+                  of the project's phase ringed. */}
+              {isCurrent ? (
+                <StepSegments steps={pr.steps} color={color} nextKey={i === currentIndex ? nextSegmentKey : null} title={stepTitle} />
+              ) : (
+                // Below 1500px the other phases' columns are too narrow for
+                // segments (2–4px each at 1024px): a plain filled bar there.
+                <>
+                  <StepSegments steps={pr.steps} color={color} nextKey={i === currentIndex ? nextSegmentKey : null} title={stepTitle} className="hidden min-[1500px]:flex" />
+                  <span className="block h-2 w-full overflow-hidden rounded-full min-[1500px]:hidden" style={{ background: hexToRgba(color, 0.22) }} aria-hidden>
+                    <span className="block h-full rounded-full transition-[width] duration-500" style={{ width: `${pr.pct}%`, background: color }} />
+                  </span>
+                </>
+              )}
               <span className="mt-2 flex items-center gap-2">
                 {/* Number circle, as on the homepage: filled, white number, ✓ once
                     done. A ring outside a white gap marks the phase being worked
@@ -252,13 +263,19 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
             </>
           ) : (
             <>
-              <span
-                className={`block w-full overflow-hidden rounded-full ${compact ? "h-1.5" : "h-2"}`}
-                style={{ background: hexToRgba(color, 0.2) }}
-                aria-hidden
-              >
-                <span className="block h-full rounded-full transition-[width] duration-500" style={{ width: `${pr.pct}%`, background: color }} />
-              </span>
+              {/* On narrow screens only the project's own phase is split into
+                  steps — six segmented bars would be ~5px per segment. */}
+              {isCurrent ? (
+                <StepSegments steps={pr.steps} color={color} nextKey={nextSegmentKey} title={stepTitle} thin={compact} />
+              ) : (
+                <span
+                  className={`block w-full overflow-hidden rounded-full ${compact ? "h-1.5" : "h-2"}`}
+                  style={{ background: hexToRgba(color, 0.2) }}
+                  aria-hidden
+                >
+                  <span className="block h-full rounded-full transition-[width] duration-500" style={{ width: `${pr.pct}%`, background: color }} />
+                </span>
+              )}
               <span className={`flex items-center ${compact ? "mt-1.5 gap-1.5" : "mt-2.5 gap-1.5 sm:gap-2"}`}>
                 <span
                   className={`flex shrink-0 items-center justify-center rounded-full font-semibold text-white ${compact ? "h-5 w-5 text-[11px]" : "h-6 w-6 text-xs sm:h-7 sm:w-7 sm:text-sm"} ${
@@ -476,5 +493,23 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
         </p>
       )}
     </div>
+  );
+}
+
+// A phase bar split into its steps. Hovering a segment names the step.
+function StepSegments({ steps, color, nextKey, title, thin, className = "flex" }: { steps: PhaseStep[]; color: string; nextKey: string | null; title: (s: PhaseStep) => string; thin?: boolean; className?: string }) {
+  return (
+    <span className={`${className} w-full gap-[3px] ${thin ? "h-1.5" : "h-2"}`} aria-hidden>
+      {steps.map((s) => (
+        <span
+          key={s.key}
+          title={title(s)}
+          className="relative block h-full min-w-0 flex-1 overflow-hidden rounded-full"
+          style={{ background: hexToRgba(color, 0.22), boxShadow: s.key === nextKey ? `inset 0 0 0 1.5px ${color}` : undefined }}
+        >
+          <span className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500" style={{ width: `${s.frac * 100}%`, background: color }} />
+        </span>
+      ))}
+    </span>
   );
 }

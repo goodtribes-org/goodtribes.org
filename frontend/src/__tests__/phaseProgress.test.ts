@@ -1,4 +1,4 @@
-import { autoDoneKeys, MIN_INTERVIEWS, MIN_LOG_ENTRIES, MIN_TEST_FEEDBACK, nextStep, phaseProgress, type ProjectSignals } from "../lib/phaseProgress";
+import { autoDoneKeys, MIN_INTERVIEWS, MIN_LOG_ENTRIES, MIN_TEST_FEEDBACK, nextStep, phaseProgress, phaseStepProgress, phaseSteps, type ProjectSignals } from "../lib/phaseProgress";
 import { MIN_INTERVIEWS as GATE_MIN_INTERVIEWS, MIN_LOG_ENTRIES as GATE_MIN_LOG, MIN_TEST_FEEDBACK as GATE_MIN_FEEDBACK } from "../lib/phaseGate";
 
 jest.mock("../lib/prisma", () => ({ prisma: {} }));
@@ -145,5 +145,25 @@ describe("phaseProgress", () => {
   it("skips a parent step while its sub-steps are what's left", () => {
     const done = new Set(["core_team_formed"]);
     expect(nextStep("PILOT", done)?.key).toBe("map_understand");
+  });
+
+  it("the bars have one segment per main step, sub-steps fold into their parent", () => {
+    expect(phaseStepProgress(new Set()).map((p) => p.total)).toEqual([7, 5, 7, 6, 5, 4]);
+  });
+
+  it("a step with sub-steps fills as they get done", () => {
+    const sprint = phaseSteps("PILOT", new Set(["map_understand", "sketch_solutions"])).find((s) => s.key === "sprint_prepped");
+    expect(sprint).toMatchObject({ done: false, frac: 0.4, subDone: 2, subTotal: 5 });
+  });
+
+  it("a step is done when ticked itself or when all its sub-steps are", () => {
+    const subs = ["map_understand", "sketch_solutions", "decide_plan", "build_prototype", "test_with_users"];
+    expect(phaseSteps("PILOT", new Set(subs)).find((s) => s.key === "sprint_prepped")).toMatchObject({ done: true, frac: 1 });
+    expect(phaseSteps("PILOT", new Set(["sprint_prepped"])).find((s) => s.key === "sprint_prepped")).toMatchObject({ done: true, frac: 1 });
+  });
+
+  it("counts steps done and fills by fraction", () => {
+    const p = phaseStepProgress(new Set(["core_team_formed", "map_understand", "sketch_solutions"]))[1];
+    expect(p).toMatchObject({ done: 1, total: 5, pct: 28, complete: false });
   });
 });

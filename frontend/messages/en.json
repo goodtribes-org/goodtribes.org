@@ -2941,12 +2941,13 @@
   },
   "PhaseMenuBar": {
     "navLabel": "Project phases",
-    "progressLabel": "{done} of {total} tasks done",
+    "progressLabel": "{done} of {total} steps done",
     "autoDone": "Done — visible in the project's content",
     "autoDoneShort": "done",
     "nextStep": "Next step:",
     "guideLinkLabel": "{phase} guide",
-    "overviewLinkLabel": "{phase} on one page"
+    "overviewLinkLabel": "{phase} on one page",
+    "subStepsLabel": "{done}/{total} sub-steps"
   },
   "PhaseChecklistWidget": {
     "heading": "Your phase journey",
