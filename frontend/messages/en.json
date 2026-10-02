@@ -4160,6 +4160,7 @@
     "workHeading": "The work in this phase",
     "workBoardLink": "Open the board →",
     "workNone": "No tasks are tied to this phase yet. Tasks you or the AI create in the phase show up here.",
+    "workNoneStarted": "None of the phase’s tasks has been started yet.",
     "workDone": "{done} of {total} tasks done",
     "workMore": "+ {count} more on the board",
     "workEarlierOpen": "{count, plural, one {# task from an earlier phase isn't done.} other {# tasks from earlier phases aren't done.}}",

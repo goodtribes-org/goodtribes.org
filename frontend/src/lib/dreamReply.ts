@@ -9,6 +9,11 @@ import { logger } from "@/lib/logger";
 import { mergeDreamState, parseDreamState, parseOpenQuestions } from "@/lib/dreamConversation";
 import { DREAM_REPLY_TOOL, DREAM_SYSTEM_PROMPT, dreamProgressNote } from "@/lib/prompts/dreamConversation";
 import { htmlToText } from "@/lib/htmlToText";
+import { publishToRoom } from "@/lib/redis";
+
+// The room's typing indicator expires after 4 s, so repeat it while the
+// model works. The AI's own message clears it, like any author's.
+const AI_TYPING_INTERVAL_MS = 3000;
 
 
 export function dreamConversationUrl(roomId: string): string {
@@ -28,6 +33,9 @@ function toHtml(text: string): string {
 // Fire-and-forget from sendRoomMessage, like triggerAiThreadReply.
 export async function triggerDreamReply(room: Room, triggeredByUserId: string): Promise<void> {
   const aiUser = await getAiParticipantUser();
+  const showTyping = () => publishToRoom(room.id, { type: "typing", userId: aiUser.id, name: aiUser.name ?? "AI" });
+  showTyping();
+  const typing = setInterval(showTyping, AI_TYPING_INTERVAL_MS);
 
   try {
     const dream = await prisma.dreamConversation.findUnique({ where: { roomId: room.id } });
@@ -100,5 +108,7 @@ export async function triggerDreamReply(room: Room, triggeredByUserId: string): 
   } catch (err) {
     logger.error("dream-conversation: reply failed", { roomId: room.id, err: String(err) });
     await persistAiMessage(room.id, "<p>Något gick fel på min sida — skriv gärna ditt svar igen.</p>", aiUser.id).catch(() => {});
+  } finally {
+    clearInterval(typing);
   }
 }
