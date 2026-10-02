@@ -4695,6 +4695,64 @@
     },
     "projectsMoving": "{moving} av {total} i rörelse",
     "projectsMovingAria": "{count, plural, one {# projekt i rörelse} other {# projekt i rörelse}}",
-    "weeklyAria": "Aktivitet per vecka, äldst först: {counts}"
+    "weeklyAria": "Aktivitet per vecka, äldst först: {counts}",
+    "help": "Hjälp"
+  },
+  "HelpPanel": {
+    "label": "Hjälp",
+    "close": "Stäng",
+    "tabs": {
+      "guides": "Guider",
+      "contact": "Kontakta oss"
+    },
+    "searchPlaceholder": "Sök bland guiderna",
+    "noMatch": "Ingen guide matchar.",
+    "askUs": "Fråga oss i stället →",
+    "guides": {
+      "gettingStarted": {
+        "title": "Kom igång med GoodTribes",
+        "text": "Vad GoodTribes är och hur det fungerar: idéer blir projekt som drivs av volontärer, steg för steg genom sex faser."
+      },
+      "startProject": {
+        "title": "Starta ett projekt",
+        "text": "Beskriv din idé, så hjälper AI:n dig att ta fram ett första utkast. Allt går att ändra, och du bjuder in andra när du vill."
+      },
+      "findProject": {
+        "title": "Hitta ett projekt att hjälpa till i",
+        "text": "Bläddra bland projekten och se vilka som söker just din kompetens. Ansök om att gå med med ett klick."
+      },
+      "myGoodTribes": {
+        "title": "Mitt GoodTribes",
+        "text": "Din egen översikt: det du ska göra, hur det går i dina projekt, vad du följer och vem som har tackat dig."
+      },
+      "academy": {
+        "title": "GoodTribes Academy",
+        "text": "Korta kurser i projektledning, crowdfunding, community och impact – för dig som vill lära dig mer."
+      },
+      "codeOfConduct": {
+        "title": "Uppförandekod",
+        "text": "Hur vi är mot varandra på GoodTribes, och vad som händer om någon bryter mot reglerna."
+      }
+    },
+    "contact": {
+      "heading": "Hittar du inte det du letar efter?",
+      "text": "Skicka en fråga eller ett förslag till oss som driver GoodTribes. Det du skriver syns bara för oss, och du ser vårt svar på samma sida.",
+      "cta": "Skicka en fråga"
+    },
+    "thisPage": "Om den här sidan",
+    "projectPhase": "Projektet är i fasen {phase}",
+    "pagePhase": "Sidan hör till fasen {phase}",
+    "nextStep": "Nästa steg: {step}",
+    "phaseGuide": "Läs guiden för {phase}",
+    "moreGuides": "Fler guider",
+    "phases": {
+      "IDEA": "Här formulerar ni drömmen, vem den hjälper och hur den kan fungera: Social Lean Canvas, värdeerbjudande, intervjuer och omvärldsbevakning. Målet är att förstå problemet innan ni bygger något.",
+      "PILOT": "Här bildar ni kärnteamet, testar lösningen i en Design Sprint och planerar piloten.",
+      "PRODUCTION": "Här genomför ni piloten, loggar vad som händer och utvärderar resultatet – och gör lösningen redo för fler.",
+      "ESTABLISH": "Här gör ni det som fungerade i piloten till stabil drift: återkommande finansiering, partnerskap, en supporterbas och en playbook som andra kan följa.",
+      "SCALE": "Här växer projektet till fler platser eller målgrupper – genom att projektet självt växer, att andra replikerar modellen eller att någon forkar den.",
+      "IMPACT": "Här mäter och redovisar ni vilken skillnad projektet faktiskt gjort, får resultatet granskat och bestämmer nästa steg: fortsätta, replikera eller avsluta ansvarsfullt."
+    },
+    "projectStillIn": "Projektet är fortfarande i fasen {phase}."
   }
 }
