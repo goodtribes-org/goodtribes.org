@@ -3923,17 +3923,23 @@
   },
   "ProjectStart": {
     "heading": "Starta ett nytt projekt",
-    "intro": "Hur mycket vill du att AI:n ska göra? Du kan ändra det när som helst, för hela projektet eller för enskilda steg.",
+    "intro": "Vill du ta hjälp av AI:n, eller göra det själv? Båda vägarna leder till samma projekt, och du kan ändra dig när som helst.",
     "recommended": "Rekommenderas",
     "agentTitle": "Låt AI:n göra jobbet",
     "agentDesc": "Svara på några korta frågor om din idé. AI:n fyller sedan i hela Idéfasen åt dig, och du granskar och redigerar på en sida.",
     "assistTitle": "AI:n hjälper mig",
     "assistDesc": "Svara på några korta frågor om din idé. Du fyller i guiden själv, med AI:ns förslag bredvid varje fält.",
-    "manualTitle": "Jag gör allt själv",
-    "manualDesc": "Gå direkt till guiden och fyll i allt själv, utan AI.",
+    "manualTitle": "Jag gör det själv",
+    "manualDesc": "Gå direkt till guiden och fyll i projektet själv. Inget samtal, inga AI-förslag.",
     "changeLater": "Samtalet tar några minuter och kan pausas. Allt AI:n skriver märks som utkast och går att ändra.",
     "resumeHeading": "Fortsätt samtalet",
-    "resumeLink": "Påbörjat samtal ({covered} av 6 områden) — senast {date}"
+    "resumeLink": "Påbörjat samtal ({covered} av 6 områden) — senast {date}",
+    "aiTitle": "Med AI-guiden",
+    "aiDesc": "Du berättar om din idé i ett kort samtal. Välj hur mycket AI:n ska göra:",
+    "manualPoint1": "Du skriver allt med egna ord",
+    "manualPoint2": "AI:n är avstängd i projektet",
+    "manualPoint3": "Du kan slå på AI senare om du vill",
+    "manualCta": "Starta utan AI →"
   },
   "DreamConversation": {
     "heading": "Drömsamtalet",
@@ -4547,7 +4553,8 @@
       "note": "Gratis konto krävs för AI-guiden · Samtalet är privat tills du själv skapar projektet",
       "restored": "Välkommen tillbaka! Din dröm finns kvar, tryck på pilen för att börja.",
       "submit": "Börja med AI-guiden",
-      "helpInstead": "Vill du hellre hjälpa till? Se projekt som söker folk →"
+      "helpInstead": "Vill du hellre hjälpa till? Se projekt som söker folk →",
+      "startProject": "Starta ett projekt utan AI →"
     },
     "live": {
       "label": "Live",
