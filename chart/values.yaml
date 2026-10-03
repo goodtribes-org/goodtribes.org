@@ -207,20 +207,21 @@ ingress:
 
 minio:
   replicaCount: 1
-  # quay.io, not Docker Hub: docker.io/minio/* stopped serving anonymous
-  # pulls (the token endpoint returns a token carrying no pull scope, so
-  # kubelet fails with "insufficient_scope: authorization failed"). quay.io
-  # publishes the same images and is still anonymously pullable.
+  # Mirrored to our own ghcr.io, pinned by version. MinIO no longer serves
+  # anonymous pulls anywhere: docker.io/minio/* stopped around 2026-09-11 and
+  # quay.io/minio/* around 2026-09-24 (both return 401), which wedged the
+  # minio-init hook and with it every ArgoCD sync. The mirrors are the exact
+  # upstream images (minio/minio@sha256:14cea493…, minio/mc@sha256:a7fe349e…)
+  # plus an OCI source label linking them to this repo, so they share its
+  # package permissions and pull with ghcr-pull-secret like the frontend.
   image:
-    repository: quay.io/minio/minio
-    tag: latest
+    repository: ghcr.io/goodtribes-org/goodtribes.org/minio
+    tag: RELEASE.2025-09-07T16-13-09Z
     pullPolicy: IfNotPresent
-  # The mc client, used by the minio-init hook Job and both backup
-  # CronJobs. Was hardcoded as minio/mc:latest in those three templates —
-  # same registry story as the server image above.
+  # The mc client, used by the minio-init hook Job and both backup CronJobs.
   mc:
-    repository: quay.io/minio/mc
-    tag: latest
+    repository: ghcr.io/goodtribes-org/goodtribes.org/mc
+    tag: RELEASE.2025-08-13T08-35-41Z
   service:
     apiPort: 9000
     consolePort: 9001
