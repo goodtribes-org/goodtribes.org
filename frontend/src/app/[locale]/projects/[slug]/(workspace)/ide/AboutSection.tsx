@@ -151,12 +151,16 @@ export default function AboutSection({
         </div>
       )}
       <div className="flex flex-wrap items-center gap-2 text-xs text-dark-slate/60">
+        {/* Category and tags are AI guesses after a Drömsamtal too (written
+            in AGENT mode, see createProjectFromDream): marked like the rest. */}
         {about.category && <span className="rounded-full bg-dry-sage/30 px-2 py-0.5">{tCat(CATEGORY_KEYS[about.category] ?? "categoryOther")}</span>}
+        {about.category && badge("category", about.category)}
         {about.tags.map((tag) => (
           <span key={tag} className="rounded-full border border-muted-teal/40 px-2 py-0.5">
             {tag}
           </span>
         ))}
+        {about.tags.length > 0 && badge("tags", about.tags)}
       </div>
     </div>
   );
