@@ -130,10 +130,10 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
           )}
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-dark-slate mb-2">
+        <fieldset>
+          <legend className="block text-sm font-medium text-dark-slate mb-2">
             {t("legalTypeLabel")}
-          </label>
+          </legend>
           <div className="grid grid-cols-2 gap-2">
             {CREATABLE_LEGAL_TYPES.map((legalType) => (
               <label
@@ -151,7 +151,7 @@ export default function NewProjectGuide({ initial = {}, ideaId, fromThread, cont
               </label>
             ))}
           </div>
-        </div>
+        </fieldset>
 
         <div className="grid grid-cols-2 gap-4">
           <div>

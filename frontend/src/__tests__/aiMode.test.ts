@@ -22,6 +22,7 @@ jest.mock("../lib/prisma", () => ({
 }));
 jest.mock("../lib/anthropic", () => ({
   isAiEnabled: () => aiEnabled,
+  isAiTemporarilyUnavailable: async () => false,
   checkAiRateLimit: (...a: unknown[]) => checkAiRateLimit(...a),
   checkAiProjectBudget: (...a: unknown[]) => checkAiProjectBudget(...a),
   checkAiProjectCallLimit: (...a: unknown[]) => checkAiProjectCallLimit(...a),
