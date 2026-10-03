@@ -11,6 +11,8 @@ const none: ProjectSignals = {
   activeMemberCount: 1,
   inviteCount: 0,
   leanCanvasFilled: 0,
+  impactModelFilled: 0,
+  impactModelFields: 6,
   valuePropositionFilled: 0,
   interviewCount: 0,
   marketScanCount: 0,
@@ -132,14 +134,14 @@ describe("phaseProgress", () => {
   });
 
   it("a phase is complete when every task is done", () => {
-    const idea = ["dream_defined", "ai_reviewed", "peer_feedback_requested", "lean_canvas_created", "value_proposition_created", "target_audience_interviews", "market_scan_partners"];
+    const idea = ["dream_defined", "lean_canvas_created", "value_proposition_created", "impact_model_created", "ai_reviewed", "target_audience_interviews", "market_scan_partners"];
     expect(phaseProgress(new Set(idea))[0]).toMatchObject({ pct: 100, complete: true });
   });
 
   it("next step is the first open task of the current phase", () => {
     expect(nextStep("IDEA", new Set())?.key).toBe("dream_defined");
-    expect(nextStep("SPRINT", new Set(["dream_defined"]))?.key).toBe("ai_reviewed");
-    expect(nextStep("IDEA", new Set(["dream_defined", "ai_reviewed", "peer_feedback_requested", "lean_canvas_created", "value_proposition_created", "target_audience_interviews", "market_scan_partners"]))).toBeNull();
+    expect(nextStep("SPRINT", new Set(["dream_defined"]))?.key).toBe("lean_canvas_created");
+    expect(nextStep("IDEA", new Set(["dream_defined", "lean_canvas_created", "value_proposition_created", "impact_model_created", "ai_reviewed", "target_audience_interviews", "market_scan_partners"]))).toBeNull();
   });
 
   it("skips a parent step while its sub-steps are what's left", () => {

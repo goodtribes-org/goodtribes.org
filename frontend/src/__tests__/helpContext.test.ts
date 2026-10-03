@@ -4,21 +4,26 @@ import { GUIDES, helpContextFor, orderedGuides, PROJECT_PAGE_HELP } from "../lib
 
 describe("helpContextFor", () => {
   it("finds the page's own help text inside a project", () => {
-    expect(helpContextFor("/projects/x/tasks")).toEqual({ projectSlug: "x", pageHelp: "TasksPage" });
-    expect(helpContextFor("/projects/x/lean-canvas")).toEqual({ projectSlug: "x", pageHelp: "LeanCanvasPage" });
-    expect(helpContextFor("/projects/x/wiki/start")).toEqual({ projectSlug: "x", pageHelp: "WikiPageDetail" });
+    expect(helpContextFor("/projects/x/tasks")).toEqual({ projectSlug: "x", pageHelp: "TasksPage", sectionIntros: [] });
+    expect(helpContextFor("/projects/x/lean-canvas")).toEqual({ projectSlug: "x", pageHelp: "LeanCanvasPage", sectionIntros: ["leanCanvasPage"] });
+    expect(helpContextFor("/projects/x/wiki/start")).toEqual({ projectSlug: "x", pageHelp: "WikiPageDetail", sectionIntros: [] });
     expect(helpContextFor("/projects/x/funding/recurring").pageHelp).toBe("RecurringFundingPage");
+    // The phase page's section intros are closed on the page, so the help
+    // panel lists them.
+    expect(helpContextFor("/projects/x/ide").sectionIntros).toEqual([
+      "about", "leanCanvas", "valueProposition", "impactModel", "sdg", "interviews", "marketScan", "gate",
+    ]);
   });
 
   it("a project page without its own text still knows the project", () => {
-    expect(helpContextFor("/projects/x")).toEqual({ projectSlug: "x", pageHelp: null });
-    expect(helpContextFor("/projects/x/uppstart")).toEqual({ projectSlug: "x", pageHelp: null });
+    expect(helpContextFor("/projects/x")).toEqual({ projectSlug: "x", pageHelp: null, sectionIntros: [] });
+    expect(helpContextFor("/projects/x/uppstart")).toEqual({ projectSlug: "x", pageHelp: null, sectionIntros: [] });
   });
 
   it("outside a project, and on /projects/new, there's no project", () => {
-    expect(helpContextFor("/")).toEqual({ projectSlug: null, pageHelp: null });
-    expect(helpContextFor("/projects")).toEqual({ projectSlug: null, pageHelp: null });
-    expect(helpContextFor("/projects/new/samtal")).toEqual({ projectSlug: null, pageHelp: null });
+    expect(helpContextFor("/")).toEqual({ projectSlug: null, pageHelp: null, sectionIntros: [] });
+    expect(helpContextFor("/projects")).toEqual({ projectSlug: null, pageHelp: null, sectionIntros: [] });
+    expect(helpContextFor("/projects/new/samtal")).toEqual({ projectSlug: null, pageHelp: null, sectionIntros: [] });
   });
 
   it("every mapped page has a help text in both languages", () => {

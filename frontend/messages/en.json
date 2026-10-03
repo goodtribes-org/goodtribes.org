@@ -2676,7 +2676,7 @@
     "saving": "Saving…",
     "save": "Save",
     "cancel": "Cancel",
-    "emptyEditable": "Empty — click Edit to fill in.",
+    "emptyEditable": "Empty — click here to fill it in.",
     "emptyReadOnly": "Not filled in yet."
   },
   "LeanCanvasFields": {
@@ -2945,7 +2945,8 @@
     "sdg_impact_measured": "Measure and report actual SDG impact",
     "impact_externally_verified": "External verification/impact report",
     "results_celebrated": "Celebrate and showcase results for the community and funders",
-    "next_step_decided": "Decide the next step: continue, replicate, or responsibly wind down"
+    "next_step_decided": "Decide the next step: continue, replicate, or responsibly wind down",
+    "impact_model_created": "Impact model"
   },
   "PhaseMenuBar": {
     "navLabel": "Project phases",
@@ -4003,7 +4004,8 @@
     "ignore": "Ignore"
   },
   "CanvasAiBar": {
-    "review": "Review what I've written",
+    "reviewIntro": "Want a second review? The AI reads what you've written and suggests at most three things to improve.",
+    "review": "Review with AI",
     "reviewing": "Reviewing…",
     "close": "Close",
     "switchToAssist": "Want some help? Switch to AI helps me"
@@ -4033,6 +4035,9 @@
     "fold": "Fold"
   },
   "IdeaOverview": {
+    "sdgAiIntro": "Not sure which goals fit? The AI reads your description and canvas and picks up to three.",
+    "sdgAiChoose": "Let the AI choose goals",
+    "sdgAiChoosing": "The AI is choosing…",
     "heading": "The Idea phase",
     "intro": "Here's everything the AI produced for your project. It's all marked as drafts — read through and press Edit wherever something is off. Last come the things only you can do.",
     "introWriting": "The AI is filling in your project right now. Sections appear as they're ready — you can start reading straight away.",
@@ -4112,7 +4117,48 @@
     "foldedCanvas": "{fields, plural, one {# box} other {# boxes}} · {guesses, plural, =0 {no guesses} one {# guess} other {# guesses}}",
     "foldedCritique": "{count, plural, =0 {no objections yet} one {# objection} other {# objections}}",
     "foldedSdg": "{count, plural, =0 {no goals chosen} one {# goal} other {# goals}}",
-    "foldedMarketScan": "{count, plural, =0 {no actors yet} one {# actor} other {# actors}}"
+    "foldedMarketScan": "{count, plural, =0 {no actors yet} one {# actor} other {# actors}}",
+    "editText": "Edit text",
+    "summaryMissing": "No summary yet — one sentence that makes people want to read on.",
+    "descriptionMissing": "No description yet — tell us about the problem, the idea and who you need.",
+    "coverAdd": "Add an image for the project",
+    "coverWhy": "The image is the first thing volunteers and sponsors see. Projects with an image get more people to stop and read.",
+    "coverSpec": "JPG, PNG or WebP · max 5 MB · landscape, at least 1600 px wide",
+    "coverChange": "Change image",
+    "coverUploading": "Uploading…",
+    "coverFailed": "The image couldn't be uploaded.",
+    "coverWrongType": "Choose a JPG, PNG, WebP or GIF image.",
+    "coverTooLarge": "The image is larger than 5 MB.",
+    "length": {
+      "summary": {
+        "short": "{n} characters — too short, say what you do and for whom",
+        "good": "{n} characters — just right",
+        "long": "{n} characters — too long, one sentence is enough"
+      },
+      "description": {
+        "short": "{n} words — too short, tell about the problem, the idea and who you need",
+        "good": "{n} words — just right",
+        "long": "{n} words — too long, most people only read the start"
+      }
+    },
+    "aboutAiIntro": "Want help with the text? The AI drafts a proposal from what you've told so far: your own text, and the Dream conversation if you had one.",
+    "aboutAiWrite": "Let the AI write a draft",
+    "aboutAiWriting": "The AI is writing…",
+    "aboutAiDraftLabel": "The AI's draft",
+    "aboutAiUse": "Use the draft",
+    "aboutAiAgain": "Write a new one",
+    "aboutAiDiscard": "Discard",
+    "aboutAiNote": "The draft replaces the summary and description and is marked as an assumption. You can edit it afterwards.",
+    "guideEyebrow": "Interview guide",
+    "guideHeading": "The questions to bring to the interviews",
+    "guideEdit": "Edit in the wiki",
+    "interviewAiIntro": "Want help with the questions? The AI suggests interview questions that test the assumptions you don't yet know hold.",
+    "interviewAiWrite": "Let the AI suggest interview questions",
+    "interviewAiWriting": "The AI is writing questions…",
+    "interviewAiDraftLabel": "The AI's suggested interview guide",
+    "interviewAiUse": "Use as our interview guide",
+    "interviewAiReplace": "Replace our interview guide",
+    "interviewAiReplaceNote": "You already have an interview guide. The suggestion replaces it, and the old one is saved as its own page in the wiki."
   },
   "PhaseGate": {
     "intro": "The Idea phase is done when you know enough to start testing the solution. Here you see what's done, what the evidence says — and you make the call. You can move on even if something is missing; it's just noted.",
@@ -4857,5 +4903,52 @@
     "description": "GoodTribes is where people turn ideas that make the world better into reality, together. Someone has a dream, others help with what they can, and the project moves step by step from idea to real change.",
     "ctaStart": "Start a project",
     "ctaBrowse": "See the projects"
+  },
+  "PhaseSteps": {
+    "heading": "The steps of the Idea phase",
+    "oneAtATime": "Focus on one step",
+    "showAll": "Show everything",
+    "back": "← Back",
+    "next": "Next →",
+    "stepOf": "Step {n} of {total}",
+    "status": {
+      "done": "Done",
+      "review": "AI draft to review",
+      "started": "Started",
+      "empty": "Not started"
+    },
+    "prevTo": "Previous: {step}",
+    "nextTo": "Next: {step}"
+  },
+  "CanvasInlineEdit": {
+    "clickToEdit": "Click to write",
+    "howToSave": "Saves when you click outside · Esc undoes",
+    "saving": "Saving …",
+    "saved": "Saved ✓"
+  },
+  "StepCards": {
+    "heading": "Tasks for this step",
+    "none": "Task",
+    "allDone": "All done",
+    "open": "{count, plural, one {# task} other {# tasks}}",
+    "empty": "No tasks for this step yet.",
+    "newPlaceholder": "New task for this step …",
+    "add": "Add",
+    "columns": {
+      "BACKLOG": "Wishlist",
+      "TODO": "To do",
+      "DOING": "Doing",
+      "REVIEW": "In review",
+      "DONE": "Done"
+    }
+  },
+  "StepDone": {
+    "markDone": "Done",
+    "saving": "Saving…",
+    "isDone": "This step is done",
+    "undo": "Undo",
+    "alsoCards": "Also mark {count, plural, one {the step's open task} other {the step's # open tasks}} as done on the board",
+    "moved": "{count, plural, one {# task was} other {# tasks were}} moved to Done on the board.",
+    "notMoved": "Couldn't move: {titles}. Finish their subtasks first, or move them on the board."
   }
 }

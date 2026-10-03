@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
+import { newHomeDisplayFont } from "@/components/ny-startsida/fonts";
 
 // Short "how to do this" boxes per section, in the spirit of IdeaBuddy's
 // per-section intros (docs/plans/fasframsteg-och-overblick.md, part 3):
 // a title, two or three sentences and one tip, written for a non-profit
-// initiativtagare. Closed per viewer and per section in localStorage — a
-// per-viewer convenience, so every read/write is wrapped in try/catch and
-// the page works without it. Shown by default until closed.
+// initiativtagare. Closed by default (2026-10-03: shown open they took a lot
+// of room and gave too much at once): the "?" next to a section's title opens
+// it, and the help panel (bottom right) lists the same texts for the page.
 
 export type SectionIntroKey =
   | "about"
@@ -25,29 +26,8 @@ export type SectionIntroKey =
   | "valuePropositionPage"
   | "impactModelPage";
 
-const storageKey = (key: SectionIntroKey) => `sectionIntroClosed:${key}`;
-
-function useIntroOpen(key: SectionIntroKey): [boolean | null, (open: boolean) => void] {
-  // null until mounted, so the server render and first client render match
-  // (no flash of a box that the viewer already closed).
-  const [open, setOpen] = useState<boolean | null>(null);
-  useEffect(() => {
-    try {
-      setOpen(window.localStorage.getItem(storageKey(key)) !== "1");
-    } catch {
-      setOpen(true);
-    }
-  }, [key]);
-  function set(next: boolean) {
-    setOpen(next);
-    try {
-      if (next) window.localStorage.removeItem(storageKey(key));
-      else window.localStorage.setItem(storageKey(key), "1");
-    } catch {
-      // private browsing etc. — the box just won't stay closed
-    }
-  }
-  return [open, set];
+function useIntroOpen(_key: SectionIntroKey): [boolean, (open: boolean) => void] {
+  return useState(false);
 }
 
 function IntroBox({ introKey, onClose }: { introKey: SectionIntroKey; onClose: () => void }) {
@@ -88,26 +68,48 @@ export function SectionHeaderWithIntro({
   const [open, setOpen] = useIntroOpen(introKey);
   return (
     <>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <h2 id={`${id}-heading`} className="text-lg font-semibold text-dark-slate">
-            {title}
-          </h2>
-          {badge && <span className="rounded-full bg-coral/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-coral">{badge}</span>}
-          {open === false && (
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              aria-label={t("reopen")}
-              title={t("reopen")}
-              className="flex h-5 w-5 items-center justify-center rounded-full border border-dark-slate/20 text-[11px] font-semibold text-dark-slate/50 hover:border-seagrass hover:text-seagrass"
+      {/* The step's title is the page's title: centred, large, in the start
+          page's display face, with the step arrows (portalled into the
+          [data-nav] slots by PhaseSteps in focus mode) either side, and "?"
+          plus the section's action (Granska, Öppna) at the right. */}
+      <div className="mb-3 grid grid-cols-1 items-center gap-3 sm:grid-cols-[1fr_auto_1fr]">
+        <span className="hidden sm:block" aria-hidden />
+        <div className="flex flex-col items-center gap-1.5">
+          <div className="flex items-center justify-center gap-2">
+            <span data-nav="prev" className="contents" />
+            <h2
+              id={`${id}-heading`}
+              className={`${newHomeDisplayFont.className} text-center text-3xl font-bold tracking-[-0.02em] text-dark-slate sm:text-4xl lg:text-[2.75rem] lg:leading-tight`}
             >
-              ?
-            </button>
-          )}
+              {title}
+            </h2>
+            <span data-nav="next" className="contents" />
+          </div>
         </div>
-        {action}
+        {/* "?" with the actions, not in the title, so the title sits
+            symmetrically between its arrows. */}
+        <div className="flex items-center justify-center gap-3 sm:justify-end">
+          <span data-nav="cards" className="contents" />
+          <button
+            type="button"
+            onClick={() => setOpen(!open)}
+            aria-expanded={open}
+            aria-label={t("reopen")}
+            title={t("reopen")}
+            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold hover:border-seagrass hover:text-seagrass ${open ? "border-seagrass text-seagrass" : "border-dark-slate/20 text-dark-slate/50"}`}
+          >
+            ?
+          </button>
+          {action}
+        </div>
       </div>
+      {/* Under the row, not in the title's column, so "?" and the actions
+          stay level with the title. */}
+      {badge && (
+        <div className="-mt-1 mb-3 flex justify-center">
+          <span className="rounded-full bg-coral/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-coral">{badge}</span>
+        </div>
+      )}
       {open && <IntroBox introKey={introKey} onClose={() => setOpen(false)} />}
     </>
   );

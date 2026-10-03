@@ -100,6 +100,19 @@ describe("interviewGuideHtml", () => {
     expect(html).not.toContain("<script>");
     expect(interviewGuideHtml({ questions: ["En fråga"] })).toBeNull();
   });
+
+  it("shows which assumption each question tests, escaped", () => {
+    const html = interviewGuideHtml({
+      questions: [
+        { question: "Berätta om dig själv.", tests: "" },
+        { question: "Berätta om senast du behövde en dator.", tests: "Kundsegment <b>" },
+        "Vem mer borde vi prata med?",
+      ],
+    });
+    expect(html).toContain("Berätta om senast du behövde en dator.<br><em>Testar: Kundsegment &lt;b&gt;</em>");
+    expect(html).not.toContain("Berätta om dig själv.<br>");
+    expect(html).toContain("Vem mer borde vi prata med?");
+  });
 });
 
 describe("fill status", () => {

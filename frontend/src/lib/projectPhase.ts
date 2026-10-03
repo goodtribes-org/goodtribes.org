@@ -129,12 +129,15 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
   ProjectPhaseValue,
   { key: string; label: string; href?: string; parentKey?: string }[]
 > = {
+  // Order (one phase page, 2026-10-03): the canvas, value
+  // proposition and impact model right after the description, the global
+  // goals once you know the impact, then the work (interviews, scan).
   IDEA: [
     { key: "dream_defined", label: "Beskriv projektet" },
-    { key: "ai_reviewed", label: "Välj SDG" },
-    { key: "peer_feedback_requested", label: "Bjud in vänner / Bygg teamet" },
     { key: "lean_canvas_created", label: "Lean Canvas", href: "lean-canvas" },
     { key: "value_proposition_created", label: "Värdeerbjudande", href: "value-proposition" },
+    { key: "impact_model_created", label: "Impactmodell", href: "impact-model" },
+    { key: "ai_reviewed", label: "Välj SDG" },
     { key: "target_audience_interviews", label: "Målgruppsintervjuer", href: "interviews" },
     { key: "market_scan_partners", label: "Omvärldsbevakning", href: "market-scan" },
   ],

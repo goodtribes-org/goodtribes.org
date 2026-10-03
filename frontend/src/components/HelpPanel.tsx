@@ -31,7 +31,8 @@ export default function HelpPanel({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [project, setProject] = useState<ProjectHelp | null>(null);
 
-  const { projectSlug, pageHelp } = helpContextFor(pathname);
+  const { projectSlug, pageHelp, sectionIntros } = helpContextFor(pathname);
+  const tIntro = useTranslations("SectionIntro");
   useEffect(() => {
     setProject(null);
     if (!projectSlug) return;
@@ -49,7 +50,10 @@ export default function HelpPanel({ onClose }: { onClose: () => void }) {
   const q = query.trim().toLowerCase();
   const matches = (...texts: string[]) => !q || texts.join(" ").toLowerCase().includes(q);
   const pageText = pageHelp ? tAll(`${pageHelp}.helpText` as never) : null;
-  const showPage = pageText && matches(t("thisPage"), pageText);
+  const intros = sectionIntros
+    .map((k) => ({ key: k, title: tIntro(`${k}.title` as never), body: tIntro(`${k}.body` as never), tip: tIntro(`${k}.tip` as never) }))
+    .filter((i) => matches(i.title, i.body, i.tip));
+  const showPage = (pageText && matches(t("thisPage"), pageText)) || intros.length > 0;
   const showPhase = projectSlug && phase && matches(tPhase(phase), t(`phases.${phase}`));
   const guides = orderedGuides(pathname, !!projectSlug).filter((g) => matches(t(`guides.${g.key}.title`), t(`guides.${g.key}.text`)));
   const nothing = !showPage && !showPhase && guides.length === 0;
@@ -79,7 +83,14 @@ export default function HelpPanel({ onClose }: { onClose: () => void }) {
             {showPage && (
               <section className="rounded-xl border border-[#E4E4DF] bg-white px-4 py-3">
                 <h3 className="m-0 text-xs font-semibold uppercase tracking-wide text-dark-slate/50">{t("thisPage")}</h3>
-                <p className="mt-1.5 mb-0 whitespace-pre-line text-sm leading-snug text-dark-slate/80">{pageText}</p>
+                {pageText && <p className="mt-1.5 mb-0 whitespace-pre-line text-sm leading-snug text-dark-slate/80">{pageText}</p>}
+                {intros.map((i) => (
+                  <details key={i.key} className="mt-2 border-t border-[#E4E4DF] pt-2 first:border-t-0 first:pt-0">
+                    <summary className="cursor-pointer text-sm font-semibold text-dark-slate">{i.title}</summary>
+                    <p className="mt-1 mb-0 text-sm leading-snug text-dark-slate/80">{i.body}</p>
+                    <p className="mt-1 mb-0 text-sm leading-snug text-dark-slate/70">💡 {tIntro("tipLabel")} {i.tip}</p>
+                  </details>
+                ))}
               </section>
             )}
 

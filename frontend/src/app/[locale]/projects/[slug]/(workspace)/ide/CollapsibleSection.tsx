@@ -67,7 +67,7 @@ export default function CollapsibleSection({
       )}
       <div id={`${id}-content`} hidden={!open}>
         {children}
-        <div className="mt-1 text-center">
+        <div data-fold className="mt-1 text-center">
           <button
             type="button"
             onClick={() => setOpen(false)}

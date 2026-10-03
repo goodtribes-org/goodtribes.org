@@ -78,6 +78,7 @@ const TEXT = {
     hWhoToInterview: "Vilka du bör intervjua",
     hQuestions: "Frågor",
     hTips: "Tips",
+    hTests: "Testar",
     // Sprint plan
     hLongTermGoal: "Långsiktigt mål",
     hSprintQuestions: "Sprintfrågor",
@@ -165,6 +166,7 @@ const TEXT = {
     hWhoToInterview: "Who to interview",
     hQuestions: "Questions",
     hTips: "Tips",
+    hTests: "Tests",
     hLongTermGoal: "Long-term goal",
     hSprintQuestions: "Sprint questions",
     hTargetUser: "Who we test with",

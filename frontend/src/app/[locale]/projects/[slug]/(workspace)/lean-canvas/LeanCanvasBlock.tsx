@@ -8,9 +8,10 @@ import BlockIterateMenu from "@/components/ai/BlockIterateMenu";
 import ChangeImpactHint from "@/components/ai/ChangeImpactHint";
 import { markAiSuggestionPartlyUsed } from "@/lib/actions/aiSuggestions";
 import type { ProvenanceInfo } from "@/lib/fieldProvenance";
-import { CANVAS_BLOCK_BORDER, canvasBlockStatus } from "@/lib/canvasBlockStatus";
+import { CANVAS_BLOCK_BORDER, CANVAS_BLOCK_SHADOW, canvasBlockStatus } from "@/lib/canvasBlockStatus";
 import { updateLeanCanvasBlock } from "./actions";
 import type { LeanCanvasField } from "./fields";
+import InlineBlockText from "@/components/canvas/InlineBlockText";
 
 interface Props {
   projectSlug: string;
@@ -58,7 +59,7 @@ export default function LeanCanvasBlock({ projectSlug, field, area, label, hint,
     <div
       data-area={area}
       data-status={status}
-      className={`border-2 ${CANVAS_BLOCK_BORDER[status]} rounded-lg bg-white p-3 flex flex-col min-h-[150px] transition-colors`}
+      className={`border-2 ${CANVAS_BLOCK_BORDER[status]} ${CANVAS_BLOCK_SHADOW} rounded-lg bg-white p-3 flex flex-col min-h-[150px] transition-colors`}
     >
       <div className="flex items-start justify-between gap-2 mb-1">
         <div className="min-w-0">
@@ -79,55 +80,26 @@ export default function LeanCanvasBlock({ projectSlug, field, area, label, hint,
               />
             )}
           </div>
-          <p className="text-[10px] text-dark-slate/40 leading-tight mt-0.5">{hint}</p>
+          <p className="text-[11px] text-dark-slate/65 leading-snug mt-0.5">{hint}</p>
         </div>
-        {canEdit && !editing && (
-          <button
-            onClick={() => setEditing(true)}
-            className="text-[10px] font-medium text-dark-slate/40 hover:text-coral shrink-0 transition-colors"
-          >
-            {t("edit")}
-          </button>
-        )}
       </div>
 
-      {editing ? (
-        <form action={handleSave} className="flex-1 flex flex-col gap-2 mt-1">
-          <textarea
-            name="value"
-            defaultValue={draftFromSuggestion ?? value ?? ""}
-            rows={5}
-            autoFocus
-            placeholder={hint}
-            className="w-full flex-1 border border-muted-teal rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-coral resize-none"
-          />
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={pending}
-              className="bg-coral text-white text-xs font-medium px-3 py-1 rounded hover:bg-watermelon disabled:opacity-50 transition-colors"
-            >
-              {pending ? t("saving") : t("save")}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setDraftFromSuggestion(null);
-                setEditing(false);
-              }}
-              className="text-xs text-dark-slate/50 hover:text-dark-slate transition-colors"
-            >
-              {t("cancel")}
-            </button>
-          </div>
-        </form>
-      ) : value ? (
-        <p className="text-xs text-dark-slate/80 whitespace-pre-wrap leading-relaxed mt-1 flex-1">{value}</p>
-      ) : (
-        <p className="text-xs text-dark-slate/30 italic mt-1 flex-1">
-          {canEdit ? t("emptyEditable") : t("emptyReadOnly")}
-        </p>
-      )}
+      <InlineBlockText
+        value={value}
+        draft={draftFromSuggestion}
+        hint={hint}
+        canEdit={canEdit}
+        editing={editing}
+        pending={pending}
+        rows={5}
+        emptyLabel={canEdit ? t("emptyEditable") : t("emptyReadOnly")}
+        onStart={() => setEditing(true)}
+        onCancel={() => {
+          setDraftFromSuggestion(null);
+          setEditing(false);
+        }}
+        onSave={handleSave}
+      />
       {!editing && <BlockIterateMenu projectSlug={projectSlug} entity="leanCanvas" field={field} hasContent={!!value?.trim()} />}
       {changed && !editing && <ChangeImpactHint projectSlug={projectSlug} fieldKey={`leanCanvas.${field}`} onClose={() => setChanged(false)} />}
       {suggestion && !editing && (

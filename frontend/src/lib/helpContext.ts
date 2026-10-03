@@ -49,15 +49,27 @@ export type HelpContext = {
   projectSlug: string | null;
   // Namespace whose `helpText` describes this page, if it has one.
   pageHelp: string | null;
+  // The page's section intros (SectionIntro namespace). They're closed on the
+  // page itself (open with "?"), so the help panel lists them for the page.
+  sectionIntros: string[];
+};
+
+// Which section intros belong to which project page.
+const PAGE_SECTION_INTROS: Record<string, string[]> = {
+  ide: ["about", "leanCanvas", "valueProposition", "impactModel", "sdg", "interviews", "marketScan", "gate"],
+  "lean-canvas": ["leanCanvasPage"],
+  "customer-model": ["customerModelPage"],
+  "value-proposition": ["valuePropositionPage"],
+  "impact-model": ["impactModelPage"],
 };
 
 // `path` without locale (next-intl's usePathname).
 export function helpContextFor(path: string): HelpContext {
   const m = path.match(/^\/projects\/([^/]+)(?:\/([^/]+))?(?:\/([^/]+))?/);
-  if (!m || m[1] === "new") return { projectSlug: null, pageHelp: null };
+  if (!m || m[1] === "new") return { projectSlug: null, pageHelp: null, sectionIntros: [] };
   const [, slug, first, second] = m;
   const pageHelp = (first && second && NESTED_PAGE_HELP[`${first}/${second}`]) || (first && PROJECT_PAGE_HELP[first]) || null;
-  return { projectSlug: slug, pageHelp };
+  return { projectSlug: slug, pageHelp, sectionIntros: (first && !second && PAGE_SECTION_INTROS[first]) || [] };
 }
 
 // The general guides, in the order shown when nothing on the page says

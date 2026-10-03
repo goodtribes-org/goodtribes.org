@@ -14,27 +14,37 @@ export default function OverviewSection({
   title,
   badge,
   action,
+  after,
   fill,
   writingLabel,
   failedNote,
   introKey,
   folded,
+  bare = false,
   children,
 }: {
   id: string;
   title: string;
   badge?: string;
   action?: ReactNode;
+  // Under the white frame, e.g. an AI button (same place as the canvases' review box).
+  after?: ReactNode;
   fill?: FillState;
   writingLabel: string;
   failedNote?: ReactNode;
   introKey?: SectionIntroKey;
   folded?: { summary: string };
+  // Without the white frame, for the big canvases (Lean Canvas, värdeerbjudande,
+  // impactmodell): their own blocks are already boxes, so the frame only took
+  // width from them.
+  bare?: boolean;
   children: ReactNode;
 }) {
   const writing = fill === "pending" || fill === "running";
+  const headerOutside = !!introKey;
+  const framed = !bare && !headerOutside;
   const section = (
-    <section id={folded ? undefined : id} aria-labelledby={`${id}-heading`} className="scroll-mt-24 rounded-2xl border border-muted-teal/30 bg-white p-5">
+    <section id={folded ? undefined : id} aria-labelledby={`${id}-heading`} className={framed ? "scroll-mt-24 rounded-2xl border border-muted-teal/30 bg-white p-5" : "scroll-mt-24"}>
       {introKey ? (
         <SectionHeaderWithIntro id={id} title={title} badge={badge} action={writing ? undefined : action} introKey={introKey} />
       ) : (
@@ -50,6 +60,9 @@ export default function OverviewSection({
           {!writing && action}
         </div>
       )}
+      {/* With the big step title, the title row sits above the white
+          frame (same as the canvases) and the frame holds only the content. */}
+      <div className={headerOutside && !bare ? "rounded-3xl border border-dark-slate/10 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_32px_-16px_rgba(0,0,0,0.15)] sm:p-8" : undefined}>
       {writing ? (
         <div aria-live="polite" className="flex flex-col gap-2">
           <p className="text-sm text-dark-slate/60">{writingLabel}</p>
@@ -65,6 +78,8 @@ export default function OverviewSection({
       ) : (
         children
       )}
+      </div>
+      {!writing && after}
     </section>
   );
   return folded ? (

@@ -10,6 +10,7 @@ import { recordAiWrite } from "@/lib/fieldProvenance";
 import { snapshotImpactModel } from "@/lib/impactModelVersions";
 import { CUSTOMER_MODEL_EXTRA_BLOCKS, LEAN_CANVAS_BLOCKS, LEAN_CANVAS_FIELDS, LEAN_CANVAS_STORED_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
+import { IMPACT_MODEL_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
 import { CANVAS_REVIEW_SYSTEM_PROMPT, CANVAS_REVIEW_TOOL } from "@/lib/prompts/canvasReview";
 
 type CanvasEntity = "leanCanvas" | "valueProposition" | "impactModel";
@@ -87,10 +88,10 @@ export async function ignoreAiSuggestion(id: string) {
 // "Granska det jag skrivit": at most 3 points of feedback on a canvas.
 // Assist-level help, so it follows the step's AI mode (never in MANUAL).
 export async function reviewCanvas(projectSlug: string, entity: string): Promise<{ points: string[] } | { error: string }> {
-  if (entity !== "leanCanvas" && entity !== "valueProposition") return { error: "Okänd canvas" };
+  if (entity !== "leanCanvas" && entity !== "valueProposition" && entity !== "impactModel") return { error: "Okänd canvas" };
   const project = await prisma.project.findUnique({
     where: { slug: projectSlug },
-    select: { id: true, title: true, leanCanvas: true, valueProposition: true },
+    select: { id: true, title: true, leanCanvas: true, valueProposition: true, impactModel: true },
   });
   if (!project) return { error: "Projektet hittades inte" };
   const userId = await requireLeadFor(project.id);
@@ -100,19 +101,31 @@ export async function reviewCanvas(projectSlug: string, entity: string): Promise
     kind: "assist",
     userId,
     projectId: project.id,
-    stepKey: entity === "leanCanvas" ? "lean_canvas_created" : "value_proposition_created",
+    stepKey: entity === "leanCanvas" ? "lean_canvas_created" : entity === "valueProposition" ? "value_proposition_created" : "impact_model_created",
     language: "project",
   });
   if (!gate.ok) return { error: aiGateMessage(gate.reason) };
 
-  const row = (entity === "leanCanvas" ? project.leanCanvas : project.valueProposition) as Record<string, unknown> | null;
-  const fields: readonly string[] = entity === "leanCanvas" ? LEAN_CANVAS_FIELDS : VALUE_PROPOSITION_FIELDS;
+  // The impact model's last link, Impact, is the canvas's Impact field (one
+  // field, two views), so it's reviewed along with the model's own links.
+  const row = (
+    entity === "leanCanvas"
+      ? project.leanCanvas
+      : entity === "valueProposition"
+        ? project.valueProposition
+        : { ...(project.impactModel ?? {}), impact: project.leanCanvas?.impact ?? null }
+  ) as Record<string, unknown> | null;
+  const fields: readonly string[] =
+    entity === "leanCanvas" ? LEAN_CANVAS_FIELDS : entity === "valueProposition" ? VALUE_PROPOSITION_FIELDS : [...IMPACT_MODEL_FIELDS, "impact"];
   const label = (f: string) => (entity === "leanCanvas" ? [...LEAN_CANVAS_BLOCKS, ...CUSTOMER_MODEL_EXTRA_BLOCKS].find((b) => b.field === f)?.translationKey ?? f : f);
   const filled = fields.filter((f) => typeof row?.[f] === "string" && (row[f] as string).trim());
   if (filled.length === 0) return { error: "Det finns inget att granska än — fyll i några fält först." };
 
   const content =
     `Projekt: ${project.title}\n\n` +
+    (entity === "impactModel"
+      ? "Det här är projektets impactmodell, dess förändringsteori: problem → deltagare → aktiviteter → kort-, medel- och långsiktiga utfall → impact. Titta särskilt på om stegen hänger ihop.\n\n"
+      : "") +
     fields.map((f) => `${label(f)}: ${typeof row?.[f] === "string" && (row[f] as string).trim() ? row[f] : "(tomt)"}`).join("\n");
 
   try {
