@@ -196,17 +196,55 @@ function inline(text: string): string {
 
 export function interviewGuideHtml(raw: unknown, t: DraftText = draftText("sv")): string | null {
   const o = (raw ?? {}) as Record<string, unknown>;
-  const questions = Array.isArray(o.questions) ? o.questions.map(str).filter(Boolean) : [];
+  // Each question names the assumption it tests (plain strings still work).
+  const questions = (Array.isArray(o.questions) ? o.questions : [])
+    .map((q) => (typeof q === "string" ? { q: str(q), tests: "" } : { q: str((q as Record<string, unknown>)?.question), tests: str((q as Record<string, unknown>)?.tests) }))
+    .filter((q) => q.q);
   if (questions.length < 3) return null;
   const tips = Array.isArray(o.tips) ? o.tips.map(str).filter(Boolean) : [];
   const parts = [
     `<p><em>${escapeHtml(t.draftNote)}</em></p>`,
     str(o.purpose) ? `<h2>${escapeHtml(t.hPurpose)}</h2><p>${inline(str(o.purpose))}</p>` : "",
     str(o.who) ? `<h2>${escapeHtml(t.hWhoToInterview)}</h2><p>${inline(str(o.who))}</p>` : "",
-    `<h2>${escapeHtml(t.hQuestions)}</h2><ol>${questions.map((q) => `<li>${inline(q)}</li>`).join("")}</ol>`,
+    `<h2>${escapeHtml(t.hQuestions)}</h2><ol>${questions
+      .map((q) => `<li>${inline(q.q)}${q.tests ? `<br><em>${escapeHtml(t.hTests)}: ${escapeHtml(q.tests)}</em>` : ""}</li>`)
+      .join("")}</ol>`,
     tips.length ? `<h2>${escapeHtml(t.hTips)}</h2><ul>${tips.map((t) => `<li>${inline(t)}</li>`).join("")}</ul>` : "",
   ];
   return parts.filter(Boolean).join("");
+}
+
+// The canvas fields the team still only assumes, with their text, for the
+// interview guide's prompt.
+async function assumptionsForGuide(projectId: string, slug: string, locale: string | null | undefined): Promise<string> {
+  const { currentAssumptions } = await import("@/lib/ideaInsights");
+  const { getCanvasFieldLabels } = await import("@/lib/canvasFieldLabels");
+  const [list, labels] = await Promise.all([currentAssumptions(projectId, slug), getCanvasFieldLabels(locale ?? "sv")]);
+  if (list.length === 0) return "Antaganden att testa: inga listade.";
+  return `Antaganden att testa:\n${list.map((a) => `- ${labels[a.key] ?? a.key}: ${a.text}`).join("\n")}`;
+}
+
+// "Föreslå intervjufrågor" on the phase page: the same guide the Idé fill
+// writes, on request, from the project's text, Drömsamtalet (if any) and the
+// assumptions the team still hasn't confirmed. Returns the guide's HTML.
+export async function draftInterviewGuide(
+  client: Anthropic,
+  p: { projectId: string; projectSlug: string },
+): Promise<string | null> {
+  const project = await prisma.project.findUnique({
+    where: { id: p.projectId },
+    select: { title: true, summary: true, description: true, contentLocale: true, dreamConversation: { select: { roomId: true } } },
+  });
+  if (!project) return null;
+  const transcript = project.dreamConversation ? await buildTranscript(project.dreamConversation.roomId) : "";
+  const context =
+    `Projekt: ${project.title}\nSammanfattning: ${project.summary ?? ""}\nBeskrivning: ${(project.description ?? "").replace(/<[^>]*>/g, " ")}` +
+    (transcript ? `\n\nDrömsamtalet:\n${transcript}` : "") +
+    `\n\n${await assumptionsForGuide(p.projectId, p.projectSlug, project.contentLocale)}`;
+  return interviewGuideHtml(
+    await callTool(client, { system: INTERVIEW_GUIDE_SYSTEM_PROMPT, tool: INTERVIEW_GUIDE_TOOL, content: context }),
+    draftText(project.contentLocale),
+  );
 }
 
 // ─── Model calls ────────────────────────────────────────────────────────────
@@ -421,20 +459,23 @@ export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
     if (written) await markDone(p.projectId, "lean_canvas_created", p.userId);
   });
 
+  // After the canvas, so the chain can start from its purpose and end in
+  // its Impact block. Runs even if the canvas failed (then on the
+  // conversation alone).
+  const impactModelDone = !wanted("impactModel") ? null : (async () => {
+    await leanCanvasDone;
+    await run("impactModel", async () => void (await fillImpactModel(client, { ...p, context })));
+  })();
+  const valuePropositionDone = !wanted("valueProposition") ? null : run("valueProposition", async () => {
+    const raw = await callTool(client, { system: VALUE_PROPOSITION_SYSTEM_PROMPT, tool: VALUE_PROPOSITION_TOOL, content: context });
+    const { written } = await applyCanvas(p.projectId, p.projectSlug, "valueProposition", coerceProposals(raw, VALUE_PROPOSITION_FIELDS), p.mode);
+    if (written) await markDone(p.projectId, "value_proposition_created", p.userId);
+  });
+
   await Promise.all([
     leanCanvasDone,
-    // After the canvas, so the chain can start from its purpose and end in
-    // its Impact block. Runs even if the canvas failed (then on the
-    // conversation alone).
-    !wanted("impactModel") ? null : (async () => {
-      await leanCanvasDone;
-      await run("impactModel", async () => void (await fillImpactModel(client, { ...p, context })));
-    })(),
-    !wanted("valueProposition") ? null : run("valueProposition", async () => {
-      const raw = await callTool(client, { system: VALUE_PROPOSITION_SYSTEM_PROMPT, tool: VALUE_PROPOSITION_TOOL, content: context });
-      const { written } = await applyCanvas(p.projectId, p.projectSlug, "valueProposition", coerceProposals(raw, VALUE_PROPOSITION_FIELDS), p.mode);
-      if (written) await markDone(p.projectId, "value_proposition_created", p.userId);
-    }),
+    impactModelDone,
+    valuePropositionDone,
     !wanted("marketScan") ? null : agent
       ? run("marketScan", async () => {
           const entries = await researchMarket(client, context);
@@ -456,23 +497,29 @@ export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
         })
       : setFillState(p.dreamId, "marketScan", "skipped"),
     !wanted("interviewGuide") ? null : agent
-      ? run("interviewGuide", async () => {
-          const exists = await prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: p.projectSlug, slug: "intervjuguide" } } });
-          if (exists) return;
-          const html = interviewGuideHtml(await callTool(client, { system: INTERVIEW_GUIDE_SYSTEM_PROMPT, tool: INTERVIEW_GUIDE_TOOL, content: context }), t);
-          if (!html) throw new Error("no interview guide");
-          const maxOrder = await prisma.wikiPage.aggregate({ where: { projectSlug: p.projectSlug }, _max: { order: true } });
-          await prisma.wikiPage.create({
-            data: {
-              projectSlug: p.projectSlug,
-              slug: "intervjuguide",
-              title: t.titleInterviewGuide,
-              content: html,
-              order: (maxOrder._max.order ?? -1) + 1,
-              createdById: aiUser.id,
-            },
+      ? (async () => {
+          // After the canvas, value proposition and impact model: the guide's
+          // questions test what they still only assume.
+          await Promise.all([leanCanvasDone, impactModelDone, valuePropositionDone]);
+          await run("interviewGuide", async () => {
+            const exists = await prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: p.projectSlug, slug: "intervjuguide" } } });
+            if (exists) return;
+            const assumptions = await assumptionsForGuide(p.projectId, p.projectSlug, project?.contentLocale);
+            const html = interviewGuideHtml(await callTool(client, { system: INTERVIEW_GUIDE_SYSTEM_PROMPT, tool: INTERVIEW_GUIDE_TOOL, content: `${context}\n\n${assumptions}` }), t);
+            if (!html) throw new Error("no interview guide");
+            const maxOrder = await prisma.wikiPage.aggregate({ where: { projectSlug: p.projectSlug }, _max: { order: true } });
+            await prisma.wikiPage.create({
+              data: {
+                projectSlug: p.projectSlug,
+                slug: "intervjuguide",
+                title: t.titleInterviewGuide,
+                content: html,
+                order: (maxOrder._max.order ?? -1) + 1,
+                createdById: aiUser.id,
+              },
+            });
           });
-        })
+        })()
       : setFillState(p.dreamId, "interviewGuide", "skipped"),
   ]);
 

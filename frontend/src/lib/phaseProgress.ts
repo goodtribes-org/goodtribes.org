@@ -16,6 +16,9 @@ export type ProjectSignals = {
   activeMemberCount: number;
   inviteCount: number;
   leanCanvasFilled: number;
+  // How many of the impact model's own links are filled (IMPACT_MODEL_FIELDS).
+  impactModelFilled: number;
+  impactModelFields: number;
   valuePropositionFilled: number;
   interviewCount: number;
   marketScanCount: number;
@@ -85,6 +88,7 @@ export function autoDoneKeys(s: ProjectSignals): string[] {
   add("peer_feedback_requested", s.activeMemberCount >= 2 || s.inviteCount > 0);
   add("lean_canvas_created", s.leanCanvasFilled >= MIN_LEAN_CANVAS_BLOCKS);
   add("value_proposition_created", s.valuePropositionFilled >= MIN_VALUE_PROPOSITION_FIELDS);
+  add("impact_model_created", s.impactModelFields > 0 && s.impactModelFilled >= s.impactModelFields);
   add("target_audience_interviews", s.interviewCount >= MIN_INTERVIEWS);
   add("market_scan_partners", s.marketScanCount > 0);
   add("core_team_formed", s.activeMemberCount >= 2);

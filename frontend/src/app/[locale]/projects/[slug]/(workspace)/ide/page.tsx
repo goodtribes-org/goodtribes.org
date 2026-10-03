@@ -8,8 +8,11 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getPhaseWork, gateWork } from "@/lib/phaseWork";
 import { Link } from "@/i18n/navigation";
+import { resolveAiMode } from "@/lib/aiMode";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
-import { isFeatureEnabled } from "@/lib/featureFlags";
+import { getAutoDoneKeys } from "@/lib/projectSignals";
+import PhaseSteps, { type PhaseStep } from "./PhaseSteps";
+import type { StepCard } from "./StepCards";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { getFieldProvenance } from "@/lib/fieldProvenance";
 import { getCanvasAiContext } from "@/lib/canvasAi";
@@ -20,10 +23,12 @@ import { CanvasIterateProvider } from "@/components/ai/BlockIterateMenu";
 import LeanCanvasGrid from "../lean-canvas/LeanCanvasGrid";
 import ValuePropositionGrid from "../value-proposition/ValuePropositionGrid";
 import ImpactModelChain from "../impact-model/ImpactModelChain";
-import AddOrInviteMember from "../../AddOrInviteMember";
 import OverviewSection from "./OverviewSection";
 import AboutSection from "./AboutSection";
-import SdgSection from "./SdgSection";
+import SdgSection, { SdgAiButton } from "./SdgSection";
+import AboutAiDraft from "./AboutAiDraft";
+import StepDone, { StepActions } from "./StepDone";
+import InterviewAiDraft from "./InterviewAiDraft";
 import FillPoller from "./FillPoller";
 import RetryButton from "./RetryButton";
 import CritiqueBox from "./CritiqueBox";
@@ -44,22 +49,27 @@ import PhaseProgressStrip from "../../PhaseProgressStrip";
 // Drömsamtalet (in AGENT mode), shown as plain content with vet/antar and an
 // Edit per section, followed by what only a human can do: interviews and
 // inviting people. Snabbstart stays available for step-by-step editing.
-export default async function IdeaOverviewPage({ params }: { params: Promise<{ locale: Locale; slug: string }> }) {
+export default async function IdeaOverviewPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: Locale; slug: string }>;
+  searchParams: Promise<{ view?: string }>;
+}) {
   const { locale, slug } = await params;
+  const { view } = await searchParams;
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  const [journeyOn, project] = await Promise.all([
-    isFeatureEnabled("ai-project-start", session.user.id),
+  const [project] = await Promise.all([
     prisma.project.findUnique({
     where: { slug },
     select: {
-      id: true, phase: true, title: true, summary: true, description: true, category: true, tags: true, sdgGoals: true,
+      id: true, phase: true, title: true, summary: true, description: true, imageUrl: true, category: true, tags: true, sdgGoals: true,
       leanCanvas: true, valueProposition: true, impactModel: true,
       dreamConversation: { select: { fillStatus: true, openQuestions: true, updatedAt: true } },
     },
     }),
   ]);
-  if (!journeyOn) redirect(`/projects/${slug}/guide`);
   if (!project) notFound();
 
   const [
@@ -73,7 +83,7 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
     getCanvasAiContext(project.id, "leanCanvas"),
     getCanvasAiContext(project.id, "valueProposition"),
     prisma.marketScanEntry.findMany({ where: { projectSlug: slug }, orderBy: { createdAt: "asc" } }),
-    prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "intervjuguide" } }, select: { slug: true } }),
+    prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "intervjuguide" } }, select: { slug: true, content: true } }),
     prisma.interviewLogEntry.findMany({ where: { projectSlug: slug }, select: { id: true, personaName: true } }),
     latestInsight<CritiqueContent>(project.id, "CRITIQUE"),
     latestInsight<SynthesisContent>(project.id, "INTERVIEW_SYNTHESIS"),
@@ -92,6 +102,37 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
   const work = await getPhaseWork(slug, "IDEA");
   const decisionDate = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
   const interviewCount = interviews.length;
+
+  // The steps of the phase, in #201's order, each with where it stands: done
+  // (ticked, or detected from the data), an AI draft waiting for review,
+  // started, or empty. The same list for a project started with AI or by hand.
+  const [checked, autoDone] = await Promise.all([
+    prisma.initiativeChecklistItem.findMany({ where: { projectId: project.id, completedAt: { not: null } }, select: { itemKey: true } }),
+    getAutoDoneKeys(project.id, slug),
+  ]);
+  const doneKeys = new Set([...checked.map((c) => c.itemKey), ...autoDone]);
+  // The kanban cards for each step (KanbanCard.phase/stepKey), for the
+  // step's "☐ n uppgifter" in its title row.
+  const stepCardRows = await prisma.kanbanCard.findMany({
+    where: { projectSlug: slug, phase: { in: ["IDEA", "SPRINT"] }, stepKey: { not: null } },
+    orderBy: [{ column: "asc" }, { order: "asc" }],
+    select: { id: true, title: true, column: true, stepKey: true, assigneeId: true },
+  });
+  const assignees = await prisma.user.findMany({
+    where: { id: { in: stepCardRows.map((c) => c.assigneeId).filter((x): x is string => !!x) } },
+    select: { id: true, name: true, image: true },
+  });
+  const cardsByStep: Record<string, StepCard[]> = {};
+  for (const c of stepCardRows) {
+    const a = assignees.find((u) => u.id === c.assigneeId);
+    (cardsByStep[c.stepKey!] ??= []).push({ id: c.id, title: c.title, column: c.column, assignee: a ? { name: a.name, image: a.image } : null });
+  }
+  const hasGuess = (prov: Record<string, { author?: string | null; status?: string | null } | undefined>) =>
+    Object.values(prov).some((p) => p?.author === "AI" && p.status !== "VET");
+  // Unanswered AI guesses win over "done": a step ticked off while the AI's
+  // guesses in it are still waiting isn't really done yet.
+  const stepStatus = (key: string, hasContent: boolean, guesses: boolean): PhaseStep["status"] =>
+    doneKeys.has(key) ? "done" : guesses ? "review" : hasContent ? "started" : "empty";
 
   const fill = project.dreamConversation
     ? withStaleAsFailed(parseFillStatus(project.dreamConversation.fillStatus), project.dreamConversation.updatedAt)
@@ -134,6 +175,35 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
     />
   );
 
+  const tSteps = await getTranslations({ locale, namespace: "ProjectPhaseChecklist" });
+  const canvasRow = (e: string) => canvases.find((c) => c.entity === e)!;
+  const steps: PhaseStep[] = ([
+    { key: "dream_defined", anchor: "om", status: stepStatus("dream_defined", !!project.summary || !!project.description, hasGuess(projectProv)) },
+    { key: "lean_canvas_created", anchor: "lean-canvas", status: stepStatus("lean_canvas_created", filledCount(canvasRow("leanCanvas")) > 0, hasGuess(leanCanvasAi.provenance)) },
+    { key: "value_proposition_created", anchor: "vardeerbjudande", status: stepStatus("value_proposition_created", filledCount(canvasRow("valueProposition")) > 0, hasGuess(valuePropositionAi.provenance)) },
+    { key: "impact_model_created", anchor: "impactmodell", status: stepStatus("impact_model_created", filledCount(canvasRow("impactModel")) > 0, hasGuess(impactModelAi.provenance)) },
+    { key: "ai_reviewed", anchor: "mal", status: stepStatus("ai_reviewed", project.sdgGoals.length > 0, projectProv.sdgGoals?.author === "AI" && projectProv.sdgGoals?.status !== "VET") },
+    { key: "target_audience_interviews", anchor: "intervjuer", status: stepStatus("target_audience_interviews", interviewCount > 0, false) },
+    { key: "market_scan_partners", anchor: "omvarld", status: stepStatus("market_scan_partners", marketScan.length > 0, false) },
+  ] as Omit<PhaseStep, "label">[]).map((st) => ({ ...st, label: tSteps(st.key as Parameters<typeof tSteps>[0]) }));
+  if (inIdeaPhase) steps.push({ key: "gate", anchor: "fasgrind", status: lastDecision ? "done" : "empty", label: t("gateHeading") });
+
+  // "Klart med steget" under each step, for the team.
+  const stepDone = (key: string) =>
+    canEdit ? (
+      <StepDone slug={slug} stepKey={key} done={doneKeys.has(key)} auto={!checked.some((c) => c.itemKey === key)} openCards={(cardsByStep[key] ?? []).filter((c) => c.column !== "DONE").length} />
+    ) : null;
+
+  // The AI buttons under "Om projektet" and "Globala mål" show only when the
+  // user has AI on for that step.
+  const [{ mode: aboutAiMode }, { mode: sdgAiMode }, { mode: interviewAiMode }] = aiAvailable
+    ? await Promise.all([
+        resolveAiMode({ projectId: project.id, feature: "dream-conversation", stepKey: "dream_defined" }),
+        resolveAiMode({ projectId: project.id, feature: "sdg-suggestion", stepKey: "ai_reviewed" }),
+        resolveAiMode({ projectId: project.id, feature: "dream-conversation", stepKey: "target_audience_interviews" }),
+      ])
+    : [{ mode: "MANUAL" as const }, { mode: "MANUAL" as const }, { mode: "MANUAL" as const }];
+
   const typeLabel: Record<string, string> = {
     COMPETITOR: t("scanCompetitor"),
     PARTNER_PROSPECT: t("scanPartner"),
@@ -142,19 +212,25 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
   };
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-5 py-6">
-      <PhaseProgressStrip projectId={project.id} slug={slug} viewing="IDEA" />
-      {isFillInProgress(fill) && <FillPoller />}
+    <div data-phase-page className="flex flex-col gap-5 pt-3 pb-6">
+      {/* Everything on the phase page reads at 64rem, except the big canvases
+          ([data-wide]), which use the whole content width so their blocks get
+          room — but only when open: folded into a row they line up with the
+          rest. Direct children only, so StepMode's show/hide still works. */}
+      <style data-keep>{`[data-phase-page] > * { width: 100%; max-width: 64rem; margin-inline: auto; } [data-phase-page] > [data-wide] { max-width: 110rem; } [data-phase-page] > [data-wide]:has(> section > button[aria-expanded="false"]) { max-width: 64rem; } [data-phase-page][data-view="steps"] [data-fold] { display: none; } [data-phase-page][data-aligned] > * { max-width: none; margin-inline: 0; margin-left: var(--align-left); width: var(--align-width); } [data-phase-page][data-aligned] > [data-wide] { margin-left: var(--wide-left); width: var(--wide-width); } [data-phase-page][data-aligned] > [data-wide]:has(> section > button[aria-expanded="false"]) { margin-left: var(--align-left); width: var(--align-width); }`}</style>
+      {/* display: contents, so an empty strip adds no gap above the step. */}
+      <div data-keep className="contents">
+        <PhaseProgressStrip projectId={project.id} slug={slug} viewing="IDEA" />
+        {isFillInProgress(fill) && <FillPoller />}
+      </div>
 
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div data-overview className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
           <p className="mt-1 text-sm text-dark-slate/60">{isFillInProgress(fill) ? t("introWriting") : t("intro")}</p>
         </div>
-        <Link href={`/projects/${slug}/guide`} className="text-sm font-medium text-dark-slate/60 hover:text-coral">
-          {t("stepByStep")}
-        </Link>
       </div>
+
 
       {showStart ? (
         <>
@@ -181,7 +257,8 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
         critiqueBox
       )}
 
-      <OverviewSection id="om" introKey="about" title={t("aboutHeading")} fill={fill.about} writingLabel={writing} folded={fold(project.title)}>
+      <div data-step="dream_defined" className="flex flex-col gap-5">
+      <OverviewSection id="om" introKey="about" after={<>{canEdit && aiAvailable && aboutAiMode !== "MANUAL" && <AboutAiDraft slug={slug} />}<StepActions>{stepDone("dream_defined")}</StepActions></>} title={t("aboutHeading")} fill={fill.about} writingLabel={writing} folded={fold(project.title)}>
         <AboutSection
           slug={slug}
           canEdit={canEdit}
@@ -193,25 +270,30 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
             descriptionHtml: project.description ? sanitizeHtml(project.description) : "",
             category: project.category ?? "",
             tags: project.tags,
+            imageUrl: project.imageUrl,
           }}
         />
       </OverviewSection>
+      </div>
 
-      <OverviewSection id="mal" introKey="sdg" title={t("sdgHeading")} fill={fill.about} writingLabel={writing} folded={fold(t("foldedSdg", { count: project.sdgGoals.length }))}>
-        <SdgSection slug={slug} goals={project.sdgGoals} provenance={projectProv.sdgGoals} canEdit={canEdit} />
-      </OverviewSection>
-
+      <div data-step="lean_canvas_created" data-wide className="flex flex-col gap-5">
       <OverviewSection
+        bare
         id="lean-canvas" introKey="leanCanvas"
+        after={
+          <StepActions>
+            {leanCanvasAi.aiAvailable && (
+              <CanvasAiBar below projectSlug={slug} entity="leanCanvas" stepKey={leanCanvasAi.stepKey} mode={leanCanvasAi.mode} canEdit={canEdit} />
+            )}
+            {stepDone("lean_canvas_created")}
+          </StepActions>
+        }
         title={t("leanCanvasHeading")}
         fill={fill.leanCanvas}
         writingLabel={writing}
         failedNote={<>{t("failedCanvas")}{retry("leanCanvas")}</>}
         folded={fold(canvasSummary("leanCanvas"))}
       >
-        {leanCanvasAi.aiAvailable && (
-          <CanvasAiBar projectSlug={slug} entity="leanCanvas" stepKey={leanCanvasAi.stepKey} mode={leanCanvasAi.mode} canEdit={canEdit} />
-        )}
         <CanvasIterateProvider enabled={canEdit && leanCanvasAi.aiAvailable && leanCanvasAi.mode !== "MANUAL"}>
           <LeanCanvasGrid
             projectSlug={slug}
@@ -221,36 +303,20 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
             suggestions={leanCanvasAi.suggestions}
           />
         </CanvasIterateProvider>
-      </OverviewSection>
+      </OverviewSection>      </div>
 
+      <div data-step="value_proposition_created" data-wide className="flex flex-col gap-5">
       <OverviewSection
-        id="impactmodell" introKey="impactModel"
-        title={t("impactModelHeading")}
-        fill={fill.impactModel}
-        writingLabel={writing}
-        failedNote={<>{t("failedCanvas")}{retry("impactModel")}</>}
-        folded={fold(canvasSummary("impactModel"))}
-        action={
-          <Link href={`/projects/${slug}/impact-model`} className="text-sm font-medium text-dark-slate/50 hover:text-coral">
-            {t("open")}
-          </Link>
-        }
-      >
-        <CanvasIterateProvider enabled={canEdit && impactModelAi.aiAvailable && impactModelAi.mode !== "MANUAL"}>
-          <ImpactModelChain
-            projectSlug={slug}
-            model={project.impactModel}
-            canvasImpact={project.leanCanvas?.impact ?? null}
-            legacyProblem={project.leanCanvas?.problem?.trim() || null}
-            canEdit={canEdit}
-            ai={impactModelAi}
-            canvasAi={leanCanvasAi}
-          />
-        </CanvasIterateProvider>
-      </OverviewSection>
-
-      <OverviewSection
+        bare
         id="vardeerbjudande" introKey="valueProposition"
+        after={
+          <StepActions>
+            {valuePropositionAi.aiAvailable && (
+              <CanvasAiBar below projectSlug={slug} entity="valueProposition" stepKey={valuePropositionAi.stepKey} mode={valuePropositionAi.mode} canEdit={canEdit} />
+            )}
+            {stepDone("value_proposition_created")}
+          </StepActions>
+        }
         title={t("valuePropositionHeading")}
         fill={fill.valueProposition}
         writingLabel={writing}
@@ -267,9 +333,112 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
           />
         </CanvasIterateProvider>
       </OverviewSection>
+      </div>
 
+      <div data-step="impact_model_created" data-wide className="flex flex-col gap-5">
+      <OverviewSection
+        bare
+        id="impactmodell" introKey="impactModel"
+        after={
+          <StepActions>
+            {impactModelAi.aiAvailable && (
+              <CanvasAiBar below projectSlug={slug} entity="impactModel" stepKey={impactModelAi.stepKey} mode={impactModelAi.mode} canEdit={canEdit} />
+            )}
+            {stepDone("impact_model_created")}
+          </StepActions>
+        }
+        title={t("impactModelHeading")}
+        fill={fill.impactModel}
+        writingLabel={writing}
+        failedNote={<>{t("failedCanvas")}{retry("impactModel")}</>}
+        folded={fold(canvasSummary("impactModel"))}
+      >
+        <CanvasIterateProvider enabled={canEdit && impactModelAi.aiAvailable && impactModelAi.mode !== "MANUAL"}>
+          <ImpactModelChain
+            projectSlug={slug}
+            model={project.impactModel}
+            canvasImpact={project.leanCanvas?.impact ?? null}
+            legacyProblem={project.leanCanvas?.problem?.trim() || null}
+            canEdit={canEdit}
+            ai={impactModelAi}
+            canvasAi={leanCanvasAi}
+          />
+        </CanvasIterateProvider>
+      </OverviewSection>
+      </div>
+
+      <div data-step="ai_reviewed" className="flex flex-col gap-5">
+      <OverviewSection id="mal" introKey="sdg" after={<>{canEdit && aiAvailable && sdgAiMode !== "MANUAL" && <SdgAiButton slug={slug} />}<StepActions>{stepDone("ai_reviewed")}</StepActions></>} title={t("sdgHeading")} fill={fill.about} writingLabel={writing} folded={fold(t("foldedSdg", { count: project.sdgGoals.length }))}>
+        <SdgSection slug={slug} goals={project.sdgGoals} provenance={projectProv.sdgGoals} canEdit={canEdit} />
+      </OverviewSection>
+      </div>
+
+      {openQuestions.length > 0 && (
+        <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+          <h2 className="text-lg font-semibold text-dark-slate">{t("thinkAboutHeading")}</h2>
+          <ul className="mt-2 list-disc pl-5 text-sm text-dark-slate/80">
+            {openQuestions.map((q) => (
+              <li key={q}>{q}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <div data-step="target_audience_interviews" className="flex flex-col gap-5">
+      <OverviewSection
+        id="intervjuer" introKey="interviews"
+        after={<>{canEdit && aiAvailable && interviewAiMode !== "MANUAL" && <InterviewAiDraft slug={slug} hasGuide={!!interviewGuide} />}<StepActions>{stepDone("target_audience_interviews")}</StepActions></>}
+        title={t("interviewsHeading")}
+        fill={fill.interviewGuide === "skipped" ? undefined : fill.interviewGuide}
+        writingLabel={t("writingInterviewGuide")}
+        failedNote={<>{t("failedInterviewGuide")}{retry("interviewGuide")}</>}
+      >
+        <p className="text-sm text-dark-slate/70">{t("interviewsIntro")}</p>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <Link href={`/projects/${slug}/interviews`} className="rounded-lg bg-coral px-3 py-1.5 text-sm font-semibold text-white hover:bg-watermelon">
+            {t("logInterviews")}
+          </Link>
+          <span className="text-sm text-dark-slate/60">{t("interviewCount", { count: interviewCount })}</span>
+        </div>
+        {/* The project's interview guide, open on the page — the questions to
+            take into the interviews. It lives in the wiki, where it's edited. */}
+        {interviewGuide && (
+          <div className="mt-6 border-t border-dark-slate/10 pt-6">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-dark-slate/45">{t("guideEyebrow")}</p>
+                <p className="text-lg font-semibold text-dark-slate">{t("guideHeading")}</p>
+              </div>
+              {canEdit && (
+                <Link href={`/projects/${slug}/wiki/intervjuguide`} className="rounded-full border border-dark-slate/15 px-3 py-1 text-sm font-medium text-dark-slate/60 hover:border-coral hover:text-coral">
+                  {t("guideEdit")}
+                </Link>
+              )}
+            </div>
+            {/* Wiki content, sanitized here like every other stored HTML. */}
+            <div
+              className="prose prose-sm mt-3 max-w-none rounded-2xl border border-dark-slate/10 bg-dry-sage/5 p-5 text-dark-slate/85 prose-h2:mt-4 prose-h2:text-base prose-h2:first:mt-0 prose-em:text-[#9a5f00]"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(interviewGuide.content ?? "") }}
+            />
+          </div>
+        )}
+        <InterviewSynthesisPanel
+          slug={slug}
+          interviewCount={interviewCount}
+          synthesis={synthesis?.content ?? null}
+          stillAssumed={assumptions.map((a) => a.key)}
+          fieldLabels={fieldLabels}
+          personaById={Object.fromEntries(interviews.map((i) => [i.id, i.personaName]))}
+          canEdit={canEdit}
+          aiAvailable={aiAvailable}
+        />
+      </OverviewSection>
+      </div>
+
+      <div data-step="market_scan_partners" className="flex flex-col gap-5">
       <OverviewSection
         id="omvarld" introKey="marketScan"
+        after={<StepActions>{stepDone("market_scan_partners")}</StepActions>}
         title={t("marketScanHeading")}
         fill={fill.marketScan === "skipped" ? undefined : fill.marketScan}
         writingLabel={t("writingMarketScan")}
@@ -306,57 +475,11 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
           </ul>
         )}
       </OverviewSection>
+      </div>
 
-      {openQuestions.length > 0 && (
-        <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
-          <h2 className="text-lg font-semibold text-dark-slate">{t("thinkAboutHeading")}</h2>
-          <ul className="mt-2 list-disc pl-5 text-sm text-dark-slate/80">
-            {openQuestions.map((q) => (
-              <li key={q}>{q}</li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <OverviewSection
-        id="intervjuer" introKey="interviews"
-        title={t("interviewsHeading")}
-        badge={t("yourTurn")}
-        fill={fill.interviewGuide === "skipped" ? undefined : fill.interviewGuide}
-        writingLabel={t("writingInterviewGuide")}
-        failedNote={<>{t("failedInterviewGuide")}{retry("interviewGuide")}</>}
-      >
-        <p className="text-sm text-dark-slate/70">{t("interviewsIntro")}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          {interviewGuide && (
-            <Link href={`/projects/${slug}/wiki/intervjuguide`} className="rounded-lg border border-seagrass/60 px-3 py-1.5 text-sm font-medium text-seagrass hover:bg-seagrass/10">
-              {t("openInterviewGuide")}
-            </Link>
-          )}
-          <Link href={`/projects/${slug}/interviews`} className="rounded-lg bg-coral px-3 py-1.5 text-sm font-semibold text-white hover:bg-watermelon">
-            {t("logInterviews")}
-          </Link>
-          <span className="text-sm text-dark-slate/60">{t("interviewCount", { count: interviewCount })}</span>
-        </div>
-        <InterviewSynthesisPanel
-          slug={slug}
-          interviewCount={interviewCount}
-          synthesis={synthesis?.content ?? null}
-          stillAssumed={assumptions.map((a) => a.key)}
-          fieldLabels={fieldLabels}
-          personaById={Object.fromEntries(interviews.map((i) => [i.id, i.personaName]))}
-          canEdit={canEdit}
-          aiAvailable={aiAvailable}
-        />
-      </OverviewSection>
-
-      <OverviewSection id="bjud-in" introKey="invite" title={t("inviteHeading")} badge={t("yourTurn")} writingLabel={writing}>
-        <p className="mb-3 text-sm text-dark-slate/70">{t("inviteIntro")}</p>
-        {canEdit ? <AddOrInviteMember projectId={project.id} slug={slug} /> : <p className="text-sm text-dark-slate/50">{t("inviteLeadsOnly")}</p>}
-      </OverviewSection>
-
+      <div data-step="gate">
       {inIdeaPhase ? (
-        <OverviewSection id="fasgrind" introKey="gate" title={t("gateHeading")} badge={t("yourTurn")} writingLabel={writing}>
+        <OverviewSection id="fasgrind" introKey="gate" title={t("gateHeading")} writingLabel={writing}>
           <PhaseGateSection
             gate="idea"
             slug={slug}
@@ -385,6 +508,8 @@ export default async function IdeaOverviewPage({ params }: { params: Promise<{ l
           </p>
         )
       )}
+      </div>
+      <PhaseSteps steps={steps} initialView={view === "all" ? "all" : "steps"} slug={slug} cardsByStep={cardsByStep} canEdit={canEdit} />
     </div>
   );
 }

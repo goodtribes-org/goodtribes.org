@@ -174,13 +174,15 @@ export const MARKET_SCAN_TOOL = {
 
 // ─── Intervjuguide ──────────────────────────────────────────────────────────
 
-export const INTERVIEW_GUIDE_SYSTEM_PROMPT = `Skriv en intervjuguide för målgruppsintervjuer i ett socialt projekt på GoodTribes.org. Syftet är att ta reda på om problemet är verkligt och hur det upplevs — inte att sälja idén.
+export const INTERVIEW_GUIDE_SYSTEM_PROMPT = `Skriv en intervjuguide för målgruppsintervjuer i ett socialt projekt på GoodTribes.org. Intervjuerna ska testa projektets antaganden: det i canvasen, värdeerbjudandet och impactmodellen som teamet ännu inte vet utan gissar. Syftet är att ta reda på om antagandena håller — inte att sälja idén.
 
 Regler:
-- 8–12 öppna frågor om personens egna erfarenheter ("Berätta om senast…", "Hur gör du idag när…"). Inga ledande frågor och inga frågor om vad de skulle tycka om lösningen.
-- Utgå från projektets riskablaste antaganden om problemet och målgruppen.
-- Några korta tips om hur man genomför intervjun och vad man ska anteckna.
-- Kort och praktiskt.
+- Utgå från listan "Antaganden att testa". Välj de 4–6 mest riskabla — de som hela idén vilar på, oftast om målgruppen, problemet och hur de löser det i dag.
+- Varje fråga testar ett antagande: ange i "tests" vilket (fältets namn, kort). Minst en fråga per valt antagande.
+- Öppna frågor om personens egna erfarenheter ("Berätta om senast…", "Hur gör du i dag när…"). Fråga om det som hänt, aldrig om vad de skulle göra eller tycka om lösningen. Inga ledande frågor.
+- Börja med en uppvärmningsfråga och avsluta med "Vem mer borde vi prata med?" (de kan ha tom "tests").
+- 8–12 frågor totalt. Några korta tips om genomförandet och vad man ska anteckna.
+- Finns ingen lista med antaganden, utgå från det riskablaste i underlaget om problemet och målgruppen.
 
 Svara genom verktyget "intervjuguide".`;
 
@@ -192,7 +194,19 @@ export const INTERVIEW_GUIDE_TOOL = {
     properties: {
       purpose: { type: "string", description: "Vad intervjuerna ska ta reda på, en eller två meningar." },
       who: { type: "string", description: "Vilka man bör intervjua, och hur man kan hitta dem." },
-      questions: { type: "array", items: { type: "string" }, minItems: 6, maxItems: 12 },
+      questions: {
+        type: "array",
+        minItems: 6,
+        maxItems: 12,
+        items: {
+          type: "object",
+          properties: {
+            question: { type: "string" },
+            tests: { type: "string", description: "Vilket antagande frågan testar (fältets namn), eller tomt för uppvärmning/avslutning." },
+          },
+          required: ["question"],
+        },
+      },
       tips: { type: "array", items: { type: "string" }, maxItems: 6 },
     },
     required: ["purpose", "who", "questions"],

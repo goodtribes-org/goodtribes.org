@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import CanvasStatusLegend from "@/components/CanvasStatusLegend";
 import type { ProvenanceInfo } from "@/lib/fieldProvenance";
 import ValuePropositionBlock from "./ValuePropositionBlock";
 import { VALUE_PROPOSITION_BLOCKS } from "./fields";
@@ -97,6 +98,7 @@ export default function ValuePropositionGrid({ projectSlug, canvas, canEdit, pro
         </div>
       </div>
       </div>
+      <CanvasStatusLegend />
     </>
   );
 }

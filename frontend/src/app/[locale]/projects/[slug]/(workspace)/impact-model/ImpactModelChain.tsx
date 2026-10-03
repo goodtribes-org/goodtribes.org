@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import CanvasStatusLegend from "@/components/CanvasStatusLegend";
 import type { ProvenanceInfo } from "@/lib/fieldProvenance";
 import LeanCanvasBlock from "../lean-canvas/LeanCanvasBlock";
 import ImpactModelBlock from "./ImpactModelBlock";
@@ -68,6 +69,7 @@ export default function ImpactModelChain({ projectSlug, model, canvasImpact, leg
           />
         </div>
       </div>
+      <CanvasStatusLegend />
     </>
   );
 }

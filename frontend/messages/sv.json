@@ -2676,7 +2676,7 @@
     "saving": "Sparar…",
     "save": "Spara",
     "cancel": "Avbryt",
-    "emptyEditable": "Tomt — klicka Redigera för att fylla i.",
+    "emptyEditable": "Tomt — klicka här för att fylla i.",
     "emptyReadOnly": "Inte ifyllt än."
   },
   "LeanCanvasFields": {
@@ -2945,7 +2945,8 @@
     "sdg_impact_measured": "Mäta och rapportera faktisk SDG-påverkan",
     "impact_externally_verified": "Extern verifiering/impact-rapport",
     "results_celebrated": "Fira och synliggöra resultat för community och finansiärer",
-    "next_step_decided": "Besluta om nästa steg: fortsätta, replikera, eller avsluta ansvarsfullt"
+    "next_step_decided": "Besluta om nästa steg: fortsätta, replikera, eller avsluta ansvarsfullt",
+    "impact_model_created": "Impactmodell"
   },
   "PhaseMenuBar": {
     "navLabel": "Projektets faser",
@@ -4003,7 +4004,8 @@
     "ignore": "Ignorera"
   },
   "CanvasAiBar": {
-    "review": "Granska det jag skrivit",
+    "reviewIntro": "Vill du ha en andra granskning? AI:n läser det du skrivit och ger högst tre saker att förbättra.",
+    "review": "Granska med AI",
     "reviewing": "Granskar…",
     "close": "Stäng",
     "switchToAssist": "Vill du ha hjälp? Byt till AI hjälper mig"
@@ -4033,6 +4035,9 @@
     "fold": "Fäll ihop"
   },
   "IdeaOverview": {
+    "sdgAiIntro": "Osäker på vilka mål som passar? AI:n läser er beskrivning och canvas och väljer upp till tre.",
+    "sdgAiChoose": "Låt AI:n välja mål",
+    "sdgAiChoosing": "AI:n väljer…",
     "heading": "Idéfasen",
     "intro": "Här är allt AI:n tagit fram för ditt projekt. Allt är märkt som utkast — läs igenom och tryck Redigera där något inte stämmer. Sist kommer det bara du kan göra.",
     "introWriting": "AI:n fyller i ditt projekt just nu. Sektionerna dyker upp allt eftersom — du kan börja läsa direkt.",
@@ -4112,7 +4117,48 @@
     "foldedCanvas": "{fields, plural, one {# ruta} other {# rutor}} · {guesses, plural, =0 {inga gissningar} one {# gissning} other {# gissningar}}",
     "foldedCritique": "{count, plural, =0 {inga invändningar än} one {# invändning} other {# invändningar}}",
     "foldedSdg": "{count, plural, =0 {inga mål valda} one {# mål} other {# mål}}",
-    "foldedMarketScan": "{count, plural, =0 {inga aktörer än} one {# aktör} other {# aktörer}}"
+    "foldedMarketScan": "{count, plural, =0 {inga aktörer än} one {# aktör} other {# aktörer}}",
+    "editText": "Redigera texten",
+    "summaryMissing": "Ingen sammanfattning än — en mening som får folk att vilja läsa mer.",
+    "descriptionMissing": "Ingen beskrivning än — berätta om problemet, idén och vilka ni behöver.",
+    "coverAdd": "Lägg till en bild för projektet",
+    "coverWhy": "Bilden är det första volontärer och sponsorer ser. Projekt med en bild får fler att stanna och läsa.",
+    "coverSpec": "JPG, PNG eller WebP · max 5 MB · gärna liggande, minst 1600 px bred",
+    "coverChange": "Byt bild",
+    "coverUploading": "Laddar upp…",
+    "coverFailed": "Det gick inte att ladda upp bilden.",
+    "coverWrongType": "Välj en JPG-, PNG-, WebP- eller GIF-bild.",
+    "coverTooLarge": "Bilden är större än 5 MB.",
+    "length": {
+      "summary": {
+        "short": "{n} tecken — för kort, säg vad ni gör och för vem",
+        "good": "{n} tecken — lagom",
+        "long": "{n} tecken — för långt, en mening räcker"
+      },
+      "description": {
+        "short": "{n} ord — för kort, berätta om problemet, idén och vilka ni behöver",
+        "good": "{n} ord — lagom",
+        "long": "{n} ord — för långt, de flesta läser bara början"
+      }
+    },
+    "aboutAiIntro": "Vill ni ha hjälp med texten? AI:n skriver ett förslag utifrån det ni berättat hittills: er egen text och Drömsamtalet om ni har haft ett.",
+    "aboutAiWrite": "Låt AI:n skriva ett förslag",
+    "aboutAiWriting": "AI:n skriver…",
+    "aboutAiDraftLabel": "AI:ns förslag",
+    "aboutAiUse": "Använd förslaget",
+    "aboutAiAgain": "Skriv ett nytt",
+    "aboutAiDiscard": "Släng",
+    "aboutAiNote": "Förslaget ersätter sammanfattning och beskrivning och märks som antagande. Ni kan redigera det efteråt.",
+    "guideEyebrow": "Intervjuguide",
+    "guideHeading": "Frågorna att ta med till intervjuerna",
+    "guideEdit": "Redigera i wikin",
+    "interviewAiIntro": "Vill ni ha hjälp med frågorna? AI:n föreslår intervjufrågor som testar de antaganden ni ännu inte vet om de stämmer.",
+    "interviewAiWrite": "Låt AI:n föreslå intervjufrågor",
+    "interviewAiWriting": "AI:n skriver frågor…",
+    "interviewAiDraftLabel": "AI:ns förslag på intervjuguide",
+    "interviewAiUse": "Använd som vår intervjuguide",
+    "interviewAiReplace": "Ersätt vår intervjuguide",
+    "interviewAiReplaceNote": "Ni har redan en intervjuguide. Förslaget ersätter den, och den gamla sparas som en egen sida i wikin."
   },
   "PhaseGate": {
     "intro": "Idéfasen är klar när ni vet tillräckligt för att börja testa lösningen. Här ser ni vad som är gjort, vad underlaget säger — och ni fattar beslutet. Ni kan gå vidare även om något saknas; det noteras bara.",
@@ -4857,5 +4903,52 @@
     "description": "GoodTribes är platsen där människor tillsammans förverkligar idéer som gör världen bättre. Någon har en dröm, andra hjälper till med det de kan, och projektet tar sig steg för steg från idé till verklig skillnad.",
     "ctaStart": "Starta ett projekt",
     "ctaBrowse": "Se projekten"
+  },
+  "PhaseSteps": {
+    "heading": "Stegen i Idéfasen",
+    "oneAtATime": "Fokusera på ett steg",
+    "showAll": "Visa allt",
+    "back": "← Tillbaka",
+    "next": "Nästa →",
+    "stepOf": "Steg {n} av {total}",
+    "status": {
+      "done": "Klart",
+      "review": "AI-utkast att granska",
+      "started": "Påbörjat",
+      "empty": "Inte påbörjat"
+    },
+    "prevTo": "Föregående: {step}",
+    "nextTo": "Nästa: {step}"
+  },
+  "CanvasInlineEdit": {
+    "clickToEdit": "Klicka för att skriva",
+    "howToSave": "Sparas när du klickar utanför · Esc ångrar",
+    "saving": "Sparar …",
+    "saved": "Sparat ✓"
+  },
+  "StepCards": {
+    "heading": "Uppgifter för steget",
+    "none": "Uppgift",
+    "allDone": "Alla klara",
+    "open": "{count, plural, one {# uppgift} other {# uppgifter}}",
+    "empty": "Inga uppgifter för det här steget än.",
+    "newPlaceholder": "Ny uppgift för steget …",
+    "add": "Lägg till",
+    "columns": {
+      "BACKLOG": "Önskelista",
+      "TODO": "Att göra",
+      "DOING": "Pågår",
+      "REVIEW": "Granskas",
+      "DONE": "Klar"
+    }
+  },
+  "StepDone": {
+    "markDone": "Klar",
+    "saving": "Sparar…",
+    "isDone": "Steget är klart",
+    "undo": "Ångra",
+    "alsoCards": "Markera även {count, plural, one {stegets öppna uppgift} other {stegets # öppna uppgifter}} som klar{count, plural, one {} other {a}} på tavlan",
+    "moved": "{count, plural, one {# uppgift flyttades} other {# uppgifter flyttades}} till Klart på tavlan.",
+    "notMoved": "Kunde inte flytta: {titles}. Gör klart deluppgifterna först, eller flytta dem på tavlan."
   }
 }

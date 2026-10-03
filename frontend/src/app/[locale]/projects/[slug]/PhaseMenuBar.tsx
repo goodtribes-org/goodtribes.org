@@ -10,7 +10,8 @@ import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, numberChecklist, 
 import { isPhaseFinished, nextStep, phaseStepProgress, type PhaseStep } from "@/lib/phaseProgress";
 import type { PhaseCardCount } from "@/lib/phaseWork";
 import { activePhaseFor } from "@/lib/phaseForPath";
-import { usePathname } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { newHomeDisplayFont } from "@/components/ny-startsida/fonts";
 
@@ -92,6 +93,11 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
   const activeIndex =
     variant === "header" ? DISPLAY_PHASES.findIndex((p) => p.value === activePhaseFor(pathname, slug, phase)) : currentIndex;
   const viewingDisplayPhase = viewingPhase ? toDisplayPhase(viewingPhase) : null;
+  // On the Idé phase page the header's Idé bar is the stepper — each
+  // step a link to it, the one being worked on framed. The page keeps
+  // ?step= in the URL; without it, the first step that isn't done.
+  const searchParams = useSearchParams();
+  const onIdeaPage = pathname === `/projects/${slug}/ide`;
   const next = showNextStep ? nextStep(phase, doneKeys) : null;
   const phaseDone = (i: number) => isPhaseFinished(progress[i], cardCounts?.[progress[i].phase]);
   const stepTitle = (s: PhaseStep) =>
@@ -177,6 +183,8 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
     <div ref={menuRef}>
       <nav
         aria-label={t("navLabel")}
+        // The Idé page lines its content up with this (ide/PhaseSteps.tsx).
+        data-phase-nav={variant === "header" ? "" : undefined}
         className={`grid ${
           variant === "header"
             ? // Header only (lg+): own column rule, without sm:grid-cols-6,
@@ -218,18 +226,6 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                   open at 40%). The frame is a 55% track that draws round in
                   full colour as the phase's kanban cards get done. A finished
                   phase (steps and cards) is one solid bar. */}
-              <PhaseBar
-                steps={pr.steps}
-                pct={pr.pct}
-                color={color}
-                cards={cardCounts?.[p.value]}
-                done={phaseDone(i)}
-                // Below 1500px the other phases' columns are too narrow for
-                // segments (2–4px each at 1024px): a continuous fill there.
-                segments={isCurrent ? "always" : "wide"}
-                stepTitle={stepTitle}
-                cardsTitle={(c) => t("cardsLabel", { done: c.done, total: c.total })}
-              />
               <span className="mt-2 flex items-center gap-2">
                 {/* Number circle, as on the homepage: filled, white number, ✓ once
                     done. A ring outside a white gap marks the phase being worked
@@ -323,6 +319,27 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
             // dropdown on the first row would otherwise lose to a later
             // column's stacking context on the second.
             <div key={p.value} className={`relative min-w-0 ${isOpen ? "z-30" : "z-10"}`}>
+              {/* The bar sits outside the button, so its steps can be links. */}
+              {headerStyle && (
+                <PhaseBar
+                  steps={pr.steps}
+                  pct={pr.pct}
+                  color={color}
+                  cards={cardCounts?.[p.value]}
+                  done={phaseDone(i)}
+                  // Below 1500px the other phases' columns are too narrow for
+                  // segments (2–4px each at 1024px): a continuous fill there.
+                  segments={isCurrent ? "always" : "wide"}
+                  stepTitle={stepTitle}
+                  cardsTitle={(c) => t("cardsLabel", { done: c.done, total: c.total })}
+                  hrefFor={p.value === "IDEA" ? (s) => `/projects/${slug}/ide?step=${s.key}` : undefined}
+                  currentKey={
+                    p.value === "IDEA" && onIdeaPage
+                      ? (searchParams.get("step") ?? pr.steps.find((s) => !s.done)?.key)
+                      : undefined
+                  }
+                />
+              )}
               {checklist ? (
                 <button
                   type="button"
@@ -505,14 +522,50 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
 }
 
 // A phase bar split into its steps. Hovering a segment names the step.
-function StepSegments({ steps, color, title, thin, className = "flex" }: { steps: PhaseStep[]; color: string; title: (s: PhaseStep) => string; thin?: boolean; className?: string }) {
+// With hrefFor (the phase page's steps) every segment is
+// a link to its step. The step being worked on has a border in the phase
+// colour; hovering another step shows the same border.
+function StepSegments({
+  steps, color, title, thin, className = "flex", hrefFor, currentKey,
+}: {
+  steps: PhaseStep[]; color: string; title: (s: PhaseStep) => string; thin?: boolean; className?: string;
+  hrefFor?: (s: PhaseStep) => string; currentKey?: string;
+}) {
   return (
-    <span className={`${className} w-full gap-[2px] ${thin ? "h-1.5" : "h-full"}`} aria-hidden>
-      {steps.map((s) => (
-        <span key={s.key} title={title(s)} className="relative block h-full min-w-0 flex-1 overflow-hidden rounded-full" style={{ background: hexToRgba(color, 0.4) }}>
-          <span className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500" style={{ width: `${s.frac * 100}%`, background: color }} />
-        </span>
-      ))}
+    <span className={`${className} w-full gap-[2px] ${thin ? "h-1.5" : "h-full"}`} aria-hidden={hrefFor ? undefined : true}>
+      {steps.map((s) => {
+        const fill = (
+          <span className="absolute inset-0 overflow-hidden rounded-full">
+            <span className="absolute inset-y-0 left-0 rounded-full transition-[width] duration-500" style={{ width: `${s.frac * 100}%`, background: color }} />
+          </span>
+        );
+        return hrefFor ? (
+          <Link
+            key={s.key}
+            href={hrefFor(s)}
+            title={title(s)}
+            aria-label={title(s)}
+            aria-current={s.key === currentKey ? "step" : undefined}
+            className="group relative block h-full min-w-0 flex-1 rounded-full focus-visible:outline-none"
+            style={{ background: hexToRgba(color, 0.4) }}
+          >
+            {fill}
+            {/* The border sits inside the step, above its fill: always on the
+                active step, on hover/focus for the others. */}
+            <span
+              aria-hidden
+              className={`pointer-events-none absolute inset-0 rounded-full ${
+                s.key === currentKey ? "" : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+              }`}
+              style={{ boxShadow: `inset 0 0 0 1px ${color}, inset 0 0 0 2px #fff` }}
+            />
+          </Link>
+        ) : (
+          <span key={s.key} title={title(s)} className="relative block h-full min-w-0 flex-1 overflow-hidden rounded-full" style={{ background: hexToRgba(color, 0.4) }}>
+            {fill}
+          </span>
+        );
+      })}
     </span>
   );
 }
@@ -522,7 +575,7 @@ function StepSegments({ steps, color, title, thin, className = "flex" }: { steps
 // pathLength 100 makes the dash the cards' done-percentage, starting top
 // left and running clockwise. No cards: just the track.
 function PhaseBar({
-  steps, pct, color, cards, done, segments, stepTitle, cardsTitle,
+  steps, pct, color, cards, done, segments, stepTitle, cardsTitle, hrefFor, currentKey,
 }: {
   steps: PhaseStep[];
   pct: number;
@@ -532,11 +585,13 @@ function PhaseBar({
   segments: "always" | "wide";
   stepTitle: (s: PhaseStep) => string;
   cardsTitle: (c: PhaseCardCount) => string;
+  hrefFor?: (s: PhaseStep) => string;
+  currentKey?: string;
 }) {
-  if (done) return <span className="block h-3 w-full rounded-full" style={{ background: color }} aria-hidden />;
+  if (done && !hrefFor) return <span className="block h-3 w-full rounded-full" style={{ background: color }} aria-hidden />;
   const cardPct = cards && cards.total > 0 ? (cards.done / cards.total) * 100 : 0;
   return (
-    <span className="relative block h-3 w-full rounded-full bg-white" title={cards && cards.total > 0 ? cardsTitle(cards) : undefined} aria-hidden>
+    <span className="relative block h-3 w-full rounded-full bg-white" title={cards && cards.total > 0 ? cardsTitle(cards) : undefined} aria-hidden={hrefFor ? undefined : true}>
       <svg className="pointer-events-none absolute left-[0.75px] top-[0.75px] overflow-visible" style={{ width: "calc(100% - 1.5px)", height: "calc(100% - 1.5px)" }}>
         <rect width="100%" height="100%" rx="5.25" fill="none" stroke={hexToRgba(color, 0.55)} strokeWidth="1.5" />
         {cardPct > 0 && (
@@ -555,8 +610,8 @@ function PhaseBar({
         )}
       </svg>
       <span className="absolute inset-[3px]">
-        <StepSegments steps={steps} color={color} title={stepTitle} className={segments === "always" ? "flex" : "hidden min-[1500px]:flex"} />
-        {segments === "wide" && (
+        <StepSegments steps={steps} color={color} title={stepTitle} className={segments === "always" || hrefFor ? "flex" : "hidden min-[1500px]:flex"} hrefFor={hrefFor} currentKey={currentKey} />
+        {segments === "wide" && !hrefFor && (
           <span className="block h-full w-full overflow-hidden rounded-full min-[1500px]:hidden" style={{ background: hexToRgba(color, 0.4) }}>
             <span className="block h-full rounded-full transition-[width] duration-500" style={{ width: `${pct}%`, background: color }} />
           </span>

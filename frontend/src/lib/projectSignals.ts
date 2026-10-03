@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { autoDoneKeys, type ProjectSignals } from "@/lib/phaseProgress";
 import { LEAN_CANVAS_BLOCKS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
+import { IMPACT_MODEL_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
 
 const filled = (row: Record<string, unknown> | null | undefined, fields: readonly string[]) =>
   fields.filter((f) => typeof row?.[f] === "string" && (row[f] as string).trim()).length;
@@ -26,6 +27,7 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
         estimatedFundingNeedSek: true,
         leanCanvas: true,
         valueProposition: true,
+        impactModel: true,
         dreamConversation: { select: { status: true } },
         openForReplication: true,
       },
@@ -62,6 +64,8 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
     inviteCount,
     leanCanvasFilled: filled(project?.leanCanvas as Record<string, unknown> | null, LEAN_CANVAS_BLOCKS.map((b) => b.field)),
     valuePropositionFilled: filled(project?.valueProposition as Record<string, unknown> | null, VALUE_PROPOSITION_FIELDS),
+    impactModelFilled: filled(project?.impactModel as Record<string, unknown> | null, IMPACT_MODEL_FIELDS),
+    impactModelFields: IMPACT_MODEL_FIELDS.length,
     interviewCount,
     marketScanCount,
     kanbanCardCount,

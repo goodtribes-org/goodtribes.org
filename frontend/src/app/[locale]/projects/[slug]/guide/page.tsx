@@ -23,6 +23,10 @@ export default async function IdeaGuidePage({
   const { step } = await searchParams;
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
+  // One page per phase: the step guide is now the Idé phase page itself,
+  // one step at a time. The old guide below stays reachable via
+  // ?step=__legacy until it's removed.
+  if (step !== "__legacy") redirect(`/projects/${slug}/ide?view=steps`);
 
   const project = await prisma.project.findUnique({
     where: { slug },
