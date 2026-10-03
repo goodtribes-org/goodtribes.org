@@ -45,7 +45,9 @@ services:
       - goodtribes
 
   minio:
-    image: minio/minio:latest
+    # Our ghcr mirror, same as the chart: docker.io and quay.io minio/* both
+    # refuse anonymous pulls now. Private package: `docker login ghcr.io` first.
+    image: ghcr.io/goodtribes-org/goodtribes.org/minio:RELEASE.2025-09-07T16-13-09Z
     restart: unless-stopped
     command: server /data --console-address ":9001"
     ports:
@@ -65,7 +67,7 @@ services:
       - goodtribes
 
   minio-init:
-    image: minio/mc:latest
+    image: ghcr.io/goodtribes-org/goodtribes.org/mc:RELEASE.2025-08-13T08-35-41Z
     depends_on:
       minio:
         condition: service_healthy
