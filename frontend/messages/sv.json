@@ -7,9 +7,6 @@
     "create": "Skapa",
     "createNewProject": "Nytt projekt",
     "createNewIdea": "Ny idé",
-    "createLeanCanvas": "Social Lean Canvas",
-    "createValueProposition": "Värdeerbjudande",
-    "createWhiteboard": "Whiteboard",
     "sandbox": "Drömfabriken",
     "sandboxHome": "Utforska Drömfabriken",
     "discover": "Utforska",
@@ -429,14 +426,15 @@
     "promoteCancel": "Avbryt",
     "cardBadge": "Social Lean Canvas",
     "listHeading": "Social Lean Canvas-utkast",
-    "listSubtitle": "Öppna utkast — skissa en affärsidé tillsammans med andra. Vem som helst inloggad kan redigera och göra ett utkast till ett projekt.",
+    "listSubtitle": "Gamla utkast från när en Social Lean Canvas kunde skapas fristående. Nya skapas i ett projekt. Öppna ett utkast för att göra om det till ett projekt.",
     "listEmptyState": "Inga utkast ännu.",
     "listStartFirst": "Starta det första →",
     "listStartedBy": "Startad av {name}",
     "listTimeJustNow": "just nu",
     "listTimeMinutesAgo": "{minutes} min sedan",
     "listTimeHoursAgo": "{hours} tim sedan",
-    "listTimeDaysAgo": "{days} dagar sedan"
+    "listTimeDaysAgo": "{days} dagar sedan",
+    "startProjectInstead": "Starta ett projekt i stället →"
   },
   "WhiteboardDraftPage": {
     "newHeading": "Ny whiteboard",
@@ -458,14 +456,15 @@
     "synced": "Sparat.",
     "cardBadge": "Whiteboard",
     "listHeading": "Whiteboards",
-    "listSubtitle": "Öppna ritytor — testa en idé fritt, tillsammans med andra. Vem som helst inloggad kan rita och göra ett utkast till ett projekt.",
+    "listSubtitle": "Gamla ritytor från när en whiteboard kunde skapas fristående. Nya finns i ett projekt. Öppna en rityta för att göra om den till ett projekt.",
     "listEmptyState": "Inga whiteboards ännu.",
     "listStartFirst": "Starta den första →",
     "listStartedBy": "Startad av {name}",
     "listTimeJustNow": "just nu",
     "listTimeMinutesAgo": "{minutes} min sedan",
     "listTimeHoursAgo": "{hours} tim sedan",
-    "listTimeDaysAgo": "{days} dagar sedan"
+    "listTimeDaysAgo": "{days} dagar sedan",
+    "startProjectInstead": "Starta ett projekt i stället →"
   },
   "AIReviewActions": {
     "genericError": "Något gick fel.",
@@ -2750,14 +2749,15 @@
     "promoteCancel": "Avbryt",
     "cardBadge": "Värdeerbjudande",
     "listHeading": "Värdeerbjudande-utkast",
-    "listSubtitle": "Öppna utkast — skissa ett värdeerbjudande tillsammans med andra. Vem som helst inloggad kan redigera och göra ett utkast till ett projekt.",
+    "listSubtitle": "Gamla utkast från när ett värdeerbjudande kunde skapas fristående. Nya skapas i ett projekt. Öppna ett utkast för att göra om det till ett projekt.",
     "listEmptyState": "Inga utkast ännu.",
     "listStartFirst": "Starta det första →",
     "listStartedBy": "Startad av {name}",
     "listTimeJustNow": "just nu",
     "listTimeMinutesAgo": "{minutes} min sedan",
     "listTimeHoursAgo": "{hours} tim sedan",
-    "listTimeDaysAgo": "{days} dagar sedan"
+    "listTimeDaysAgo": "{days} dagar sedan",
+    "startProjectInstead": "Starta ett projekt i stället →"
   },
   "ScalePage": {
     "breadcrumbProjects": "Projekt",

@@ -3,20 +3,9 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { createProjectRecord } from "@/lib/createProject";
 import { Prisma } from "@prisma/client";
 
-export async function createWhiteboardDraft(formData: FormData): Promise<void> {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-
-  const name = (formData.get("name") as string | null)?.trim();
-  if (!name) redirect("/whiteboard/new");
-
-  const draft = await prisma.whiteboardDraft.create({ data: { ownerId: session.user.id, name } });
-  redirect(`/whiteboard/${draft.id}`);
-}
 
 type CanvasSaveResult =
   | { ok: true; version: number }

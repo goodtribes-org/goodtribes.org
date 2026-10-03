@@ -317,7 +317,9 @@ export default async function SandboxPage({
         )}
       </section>
 
-      {userId && (
+      {/* Old standalone drafts, only for those who have some: new ones can't
+          be created anymore (tools are tried inside a project). */}
+      {userId && leanCanvasDrafts.length + whiteboardDrafts.length + valuePropositionDrafts.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
           <section id="lean-canvas">
             <div className="flex items-center justify-between mb-4">
@@ -331,9 +333,6 @@ export default async function SandboxPage({
             {leanCanvasDrafts.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-24 text-center">
                 <p className="text-dark-slate/50 mb-4">{tLeanCanvas("listEmptyState")}</p>
-                <Link href="/lean-canvas/new" className="text-coral hover:underline text-sm">
-                  {tLeanCanvas("listStartFirst")}
-                </Link>
               </div>
             ) : (
               <div className="flex flex-col rounded-lg border border-muted-teal/40 bg-white divide-y divide-muted-teal/20 overflow-hidden">
@@ -373,9 +372,6 @@ export default async function SandboxPage({
             {whiteboardDrafts.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-24 text-center">
                 <p className="text-dark-slate/50 mb-4">{tWhiteboard("listEmptyState")}</p>
-                <Link href="/whiteboard/new" className="text-coral hover:underline text-sm">
-                  {tWhiteboard("listStartFirst")}
-                </Link>
               </div>
             ) : (
               <div className="flex flex-col rounded-lg border border-muted-teal/40 bg-white divide-y divide-muted-teal/20 overflow-hidden">
@@ -413,9 +409,6 @@ export default async function SandboxPage({
             {valuePropositionDrafts.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-24 text-center">
                 <p className="text-dark-slate/50 mb-4">{tValueProposition("listEmptyState")}</p>
-                <Link href="/value-proposition/new" className="text-coral hover:underline text-sm">
-                  {tValueProposition("listStartFirst")}
-                </Link>
               </div>
             ) : (
               <div className="flex flex-col rounded-lg border border-muted-teal/40 bg-white divide-y divide-muted-teal/20 overflow-hidden">

@@ -7,16 +7,6 @@ import { redirect } from "next/navigation";
 import { createProjectRecord } from "@/lib/createProject";
 import { VALUE_PROPOSITION_FIELDS, type ValuePropositionField } from "../projects/[slug]/(workspace)/value-proposition/fields";
 
-export async function createValuePropositionDraft(formData: FormData): Promise<void> {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-
-  const name = (formData.get("name") as string | null)?.trim();
-  if (!name) redirect("/value-proposition/new");
-
-  const draft = await prisma.valuePropositionDraft.create({ data: { ownerId: session.user.id, name } });
-  redirect(`/value-proposition/${draft.id}`);
-}
 
 // Open by design, not just the creator — same reasoning as
 // updateLeanCanvasDraftBlock (any logged-in user can edit any
