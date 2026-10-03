@@ -1,4 +1,4 @@
-import { isAiEnabled } from "@/lib/anthropic";
+import { isAiEnabled, isAiTemporarilyUnavailable } from "@/lib/anthropic";
 import { isFeatureEnabled } from "@/lib/featureFlags";
 
 // The AI-guided project start (vägval, Drömsamtalet, AI mode settings,
@@ -13,5 +13,8 @@ import { isFeatureEnabled } from "@/lib/featureFlags";
 // recommendation) only need the flag and use isFeatureEnabled directly.
 export async function isAiProjectStartAvailable(userId: string | null | undefined): Promise<boolean> {
   if (!isAiEnabled()) return false;
+  // Configured but found not to work (bad key, no credentials, no credit):
+  // hidden the same way for a while, see isAiTemporarilyUnavailable.
+  if (await isAiTemporarilyUnavailable()) return false;
   return isFeatureEnabled("ai-project-start", userId);
 }

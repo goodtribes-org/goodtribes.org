@@ -1,6 +1,8 @@
 import type AnthropicSdk from "@anthropic-ai/sdk";
 import { redisPub } from "@/lib/redis";
 import { checkRateLimit, RATE_LIMIT_TIMEOUT_MS, withTimeout } from "@/lib/rateLimit";
+import { permanentAiFailure } from "@/lib/aiFailure";
+import { logger } from "@/lib/logger";
 
 // Which platform serves the Claude models. "anthropic" (default) is the
 // first-party Claude API, keyed by ANTHROPIC_API_KEY. "vertex" is Claude on
@@ -219,7 +221,51 @@ export function withCacheBreakpoint(messages: AnthropicSdk.MessageParam[]): Anth
 export async function createAnthropicClient(): Promise<AnthropicSdk | null> {
   if (!isAiEnabled()) return null;
   if (aiProvider() === "relay") return (await import("@/lib/aiRelay")).createRelayClient();
-  if (aiProvider() === "vertex") return createVertexClient();
+  if (aiProvider() === "vertex") return withOutageBreaker(await createVertexClient());
   const Anthropic = (await import("@anthropic-ai/sdk")).default;
-  return new Anthropic();
+  return withOutageBreaker(new Anthropic());
+}
+
+// ─── Configured but not working ─────────────────────────────────────────────
+// isAiEnabled() can only see that a key or a Vertex project is set, not that
+// it works. When a call fails in a way retrying won't fix (permanentAiFailure:
+// bad key, no Google credentials, no credit …) the AI is switched off for
+// AI_OUTAGE_SECONDS: getAiClientFor and isAiProjectStartAvailable then act
+// as if AI weren't configured, so entry points hide and features say "inte
+// tillgänglig" once, instead of every message ending in "Något gick fel".
+// After the window the next call tries again. Fails open on a Redis outage,
+// like the rate limits.
+const AI_OUTAGE_KEY = "ai:unavailable";
+const AI_OUTAGE_SECONDS = 10 * 60;
+
+export async function isAiTemporarilyUnavailable(): Promise<boolean> {
+  try {
+    return (await withTimeout(redisPub.exists(AI_OUTAGE_KEY), RATE_LIMIT_TIMEOUT_MS)) === 1;
+  } catch {
+    return false;
+  }
+}
+
+async function markAiUnavailable(reason: string): Promise<void> {
+  logger.error("ai unavailable: switching AI features off for a while", { reason, seconds: AI_OUTAGE_SECONDS, provider: aiProvider() });
+  try {
+    await withTimeout(redisPub.set(AI_OUTAGE_KEY, reason, "EX", AI_OUTAGE_SECONDS), RATE_LIMIT_TIMEOUT_MS);
+  } catch {
+    // Redis down: nothing to remember it in; the next call finds out again.
+  }
+}
+
+function withOutageBreaker(client: AnthropicSdk): AnthropicSdk {
+  const create = client.messages.create.bind(client.messages) as (...args: unknown[]) => Promise<unknown>;
+  const messages = Object.create(client.messages, {
+    create: {
+      value: (...args: unknown[]) =>
+        create(...args).catch(async (err: unknown) => {
+          const reason = permanentAiFailure(err);
+          if (reason) await markAiUnavailable(reason);
+          throw err;
+        }),
+    },
+  });
+  return Object.create(client, { messages: { value: messages } }) as AnthropicSdk;
 }
