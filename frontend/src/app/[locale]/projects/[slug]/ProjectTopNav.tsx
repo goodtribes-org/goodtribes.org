@@ -339,13 +339,24 @@ export default function ProjectTopNav({
     <>
       {titleSlot &&
         createPortal(
-          <Link
-            href={base}
-            title={title}
-            className="truncate text-seagrass font-semibold text-lg tracking-tight hover:text-dark-slate transition-colors"
-          >
-            {title}
-          </Link>,
+          <>
+            <Link
+              href={base}
+              title={title}
+              className="truncate text-seagrass font-semibold text-lg tracking-tight hover:text-dark-slate transition-colors"
+            >
+              {title}
+            </Link>
+            {/* Inviting is always one click away, not a step of a phase. */}
+            {isOwner && (
+              <Link
+                href={`${base}/invite`}
+                className="ml-2 shrink-0 rounded-full border border-seagrass/50 px-2.5 py-0.5 text-xs font-semibold text-seagrass hover:bg-seagrass/10"
+              >
+                {t("invite")}
+              </Link>
+            )}
+          </>,
           titleSlot,
         )}
       {headerSlot &&

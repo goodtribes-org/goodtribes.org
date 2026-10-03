@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { LeanCanvas, ValueProposition } from "@prisma/client";
 import { completeIdeaGuideStep, updateIdeaDetails } from "./actions";
-import AddOrInviteMember from "../AddOrInviteMember";
 import LeanCanvasGrid from "../(workspace)/lean-canvas/LeanCanvasGrid";
 import { LEAN_CANVAS_FIELDS } from "../(workspace)/lean-canvas/fields";
 import ValuePropositionGrid from "../(workspace)/value-proposition/ValuePropositionGrid";
@@ -28,7 +27,6 @@ import { setStepAiMode } from "@/lib/actions/aiModeSettings";
 
 
 interface Props {
-  projectId: string;
   slug: string;
   title: string;
   initialSummary: string;
@@ -45,7 +43,6 @@ interface Props {
   valueProposition: ValueProposition | null;
   hasInterviews: boolean;
   hasMarketScan: boolean;
-  hasInvitedSomeone: boolean;
   // Set from the phase-menu checklist's `?step=<itemKey>` deep link (see
   // PhaseMenuBar.tsx) so clicking a checklist item's text lands directly on
   // that step instead of always step 0.
@@ -71,7 +68,6 @@ interface Props {
 // step 1 ("Beskriv projektet") both creates the Project on /projects/new
 // and can be revisited/edited here afterward via updateIdeaDetails.
 export default function IdeaGuide({
-  projectId,
   slug,
   title: initialTitle,
   initialSummary,
@@ -86,7 +82,6 @@ export default function IdeaGuide({
   valueProposition,
   hasInterviews,
   hasMarketScan,
-  hasInvitedSomeone,
   initialStep,
   aiSettings,
   leanCanvasAi,
@@ -99,11 +94,20 @@ export default function IdeaGuide({
   const t = useTranslations("IdeaGuide");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
   const router = useRouter();
+  // Steps are found by key, so their order is decided in one place
+  // (INITIATIVE_CHECKLIST_ITEMS.IDEA via IDEA_GUIDE_STEPS), not by index here.
+  const ORDER = IDEA_GUIDE_STEPS.map((s) => s.key);
+  const at = (key: string) => ORDER.indexOf(key);
+  const isLast = (key: string) => at(key) === ORDER.length - 1;
+  // After a step: the next one, or back to the project after the last.
+  function advance(key: string) {
+    if (isLast(key)) router.push(`/projects/${slug}`);
+    else setStep(at(key) + 1);
+  }
   const [step, setStep] = useState(initialStep ?? 0);
   const [done, setDone] = useState<Set<string>>(new Set(completedKeys));
   const auto = useMemo(() => new Set(autoDoneKeys), [autoDoneKeys]);
   const shown = useMemo(() => new Set([...done, ...auto]), [done, auto]);
-  const [invitedSomeone, setInvitedSomeone] = useState(hasInvitedSomeone);
   const [title, setTitle] = useState(initialTitle);
   const [summary, setSummary] = useState(initialSummary);
   const [description, setDescription] = useState(initialDescription);
@@ -154,7 +158,7 @@ export default function IdeaGuide({
         imageUrl,
       });
       setDone((prev) => new Set(prev).add("dream_defined"));
-      setStep(1);
+      advance("dream_defined");
     });
   }
 
@@ -173,7 +177,7 @@ export default function IdeaGuide({
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "ai_reviewed", hasSelection, Array.from(selected));
       markDone("ai_reviewed", hasSelection);
-      setStep(2);
+      advance("ai_reviewed");
     });
   }
 
@@ -182,7 +186,7 @@ export default function IdeaGuide({
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "lean_canvas_created", hasContent);
       markDone("lean_canvas_created", hasContent);
-      setStep(4);
+      advance("lean_canvas_created");
     });
   }
 
@@ -191,7 +195,7 @@ export default function IdeaGuide({
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "value_proposition_created", hasContent);
       markDone("value_proposition_created", hasContent);
-      setStep(5);
+      advance("value_proposition_created");
     });
   }
 
@@ -199,27 +203,19 @@ export default function IdeaGuide({
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "target_audience_interviews", hasInterviews);
       markDone("target_audience_interviews", hasInterviews);
-      setStep(6);
+      advance("target_audience_interviews");
     });
   }
 
-  // The last step of the Idé guide: Design Sprint is Uppstart's, so the
-  // guide ends here and goes back to the project.
-  function handleMarketScanFinish() {
+  function handleMarketScanNext() {
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "market_scan_partners", hasMarketScan);
       markDone("market_scan_partners", hasMarketScan);
-      router.push(`/projects/${slug}`);
+      advance("market_scan_partners");
     });
   }
 
-  function handleFeedbackNext() {
-    startTransition(async () => {
-      await completeIdeaGuideStep(slug, "peer_feedback_requested", invitedSomeone);
-      markDone("peer_feedback_requested", invitedSomeone);
-      setStep(3);
-    });
-  }
+
 
   return (
     <div className="py-10">
@@ -294,7 +290,7 @@ export default function IdeaGuide({
       </div>
 
       {/* Step 1 — Beskriv projektet */}
-      <div className={step === 0 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
+      <div className={step === at("dream_defined") ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div>
           <label className="block text-sm font-medium text-dark-slate mb-2">
             {t("coverImageLabel")} <span className="text-dark-slate/50 font-normal">{t("optionalLabel")}</span>
@@ -383,13 +379,13 @@ export default function IdeaGuide({
             onClick={handleDetailsNext}
             className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            {isPending ? t("saving") : t("next")}
+            {isPending ? t("saving") : isLast("dream_defined") ? t("finishButton") : t("next")}
           </button>
         </div>
       </div>
 
       {/* Step 2 — Välj SDG */}
-      <div className={step === 1 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
+      <div className={step === at("ai_reviewed") ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div>
           <label className="block text-sm font-medium text-dark-slate mb-1">{t("sdgLabel")}</label>
           <p className="text-xs text-dark-slate/50 mb-4">
@@ -427,52 +423,21 @@ export default function IdeaGuide({
           </div>
         </div>
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(0)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button type="button" onClick={() => setStep(at("ai_reviewed") - 1)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
             type="button"
             disabled={isPending}
             onClick={handleSdgNext}
             className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            {isPending ? t("saving") : t("next")}
-          </button>
-        </div>
-      </div>
-
-      {/* Step 3 — Bjud in vänner (moved to right after SDG, so a founder
-          brings in collaborators before sinking time into Lean Canvas etc. —
-          see projectPhase.ts's IDEA order) */}
-      <div className={step === 2 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
-        <div className="rounded-xl border border-seagrass/20 bg-seagrass/5 p-5">
-          <label className="block text-base font-semibold text-dark-slate mb-1">
-            {t("inviteFriendsLabel")}
-          </label>
-          <p className="text-sm text-dark-slate/60 mb-4">
-            {t("inviteFriendsHint")}
-          </p>
-          <AddOrInviteMember
-            projectId={projectId}
-            slug={slug}
-            onAdded={() => setInvitedSomeone(true)}
-            onInviteSent={() => setInvitedSomeone(true)}
-          />
-        </div>
-        <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(1)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={handleFeedbackNext}
-            className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
-          >
-            {isPending ? t("saving") : t("next")}
+            {isPending ? t("saving") : isLast("ai_reviewed") ? t("finishButton") : t("next")}
           </button>
         </div>
       </div>
 
       {/* Step 4 — Lean Canvas (kept full-width, unlike the other steps, so
           its 10-column grid has room at the 900px+ breakpoint) */}
-      <div className={step === 3 ? "flex flex-col gap-5" : "hidden"}>
+      <div className={step === at("lean_canvas_created") ? "flex flex-col gap-5" : "hidden"}>
         <div className="max-w-3xl">
           <label className="block text-sm font-medium text-dark-slate mb-1">{t("leanCanvasLabel")}</label>
           <p className="text-xs text-dark-slate/50 mb-3">
@@ -490,21 +455,21 @@ export default function IdeaGuide({
           suggestions={leanCanvasAi?.suggestions}
         />
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(2)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button type="button" onClick={() => setStep(at("lean_canvas_created") - 1)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
             type="button"
             disabled={isPending}
             onClick={handleLeanCanvasNext}
             className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            {isPending ? t("saving") : t("next")}
+            {isPending ? t("saving") : isLast("lean_canvas_created") ? t("finishButton") : t("next")}
           </button>
         </div>
       </div>
 
       {/* Step 5 — Värdeerbjudande (kept full-width, like Lean Canvas, so its
           2-column layout has room to sit side by side) */}
-      <div className={step === 4 ? "flex flex-col gap-5" : "hidden"}>
+      <div className={step === at("value_proposition_created") ? "flex flex-col gap-5" : "hidden"}>
         <div className="max-w-3xl">
           <label className="block text-sm font-medium text-dark-slate mb-1">{t("valuePropositionLabel")}</label>
           <p className="text-xs text-dark-slate/50 mb-3">
@@ -528,20 +493,20 @@ export default function IdeaGuide({
           suggestions={valuePropositionAi?.suggestions}
         />
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(3)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button type="button" onClick={() => setStep(at("value_proposition_created") - 1)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
             type="button"
             disabled={isPending}
             onClick={handleValuePropositionNext}
             className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            {isPending ? t("saving") : t("next")}
+            {isPending ? t("saving") : isLast("value_proposition_created") ? t("finishButton") : t("next")}
           </button>
         </div>
       </div>
 
       {/* Step 6 — Målgruppsintervjuer */}
-      <div className={step === 5 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
+      <div className={step === at("target_audience_interviews") ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div className="rounded-xl border border-seagrass/20 bg-seagrass/5 p-5">
           <label className="block text-base font-semibold text-dark-slate mb-1">
             {t("interviewsLabel")}
@@ -557,20 +522,20 @@ export default function IdeaGuide({
           </a>
         </div>
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(4)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button type="button" onClick={() => setStep(at("target_audience_interviews") - 1)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
             type="button"
             disabled={isPending}
             onClick={handleInterviewsNext}
             className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            {isPending ? t("saving") : t("next")}
+            {isPending ? t("saving") : isLast("target_audience_interviews") ? t("finishButton") : t("next")}
           </button>
         </div>
       </div>
 
       {/* Step 7 — Omvärldsbevakning */}
-      <div className={step === 6 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
+      <div className={step === at("market_scan_partners") ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
         <div className="rounded-xl border border-seagrass/20 bg-seagrass/5 p-5">
           <label className="block text-base font-semibold text-dark-slate mb-1">
             {t("marketScanLabel")}
@@ -586,19 +551,21 @@ export default function IdeaGuide({
           </a>
         </div>
         <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(5)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
+          <button type="button" onClick={() => setStep(at("market_scan_partners") - 1)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
           <button
             type="button"
             disabled={isPending}
-            onClick={handleMarketScanFinish}
+            onClick={handleMarketScanNext}
             className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            {isPending ? t("saving") : t("finishButton")}
+            {isPending ? t("saving") : isLast("market_scan_partners") ? t("finishButton") : t("next")}
           </button>
         </div>
-        <p className="text-xs text-dark-slate/50 text-right">{t("sprintInNextPhase")}</p>
       </div>
 
+      {step === ORDER.length - 1 && (
+        <p className="max-w-3xl mx-auto text-xs text-dark-slate/50 text-right">{t("sprintInNextPhase")}</p>
+      )}
     </div>
   );
 }

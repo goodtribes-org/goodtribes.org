@@ -8,6 +8,7 @@ import PhaseProgressStrip from "../PhaseProgressStrip";
 import { ProjectSandboxAnnouncer } from "@/components/SandboxIndicator";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
+import StartTogetherPrompt from "@/components/project/StartTogetherPrompt";
 
 export default async function WorkspaceLayout({
   children,
@@ -23,7 +24,7 @@ export default async function WorkspaceLayout({
   ]);
   if (!project) notFound();
 
-  const [isOwner, checklistItems] = await Promise.all([
+  const [isOwner, checklistItems, otherMembers] = await Promise.all([
     session?.user?.id
       ? hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES)
       : Promise.resolve(false),
@@ -31,7 +32,10 @@ export default async function WorkspaceLayout({
       where: { projectId: project.id, completedAt: { not: null } },
       select: { itemKey: true },
     }),
+    prisma.projectMember.count({ where: { projectId: project.id, userId: { not: session?.user?.id ?? "" }, NOT: { role: "FOLLOWER" } } }),
   ]);
+  // Asked once while the founder is still alone in the project.
+  const askStartTogether = isOwner && otherMembers === 0;
 
   return (
     <>
@@ -61,6 +65,7 @@ export default async function WorkspaceLayout({
         />
         <div className="flex-1 min-w-0 px-6 lg:pt-8 lg:pb-12">
           <HubTabs slug={slug} isCommercial={isCommercialLegalType(project.legalType)} />
+          {askStartTogether && <StartTogetherPrompt slug={slug} />}
           {children}
         </div>
       </div>

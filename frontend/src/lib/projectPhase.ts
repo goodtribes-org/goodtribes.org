@@ -129,25 +129,29 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
   ProjectPhaseValue,
   { key: string; label: string; href?: string; parentKey?: string }[]
 > = {
+  // Order (2026-10-03): the idea's core (canvas, value proposition) right
+  // after the description, the global goals once you know who it's for,
+  // then the work (interviews, scan). No "set up the board" step (the system
+  // creates a card per step, issue #200) and no "invite" step: inviting is
+  // always available (button by the project title, a question right after
+  // the project is created), and forming the team is Uppstart's step.
   IDEA: [
     { key: "dream_defined", label: "Beskriv projektet" },
-    { key: "ai_reviewed", label: "Välj SDG" },
-    { key: "peer_feedback_requested", label: "Bjud in vänner / Bygg teamet" },
     { key: "lean_canvas_created", label: "Lean Canvas", href: "lean-canvas" },
     { key: "value_proposition_created", label: "Värdeerbjudande", href: "value-proposition" },
+    { key: "ai_reviewed", label: "Välj SDG" },
     { key: "target_audience_interviews", label: "Målgruppsintervjuer", href: "interviews" },
     { key: "market_scan_partners", label: "Omvärldsbevakning", href: "market-scan" },
   ],
   SPRINT: [],
   PILOT: [
-    { key: "core_team_formed", label: "Definiera roller och bilda kärnteam", href: "members" },
+    { key: "core_team_formed", label: "Bilda kärnteamet och fördela rollerna", href: "members" },
     { key: "sprint_prepped", label: "Design Sprint (5 steg)", href: "sprints" },
     { key: "map_understand", label: "Kartlägga & förstå", href: "sprints", parentKey: "sprint_prepped" },
     { key: "sketch_solutions", label: "Skissa lösningar", href: "sprints", parentKey: "sprint_prepped" },
     { key: "decide_plan", label: "Beslut & planera", href: "sprints", parentKey: "sprint_prepped" },
     { key: "build_prototype", label: "Bygga prototyp", href: "sprints", parentKey: "sprint_prepped" },
     { key: "test_with_users", label: "Testa med användare", href: "sprints", parentKey: "sprint_prepped" },
-    { key: "kanban_seeded", label: "Sätta upp Kanban-board med första uppgifterna", href: "kanban" },
     { key: "rough_budget_estimated", label: "Ta fram grov budget/resursbehov", href: "project-plan" },
     { key: "pilot_scope_defined", label: "Planera och avgränsa piloten", href: "project-plan" },
   ],

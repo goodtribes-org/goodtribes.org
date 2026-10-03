@@ -749,7 +749,8 @@
     "lockedHint": "Låses upp i en senare fas",
     "navGroupsLabel": "Projektmeny",
     "navImpactModel": "Impactmodell",
-    "navCustomerModel": "Kundmodell"
+    "navCustomerModel": "Kundmodell",
+    "invite": "Bjud in"
   },
   "MembersManager": {
     "pageTitle": "Projektmedlemmar",
@@ -2910,14 +2911,14 @@
     "target_audience_interviews": "Målgruppsintervjuer",
     "market_scan_partners": "Omvärldsbevakning",
     "peer_feedback_requested": "Bjud in vänner / Bygg teamet",
-    "core_team_formed": "Definiera roller och bilda kärnteam",
+    "core_team_formed": "Bilda kärnteamet och fördela rollerna",
     "sprint_prepped": "Design Sprint (5 steg)",
     "map_understand": "Kartlägga & förstå",
     "sketch_solutions": "Skissa lösningar",
     "decide_plan": "Beslut & planera",
     "build_prototype": "Bygga prototyp",
     "test_with_users": "Testa med användare",
-    "kanban_seeded": "Sätta upp Kanban-board med första uppgifterna",
+    "kanban_seeded": "Första uppgifterna på tavlan",
     "rough_budget_estimated": "Ta fram grov budget/resursbehov",
     "pilot_scope_defined": "Planera och avgränsa piloten",
     "pilot_success_criteria": "Definiera framgångskriterier för pilotfasen",
@@ -4854,5 +4855,11 @@
     "description": "GoodTribes är platsen där människor tillsammans förverkligar idéer som gör världen bättre. Någon har en dröm, andra hjälper till med det de kan, och projektet tar sig steg för steg från idé till verklig skillnad.",
     "ctaStart": "Starta ett projekt",
     "ctaBrowse": "Se projekten"
+  },
+  "StartTogether": {
+    "question": "Startar du projektet tillsammans med någon?",
+    "hint": "Bjud in dem nu, så kan ni arbeta tillsammans från början. Du kan också vänta tills idén känns klar, och knappen Bjud in finns alltid uppe vid projektets namn.",
+    "invite": "Bjud in",
+    "notNow": "Inte nu"
   }
 }

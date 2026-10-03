@@ -36,17 +36,12 @@ export default async function IdeaGuidePage({
   if (!project) redirect("/projects");
   if (!isLeadRole(project.members[0]?.role)) redirect(`/projects/${slug}`);
 
-  // Ground truth for whether the "Bjud in vänner" step has real work behind
-  // it — unlike SDG selection or the Lean Canvas, there's no other field to
-  // check this against, so it's computed here rather than trusted from
-  // completedKeys (which older guide versions marked unconditionally).
-  const [memberCount, pendingInviteCount, interviewCount, marketScanCount] = await Promise.all([
-    prisma.projectMember.count({ where: { projectId: project.id } }),
-    prisma.projectInvite.count({ where: { projectId: project.id, usedAt: null } }),
+  // Ground truth for whether the interview and market-scan steps have real
+  // work behind them, computed here rather than trusted from completedKeys.
+  const [interviewCount, marketScanCount] = await Promise.all([
     prisma.interviewLogEntry.count({ where: { projectSlug: slug } }),
     prisma.marketScanEntry.count({ where: { projectSlug: slug } }),
   ]);
-  const hasInvitedSomeone = memberCount > 1 || pendingInviteCount > 0;
 
   // Per-step AI mode pickers ship dark behind the ai-project-start flag.
   // vet/antar marking on the canvas steps ships behind the same flag.
@@ -83,7 +78,6 @@ export default async function IdeaGuidePage({
         />
       </div>
       <IdeaGuide
-        projectId={project.id}
         slug={slug}
         title={project.title}
         initialSummary={project.summary ?? ""}
@@ -98,7 +92,6 @@ export default async function IdeaGuidePage({
         valueProposition={project.valueProposition}
         hasInterviews={interviewCount > 0}
         hasMarketScan={marketScanCount > 0}
-        hasInvitedSomeone={hasInvitedSomeone}
         initialStep={Math.max(0, IDEA_GUIDE_STEPS.findIndex((i) => i.key === step))}
         aiSettings={aiSettings}
         leanCanvasAi={leanCanvasAi}

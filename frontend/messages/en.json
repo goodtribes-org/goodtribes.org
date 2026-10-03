@@ -749,7 +749,8 @@
     "lockedHint": "Unlocks in a later phase",
     "navGroupsLabel": "Project menu",
     "navImpactModel": "Impact model",
-    "navCustomerModel": "Customer model"
+    "navCustomerModel": "Customer model",
+    "invite": "Invite"
   },
   "MembersManager": {
     "pageTitle": "Project members",
@@ -2910,14 +2911,14 @@
     "target_audience_interviews": "Target audience interviews",
     "market_scan_partners": "Market scan",
     "peer_feedback_requested": "Invite friends / build the team",
-    "core_team_formed": "Define roles and form a core team",
+    "core_team_formed": "Form the core team and share out the roles",
     "sprint_prepped": "Design Sprint (5 steps)",
     "map_understand": "Map & understand",
     "sketch_solutions": "Sketch solutions",
     "decide_plan": "Decide & plan",
     "build_prototype": "Build prototype",
     "test_with_users": "Test with users",
-    "kanban_seeded": "Set up the Kanban board with initial tasks",
+    "kanban_seeded": "The first tasks on the board",
     "rough_budget_estimated": "Draft a rough budget/resource estimate",
     "pilot_scope_defined": "Plan and scope the pilot",
     "pilot_success_criteria": "Define success criteria for the pilot phase",
@@ -4854,5 +4855,11 @@
     "description": "GoodTribes is where people turn ideas that make the world better into reality, together. Someone has a dream, others help with what they can, and the project moves step by step from idea to real change.",
     "ctaStart": "Start a project",
     "ctaBrowse": "See the projects"
+  },
+  "StartTogether": {
+    "question": "Are you starting this project with someone?",
+    "hint": "Invite them now so you can work together from the start. Or wait until the idea feels ready — the Invite button by the project's name is always there.",
+    "invite": "Invite",
+    "notNow": "Not now"
   }
 }
