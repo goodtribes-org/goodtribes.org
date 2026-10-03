@@ -48,18 +48,18 @@ export default async function WhiteboardListPage({
           <p className="text-sm text-dark-slate/50 mt-1">{t("listSubtitle")}</p>
         </div>
         <Link
-          href="/whiteboard/new"
+          href="/projects/new"
           className="px-4 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors flex-shrink-0"
         >
-          {t("newCta")}
+          {t("startProjectInstead")}
         </Link>
       </div>
 
       {drafts.length === 0 ? (
         <div className="border border-dashed border-muted-teal/40 rounded-lg p-16 text-center">
           <p className="text-dark-slate/40 text-sm mb-3">{t("listEmptyState")}</p>
-          <Link href="/whiteboard/new" className="text-coral hover:underline text-sm">
-            {t("listStartFirst")}
+          <Link href="/projects/new" className="text-coral hover:underline text-sm">
+            {t("startProjectInstead")}
           </Link>
         </div>
       ) : (

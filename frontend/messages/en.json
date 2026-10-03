@@ -7,9 +7,6 @@
     "create": "Create",
     "createNewProject": "New project",
     "createNewIdea": "New idea",
-    "createLeanCanvas": "Social Lean Canvas",
-    "createValueProposition": "Value Proposition Canvas",
-    "createWhiteboard": "Whiteboard",
     "sandbox": "Dream Factory",
     "sandboxHome": "Explore the Dream Factory",
     "discover": "Discover",
@@ -429,14 +426,15 @@
     "promoteCancel": "Cancel",
     "cardBadge": "Social Lean Canvas",
     "listHeading": "Social Lean Canvas drafts",
-    "listSubtitle": "Open drafts — sketch a business idea together with others. Anyone logged in can edit and turn a draft into a project.",
+    "listSubtitle": "Old drafts from when a Social Lean Canvas could be created on its own. New ones are made inside a project. Open a draft to turn it into a project.",
     "listEmptyState": "No drafts yet.",
     "listStartFirst": "Start the first one →",
     "listStartedBy": "Started by {name}",
     "listTimeJustNow": "just now",
     "listTimeMinutesAgo": "{minutes}m ago",
     "listTimeHoursAgo": "{hours}h ago",
-    "listTimeDaysAgo": "{days}d ago"
+    "listTimeDaysAgo": "{days}d ago",
+    "startProjectInstead": "Start a project instead →"
   },
   "WhiteboardDraftPage": {
     "newHeading": "New whiteboard",
@@ -458,14 +456,15 @@
     "synced": "Saved.",
     "cardBadge": "Whiteboard",
     "listHeading": "Whiteboards",
-    "listSubtitle": "Open drawing spaces — try an idea freely, together with others. Anyone logged in can draw and turn a draft into a project.",
+    "listSubtitle": "Old whiteboards from when one could be created on its own. New ones live inside a project. Open one to turn it into a project.",
     "listEmptyState": "No whiteboards yet.",
     "listStartFirst": "Start the first one →",
     "listStartedBy": "Started by {name}",
     "listTimeJustNow": "just now",
     "listTimeMinutesAgo": "{minutes}m ago",
     "listTimeHoursAgo": "{hours}h ago",
-    "listTimeDaysAgo": "{days}d ago"
+    "listTimeDaysAgo": "{days}d ago",
+    "startProjectInstead": "Start a project instead →"
   },
   "AIReviewActions": {
     "genericError": "Something went wrong.",
@@ -2750,14 +2749,15 @@
     "promoteCancel": "Cancel",
     "cardBadge": "Value Proposition",
     "listHeading": "Value Proposition drafts",
-    "listSubtitle": "Open drafts — sketch a value proposition together with others. Anyone logged in can edit and turn a draft into a project.",
+    "listSubtitle": "Old drafts from when a value proposition could be created on its own. New ones are made inside a project. Open a draft to turn it into a project.",
     "listEmptyState": "No drafts yet.",
     "listStartFirst": "Start the first one →",
     "listStartedBy": "Started by {name}",
     "listTimeJustNow": "just now",
     "listTimeMinutesAgo": "{minutes}m ago",
     "listTimeHoursAgo": "{hours}h ago",
-    "listTimeDaysAgo": "{days}d ago"
+    "listTimeDaysAgo": "{days}d ago",
+    "startProjectInstead": "Start a project instead →"
   },
   "ScalePage": {
     "breadcrumbProjects": "Projects",

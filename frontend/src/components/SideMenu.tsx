@@ -85,9 +85,8 @@ export default function SideMenu() {
     items: [
       { href: "/projects/new", label: t("createNewProject") },
       { href: "/ideas/new", label: t("createNewIdea") },
-      { href: "/lean-canvas/new", label: t("createLeanCanvas") },
-      { href: "/value-proposition/new", label: t("createValueProposition") },
-      { href: "/whiteboard/new", label: t("createWhiteboard") },
+      // No standalone canvases or whiteboards (2026-10-03): the tools are
+      // tried inside a project, where they have a team, phases and AI.
     ],
   };
   const discover: Section = {
