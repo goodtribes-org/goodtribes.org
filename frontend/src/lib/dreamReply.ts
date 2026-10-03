@@ -10,6 +10,9 @@ import { mergeDreamState, parseDreamState, parseOpenQuestions } from "@/lib/drea
 import { DREAM_REPLY_TOOL, DREAM_SYSTEM_PROMPT, dreamProgressNote } from "@/lib/prompts/dreamConversation";
 import { htmlToText } from "@/lib/htmlToText";
 import { publishToRoom } from "@/lib/redis";
+import { permanentAiFailure } from "@/lib/aiFailure";
+
+const AI_UNAVAILABLE_TEXT = "AI är inte tillgänglig just nu. Du kan pausa och fortsätta senare, eller fylla i guiden själv.";
 
 // The room's typing indicator expires after 4 s, so repeat it while the
 // model works. The AI's own message clears it, like any author's.
@@ -49,10 +52,7 @@ export async function triggerDreamReply(room: Room, triggeredByUserId: string): 
       projectId: null,
     });
     if (!gate.ok) {
-      const text =
-        gate.reason === "rate_limited"
-          ? "Jag behöver en kort paus — försök igen om en stund."
-          : "AI är inte tillgänglig just nu. Du kan pausa och fortsätta senare, eller fylla i guiden själv.";
+      const text = gate.reason === "rate_limited" ? "Jag behöver en kort paus — försök igen om en stund." : AI_UNAVAILABLE_TEXT;
       await persistAiMessage(room.id, `<p>${text}</p>`, aiUser.id);
       return;
     }
@@ -107,7 +107,10 @@ export async function triggerDreamReply(room: Room, triggeredByUserId: string): 
     await persistAiMessage(room.id, toHtml(reply), aiUser.id);
   } catch (err) {
     logger.error("dream-conversation: reply failed", { roomId: room.id, err: String(err) });
-    await persistAiMessage(room.id, "<p>Något gick fel på min sida — skriv gärna ditt svar igen.</p>", aiUser.id).catch(() => {});
+    // A failure retrying won't fix (bad key, no credentials, no credit) has
+    // just switched AI off for a while — don't ask them to write again.
+    const text = permanentAiFailure(err) ? AI_UNAVAILABLE_TEXT : "Något gick fel på min sida — skriv gärna ditt svar igen.";
+    await persistAiMessage(room.id, `<p>${text}</p>`, aiUser.id).catch(() => {});
   } finally {
     clearInterval(typing);
   }
