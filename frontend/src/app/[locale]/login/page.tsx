@@ -3,11 +3,12 @@ import { auth } from "@/auth";
 import { Link } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import LoginForm from "./LoginForm";
+import SavedDream from "./SavedDream";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; callbackUrl?: string }>;
+  searchParams: Promise<{ error?: string; callbackUrl?: string; from?: string }>;
 }) {
   const session = await auth();
   if (session) redirect("/");
@@ -17,11 +18,15 @@ export default async function LoginPage({
   // A locale-prefixed default, so the emails NextAuth sends can tell which
   // language the person signed up in (see lib/authEmails.ts).
   const callbackUrl = params.callbackUrl ?? `/${await getLocale()}`;
+  // From the start page's dream box: the same magic link works for new and
+  // existing accounts, so say what happens next instead of a bare "Logga in".
+  const fromDream = params.from === "dream";
 
   return (
     <div className="max-w-sm mx-auto mt-16">
-      <h1 className="text-2xl font-bold mb-2">{t("loginTitle")}</h1>
-      <p className="text-dark-slate/70 mb-8">{t("loginSubtitle")}</p>
+      <h1 className="text-2xl font-bold mb-2">{fromDream ? t("dreamLoginTitle") : t("loginTitle")}</h1>
+      <p className="text-dark-slate/70 mb-8">{fromDream ? t("dreamLoginSubtitle") : t("loginSubtitle")}</p>
+      {fromDream && <SavedDream />}
 
       {params.error && (
         <div className="mb-6 p-3 bg-watermelon/10 border border-watermelon/40 rounded text-sm text-watermelon">
@@ -31,12 +36,16 @@ export default async function LoginPage({
 
       <LoginForm callbackUrl={callbackUrl} />
 
+      {/* Not on the dream version: the same link works for new accounts,
+          and a second way in only made people unsure which to take. */}
+      {!fromDream && (
       <p className="mt-6 text-sm text-dark-slate/60 text-center">
         {t("newHere")}{" "}
         <Link href={params.callbackUrl ? `/signup?callbackUrl=${encodeURIComponent(params.callbackUrl)}` : "/signup"} className="text-coral hover:text-seagrass underline underline-offset-4">
           {t("createAccountLink")}
         </Link>
       </p>
+      )}
 
       {process.env.NODE_ENV === "development" && (
         <div className="mt-8 pt-6 border-t border-muted-teal/40">
