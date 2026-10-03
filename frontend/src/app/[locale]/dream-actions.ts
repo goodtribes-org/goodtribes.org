@@ -27,7 +27,7 @@ export async function startDreamFromHome(text: string) {
   const userId = session?.user?.id;
   // The client saves the text before calling this, and it is restored after
   // login, so nothing the visitor wrote is lost on the way.
-  if (!userId) redirect("/login?callbackUrl=/");
+  if (!userId) redirect("/login?callbackUrl=/&from=dream");
 
   const dream = text.trim().slice(0, MAX_DREAM_LENGTH);
   if (!dream) return;
