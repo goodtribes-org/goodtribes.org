@@ -7,6 +7,7 @@ import {
   checkAiRateLimit,
   createAnthropicClient,
   isAiEnabled,
+  isAiTemporarilyUnavailable,
   recordAiProjectSpend,
 } from "@/lib/anthropic";
 import { costMicroUsd } from "@/lib/aiCost";
@@ -164,7 +165,7 @@ export type AiGateResult =
 // rate limits so a call blocked by MANUAL doesn't burn the user's quota or
 // the project's monthly budget.
 export async function getAiClientFor(req: AiGateRequest): Promise<AiGateResult> {
-  if (!isAiEnabled()) return { ok: false, reason: "not_configured" };
+  if (!isAiEnabled() || (await isAiTemporarilyUnavailable())) return { ok: false, reason: "not_configured" };
 
   let mode: AiMode = "AGENT";
   if (req.projectId) {
