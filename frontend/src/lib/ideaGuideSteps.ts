@@ -7,11 +7,7 @@ import { INITIATIVE_CHECKLIST_ITEMS } from "@/lib/projectPhase";
 // because step 0 needs to create the Project before anything else can
 // attach to it.
 //
-// The wizard's final step is Design Sprint prep, whose itemKey
-// (sprint_prepped) now lives in PILOT's checklist array, not IDEA's (see
-// projectPhase.ts — Design Sprint moved to Fas 2/Uppstart). It's appended
-// here explicitly so the step indicator still shows all 8 wizard steps.
-export const IDEA_GUIDE_STEPS = [
-  ...INITIATIVE_CHECKLIST_ITEMS.IDEA,
-  INITIATIVE_CHECKLIST_ITEMS.PILOT.find((item) => item.key === "sprint_prepped")!,
-];
+// Only the Idé phase's own steps: Design Sprint belongs to Uppstart (PILOT's
+// checklist, see projectPhase.ts) and lives on the Uppstart overview. The
+// wizard used to append it as an 8th step; it no longer does (2026-10-03).
+export const IDEA_GUIDE_STEPS = [...INITIATIVE_CHECKLIST_ITEMS.IDEA];

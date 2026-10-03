@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import type { LeanCanvas, ValueProposition } from "@prisma/client";
 import { completeIdeaGuideStep, updateIdeaDetails } from "./actions";
-import { toggleChecklistItem } from "../(workspace)/edit/actions";
 import AddOrInviteMember from "../AddOrInviteMember";
 import LeanCanvasGrid from "../(workspace)/lean-canvas/LeanCanvasGrid";
 import { LEAN_CANVAS_FIELDS } from "../(workspace)/lean-canvas/fields";
@@ -19,7 +18,6 @@ import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_NUMBERS, SDG_LABELS_SV } from "@/lib/sdg";
 import { IDEA_GUIDE_STEPS } from "@/lib/ideaGuideSteps";
 import { CATEGORIES } from "@/lib/categories";
-import { INITIATIVE_CHECKLIST_ITEMS } from "@/lib/projectPhase";
 import type { AiMode } from "@prisma/client";
 import type { ProjectAiSettings } from "@/lib/aiMode";
 import type { CanvasAiContext } from "@/lib/canvasAi";
@@ -28,13 +26,6 @@ import { startDreamConversationForProject } from "@/app/[locale]/projects/new/sa
 import AiModePicker from "@/components/ai/AiModePicker";
 import { setStepAiMode } from "@/lib/actions/aiModeSettings";
 
-// The sprint step doesn't move the project's actual phase forward (IDEA and
-// SPRINT are merged into one visible "Idé" step everywhere — see
-// projectPhase.ts) — it just lets founders get a head start on sprint prep
-// while still in Idé. Reuses Design Sprint's own 5 sub-items (now nested
-// under PILOT's sprint_prepped item — see projectPhase.ts) so ticking them
-// here already counts if the project later really enters PILOT phase.
-const SPRINT_PREP_ITEMS = INITIATIVE_CHECKLIST_ITEMS.PILOT.filter((item) => item.parentKey === "sprint_prepped");
 
 interface Props {
   projectId: string;
@@ -107,7 +98,6 @@ export default function IdeaGuide({
 }: Props) {
   const t = useTranslations("IdeaGuide");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
-  const tMenu = useTranslations("PhaseMenuBar");
   const router = useRouter();
   const [step, setStep] = useState(initialStep ?? 0);
   const [done, setDone] = useState<Set<string>>(new Set(completedKeys));
@@ -213,11 +203,13 @@ export default function IdeaGuide({
     });
   }
 
-  function handleMarketScanNext() {
+  // The last step of the Idé guide: Design Sprint is Uppstart's, so the
+  // guide ends here and goes back to the project.
+  function handleMarketScanFinish() {
     startTransition(async () => {
       await completeIdeaGuideStep(slug, "market_scan_partners", hasMarketScan);
       markDone("market_scan_partners", hasMarketScan);
-      setStep(7);
+      router.push(`/projects/${slug}`);
     });
   }
 
@@ -226,27 +218,6 @@ export default function IdeaGuide({
       await completeIdeaGuideStep(slug, "peer_feedback_requested", invitedSomeone);
       markDone("peer_feedback_requested", invitedSomeone);
       setStep(3);
-    });
-  }
-
-  function toggleSprintTask(itemKey: string) {
-    if (auto.has(itemKey)) return;
-    const wasDone = done.has(itemKey);
-    startTransition(async () => {
-      await toggleChecklistItem(slug, "PILOT", itemKey, !wasDone);
-      setDone((prev) => {
-        const next = new Set(prev);
-        if (wasDone) next.delete(itemKey); else next.add(itemKey);
-        return next;
-      });
-    });
-  }
-
-  function handleSprintFinish() {
-    const hasProgress = SPRINT_PREP_ITEMS.some((item) => shown.has(item.key));
-    startTransition(async () => {
-      await completeIdeaGuideStep(slug, "sprint_prepped", hasProgress);
-      router.push(`/projects/${slug}`);
     });
   }
 
@@ -619,64 +590,15 @@ export default function IdeaGuide({
           <button
             type="button"
             disabled={isPending}
-            onClick={handleMarketScanNext}
-            className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
-          >
-            {isPending ? t("saving") : t("next")}
-          </button>
-        </div>
-      </div>
-
-      {/* Step 8 — Sprint */}
-      <div className={step === 7 ? "flex flex-col gap-5 max-w-3xl mx-auto" : "hidden"}>
-        <div>
-          <label className="block text-sm font-medium text-dark-slate mb-1">{t("sprintLabel")}</label>
-          <p className="text-xs text-dark-slate/50 mb-4">
-            {t("sprintHint")}
-          </p>
-          <a
-            href={`/projects/${slug}/sprints`}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors mb-4"
-          >
-            {t("openDesignSprints")}
-          </a>
-          <div className="flex flex-col gap-2">
-            {SPRINT_PREP_ITEMS.map((item) => {
-              const isChecked = shown.has(item.key);
-              const isAuto = auto.has(item.key);
-              return (
-                <label
-                  key={item.key}
-                  className={`flex items-center gap-3 cursor-pointer rounded-lg border px-3 py-2.5 transition-colors ${
-                    isChecked ? "border-seagrass bg-seagrass/5" : "border-muted-teal/30 hover:border-seagrass/40"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isChecked} disabled={isAuto} onChange={() => toggleSprintTask(item.key)}
-                    className="accent-seagrass w-4 h-4 flex-shrink-0"
-                  />
-                  <span className={`text-sm ${isChecked ? "text-dark-slate font-medium" : "text-dark-slate/70"}`}>
-                    {tChecklist(item.key)}
-                    {isAuto && <span className="ml-1.5 text-[10px] font-medium text-seagrass">{tMenu("autoDoneShort")}</span>}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-        </div>
-        <div className="flex justify-between pt-2">
-          <button type="button" onClick={() => setStep(6)} className="text-sm text-dark-slate/50 hover:text-dark-slate px-4 py-2">{t("back")}</button>
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={handleSprintFinish}
+            onClick={handleMarketScanFinish}
             className="px-6 py-2 bg-dark-slate text-white text-sm font-medium rounded-xl hover:opacity-90 transition-opacity disabled:opacity-60"
           >
             {isPending ? t("saving") : t("finishButton")}
           </button>
         </div>
+        <p className="text-xs text-dark-slate/50 text-right">{t("sprintInNextPhase")}</p>
       </div>
+
     </div>
   );
 }

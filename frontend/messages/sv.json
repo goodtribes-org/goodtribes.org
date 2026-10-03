@@ -1267,9 +1267,6 @@
     "openMarketScan": "Öppna omvärldsbevakningen →",
     "inviteFriendsLabel": "🎉 Dela idén med vänner",
     "inviteFriendsHint": "Bra idéer blir ännu bättre med fler perspektiv. Bjud in vänner och kollegor att kika på din idé och tycka till — både de som redan är med på GoodTribes och de som inte är det än. Helt valfritt, men det tar bara en minut.",
-    "sprintLabel": "Sprint",
-    "sprintHint": "Valfritt — förbered sprint-arbetet redan nu genom att bocka av det som redan är klart, eller starta en riktig, asynkron Design Sprint direkt.",
-    "openDesignSprints": "Öppna Design Sprints →",
     "finishButton": "Klar, ta mig till projektet",
     "aiModeForStep": "AI för det här steget",
     "sdgRecommendation": "Tips: välj 1–3 mål som projektet tydligt bidrar till. Färre mål gör det lättare att mäta och berätta om er impact.",
@@ -1278,7 +1275,8 @@
     "talkToAi": "Prata med AI:n",
     "talkToAiHint": "Berätta om projektet i ett kort samtal, så fyller AI:n i det som saknas. Inget du redan skrivit skrivs över.",
     "overviewHint": "Allt i Idéfasen finns också samlat på en sida.",
-    "overviewLink": "Visa allt på en sida"
+    "overviewLink": "Visa allt på en sida",
+    "sprintInNextPhase": "Design Sprint gör ni i nästa fas, Uppstart."
   },
   "PhaseGuide": {
     "title": "{phaseLabel}-guiden — {projectTitle}",

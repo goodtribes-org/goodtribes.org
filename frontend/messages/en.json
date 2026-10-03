@@ -1267,9 +1267,6 @@
     "openMarketScan": "Open the market scan →",
     "inviteFriendsLabel": "🎉 Share the idea with friends",
     "inviteFriendsHint": "Good ideas get even better with more perspectives. Invite friends and colleagues to take a look at your idea and share feedback — both those already on GoodTribes and those who aren't yet. Completely optional, but it only takes a minute.",
-    "sprintLabel": "Sprint",
-    "sprintHint": "Optional — get a head start on sprint prep now by checking off what's already done, or start a real, asynchronous Design Sprint right away.",
-    "openDesignSprints": "Open Design Sprints →",
     "finishButton": "Done, take me to the project",
     "aiModeForStep": "AI for this step",
     "sdgRecommendation": "Tip: pick 1–3 goals the project clearly contributes to. Fewer goals make your impact easier to measure and explain.",
@@ -1278,7 +1275,8 @@
     "talkToAi": "Talk to the AI",
     "talkToAiHint": "Tell the AI about the project in a short conversation and it fills in what's missing. Nothing you've already written is overwritten.",
     "overviewHint": "Everything in the Idea phase is also gathered on one page.",
-    "overviewLink": "Show it all on one page"
+    "overviewLink": "Show it all on one page",
+    "sprintInNextPhase": "You'll do the Design Sprint in the next phase, Start-up."
   },
   "PhaseGuide": {
     "title": "{phaseLabel} guide — {projectTitle}",
