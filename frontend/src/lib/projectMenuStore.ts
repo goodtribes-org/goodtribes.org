@@ -10,9 +10,9 @@ import type { ProjectPhaseValue } from "@/lib/projectPhase";
 // 1. Project context: ProjectTopNav (rendered on every project page)
 //    publishes the project's slug, phase and roles, so the drawer can show
 //    that project's full, phase-aware tool menu (buildProjectNavGroups).
-// 2. Pinned: "📌 Fäst menyn" turns the drawer's project tools into a fixed
-//    left rail (ProjectSideNav). A per-viewer convenience in localStorage —
-//    wrapped in try/catch, and the default (unpinned) is fine without it.
+// 2. Pinned: the drawer's project tools as a fixed left rail
+//    (ProjectSideNav), on by default; "📌" unpins it. A per-viewer choice in
+//    localStorage, wrapped in try/catch; the default works without it.
 
 export type ProjectMenuContext = {
   slug: string;
@@ -44,12 +44,15 @@ export function useProjectMenuContext(): ProjectMenuContext | null {
 const PIN_KEY = "projectMenuPinned";
 let pinned: boolean | null = null;
 
+// Pinned by default (2026-10-04): a new member should see the project's
+// menu on the left without first finding "📌 Fäst menyn". Only an explicit
+// unpin ("0") hides it.
 function readPinned(): boolean {
   if (pinned === null) {
     try {
-      pinned = window.localStorage.getItem(PIN_KEY) === "1";
+      pinned = window.localStorage.getItem(PIN_KEY) !== "0";
     } catch {
-      pinned = false;
+      pinned = true;
     }
   }
   return pinned;
@@ -58,18 +61,17 @@ function readPinned(): boolean {
 export function setProjectMenuPinned(next: boolean) {
   pinned = next;
   try {
-    if (next) window.localStorage.setItem(PIN_KEY, "1");
-    else window.localStorage.removeItem(PIN_KEY);
+    window.localStorage.setItem(PIN_KEY, next ? "1" : "0");
   } catch {
-    // private browsing etc. — pinning just won't survive a reload
+    // private browsing etc. — the choice just won't survive a reload
   }
   emit();
 }
 
-// false on the server and before hydration, so the rail never renders into
-// the server HTML (no hydration mismatch for viewers who pinned it).
+// true on the server, the default, so the rail is in the server HTML for
+// almost everyone; a viewer who unpinned it sees it go after hydration.
 export function useProjectMenuPinned(): boolean {
-  return useSyncExternalStore(subscribe, readPinned, () => false);
+  return useSyncExternalStore(subscribe, readPinned, () => true);
 }
 
 // "Hela menyn / bara symboler" for the pinned rail, like the original left

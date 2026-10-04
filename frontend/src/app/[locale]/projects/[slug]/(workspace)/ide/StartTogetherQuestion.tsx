@@ -5,8 +5,9 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { answerInviteQuestion } from "./actions";
 
-// "Startar du projektet tillsammans med någon?" — at the top of the Idé page
-// for a lead who's still alone in the project, until it's answered (#201).
+// "Startar du projektet tillsammans med någon?" — at the end of the Idé
+// page's first step for a lead who's still alone in the project, until it's
+// answered (#201).
 // Inviting isn't a step: some start together, some wait until the idea feels
 // ready, and "Bjud in" by the project title is always there.
 export default function StartTogetherQuestion({ slug }: { slug: string }) {
