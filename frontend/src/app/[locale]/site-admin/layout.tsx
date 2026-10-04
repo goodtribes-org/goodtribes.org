@@ -1,10 +1,8 @@
 import { auth } from "@/auth";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { isSiteAdmin } from "@/lib/authz";
-import { countPendingImpactReports } from "@/lib/impactReports";
-import { SITE_ADMIN_NAV } from "@/lib/siteAdminNav";
-
+import { getAdminQueueCounts } from "@/lib/siteAdminCounts";
+import AdminNav from "./AdminNav";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -12,32 +10,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     notFound();
   }
 
-  // A review queue nobody can see the depth of is a queue nobody works —
-  // impact reports are submitted by projects and then just sit there until an
-  // admin happens to open the page.
-  const pendingImpactReports = await countPendingImpactReports();
+  const counts = await getAdminQueueCounts();
 
+  // Full-bleed like the project pages' layout, so the menu runs from the
+  // header's line down to the footer's, the same rail as there.
   return (
-    <div>
-      <div className="border-b border-muted-teal/30 mb-6">
-        <nav className="max-w-4xl mx-auto px-4 flex gap-4">
-          {SITE_ADMIN_NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-sm font-medium text-dark-slate/60 hover:text-dark-slate py-3 transition-colors"
-            >
-              {item.label}
-              {item.href === "/site-admin/impact-reports" && pendingImpactReports > 0 && (
-                <span className="ml-1.5 text-[10px] font-bold bg-coral text-white rounded-full px-1.5 py-0.5 align-middle">
-                  {pendingImpactReports}
-                </span>
-              )}
-            </Link>
-          ))}
-        </nav>
-      </div>
-      {children}
+    <div className="flex flex-1 flex-col lg:-mb-12 lg:-mt-8 lg:flex-row" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
+      <AdminNav counts={counts} />
+      {/* The pages keep their own max-width; this only places them next to
+          the menu. */}
+      <div className="min-w-0 flex-1 px-6 py-6 lg:pb-12 lg:pt-8 [&>*]:!mx-0 [&>*]:!px-0 [&>*]:!pt-0">{children}</div>
     </div>
   );
 }
