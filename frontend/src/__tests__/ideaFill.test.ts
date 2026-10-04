@@ -7,6 +7,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import {
   coerceBasics,
   coerceMarketScan,
+  coerceMarketScanConclusion,
   coerceProposals,
   impactModelContext,
   interviewGuideHtml,
@@ -90,6 +91,32 @@ describe("market scan — AI never makes up sources", () => {
     );
     expect(entries.map((e) => e.name)).toEqual(["Seniorer", "Kommun"]);
     expect(entries[1].type).toBe("COMPETITOR"); // unknown type falls back
+  });
+
+  it("keeps a find's canvas link only when it's a known field (#207)", () => {
+    const allowed = searchResultUrls(content);
+    const known = new Set(["leanCanvas.customerSegments"]);
+    const entries = coerceMarketScan(
+      {
+        entries: [
+          { type: "COMPETITOR", name: "Seniorer", description: "Hjälper äldre", source_url: "https://seniorer.example.se/om-oss", linked_field: "leanCanvas.customerSegments" },
+          { type: "TREND", name: "Kommun", description: "Digital hjälp", source_url: "https://kommun.example.se/digital", linked_field: "made.up" },
+        ],
+      },
+      allowed,
+      known,
+    );
+    expect(entries.map((e) => e.linkedField)).toEqual(["leanCanvas.customerSegments", null]);
+  });
+
+  it("reads the scan's conclusion, or none when it's empty", () => {
+    expect(coerceMarketScanConclusion({ conclusion: { strengths: "Kurser finns", gap: "", first_contacts: "Biblioteket" } })).toEqual({
+      strengths: "Kurser finns",
+      gap: "",
+      firstContacts: "Biblioteket",
+    });
+    expect(coerceMarketScanConclusion({ conclusion: { strengths: " ", gap: "" } })).toBeNull();
+    expect(coerceMarketScanConclusion({})).toBeNull();
   });
 });
 

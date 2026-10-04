@@ -142,7 +142,9 @@ Regler:
 - Ta bara med sådant du faktiskt hittat i sökresultaten, och ange alltid adressen (source_url) till sidan du hittade det på. Inga påhittade organisationer.
 - Hellre 3 säkra träffar än 8 osäkra. Högst 8.
 - type: COMPETITOR (liknande aktör eller alternativ), PARTNER_PROSPECT (möjlig samarbetspartner), TREND eller REGULATION.
-- description: vad aktören gör, en till två meningar. relevance: varför det spelar roll för just det här projektet.
+- description: vad aktören gör, en till två meningar. relevance: varför det spelar roll för just det här projektet ("För er: …").
+- linked_field: vilket fält i projektets canvas fyndet säger något om, en av nycklarna i underlaget (t.ex. "leanCanvas.customerSegments"). Leta utifrån canvasen: andra som löser samma problem för samma målgrupp, de som redan når målgruppen, trender som påverkar syftet, regler som rör lösningen.
+- conclusion: en kort slutsats byggd bara på det du hittat — vad andra redan gör bra (strengths), var luckan finns som projektet kan fylla (gap), och vilka att kontakta först (first_contacts). Hitta inte på något som inte står i fynden.
 
 När du är klar med sökningarna: rapportera genom verktyget "omvarld".`;
 
@@ -163,8 +165,17 @@ export const MARKET_SCAN_TOOL = {
             description: { type: "string" },
             relevance: { type: "string" },
             source_url: { type: "string" },
+            linked_field: { type: "string", description: "Canvasfältet fyndet säger något om, t.ex. leanCanvas.customerSegments." },
           },
           required: ["type", "name", "description", "source_url"],
+        },
+      },
+      conclusion: {
+        type: "object",
+        properties: {
+          strengths: { type: "string" },
+          gap: { type: "string" },
+          first_contacts: { type: "string" },
         },
       },
     },
