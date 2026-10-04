@@ -160,6 +160,9 @@ export function searchResultUrls(content: Anthropic.ContentBlock[]): Set<string>
 export type MarketScanProposal = {
   type: MarketScanEntryType;
   name: string;
+  // A canvas field key ("leanCanvas.customerSegments"), when the model gave a
+  // known one (#207).
+  linkedField?: string | null;
   description: string;
   relevance: string;
   sourceUrl: string;
@@ -169,7 +172,16 @@ const SCAN_TYPES: readonly string[] = ["COMPETITOR", "PARTNER_PROSPECT", "TREND"
 
 // "AI never makes up facts": an entry is kept only if its source is a page
 // that really appeared in the search results — anything else is dropped.
-export function coerceMarketScan(raw: unknown, allowedUrls: Set<string>): MarketScanProposal[] {
+export type MarketScanConclusionDraft = { strengths: string; gap: string; firstContacts: string } | null;
+
+// The scan's conclusion, only when it says something.
+export function coerceMarketScanConclusion(raw: unknown): MarketScanConclusionDraft {
+  const c = ((raw ?? {}) as { conclusion?: Record<string, unknown> }).conclusion ?? {};
+  const out = { strengths: str(c.strengths), gap: str(c.gap), firstContacts: str(c.first_contacts) };
+  return out.strengths || out.gap || out.firstContacts ? out : null;
+}
+
+export function coerceMarketScan(raw: unknown, allowedUrls: Set<string>, knownFields?: Set<string>): MarketScanProposal[] {
   const entries = Array.isArray((raw as { entries?: unknown })?.entries) ? (raw as { entries: unknown[] }).entries : [];
   const out: MarketScanProposal[] = [];
   for (const e of entries) {
@@ -183,6 +195,7 @@ export function coerceMarketScan(raw: unknown, allowedUrls: Set<string>): Market
       description: str(o.description),
       relevance: str(o.relevance),
       sourceUrl,
+      linkedField: knownFields?.has(str(o.linked_field)) ? str(o.linked_field) : null,
     });
   }
   return out.slice(0, 8);
@@ -285,7 +298,11 @@ export async function generateBasics(client: Anthropic, transcript: string): Pro
 // Web search + a report tool in one call. Not forced (forcing the report
 // tool would skip the searching); the model searches, then reports. A
 // long search can come back as pause_turn — continue it a few times.
-async function researchMarket(client: Anthropic, context: string): Promise<MarketScanProposal[]> {
+export async function researchMarket(
+  client: Anthropic,
+  context: string,
+  knownFields?: Set<string>,
+): Promise<{ entries: MarketScanProposal[]; conclusion: MarketScanConclusionDraft }> {
   // The basic web search variant: the dynamic-filtering one (_20260209)
   // runs code between searches and regularly took over two minutes here;
   // three plain searches are enough for a first scan.
@@ -302,11 +319,15 @@ async function researchMarket(client: Anthropic, context: string): Promise<Marke
     }, { timeout: 240_000, maxRetries: 0 });
     allContent.push(...response.content);
     const report = response.content.find((b) => b.type === "tool_use" && b.name === MARKET_SCAN_TOOL.name);
-    if (report && report.type === "tool_use") return coerceMarketScan(report.input, searchResultUrls(allContent));
+    if (report && report.type === "tool_use") {
+      const entries = coerceMarketScan(report.input, searchResultUrls(allContent), knownFields);
+      // A conclusion only stands on real, sourced finds.
+      return { entries, conclusion: entries.length ? coerceMarketScanConclusion(report.input) : null };
+    }
     if (response.stop_reason !== "pause_turn") break;
     messages.push({ role: "assistant", content: response.content });
   }
-  return [];
+  return { entries: [], conclusion: null };
 }
 
 // ─── Applying proposals (the never-overwrite rule) ──────────────────────────
@@ -485,20 +506,12 @@ export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
     valuePropositionDone,
     !wanted("marketScan") ? null : agent
       ? run("marketScan", async () => {
-          const entries = await researchMarket(client, context);
-          if (entries.length) {
-            await prisma.marketScanEntry.createMany({
-              data: entries.map((e) => ({
-                projectSlug: p.projectSlug,
-                type: e.type,
-                name: e.name,
-                description: e.description,
-                relevanceNote: e.relevance || null,
-                sourceUrl: e.sourceUrl,
-                createdByAi: true,
-                createdById: aiUser.id,
-              })),
-            });
+          // After the canvas, so the search starts from it and links each
+          // find to the field it speaks to (#207).
+          await leanCanvasDone;
+          const { runAndSaveMarketScan } = await import("@/lib/marketScan");
+          const found = await runAndSaveMarketScan(client, p.projectSlug, `Drömsamtalet:\n${p.transcript}`);
+          if (found > 0) {
             await markDone(p.projectId, "market_scan_partners", p.userId, p.projectSlug);
           }
         })

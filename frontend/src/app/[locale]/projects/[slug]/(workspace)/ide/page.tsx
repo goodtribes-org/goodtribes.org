@@ -29,6 +29,8 @@ import SdgSection, { SdgAiButton } from "./SdgSection";
 import AboutAiDraft from "./AboutAiDraft";
 import StepDone, { StepActions } from "./StepDone";
 import StartTogetherQuestion from "./StartTogetherQuestion";
+import MarketScanTemplate from "./MarketScanTemplate";
+import InterviewTemplate from "./InterviewTemplate";
 import InterviewAiDraft from "./InterviewAiDraft";
 import FillPoller from "./FillPoller";
 import RetryButton from "./RetryButton";
@@ -50,6 +52,21 @@ import PhaseProgressStrip from "../../PhaseProgressStrip";
 // Drömsamtalet (in AGENT mode), shown as plain content with vet/antar and an
 // Edit per section, followed by what only a human can do: interviews and
 // inviting people. Snabbstart stays available for step-by-step editing.
+// Which assumptions an interview can test first: who the target group is,
+// their problem and how they solve it today, then the rest. Figures (costs,
+// metrics, revenue) last — interviews rarely settle those.
+const INTERVIEW_ORDER = [
+  "leanCanvas.customerSegments", "leanCanvas.jobsToBeDone", "valueProposition.vpPains", "valueProposition.vpJobs",
+  "leanCanvas.alternatives", "leanCanvas.earlyAdopters", "impactModel.issue", "impactModel.participants",
+  "leanCanvas.uniqueValueProposition", "valueProposition.vpGains", "leanCanvas.solution", "leanCanvas.channels",
+];
+const INTERVIEW_LAST = ["leanCanvas.keyMetrics", "leanCanvas.costStructure", "leanCanvas.revenueStreams", "leanCanvas.unfairAdvantage"];
+function interviewPriority(key: string): number {
+  const i = INTERVIEW_ORDER.indexOf(key);
+  if (i >= 0) return i;
+  return INTERVIEW_LAST.includes(key) ? 100 + INTERVIEW_LAST.indexOf(key) : 50;
+}
+
 export default async function IdeaOverviewPage({
   params,
   searchParams,
@@ -202,20 +219,16 @@ export default async function IdeaOverviewPage({
 
   // The AI buttons under "Om projektet" and "Globala mål" show only when the
   // user has AI on for that step.
-  const [{ mode: aboutAiMode }, { mode: sdgAiMode }, { mode: interviewAiMode }] = aiAvailable
+  const [{ mode: aboutAiMode }, { mode: sdgAiMode }, { mode: interviewAiMode }, { mode: marketScanAiMode }] = aiAvailable
     ? await Promise.all([
         resolveAiMode({ projectId: project.id, feature: "dream-conversation", stepKey: "dream_defined" }),
         resolveAiMode({ projectId: project.id, feature: "sdg-suggestion", stepKey: "ai_reviewed" }),
         resolveAiMode({ projectId: project.id, feature: "dream-conversation", stepKey: "target_audience_interviews" }),
+        resolveAiMode({ projectId: project.id, feature: "dream-conversation", stepKey: "market_scan_partners" }),
       ])
-    : [{ mode: "MANUAL" as const }, { mode: "MANUAL" as const }, { mode: "MANUAL" as const }];
-
-  const typeLabel: Record<string, string> = {
-    COMPETITOR: t("scanCompetitor"),
-    PARTNER_PROSPECT: t("scanPartner"),
-    TREND: t("scanTrend"),
-    REGULATION: t("scanRegulation"),
-  };
+    : [{ mode: "MANUAL" as const }, { mode: "MANUAL" as const }, { mode: "MANUAL" as const }, { mode: "MANUAL" as const }];
+  const marketScanConclusion = await prisma.marketScanConclusion.findUnique({ where: { projectSlug: slug } });
+  const canvasRowForScan = (project.leanCanvas ?? {}) as Record<string, string | null>;
 
   return (
     <div data-phase-page className="flex flex-col gap-5 pt-3 pb-6">
@@ -436,6 +449,18 @@ export default async function IdeaOverviewPage({
             />
           </div>
         )}
+        {/* No guide yet: the template, for a team writing its own questions
+            (#207). It saves as the guide. */}
+        {!interviewGuide && (
+          <InterviewTemplate
+            slug={slug}
+            canEdit={canEdit}
+            customerSegments={project.leanCanvas?.customerSegments ?? null}
+            assumptions={[...assumptions]
+              .sort((a, b) => interviewPriority(a.key) - interviewPriority(b.key))
+              .map((a) => ({ label: fieldLabels[a.key] ?? a.key, text: a.text }))}
+          />
+        )}
         <InterviewSynthesisPanel
           slug={slug}
           interviewCount={interviewCount}
@@ -458,36 +483,19 @@ export default async function IdeaOverviewPage({
         writingLabel={t("writingMarketScan")}
         failedNote={<>{t("failedMarketScan")}{retry("marketScan")}</>}
         folded={fold(t("foldedMarketScan", { count: marketScan.length }))}
-        action={
-          <Link href={`/projects/${slug}/market-scan`} className="text-sm font-medium text-dark-slate/50 hover:text-coral">
-            {canEdit ? t("manage") : t("open")}
-          </Link>
-        }
       >
-        {marketScan.length === 0 ? (
-          <p className="text-sm text-dark-slate/50">{t("marketScanEmpty")}</p>
-        ) : (
-          <ul className="flex flex-col divide-y divide-muted-teal/20">
-            {marketScan.map((e) => (
-              <li key={e.id} className="py-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold text-dark-slate">{e.name}</span>
-                  <span className="rounded-full bg-dry-sage/30 px-2 py-0.5 text-[11px] text-dark-slate/60">{typeLabel[e.type]}</span>
-                  {e.createdByAi && (
-                    <span className="rounded-full border border-coral/40 bg-coral/10 px-1.5 py-px text-[10px] font-medium text-coral">{t("foundByAi")}</span>
-                  )}
-                </div>
-                <p className="mt-1 text-sm text-dark-slate/80">{e.description}</p>
-                {e.relevanceNote && <p className="mt-1 text-xs text-dark-slate/60">{e.relevanceNote}</p>}
-                {e.sourceUrl && (
-                  <a href={e.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block break-all text-xs text-seagrass hover:underline">
-                    {t("source")}: {e.sourceUrl}
-                  </a>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+        <MarketScanTemplate
+          slug={slug}
+          canEdit={canEdit}
+          aiButton={canEdit && aiAvailable && marketScanAiMode !== "MANUAL"}
+          canvas={Object.fromEntries(["customerSegments", "jobsToBeDone", "solution"].map((f) => [`leanCanvas.${f}`, canvasRowForScan[f] ?? null]))}
+          fieldLabels={fieldLabels}
+          entries={marketScan.map((e) => ({
+            id: e.id, type: e.type, name: e.name, description: e.description, relevanceNote: e.relevanceNote,
+            sourceUrl: e.sourceUrl, createdByAi: e.createdByAi, linkedField: e.linkedField, confirmedAt: e.confirmedAt?.toISOString() ?? null,
+          }))}
+          conclusion={marketScanConclusion ? { strengths: marketScanConclusion.strengths, gap: marketScanConclusion.gap, firstContacts: marketScanConclusion.firstContacts, createdByAi: marketScanConclusion.createdByAi } : null}
+        />
       </OverviewSection>
       </div>
 

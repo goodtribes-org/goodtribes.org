@@ -231,12 +231,31 @@ model MarketScanEntry {
   // Found by the AI's web search (the Idé fill) — always with a sourceUrl
   // that appeared in the actual search results.
   createdByAi   Boolean             @default(false)
+  // The canvas field this entry speaks to (e.g. "leanCanvas.customerSegments"),
+  // so the scan follows the canvas (#207). Null for older or unlinked entries.
+  linkedField   String?
+  // A member checked it ("✓ Stämmer") — an AI find is a lead, not a fact.
+  confirmedAt   DateTime?
   createdById   String
   createdBy     User                @relation("MarketScanEntryCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
 
   @@index([projectSlug])
+}
+
+// The market scan's conclusion, "Er plats i landskapet" (#207): what others
+// already do well, where the gap is, who to contact first. Feeds the canvas's
+// Unikt värdeerbjudande and Orättvis fördel. createdByAi = an AI draft
+// nobody has edited yet (shown as "AI-utkast · Antagande").
+model MarketScanConclusion {
+  projectSlug   String   @id
+  project       Project  @relation("ProjectMarketScanConclusion", fields: [projectSlug], references: [slug], onDelete: Cascade)
+  strengths     String?  @db.Text
+  gap           String?  @db.Text
+  firstContacts String?  @db.Text
+  createdByAi   Boolean  @default(false)
+  updatedAt     DateTime @updatedAt
 }
 
 enum ChannelPlanStatus {

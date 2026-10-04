@@ -4957,5 +4957,151 @@
     "why": "Invite them now, so you can work on the idea together from the start. Or wait — the Invite button is always by the project's name.",
     "invite": "Invite",
     "notNow": "Not now"
+  },
+  "MarketScanTemplate": {
+    "recommended": "Recommended",
+    "aiHeading": "Let the AI do a first market scan",
+    "aiBody": "The AI searches the web from your Social Lean Canvas and fills the template below with players, trends and rules, each with a source. It takes a minute or two. Then you go through it and keep what holds.",
+    "aiRun": "Run the market scan",
+    "aiRunning": "The AI is searching the web…",
+    "aiFound": "{count, plural, one {The AI found # thing} other {The AI found # things}} with a source.",
+    "orManual": "or fill in the template yourself ↓",
+    "aiDoneHeading": "{count, plural, one {The AI found # thing.} other {The AI found # things.}}",
+    "aiDoneBody": "Everything is a suggestion: check the sources, press ✓ Holds on what holds and remove the rest.",
+    "aiMore": "Search for more",
+    "startsFrom": "Starts from your Social Lean Canvas",
+    "canvasEmpty": "Not filled in yet — fill in the canvas first, so the scan hits the mark.",
+    "buildsOn": "Builds on the canvas: {fields}",
+    "section": {
+      "COMPETITOR": {
+        "title": "Others solving the same problem",
+        "question": "Who already helps your target group with this? What do they do well, and what's missing?"
+      },
+      "PARTNER_PROSPECT": {
+        "title": "Possible partners",
+        "question": "Who already reaches your target group, or has what you need (space, equipment, volunteers)?"
+      },
+      "TREND": {
+        "title": "Trends that matter",
+        "question": "What's changing in society that makes your problem bigger or smaller?"
+      },
+      "REGULATION": {
+        "title": "Rules and requirements",
+        "question": "Are there laws, permits or requirements you need to know about?"
+      }
+    },
+    "foundByAi": "Found by AI",
+    "linkedTo": "Linked to: {field}",
+    "forYou": "For you:",
+    "source": "Source",
+    "confirm": "✓ Holds",
+    "confirmed": "✓ Checked",
+    "remove": "Remove",
+    "add": "+ Add",
+    "addError": "Couldn't save. Try again.",
+    "fieldName": "Name",
+    "fieldNameHint": "Organisation, initiative or company",
+    "fieldSource": "Source",
+    "fieldSourceHint": "Link to their website or an article",
+    "fieldWhat": "What do they do?",
+    "fieldWhatHint": "One or two sentences",
+    "fieldMeaning": "What does it mean for you?",
+    "fieldMeaningHint": "Competitor, partner, lesson — and why",
+    "fieldLinked": "Linked to the canvas field",
+    "save": "Save",
+    "saved": "Saved",
+    "cancel": "Cancel",
+    "conclusionTitle": "Conclusion: your place in the landscape",
+    "conclusionBody": "This is what the scan should lead to. The answers feed Unique value proposition and Unfair advantage in the canvas.",
+    "conclusion": {
+      "strengths": "What do others already do well?",
+      "gap": "Where's the gap — what only you do?",
+      "firstContacts": "Who do you contact first?"
+    },
+    "aiDraft": "AI draft · Assumption",
+    "writeHere": "Write here…"
+  },
+  "InterviewTemplate": {
+    "eyebrow": "Interview template",
+    "heading": "Test your assumptions in a 20-minute conversation",
+    "print": "Print",
+    "save": "Save as our interview guide",
+    "saving": "Saving…",
+    "saveHint": "Write at least one question of your own in step 1 to save the template as your interview guide.",
+    "whyHeading": "The interviews decide what holds",
+    "whyBody": "Everything in your canvas not marked Done — you know is a guess. The interviews are where you test the guesses against the people you want to help. That's why the template starts from your assumptions, not from ready-made questions.",
+    "step1Heading": "1. Pick the assumptions the whole idea rests on",
+    "step1Body": "Start with the riskiest — usually who the target group is, what problem they have and how they solve it today. Write at least one question per assumption.",
+    "yourQuestion": "Your question",
+    "questionHint": "Tell me about the last time you…",
+    "noAssumptions": "No assumptions to test right now — either the canvas is empty, or you've marked everything as Done. Fill in the canvas first, or test the basics: is the problem real, how often, and how do they solve it today?",
+    "more": "+ {count, plural, one {# more assumption} other {# more assumptions}}. Take them in the next round of interviews.",
+    "howHeading": "How to turn an assumption into a question",
+    "howBody": "Ask about what has happened, not what they would do. People are bad at predicting themselves, but good at telling.",
+    "exAssumptionLabel": "Assumption",
+    "exAssumption": "“Older people in the area have no one to ask about their computer.”",
+    "exBadLabel": "Not like this",
+    "exBad": "“Would you like a computer buddy?” — everyone says yes, nobody commits.",
+    "exGoodLabel": "But like this",
+    "exGood": "“Tell me about the last time you got stuck with your computer. What did you do?”",
+    "step2Heading": "2. Talk to the people you guess you help",
+    "segmentsEmpty": "Customer segments isn't filled in on the canvas yet.",
+    "whoTip": "3–5 people per round is enough. Not friends or family — they're too kind to disagree.",
+    "step3Heading": "3. The conversation",
+    "part": {
+      "warmup": "Warm up",
+      "assumptions": "Your assumption questions",
+      "today": "What they do today",
+      "close": "Close"
+    },
+    "time": {
+      "warmup": "2 min",
+      "assumptions": "12 min",
+      "today": "4 min",
+      "close": "2 min"
+    },
+    "assumptionPart": "Ask the questions from step 1 here, one at a time. Follow up each answer:",
+    "followUp1": "“Can you tell me more?”",
+    "followUp2": "“How often does that happen?”",
+    "followUp3": "“What did you do then?”",
+    "q": {
+      "warmup1": "Tell me a bit about yourself and your everyday life.",
+      "today1": "How do you solve it today?",
+      "today2": "What have you tried that didn't work?",
+      "today3": "What does it cost you — in time, money or energy?",
+      "close1": "Is there anything I should have asked about?",
+      "close2": "Who else should we talk to?",
+      "close3": "May we get back to you?"
+    },
+    "doHeading": "Do this",
+    "do1": "Let the silence be — the other person fills it.",
+    "do2": "Write down exact words, they become your best quotes.",
+    "do3": "Be two if you can: one asks, one takes notes.",
+    "dontHeading": "Avoid",
+    "dont1": "Don't tell them about your idea until the end, if at all.",
+    "dont2": "Don't ask “would you…?” — the answer says nothing.",
+    "dont3": "Don't ask leading questions (“isn't it annoying to…?”).",
+    "step4Heading": "4. After the conversation — what happened to the assumptions?",
+    "step4Body": "Take notes right away. The same fields as when you log the interview, so they carry straight over.",
+    "after": {
+      "who": "Who and when",
+      "problem": "The biggest problem they mentioned",
+      "held": "Did the assumption hold?",
+      "quote": "Quote"
+    },
+    "afterHint": {
+      "who": "First name or description, and date",
+      "problem": "In their own words",
+      "held": "Yes · Partly · No — and which assumption",
+      "quote": "What they said that stuck"
+    },
+    "step4Close": "When several interviews point the same way: mark the field Done — you know in the canvas, or rewrite it. That's how assumptions become knowledge.",
+    "tests": "Tests",
+    "savedNote": "From the interview template — edit freely.",
+    "purposeHeading": "What the interviews should find out",
+    "whoHeading": "Who to interview",
+    "whoFallback": "The people you want to help.",
+    "questionsHeading": "Questions",
+    "tipsHeading": "Tips"
   }
 }

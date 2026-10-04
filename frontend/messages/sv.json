@@ -4957,5 +4957,151 @@
     "why": "Bjud in dem nu, så kan ni jobba med idén tillsammans från början. Du kan också vänta — knappen Bjud in finns alltid vid projektets namn.",
     "invite": "Bjud in",
     "notNow": "Inte nu"
+  },
+  "MarketScanTemplate": {
+    "recommended": "Rekommenderat",
+    "aiHeading": "Låt AI:n göra en första omvärldsbevakning",
+    "aiBody": "AI:n söker på webben utifrån er Social Lean Canvas och fyller mallen nedan med aktörer, trender och regler, med en källa till varje. Det tar en eller två minuter. Sedan går ni igenom och behåller det som stämmer.",
+    "aiRun": "Ta fram omvärldsbevakningen",
+    "aiRunning": "AI:n söker på webben…",
+    "aiFound": "{count, plural, one {AI:n hittade # sak} other {AI:n hittade # saker}} med källa.",
+    "orManual": "eller fyll i mallen själv ↓",
+    "aiDoneHeading": "{count, plural, one {AI:n har hittat # sak.} other {AI:n har hittat # saker.}}",
+    "aiDoneBody": "Allt är förslag: kolla källorna, tryck ✓ Stämmer på det som håller och ta bort resten.",
+    "aiMore": "Sök efter fler",
+    "startsFrom": "Utgår från er Social Lean Canvas",
+    "canvasEmpty": "Inte ifyllt än — fyll i canvasen först, så blir bevakningen träffsäker.",
+    "buildsOn": "Bygger på canvasen: {fields}",
+    "section": {
+      "COMPETITOR": {
+        "title": "Andra som löser samma problem",
+        "question": "Vem hjälper redan er målgrupp med samma sak? Vad gör de bra, och vad saknas?"
+      },
+      "PARTNER_PROSPECT": {
+        "title": "Möjliga samarbetspartners",
+        "question": "Vem når redan er målgrupp, eller har det ni behöver (lokaler, utrustning, volontärer)?"
+      },
+      "TREND": {
+        "title": "Trender som påverkar",
+        "question": "Vad förändras i samhället som gör ert problem större eller mindre?"
+      },
+      "REGULATION": {
+        "title": "Regler och krav",
+        "question": "Finns lagar, tillstånd eller krav ni behöver känna till?"
+      }
+    },
+    "foundByAi": "Hittad av AI",
+    "linkedTo": "Kopplat till: {field}",
+    "forYou": "För er:",
+    "source": "Källa",
+    "confirm": "✓ Stämmer",
+    "confirmed": "✓ Kontrollerad",
+    "remove": "Ta bort",
+    "add": "+ Lägg till",
+    "addError": "Det gick inte att spara. Försök igen.",
+    "fieldName": "Namn",
+    "fieldNameHint": "Organisation, initiativ eller företag",
+    "fieldSource": "Källa",
+    "fieldSourceHint": "Länk till deras webbplats eller en artikel",
+    "fieldWhat": "Vad gör de?",
+    "fieldWhatHint": "En eller två meningar",
+    "fieldMeaning": "Vad betyder det för er?",
+    "fieldMeaningHint": "Konkurrent, partner, lärdom — och varför",
+    "fieldLinked": "Kopplat till canvasfältet",
+    "save": "Spara",
+    "saved": "Sparat",
+    "cancel": "Avbryt",
+    "conclusionTitle": "Slutsats: er plats i landskapet",
+    "conclusionBody": "Det här är vad bevakningen ska leda till. Svaren matar Unikt värdeerbjudande och Orättvis fördel i canvasen.",
+    "conclusion": {
+      "strengths": "Vad gör andra redan bra?",
+      "gap": "Var finns luckan — det bara ni gör?",
+      "firstContacts": "Vem kontaktar ni först?"
+    },
+    "aiDraft": "AI-utkast · Antagande",
+    "writeHere": "Skriv här…"
+  },
+  "InterviewTemplate": {
+    "eyebrow": "Intervjumall",
+    "heading": "Testa era antaganden i ett samtal på 20 minuter",
+    "print": "Skriv ut",
+    "save": "Spara som vår intervjuguide",
+    "saving": "Sparar…",
+    "saveHint": "Skriv minst en egen fråga i steg 1 för att kunna spara mallen som er intervjuguide.",
+    "whyHeading": "Intervjuerna avgör vad som håller",
+    "whyBody": "Allt i er canvas som inte är markerat Klart — ni vet är en gissning. Intervjuerna är där ni testar gissningarna mot dem ni vill hjälpa. Därför börjar mallen med era antaganden, inte med färdiga frågor.",
+    "step1Heading": "1. Välj de antaganden som hela idén vilar på",
+    "step1Body": "Börja med de riskablaste — oftast vem målgruppen är, vilket problem de har och hur de löser det i dag. Skriv minst en fråga per antagande.",
+    "yourQuestion": "Er fråga",
+    "questionHint": "Berätta om senast du…",
+    "noAssumptions": "Inga antaganden att testa just nu — antingen är canvasen tom, eller så har ni markerat allt som Klart. Fyll i canvasen först, eller testa grunderna: finns problemet på riktigt, hur ofta, och hur löser de det i dag?",
+    "more": "+ {count, plural, one {# antagande till} other {# antaganden till}}. Ta dem i nästa omgång intervjuer.",
+    "howHeading": "Så gör ni en fråga av ett antagande",
+    "howBody": "Fråga om det som har hänt, inte om vad de skulle göra. Folk är dåliga på att förutsäga sig själva, men bra på att berätta.",
+    "exAssumptionLabel": "Antagande",
+    "exAssumption": "”Äldre i området saknar någon att fråga om datorn.”",
+    "exBadLabel": "Inte så här",
+    "exBad": "”Skulle du vilja ha en datorfadder?” — alla säger ja, ingen förbinder sig.",
+    "exGoodLabel": "Utan så här",
+    "exGood": "”Berätta om senast du fastnade med datorn. Vad gjorde du då?”",
+    "step2Heading": "2. Prata med dem ni gissar att ni hjälper",
+    "segmentsEmpty": "Kundsegment är inte ifyllt i canvasen än.",
+    "whoTip": "3–5 personer per omgång räcker. Inte vänner eller familj — de är för snälla för att säga emot.",
+    "step3Heading": "3. Samtalet",
+    "part": {
+      "warmup": "Värm upp",
+      "assumptions": "Era antagandefrågor",
+      "today": "Vad de gör i dag",
+      "close": "Avsluta"
+    },
+    "time": {
+      "warmup": "2 min",
+      "assumptions": "12 min",
+      "today": "4 min",
+      "close": "2 min"
+    },
+    "assumptionPart": "Här ställer ni frågorna från steg 1, en i taget. Följ upp varje svar:",
+    "followUp1": "”Kan du berätta mer?”",
+    "followUp2": "”Hur ofta händer det?”",
+    "followUp3": "”Vad gjorde du då?”",
+    "q": {
+      "warmup1": "Berätta lite om dig själv och din vardag.",
+      "today1": "Hur löser du det i dag?",
+      "today2": "Vad har du provat som inte fungerade?",
+      "today3": "Vad kostar det dig — i tid, pengar eller ork?",
+      "close1": "Finns det något jag borde ha frågat om?",
+      "close2": "Vem mer borde vi prata med?",
+      "close3": "Får vi höra av oss igen?"
+    },
+    "doHeading": "Gör så här",
+    "do1": "Låt tystnaden vara — den andra fyller i.",
+    "do2": "Skriv ner exakta ord, de blir era bästa citat.",
+    "do3": "Var två om det går: en frågar, en antecknar.",
+    "dontHeading": "Undvik",
+    "dont1": "Berätta inte om er idé förrän i slutet, om alls.",
+    "dont2": "Fråga inte ”skulle du…?” — svaret säger inget.",
+    "dont3": "Ställ inte ledande frågor (”visst är det jobbigt att…?”).",
+    "step4Heading": "4. Efter samtalet — vad hände med antagandena?",
+    "step4Body": "Anteckna direkt. Samma fält som när ni loggar intervjun, så det går att föra över rakt av.",
+    "after": {
+      "who": "Vem och när",
+      "problem": "Största problemet de nämnde",
+      "held": "Höll antagandet?",
+      "quote": "Citat"
+    },
+    "afterHint": {
+      "who": "Förnamn eller beskrivning, och datum",
+      "problem": "Med deras egna ord",
+      "held": "Ja · Delvis · Nej — och vilket antagande",
+      "quote": "Det de sa som fastnade"
+    },
+    "step4Close": "När flera intervjuer pekar åt samma håll: markera fältet som Klart — ni vet i canvasen, eller skriv om det. Det är så antagandena blir kunskap.",
+    "tests": "Testar",
+    "savedNote": "Från intervjumallen — ändra fritt.",
+    "purposeHeading": "Det här ska intervjuerna ta reda på",
+    "whoHeading": "Vilka ni ska intervjua",
+    "whoFallback": "Dem ni vill hjälpa.",
+    "questionsHeading": "Frågor",
+    "tipsHeading": "Tips"
   }
 }
