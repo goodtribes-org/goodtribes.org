@@ -34,7 +34,10 @@ export default function StepDone({ slug, stepKey, done, auto, openCards }: { slu
     });
   }
 
-  if (done) {
+  // Done, and nothing left on the board: show it. Done but with cards still
+  // open (e.g. the AI wrote it and its card waits in Review, #200): "Klar"
+  // stays, so a lead can approve the work.
+  if (done && openCards === 0) {
     return (
       <>
         <span className="col-start-3 flex items-center justify-self-end gap-2">

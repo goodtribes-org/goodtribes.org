@@ -5,6 +5,7 @@ import { indexDocuments } from "@/lib/meili";
 import { isCreatableLegalType } from "@/lib/legalType";
 import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 import { normalizeContentLocale, requestContentLocale } from "@/lib/aiLanguage";
+import { createIdeaStepCards } from "@/lib/ideaStepCards";
 
 export type CreateProjectParams = {
   title: string;
@@ -27,6 +28,12 @@ export type CreateProjectParams = {
   // (aiMode = NULL); "Starta utan AI" sets MANUAL so the AI stays out
   // until someone switches it on.
   aiMode?: AiMode | null;
+  // A card per Idé step on the board (lib/ideaStepCards.ts, #200). Off for
+  // the sandbox-seed cron's placeholder projects.
+  ideaStepCards?: boolean;
+  // Set when the project comes out of a Drömsamtal: the "Beskriv projektet"
+  // card then credits the founder (told it) and GoodTribes (wrote it up).
+  dreamFounderId?: string;
 };
 
 // Shared core of project creation — slug-retry, the Project row itself, the
@@ -43,7 +50,7 @@ export async function createProjectRecord(params: CreateProjectParams) {
     // Every new project — whether from the full creation form or idea
     // promotion — starts in the sandbox by default. Founders apply to
     // graduate out (see requestSandboxGraduation) once it's ready.
-    isSandbox = true, skillIds = [], aiMode = null,
+    isSandbox = true, skillIds = [], aiMode = null, ideaStepCards = true, dreamFounderId,
   } = params;
   const legalType = params.legalType && isCreatableLegalType(params.legalType) ? params.legalType : "NONPROFIT_UMBRELLA";
 
@@ -91,6 +98,7 @@ export async function createProjectRecord(params: CreateProjectParams) {
         locale: "sv",
       }]);
 
+      if (ideaStepCards) await createIdeaStepCards(prisma, { projectSlug: project.slug, contentLocale, dreamFounderId });
       invalidateListCache(PROJECTS_LIST_TAG);
       return project;
     } catch (e: unknown) {

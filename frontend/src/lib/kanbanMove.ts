@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { markStepDoneIfCardsDone } from "@/lib/ideaStepCards";
 import { revalidatePath } from "next/cache";
 import { logActivity } from "@/lib/activity";
 import { publishToKanban } from "@/lib/redis";
@@ -168,6 +169,8 @@ export async function moveKanbanCard(cardId: string, newColumn: string, userId: 
         approverId: userId,
       });
     });
+    // The last of a step's cards in Done: the step is done (#200).
+    if (project) await markStepDoneIfCardsDone(project.id, card, userId);
     for (const payee of payees) {
       await createNotification({
         userId: payee.userId,

@@ -79,6 +79,7 @@ export async function POST(request: Request) {
       description: t.problemStatement,
       sdgGoals,
       ownerId: aiUser.id,
+        ideaStepCards: false,
       isSandbox: true,
     });
     seeded++;

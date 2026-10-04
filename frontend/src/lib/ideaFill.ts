@@ -15,6 +15,7 @@ import { LEAN_CANVAS_FIELDS, LEAN_CANVAS_STORED_FIELDS } from "@/app/[locale]/pr
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
 import { IMPACT_MODEL_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
 import { htmlToText } from "@/lib/htmlToText";
+import { creditAiForStep } from "@/lib/ideaStepCards";
 import {
   BASICS_SYSTEM_PROMPT,
   BASICS_TOOL,
@@ -393,12 +394,15 @@ export async function fillImpactModel(
   return { written, proposed: Object.keys(proposals).length };
 }
 
-async function markDone(projectId: string, itemKey: string, userId: string) {
+// The AI wrote this step's work: tick the step, and make GoodTribes the
+// assignee of its cards, waiting in Review for a lead's approval (#200).
+async function markDone(projectId: string, itemKey: string, userId: string, projectSlug: string) {
   await prisma.initiativeChecklistItem.upsert({
     where: { projectId_itemKey: { projectId, itemKey } },
     create: { projectId, phase: "IDEA", itemKey, completedAt: new Date(), completedById: userId },
     update: { completedAt: new Date(), completedById: userId },
   });
+  await creditAiForStep(projectSlug, itemKey);
 }
 
 // ─── The background fill ────────────────────────────────────────────────────
@@ -456,7 +460,7 @@ export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
   const leanCanvasDone = !wanted("leanCanvas") ? null : run("leanCanvas", async () => {
     const raw = await callTool(client, { system: LEAN_CANVAS_SYSTEM_PROMPT, tool: LEAN_CANVAS_TOOL, content: context });
     const { written } = await applyCanvas(p.projectId, p.projectSlug, "leanCanvas", coerceProposals(raw, LEAN_CANVAS_FIELDS), p.mode);
-    if (written) await markDone(p.projectId, "lean_canvas_created", p.userId);
+    if (written) await markDone(p.projectId, "lean_canvas_created", p.userId, p.projectSlug);
   });
 
   // After the canvas, so the chain can start from its purpose and end in
@@ -464,12 +468,15 @@ export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
   // conversation alone).
   const impactModelDone = !wanted("impactModel") ? null : (async () => {
     await leanCanvasDone;
-    await run("impactModel", async () => void (await fillImpactModel(client, { ...p, context })));
+    await run("impactModel", async () => {
+      const { written } = await fillImpactModel(client, { ...p, context });
+      if (written > 0) await creditAiForStep(p.projectSlug, "impact_model_created");
+    });
   })();
   const valuePropositionDone = !wanted("valueProposition") ? null : run("valueProposition", async () => {
     const raw = await callTool(client, { system: VALUE_PROPOSITION_SYSTEM_PROMPT, tool: VALUE_PROPOSITION_TOOL, content: context });
     const { written } = await applyCanvas(p.projectId, p.projectSlug, "valueProposition", coerceProposals(raw, VALUE_PROPOSITION_FIELDS), p.mode);
-    if (written) await markDone(p.projectId, "value_proposition_created", p.userId);
+    if (written) await markDone(p.projectId, "value_proposition_created", p.userId, p.projectSlug);
   });
 
   await Promise.all([
@@ -492,7 +499,7 @@ export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
                 createdById: aiUser.id,
               })),
             });
-            await markDone(p.projectId, "market_scan_partners", p.userId);
+            await markDone(p.projectId, "market_scan_partners", p.userId, p.projectSlug);
           }
         })
       : setFillState(p.dreamId, "marketScan", "skipped"),
