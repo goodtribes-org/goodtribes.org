@@ -135,12 +135,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       {/* 100vw includes the scrollbar, so the full-bleed wrapper is a few
           pixels wider than the page; clip that instead of letting it scroll. */}
       <style>{`html, body { overflow-x: clip; }`}</style>
-      <DreamHero isLoggedIn={!!userId} />
-      {/* Other ways in: start a project without AI, straight to Snabbstart
-          (the dream box above is the AI way in), or help out. */}
+      <DreamHero />
+      {/* Other ways in: Drömguiden from its first question (the dream box
+          above answers that one for you), or help out. */}
       <div className="-mt-6 flex flex-wrap justify-center gap-2 px-4 pb-6">
         <Link
-          href="/projects/new?ai=off"
+          href="/projects/new"
           className="inline-flex items-center rounded-full border border-[#E8531F] bg-white px-4 py-2 text-[15px] font-semibold hover:bg-[#FFF4EE]"
           style={{ color: INK }}
         >

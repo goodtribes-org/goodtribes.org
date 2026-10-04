@@ -5,9 +5,9 @@ import { htmlToPreviewText } from "@/lib/renderBody";
 import { getTranslations } from "next-intl/server";
 import { buildMetadata } from "@/lib/metadata";
 import NewProjectGuide from "./NewProjectGuide";
-import ProjectStartChoice from "./ProjectStartChoice";
+import DreamGuide from "./DreamGuide";
+import { Link } from "@/i18n/navigation";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
-import { parseDreamState } from "@/lib/dreamConversation";
 import type { Metadata } from "next";
 import type { Locale } from "next-intl";
 
@@ -30,38 +30,50 @@ export default async function NewProjectPage({
     getTranslations({ locale, namespace: "NewProjectPage" }),
   ]);
   const { from: ideaId, fromThread, title: titleParam, manual, ai } = await searchParams;
-  if (!session?.user?.id) {
-    // Keep "utan AI" through the login, or the visitor lands on the choice.
-    const back = `/${locale}/projects/new${ai === "off" ? "?ai=off" : ""}`;
+  const userId = session?.user?.id;
+
+  // Drömguiden (#214): a plain "Nytt projekt" — and the start page's dream
+  // box — start here. No login until "Skapa mitt projekt". Promoting an
+  // idea or a thread, and Snabbstart (?manual=1), still use the form below.
+  if (!ideaId && !fromThread && !manual) {
+    const [aiAvailable, inProgress, tg] = await Promise.all([
+      userId ? isAiProjectStartAvailable(userId) : Promise.resolve(false),
+      userId
+        ? prisma.dreamConversation.findFirst({
+            where: { userId, status: "in_progress" },
+            orderBy: { updatedAt: "desc" },
+            select: { roomId: true },
+          })
+        : Promise.resolve(null),
+      getTranslations({ locale, namespace: "DreamGuide" }),
+    ]);
+    return (
+      <div>
+        {inProgress && (
+          <p className="mx-auto mt-4 max-w-2xl rounded-xl bg-seagrass/5 px-4 py-2 text-sm text-dark-slate/75">
+            {tg.rich("resume", {
+              link: (chunks) => (
+                <Link href={`/projects/new/samtal/${inProgress.roomId}`} className="font-medium text-seagrass hover:underline">
+                  {chunks}
+                </Link>
+              ),
+            })}
+          </p>
+        )}
+        <DreamGuide isLoggedIn={!!userId} aiAvailable={aiAvailable} withoutAi={ai === "off"} />
+      </div>
+    );
+  }
+
+  if (!userId) {
+    const back = `/${locale}/projects/new?${new URLSearchParams(
+      Object.entries({ from: ideaId, fromThread, title: titleParam, manual }).filter((e): e is [string, string] => !!e[1]),
+    )}`;
     redirect(`/${locale}/login?callbackUrl=${encodeURIComponent(back)}`);
   }
 
-  // "Starta ett projekt utan AI" (?ai=off): straight to Snabbstart, and the
-  // project is created with AI switched off. Plain ?manual=1 is also the
-  // fallback when AI isn't available, so it leaves the mode unset.
+  // Snabbstart via "utan AI" (?ai=off): the project starts with AI off.
   const withoutAi = ai === "off";
-
-  // Vägvalet (behind the ai-project-start flag): a plain "Nytt projekt"
-  // first asks how much the AI should do. Promoting an idea or a thread, or
-  // choosing to do it without AI (?ai=off), goes straight to Snabbstart.
-  // Without an Anthropic key there is no vägval — straight to Snabbstart.
-  if (!ideaId && !fromThread && !manual && !withoutAi && (await isAiProjectStartAvailable(session.user.id))) {
-    const inProgress = await prisma.dreamConversation.findMany({
-      where: { userId: session.user.id, status: "in_progress" },
-      orderBy: { updatedAt: "desc" },
-      take: 3,
-      select: { roomId: true, updatedAt: true, state: true },
-    });
-    return (
-      <ProjectStartChoice
-        inProgress={inProgress.map((c) => ({
-          roomId: c.roomId,
-          updatedAt: c.updatedAt,
-          coveredCount: parseDreamState(c.state).covered.length,
-        }))}
-      />
-    );
-  }
 
   let initial: { title?: string; description?: string; sdgGoals?: number[]; category?: string; tags?: string[]; imageUrl?: string } = {};
 

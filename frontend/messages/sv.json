@@ -3928,26 +3928,6 @@
     "said": "Du sa",
     "saidHint": "Det kommer från er: någon skrev det, eller sa det i Drömsamtalet."
   },
-  "ProjectStart": {
-    "heading": "Starta ett nytt projekt",
-    "intro": "Vill du ta hjälp av AI:n, eller göra det själv? Båda vägarna leder till samma projekt, och du kan ändra dig när som helst.",
-    "recommended": "Rekommenderas",
-    "manualTitle": "Jag gör det själv",
-    "manualDesc": "Gå direkt till guiden och fyll i projektet själv. Inget samtal, inga AI-förslag.",
-    "changeLater": "Samtalet tar några minuter och kan pausas.",
-    "resumeHeading": "Fortsätt samtalet",
-    "resumeLink": "Påbörjat samtal ({covered} av 6 områden) — senast {date}",
-    "aiTitle": "Med AI-guiden",
-    "aiDesc": "Berätta om din idé i ett kort samtal. AI:n fyller sedan i ett första utkast av Idéfasen åt dig.",
-    "manualPoint1": "Du skriver allt med egna ord",
-    "manualPoint2": "AI:n är avstängd i projektet",
-    "manualPoint3": "Du kan slå på AI senare om du vill",
-    "manualCta": "Starta utan AI →",
-    "aiPoint1": "Du skriver över det du vill med egna ord",
-    "aiPoint2": "Allt AI:n skriver märks som utkast",
-    "aiPoint3": "Du kan skruva ner eller stänga av AI:n när som helst",
-    "aiCta": "Börja med AI-guiden →"
-  },
   "DreamConversation": {
     "heading": "Drömsamtalet",
     "intro": "Berätta med egna ord — några korta frågor räcker. När samtalet är klart skapar AI:n ditt projekt och fyller i det som behövs i Idéfasen.",
@@ -4603,11 +4583,10 @@
         "2": "Jag drömmer om ett IT-företag där hela vinsten går till goda ändamål…",
         "3": "Jag drömmer om ett företag som finansierar rent vatten med sin vinst…"
       },
-      "note": "Gratis konto krävs för AI-guiden · Samtalet är privat tills du själv skapar projektet",
-      "restored": "Välkommen tillbaka! Din dröm finns kvar, tryck på pilen för att börja.",
+      "note": "Inget konto behövs för att börja · Dina svar är privata tills du själv skapar projektet",
       "submit": "Börja med AI-guiden",
       "helpInstead": "Vill du hellre hjälpa till? Se projekt som söker folk →",
-      "startProject": "Starta ett projekt utan AI →"
+      "startProject": "Starta ett projekt →"
     },
     "live": {
       "label": "Live",
@@ -5103,5 +5082,108 @@
     "whoFallback": "Dem ni vill hjälpa.",
     "questionsHeading": "Frågor",
     "tipsHeading": "Tips"
+  },
+  "DreamGuide": {
+    "pageTitle": "Starta ett projekt",
+    "overline": "Berätta om din dröm",
+    "progress": "{step} av {total}",
+    "intro": "Fem korta frågor om din idé. Du kan gå tillbaka och ändra när som helst, och \"Vet inte än\" är alltid ett okej svar.",
+    "examplePrefix": "Till exempel: {example}",
+    "back": "← Tillbaka",
+    "next": "Nästa →",
+    "unknown": "Vet inte än",
+    "unknownNote": "Okej — det blir en öppen fråga att ta reda på, och ett kort på projektets tavla.",
+    "answerAnyway": "Svara ändå",
+    "unknownAnswer": "Vet inte än.",
+    "unknownSummary": "Vet inte än — blir en öppen fråga",
+    "noAnswer": "Inget svar",
+    "change": "Ändra",
+    "followUpThinking": "Funderar på en följdfråga …",
+    "followUpHint": "Svara gärna, eller gå vidare med Nästa.",
+    "fromHome": "Din dröm från startsidan är med:",
+    "openQuestionCard": "Öppen fråga från Drömguiden. Ta reda på det här under Idéfasen.",
+    "questions": {
+      "dream": {
+        "area": "Drömmen",
+        "title": "Vad vill du förändra?",
+        "help": "Beskriv hur det ser ut om du lyckas. Det får gärna vara stort.",
+        "example": "Att inga äldre i Gottsunda ska känna sig utanför för att de inte kan använda datorn.",
+        "followUp": "Hur märks det i vardagen när du har lyckats? Vad har ändrats för någon?"
+      },
+      "problem": {
+        "area": "Problemet",
+        "title": "Vem drabbas i dag, och vad har du själv sett?",
+        "help": "Ju mer konkret, desto bättre blir allt du bygger vidare på.",
+        "example": "Min granne på 82 kan inte boka vårdtid längre sedan allt blev digitalt. Hon har ingen att fråga.",
+        "followUp": "Vem mer precist? Tänk på en person du har mött."
+      },
+      "why_you": {
+        "area": "Varför du",
+        "title": "Vad driver dig, och vad har du med dig?",
+        "help": "Erfarenhet, kunskap, ett nätverk — allt som gör att just du kan göra det här.",
+        "example": "Jag har jobbat med IT-support i 20 år och känner föreningarna i området.",
+        "followUp": "Finns det något du har gjort förut som liknar det här?"
+      },
+      "idea": {
+        "area": "Idén",
+        "title": "Hur tänker du lösa det? Hur gör folk i dag?",
+        "help": "Det behöver inte vara färdigt. Skriv också vad som finns redan.",
+        "example": "En datorfadder per person i tre månader. I dag finns bara kommunens drop-in två timmar i veckan.",
+        "followUp": "Vad gör din idé som det som finns i dag inte gör?"
+      },
+      "people": {
+        "area": "Människorna",
+        "title": "Vem ska använda det, vem kan stödja det, och vem kan hjälpa till?",
+        "help": "Användare, de som kan betala eller ge stöd, och de som kan bli en del av teamet.",
+        "example": "Äldre i Gottsunda. Bostadsbolaget och kommunen kan stödja. Pensionerade IT-folk som faddrar.",
+        "followUp": "Vem är den första du skulle ringa?"
+      }
+    },
+    "conditions": {
+      "area": "Förutsättningar",
+      "heading": "Hur ser det ut för dig just nu?",
+      "time": "Tid i veckan",
+      "timeOptions": {
+        "low": "1–3 h/vecka",
+        "mid": "4–8 h/vecka",
+        "high": "Mer än 8 h"
+      },
+      "team": "Team",
+      "teamOptions": {
+        "SOLO": "Ensam just nu",
+        "SMALL": "Vi är 2–4",
+        "TEAM": "5 eller fler"
+      },
+      "ambition": "Ambition",
+      "ambitionOptions": {
+        "HOBBY": "Ett projekt vid sidan av",
+        "VENTURE": "Kan bli en egen verksamhet"
+      },
+      "name": "Projektnamn",
+      "nameLabel": "Har projektet ett namn?",
+      "nameOptional": "(valfritt, kan ändras)",
+      "toSummary": "Visa sammanfattningen →"
+    },
+    "summary": {
+      "area": "Klart",
+      "heading": "Det här har du berättat",
+      "welcomeBack": "Välkommen tillbaka! Dina svar finns kvar — titta igenom dem och skapa projektet.",
+      "whatHappens": "Vad händer när du skapar projektet?",
+      "withAi": "Med AI",
+      "withoutAi": "Utan AI",
+      "ai1": "AI:n skriver namn, sammanfattning och beskrivning av dina svar.",
+      "ai2": "AI:n gör ett första utkast av Social Lean Canvas, värdeerbjudande och impactmodell — allt märkt som antaganden att testa.",
+      "manual1": "Dina svar blir projektets beskrivning, ordagrant. Du kan finslipa texten i första steget.",
+      "manual2": "Du fyller i canvasen själv, steg för steg — mallarna hjälper dig.",
+      "openQuestions": "Det du svarade \"Vet inte än\" på blir öppna frågor och kort på tavlan.",
+      "aiUnavailable": "AI är inte påslaget just nu, så projektet skapas av dina svar.",
+      "create": "Skapa mitt projekt",
+      "creating": "Skapar projektet …",
+      "loginNote": "Du loggar in med din e-post när du skapar projektet. Dina svar sparas så länge.",
+      "error": "Något gick fel när projektet skapades. Dina svar finns kvar — försök igen.",
+      "retryWithoutAi": "Skapa utan AI i stället"
+    },
+    "resume": "Du har ett påbörjat Drömsamtal: <link>fortsätt det</link>",
+    "formInstead": "Hellre ett formulär? <link>Snabbstart</link>"
   }
 }

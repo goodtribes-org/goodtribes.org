@@ -3928,26 +3928,6 @@
     "said": "You said",
     "saidHint": "It comes from you: someone wrote it, or said it in the dream conversation."
   },
-  "ProjectStart": {
-    "heading": "Start a new project",
-    "intro": "Do you want help from the AI, or do it yourself? Both lead to the same kind of project, and you can change your mind at any time.",
-    "recommended": "Recommended",
-    "manualTitle": "I'll do it myself",
-    "manualDesc": "Go straight to the guide and fill in the project yourself. No conversation, no AI suggestions.",
-    "changeLater": "The conversation takes a few minutes and can be paused.",
-    "resumeHeading": "Continue the conversation",
-    "resumeLink": "Conversation in progress ({covered} of 6 areas) — last {date}",
-    "aiTitle": "With the AI guide",
-    "aiDesc": "Tell us about your idea in a short conversation. The AI then fills in a first draft of the Idea phase for you.",
-    "manualPoint1": "You write everything in your own words",
-    "manualPoint2": "AI is switched off in the project",
-    "manualPoint3": "You can switch AI on later if you like",
-    "manualCta": "Start without AI →",
-    "aiPoint1": "Overwrite whatever you like in your own words",
-    "aiPoint2": "Everything the AI writes is marked as a draft",
-    "aiPoint3": "Turn the AI down or off at any time",
-    "aiCta": "Start with the AI guide →"
-  },
   "DreamConversation": {
     "heading": "The dream conversation",
     "intro": "Tell it in your own words — a few short questions are enough. When the conversation is done, the AI creates your project and fills in what the Idea phase needs.",
@@ -4603,11 +4583,10 @@
         "2": "I dream of an IT company where all the profit goes to good causes…",
         "3": "I dream of a company that funds clean water with its profits…"
       },
-      "note": "Free account needed for the AI guide · The conversation is private until you create the project yourself",
-      "restored": "Welcome back! Your dream is still here, press the arrow to start.",
+      "note": "No account needed to start · Your answers are private until you create the project yourself",
       "submit": "Start with the AI guide",
       "helpInstead": "Would you rather help out? See projects looking for people →",
-      "startProject": "Start a project without AI →"
+      "startProject": "Start a project →"
     },
     "live": {
       "label": "Live",
@@ -5103,5 +5082,108 @@
     "whoFallback": "The people you want to help.",
     "questionsHeading": "Questions",
     "tipsHeading": "Tips"
+  },
+  "DreamGuide": {
+    "pageTitle": "Start a project",
+    "overline": "Tell us about your dream",
+    "progress": "{step} of {total}",
+    "intro": "Five short questions about your idea. You can go back and change anything, and \"Don't know yet\" is always an okay answer.",
+    "examplePrefix": "For example: {example}",
+    "back": "← Back",
+    "next": "Next →",
+    "unknown": "Don't know yet",
+    "unknownNote": "Okay — it becomes an open question to find out, and a card on the project's board.",
+    "answerAnyway": "Answer anyway",
+    "unknownAnswer": "Don't know yet.",
+    "unknownSummary": "Don't know yet — becomes an open question",
+    "noAnswer": "No answer",
+    "change": "Change",
+    "followUpThinking": "Thinking of a follow-up question …",
+    "followUpHint": "Answer if you like, or move on with Next.",
+    "fromHome": "Your dream from the start page is included:",
+    "openQuestionCard": "Open question from the Dream guide. Find this out during the Idea phase.",
+    "questions": {
+      "dream": {
+        "area": "The dream",
+        "title": "What do you want to change?",
+        "help": "Describe what it looks like if you succeed. It can be big.",
+        "example": "That no elderly person in our neighbourhood feels left out because they can't use a computer.",
+        "followUp": "How does it show in everyday life when you've succeeded? What has changed for someone?"
+      },
+      "problem": {
+        "area": "The problem",
+        "title": "Who is affected today, and what have you seen yourself?",
+        "help": "The more concrete, the better everything you build on it becomes.",
+        "example": "My 82-year-old neighbour can no longer book a doctor's appointment since everything went digital. She has no one to ask.",
+        "followUp": "Who more precisely? Think of a person you have met."
+      },
+      "why_you": {
+        "area": "Why you",
+        "title": "What drives you, and what do you bring?",
+        "help": "Experience, knowledge, a network — anything that means you in particular can do this.",
+        "example": "I've worked in IT support for 20 years and know the local associations.",
+        "followUp": "Have you done anything before that resembles this?"
+      },
+      "idea": {
+        "area": "The idea",
+        "title": "How do you plan to solve it? What do people do today?",
+        "help": "It doesn't have to be finished. Also write what already exists.",
+        "example": "A computer buddy per person for three months. Today there's only the council's drop-in two hours a week.",
+        "followUp": "What does your idea do that what exists today doesn't?"
+      },
+      "people": {
+        "area": "The people",
+        "title": "Who will use it, who can support it, and who can help?",
+        "help": "Users, those who can pay or give support, and those who could join the team.",
+        "example": "Elderly people in the area. The housing company and the council can support. Retired IT people as buddies.",
+        "followUp": "Who is the first person you would call?"
+      }
+    },
+    "conditions": {
+      "area": "Conditions",
+      "heading": "What does it look like for you right now?",
+      "time": "Time per week",
+      "timeOptions": {
+        "low": "1–3 h/week",
+        "mid": "4–8 h/week",
+        "high": "More than 8 h"
+      },
+      "team": "Team",
+      "teamOptions": {
+        "SOLO": "Just me for now",
+        "SMALL": "We're 2–4",
+        "TEAM": "5 or more"
+      },
+      "ambition": "Ambition",
+      "ambitionOptions": {
+        "HOBBY": "A side project",
+        "VENTURE": "Could become its own organisation"
+      },
+      "name": "Project name",
+      "nameLabel": "Does the project have a name?",
+      "nameOptional": "(optional, can be changed)",
+      "toSummary": "Show the summary →"
+    },
+    "summary": {
+      "area": "Done",
+      "heading": "This is what you told us",
+      "welcomeBack": "Welcome back! Your answers are still here — look them over and create the project.",
+      "whatHappens": "What happens when you create the project?",
+      "withAi": "With AI",
+      "withoutAi": "Without AI",
+      "ai1": "The AI writes a name, summary and description from your answers.",
+      "ai2": "The AI drafts the Social Lean Canvas, value proposition and impact model — all marked as assumptions to test.",
+      "manual1": "Your answers become the project's description, word for word. You can polish the text in the first step.",
+      "manual2": "You fill in the canvas yourself, step by step — the templates help you.",
+      "openQuestions": "Whatever you answered \"Don't know yet\" to becomes open questions and cards on the board.",
+      "aiUnavailable": "AI isn't switched on right now, so the project is created from your answers.",
+      "create": "Create my project",
+      "creating": "Creating the project …",
+      "loginNote": "You log in with your email when you create the project. Your answers are kept until then.",
+      "error": "Something went wrong creating the project. Your answers are still here — try again.",
+      "retryWithoutAi": "Create without AI instead"
+    },
+    "resume": "You have a Dream conversation in progress: <link>continue it</link>",
+    "formInstead": "Prefer a form? <link>Quick start</link>"
   }
 }

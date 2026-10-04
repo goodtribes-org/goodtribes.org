@@ -35,31 +35,10 @@ async function requireUser(): Promise<string> {
   return session.user.id;
 }
 
-// Vägval → "Låt AI:n göra jobbet" / "AI:n hjälper mig": starts a Drömsamtal.
-// "Jag gör allt själv" never gets here — it goes straight to the manual
-// Snabbstart. The chosen mode is stored now and becomes the project's
-// aiMode once the summary is approved.
-
 // These actions redirect with next/navigation, which knows nothing about the
 // locale — without the prefix a visitor on /en lands on the Swedish page.
 async function localized(path: string): Promise<string> {
   return `/${await getLocale()}${path}`;
-}
-
-export async function startDreamConversation(mode: string) {
-  const userId = await requireUser();
-  if (!(await isAiProjectStartAvailable(userId))) redirect(await localized("/projects/new?manual=1"));
-  if (mode !== "AGENT" && mode !== "ASSIST") throw new Error("Ogiltigt val");
-
-  const room = await prisma.room.create({ data: { type: "AI_INTAKE" } });
-  // AI_INTAKE access is RoomParticipant-authoritative (see roomAuth.ts) —
-  // only the initiativtagare can read or post.
-  await prisma.roomParticipant.create({ data: { roomId: room.id, userId } });
-  await prisma.dreamConversation.create({ data: { roomId: room.id, userId, aiMode: mode } });
-
-  await postDreamOpener(room.id);
-
-  redirect(await localized(`/projects/new/samtal/${room.id}`));
 }
 
 // "Prata med AI:n" from Snabbstart: a Drömsamtal for a project that already
