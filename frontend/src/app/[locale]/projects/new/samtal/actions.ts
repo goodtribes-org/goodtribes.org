@@ -17,6 +17,7 @@ import { decideAiPlacement } from "@/lib/aiSuggestions";
 import { buildTranscript, generateBasics, runIdeaFill, statusFor } from "@/lib/ideaFill";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { markChecklistDone } from "@/app/[locale]/projects/[slug]/guide/actions";
+import { creditAiForStep } from "@/lib/ideaStepCards";
 import { requestContentLocale } from "@/lib/aiLanguage";
 import { deleteDocument } from "@/lib/meili";
 
@@ -211,6 +212,7 @@ export async function createProjectFromDream(roomId: string) {
         category: (value("category") as string | undefined) ?? null,
         tags: (value("tags") as string[] | undefined) ?? [],
         sdgGoals: (value("sdgGoals") as number[] | undefined) ?? [],
+        dreamFounderId: userId,
       });
     }
 
@@ -268,7 +270,10 @@ export async function createProjectFromDream(roomId: string) {
     });
 
     await markChecklistDone(project.id, "dream_defined", userId);
-    if (writes.some((w) => w.field === "sdgGoals")) await markChecklistDone(project.id, "ai_reviewed", userId);
+    if (writes.some((w) => w.field === "sdgGoals")) {
+      await markChecklistDone(project.id, "ai_reviewed", userId);
+      await creditAiForStep(project.slug, "ai_reviewed");
+    }
 
     // The rest of phase 1 fills in while the user already looks at it.
     void runIdeaFill({ dreamId: dream.id, projectId: project.id, projectSlug: project.slug, mode, transcript, userId });

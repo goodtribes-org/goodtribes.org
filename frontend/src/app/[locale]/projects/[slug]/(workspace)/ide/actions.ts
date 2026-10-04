@@ -271,6 +271,8 @@ export async function chooseSdgGoalsWithAi(
     await recordAiWrite(tx, { projectId: project.id, entity: "project", field: "sdgGoals", status: "ANTAR" });
   });
   await markChecklistDone(project.id, "ai_reviewed", session.user.id);
+  const { creditAiForStep } = await import("@/lib/ideaStepCards");
+  await creditAiForStep(projectSlug, "ai_reviewed");
   revalidatePath(`/projects/${projectSlug}`, "layout");
   return { goals, reasoning: res.reasoning };
 }
@@ -398,6 +400,8 @@ export async function applyAboutDraft(projectSlug: string, summary: string, desc
     await recordAiWrite(tx, { projectId: project.id, entity: "project", field: "summary", status: "ANTAR" });
     await recordAiWrite(tx, { projectId: project.id, entity: "project", field: "description", status: "ANTAR" });
   });
+  const { creditAiForStep } = await import("@/lib/ideaStepCards");
+  await creditAiForStep(projectSlug, "dream_defined");
   const { PROJECTS_LIST_TAG, invalidateListCache } = await import("@/lib/listCache");
   invalidateListCache(PROJECTS_LIST_TAG);
   revalidatePath(`/projects/${projectSlug}`, "layout");
