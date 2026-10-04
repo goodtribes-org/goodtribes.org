@@ -152,8 +152,8 @@
     "consentGateBody": "Before you can keep using GoodTribes.org, you need to agree to the Participant Agreement and the Code of Conduct.",
     "consentGateLogOut": "Log out",
     "consentGateContinue": "Continue",
-    "dreamLoginTitle": "Create a free account to continue with your dream",
-    "dreamLoginSubtitle": "Enter your email and we'll send you a link. It works whether you're new or already have an account. Once you've clicked it, the conversation continues where you left off.",
+    "dreamLoginTitle": "Log in and your project gets created",
+    "dreamLoginSubtitle": "Your answers are saved. Enter your email and we'll send you a link – it works whether you're new or already have an account. Once you click it, you're back with your answers and can create the project.",
     "dreamSaved": "Your dream is saved"
   },
   "SitePageEditor": {

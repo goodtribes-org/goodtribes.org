@@ -8,6 +8,13 @@ describe("safeCallbackPath", () => {
     expect(safeCallbackPath("https://goodtribes.org/sv/projects/new?ai=off", origin)).toBe("/sv/projects/new?ai=off");
   });
 
+  it("treats www and the bare domain as the same site", () => {
+    expect(safeCallbackPath("https://www.goodtribes.org/projects/new?guide=x", origin)).toBe("/projects/new?guide=x");
+    expect(safeCallbackPath("https://goodtribes.org/projects/new", "https://www.goodtribes.org")).toBe("/projects/new");
+    expect(safeCallbackPath("https://www.evil.example/sv", origin)).toBeNull();
+    expect(safeCallbackPath("https://wwwgoodtribes.org/sv", origin)).toBeNull();
+  });
+
   it("drops other hosts, protocol-relative links and junk", () => {
     expect(safeCallbackPath("https://evil.example/sv", origin)).toBeNull();
     expect(safeCallbackPath("//evil.example/sv", origin)).toBeNull();

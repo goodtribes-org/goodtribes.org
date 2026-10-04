@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { buildMetadata } from "@/lib/metadata";
 import NewProjectGuide from "./NewProjectGuide";
 import DreamGuide from "./DreamGuide";
+import { isStashId, readStashedGuideInput } from "@/lib/dreamGuideStash";
 import { Link } from "@/i18n/navigation";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import type { Metadata } from "next";
@@ -22,21 +23,21 @@ export default async function NewProjectPage({
   searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ from?: string; fromThread?: string; title?: string; manual?: string; ai?: string }>;
+  searchParams: Promise<{ from?: string; fromThread?: string; title?: string; manual?: string; ai?: string; guide?: string }>;
 }) {
   const { locale } = await params;
   const [session, t] = await Promise.all([
     auth(),
     getTranslations({ locale, namespace: "NewProjectPage" }),
   ]);
-  const { from: ideaId, fromThread, title: titleParam, manual, ai } = await searchParams;
+  const { from: ideaId, fromThread, title: titleParam, manual, ai, guide } = await searchParams;
   const userId = session?.user?.id;
 
   // Drömguiden (#214): a plain "Nytt projekt" — and the start page's dream
   // box — start here. No login until "Skapa mitt projekt". Promoting an
   // idea or a thread, and Snabbstart (?manual=1), still use the form below.
   if (!ideaId && !fromThread && !manual) {
-    const [aiAvailable, inProgress, tg] = await Promise.all([
+    const [aiAvailable, inProgress, tg, stashed] = await Promise.all([
       userId ? isAiProjectStartAvailable(userId) : Promise.resolve(false),
       userId
         ? prisma.dreamConversation.findFirst({
@@ -46,6 +47,8 @@ export default async function NewProjectPage({
           })
         : Promise.resolve(null),
       getTranslations({ locale, namespace: "DreamGuide" }),
+      // Back from logging in (?guide=<id>): the answers kept on the server.
+      isStashId(guide) ? readStashedGuideInput(guide) : Promise.resolve(null),
     ]);
     return (
       <div>
@@ -60,7 +63,13 @@ export default async function NewProjectPage({
             })}
           </p>
         )}
-        <DreamGuide isLoggedIn={!!userId} aiAvailable={aiAvailable} withoutAi={ai === "off"} />
+        <DreamGuide
+          isLoggedIn={!!userId}
+          aiAvailable={aiAvailable}
+          withoutAi={ai === "off"}
+          stashed={stashed}
+          stashId={stashed ? guide : undefined}
+        />
       </div>
     );
   }

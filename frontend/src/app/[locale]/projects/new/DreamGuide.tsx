@@ -17,7 +17,7 @@ import {
   type GuideInput,
   type WeeklyHoursKey,
 } from "@/lib/dreamGuide";
-import { createProjectFromGuide, suggestGuideFollowUp } from "./guide-actions";
+import { createProjectFromGuide, stashGuide, suggestGuideFollowUp } from "./guide-actions";
 
 // Same key as the start page's dream box (DreamHero): what the visitor wrote
 // there is the answer to the first question.
@@ -33,12 +33,18 @@ export default function DreamGuide({
   isLoggedIn,
   aiAvailable,
   withoutAi = false,
+  stashed = null,
+  stashId,
 }: {
   isLoggedIn: boolean;
   // AI configured and the flag on. Logged out it is unknown (the flag can be
   // per user), so the choice is shown and the server decides on create.
   aiAvailable: boolean;
   withoutAi?: boolean;
+  // Back from logging in: the answers kept on the server (see
+  // dreamGuideStash.ts), for when this origin's localStorage doesn't have them.
+  stashed?: GuideInput | null;
+  stashId?: string;
 }) {
   const t = useTranslations("DreamGuide");
   const router = useRouter();
@@ -61,24 +67,26 @@ export default function DreamGuide({
 
   useEffect(() => {
     // Back from logging in: everything answered, straight to the summary.
+    const restore = (g: GuideInput) => {
+      setAnswers(g.answers ?? {});
+      setFollowUps(g.followUps ?? {});
+      setUnknown(Array.isArray(g.unknown) ? g.unknown : []);
+      setConditions(g.conditions ?? {});
+      setName(typeof g.name === "string" ? g.name : "");
+      setWithAi(g.withAi !== false && (aiAvailable || !isLoggedIn));
+      setBackFromLogin(isLoggedIn);
+      setStep(summaryStep);
+    };
+    let local: (GuideInput & { at?: number }) | null = null;
     try {
       const raw = localStorage.getItem(GUIDE_KEY);
       if (raw) {
         localStorage.removeItem(GUIDE_KEY);
-        const g = JSON.parse(raw) as GuideInput & { at?: number };
-        if (Date.now() - (g.at ?? 0) < GUIDE_KEEP_MS) {
-          setAnswers(g.answers ?? {});
-          setFollowUps(g.followUps ?? {});
-          setUnknown(Array.isArray(g.unknown) ? g.unknown : []);
-          setConditions(g.conditions ?? {});
-          setName(typeof g.name === "string" ? g.name : "");
-          setWithAi(g.withAi !== false && (aiAvailable || !isLoggedIn));
-          setBackFromLogin(isLoggedIn);
-          setStep(summaryStep);
-          return;
-        }
+        local = JSON.parse(raw) as GuideInput & { at?: number };
       }
     } catch {}
+    if (local && Date.now() - (local.at ?? 0) < GUIDE_KEEP_MS) return restore(local);
+    if (stashed) return restore(stashed);
     // From the start page: question 1 is answered, go on to question 2.
     try {
       const raw = localStorage.getItem(HOME_DRAFT_KEY);
@@ -129,12 +137,18 @@ export default function DreamGuide({
       try {
         localStorage.setItem(GUIDE_KEY, JSON.stringify({ ...data, at: Date.now() }));
       } catch {}
-      router.push(`/login?callbackUrl=${encodeURIComponent(pathname)}`);
+      startCreating(async () => {
+        // Also on the server, so the answers survive a login link that
+        // opens on another origin or in another browser.
+        const id = await stashGuide(data).catch(() => null);
+        const back = id ? `${pathname}?guide=${id}` : pathname;
+        router.push(`/login?from=dream&callbackUrl=${encodeURIComponent(back)}`);
+      });
       return;
     }
     startCreating(async () => {
       try {
-        await createProjectFromGuide(data);
+        await createProjectFromGuide(data, stashId);
       } catch (e) {
         // A redirect (to the new project) is thrown on purpose.
         if (e && typeof e === "object" && "digest" in e && String((e as { digest: unknown }).digest).startsWith("NEXT_REDIRECT")) throw e;

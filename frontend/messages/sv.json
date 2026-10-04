@@ -152,8 +152,8 @@
     "consentGateBody": "Innan du kan fortsätta använda GoodTribes.org behöver du godkänna Deltagaravtalet och uppförandekoden.",
     "consentGateLogOut": "Logga ut",
     "consentGateContinue": "Fortsätt",
-    "dreamLoginTitle": "Skapa ett gratis konto för att fortsätta med din dröm",
-    "dreamLoginSubtitle": "Ange din e-post så skickar vi en länk. Den fungerar både om du är ny och om du redan har ett konto. När du klickat på den fortsätter samtalet där du slutade.",
+    "dreamLoginTitle": "Logga in så skapas ditt projekt",
+    "dreamLoginSubtitle": "Dina svar är sparade. Ange din e-post så skickar vi en länk – den fungerar både om du är ny och om du redan har ett konto. När du klickat på den kommer du tillbaka till dina svar och skapar projektet.",
     "dreamSaved": "Din dröm är sparad"
   },
   "SitePageEditor": {
