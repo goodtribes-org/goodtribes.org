@@ -2,29 +2,14 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { startDreamFromHome } from "@/app/[locale]/dream-actions";
+import { useRouter } from "@/i18n/navigation";
 import { heroTaglineFont } from "@/lib/fonts";
 import { newHomeDisplayFont } from "./fonts";
 
-// Kept in localStorage across the login round trip, so a visitor who writes
-// their dream before logging in finds it again afterwards — the magic link
-// usually opens in a new tab, where sessionStorage would be empty. It never
-// goes in the URL. Logged in again within DRAFT_CONTINUE_MS, the
-// conversation starts by itself (that's what they asked for before logging
-// in); an older draft is only put back in the box.
+// The dream box is the answer to Drömguiden's first question (#214): it is
+// handed over in localStorage under this key (the guide reads and removes
+// it) and the guide opens on question 2. It never goes in the URL.
 const DRAFT_KEY = "gt:new-home-dream";
-const DRAFT_CONTINUE_MS = 2 * 60 * 60 * 1000;
-
-function readDraft(): { text: string; at: number } | null {
-  try {
-    const raw = localStorage.getItem(DRAFT_KEY);
-    if (!raw) return null;
-    const d = JSON.parse(raw) as { text?: unknown; at?: unknown };
-    return typeof d.text === "string" && d.text ? { text: d.text, at: typeof d.at === "number" ? d.at : 0 } : null;
-  } catch {
-    return null;
-  }
-}
 const EXAMPLE_COUNT = 4;
 
 // Small per-word tilt (deg) and baseline shift (em) so the tagline reads as
@@ -65,30 +50,12 @@ function FlyingBulb({ style }: { style: React.CSSProperties }) {
   );
 }
 
-export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
+export default function DreamHero() {
   const t = useTranslations("NewHomePage.hero");
   const [text, setText] = useState("");
   const [example, setExample] = useState(0);
-  const [restored, setRestored] = useState(false);
   const [pending, startTransition] = useTransition();
-
-  useEffect(() => {
-    // Storage blocked or empty: the visitor simply types again.
-    const draft = readDraft();
-    if (!draft) return;
-    setText(draft.text);
-    setRestored(true);
-    if (isLoggedIn && Date.now() - draft.at < DRAFT_CONTINUE_MS) {
-      try {
-        localStorage.removeItem(DRAFT_KEY);
-      } catch {}
-      startTransition(async () => {
-        await startDreamFromHome(draft.text);
-      });
-    }
-    // Once, on arrival — not again when the box is edited.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const router = useRouter();
 
   useEffect(() => {
     if (text) return;
@@ -100,12 +67,9 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
     const dream = text.trim();
     if (!dream || pending) return;
     try {
-      if (isLoggedIn) localStorage.removeItem(DRAFT_KEY);
-      else localStorage.setItem(DRAFT_KEY, JSON.stringify({ text: dream, at: Date.now() }));
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ text: dream, at: Date.now() }));
     } catch {}
-    startTransition(async () => {
-      await startDreamFromHome(dream);
-    });
+    startTransition(() => router.push("/projects/new"));
   }
 
   return (
@@ -223,10 +187,7 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
             <textarea
               id="nh-dream"
               value={text}
-              onChange={(e) => {
-                setText(e.target.value);
-                setRestored(false);
-              }}
+              onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -243,7 +204,7 @@ export default function DreamHero({ isLoggedIn }: { isLoggedIn: boolean }) {
             )}
           </div>
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[13px] text-[#6B726E] sm:text-sm">{restored ? t("restored") : t("note")}</p>
+            <p className="text-[13px] text-[#6B726E] sm:text-sm">{t("note")}</p>
             <button
               type="submit"
               disabled={!text.trim() || pending}
