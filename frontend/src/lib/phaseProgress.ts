@@ -192,3 +192,15 @@ export function nextStep(phase: ProjectPhaseValue, doneKeys: ReadonlySet<string>
   }
   return null;
 }
+
+// Where "Nästa steg" (or any checklist step) is done. Every Idé step lives
+// on the one Idé phase page since 2026-10-03 (#206), so it goes there, never
+// to the step's old standalone page (an Idé item's href, e.g. "lean-canvas",
+// is only for the legacy guide). Later phases: the step's own page, or the
+// guide.
+export function stepHref(slug: string, phase: ProjectPhaseValue, step: { key: string; href?: string }): string {
+  const display = toDisplayPhase(phase);
+  if (display === "IDEA") return `/projects/${slug}/ide?step=${step.key}`;
+  if (step.href) return `/projects/${slug}/${step.href}`;
+  return `/projects/${slug}/guide/${display.toLowerCase()}?step=${step.key}`;
+}

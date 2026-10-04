@@ -7,7 +7,7 @@ import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
 import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, numberChecklist, overviewPathFor, PHASE_COLORS, hexToRgba, type ProjectPhaseValue } from "@/lib/projectPhase";
-import { isPhaseFinished, nextStep, phaseStepProgress, type PhaseStep } from "@/lib/phaseProgress";
+import { isPhaseFinished, nextStep, phaseStepProgress, stepHref, type PhaseStep } from "@/lib/phaseProgress";
 import type { PhaseCardCount } from "@/lib/phaseWork";
 import { activePhaseFor } from "@/lib/phaseForPath";
 import { Link, usePathname } from "@/i18n/navigation";
@@ -377,7 +377,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                     >
                       {next && i === currentIndex && (
                         <a
-                          href={next.href ? `/projects/${slug}/${next.href}` : guideHref(slug, phase, next.key)}
+                          href={stepHref(slug, phase, next)}
                           className="block border-b border-muted-teal/10 px-3.5 py-2.5 transition-colors hover:bg-coral/10"
                           style={{ background: hexToRgba(color, 0.14) }}
                         >
@@ -428,7 +428,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                           <span className={`text-sm ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/80"}`}>
                             <span className={`font-medium ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/40"}`}>{itemNumbers[j]}</span>{" "}
                             <a
-                              href={item.href ? `/projects/${slug}/${item.href}` : guideHref(slug, p.value, item.key)}
+                              href={stepHref(slug, p.value, item)}
                               className={`hover:underline ${done ? "text-dark-slate/30 line-through" : ""}`}
                             >
                               {tChecklist(item.key)}
@@ -491,7 +491,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                           <span className={`text-sm ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/80"}`}>
                             <span className={`font-medium ${done ? "text-dark-slate/30 line-through" : "text-dark-slate/40"}`}>{itemNumbers[j]}</span>{" "}
                             <a
-                              href={item.href ? `/projects/${slug}/${item.href}` : guideHref(slug, p.value, item.key)}
+                              href={stepHref(slug, p.value, item)}
                               className={`hover:underline ${done ? "text-dark-slate/30 line-through" : ""}`}
                             >
                               {tChecklist(item.key)}
@@ -512,7 +512,7 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
       {next && variant !== "header" && (
         <p className={`${compact ? "mt-2 text-xs" : "mt-4 text-sm"} text-dark-slate/70`}>
           <span className="font-semibold text-dark-slate">{t("nextStep")}</span>{" "}
-          <a href={next.href ? `/projects/${slug}/${next.href}` : guideHref(slug, phase, next.key)} className="font-medium text-seagrass hover:underline">
+          <a href={stepHref(slug, phase, next)} className="font-medium text-seagrass hover:underline">
             {tChecklist(next.key)} →
           </a>
         </p>
