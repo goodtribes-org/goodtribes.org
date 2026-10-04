@@ -237,14 +237,6 @@ export default async function IdeaOverviewPage({
           room — but only when open: folded into a row they line up with the
           rest. Direct children only, so StepMode's show/hide still works. */}
       <style data-keep>{`[data-phase-page] > * { width: 100%; max-width: 64rem; margin-inline: auto; } [data-phase-page] > [data-wide] { max-width: 110rem; } [data-phase-page] > [data-wide]:has(> section > button[aria-expanded="false"]) { max-width: 64rem; } [data-phase-page][data-view="steps"] [data-fold] { display: none; } [data-phase-page][data-aligned] > * { max-width: none; margin-inline: 0; margin-left: var(--align-left); width: var(--align-width); } [data-phase-page][data-aligned] > [data-wide] { margin-left: var(--wide-left); width: var(--wide-width); } [data-phase-page][data-aligned] > [data-wide]:has(> section > button[aria-expanded="false"]) { margin-left: var(--align-left); width: var(--align-width); }`}</style>
-      {/* "Startar du projektet tillsammans med någon?" until a lead alone in
-          the project has answered it (#201). Shown on every step. */}
-      {askStartTogether && (
-        <div data-keep>
-          <StartTogetherQuestion slug={slug} />
-        </div>
-      )}
-
       {/* display: contents, so an empty strip adds no gap above the step. */}
       <div data-keep className="contents">
         <PhaseProgressStrip projectId={project.id} slug={slug} viewing="IDEA" />
@@ -301,6 +293,11 @@ export default async function IdeaOverviewPage({
           }}
         />
       </OverviewSection>
+      {/* "Startar du projektet tillsammans med någon?" until a lead alone in
+          the project has answered it (#201): only in this first step, under
+          its own work, so it never takes the focus from the canvases. "Bjud
+          in" by the project title is always there. */}
+      {askStartTogether && <StartTogetherQuestion slug={slug} />}
       </div>
 
       <div data-step="lean_canvas_created" data-wide className="flex flex-col gap-5">
