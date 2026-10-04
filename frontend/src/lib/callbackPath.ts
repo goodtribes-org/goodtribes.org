@@ -6,12 +6,19 @@ export function safeCallbackPath(raw: string | null | undefined, origin: string)
   if (!raw) return null;
   try {
     const url = new URL(raw, origin);
-    if (url.origin !== new URL(origin).origin) return null;
+    if (siteOf(url) !== siteOf(new URL(origin))) return null;
     const path = `${url.pathname}${url.search}`;
     return path.startsWith("/") && !path.startsWith("//") ? path : null;
   } catch {
     return null;
   }
+}
+
+// goodtribes.org and www.goodtribes.org are one site: production's login
+// links are built on www while visitors browse the bare domain, and a
+// callbackUrl from the one must still count on the other.
+function siteOf(url: URL): string {
+  return `${url.protocol}//${url.host.replace(/^www\./, "")}`;
 }
 
 // The start page ("/", "/sv", "/en") isn't a destination worth returning

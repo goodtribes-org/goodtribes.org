@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
@@ -11,6 +12,8 @@ import { createProjectRecord } from "@/lib/createProject";
 import { escapeHtml } from "@/lib/renderBody";
 import { markChecklistDone } from "@/app/[locale]/projects/[slug]/guide/actions";
 import { createProjectFromDream } from "./samtal/actions";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { dropStashedGuideInput, stashGuideInput } from "@/lib/dreamGuideStash";
 import {
   GUIDE_AREAS,
   MAX_ANSWER_LENGTH,
@@ -80,9 +83,22 @@ export async function suggestGuideFollowUp(
   }
 }
 
+// Before a logged-out visitor goes to log in: keeps the answers on the
+// server so they follow the magic link to whatever origin or browser it
+// opens in (see dreamGuideStash.ts). Returns the id for the callbackUrl, or
+// null (Redis down, or too many from one address) — localStorage still has
+// them then. No login needed, so it's rate-limited per address.
+export async function stashGuide(raw: unknown): Promise<string | null> {
+  const input = parseGuideInput(raw);
+  if (!GUIDE_AREAS.some((a) => input.answers[a])) return null;
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (!(await checkRateLimit(`dream-guide-stash:${ip}`, 20, 60 * 60))) return null;
+  return stashGuideInput(input);
+}
+
 // "Skapa mitt projekt". Login happens here, not before the questions: the
 // guide keeps the answers through the login round trip and calls this again.
-export async function createProjectFromGuide(raw: unknown) {
+export async function createProjectFromGuide(raw: unknown, stashId?: string) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) redirect(await localized(`/login?callbackUrl=${encodeURIComponent(await localized("/projects/new"))}`));
@@ -91,6 +107,8 @@ export async function createProjectFromGuide(raw: unknown) {
   if (!GUIDE_AREAS.some((a) => input.answers[a])) throw new Error("Svara på minst en fråga först.");
   const t = await getTranslations("DreamGuide");
   const openQuestions = input.unknown.map((a) => t(`questions.${a}.title`));
+  // The project is being made from these answers: don't offer them again.
+  if (stashId) await dropStashedGuideInput(stashId);
 
   if (input.withAi && (await isAiProjectStartAvailable(userId))) {
     await createWithAi(input, userId, openQuestions, t);

@@ -18,8 +18,9 @@ export default async function LoginPage({
   // A locale-prefixed default, so the emails NextAuth sends can tell which
   // language the person signed up in (see lib/authEmails.ts).
   const callbackUrl = params.callbackUrl ?? `/${await getLocale()}`;
-  // From the start page's dream box: the same magic link works for new and
-  // existing accounts, so say what happens next instead of a bare "Logga in".
+  // From Drömguiden's "Skapa mitt projekt": the same magic link works for new
+  // and existing accounts, so say what happens next instead of a bare
+  // "Logga in".
   const fromDream = params.from === "dream";
 
   return (
