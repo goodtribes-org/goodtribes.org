@@ -242,7 +242,6 @@ export async function startUppstartFill(p: UppstartFillParams): Promise<void> {
         const tasks = coerceTasks(await callFillTool(client, TASKS_SYSTEM_PROMPT, tasksToolFor(getChecklistForPhase("PILOT")), context), stepKeysFor("PILOT"));
         if (!tasks.length) throw new Error("no tasks");
         await addAiCards(slug, "PILOT", tasks, aiUserId);
-        await markStepDone(p.projectId, "PILOT", "kanban_seeded", p.userId);
       },
 
       plan: async ({ client, context, aiUserId }) => {

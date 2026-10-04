@@ -14,7 +14,7 @@ const filled = (row: Record<string, unknown> | null | undefined, fields: readonl
 // renders both the phase bar and the checklist widget from it.
 export const getProjectSignals = cache(async (projectId: string, slug: string): Promise<ProjectSignals> => {
   const [
-    project, activeMemberCount, inviteCount, interviewCount, marketScanCount, kanbanCardCount, sprints,
+    project, activeMemberCount, interviewCount, marketScanCount, sprints,
     testFeedbackCount, roles, evaluation, pilotGate, impactMetricCount, launch, pages, campaign, applications,
     activePartnerships, councilReview, scalingPlan, instances, reports, followup,
   ] = await Promise.all([
@@ -33,10 +33,8 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
       },
     }),
     prisma.projectMember.count({ where: { projectId, role: { not: "FOLLOWER" } } }),
-    prisma.projectInvite.count({ where: { projectId } }),
     prisma.interviewLogEntry.count({ where: { projectSlug: slug } }),
     prisma.marketScanEntry.count({ where: { projectSlug: slug } }),
-    prisma.kanbanCard.count({ where: { projectSlug: slug } }),
     prisma.sprint.findMany({ where: { projectSlug: slug }, select: { phases: { where: { status: "CLOSED" }, select: { phase: true } } } }),
     prisma.sprintContribution.count({ where: { type: "FEEDBACK", sprintPhase: { phase: "VALIDATE", sprint: { projectSlug: slug } } } }),
     prisma.projectRoleNeed.findMany({ where: { projectId }, select: { filledById: true } }),
@@ -61,14 +59,12 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
     hasSummaryAndDescription: !!project?.summary?.trim() && !!project?.description?.trim(),
     sdgCount: project?.sdgGoals.length ?? 0,
     activeMemberCount,
-    inviteCount,
     leanCanvasFilled: filled(project?.leanCanvas as Record<string, unknown> | null, LEAN_CANVAS_BLOCKS.map((b) => b.field)),
     valuePropositionFilled: filled(project?.valueProposition as Record<string, unknown> | null, VALUE_PROPOSITION_FIELDS),
     impactModelFilled: filled(project?.impactModel as Record<string, unknown> | null, IMPACT_MODEL_FIELDS),
     impactModelFields: IMPACT_MODEL_FIELDS.length,
     interviewCount,
     marketScanCount,
-    kanbanCardCount,
     sprintCount: sprints.length,
     closedSprintSteps: [...new Set(sprints.flatMap((s) => s.phases.map((p) => p.phase)))],
     fundingNeedSet: project?.estimatedFundingNeedSek != null,

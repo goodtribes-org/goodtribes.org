@@ -26,7 +26,6 @@ import PhaseProgressStrip from "../../PhaseProgressStrip";
 const STEP_ANCHOR: Record<string, string> = {
   core_team_formed: "team",
   sprint_prepped: "sprint",
-  kanban_seeded: "uppgifter",
   rough_budget_estimated: "plan",
   pilot_scope_defined: "plan",
 };

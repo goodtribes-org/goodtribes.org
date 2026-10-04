@@ -77,8 +77,8 @@ export function getNextPhase(current: ProjectPhaseValue): ProjectPhaseValue | nu
 }
 
 // Checklist sub-steps within every phase (PRD 4d) — a UI progress checklist,
-// not separate phase values. peer_feedback_requested is informative only,
-// never a gate (idea -> sprint is always the initiator's own call).
+// not separate phase values. Inviting people is not a step: it's a question
+// right after a project starts and a button by the project title (#201).
 //
 // An item with `parentKey` set is a sub-step of the item with that key —
 // PhaseMenuBar numbers it as a sub-number (e.g. 2.3.1) of its parent's
@@ -143,14 +143,13 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
   ],
   SPRINT: [],
   PILOT: [
-    { key: "core_team_formed", label: "Definiera roller och bilda kärnteam", href: "members" },
+    { key: "core_team_formed", label: "Bilda kärnteamet och fördela rollerna", href: "members" },
     { key: "sprint_prepped", label: "Design Sprint (5 steg)", href: "sprints" },
     { key: "map_understand", label: "Kartlägga & förstå", href: "sprints", parentKey: "sprint_prepped" },
     { key: "sketch_solutions", label: "Skissa lösningar", href: "sprints", parentKey: "sprint_prepped" },
     { key: "decide_plan", label: "Beslut & planera", href: "sprints", parentKey: "sprint_prepped" },
     { key: "build_prototype", label: "Bygga prototyp", href: "sprints", parentKey: "sprint_prepped" },
     { key: "test_with_users", label: "Testa med användare", href: "sprints", parentKey: "sprint_prepped" },
-    { key: "kanban_seeded", label: "Sätta upp Kanban-board med första uppgifterna", href: "kanban" },
     { key: "rough_budget_estimated", label: "Ta fram grov budget/resursbehov", href: "project-plan" },
     { key: "pilot_scope_defined", label: "Planera och avgränsa piloten", href: "project-plan" },
   ],

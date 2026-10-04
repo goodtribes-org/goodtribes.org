@@ -151,6 +151,9 @@ model Project {
   // creator's locale at creation) — the AI writes its drafts, and the fixed
   // text it inserts (wiki headings, card titles), in this language.
   contentLocale      String               @default("sv")
+  // "Startar du projektet tillsammans med någon?" (#201): set when a lead
+  // answers "Inte nu", so the question isn't asked again on any device.
+  inviteQuestionDismissedAt DateTime?
   mentorships        MentorshipRequest[]  @relation("ProjectMentorships")
   phaseAiSettings    ProjectPhaseAiSetting[]
   stepAiSettings     ProjectStepAiSetting[]
