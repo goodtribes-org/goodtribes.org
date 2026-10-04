@@ -529,3 +529,17 @@ export async function setStepDone(
   revalidatePath(`/projects/${projectSlug}`, "layout");
   return { ok: true, moved, notMoved };
 }
+
+// "Startar du projektet tillsammans med någon?" (#201): "Inte nu", or "Bjud in"
+// on the way to the members page — either way the question has been
+// answered, on every device.
+export async function answerInviteQuestion(projectSlug: string): Promise<{ ok: true } | { error: string }> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Inte inloggad" };
+  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true } });
+  if (!project) return { error: "Projektet hittades inte" };
+  if (!(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) return { error: "Forbidden" };
+  await prisma.project.update({ where: { id: project.id }, data: { inviteQuestionDismissedAt: new Date() } });
+  revalidatePath(`/projects/${projectSlug}`, "layout");
+  return { ok: true };
+}

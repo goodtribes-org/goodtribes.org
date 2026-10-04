@@ -9,14 +9,12 @@ const none: ProjectSignals = {
   hasSummaryAndDescription: false,
   sdgCount: 0,
   activeMemberCount: 1,
-  inviteCount: 0,
   leanCanvasFilled: 0,
   impactModelFilled: 0,
   impactModelFields: 6,
   valuePropositionFilled: 0,
   interviewCount: 0,
   marketScanCount: 0,
-  kanbanCardCount: 0,
   sprintCount: 0,
   closedSprintSteps: [],
   fundingNeedSet: false,
@@ -54,12 +52,10 @@ describe("phaseProgress", () => {
       ...none,
       dreamConfirmed: true,
       sdgCount: 2,
-      inviteCount: 1,
       leanCanvasFilled: 6,
       valuePropositionFilled: 3,
       interviewCount: 3,
       marketScanCount: 1,
-      kanbanCardCount: 2,
       sprintCount: 1,
       closedSprintSteps: ["UNDERSTAND", "DIVERGE"],
       fundingNeedSet: true,
@@ -68,7 +64,6 @@ describe("phaseProgress", () => {
       expect.arrayContaining([
         "dream_defined",
         "ai_reviewed",
-        "peer_feedback_requested",
         "lean_canvas_created",
         "target_audience_interviews",
         "market_scan_partners",
@@ -78,8 +73,10 @@ describe("phaseProgress", () => {
         "rough_budget_estimated",
       ]),
     );
-    // Below threshold: 3 of 6 VP fields, 2 kanban cards; one member isn't a team.
+    // Below threshold: 3 of 6 VP fields; one member isn't a team. The old
+    // invite and board steps are gone (#201).
     expect(keys).not.toContain("value_proposition_created");
+    expect(keys).not.toContain("peer_feedback_requested");
     expect(keys).not.toContain("kanban_seeded");
     expect(keys).not.toContain("core_team_formed");
   });
@@ -150,7 +147,7 @@ describe("phaseProgress", () => {
   });
 
   it("the bars have one segment per main step, sub-steps fold into their parent", () => {
-    expect(phaseStepProgress(new Set()).map((p) => p.total)).toEqual([7, 5, 7, 6, 5, 4]);
+    expect(phaseStepProgress(new Set()).map((p) => p.total)).toEqual([7, 4, 7, 6, 5, 4]);
   });
 
   it("a step with sub-steps fills as they get done", () => {
@@ -166,7 +163,8 @@ describe("phaseProgress", () => {
 
   it("counts steps done and fills by fraction", () => {
     const p = phaseStepProgress(new Set(["core_team_formed", "map_understand", "sketch_solutions"]))[1];
-    expect(p).toMatchObject({ done: 1, total: 5, pct: 28, complete: false });
+    // Uppstart has 4 main steps (the board step left with #201): 1 + 2/5 of the sprint.
+    expect(p).toMatchObject({ done: 1, total: 4, pct: 35, complete: false });
   });
 
   it("a phase is finished only when its steps and its kanban cards are done", () => {

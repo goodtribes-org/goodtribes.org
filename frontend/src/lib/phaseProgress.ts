@@ -14,7 +14,6 @@ export type ProjectSignals = {
   sdgCount: number;
   // Members who aren't just followers.
   activeMemberCount: number;
-  inviteCount: number;
   leanCanvasFilled: number;
   // How many of the impact model's own links are filled (IMPACT_MODEL_FIELDS).
   impactModelFilled: number;
@@ -22,7 +21,6 @@ export type ProjectSignals = {
   valuePropositionFilled: number;
   interviewCount: number;
   marketScanCount: number;
-  kanbanCardCount: number;
   sprintCount: number;
   // Design-sprint steps (SprintPhaseName) closed in any sprint.
   closedSprintSteps: string[];
@@ -62,7 +60,6 @@ export type ProjectSignals = {
 export const MIN_LEAN_CANVAS_BLOCKS = 6; // of 11
 export const MIN_VALUE_PROPOSITION_FIELDS = 4; // of 6
 export const MIN_INTERVIEWS = 3;
-export const MIN_KANBAN_CARDS = 3;
 // Match MIN_TEST_FEEDBACK / MIN_LOG_ENTRIES in lib/phaseGate.ts (the test
 // keeps them in sync) — the bars and the gates must never disagree.
 export const MIN_TEST_FEEDBACK = 3;
@@ -85,14 +82,12 @@ export function autoDoneKeys(s: ProjectSignals): string[] {
   const add = (key: string, cond: boolean) => cond && done.push(key);
   add("dream_defined", s.dreamConfirmed || s.hasSummaryAndDescription);
   add("ai_reviewed", s.sdgCount > 0);
-  add("peer_feedback_requested", s.activeMemberCount >= 2 || s.inviteCount > 0);
   add("lean_canvas_created", s.leanCanvasFilled >= MIN_LEAN_CANVAS_BLOCKS);
   add("value_proposition_created", s.valuePropositionFilled >= MIN_VALUE_PROPOSITION_FIELDS);
   add("impact_model_created", s.impactModelFields > 0 && s.impactModelFilled >= s.impactModelFields);
   add("target_audience_interviews", s.interviewCount >= MIN_INTERVIEWS);
   add("market_scan_partners", s.marketScanCount > 0);
   add("core_team_formed", s.activeMemberCount >= 2);
-  add("kanban_seeded", s.kanbanCardCount >= MIN_KANBAN_CARDS);
   add("sprint_prepped", s.sprintCount > 0);
   for (const step of s.closedSprintSteps) if (SPRINT_STEP_KEYS[step]) done.push(SPRINT_STEP_KEYS[step]);
   add("rough_budget_estimated", s.fundingNeedSet);

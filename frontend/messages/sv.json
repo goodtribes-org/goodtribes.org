@@ -751,7 +751,8 @@
     "lockedHint": "Låses upp i en senare fas",
     "navGroupsLabel": "Projektmeny",
     "navImpactModel": "Impactmodell",
-    "navCustomerModel": "Kundmodell"
+    "navCustomerModel": "Kundmodell",
+    "invite": "+ Bjud in"
   },
   "MembersManager": {
     "pageTitle": "Projektmedlemmar",
@@ -2913,7 +2914,7 @@
     "target_audience_interviews": "Målgruppsintervjuer",
     "market_scan_partners": "Omvärldsbevakning",
     "peer_feedback_requested": "Bjud in vänner / Bygg teamet",
-    "core_team_formed": "Definiera roller och bilda kärnteam",
+    "core_team_formed": "Bilda kärnteamet och fördela rollerna",
     "sprint_prepped": "Design Sprint (5 steg)",
     "map_understand": "Kartlägga & förstå",
     "sketch_solutions": "Skissa lösningar",
@@ -4950,5 +4951,11 @@
     "alsoCards": "Markera även {count, plural, one {stegets öppna uppgift} other {stegets # öppna uppgifter}} som klar{count, plural, one {} other {a}} på tavlan",
     "moved": "{count, plural, one {# uppgift flyttades} other {# uppgifter flyttades}} till Klart på tavlan.",
     "notMoved": "Kunde inte flytta: {titles}. Gör klart deluppgifterna först, eller flytta dem på tavlan."
+  },
+  "StartTogether": {
+    "question": "Startar du projektet tillsammans med någon?",
+    "why": "Bjud in dem nu, så kan ni jobba med idén tillsammans från början. Du kan också vänta — knappen Bjud in finns alltid vid projektets namn.",
+    "invite": "Bjud in",
+    "notNow": "Inte nu"
   }
 }

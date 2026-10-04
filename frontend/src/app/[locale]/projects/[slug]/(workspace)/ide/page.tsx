@@ -28,6 +28,7 @@ import AboutSection from "./AboutSection";
 import SdgSection, { SdgAiButton } from "./SdgSection";
 import AboutAiDraft from "./AboutAiDraft";
 import StepDone, { StepActions } from "./StepDone";
+import StartTogetherQuestion from "./StartTogetherQuestion";
 import InterviewAiDraft from "./InterviewAiDraft";
 import FillPoller from "./FillPoller";
 import RetryButton from "./RetryButton";
@@ -64,7 +65,7 @@ export default async function IdeaOverviewPage({
     prisma.project.findUnique({
     where: { slug },
     select: {
-      id: true, phase: true, title: true, summary: true, description: true, imageUrl: true, category: true, tags: true, sdgGoals: true,
+      id: true, phase: true, title: true, summary: true, description: true, imageUrl: true, inviteQuestionDismissedAt: true, category: true, tags: true, sdgGoals: true,
       leanCanvas: true, valueProposition: true, impactModel: true,
       dreamConversation: { select: { fillStatus: true, openQuestions: true, updatedAt: true } },
     },
@@ -188,7 +189,12 @@ export default async function IdeaOverviewPage({
   ] as Omit<PhaseStep, "label">[]).map((st) => ({ ...st, label: tSteps(st.key as Parameters<typeof tSteps>[0]) }));
   if (inIdeaPhase) steps.push({ key: "gate", anchor: "fasgrind", status: lastDecision ? "done" : "empty", label: t("gateHeading") });
 
-  // "Klart med steget" under each step, for the team.
+  const askStartTogether =
+    canEdit &&
+    !project.inviteQuestionDismissedAt &&
+    (await prisma.projectMember.count({ where: { projectId: project.id, role: { not: "FOLLOWER" } } })) <= 1;
+
+  // "Klar" under each step, for the team.
   const stepDone = (key: string) =>
     canEdit ? (
       <StepDone slug={slug} stepKey={key} done={doneKeys.has(key)} auto={!checked.some((c) => c.itemKey === key)} openCards={(cardsByStep[key] ?? []).filter((c) => c.column !== "DONE").length} />
@@ -218,6 +224,14 @@ export default async function IdeaOverviewPage({
           room — but only when open: folded into a row they line up with the
           rest. Direct children only, so StepMode's show/hide still works. */}
       <style data-keep>{`[data-phase-page] > * { width: 100%; max-width: 64rem; margin-inline: auto; } [data-phase-page] > [data-wide] { max-width: 110rem; } [data-phase-page] > [data-wide]:has(> section > button[aria-expanded="false"]) { max-width: 64rem; } [data-phase-page][data-view="steps"] [data-fold] { display: none; } [data-phase-page][data-aligned] > * { max-width: none; margin-inline: 0; margin-left: var(--align-left); width: var(--align-width); } [data-phase-page][data-aligned] > [data-wide] { margin-left: var(--wide-left); width: var(--wide-width); } [data-phase-page][data-aligned] > [data-wide]:has(> section > button[aria-expanded="false"]) { margin-left: var(--align-left); width: var(--align-width); }`}</style>
+      {/* "Startar du projektet tillsammans med någon?" until a lead alone in
+          the project has answered it (#201). Shown on every step. */}
+      {askStartTogether && (
+        <div data-keep>
+          <StartTogetherQuestion slug={slug} />
+        </div>
+      )}
+
       {/* display: contents, so an empty strip adds no gap above the step. */}
       <div data-keep className="contents">
         <PhaseProgressStrip projectId={project.id} slug={slug} viewing="IDEA" />

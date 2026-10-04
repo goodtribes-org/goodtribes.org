@@ -219,7 +219,6 @@ export function cardsForDecision(
 export const UPPSTART_GATE_CRITERIA = [
   "core_team_formed",
   "test_with_users",
-  "kanban_seeded",
   "rough_budget_estimated",
   "pilot_scope_defined",
 ] as const;
