@@ -4845,8 +4845,8 @@
   "WelcomePage": {
     "pageTitle": "Welcome",
     "heading": "Welcome to GoodTribes!",
-    "headingContinue": "Welcome! Just one thing, then you're on your way.",
-    "intro": "What's your name?",
+    "headingContinue": "Welcome! Tell us a little about yourself, then you carry on.",
+    "intro": "So the people you work with know who you are.",
     "nameLabel": "First and last name",
     "namePlaceholder": "e.g. Anna Andersson",
     "nameHint": "On GoodTribes we use real names, so everyone knows who they're working with. Your name is shown to others in the projects you're part of.",
@@ -4857,8 +4857,14 @@
       "explore": "Look around"
     },
     "continue": "Continue →",
-    "moreLater": "You can fill in the rest of your profile whenever you like.",
-    "fullProfile": "Fill in the full profile"
+    "moreLater": "You can add skills and interests whenever you like.",
+    "fullProfile": "Fill in the full profile",
+    "photoLabel": "Add a picture of yourself",
+    "photoHint": "A face makes it easier to get to know each other.",
+    "bioLabel": "A few words about you",
+    "bioPlaceholder": "e.g. Teacher in Uppsala who loves gardening. Can help with writing and organising meetups.",
+    "bioHint": "What are you passionate about, and what can you contribute? Shown on your profile.",
+    "optional": "(optional)"
   },
   "HowItWorks": {
     "pageTitle": "How it works",

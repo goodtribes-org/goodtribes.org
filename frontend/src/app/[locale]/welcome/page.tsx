@@ -8,8 +8,10 @@ import { isStartPage, safeCallbackPath } from "@/lib/callbackPath";
 import { APP_URL, buildMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 import { saveWelcome } from "./actions";
+import WelcomePhoto from "./WelcomePhoto";
 
 const GOALS = ["start", "join", "explore"] as const;
+const MAX_BIO_LENGTH = 500;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -33,7 +35,7 @@ export default async function WelcomePage({
   if (!session?.user?.id) redirect(`/${locale}/login`);
 
   const back = safeCallbackPath(sp.callbackUrl, APP_URL);
-  const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { name: true } });
+  const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { name: true, image: true, bio: true } });
   const heading = back && !isStartPage(back) ? t("headingContinue") : t("heading");
 
   return (
@@ -43,6 +45,13 @@ export default async function WelcomePage({
 
       <form action={saveWelcome} className="mt-8 flex flex-col gap-6">
         {back && <input type="hidden" name="callbackUrl" value={back} />}
+        <div className="flex flex-col items-center gap-1.5 text-center">
+          <WelcomePhoto current={user?.image ?? null} />
+          <span className="text-sm font-semibold text-dark-slate">
+            {t("photoLabel")} <span className="font-normal text-dark-slate/50">{t("optional")}</span>
+          </span>
+          <span className="text-xs text-dark-slate/60">{t("photoHint")}</span>
+        </div>
         <label className="flex flex-col gap-1.5">
           <span className="text-sm font-semibold text-dark-slate">{t("nameLabel")}</span>
           <input
@@ -57,6 +66,20 @@ export default async function WelcomePage({
             className="rounded-lg border border-muted-teal/50 bg-white px-3 py-2.5 text-base focus:border-seagrass focus:outline-none"
           />
           <span className="text-xs text-dark-slate/60">{t("nameHint")}</span>
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-sm font-semibold text-dark-slate">
+            {t("bioLabel")} <span className="font-normal text-dark-slate/50">{t("optional")}</span>
+          </span>
+          <textarea
+            name="bio"
+            rows={3}
+            maxLength={MAX_BIO_LENGTH}
+            defaultValue={user?.bio ?? ""}
+            placeholder={t("bioPlaceholder")}
+            className="resize-none rounded-lg border border-muted-teal/50 bg-white px-3 py-2.5 text-base focus:border-seagrass focus:outline-none"
+          />
+          <span className="text-xs text-dark-slate/60">{t("bioHint")}</span>
         </label>
 
         {/* Only when they weren't on their way somewhere already. */}
