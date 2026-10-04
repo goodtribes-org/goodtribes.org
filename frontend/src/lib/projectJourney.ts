@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getAutoDoneKeys } from "@/lib/projectSignals";
-import { nextStep, phaseProgress, type PhaseProgress } from "@/lib/phaseProgress";
-import { toDisplayPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { nextStep, phaseProgress, stepHref, type PhaseProgress } from "@/lib/phaseProgress";
+import { type ProjectPhaseValue } from "@/lib/projectPhase";
 
 // Where a project is on its journey: per-phase progress (the phase bars) and
 // the next concrete step, with a link to where it's done. The same "done"
@@ -22,11 +22,6 @@ export async function getProjectJourney(project: { id: string; slug: string; pha
   const done = new Set([...auto, ...ticked.map((t) => t.itemKey)]);
   const phase = project.phase as ProjectPhaseValue;
   const step = nextStep(phase, done);
-  const display = toDisplayPhase(phase);
-  const nextStepHref = !step
-    ? null
-    : step.href
-      ? `/projects/${project.slug}/${step.href}`
-      : `/projects/${project.slug}/guide${display === "IDEA" ? "" : `/${display.toLowerCase()}`}?step=${step.key}`;
+  const nextStepHref = step ? stepHref(project.slug, phase, step) : null;
   return { progress: phaseProgress(done), nextStepKey: step?.key ?? null, nextStepHref };
 }
