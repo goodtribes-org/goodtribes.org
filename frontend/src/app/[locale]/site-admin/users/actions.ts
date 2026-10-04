@@ -113,7 +113,8 @@ export async function setSiteRole(userId: string, role: SiteRole) {
   if (!(await isSiteOwner(session.user.id))) throw new Error("Forbidden");
 
   await prisma.user.update({ where: { id: userId }, data: { siteRole: role } });
-  revalidatePath("/site-admin/users");
+  // The list and each user's own page.
+  revalidatePath("/[locale]/site-admin/users", "layout");
 }
 
 export async function setSuspended(userId: string, suspended: boolean) {
@@ -125,5 +126,5 @@ export async function setSuspended(userId: string, suspended: boolean) {
     where: { id: userId },
     data: { suspendedAt: suspended ? new Date() : null },
   });
-  revalidatePath("/site-admin/users");
+  revalidatePath("/[locale]/site-admin/users", "layout");
 }

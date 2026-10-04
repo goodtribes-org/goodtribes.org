@@ -1,24 +1,61 @@
-// Shared between the site-admin layout's own tab bar and the global side menu,
-// so the two can't drift apart. Labels are hardcoded Swedish, same as the
+// The site-admin menu, grouped by what an admin is doing rather than one long
+// row of tabs. Shared by the site-admin layout and the overview page, so the
+// two can't drift apart. Labels are hardcoded Swedish, same as the
 // site-admin area itself (admin-only tooling, not run through next-intl).
-export const SITE_ADMIN_NAV = [
-  { href: "/site-admin/ethics", label: "Etikgranskning" },
-  { href: "/site-admin/content-flags", label: "Innehållsflaggor" },
-  { href: "/site-admin/suggestions", label: "Förbättringsförslag" },
-  { href: "/site-admin/users", label: "Användare" },
-  { href: "/site-admin/projects", label: "Projekt" },
-  { href: "/site-admin/organisations", label: "Organisationer" },
-  { href: "/site-admin/token-backfill", label: "Token-bakfyllning" },
-  { href: "/site-admin/council", label: "Granskningsråd" },
-  { href: "/site-admin/sandbox-graduation", label: "Drömfabriken-ansökningar" },
-  { href: "/site-admin/impact-reports", label: "Impact-rapporter" },
-  { href: "/site-admin/legal-type", label: "Juridisk form" },
-  { href: "/site-admin/profit-distribution", label: "Vinstfördelning" },
-  { href: "/site-admin/impact-fund", label: "Impact-fond" },
-  { href: "/site-admin/hero-carousel", label: "Startsidan" },
-  { href: "/site-admin/sandbox-hero", label: "Drömfabriken" },
-  { href: "/site-admin/site-copy", label: "Sidtexter" },
-  { href: "/site-admin/shop", label: "Shop" },
-  { href: "/site-admin/funding-sources", label: "Fondkatalog" },
-  { href: "/site-admin/feature-flags", label: "Funktionsflaggor" },
+// `count` names a queue in getAdminQueueCounts (lib/siteAdminCounts.ts):
+// the item shows how many are waiting.
+
+export type AdminQueue = "contentFlags" | "ethics" | "suggestions" | "impactReports" | "sandbox" | "legalType" | "profitDistribution";
+
+// `short`: the menu's label where the full one doesn't fit its width.
+export type AdminNavItem = { href: string; label: string; short?: string; count?: AdminQueue };
+export type AdminNavGroup = { title: string; items: AdminNavItem[] };
+
+export const SITE_ADMIN_GROUPS: AdminNavGroup[] = [
+  {
+    title: "Granska",
+    items: [
+      { href: "/site-admin/content-flags", label: "Innehållsflaggor", count: "contentFlags" },
+      { href: "/site-admin/ethics", label: "Etikgranskning", count: "ethics" },
+      { href: "/site-admin/impact-reports", label: "Impactrapporter", count: "impactReports" },
+      { href: "/site-admin/suggestions", label: "Förbättringsförslag", count: "suggestions" },
+    ],
+  },
+  {
+    title: "Människor",
+    items: [
+      { href: "/site-admin/users", label: "Användare" },
+      { href: "/site-admin/organisations", label: "Organisationer" },
+      { href: "/site-admin/council", label: "Granskningsrådet" },
+    ],
+  },
+  {
+    title: "Projekt",
+    items: [
+      { href: "/site-admin/projects", label: "Alla projekt" },
+      { href: "/site-admin/sandbox-graduation", label: "Ansökningar från Drömfabriken", short: "Ansökningar", count: "sandbox" },
+      { href: "/site-admin/legal-type", label: "Byte av juridisk form", count: "legalType" },
+    ],
+  },
+  {
+    title: "Pengar och beslut",
+    items: [
+      { href: "/site-admin/profit-distribution", label: "Vinstfördelning", count: "profitDistribution" },
+      { href: "/site-admin/impact-fund", label: "Impactfonden" },
+      { href: "/site-admin/funding-sources", label: "Fondkatalog" },
+      { href: "/site-admin/shop", label: "Shop" },
+      { href: "/site-admin/token-backfill", label: "Token-bakfyllning" },
+    ],
+  },
+  {
+    title: "Sajtens innehåll",
+    items: [
+      { href: "/site-admin/hero-carousel", label: "Startsidan" },
+      { href: "/site-admin/sandbox-hero", label: "Drömfabriken" },
+      { href: "/site-admin/site-copy", label: "Sidtexter" },
+      { href: "/site-admin/feature-flags", label: "Funktionsflaggor" },
+    ],
+  },
 ];
+
+export const SITE_ADMIN_NAV: AdminNavItem[] = SITE_ADMIN_GROUPS.flatMap((g) => g.items);
