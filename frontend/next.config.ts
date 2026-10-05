@@ -13,6 +13,13 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Drömfabriken (/sandbox) was removed (#224); old links land on the start page.
+  async redirects() {
+    return [
+      { source: "/sandbox", destination: "/", permanent: true },
+      { source: "/:locale(sv|en)/sandbox", destination: "/:locale", permanent: true },
+    ];
+  },
   images: {
     remotePatterns: [
       {

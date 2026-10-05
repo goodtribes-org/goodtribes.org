@@ -68,10 +68,6 @@ export default async function IdeaverkstadPage() {
         </div>
       </div>
 
-      <Link href="/sandbox" className="block text-sm text-amber-700 hover:underline mb-6">
-        {t("sandboxPromo")}
-      </Link>
-
       {rooms.length === 0 ? (
         <div className="border border-dashed border-muted-teal/40 rounded-lg p-16 text-center">
           <p className="text-dark-slate/40 text-sm mb-3">{t("emptyState")}</p>

@@ -7,8 +7,6 @@
     "create": "Create",
     "createNewProject": "New project",
     "createNewIdea": "New idea",
-    "sandbox": "Dream Factory",
-    "sandboxHome": "Explore the Dream Factory",
     "discover": "Discover",
     "discoverProjects": "Projects",
     "discoverIdeaverkstad": "Idea Workshop",
@@ -416,7 +414,7 @@
     "nameLabel": "Name",
     "namePlaceholder": "Give your Social Lean Canvas a name",
     "newCta": "Create canvas draft",
-    "backToSandbox": "← Back to the Dream Factory",
+    "backToList": "← All drafts",
     "draftHeading": "Social Lean Canvas — draft",
     "draftSubtitle": "Open draft, started by {name} — anyone logged in can edit it and turn it into a project.",
     "unknownAuthor": "Unknown",
@@ -445,7 +443,7 @@
     "nameLabel": "Name",
     "namePlaceholder": "Give your whiteboard a name",
     "newCta": "Create whiteboard draft",
-    "backToSandbox": "← Back to the Dream Factory",
+    "backToList": "← All drafts",
     "draftHeading": "Whiteboard — draft",
     "draftSubtitle": "Open draft, started by {name} — anyone logged in can draw here and turn it into a project.",
     "unknownAuthor": "Unknown",
@@ -1473,7 +1471,7 @@
     "noChannelsAtAll": "You're not part of any channels yet. Channels are created by project and organisation admins.",
     "noMatches": "No channels match \"{query}\"."
   },
-  "SandboxPillars": {
+  "AboutPillars": {
     "levaGottHeading": "Living Well",
     "levaGottBody": "Living Well: We humans share the same basic physical needs — clean air, clean water, food, clothing, housing, security, wellbeing, and more. GoodTribes wants to give everyone the opportunity to meet these needs by being able to make a living through their commitment to long-term sustainable environmental and social development.",
     "maGottHeading": "Feeling Good",
@@ -1481,7 +1479,8 @@
     "goraGottHeading": "Doing Good",
     "goraGottBody": "Doing Good: We humans share the same underlying desire for happiness, meaning, and being part of something bigger than ourselves. GoodTribes is grounded in research showing that people experience their greatest and most lasting happiness, satisfaction, and meaning when we make the world better together with others.",
     "dreamGoodHeading": "Dream Big",
-    "dreamGoodBody": "Dream Big: We humans share the same dreams about a better life."
+    "dreamGoodBody": "Dream Big: We humans share the same dreams about a better life.",
+    "editLink": "Edit the boxes"
   },
   "Showroom": {
     "ideaBand": {
@@ -1515,34 +1514,11 @@
       "next": "Next step"
     }
   },
-  "SandboxPage": {
-    "metaTitle": "Dream Factory — GoodTribes.org",
-    "metaDescription": "An experimental area mixing AI-generated content with user contributions.",
-    "exploreHeading": "Explore projects",
-    "emptyProjects": "No Dream Factory projects yet.",
-    "startFirstProject": "Start the first one →",
-    "startNext": "+ Start the next one",
-    "aiSeedingSoon": "🤖 AI seeding soon",
-    "exploreIdeasHeading": "Explore ideas",
-    "seeAllIdeasLink": "See all ideas →",
-    "noIdeasYet": "No ideas yet.",
-    "shareFirstIdeaLink": "Share the first idea",
-    "exploreLeanCanvasHeading": "Explore Social Lean Canvas",
-    "seeAllLeanCanvasLink": "See all Social Lean Canvas →",
-    "exploreWhiteboardHeading": "Explore whiteboards",
-    "seeAllWhiteboardLink": "See all whiteboards →",
-    "exploreValuePropositionHeading": "Explore value propositions",
-    "seeAllValuePropositionLink": "See all value propositions →",
-    "pulseHeading": "Happening now",
-    "pulseSubheading": "Latest activity on the platform",
-    "seeAllPulseLink": "See all activity →"
-  },
   "IdeaverkstadPage": {
     "heading": "Idea Workshop",
     "subtitle": "Bounce ideas off others and AI — from problem to project.",
     "aiGuideCta": "Let AI guide me",
     "newSessionCta": "+ New idea session",
-    "sandboxPromo": "🧪 Try the Dream Factory — our experimental idea area with AI-generated problem statements →",
     "emptyState": "No idea sessions yet.",
     "startFirstSession": "Start the first one →",
     "unnamedSession": "Unnamed idea session",
@@ -2740,7 +2716,7 @@
     "nameLabel": "Name",
     "namePlaceholder": "Give your value proposition a name",
     "newCta": "Create draft",
-    "backToSandbox": "← Back to the Dream Factory",
+    "backToList": "← All drafts",
     "draftHeading": "Value Proposition — draft",
     "draftSubtitle": "Open draft, started by {name} — anyone logged in can edit it and turn it into a project.",
     "unknownAuthor": "Unknown",
@@ -3607,14 +3583,11 @@
     "localeSv": "Swedish",
     "localeEn": "English"
   },
-  "SandboxHeroAdminPage": {
-    "heading": "Dream Factory ({locale})",
-    "intro": "The intro text and the four pillar cards (Living Well, Feeling Good, Doing Good, Dream Big) at the top of the Dream Factory page."
+  "AboutPillarsAdminPage": {
+    "heading": "The boxes on About GoodTribes ({locale})",
+    "intro": "The four boxes (Living Well, Feeling Good, Doing Good, Dream Big) under the heading on About GoodTribes (/about)."
   },
-  "SandboxHeroEditor": {
-    "introSectionTitle": "Intro text",
-    "heroKickerLabel": "Kicker",
-    "heroDescriptionLabel": "Description",
+  "AboutPillarsEditor": {
     "pillarHeadingLabel": "Heading",
     "pillarBodyLabel": "Body",
     "saveButton": "Save",
@@ -3622,7 +3595,7 @@
   },
   "SiteCopyAdminPage": {
     "heading": "Page text ({locale})",
-    "intro": "All static text on the homepage and Dream Factory, grouped by section. An empty field resets it to the default text.",
+    "intro": "All static text on the homepage, grouped by section. An empty field resets it to the default text.",
     "localeSv": "SV",
     "localeEn": "EN",
     "saveButton": "Save all changes"
@@ -4611,6 +4584,17 @@
       "heading": "Help out on a project",
       "allLink": "See all projects →"
     },
+    "ideas": {
+      "eyebrow": "Ideas",
+      "heading": "Explore ideas",
+      "allLink": "See all ideas →",
+      "label": "Idea",
+      "byAuthor": "by {name}",
+      "unknownAuthor": "Unknown",
+      "votes": "votes",
+      "comments": "comments",
+      "noDescription": "No description yet."
+    },
     "stats": {
       "eyebrow": "Together",
       "heading": "What we've done together",
@@ -4668,7 +4652,6 @@
     "tools": "Tools",
     "toolsHeading": "The tools in every project",
     "toolsIntro": "Every project gets these tools, completely free.",
-    "trySandbox": "Try them in the Sandbox",
     "startProject": "Start a project"
   },
   "Thanks": {

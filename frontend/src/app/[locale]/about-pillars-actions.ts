@@ -8,9 +8,7 @@ import type { Locale } from "next-intl";
 
 type OkOrError = { error: string } | { ok: true };
 
-export type SandboxHeroInput = {
-  heroKicker: string;
-  heroDescription: string;
+export type AboutPillarsInput = {
   levaGottHeading: string;
   levaGottBody: string;
   maGottHeading: string;
@@ -21,9 +19,7 @@ export type SandboxHeroInput = {
   dreamGoodBody: string;
 };
 
-const REQUIRED_FIELDS: (keyof SandboxHeroInput)[] = [
-  "heroKicker",
-  "heroDescription",
+const REQUIRED_FIELDS: (keyof AboutPillarsInput)[] = [
   "levaGottHeading",
   "levaGottBody",
   "maGottHeading",
@@ -34,19 +30,12 @@ const REQUIRED_FIELDS: (keyof SandboxHeroInput)[] = [
   "dreamGoodBody",
 ];
 
-// The four *Body fields (and the intro description) are edited via
-// RichTextEditor now, so they arrive as HTML — sanitize before storing,
-// same rule as HomeHeroSlide's body/outro. Heading/kicker fields stay
-// plain single-line labels.
-const HTML_FIELDS: (keyof SandboxHeroInput)[] = [
-  "heroDescription",
-  "levaGottBody",
-  "maGottBody",
-  "goraGottBody",
-  "dreamGoodBody",
-];
+// The four *Body fields are edited via RichTextEditor, so they arrive as
+// HTML — sanitize before storing, same rule as HomeHeroSlide's body/outro.
+// Headings stay plain single-line labels.
+const HTML_FIELDS: (keyof AboutPillarsInput)[] = ["levaGottBody", "maGottBody", "goraGottBody", "dreamGoodBody"];
 
-export async function updateSandboxHero(input: SandboxHeroInput, locale: Locale): Promise<OkOrError> {
+export async function updateAboutPillars(input: AboutPillarsInput, locale: Locale): Promise<OkOrError> {
   await requireAdminSession();
 
   const trimmed = Object.fromEntries(
@@ -54,18 +43,20 @@ export async function updateSandboxHero(input: SandboxHeroInput, locale: Locale)
       key,
       HTML_FIELDS.includes(key) ? sanitizeHtml(input[key]).trim() : input[key].trim(),
     ])
-  ) as SandboxHeroInput;
+  ) as AboutPillarsInput;
 
   for (const key of REQUIRED_FIELDS) {
     if (!trimmed[key]) return { error: "Alla fält krävs." };
   }
 
+  // The row still has Drömfabriken's old kicker/description columns (see
+  // lib/aboutPillars.ts); a new locale's row just leaves them empty.
   await prisma.sandboxHeroSettings.upsert({
     where: { locale },
     update: trimmed,
-    create: { locale, ...trimmed },
+    create: { locale, heroKicker: "", heroDescription: "", ...trimmed },
   });
 
-  revalidatePath("/sandbox");
+  revalidatePath("/about");
   return { ok: true };
 }

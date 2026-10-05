@@ -18,9 +18,13 @@ interface Props {
   display?: ReactNode;
   // Width of the read view; the editor stays max-w-2xl.
   className?: string;
+  // Shown between the title and the body when not editing (e.g. /about's
+  // four boxes); the article can then keep a narrower width of its own.
+  belowTitle?: ReactNode;
+  articleClassName?: string;
 }
 
-export default function EditableSitePage({ slug, locale, canEdit, title, body, titleClassName, display, className }: Props) {
+export default function EditableSitePage({ slug, locale, canEdit, title, body, titleClassName, display, className, belowTitle, articleClassName }: Props) {
   const t = useTranslations("SitePageEditor");
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(title);
@@ -85,11 +89,12 @@ export default function EditableSitePage({ slug, locale, canEdit, title, body, t
           </button>
         )}
       </div>
+      {belowTitle && <div className="mb-8">{belowTitle}</div>}
       {display ?? <article
-        className="prose prose-sm max-w-none text-dark-slate/80 leading-relaxed
+        className={`prose prose-sm ${articleClassName ?? "max-w-none"} text-dark-slate/80 leading-relaxed
           prose-headings:text-dark-slate
           prose-a:text-coral prose-a:no-underline hover:prose-a:underline
-          prose-strong:text-dark-slate"
+          prose-strong:text-dark-slate`}
         dangerouslySetInnerHTML={{ __html: body }}
       />}
     </div>

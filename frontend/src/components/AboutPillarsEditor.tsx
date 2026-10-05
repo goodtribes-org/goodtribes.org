@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { updateSandboxHero, type SandboxHeroInput } from "@/app/[locale]/sandbox-hero-actions";
+import { updateAboutPillars, type AboutPillarsInput } from "@/app/[locale]/about-pillars-actions";
 import RichTextEditor from "@/components/RichTextEditor";
 import type { Locale } from "next-intl";
 
@@ -13,8 +13,8 @@ const PILLAR_FIELDS = [
   { key: "dreamGood", headingKey: "dreamGoodHeading", bodyKey: "dreamGoodBody" },
 ] as const satisfies readonly {
   key: string;
-  headingKey: keyof SandboxHeroInput;
-  bodyKey: keyof SandboxHeroInput;
+  headingKey: keyof AboutPillarsInput;
+  bodyKey: keyof AboutPillarsInput;
 }[];
 
 function TextField({
@@ -55,28 +55,28 @@ function RichField({
   );
 }
 
-export default function SandboxHeroEditor({
+export default function AboutPillarsEditor({
   initialData,
   locale,
 }: {
-  initialData: SandboxHeroInput;
+  initialData: AboutPillarsInput;
   locale: Locale;
 }) {
-  const t = useTranslations("SandboxHeroEditor");
-  const tPillars = useTranslations("SandboxPillars");
+  const t = useTranslations("AboutPillarsEditor");
+  const tPillars = useTranslations("AboutPillars");
   const [data, setData] = useState(initialData);
   const [saved, setSaved] = useState(initialData);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  function set<K extends keyof SandboxHeroInput>(key: K, value: string) {
+  function set<K extends keyof AboutPillarsInput>(key: K, value: string) {
     setData((prev) => ({ ...prev, [key]: value }));
   }
 
   function handleSave() {
     setError(null);
     startTransition(async () => {
-      const result = await updateSandboxHero(data, locale);
+      const result = await updateAboutPillars(data, locale);
       if ("error" in result) {
         setError(result.error);
         return;
@@ -95,16 +95,6 @@ export default function SandboxHeroEditor({
 
   return (
     <div className="space-y-8">
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-dark-slate">{t("introSectionTitle")}</h3>
-        <TextField label={t("heroKickerLabel")} value={data.heroKicker} onChange={(v) => set("heroKicker", v)} />
-        <RichField
-          label={t("heroDescriptionLabel")}
-          value={data.heroDescription}
-          onChange={(v) => set("heroDescription", v)}
-        />
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {PILLAR_FIELDS.map(({ key, headingKey, bodyKey }) => (
           <div key={key} className="border border-muted-teal/20 rounded-lg p-4 space-y-3">

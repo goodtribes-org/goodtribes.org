@@ -53,7 +53,6 @@ export async function approveSandboxGraduation(requestId: string, umbrellaEntity
   revalidatePath("/site-admin/sandbox-graduation");
   revalidatePath(`/projects/${request.project.slug}`);
   revalidatePath(`/projects/${request.project.slug}/edit`);
-  revalidatePath("/sandbox");
 }
 
 export async function rejectSandboxGraduation(requestId: string, note: string) {

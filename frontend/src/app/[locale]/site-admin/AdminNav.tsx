@@ -26,7 +26,7 @@ const ICONS: Record<string, LucideIcon> = {
   "/site-admin/shop": ShoppingBag,
   "/site-admin/token-backfill": Coins,
   "/site-admin/hero-carousel": Home,
-  "/site-admin/sandbox-hero": Sparkles,
+  "/site-admin/about-pillars": Sparkles,
   "/site-admin/site-copy": FileText,
   "/site-admin/feature-flags": ToggleLeft,
 };

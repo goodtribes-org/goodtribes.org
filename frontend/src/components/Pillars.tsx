@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CARD_SHADOW } from "@/lib/heroCardStyle";
+import type { PillarKey } from "@/lib/aboutPillars";
 
 // Content saved through the rich-text editor is HTML; content seeded before
 // it was added is plain text — same detection as HeroSlideRow's RichText.
@@ -16,25 +16,12 @@ function RichText({ html, className }: { html: string; className: string }) {
   return <p className={className}>{html}</p>;
 }
 
-// The two tree illustrations are the original GoodTribe artwork recovered
-// from the old dev-goodtribe.pantheonsite.io site — see
-// /public/img/sandbox-tree-*.png. The pillar icons are simple white-line
-// SVGs (from the very first sandbox-hero concept mockup) rather than the
-// recovered PNGs — cleaner against the colored gradient header. The trees
-// sit above the row's outer two slots (whichever pillars occupy them —
-// currently Dröm stort / Leva Gott), hidden on mobile where the grid stacks
-// to a single column and "outer corner" stops being meaningful. Each header
-// fades from the pillar's base color, the "strong color → fade out"
-// treatment from that same concept mockup. Row width follows the original's
-// measured ratio (tree width ≈ 30% of its container) — with the trees sized
-// up, the row widens back out to match rather than staying artificially
-// narrow. PILLARS' array order is the display order (left to right).
-//
-// The optional centered textbox between the trees recreates the original
-// GoodTribe hero layout (trees flanking a single textbox, recovered from
-// dev-goodtribe.pantheonsite.io) from back when this lived on /sandbox —
-// same card styling as that recovered design, just without the connector
-// line PNG (deleted when the trees moved to flank this row instead).
+// The four boxes on /about (Leva Gott, Må Gott, Göra Gott, Dröm stort),
+// moved there from the top of Drömfabriken when /sandbox was removed (#224).
+// Texts come from SandboxHeroSettings (lib/aboutPillars.ts), edited at
+// /site-admin/about-pillars. The icons are simple white-line SVGs, and each
+// header fades from the pillar's base color. PILLARS' array order is the
+// display order (left to right).
 function LeafIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
@@ -78,95 +65,49 @@ const PILLARS = [
   { Icon: BulbIcon, color: "var(--color-coral)", key: "dreamGood" as const },
 ];
 
-const TREE_LEFT = { src: "/img/sandbox-tree-left.png", alt: "" };
-const TREE_RIGHT = { src: "/img/sandbox-tree-right.png", alt: "" };
-
 export default function Pillars({
-  heading,
-  body,
   headings,
   bodies,
   canEdit,
   editHref,
   editLabel,
 }: {
-  heading?: string;
-  body?: string;
-  headings: Record<"levaGott" | "maGott" | "goraGott" | "dreamGood", string>;
-  bodies: Record<"levaGott" | "maGott" | "goraGott" | "dreamGood", string>;
+  headings: Record<PillarKey, string>;
+  bodies: Record<PillarKey, string>;
   canEdit?: boolean;
   editHref?: string;
   editLabel?: string;
 }) {
   return (
-    <div className="pt-0 sm:pt-20">
-      <div className="relative max-w-4xl mx-auto">
-        {/* bottom-full anchors each tree's bottom edge to the row's top edge
-            with zero overlap; the negative margin-bottom then pulls it down
-            by a small, fixed amount so the branch tips overflow past the
-            Leva Gott / Göra Gott cards' outer corners. */}
-        <img
-          src={TREE_LEFT.src}
-          alt={TREE_LEFT.alt}
-          className="hidden sm:block absolute left-[-86px] md:left-[-130px] bottom-full mb-[-28px] md:mb-[-43px] w-[230px] md:w-[317px] h-auto z-20 pointer-events-none select-none"
-        />
-        <img
-          src={TREE_RIGHT.src}
-          alt={TREE_RIGHT.alt}
-          className="hidden sm:block absolute right-[-86px] md:right-[-130px] bottom-full mb-[-43px] md:mb-[-58px] w-[230px] md:w-[317px] h-auto z-20 pointer-events-none select-none"
-        />
-
-        {/* z-0 (istället för z-10) så trädens grenar hamnar framför rutan, inte bakom den. */}
-        {heading && (
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-6 md:mb-10 z-0 w-full max-w-lg sm:max-w-xl px-4">
-            <div className={`relative bg-white p-3 ${CARD_SHADOW}`}>
-              {canEdit && editHref && (
-                <Link
-                  href={editHref}
-                  className="absolute top-3 right-3 z-10 text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors bg-white/70 rounded-md px-2 py-1"
-                >
-                  ✎ {editLabel}
-                </Link>
-              )}
-              <div className="border border-muted-teal/20 px-4 sm:px-6 py-4 sm:py-5 bg-amber-50 text-center">
-                <h2 className="text-lg sm:text-2xl font-bold text-amber-900" style={{ textWrap: "balance" }}>
-                  {heading}
-                </h2>
-                {body && (
-                  <RichText html={body} className="mt-2 text-amber-800 text-xs sm:text-sm leading-relaxed" />
-                )}
-              </div>
+    <div className="relative">
+      {canEdit && editHref && (
+        <div className="mb-2 flex justify-end">
+          <Link
+            href={editHref}
+            className="text-xs font-medium text-dark-slate/50 hover:text-coral transition-colors"
+          >
+            ✎ {editLabel}
+          </Link>
+        </div>
+      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {PILLARS.map((p) => (
+          <div
+            key={p.key}
+            className="bg-white border border-[#ecd9a8] rounded-[14px] overflow-hidden shadow-[0_10px_24px_-14px_rgba(37,68,65,0.18)]"
+          >
+            <div
+              className="flex items-center gap-2 px-4 py-3 text-white font-bold text-sm uppercase tracking-wide"
+              style={{ background: `linear-gradient(135deg, ${p.color}, color-mix(in srgb, ${p.color} 30%, white))` }}
+            >
+              <p.Icon />
+              <span>{headings[p.key]}</span>
+            </div>
+            <div className="p-4">
+              <RichText html={bodies[p.key]} className="text-xs text-dark-slate/70 leading-relaxed text-center" />
             </div>
           </div>
-        )}
-
-        {/* z-30 — högre än trädens z-20 — så Leva Gott-rutorna ligger framför träden. */}
-        <div className="relative z-30 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {PILLARS.map((p, i) => (
-            <div
-              key={p.key}
-              className="bg-white border border-[#ecd9a8] rounded-[14px] overflow-hidden shadow-[0_10px_24px_-14px_rgba(37,68,65,0.18)]"
-              style={
-                i === 0
-                  ? { transform: "translateX(-10px)" }
-                  : i === 1
-                    ? { transform: "translateX(-5px)" }
-                    : undefined
-              }
-            >
-              <div
-                className="flex items-center gap-2 px-4 py-3 text-white font-bold text-sm uppercase tracking-wide"
-                style={{ background: `linear-gradient(135deg, ${p.color}, color-mix(in srgb, ${p.color} 30%, white))` }}
-              >
-                <p.Icon />
-                <span>{headings[p.key]}</span>
-              </div>
-              <div className="p-4">
-                <RichText html={bodies[p.key]} className="text-xs text-dark-slate/70 leading-relaxed text-center" />
-              </div>
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
     </div>
   );

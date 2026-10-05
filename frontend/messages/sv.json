@@ -7,8 +7,6 @@
     "create": "Skapa",
     "createNewProject": "Nytt projekt",
     "createNewIdea": "Ny idé",
-    "sandbox": "Drömfabriken",
-    "sandboxHome": "Utforska Drömfabriken",
     "discover": "Utforska",
     "discoverProjects": "Projekt",
     "discoverIdeaverkstad": "Idéverkstaden",
@@ -416,7 +414,7 @@
     "nameLabel": "Namn",
     "namePlaceholder": "Ge din Social Lean Canvas ett namn",
     "newCta": "Skapa canvas-utkast",
-    "backToSandbox": "← Tillbaka till Drömfabriken",
+    "backToList": "← Alla utkast",
     "draftHeading": "Social Lean Canvas — utkast",
     "draftSubtitle": "Öppet utkast, startat av {name} — vem som helst inloggad kan redigera det och göra det till ett projekt.",
     "unknownAuthor": "Okänd",
@@ -445,7 +443,7 @@
     "nameLabel": "Namn",
     "namePlaceholder": "Ge din whiteboard ett namn",
     "newCta": "Skapa whiteboard-utkast",
-    "backToSandbox": "← Tillbaka till Drömfabriken",
+    "backToList": "← Alla utkast",
     "draftHeading": "Whiteboard — utkast",
     "draftSubtitle": "Öppet utkast, startat av {name} — vem som helst inloggad kan rita här och göra det till ett projekt.",
     "unknownAuthor": "Okänd",
@@ -1473,7 +1471,7 @@
     "noChannelsAtAll": "Du är inte med i några kanaler ännu. Kanaler skapas av projekt- och organisationsadmins.",
     "noMatches": "Inga kanaler matchar \"{query}\"."
   },
-  "SandboxPillars": {
+  "AboutPillars": {
     "levaGottHeading": "Leva Gott",
     "levaGottBody": "Leva Gott: Vi människor har samma grundläggande fysiska behov av ren luft, rent vatten, mat, kläder, bostad, trygghet, välmående osv. GoodTribes vill ge alla människor möjligheten att möta dessa behov genom att kunna försörja sig på sitt engagemang för en långsiktigt hållbar miljö- och samhällsutveckling.",
     "maGottHeading": "Må Gott",
@@ -1481,7 +1479,8 @@
     "goraGottHeading": "Göra Gott",
     "goraGottBody": "Göra Gott: Vi människor har samma övergripande önskan om lycka, mening och att vara en del av ett större sammanhang. GoodTribes utgår från forskningen som visar att människor upplever störst och mest långvarig lycka, tillfredsställelse och mening när vi tillsammans med andra gör världen bättre.",
     "dreamGoodHeading": "Dröm stort",
-    "dreamGoodBody": "Dröm stort: Vi människor delar samma drömmar om ett bättre liv."
+    "dreamGoodBody": "Dröm stort: Vi människor delar samma drömmar om ett bättre liv.",
+    "editLink": "Redigera rutorna"
   },
   "Showroom": {
     "ideaBand": {
@@ -1515,34 +1514,11 @@
       "next": "Nästa steg"
     }
   },
-  "SandboxPage": {
-    "metaTitle": "Drömfabriken — GoodTribes.org",
-    "metaDescription": "Ett experimentellt område som blandar AI-genererat innehåll med användarbidrag.",
-    "exploreHeading": "Utforska projekt",
-    "emptyProjects": "Inga projekt i Drömfabriken ännu.",
-    "startFirstProject": "Starta det första →",
-    "startNext": "+ Starta nästa",
-    "aiSeedingSoon": "🤖 AI seedar snart",
-    "exploreIdeasHeading": "Utforska idéer",
-    "seeAllIdeasLink": "Se alla idéer →",
-    "noIdeasYet": "Inga idéer ännu.",
-    "shareFirstIdeaLink": "Dela den första idén",
-    "exploreLeanCanvasHeading": "Utforska Social Lean Canvas",
-    "seeAllLeanCanvasLink": "Se alla Social Lean Canvas →",
-    "exploreWhiteboardHeading": "Utforska whiteboards",
-    "seeAllWhiteboardLink": "Se alla whiteboards →",
-    "exploreValuePropositionHeading": "Utforska värdeerbjudande",
-    "seeAllValuePropositionLink": "Se alla värdeerbjudande →",
-    "pulseHeading": "Händer just nu",
-    "pulseSubheading": "Senaste aktivitet på plattformen",
-    "seeAllPulseLink": "Se all aktivitet →"
-  },
   "IdeaverkstadPage": {
     "heading": "Idéverkstaden",
     "subtitle": "Posta ett problem, bolla idéer med andra — och skriv @AI för att bjuda in AI i tråden.",
     "aiGuideCta": "Låt AI guida mig",
     "newSessionCta": "+ Ny idésession",
-    "sandboxPromo": "🧪 Prova Drömfabriken — vårt experimentella idéområde med AI-genererade problemställningar →",
     "emptyState": "Inga idésessioner ännu.",
     "startFirstSession": "Starta den första →",
     "unnamedSession": "Namnlös idésession",
@@ -2740,7 +2716,7 @@
     "nameLabel": "Namn",
     "namePlaceholder": "Ge ditt värdeerbjudande ett namn",
     "newCta": "Skapa utkast",
-    "backToSandbox": "← Tillbaka till Drömfabriken",
+    "backToList": "← Alla utkast",
     "draftHeading": "Värdeerbjudande — utkast",
     "draftSubtitle": "Öppet utkast, startat av {name} — vem som helst inloggad kan redigera det och göra det till ett projekt.",
     "unknownAuthor": "Okänd",
@@ -3607,14 +3583,11 @@
     "localeSv": "svenska",
     "localeEn": "engelska"
   },
-  "SandboxHeroAdminPage": {
-    "heading": "Drömfabriken ({locale})",
-    "intro": "Introtexten och de fyra pelarrutorna (Leva Gott, Må Gott, Göra Gott, Dröm stort) högst upp på Drömfabriken-sidan."
+  "AboutPillarsAdminPage": {
+    "heading": "Rutorna på Om GoodTribes ({locale})",
+    "intro": "De fyra rutorna (Leva Gott, Må Gott, Göra Gott, Dröm stort) under rubriken på Om GoodTribes (/about)."
   },
-  "SandboxHeroEditor": {
-    "introSectionTitle": "Introtext",
-    "heroKickerLabel": "Kicker",
-    "heroDescriptionLabel": "Beskrivning",
+  "AboutPillarsEditor": {
     "pillarHeadingLabel": "Rubrik",
     "pillarBodyLabel": "Text",
     "saveButton": "Spara",
@@ -3622,7 +3595,7 @@
   },
   "SiteCopyAdminPage": {
     "heading": "Sidtexter ({locale})",
-    "intro": "All statisk text på startsidan och Drömfabriken, grupperad per sektion. Ett tomt fält återställer till standardtexten.",
+    "intro": "All statisk text på startsidan, grupperad per sektion. Ett tomt fält återställer till standardtexten.",
     "localeSv": "SV",
     "localeEn": "EN",
     "saveButton": "Spara alla ändringar"
@@ -4611,6 +4584,17 @@
       "heading": "Hjälp till i ett projekt",
       "allLink": "Se alla projekt →"
     },
+    "ideas": {
+      "eyebrow": "Idéer",
+      "heading": "Utforska idéer",
+      "allLink": "Se alla idéer →",
+      "label": "Idé",
+      "byAuthor": "av {name}",
+      "unknownAuthor": "Okänd",
+      "votes": "röster",
+      "comments": "kommentarer",
+      "noDescription": "Ingen beskrivning ännu."
+    },
     "stats": {
       "eyebrow": "Tillsammans",
       "heading": "Det här har vi gjort tillsammans",
@@ -4668,7 +4652,6 @@
     "tools": "Verktyg",
     "toolsHeading": "Verktygen i varje projekt",
     "toolsIntro": "Alla projekt får de här verktygen, helt gratis.",
-    "trySandbox": "Prova i Sandbox",
     "startProject": "Starta ett projekt"
   },
   "Thanks": {
