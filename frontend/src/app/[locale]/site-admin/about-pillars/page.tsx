@@ -1,12 +1,10 @@
 import { getTranslations } from "next-intl/server";
-import { getSandboxHeroDraft } from "@/lib/sandboxHero";
-import SandboxHeroEditor from "@/components/SandboxHeroEditor";
-import type { SandboxHeroInput } from "../../sandbox-hero-actions";
+import { getAboutPillarsDraft } from "@/lib/aboutPillars";
+import AboutPillarsEditor from "@/components/AboutPillarsEditor";
+import type { AboutPillarsInput } from "../../about-pillars-actions";
 import type { Locale } from "next-intl";
 
-const EMPTY: SandboxHeroInput = {
-  heroKicker: "",
-  heroDescription: "",
+const EMPTY: AboutPillarsInput = {
   levaGottHeading: "",
   levaGottBody: "",
   maGottHeading: "",
@@ -17,17 +15,15 @@ const EMPTY: SandboxHeroInput = {
   dreamGoodBody: "",
 };
 
-export default async function SandboxHeroAdminPage({ params }: { params: Promise<{ locale: Locale }> }) {
+export default async function AboutPillarsAdminPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   const [draft, t] = await Promise.all([
-    getSandboxHeroDraft(locale),
-    getTranslations({ locale, namespace: "SandboxHeroAdminPage" }),
+    getAboutPillarsDraft(locale),
+    getTranslations({ locale, namespace: "AboutPillarsAdminPage" }),
   ]);
 
-  const initialData: SandboxHeroInput = draft
+  const initialData: AboutPillarsInput = draft
     ? {
-        heroKicker: draft.heroKicker,
-        heroDescription: draft.heroDescription,
         levaGottHeading: draft.levaGottHeading,
         levaGottBody: draft.levaGottBody,
         maGottHeading: draft.maGottHeading,
@@ -46,7 +42,7 @@ export default async function SandboxHeroAdminPage({ params }: { params: Promise
         <p className="text-sm text-dark-slate/50">{t("intro")}</p>
       </div>
 
-      <SandboxHeroEditor initialData={initialData} locale={locale} />
+      <AboutPillarsEditor initialData={initialData} locale={locale} />
     </div>
   );
 }

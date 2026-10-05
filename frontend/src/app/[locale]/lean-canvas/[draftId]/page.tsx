@@ -34,8 +34,8 @@ export default async function LeanCanvasDraftPage({
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-        <Link href="/sandbox" className="text-sm text-dark-slate/50 hover:text-dark-slate">
-          {t("backToSandbox")}
+        <Link href="/lean-canvas" className="text-sm text-dark-slate/50 hover:text-dark-slate">
+          {t("backToList")}
         </Link>
         {draft.promotedToProject ? (
           <Link

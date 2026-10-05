@@ -6,6 +6,9 @@ import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { htmlToPreviewText } from "@/lib/renderBody";
 import { DEFAULT_SITE_PAGES } from "@/lib/defaultSitePages";
 import EditableSitePage from "@/components/EditableSitePage";
+import Pillars from "@/components/Pillars";
+import { getAboutPillars } from "@/lib/aboutPillars";
+import { getTranslations } from "next-intl/server";
 import { buildMetadata } from "@/lib/metadata";
 import type { Locale } from "next-intl";
 
@@ -25,7 +28,12 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
   const session = await auth();
   const canEdit = session?.user?.id ? await isSiteAdmin(session.user.id) : false;
 
-  const page = (await getSitePage("about", locale)) ?? DEFAULT_SITE_PAGES.about[locale];
+  const [sitePage, pillars, t] = await Promise.all([
+    getSitePage("about", locale),
+    getAboutPillars(locale),
+    getTranslations({ locale, namespace: "AboutPillars" }),
+  ]);
+  const page = sitePage ?? DEFAULT_SITE_PAGES.about[locale];
 
   return (
     <EditableSitePage
@@ -35,6 +43,17 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       title={page.title}
       body={sanitizeHtml(page.body)}
       titleClassName="text-4xl"
+      className="max-w-5xl"
+      articleClassName="max-w-2xl"
+      belowTitle={
+        <Pillars
+          headings={pillars.headings}
+          bodies={pillars.bodies}
+          canEdit={canEdit}
+          editHref="/site-admin/about-pillars"
+          editLabel={t("editLink")}
+        />
+      }
     />
   );
 }

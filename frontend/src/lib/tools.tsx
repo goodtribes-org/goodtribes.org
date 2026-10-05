@@ -1,6 +1,5 @@
 // The 16 tools every project gets, with their icons — kept free of server-only
-// imports so both server components (showroom/ToolsGrid) and the header's
-// client-side tools menu (ToolsMenu) can use the same list. Labels and
+// imports so the header's client-side tools menu (ToolsMenu) can use it. Labels and
 // descriptions live in messages under HomePage.tools (<key>Label/<key>Body).
 export const TOOLS = [
   { key: "leanCanvas", color: "coral", path: <><rect x="3" y="4" width="18" height="16" rx="1" /><path d="M3 10h18M9 10v10" /></> },

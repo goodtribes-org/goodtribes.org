@@ -51,7 +51,7 @@ export const SITE_ADMIN_GROUPS: AdminNavGroup[] = [
     title: "Sajtens innehåll",
     items: [
       { href: "/site-admin/hero-carousel", label: "Startsidan" },
-      { href: "/site-admin/sandbox-hero", label: "Drömfabriken" },
+      { href: "/site-admin/about-pillars", label: "Rutorna på Om oss" },
       { href: "/site-admin/site-copy", label: "Sidtexter" },
       { href: "/site-admin/feature-flags", label: "Funktionsflaggor" },
     ],

@@ -26,6 +26,5 @@ export async function saveSiteCopy(locale: string, formData: FormData) {
   await prisma.$transaction(ops);
 
   revalidatePath("/");
-  revalidatePath("/sandbox");
   revalidatePath("/site-admin/site-copy");
 }

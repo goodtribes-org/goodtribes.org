@@ -1,12 +1,12 @@
-// Every static text field on the homepage and Drömfabriken that's editable
+// Every static text field on the homepage that's editable
 // via /site-admin/site-copy, grouped by the section an admin sees it in.
 // `key` must be the exact next-intl message path so components can resolve
 // `copy[key] ?? t(shortKey)` — see getSiteCopyMap in @/lib/siteCopy.
 //
 // NOT included here (already have their own dedicated editors, or aren't
 // visible page content): HomePage.heroDefaultHeading/heroDefaultBody
-// (site-admin/hero-carousel), SandboxPillars/the sandbox hero kicker+intro
-// (site-admin/sandbox-hero), and any aria-label-only text.
+// (site-admin/hero-carousel), AboutPillars (site-admin/about-pillars), and
+// any aria-label-only text.
 export type SiteCopyField = { key: string; label: string; multiline?: boolean };
 export type SiteCopySection = { title: string; fields: SiteCopyField[] };
 
@@ -153,44 +153,6 @@ export const SITE_COPY_SECTIONS: SiteCopySection[] = [
       { key: "HomePage.tools.ganttBody", label: "Gantt-schema — text", multiline: true },
       { key: "HomePage.tools.todosLabel", label: "Todo-listor — titel" },
       { key: "HomePage.tools.todosBody", label: "Todo-listor — text", multiline: true },
-    ],
-  },
-  {
-    title: "Drömfabriken — projekt",
-    fields: [
-      { key: "SandboxPage.exploreHeading", label: "Rubrik" },
-      { key: "SandboxPage.emptyProjects", label: "Text när inga projekt finns" },
-      { key: "SandboxPage.startFirstProject", label: "\"Starta det första\"-länk" },
-      { key: "SandboxPage.startNext", label: "\"Starta nästa\"-länk" },
-      { key: "SandboxPage.aiSeedingSoon", label: "AI-seedning-notis" },
-    ],
-  },
-  {
-    title: "Drömfabriken — idéer",
-    fields: [
-      { key: "SandboxPage.exploreIdeasHeading", label: "Rubrik" },
-      { key: "SandboxPage.seeAllIdeasLink", label: "\"Se alla idéer\"-länk" },
-      { key: "SandboxPage.noIdeasYet", label: "Text när inga idéer finns" },
-      { key: "SandboxPage.shareFirstIdeaLink", label: "\"Dela den första idén\"-länk" },
-    ],
-  },
-  {
-    title: "Drömfabriken — Lean Canvas & Whiteboard & Värdeerbjudande",
-    fields: [
-      { key: "SandboxPage.exploreLeanCanvasHeading", label: "Lean Canvas — rubrik" },
-      { key: "SandboxPage.seeAllLeanCanvasLink", label: "Lean Canvas — \"Se alla\"-länk" },
-      { key: "SandboxPage.exploreWhiteboardHeading", label: "Whiteboard — rubrik" },
-      { key: "SandboxPage.seeAllWhiteboardLink", label: "Whiteboard — \"Se alla\"-länk" },
-      { key: "SandboxPage.exploreValuePropositionHeading", label: "Värdeerbjudande — rubrik" },
-      { key: "SandboxPage.seeAllValuePropositionLink", label: "Värdeerbjudande — \"Se alla\"-länk" },
-    ],
-  },
-  {
-    title: "Drömfabriken — aktivitetsflöde",
-    fields: [
-      { key: "SandboxPage.pulseHeading", label: "Rubrik" },
-      { key: "SandboxPage.pulseSubheading", label: "Underrubrik" },
-      { key: "SandboxPage.seeAllPulseLink", label: "\"Se all aktivitet\"-länk" },
     ],
   },
 ];

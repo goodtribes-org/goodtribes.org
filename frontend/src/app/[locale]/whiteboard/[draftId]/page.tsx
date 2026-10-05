@@ -37,8 +37,8 @@ export default async function WhiteboardDraftPage({
     <div className="relative -mt-8 -mb-12" style={{ marginLeft: "calc(50% - 50vw)", width: "100vw" }}>
       <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-3 border-b border-amber-200 bg-amber-50/40 flex-wrap">
         <div className="flex items-center gap-3 min-w-0">
-          <Link href="/sandbox" className="text-sm text-dark-slate/50 hover:text-dark-slate flex-shrink-0">
-            {t("backToSandbox")}
+          <Link href="/whiteboard" className="text-sm text-dark-slate/50 hover:text-dark-slate flex-shrink-0">
+            {t("backToList")}
           </Link>
           <p className="text-sm font-bold text-dark-slate truncate hidden sm:block">
             {draft.name || t("draftHeading")}

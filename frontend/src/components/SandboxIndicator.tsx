@@ -1,25 +1,21 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { usePathname } from "@/i18n/navigation";
 
 // Drives the sandbox-colored border on SiteHeader/SiteFooter (and the mini
-// hero peek). Defaults to the /sandbox route check (for the Sandbox browse
-// pages themselves), but a project page overrides it with the actual
-// project.isSandbox flag via ProjectSandboxAnnouncer below — project pages
-// aren't served under /sandbox/ even when the project itself is a sandbox one.
+// hero peek). Off by default; a project page turns it on with the actual
+// project.isSandbox flag via ProjectSandboxAnnouncer below. (It used to also
+// switch on for the /sandbox browse page, removed in #224.)
 const SandboxContext = createContext<{
   isSandbox: boolean;
   setProjectSandbox: (value: boolean | null) => void;
 }>({ isSandbox: false, setProjectSandbox: () => {} });
 
 export function SandboxProvider({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const pathIsSandbox = pathname === "/sandbox" || pathname.startsWith("/sandbox/");
   const [projectSandbox, setProjectSandbox] = useState<boolean | null>(null);
   const value = useMemo(
-    () => ({ isSandbox: projectSandbox ?? pathIsSandbox, setProjectSandbox }),
-    [projectSandbox, pathIsSandbox]
+    () => ({ isSandbox: projectSandbox ?? false, setProjectSandbox }),
+    [projectSandbox]
   );
   return <SandboxContext.Provider value={value}>{children}</SandboxContext.Provider>;
 }
@@ -29,8 +25,7 @@ export function useSandboxIndicator() {
 }
 
 // Rendered once by a project page/layout so the header/footer border matches
-// this project's actual isSandbox flag instead of falling back to the
-// path-based guess. Clears back to the path-based default on unmount.
+// this project's actual isSandbox flag. Clears back to off on unmount.
 export function ProjectSandboxAnnouncer({ isSandbox }: { isSandbox: boolean }) {
   const { setProjectSandbox } = useContext(SandboxContext);
   useEffect(() => {

@@ -70,9 +70,6 @@ export default function ToolsMenu() {
             ))}
           </ul>
           <div className="flex gap-2 border-t border-muted-teal/20 bg-[#FBFBF9] px-4 py-3">
-            <Link href="/sandbox" onClick={() => setOpen(false)} className="flex-1 rounded-md border border-muted-teal px-3 py-1.5 text-center text-sm font-medium text-dark-slate hover:border-dark-slate/40">
-              {t("trySandbox")}
-            </Link>
             <Link href="/projects/new" onClick={() => setOpen(false)} className="flex-1 rounded-md bg-coral px-3 py-1.5 text-center text-sm font-medium text-white hover:bg-watermelon">
               {t("startProject")}
             </Link>
