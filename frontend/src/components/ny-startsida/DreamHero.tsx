@@ -24,10 +24,11 @@ const TAGLINE_WOBBLE: [number, number][] = [
   [1, -0.03],
 ];
 // One colour per word of the tagline, taken from the tree pictures' speech
-// bubbles (blue thumb, red heart, green leaf) plus GoodTribes' orange and
-// black: Vi · gör · goda · drömmar · verkliga. Extra words (the English
-// "come true.") keep the last colour.
-const TAGLINE_COLORS = ["var(--color-coral)", "#1a1a1a", "#ab0000", "#0000ab", "#005600"];
+// bubbles (green leaf, red heart, blue thumb) plus GoodTribes' orange and
+// black: Vi green · gör orange · goda red · drömmar blue · verkliga black
+// (Niklas, 2026-10-07). Extra words (the English "come true.") keep the
+// last colour.
+const TAGLINE_COLORS = ["#005600", "var(--color-coral)", "#ab0000", "#0000ab", "#1a1a1a"];
 // Matches the placeholder's fade animation (nh-ph below), so each example
 // fades in, stays and fades out once.
 const EXAMPLE_INTERVAL_MS = 3200;
