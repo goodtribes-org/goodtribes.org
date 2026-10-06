@@ -9,6 +9,7 @@ export type FlagContentTargetType =
   | "FeedPost"
   | "FeedComment"
   | "IdeaComment"
+  | "IdeaArgument"
   | "Message"
   | "DreamWallPost"
   | "KanbanCardComment"

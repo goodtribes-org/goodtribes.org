@@ -46,6 +46,8 @@ model User {
   ideaEndorsements        IdeaEndorsement[]         @relation("IdeaEndorsements")
   ideaFollowers           IdeaFollower[]            @relation("IdeaFollowers")
   authoredIdeaComments    IdeaComment[]             @relation("AuthoredIdeaComments")
+  authoredIdeaArguments   IdeaArgument[]            @relation("AuthoredIdeaArguments")
+  ideaArgumentHelpfuls    IdeaArgumentHelpful[]     @relation("IdeaArgumentHelpfuls")
   authoredBlogPosts       BlogPost[]                @relation("AuthoredBlogPosts")
   notifications           Notification[]            @relation("UserNotifications")
   assignedKanbanCards     KanbanCard[]              @relation("AssignedKanbanCards")

@@ -1032,6 +1032,7 @@
     "agenda2030Label": "Agenda 2030:",
     "becameProjectBanner": "This idea became a project!",
     "drivenBy": "{count, plural, one {Run by one project} other {Run by # projects}}",
+    "similarHeading": "Similar ideas",
     "outcomeHeading": "What became of the idea",
     "outcomeRunBy": "Run by {name}",
     "outcomeNoResults": "No verified results yet.",
@@ -5196,6 +5197,9 @@
       "error": "Something went wrong creating the project. Your answers are still here — try again.",
       "retryWithoutAi": "Create without AI instead",
       "drivingIdea": "You're running a shared idea. The project links to the idea, and the person who had it gets a notification and an invitation to join as an adviser.",
+      "similarHeading": "Similar ideas already exist",
+      "similarRead": "Read",
+      "similarHelp": "Help with it instead",
       "choiceHeading": "What do you want to do with your dream?",
       "driveTitle": "I want to run this",
       "driveBody": "You start a project, become its owner and invite others to help.",
@@ -5236,5 +5240,19 @@
       "LOCAL_KNOWLEDGE": "Local knowledge",
       "PRACTICAL": "Practical help"
     }
+  },
+  "IdeaArguments": {
+    "heading": "What speaks for and against?",
+    "pro": "For",
+    "con": "Against",
+    "empty": "None yet.",
+    "helpful": "Helpful",
+    "remove": "Remove",
+    "addPro": "Add an argument for",
+    "addCon": "Add an argument against",
+    "cancel": "Cancel",
+    "publish": "Publish",
+    "tooLong": "500 characters at most.",
+    "error": "Couldn't save. Try again."
   }
 }

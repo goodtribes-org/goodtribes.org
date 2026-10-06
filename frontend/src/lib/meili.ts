@@ -306,7 +306,7 @@ function dedupeByLocale(hits: SearchResult[], locale: string): SearchResult[] {
 // indexing the first org) silently zeroed out search results for every
 // other index too. Querying independently means a missing/broken index
 // degrades to "no hits from that category," not "no hits at all."
-async function searchIndex(
+export async function searchIndex(
   index: string,
   query: string,
   opts: { limit: number; filter?: string }

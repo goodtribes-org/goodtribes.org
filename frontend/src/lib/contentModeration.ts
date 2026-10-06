@@ -7,6 +7,7 @@ export const TARGET_TYPES = [
   "FeedPost",
   "FeedComment",
   "IdeaComment",
+  "IdeaArgument",
   "Message",
   "DreamWallPost",
   "KanbanCardComment",
@@ -42,6 +43,8 @@ export async function targetExists(targetType: ContentTargetType, targetId: stri
       return (await prisma.feedComment.findUnique({ where: { id: targetId }, select: { id: true } })) !== null;
     case "IdeaComment":
       return (await prisma.ideaComment.findUnique({ where: { id: targetId }, select: { id: true } })) !== null;
+    case "IdeaArgument":
+      return (await prisma.ideaArgument.findUnique({ where: { id: targetId }, select: { id: true } })) !== null;
     case "Message":
       return (await prisma.message.findUnique({ where: { id: targetId }, select: { id: true } })) !== null;
     case "DreamWallPost":
@@ -102,6 +105,9 @@ export async function hideTarget(
     case "IdeaComment":
       await prisma.ideaComment.update({ where: { id: targetId }, data });
       return;
+    case "IdeaArgument":
+      await prisma.ideaArgument.update({ where: { id: targetId }, data });
+      return;
     case "Message":
       await prisma.message.update({ where: { id: targetId }, data });
       // Moderator-hidden messages must not remain searchable — see
@@ -152,6 +158,9 @@ export async function unhideTarget(targetType: ContentTargetType, targetId: stri
       return;
     case "IdeaComment":
       await prisma.ideaComment.update({ where: { id: targetId }, data });
+      return;
+    case "IdeaArgument":
+      await prisma.ideaArgument.update({ where: { id: targetId }, data });
       return;
     case "Message": {
       const message = await prisma.message.update({
@@ -209,6 +218,10 @@ export async function getTargetPreview(targetType: ContentTargetType, targetId: 
       const row = await prisma.ideaComment.findUnique({ where: { id: targetId }, select: { content: true } });
       return row?.content ?? null;
     }
+    case "IdeaArgument": {
+      const row = await prisma.ideaArgument.findUnique({ where: { id: targetId }, select: { text: true } });
+      return row?.text ?? null;
+    }
     case "Message": {
       const row = await prisma.message.findUnique({ where: { id: targetId }, select: { body: true } });
       return row?.body ?? null;
@@ -264,6 +277,8 @@ export async function isTargetHidden(targetType: ContentTargetType, targetId: st
       return (await prisma.feedComment.findUnique({ where: { id: targetId }, select: { hiddenAt: true } }))?.hiddenAt != null;
     case "IdeaComment":
       return (await prisma.ideaComment.findUnique({ where: { id: targetId }, select: { hiddenAt: true } }))?.hiddenAt != null;
+    case "IdeaArgument":
+      return (await prisma.ideaArgument.findUnique({ where: { id: targetId }, select: { hiddenAt: true } }))?.hiddenAt != null;
     case "Message":
       return (await prisma.message.findUnique({ where: { id: targetId }, select: { hiddenAt: true } }))?.hiddenAt != null;
     case "DreamWallPost":
