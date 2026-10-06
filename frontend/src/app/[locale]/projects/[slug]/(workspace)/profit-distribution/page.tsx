@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -10,6 +11,7 @@ export default async function ProfitDistributionPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  await notFoundUnlessVisible(slug);
   const t = await getTranslations("ProfitDistributionPage");
   const STATUS_LABEL: Record<string, string> = {
     pending: t("statusPending"),

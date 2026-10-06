@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -13,6 +14,7 @@ import type { Locale } from "next-intl";
 
 export default async function ProjectPartnershipsPage({ params }: { params: Promise<{ locale: Locale; slug: string }> }) {
   const { locale, slug } = await params;
+  await notFoundUnlessVisible(slug);
   const [session, t] = await Promise.all([
     auth(),
     getTranslations({ locale, namespace: "PartnershipsPage" }),

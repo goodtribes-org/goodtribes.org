@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -17,6 +18,7 @@ import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
   const { locale, slug } = await params;
+  await notFoundUnlessVisible(slug);
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) return {};
   const t = await getTranslations({ locale, namespace: "FundingPage" });
@@ -30,6 +32,7 @@ function daysLeft(deadline: Date): number {
 
 export default async function FundingPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  await notFoundUnlessVisible(slug);
   const session = await auth();
   const userId = session?.user?.id ?? null;
   const locale = await getLocale();

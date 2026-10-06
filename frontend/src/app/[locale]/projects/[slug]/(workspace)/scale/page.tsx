@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma"
@@ -14,6 +15,7 @@ import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 
 export default async function ScalePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  await notFoundUnlessVisible(slug);
   const t = await getTranslations("ScalePage");
   const session = await auth();
 

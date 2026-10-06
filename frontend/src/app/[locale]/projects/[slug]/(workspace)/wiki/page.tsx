@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma"
@@ -10,6 +11,7 @@ import { isLeadRole } from "@/lib/authz";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string; locale: string }> }): Promise<Metadata> {
   const { slug, locale } = await params;
+  await notFoundUnlessVisible(slug);
   const [project, t] = await Promise.all([
     prisma.project.findUnique({ where: { slug }, select: { title: true } }),
     getTranslations({ locale, namespace: "WikiPage" }),
@@ -20,6 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function WikiIndexPage({ params }: { params: Promise<{ slug: string; locale: string }> }) {
   const { slug, locale } = await params;
+  await notFoundUnlessVisible(slug);
   const t = await getTranslations({ locale, namespace: "WikiPage" });
 
   const project = await prisma.project.findUnique({

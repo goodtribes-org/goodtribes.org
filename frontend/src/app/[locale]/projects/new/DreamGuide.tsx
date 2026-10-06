@@ -18,6 +18,7 @@ import {
   type WeeklyHoursKey,
 } from "@/lib/dreamGuide";
 import { createProjectFromGuide, similarIdeasForGuide, stashGuide, suggestGuideFollowUp } from "./guide-actions";
+import { MAX_DRAFTS, type OwnDraft } from "@/lib/draftLimit";
 
 // Same key as the start page's dream box (DreamHero): what the visitor wrote
 // there is the answer to the first question.
@@ -39,6 +40,7 @@ export default function DreamGuide({
   stashed = null,
   stashId,
   fromIdea = null,
+  ownDrafts = null,
 }: {
   isLoggedIn: boolean;
   // AI configured and the flag on. Logged out it is unknown (the flag can be
@@ -50,6 +52,9 @@ export default function DreamGuide({
   stashed?: GuideInput | null;
   stashId?: string;
   fromIdea?: FromIdea | null;
+  // Logged in: the drafts this person owns (#226). At MAX_DRAFTS, a new
+  // project needs one of them published or removed first.
+  ownDrafts?: OwnDraft[] | null;
 }) {
   const t = useTranslations("DreamGuide");
   const router = useRouter();
@@ -67,6 +72,8 @@ export default function DreamGuide({
   // "Någon annan får driva det" (#234): share the answers as an idea.
   const [share, setShare] = useState(false);
   const [basedOnIdeaId, setBasedOnIdeaId] = useState<string | undefined>(fromIdea?.id);
+  const [draftLimit, setDraftLimit] = useState<OwnDraft[] | null>(ownDrafts && ownDrafts.length >= MAX_DRAFTS ? ownDrafts : null);
+  const atDraftLimit = !!draftLimit && !share && !basedOnIdeaId;
   const [similar, setSimilar] = useState<{ id: string; title: string }[]>([]);
   const [fromHome, setFromHome] = useState(false);
   const [backFromLogin, setBackFromLogin] = useState(false);
@@ -184,7 +191,8 @@ export default function DreamGuide({
     }
     startCreating(async () => {
       try {
-        await createProjectFromGuide(data, stashId);
+        const res = await createProjectFromGuide(data, stashId);
+        if (res && "draftLimit" in res) setDraftLimit(res.draftLimit);
       } catch (e) {
         // A redirect (to the new project) is thrown on purpose.
         if (e && typeof e === "object" && "digest" in e && String((e as { digest: unknown }).digest).startsWith("NEXT_REDIRECT")) throw e;
@@ -430,6 +438,24 @@ export default function DreamGuide({
               </>
             )}
 
+            {atDraftLimit && (
+              <div className="mt-5 rounded-2xl border border-amber-300 bg-amber-50 p-4">
+                <p className="text-sm font-semibold text-amber-900">{t("summary.draftLimitHeading", { max: MAX_DRAFTS })}</p>
+                <p className="mt-1 text-sm text-amber-900/80">{t("summary.draftLimitBody")}</p>
+                <ul className="mt-3 flex flex-col gap-2">
+                  {draftLimit!.map((d) => (
+                    <li key={d.slug} className="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-2 text-sm">
+                      <span className="min-w-0 truncate text-dark-slate">{d.title}</span>
+                      <Link href={`/projects/${d.slug}`} className="shrink-0 font-medium text-seagrass hover:underline">
+                        {t("summary.draftLimitOpen")}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 text-xs text-amber-900/70">{t("summary.draftLimitShareHint")}</p>
+              </div>
+            )}
+
             <div className="mt-5 rounded-2xl border border-dark-slate/10 p-4">
               <p className="text-sm font-semibold text-dark-slate">{share ? t("summary.whatHappensShare") : t("summary.whatHappens")}</p>
               {share ? null : isLoggedIn && !aiAvailable ? (
@@ -463,6 +489,7 @@ export default function DreamGuide({
                   </>
                 )}
                 <li>{share ? t("summary.shareOpenQuestions") : t("summary.openQuestions")}</li>
+                {!share && !basedOnIdeaId && <li>{t("summary.draftNote")}</li>}
               </ul>
             </div>
 
@@ -484,7 +511,7 @@ export default function DreamGuide({
               <button
                 type="button"
                 onClick={() => create(withAi)}
-                disabled={creating || !answeredAny}
+                disabled={creating || !answeredAny || atDraftLimit}
                 className="rounded-full bg-seagrass px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-seagrass/90 disabled:opacity-60"
               >
                 {share ? (creating ? t("summary.sharing") : t("summary.share")) : creating ? t("summary.creating") : t("summary.create")}

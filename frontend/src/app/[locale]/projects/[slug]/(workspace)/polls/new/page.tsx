@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -10,6 +11,7 @@ export default async function NewPollPage({
   params: Promise<{ locale: Locale; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  await notFoundUnlessVisible(slug);
   const [session, t] = await Promise.all([
     auth(),
     getTranslations({ locale, namespace: "NewPollPage" }),

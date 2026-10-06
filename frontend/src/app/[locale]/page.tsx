@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import Link from "next/link";
 import { hasLocale, type Locale } from "next-intl";
 import { getTranslations } from "next-intl/server";
@@ -50,7 +51,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     neededSkills: { select: { skill: { select: { name: true } } } },
     translations,
   } as const;
-  const live = { hiddenAt: null, archivedAt: null };
+  // Published, not hidden or archived — drafts (#226) never show here.
+  const live = { ...PUBLIC_PROJECT_WHERE, archivedAt: null };
 
   const [
     activity, allProjects, projectsBeyondIdea, ideaPhaseProjects,
@@ -90,7 +92,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       take: IDEA_CARDS,
       include: {
         author: { select: { name: true } },
-        _count: { select: { votes: true, comments: true, basedProjects: { where: { hiddenAt: null } } } },
+        _count: { select: { votes: true, comments: true, basedProjects: { where: PUBLIC_PROJECT_WHERE } } },
         translations,
       },
     }),

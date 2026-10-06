@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
@@ -22,6 +23,7 @@ export default async function PhaseGuidePage({
   searchParams: Promise<{ step?: string }>;
 }) {
   const { locale, slug, phase: phaseParam } = await params;
+  await notFoundUnlessVisible(slug);
   const { step } = await searchParams;
   const phase = phaseParam.toUpperCase() as ProjectPhaseValue;
   if (!GUIDE_PHASES.includes(phase)) notFound();

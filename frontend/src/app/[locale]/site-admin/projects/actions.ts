@@ -22,7 +22,8 @@ export async function setProjectHidden(slug: string, hidden: boolean) {
     void deleteDocument("projects", `project-${slug}__en`);
   } else {
     await unhideTarget("Project", project.id);
-    void indexDocuments("projects", [{
+    // A draft (#226) stays out of search until it's published.
+    if (project.publishedAt) void indexDocuments("projects", [{
       id: `project-${slug}`,
       type: "project",
       title: project.title,

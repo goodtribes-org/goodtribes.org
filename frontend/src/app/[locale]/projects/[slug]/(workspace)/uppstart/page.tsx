@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getCanvasFieldLabels } from "@/lib/canvasFieldLabels";
@@ -39,6 +40,7 @@ const SPRINT_STEP_KEYS = ["map_understand", "sketch_solutions", "decide_plan", "
 // forming the team and running the sprint. The step-by-step guide stays.
 export default async function UppstartOverviewPage({ params }: { params: Promise<{ locale: Locale; slug: string }> }) {
   const { locale, slug } = await params;
+  await notFoundUnlessVisible(slug);
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const [journeyOn, project] = await Promise.all([

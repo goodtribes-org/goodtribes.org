@@ -25,7 +25,6 @@ export type AiFeature =
   | AiToolKey
   | "project-plan"
   | "translation"
-  | "sandbox-seed"
   | "dream-conversation"
   | "canvas-review"
   | "impact-model"
@@ -142,7 +141,7 @@ export type AiGateRequest = {
   // user and are bounded by their own schedule.
   userId: string | null;
   // null for AI calls that don't belong to a project yet (idea feed SDG
-  // suggestions, Idéverkstaden threads, the sandbox-seed cron) — those only
+  // suggestions, Idéverkstaden threads) — those only
   // need AI to be configured.
   projectId: string | null;
   stepKey?: string;
@@ -202,7 +201,7 @@ export async function getAiClientFor(req: AiGateRequest): Promise<AiGateResult> 
 
 // Charges every messages.create's real cost to the project's AI budget (see
 // checkAiProjectBudget) and logs it — also for calls with no project
-// (sandbox-seed, the idea feed), which only get logged. One gate can serve
+// (the idea feed), which only get logged. One gate can serve
 // many calls (runIdeaFill does every section and web search on one client),
 // which is exactly why the charge happens here per call and not at the gate.
 // Returns the SDK's own promise untouched (the charge hangs off a side

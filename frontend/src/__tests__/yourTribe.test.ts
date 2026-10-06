@@ -34,7 +34,11 @@ import { getYourTribe, pulseStatus, weeklyCounts } from "../lib/yourTribe";
 const DAY = 86_400_000;
 const NOW = new Date("2026-10-01T12:00:00Z").getTime();
 const daysAgo = (n: number) => new Date(NOW - n * DAY);
-const project = (id: string) => ({ id, slug: id, title: id, phase: "IDEA", imageUrl: null });
+const project = (id: string, draftSinceDays?: number) => ({
+  id, slug: id, title: id, phase: "IDEA", imageUrl: null,
+  publishedAt: draftSinceDays === undefined ? daysAgo(60) : null,
+  createdAt: daysAgo(draftSinceDays ?? 60),
+});
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -100,6 +104,17 @@ describe("getYourTribe", () => {
     expect(data.todos.map((t) => `${t.kind}:${t.id}`)).toEqual(["task:late", "task:soon", "joinRequest:jr", "nextStep:step-quiet", "task:later"]);
     expect(data.todos[0]).toMatchObject({ overdue: true });
     expect(data.todos[3]).toMatchObject({ project: "quiet", projectStill: true });
+  });
+
+  it("nudges a lead to publish a draft that has waited a week, not a fresh one or someone else's (#226)", async () => {
+    memberFindMany.mockResolvedValue([
+      { role: "FOUNDER", project: project("old-draft", 9) },
+      { role: "FOUNDER", project: project("new-draft", 2) },
+      { role: "MEMBER", project: project("their-draft", 30) },
+    ]);
+    const data = await getYourTribe("me", NOW);
+    const drafts = data.todos.filter((t) => t.kind === "draft");
+    expect(drafts).toEqual([{ kind: "draft", id: "draft-old-draft", project: "old-draft", href: "/projects/old-draft", days: 9 }]);
   });
 
   it("asks for join requests and next steps only for projects you lead", async () => {

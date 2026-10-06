@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -12,6 +13,7 @@ import type { Locale } from "next-intl";
 
 export default async function SprintsPage({ params }: { params: Promise<{ locale: Locale; slug: string }> }) {
   const { locale, slug } = await params;
+  await notFoundUnlessVisible(slug);
   const [session, project, t] = await Promise.all([
     auth(),
     prisma.project.findUnique({ where: { slug }, select: { id: true, title: true } }),

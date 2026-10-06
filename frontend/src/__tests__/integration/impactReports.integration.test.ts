@@ -44,7 +44,7 @@ async function seedScenario(opts: { adminRole: "ADMIN" | "USER" } = { adminRole:
     },
   });
   const project = await prisma.project.create({
-    data: { slug: `impact-${s}`, title: "Impact Test", ownerId: founder.id, tags: [], sdgGoals: [] },
+    data: { slug: `impact-${s}`, title: "Impact Test", ownerId: founder.id, tags: [], sdgGoals: [], publishedAt: new Date() },
   });
   const report = await prisma.impactReport.create({
     data: {
@@ -165,6 +165,16 @@ describe("impact report review (integration)", () => {
 describe("getFoundingStoryData (integration)", () => {
   it("returns nothing when the featured project doesn't exist in this environment", async () => {
     expect(await getFoundingStoryData("no-such-project-slug")).toBeNull();
+  });
+
+  it("never features a draft (#226)", async () => {
+    const { founder, reviewer, project } = await seedScenario();
+    try {
+      await prisma.project.update({ where: { id: project.id }, data: { publishedAt: null } });
+      expect(await getFoundingStoryData(project.slug)).toBeNull();
+    } finally {
+      await cleanup({ founderId: founder.id, reviewerId: reviewer.id, projectId: project.id });
+    }
   });
 
   it("splits verified reports into delivered and support, cumulative first, and excludes unreviewed ones", async () => {

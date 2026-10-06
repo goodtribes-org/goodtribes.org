@@ -54,6 +54,9 @@ export async function createProject(formData: FormData) {
     title, slogan, summary, description, category, tags, sdgGoals, imageUrl, orgId,
     legalType: legalTypeRaw, ownerId: userId, skillIds,
     aiMode: withoutAi ? "MANUAL" : null,
+    // Promoting a public idea is public from the start (#226); everything
+    // else starts as a draft.
+    publish: !!ideaId,
   });
 
   // This form already covers everything the guide's "Beskriv projektet"
@@ -79,7 +82,8 @@ export async function createProject(formData: FormData) {
     if (boardRow) syncProjectBoardInBackground(boardRow);
   }
 
-  if (orgId) {
+  // A draft's organisation hears about it when it's published.
+  if (orgId && project.publishedAt) {
     await logOrgActivity(orgId, userId, "project_added", { title: project.title, slug: project.slug });
   }
 

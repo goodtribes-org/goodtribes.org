@@ -1,3 +1,4 @@
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import { prisma } from "@/lib/prisma";
 import type { ImpactReportKind, ImpactValueQualifier } from "@prisma/client";
 
@@ -74,7 +75,7 @@ export async function getVerifiedImpactReports(projectId: string) {
 // any given environment.
 export async function getFoundingStoryData(slug: string) {
   const project = await prisma.project.findFirst({
-    where: { slug, hiddenAt: null },
+    where: { slug, ...PUBLIC_PROJECT_WHERE },
     select: { id: true, slug: true, title: true },
   });
   if (!project) return null;

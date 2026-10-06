@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { indexDocuments, deleteDocument } from "@/lib/meili";
 import { hasProjectRole, isSiteAdmin, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { isCommercialLegalType } from "@/lib/legalType";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { PROJECT_PHASE_LABEL, getNextPhase, toDisplayPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 import { notifyIdeaAuthor } from "@/lib/ideaOutcome";
@@ -164,7 +165,8 @@ export async function updateProject(slug: string, formData: FormData) {
   await updateGithubMapping(slug, formData.get("githubProject") as string | null);
 
   // Sync Meilisearch — remove old slug entry if slug changed (slug doesn't change here, but keep in sync)
-  if (!project.hiddenAt) {
+  // A draft (#226) stays out of search until it is published.
+  if (!project.hiddenAt && project.publishedAt) {
     void indexDocuments("projects", [{
       id: `project-${slug}`,
       type: "project",
@@ -223,7 +225,8 @@ export async function advanceProjectPhase(slug: string) {
     title: (p, idea) => `${p}, som driver din idé "${idea}", har gått vidare till ${PROJECT_PHASE_LABEL[toDisplayPhase(nextPhase)]}`,
   });
 
-  if (!project.hiddenAt) {
+  // A draft (#226) stays out of search until it is published.
+  if (!project.hiddenAt && project.publishedAt) {
     void indexDocuments("projects", [{
       id: `project-${slug}`,
       type: "project",
@@ -241,19 +244,18 @@ export async function advanceProjectPhase(slug: string) {
   revalidatePath(`/projects/${slug}/edit`);
 }
 
-// Applies to graduate a project out of Sandbox into a "GoodTribes-godkänt
-// projekt" — no separate "lift" step exists (a sandbox project is already a
-// real project), this just requests the flag flip. Lead-only. Decided by the
-// Foundation (site-admin), see site-admin/sandbox-graduation/actions.ts —
-// replaces the old one-click self-serve toggleSandbox.
-export async function requestSandboxGraduation(slug: string) {
+// A commercial, published project applies for invoicing (#226, what used
+// to be "graduating out of Sandbox"). Lead-only. The Foundation decides and
+// assigns a paraply-AB, see site-admin/invoicing/actions.ts. Nonprofit
+// projects don't need this at all.
+export async function requestInvoicing(slug: string) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
   const project = await prisma.project.findUnique({ where: { slug } });
   if (!project) redirect("/projects");
   if (!(await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES))) redirect(`/projects/${slug}`);
-  if (!project.isSandbox) return;
+  if (!isCommercialLegalType(project.legalType) || project.commercialUmbrellaEntityId || !project.publishedAt) return;
 
   const existingPending = await prisma.sandboxGraduationRequest.findFirst({
     where: { projectId: project.id, status: "pending" },

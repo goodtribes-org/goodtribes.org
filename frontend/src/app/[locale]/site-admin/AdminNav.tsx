@@ -18,7 +18,7 @@ const ICONS: Record<string, LucideIcon> = {
   "/site-admin/organisations": Building2,
   "/site-admin/council": Gavel,
   "/site-admin/projects": FolderKanban,
-  "/site-admin/sandbox-graduation": GraduationCap,
+  "/site-admin/invoicing": GraduationCap,
   "/site-admin/legal-type": Landmark,
   "/site-admin/profit-distribution": PieChart,
   "/site-admin/impact-fund": HandCoins,

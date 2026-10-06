@@ -1,3 +1,4 @@
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -22,7 +23,7 @@ export default async function MinaFordelningarPage({ params }: { params: Promise
   });
 
   const projects = await prisma.project.findMany({
-    where: { archivedAt: null },
+    where: { ...PUBLIC_PROJECT_WHERE, archivedAt: null },
     select: { title: true, slug: true },
     orderBy: { title: "asc" },
     take: 500,

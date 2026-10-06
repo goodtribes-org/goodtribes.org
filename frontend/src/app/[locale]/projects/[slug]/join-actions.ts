@@ -14,6 +14,9 @@ import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 export async function requestToJoin(projectId: string, slug: string, message: string) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
+  // A draft (#226) is joined by invitation only; outsiders can't see it.
+  const target = await prisma.project.findUnique({ where: { id: projectId }, select: { publishedAt: true } });
+  if (!target?.publishedAt) return;
 
   await prisma.projectJoinRequest.upsert({
     where: { projectId_userId: { projectId, userId: session.user.id } },

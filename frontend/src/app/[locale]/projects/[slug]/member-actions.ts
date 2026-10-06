@@ -223,6 +223,9 @@ export async function toggleFollowProject(
   }
 
   if (await isExcludedFromProject(userId, projectId)) return { error: "Forbidden" };
+  // Nobody outside a draft (#226) can follow it.
+  const target = await prisma.project.findUnique({ where: { id: projectId }, select: { publishedAt: true } });
+  if (!target?.publishedAt) return { error: "Forbidden" };
 
   await prisma.projectMember.create({ data: { projectId, userId, role: "FOLLOWER" } });
   revalidatePath(`/projects/${slug}`);

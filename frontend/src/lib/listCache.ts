@@ -1,3 +1,4 @@
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import { unstable_cache, revalidateTag } from "next/cache"
 import type { Prisma, ProjectPhase, IdeaStatus } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
@@ -48,7 +49,7 @@ export const getCachedProjectsPage = unstable_cache(
     locale: Locale,
   ) => {
     const where: Prisma.ProjectWhereInput = {
-      hiddenAt: null,
+      ...PUBLIC_PROJECT_WHERE,
       ...(q ? { OR: [
         { title: { contains: q, mode: "insensitive" } },
         { description: { contains: q, mode: "insensitive" } },
@@ -146,7 +147,7 @@ export const getCachedIdeasPage = unstable_cache(
         take: IDEAS_PAGE_SIZE,
         include: {
           author: { select: { name: true } },
-          _count: { select: { votes: true, comments: true, endorsements: true, followers: true, basedProjects: { where: { hiddenAt: null } } } },
+          _count: { select: { votes: true, comments: true, endorsements: true, followers: true, basedProjects: { where: PUBLIC_PROJECT_WHERE } } },
           translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
         },
       }),

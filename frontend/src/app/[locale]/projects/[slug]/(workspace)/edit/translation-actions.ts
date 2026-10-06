@@ -130,7 +130,7 @@ export async function upsertProjectTranslation(
     },
   });
 
-  if (locale === "en" && !project.hiddenAt) {
+  if (locale === "en" && !project.hiddenAt && project.publishedAt) {
     void indexDocuments("projects", [{
       id: `project-${project.slug}__en`,
       type: "project",

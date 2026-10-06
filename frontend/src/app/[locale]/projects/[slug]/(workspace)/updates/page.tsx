@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
@@ -28,6 +29,7 @@ export default async function UpdatesPage({
   params: Promise<{ slug: string; locale: string }>;
 }) {
   const { slug, locale } = await params;
+  await notFoundUnlessVisible(slug);
   const [session, t] = await Promise.all([auth(), getTranslations({ locale, namespace: "UpdatesPage" })]);
 
   const project = await prisma.project.findUnique({

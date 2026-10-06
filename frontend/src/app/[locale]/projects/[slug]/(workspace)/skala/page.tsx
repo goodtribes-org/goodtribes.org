@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
@@ -31,6 +32,7 @@ const STEP_ANCHOR: Record<string, string> = {
 // regional instances, first tasks — and the gate to Impact.
 export default async function SkalaOverviewPage({ params }: { params: Promise<{ locale: Locale; slug: string }> }) {
   const { locale, slug } = await params;
+  await notFoundUnlessVisible(slug);
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const [journeyOn, project] = await Promise.all([

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -22,6 +23,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string; locale: string }>;
 }): Promise<Metadata> {
   const { slug, locale } = await params;
+  await notFoundUnlessVisible(slug);
   const [project, t] = await Promise.all([
     prisma.project.findUnique({ where: { slug }, select: { title: true } }),
     getTranslations({ locale, namespace: "CalendarPage" }),
@@ -102,6 +104,7 @@ export default async function CalendarPage({
   searchParams: Promise<{ year?: string; month?: string; view?: string }>;
 }) {
   const { slug, locale } = await params;
+  await notFoundUnlessVisible(slug);
   const sp = await searchParams;
   const t = await getTranslations({ locale, namespace: "CalendarPage" });
 

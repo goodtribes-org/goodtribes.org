@@ -9,6 +9,7 @@ import DreamGuide from "./DreamGuide";
 import { isStashId, readStashedGuideInput } from "@/lib/dreamGuideStash";
 import { Link } from "@/i18n/navigation";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
+import { listOwnDrafts } from "@/lib/projectVisibility";
 import type { Metadata } from "next";
 import type { Locale } from "next-intl";
 
@@ -38,7 +39,7 @@ export default async function NewProjectPage({
   // No login until "Skapa mitt projekt". Promoting a thread, and
   // Snabbstart (?manual=1), still use the form below.
   if (!fromThread && !manual) {
-    const [aiAvailable, inProgress, tg, stashed, idea] = await Promise.all([
+    const [aiAvailable, inProgress, tg, stashed, idea, ownDrafts] = await Promise.all([
       userId ? isAiProjectStartAvailable(userId) : Promise.resolve(false),
       userId
         ? prisma.dreamConversation.findFirst({
@@ -57,6 +58,8 @@ export default async function NewProjectPage({
             select: { id: true, title: true, description: true, problem: true, solution: true, author: { select: { name: true } } },
           })
         : Promise.resolve(null),
+      // The draft limit (#226) shown on the summary.
+      userId ? listOwnDrafts(userId) : Promise.resolve(null),
     ]);
     return (
       <div>
@@ -89,6 +92,7 @@ export default async function NewProjectPage({
                 }
               : null
           }
+          ownDrafts={ownDrafts}
         />
       </div>
     );

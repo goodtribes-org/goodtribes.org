@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -18,6 +19,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string; locale: string }>;
 }): Promise<Metadata> {
   const { slug, locale } = await params;
+  await notFoundUnlessVisible(slug);
   const [project, t] = await Promise.all([
     prisma.project.findUnique({ where: { slug }, select: { title: true } }),
     getTranslations({ locale, namespace: "RoadmapPage" }),
@@ -37,6 +39,7 @@ export default async function RoadmapPage({
   params: Promise<{ slug: string; locale: string }>;
 }) {
   const { slug, locale } = await params;
+  await notFoundUnlessVisible(slug);
   const t = await getTranslations({ locale, namespace: "RoadmapPage" });
 
   const [session, project] = await Promise.all([

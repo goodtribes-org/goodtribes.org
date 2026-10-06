@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createProjectRecord } from "@/lib/createProject";
+import { DraftLimitError } from "@/lib/projectVisibility";
 import { LEAN_CANVAS_FIELDS, LEAN_CANVAS_STORED_FIELDS, type LeanCanvasField } from "../projects/[slug]/(workspace)/lean-canvas/fields";
 
 
@@ -46,7 +47,14 @@ export async function promoteLeanCanvasDraftToProject(
   const title = (formData.get("title") as string | null)?.trim();
   if (!title) return { error: "Title required" };
 
-  const project = await createProjectRecord({ title, ownerId: session.user.id, isSandbox: true });
+  // A new project is a draft (#226); at the draft limit, say so instead.
+  let project: Awaited<ReturnType<typeof createProjectRecord>>;
+  try {
+    project = await createProjectRecord({ title, ownerId: session.user.id });
+  } catch (e) {
+    if (e instanceof DraftLimitError) return { error: e.message };
+    throw e;
+  }
 
   await prisma.leanCanvas.create({
     data: {

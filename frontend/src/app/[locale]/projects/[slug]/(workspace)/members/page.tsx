@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -9,6 +10,7 @@ import type { Locale } from "next-intl";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: Locale; slug: string }> }): Promise<Metadata> {
   const { locale, slug } = await params;
+  await notFoundUnlessVisible(slug);
   const [project, t] = await Promise.all([
     prisma.project.findUnique({ where: { slug }, select: { title: true } }),
     getTranslations({ locale, namespace: "ProjectMembersPage" }),
@@ -19,6 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: L
 
 export default async function MembersPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  await notFoundUnlessVisible(slug);
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 

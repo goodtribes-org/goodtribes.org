@@ -1,3 +1,4 @@
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import { prisma } from "@/lib/prisma";
 
 // "♥ Tacka": a one-click thank-you for something in the feed. It is stored as
@@ -27,7 +28,7 @@ export type ThanksTarget = {
 export async function resolveThanksTarget(targetType: ThankableType, targetId: string): Promise<ThanksTarget | null> {
   switch (targetType) {
     case "project": {
-      const p = await prisma.project.findFirst({ where: { id: targetId, hiddenAt: null }, select: { id: true, ownerId: true, slug: true, title: true } });
+      const p = await prisma.project.findFirst({ where: { id: targetId, ...PUBLIC_PROJECT_WHERE }, select: { id: true, ownerId: true, slug: true, title: true } });
       return p && { recipientId: p.ownerId, href: `/projects/${p.slug}`, projectId: p.id, kind: "startedProject", project: p.title };
     }
     case "idea": {

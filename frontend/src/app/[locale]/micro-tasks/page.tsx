@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Prisma } from "@prisma/client"
@@ -35,7 +36,7 @@ export default async function MicroTasksPage({
     openToPublic: true,
     assigneeId: null,
     column: { not: "DONE" },
-    project: { hiddenAt: null },
+    project: PUBLIC_PROJECT_WHERE,
     ...(category ? { category } : {}),
   };
 

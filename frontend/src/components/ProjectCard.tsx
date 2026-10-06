@@ -23,7 +23,6 @@ export type ProjectCardData = {
   description: string | null;
   phase: string;
   archivedAt: Date | string | null;
-  isSandbox?: boolean;
   imageUrl: string | null;
   sdgGoals: number[];
   legalType: string;
@@ -56,11 +55,9 @@ function Face({ person, title, starter }: { person: { name: string | null; image
 
 export default function ProjectCard({
   project,
-  variant,
   showStats = true,
 }: {
   project: ProjectCardData;
-  variant?: "default" | "sandbox";
   showStats?: boolean;
 }) {
   const t = useTranslations("ProjectCard");
@@ -79,22 +76,15 @@ export default function ProjectCard({
     IMPACT: t("phaseImpact"),
   };
 
-  // Falls back to the project's own isSandbox flag when the caller doesn't
-  // pin a variant explicitly — listing pages that mix real and sandbox
-  // projects together (homepage, /projects) rely on this so real projects
-  // stand out with a green border instead of all looking the same.
-  const effectiveVariant = variant ?? (project.isSandbox ? "sandbox" : "default");
   const primarySdg = project.sdgGoals[0];
-  const tint = effectiveVariant === "sandbox" ? "#f59e0b" : primarySdg ? SDG_COLORS[primarySdg] : "#43aa8b";
+  const tint = primarySdg ? SDG_COLORS[primarySdg] : "#43aa8b";
   const stageLabel = project.archivedAt ? t("phaseArchived") : PHASE_LABEL[project.phase] ?? project.phase;
   const seekingSkills = project.neededSkills?.map((s) => s.skill.name) ?? [];
 
   return (
     <a
       href={`/projects/${project.slug}`}
-      className={`w-full rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-white flex flex-col ${
-        effectiveVariant === "sandbox" ? "border border-orange-500 hover:border-orange-600" : "border border-seagrass hover:border-dark-slate"
-      }`}
+      className="w-full rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-white flex flex-col border border-seagrass hover:border-dark-slate"
     >
       <div className="relative aspect-[4/3] w-full">
         {project.imageUrl ? (

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -23,6 +24,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string; locale: string }>;
 }): Promise<Metadata> {
   const { slug, locale } = await params;
+  await notFoundUnlessVisible(slug);
   const project = await prisma.project.findUnique({
     where: { slug },
     select: { title: true },
@@ -101,6 +103,7 @@ export default async function ImpactPage({
   params: Promise<{ slug: string; locale: string }>;
 }) {
   const { slug, locale } = await params;
+  await notFoundUnlessVisible(slug);
   const t = await getTranslations({ locale, namespace: "ImpactPage" });
   const session = await auth();
 

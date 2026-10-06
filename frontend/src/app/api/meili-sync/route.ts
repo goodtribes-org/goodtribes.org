@@ -1,3 +1,4 @@
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
 
   const [projects, ideas, users] = await Promise.all([
     prisma.project.findMany({
-      where: { hiddenAt: null },
+      where: PUBLIC_PROJECT_WHERE,
       include: { owner: { select: { name: true } }, translations: true },
     }),
     prisma.idea.findMany({

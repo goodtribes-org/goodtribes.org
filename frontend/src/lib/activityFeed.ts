@@ -3,6 +3,7 @@ import { htmlToPreviewText } from "@/lib/renderBody";
 import { timeAgo } from "@/lib/timeAgo";
 import { FEED_LIKE_EMOJI } from "@/lib/feedLikeEmoji";
 import { getTranslations } from "next-intl/server";
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 
 export { FEED_LIKE_EMOJI };
 
@@ -85,7 +86,7 @@ export async function fetchActivityItems(
         },
       }),
       prisma.blogPost.findMany({
-        where: opts ? { projectSlug: opts.projectSlug } : { project: { hiddenAt: null } },
+        where: opts ? { projectSlug: opts.projectSlug } : { project: PUBLIC_PROJECT_WHERE },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
         select: {
@@ -97,7 +98,7 @@ export async function fetchActivityItems(
       prisma.milestone.findMany({
         where: opts
           ? { status: "done", projectId: opts.projectId }
-          : { status: "done", project: { hiddenAt: null } },
+          : { status: "done", project: PUBLIC_PROJECT_WHERE },
         orderBy: { updatedAt: "desc" },
         take: LIMIT,
         select: {
@@ -108,12 +109,14 @@ export async function fetchActivityItems(
       }),
       opts
         ? Promise.resolve([])
+        // A project enters the feed when it's published, not when its
+        // draft was created (#226).
         : prisma.project.findMany({
-            where: { hiddenAt: null },
-            orderBy: { createdAt: "desc" },
+            where: PUBLIC_PROJECT_WHERE,
+            orderBy: { publishedAt: "desc" },
             take: LIMIT,
             select: {
-              id: true, title: true, slug: true, createdAt: true, imageUrl: true,
+              id: true, title: true, slug: true, publishedAt: true, imageUrl: true,
               owner: { select: { id: true, name: true, image: true } },
             },
           }),
@@ -131,7 +134,7 @@ export async function fetchActivityItems(
       prisma.activityEvent.findMany({
         where: {
           type: { in: ["task_completed", "task_created", "task_moved", "todo_completed", "member_joined"] },
-          ...(opts ? { projectId: opts.projectId } : { project: { hiddenAt: null } }),
+          ...(opts ? { projectId: opts.projectId } : { project: PUBLIC_PROJECT_WHERE }),
         },
         orderBy: { createdAt: "desc" },
         take: LIMIT * 2,
@@ -147,7 +150,7 @@ export async function fetchActivityItems(
           hiddenAt: null,
           room: opts
             ? { type: "PROJECT_CHANNEL", projectId: opts.projectId }
-            : { type: "PROJECT_CHANNEL", project: { hiddenAt: null } },
+            : { type: "PROJECT_CHANNEL", project: PUBLIC_PROJECT_WHERE },
         },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
@@ -160,7 +163,7 @@ export async function fetchActivityItems(
       prisma.kanbanCardComment.findMany({
         where: {
           hiddenAt: null,
-          card: opts ? { projectSlug: opts.projectSlug } : { project: { hiddenAt: null } },
+          card: opts ? { projectSlug: opts.projectSlug } : { project: PUBLIC_PROJECT_WHERE },
         },
         orderBy: { createdAt: "desc" },
         take: LIMIT,
@@ -227,7 +230,7 @@ export async function fetchActivityItems(
       actorId: p.owner.id, avatarName: p.owner.name, avatarImage: p.owner.image, projectImage: p.imageUrl,
       projectName: p.title, projectHref: `/projects/${p.slug}`, projectId: p.id,
       action: t("newProjectCreated"),
-      href: `/projects/${p.slug}`, date: p.createdAt,
+      href: `/projects/${p.slug}`, date: p.publishedAt!,
     })),
     ...ideas.map((i) => {
       const parts = [];

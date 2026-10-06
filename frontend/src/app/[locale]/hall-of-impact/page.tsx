@@ -1,5 +1,6 @@
 export const revalidate = 60;
 
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma"
@@ -29,7 +30,7 @@ export default async function HallOfImpactPage({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "HallOfImpactPage" });
   const projects = await prisma.project.findMany({
-    where: { OR: [{ phase: "IMPACT" }, { archivedAt: { not: null } }] },
+    where: { ...PUBLIC_PROJECT_WHERE, OR: [{ phase: "IMPACT" }, { archivedAt: { not: null } }] },
     include: {
       alumni: { select: { id: true } },
       impactMetrics: {

@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -5,7 +6,6 @@ import ProjectTopNav from "../ProjectTopNav";
 import ProjectSideNav from "../ProjectSideNav";
 import HubTabs from "../HubTabs";
 import PhaseProgressStrip from "../PhaseProgressStrip";
-import { ProjectSandboxAnnouncer } from "@/components/SandboxIndicator";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 
@@ -17,9 +17,10 @@ export default async function WorkspaceLayout({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  await notFoundUnlessVisible(slug);
   const [session, project] = await Promise.all([
     auth(),
-    prisma.project.findUnique({ where: { slug }, select: { id: true, title: true, legalType: true, isSandbox: true, phase: true } }),
+    prisma.project.findUnique({ where: { slug }, select: { id: true, title: true, legalType: true, phase: true } }),
   ]);
   if (!project) notFound();
 
@@ -35,7 +36,6 @@ export default async function WorkspaceLayout({
 
   return (
     <>
-      <ProjectSandboxAnnouncer isSandbox={project.isSandbox} />
       <ProjectTopNav
         slug={slug}
         title={project.title}

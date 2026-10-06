@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -13,6 +14,7 @@ export default async function SprintPage({
   params: Promise<{ locale: Locale; slug: string; sprintId: string }>;
 }) {
   const { locale, slug, sprintId } = await params;
+  await notFoundUnlessVisible(slug);
   const [session, project, t] = await Promise.all([
     auth(),
     prisma.project.findUnique({ where: { slug }, select: { id: true } }),

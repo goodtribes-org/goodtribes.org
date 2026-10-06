@@ -1,3 +1,6 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
+import { publishMissing, unpublishBlockers } from "@/lib/projectVisibility";
+import { isCommercialLegalType } from "@/lib/legalType";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation";
@@ -21,6 +24,7 @@ export default async function EditProjectPage({
   params: Promise<{ locale: Locale; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  await notFoundUnlessVisible(slug);
   const [session, t] = await Promise.all([
     auth(),
     getTranslations({ locale, namespace: "EditProjectPage" }),
@@ -50,7 +54,10 @@ export default async function EditProjectPage({
   ]);
   if (!project) redirect("/projects");
 
-  const graduationRequest = project.isSandbox
+  // Invoicing (#226): only a commercial project without a paraply-AB yet
+  // has anything to apply for.
+  const needsInvoicing = isCommercialLegalType(project.legalType) && !project.commercialUmbrellaEntityId;
+  const invoicingRequest = needsInvoicing
     ? await prisma.sandboxGraduationRequest.findFirst({
         where: { projectId: project.id },
         orderBy: { createdAt: "desc" },
@@ -110,7 +117,8 @@ export default async function EditProjectPage({
           summary: (project as typeof project & { summary: string | null }).summary,
           description: project.description,
           phase: project.phase,
-          isSandbox: project.isSandbox,
+          publishedAt: project.publishedAt?.toISOString() ?? null,
+          needsInvoicing,
           abandonedAt: project.abandonedAt?.toISOString() ?? null,
           category: project.category,
           tags: project.tags,
@@ -118,7 +126,9 @@ export default async function EditProjectPage({
           imageUrl: project.imageUrl,
         }}
         completedChecklistKeys={checklistItems.map((c) => c.itemKey)}
-        graduationRequest={graduationRequest}
+        invoicingRequest={invoicingRequest}
+        unpublishBlockers={project.publishedAt ? await unpublishBlockers(project) : []}
+        publishMissing={publishMissing(project)}
         ownershipInterests={project.ownershipInterests.map((i) => ({
           id: i.id,
           user: i.user,

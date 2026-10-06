@@ -2,7 +2,8 @@
 
 import { useState, useTransition, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { updateProject, advanceProjectPhase, requestSandboxGraduation, toggleChecklistItem, updateGithubColumnMap } from "./actions";
+import { updateProject, advanceProjectPhase, requestInvoicing, toggleChecklistItem, updateGithubColumnMap } from "./actions";
+import PublishSection from "./PublishSection";
 import { COLUMNS, COLUMN_LABEL_KEYS } from "@/lib/kanbanColumns";
 import { columnForStatus } from "@/lib/githubColumnMap";
 import { markProjectAbandoned, unmarkProjectAbandoned, transferOwnership } from "@/app/[locale]/projects/[slug]/ownership-actions";
@@ -40,7 +41,8 @@ interface Props {
     summary: string | null;
     description: string | null;
     phase: string;
-    isSandbox: boolean;
+    publishedAt: string | null;
+    needsInvoicing: boolean;
     abandonedAt: string | null;
     category: string | null;
     tags: string[];
@@ -49,10 +51,12 @@ interface Props {
   };
   completedChecklistKeys: string[];
   ownershipInterests: { id: string; user: { id: string; name: string | null; image: string | null }; message: string | null; createdAt: string }[];
-  graduationRequest: { status: string; decisionNote: string | null } | null;
+  invoicingRequest: { status: string; decisionNote: string | null } | null;
+  unpublishBlockers: ("members" | "funding" | "tokens")[];
+  publishMissing: ("title" | "about")[];
 }
 
-export default function EditProjectForm({ slug, projectId, showTranslationSuggest, existingEnTranslation, skills, orgs, currentSkillIds, currentOrgId, github, initial, completedChecklistKeys, ownershipInterests, graduationRequest }: Props) {
+export default function EditProjectForm({ slug, projectId, showTranslationSuggest, existingEnTranslation, skills, orgs, currentSkillIds, currentOrgId, github, initial, completedChecklistKeys, ownershipInterests, invoicingRequest, unpublishBlockers, publishMissing }: Props) {
   const t = useTranslations("EditProjectForm");
   const tPhase = useTranslations("ProjectPhase");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
@@ -64,7 +68,7 @@ export default function EditProjectForm({ slug, projectId, showTranslationSugges
   const [isPending, startTransition] = useTransition();
   const [isSuggesting, startSuggesting] = useTransition();
   const [isAdvancing, startAdvancing] = useTransition();
-  const [isGraduating, startGraduating] = useTransition();
+  const [isApplyingInvoicing, startApplyingInvoicing] = useTransition();
   const [isAbandoning, startAbandoning] = useTransition();
   const [isTransferring, startTransferring] = useTransition();
   const [abandonedAt, setAbandonedAt] = useState(initial.abandonedAt);
@@ -273,30 +277,34 @@ export default function EditProjectForm({ slug, projectId, showTranslationSugges
         )}
       </div>
 
-      {initial.isSandbox && (
-        <div className="border-2 border-amber-300 bg-amber-50/40 rounded-md p-4 flex items-center justify-between gap-4">
+      <PublishSection slug={slug} publishedAt={initial.publishedAt} blockers={unpublishBlockers} missing={publishMissing} />
+
+      {initial.needsInvoicing && (
+        <div className="border border-muted-teal/40 bg-white rounded-md p-4 flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-dark-slate">{t("sandboxHeading")}</p>
-            {graduationRequest?.status === "pending" ? (
-              <p className="text-xs text-dark-slate/60 mt-0.5">{t("graduationPending")}</p>
-            ) : graduationRequest?.status === "rejected" ? (
+            <p className="text-sm font-medium text-dark-slate">{t("invoicingHeading")}</p>
+            {!initial.publishedAt ? (
+              <p className="text-xs text-dark-slate/60 mt-0.5">{t("invoicingPublishFirst")}</p>
+            ) : invoicingRequest?.status === "pending" ? (
+              <p className="text-xs text-dark-slate/60 mt-0.5">{t("invoicingPending")}</p>
+            ) : invoicingRequest?.status === "rejected" ? (
               <p className="text-xs text-dark-slate/60 mt-0.5">
-                {graduationRequest.decisionNote
-                  ? t("graduationRejectedWithNote", { note: graduationRequest.decisionNote })
-                  : t("graduationRejectedPlain")}
+                {invoicingRequest.decisionNote
+                  ? t("invoicingRejectedWithNote", { note: invoicingRequest.decisionNote })
+                  : t("invoicingRejectedPlain")}
               </p>
             ) : (
-              <p className="text-xs text-dark-slate/60 mt-0.5">{t("graduationPrompt")}</p>
+              <p className="text-xs text-dark-slate/60 mt-0.5">{t("invoicingPrompt")}</p>
             )}
           </div>
-          {graduationRequest?.status !== "pending" && (
+          {initial.publishedAt && invoicingRequest?.status !== "pending" && (
             <button
               type="button"
-              disabled={isGraduating}
-              onClick={() => startGraduating(() => requestSandboxGraduation(slug))}
-              className="text-sm font-medium text-amber-700 border border-amber-400 rounded-md px-4 py-2 hover:bg-amber-100 transition-colors disabled:opacity-60 flex-shrink-0"
+              disabled={isApplyingInvoicing}
+              onClick={() => startApplyingInvoicing(() => requestInvoicing(slug))}
+              className="text-sm font-medium text-seagrass border border-seagrass rounded-md px-4 py-2 hover:bg-seagrass/10 transition-colors disabled:opacity-60 flex-shrink-0"
             >
-              {isGraduating ? t("graduatingButton") : t("applyGraduationButton")}
+              {isApplyingInvoicing ? t("invoicingApplying") : t("invoicingApply")}
             </button>
           )}
         </div>

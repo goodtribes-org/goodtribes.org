@@ -5,7 +5,7 @@ import { logger } from "@/lib/logger";
 
 // Called periodically by an external scheduler (GitHub Actions cron, see
 // .github/workflows/sprint-phase-advance.yml). Requires the same
-// Authorization: Bearer <CRON_SECRET> header as /api/cron/sandbox-seed.
+// Authorization: Bearer <CRON_SECRET> header as the other /api/cron/* routes.
 //
 // A missing CRON_SECRET fails closed rather than skipping the auth check —
 // see /api/cron/github-sync for the reference pattern.

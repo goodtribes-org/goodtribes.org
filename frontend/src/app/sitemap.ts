@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { routing } from "@/i18n/routing";
@@ -28,7 +29,7 @@ function localizedEntries(
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [projects, ideas, orgs, members] = await Promise.all([
     prisma.project.findMany({
-      where: { hiddenAt: null },
+      where: PUBLIC_PROJECT_WHERE,
       select: { slug: true, updatedAt: true },
     }),
     prisma.idea.findMany({

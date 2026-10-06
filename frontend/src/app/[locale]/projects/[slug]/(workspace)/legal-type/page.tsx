@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
@@ -20,6 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function LegalTypePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  await notFoundUnlessVisible(slug);
   const t = await getTranslations("LegalTypePage");
   const STATUS_LABEL: Record<string, string> = {
     pending: t("statusPending"),
@@ -36,7 +38,6 @@ export default async function LegalTypePage({ params }: { params: Promise<{ slug
     select: {
       id: true,
       legalType: true,
-      isSandbox: true,
       commercialUmbrellaEntityId: true,
       commercialUmbrellaEntity: { select: { name: true } },
     },
