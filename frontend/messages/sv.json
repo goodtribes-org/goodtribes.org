@@ -1062,9 +1062,9 @@
     "logInToVoteTitle": "Logga in för att rösta",
     "votesLabel": "röster",
     "removeEndorsementTitle": "Ta bort mitt stöd",
-    "endorseTitle": "Jag vill jobba med det här",
+    "endorseTitle": "Jag vill hjälpa till",
     "logInToEndorseTitle": "Logga in för att stödja",
-    "contributeLabel": "Vill bidra",
+    "contributeLabel": "Vill hjälpa till",
     "unfollowTitle": "Sluta följa",
     "followTitle": "Följ för uppdateringar",
     "logInToFollowTitle": "Logga in för att följa",
@@ -5215,5 +5215,26 @@
     },
     "resume": "Du har ett påbörjat Drömsamtal: <link>fortsätt det</link>",
     "formInstead": "Hellre ett formulär? <link>Snabbstart</link>"
+  },
+  "IdeaHelp": {
+    "heading": "Jag vill hjälpa till",
+    "count": "{count, plural, one {En person vill hjälpa till om idén blir av.} other {# personer vill hjälpa till om idén blir av.}}",
+    "none": "Ingen har anmält sig än. Bli först!",
+    "pickHeading": "Vad kan du hjälpa till med?",
+    "join": "✓ Räkna med mig",
+    "update": "Spara",
+    "leave": "Jag kan inte längre",
+    "saved": "Sparat",
+    "note": "När någon startar ett projekt av idén får du en notis och kan gå med.",
+    "loginToHelp": "Logga in för att säga att du vill hjälpa till.",
+    "roles": {
+      "CODE": "Kod & teknik",
+      "DESIGN": "Design",
+      "COMMUNICATION": "Kommunikation",
+      "FUNDRAISING": "Söka pengar",
+      "CONTACTS": "Kontakter",
+      "LOCAL_KNOWLEDGE": "Lokalkännedom",
+      "PRACTICAL": "Praktisk hjälp"
+    }
   }
 }

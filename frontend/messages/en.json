@@ -1062,9 +1062,9 @@
     "logInToVoteTitle": "Log in to vote",
     "votesLabel": "votes",
     "removeEndorsementTitle": "Remove endorsement",
-    "endorseTitle": "I'd work on this",
+    "endorseTitle": "I want to help",
     "logInToEndorseTitle": "Log in to endorse",
-    "contributeLabel": "I'd contribute",
+    "contributeLabel": "Want to help",
     "unfollowTitle": "Unfollow",
     "followTitle": "Follow for updates",
     "logInToFollowTitle": "Log in to follow",
@@ -5215,5 +5215,26 @@
     },
     "resume": "You have a Dream conversation in progress: <link>continue it</link>",
     "formInstead": "Prefer a form? <link>Quick start</link>"
+  },
+  "IdeaHelp": {
+    "heading": "I want to help",
+    "count": "{count, plural, one {One person wants to help if the idea gets going.} other {# people want to help if the idea gets going.}}",
+    "none": "Nobody has signed up yet. Be the first!",
+    "pickHeading": "What could you help with?",
+    "join": "✓ Count me in",
+    "update": "Save",
+    "leave": "I can't any more",
+    "saved": "Saved",
+    "note": "When someone starts a project from the idea, you get a notification and can join.",
+    "loginToHelp": "Log in to say you want to help.",
+    "roles": {
+      "CODE": "Code & tech",
+      "DESIGN": "Design",
+      "COMMUNICATION": "Communication",
+      "FUNDRAISING": "Fundraising",
+      "CONTACTS": "Contacts",
+      "LOCAL_KNOWLEDGE": "Local knowledge",
+      "PRACTICAL": "Practical help"
+    }
   }
 }

@@ -16,6 +16,7 @@ import { buildMetadata, APP_URL } from "@/lib/metadata";
 import IdeaRevisions from "./IdeaRevisions";
 import { isSiteAdmin } from "@/lib/authz";
 import IdeaOutcome from "./IdeaOutcome";
+import IdeaHelp from "./IdeaHelp";
 import { resolveIdeaContent } from "@/lib/contentTranslation";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "next-intl";
@@ -91,7 +92,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
       include: {
         author: { select: { id: true, name: true, image: true } },
         votes: { select: { userId: true } },
-        endorsements: { select: { userId: true } },
+        endorsements: { select: { userId: true, roles: true } },
         followers: { select: { userId: true } },
         comments: {
           where: { hiddenAt: null },
@@ -306,6 +307,18 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           {/* #233: anyone logged in can drive an open idea, as many times as
               it takes; each project links back and the idea stays open. */}
           <IdeaOutcome projects={idea.basedProjects} locale={locale} />
+
+          {idea.status === "open" && (
+            <IdeaHelp
+              ideaId={idea.id}
+              isLoggedIn={!!userId}
+              myRoles={idea.endorsements.find((e) => e.userId === userId)?.roles ?? null}
+              helperCount={idea.endorsements.length}
+              roleCounts={Object.fromEntries(
+                [...new Set(idea.endorsements.flatMap((e) => e.roles))].map((r) => [r, idea.endorsements.filter((e) => e.roles.includes(r)).length]),
+              )}
+            />
+          )}
 
           {idea.status === "open" && (
             <div className="mb-8 rounded-xl border-2 border-dashed border-seagrass/40 bg-seagrass/5 p-5">

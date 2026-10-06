@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { toggleVote, toggleEndorsement, toggleFollow, setIdeaStatus, addComment } from "./actions";
+import { toggleVote, toggleFollow, setIdeaStatus, addComment } from "./actions";
 import ShareButton from "@/components/ShareButton";
 import FlagContentButton from "@/components/FlagContentButton";
 
@@ -38,8 +38,6 @@ export function IdeaSidebar({
   const [pending, startTransition] = useTransition();
   const [votes, setVotes] = useState(voteCount);
   const [voted, setVoted] = useState(hasVoted);
-  const [endorses, setEndorses] = useState(endorseCount);
-  const [endorsed, setEndorsed] = useState(hasEndorsed);
   const [follows, setFollows] = useState(followCount);
   const [followed, setFollowed] = useState(hasFollowed);
 
@@ -48,13 +46,6 @@ export function IdeaSidebar({
     setVotes((c) => (voted ? c - 1 : c + 1));
     setVoted((v) => !v);
     startTransition(async () => { await toggleVote(ideaId); });
-  }
-
-  function handleEndorse() {
-    if (!isLoggedIn) return;
-    setEndorses((c) => (endorsed ? c - 1 : c + 1));
-    setEndorsed((v) => !v);
-    startTransition(async () => { await toggleEndorsement(ideaId); });
   }
 
   function handleFollow() {
@@ -89,23 +80,23 @@ export function IdeaSidebar({
         <span className="text-[10px] uppercase tracking-wider">{t("votesLabel")}</span>
       </button>
 
-      {/* Endorse */}
-      <button
-        onClick={handleEndorse}
-        disabled={!isLoggedIn || pending}
-        title={isLoggedIn ? (endorsed ? t("removeEndorsementTitle") : t("endorseTitle")) : t("logInToEndorseTitle")}
+      {/* "Jag vill hjälpa till" (#235): the count; choosing with what
+          happens in the panel on the page (#hjalp). */}
+      <a
+        href="#hjalp"
+        title={t("endorseTitle")}
         className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl border-2 transition-all ${
-          endorsed
+          hasEndorsed
             ? "border-coral bg-coral/10 text-coral"
             : "border-muted-teal text-dark-slate/60 hover:border-coral hover:text-coral"
-        } ${!isLoggedIn ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+        }`}
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
-        <span className="text-xl font-bold">{endorses}</span>
+        <span className="text-xl font-bold">{endorseCount}</span>
         <span className="text-[10px] uppercase tracking-wider text-center leading-tight">{t("contributeLabel")}</span>
-      </button>
+      </a>
 
       {/* Follow */}
       <button
