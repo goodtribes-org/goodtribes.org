@@ -15,6 +15,7 @@ import { SDG_LABELS_EN } from "@/lib/sdg";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
 import IdeaRevisions from "./IdeaRevisions";
 import { isSiteAdmin } from "@/lib/authz";
+import IdeaOutcome from "./IdeaOutcome";
 import { resolveIdeaContent } from "@/lib/contentTranslation";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "next-intl";
@@ -108,7 +109,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
         basedProjects: {
           where: { hiddenAt: null, archivedAt: null },
           orderBy: { createdAt: "asc" },
-          select: { slug: true, title: true, owner: { select: { name: true } } },
+          select: { id: true, slug: true, title: true, phase: true, owner: { select: { name: true } } },
         },
         translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
       },
@@ -304,23 +305,10 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
 
           {/* #233: anyone logged in can drive an open idea, as many times as
               it takes; each project links back and the idea stays open. */}
+          <IdeaOutcome projects={idea.basedProjects} locale={locale} />
+
           {idea.status === "open" && (
             <div className="mb-8 rounded-xl border-2 border-dashed border-seagrass/40 bg-seagrass/5 p-5">
-              {idea.basedProjects.length > 0 && (
-                <>
-                  <p className="mb-2 text-sm font-semibold text-dark-slate">{t("drivenBy", { count: idea.basedProjects.length })}</p>
-                  <ul className="mb-4 flex flex-col gap-1">
-                    {idea.basedProjects.map((p) => (
-                      <li key={p.slug} className="text-sm">
-                        <Link href={`/projects/${p.slug}`} className="font-medium text-seagrass hover:underline">
-                          {p.title}
-                        </Link>
-                        {p.owner.name && <span className="text-dark-slate/50"> · {p.owner.name}</span>}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
               <p className="text-sm font-semibold text-dark-slate">{t("driveHeading")}</p>
               <p className="mb-3 mt-1 text-sm text-dark-slate/60">{idea.basedProjects.length > 0 ? t("driveTextMore") : t("driveText")}</p>
               {userId ? (

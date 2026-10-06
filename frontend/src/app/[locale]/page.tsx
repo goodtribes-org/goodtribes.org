@@ -90,7 +90,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       take: IDEA_CARDS,
       include: {
         author: { select: { name: true } },
-        _count: { select: { votes: true, comments: true } },
+        _count: { select: { votes: true, comments: true, basedProjects: { where: { hiddenAt: null } } } },
         translations,
       },
     }),
@@ -131,6 +131,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       authorName: idea.author.name,
       votes: idea._count.votes,
       comments: idea._count.comments,
+      drivenBy: idea._count.basedProjects,
     };
   });
   const ideaLabels = {
@@ -140,6 +141,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     votes: t("ideas.votes"),
     comments: t("ideas.comments"),
     noDescription: t("ideas.noDescription"),
+    drivenBy: (count: number) => t("ideas.drivenBy", { count }),
+    waiting: t("ideas.waitingBadge"),
   };
   const events = activity.filter(isMeaningful);
   const communityEvents = events.slice(0, 6);

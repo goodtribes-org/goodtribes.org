@@ -35,7 +35,7 @@ export default async function IdeasPage({
 }) {
   const { page: pageStr, sort: sortParam, status, category, sdg, region } = await searchParams;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
-  const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : "new";
+  const sort = sortParam === "top" ? "top" : sortParam === "trending" ? "trending" : sortParam === "waiting" ? "waiting" : "new";
   const sdgNum = sdg ? parseInt(sdg) : undefined;
   const statusFilter = FILTERABLE_IDEA_STATUSES.includes(status as IdeaStatus) ? (status as IdeaStatus) : undefined;
 
@@ -48,18 +48,16 @@ export default async function IdeasPage({
     getCachedIdeasPage(sort, statusFilter, category, sdgNum, region, page, locale),
   ]);
 
-  function statusBadge(status: string) {
-    const map: Record<string, { label: string; cls: string }> = {
-      draft:       { label: t("statusDraft"),       cls: "bg-gray-100 text-gray-500" },
-      open:        { label: t("statusOpen"),        cls: "bg-teal-50 text-teal-700" },
-      review:      { label: t("statusReview"),       cls: "bg-amber-100 text-amber-700" },
-      shortlisted: { label: t("statusShortlisted"), cls: "bg-purple-100 text-purple-700" },
-      approved:    { label: t("statusApproved"),     cls: "bg-green-100 text-green-700" },
-      converted:   { label: t("statusConverted"),    cls: "bg-coral/10 text-coral" },
-    };
-    const s = map[status] ?? map.open;
-    return <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${s.cls}`}>{s.label}</span>;
+  // #237: whether anyone drives the idea yet, instead of a status.
+  function driveBadge(count: number) {
+    const cls = count > 0 ? "bg-seagrass/10 text-seagrass" : "bg-amber-50 text-amber-700";
+    return (
+      <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full ${cls}`}>
+        {count > 0 ? t("drivenBy", { count }) : t("waitingBadge")}
+      </span>
+    );
   }
+
 
   return (
     <div>
@@ -119,7 +117,7 @@ export default async function IdeasPage({
                     </div>
                   )}
                   <div className="absolute top-2 left-2">
-                    {statusBadge(idea.status)}
+                    {driveBadge(idea._count.basedProjects)}
                   </div>
                 </div>
                 <div className="p-3 flex flex-col flex-1">
