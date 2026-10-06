@@ -38,6 +38,10 @@
     "findProject": "Find a project"
   },
   "Footer": {
+    "taglineStart": "We make good dreams",
+    "taglineHighlight": "come true",
+    "foundationTitle": "GoodTribes Foundation",
+    "country": "Sweden",
     "hallOfImpact": "Hall of Impact",
     "shop": "Shop",
     "academy": "Academy",
@@ -4608,7 +4612,14 @@
       "heading": "Where it all began",
       "storyHeading": "It started with computers that were going to be scrapped",
       "body": "Perfectly working computers are replaced after three or four years – while preschools, schools and non-profits lack equipment. Infos Datordonation solved both problems: the computers were securely wiped, got new software and went on to schools including Tensta, Rinkeby and Skärholmen and to organisations such as Amnesty, Greenpeace and Save the Children. That work led to the founding of the GoodTribes Foundation, so that more good ideas can help build a better world.",
-      "supportLabel": "Made possible by"
+      "supportLabel": "Made possible by",
+      "circles": {
+        "units": { "label": "Donated", "unit": "computer units" },
+        "purchaseValue": { "label": "Purchase value", "unit": "million kronor" },
+        "co2": { "label": "Emissions cut", "unit": "tonnes CO₂" },
+        "volunteers": { "label": "Volunteers", "unit": "" },
+        "staff": "{count} full-time staff"
+      }
     },
     "community": {
       "eyebrow": "We are GoodTribes",

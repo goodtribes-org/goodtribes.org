@@ -204,9 +204,9 @@ export default async function LocaleLayout({
                     className="object-contain"
                   />
                   <h2 className={`${heroTaglineFont.className} text-dark-slate leading-none`} style={{ fontSize: "clamp(26px,3vw,40px)", fontWeight: 400, whiteSpace: "nowrap" }}>
-                    Vi gör goda drömmar{" "}
+                    {t("taglineStart")}{" "}
                     <span className="relative inline-block isolate">
-                      <span className="relative z-[1]">verkliga</span>
+                      <span className="relative z-[1]">{t("taglineHighlight")}</span>
                       {/* Hand-drawn coral brush stroke, like the underline on goodtribes.org's hero —
                           drawn behind the word so descenders (the g) stay on top */}
                       <svg aria-hidden viewBox="0 0 200 20" preserveAspectRatio="none" fill="none" className="absolute left-[-4%] w-[108%] pointer-events-none z-0" style={{ bottom: "-0.26em", height: "0.4em" }}>
@@ -226,7 +226,7 @@ export default async function LocaleLayout({
                           <path d="M12 20s-7-4.4-9-9a5 5 0 019-3 5 5 0 019 3c-2 4.6-9 9-9 9z" />
                         </svg>
                       </div>
-                      <p className="text-xs font-semibold text-dark-slate uppercase tracking-wider">Stiftelsen GoodTribes</p>
+                      <p className="text-xs font-semibold text-dark-slate uppercase tracking-wider">{t("foundationTitle")}</p>
                     </div>
                     <p className="text-dark-slate/60 leading-relaxed text-[13px]" style={{ marginTop: 8 }}>{t("foundationBlurb")}</p>
                   </div>
@@ -247,7 +247,7 @@ export default async function LocaleLayout({
                     <p>Org.nr 802481-8497</p>
                     <p>Högbergsgatan 52</p>
                     <p>118 26 Stockholm</p>
-                    <p>Sverige</p>
+                    <p>{t("country")}</p>
                     <a href="mailto:Info@goodtribes.org" className="underline hover:text-dark-slate transition-colors">
                       Info@goodtribes.org
                     </a>

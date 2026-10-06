@@ -38,6 +38,10 @@
     "findProject": "Hitta ett projekt"
   },
   "Footer": {
+    "taglineStart": "Vi gör goda drömmar",
+    "taglineHighlight": "verkliga",
+    "foundationTitle": "Stiftelsen GoodTribes",
+    "country": "Sverige",
     "hallOfImpact": "Hall of Impact",
     "shop": "Shop",
     "academy": "Academy",
@@ -4608,7 +4612,14 @@
       "heading": "Där allt började",
       "storyHeading": "Det började med datorer som skulle skrotas",
       "body": "Fullt fungerande datorer byts ut efter tre, fyra år – samtidigt som förskolor, skolor och ideella organisationer saknar utrustning. Infos Datordonation löste båda problemen: datorerna raderades säkert, fick nya program och gick vidare till skolor i bland annat Tensta, Rinkeby och Skärholmen och till organisationer som Amnesty, Greenpeace och Rädda barnen. Ur det arbetet grundades Stiftelsen GoodTribes, så att fler goda idéer ska kunna bidra till en bättre värld.",
-      "supportLabel": "Möjliggjort av"
+      "supportLabel": "Möjliggjort av",
+      "circles": {
+        "units": { "label": "Donerat", "unit": "datorenheter" },
+        "purchaseValue": { "label": "Inköpsvärde", "unit": "miljoner kronor" },
+        "co2": { "label": "Utsläppsminskning", "unit": "ton CO₂" },
+        "volunteers": { "label": "Frivilliga eldsjälar", "unit": "" },
+        "staff": "{count} heltidare"
+      }
     },
     "community": {
       "eyebrow": "Vi är GoodTribes",
