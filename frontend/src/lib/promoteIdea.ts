@@ -66,4 +66,22 @@ export async function linkProjectToIdea(ideaId: string, projectId: string, owner
       }).catch(() => {}),
     ),
   );
+
+  // #235: everyone who said "Jag vill hjälpa till" hears the idea got
+  // going and can ask to join the project from its page.
+  const helpers = await prisma.ideaEndorsement.findMany({ where: { ideaId }, select: { userId: true } });
+  const told = new Set([ownerId, idea.authorId, ...others]);
+  await Promise.all(
+    helpers
+      .filter((h) => !told.has(h.userId))
+      .map((h) =>
+        createNotification({
+          userId: h.userId,
+          type: "idea_driven",
+          title: `${who} har startat ett projekt av idén du vill hjälpa till med`,
+          body: project.title,
+          url: `/projects/${project.slug}`,
+        }).catch(() => {}),
+      ),
+  );
 }

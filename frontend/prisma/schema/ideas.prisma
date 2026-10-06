@@ -132,11 +132,26 @@ model IdeaVote {
   @@unique([ideaId, userId])
 }
 
+// What someone offers when they say "Jag vill hjälpa till" on an idea (#235).
+enum IdeaHelpRole {
+  CODE
+  DESIGN
+  COMMUNICATION
+  FUNDRAISING
+  CONTACTS
+  LOCAL_KNOWLEDGE
+  PRACTICAL
+}
+
+// "Jag vill hjälpa till" (#235, earlier "Stötta"): someone who would help
+// if the idea gets going, and with what. An empty roles list is a helper
+// who hasn't said with what (every endorsement from before #235).
 model IdeaEndorsement {
   id        String   @id @default(cuid())
   ideaId    String
   userId    String
   createdAt DateTime @default(now())
+  roles     IdeaHelpRole[] @default([])
 
   idea Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
   user User @relation("IdeaEndorsements", fields: [userId], references: [id], onDelete: Cascade)

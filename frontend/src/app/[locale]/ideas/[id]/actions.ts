@@ -2,7 +2,7 @@
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
-import type { IdeaStatus } from "@prisma/client";
+import type { IdeaHelpRole, IdeaStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notify";
 import { isSiteAdmin } from "@/lib/authz";
@@ -48,33 +48,41 @@ export async function toggleVote(ideaId: string) {
   revalidatePath("/");
 }
 
-export async function toggleEndorsement(ideaId: string) {
+const HELP_ROLES: readonly IdeaHelpRole[] = ["CODE", "DESIGN", "COMMUNICATION", "FUNDRAISING", "CONTACTS", "LOCAL_KNOWLEDGE", "PRACTICAL"];
+
+// "Jag vill hjälpa till" (#235): say what you could help with, change it,
+// or (roles = null) stop. Replaces the old "Stötta" toggle; the row is the
+// same IdeaEndorsement. Roles come from the client, so they are filtered
+// against the enum rather than trusted.
+export async function setIdeaHelp(ideaId: string, roles: string[] | null) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not logged in" };
+  const userId = session.user.id;
+  const where = { ideaId_userId: { ideaId, userId } };
 
-  const existing = await prisma.ideaEndorsement.findUnique({
-    where: { ideaId_userId: { ideaId, userId: session.user.id } },
-  });
-
-  if (existing) {
-    await prisma.ideaEndorsement.delete({ where: { id: existing.id } });
+  if (roles === null) {
+    await prisma.ideaEndorsement.deleteMany({ where: { ideaId, userId } });
   } else {
-    await prisma.ideaEndorsement.create({ data: { ideaId, userId: session.user.id } });
-    const idea = await prisma.idea.findUnique({ where: { id: ideaId }, select: { title: true, authorId: true } });
-    if (idea && idea.authorId !== session.user.id) {
-      const endorser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { name: true } });
+    const picked = HELP_ROLES.filter((r) => roles.includes(r));
+    const idea = await prisma.idea.findFirst({ where: { id: ideaId, hiddenAt: null }, select: { title: true, authorId: true } });
+    if (!idea) return { error: "Not found" };
+    const existing = await prisma.ideaEndorsement.findUnique({ where, select: { id: true } });
+    await prisma.ideaEndorsement.upsert({ where, create: { ideaId, userId, roles: picked }, update: { roles: picked } });
+    if (!existing && idea.authorId !== userId) {
+      const helper = await prisma.user.findUnique({ where: { id: userId }, select: { name: true } });
       await createNotification({
         userId: idea.authorId,
         type: "idea_vote",
-        title: `${endorser?.name ?? "Someone"} wants to contribute to your idea`,
+        title: `${helper?.name ?? "Någon"} vill hjälpa till med din idé`,
         body: idea.title,
-        url: `/ideas/${ideaId}`,
+        url: `/ideas/${ideaId}#hjalp`,
       });
     }
   }
 
   revalidatePath(`/ideas/${ideaId}`);
   revalidatePath("/ideas");
+  return { ok: true };
 }
 
 export async function toggleFollow(ideaId: string) {
