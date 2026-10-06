@@ -363,3 +363,61 @@ export async function upsertIdeaTranslation(
 }
 
 
+
+// "Vad talar för och emot?" (#236). Short, one argument at a time; same
+// guard and proactive moderation as comments, and flaggable the same way.
+// Also IdeaArguments.tsx's maxLength; a "use server" file can only export
+// async functions, so the client keeps its own copy.
+const MAX_ARGUMENT_LENGTH = 500;
+
+export async function addIdeaArgument(ideaId: string, side: string, text: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+  if (side !== "PRO" && side !== "CON") return { error: "Invalid side" };
+  const trimmed = text.trim();
+  if (!trimmed) return { error: "Empty" };
+  if (trimmed.length > MAX_ARGUMENT_LENGTH) return { error: "Too long" };
+  const idea = await prisma.idea.findFirst({ where: { id: ideaId, hiddenAt: null, status: "open" }, select: { id: true } });
+  if (!idea) return { error: "Not found" };
+
+  const guard = await guardSocialAction(session.user.id, "comment");
+  if (!guard.ok) return { error: guard.error, code: guard.code };
+
+  const argument = await prisma.ideaArgument.create({
+    data: { ideaId, authorId: session.user.id, side, text: trimmed },
+  });
+  await runProactiveModeration({
+    targetType: "IdeaArgument",
+    targetId: argument.id,
+    authorId: session.user.id,
+    text: trimmed,
+    url: `/ideas/${ideaId}`,
+  });
+  revalidatePath(`/ideas/${ideaId}`);
+  return { ok: true };
+}
+
+export async function toggleArgumentHelpful(argumentId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+  const argument = await prisma.ideaArgument.findFirst({ where: { id: argumentId, hiddenAt: null }, select: { ideaId: true, authorId: true } });
+  if (!argument) return { error: "Not found" };
+  // Your own argument isn't yours to mark helpful.
+  if (argument.authorId === session.user.id) return { error: "Own argument" };
+  const where = { argumentId_userId: { argumentId, userId: session.user.id } };
+  const existing = await prisma.ideaArgumentHelpful.findUnique({ where, select: { id: true } });
+  if (existing) await prisma.ideaArgumentHelpful.delete({ where: { id: existing.id } });
+  else await prisma.ideaArgumentHelpful.create({ data: { argumentId, userId: session.user.id } });
+  revalidatePath(`/ideas/${argument.ideaId}`);
+  return { ok: true };
+}
+
+export async function deleteOwnArgument(argumentId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not logged in" };
+  const argument = await prisma.ideaArgument.findUnique({ where: { id: argumentId }, select: { ideaId: true, authorId: true } });
+  if (!argument || argument.authorId !== session.user.id) return { error: "Not authorised" };
+  await prisma.ideaArgument.delete({ where: { id: argumentId } });
+  revalidatePath(`/ideas/${argument.ideaId}`);
+  return { ok: true };
+}

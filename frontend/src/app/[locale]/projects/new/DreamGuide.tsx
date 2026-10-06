@@ -17,7 +17,7 @@ import {
   type GuideInput,
   type WeeklyHoursKey,
 } from "@/lib/dreamGuide";
-import { createProjectFromGuide, stashGuide, suggestGuideFollowUp } from "./guide-actions";
+import { createProjectFromGuide, similarIdeasForGuide, stashGuide, suggestGuideFollowUp } from "./guide-actions";
 
 // Same key as the start page's dream box (DreamHero): what the visitor wrote
 // there is the answer to the first question.
@@ -67,6 +67,7 @@ export default function DreamGuide({
   // "Någon annan får driva det" (#234): share the answers as an idea.
   const [share, setShare] = useState(false);
   const [basedOnIdeaId, setBasedOnIdeaId] = useState<string | undefined>(fromIdea?.id);
+  const [similar, setSimilar] = useState<{ id: string; title: string }[]>([]);
   const [fromHome, setFromHome] = useState(false);
   const [backFromLogin, setBackFromLogin] = useState(false);
   const [thinking, setThinking] = useState(false);
@@ -120,6 +121,20 @@ export default function DreamGuide({
     // Once, on arrival.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // #236: on the summary, look for shared ideas like this dream (not when
+  // driving one already). Search only — no AI.
+  const searchText = [answers.dream, answers.idea].filter(Boolean).join(" ");
+  useEffect(() => {
+    if (step !== summaryStep || basedOnIdeaId || searchText.trim().length < 3) return;
+    let live = true;
+    similarIdeasForGuide(searchText)
+      .then((hits) => live && setSimilar(hits))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [step, summaryStep, basedOnIdeaId, searchText]);
 
   const area: GuideArea | undefined = GUIDE_AREAS[step];
   // Driving an existing idea is never "share it as an idea" again.
@@ -379,6 +394,28 @@ export default function DreamGuide({
                 </p>
               </li>
             </ul>
+
+            {similar.length > 0 && (
+              <div className="mt-5 rounded-2xl border border-[#E08A00]/30 bg-[#E08A00]/5 p-4">
+                <p className="text-sm font-semibold text-dark-slate">{t("summary.similarHeading")}</p>
+                <ul className="mt-2 flex flex-col gap-2">
+                  {similar.map((s) => (
+                    <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white p-3">
+                      <span className="min-w-0 text-sm font-medium text-dark-slate">{s.title}</span>
+                      {/* New tab, so the answers here aren't lost. */}
+                      <span className="flex gap-3 text-xs font-medium">
+                        <a href={`/ideas/${s.id}`} target="_blank" rel="noopener" className="text-seagrass hover:underline">
+                          {t("summary.similarRead")}
+                        </a>
+                        <a href={`/ideas/${s.id}#hjalp`} target="_blank" rel="noopener" className="text-seagrass hover:underline">
+                          {t("summary.similarHelp")}
+                        </a>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Driving a shared idea (#233): it is already an idea, so no choice. */}
             {basedOnIdeaId ? (

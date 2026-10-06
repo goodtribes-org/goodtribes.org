@@ -1032,6 +1032,7 @@
     "agenda2030Label": "Agenda 2030:",
     "becameProjectBanner": "Den här idén blev ett projekt!",
     "drivenBy": "{count, plural, one {Drivs av ett projekt} other {Drivs av # projekt}}",
+    "similarHeading": "Liknande idéer",
     "outcomeHeading": "Det här blev av idén",
     "outcomeRunBy": "Drivs av {name}",
     "outcomeNoResults": "Inga verifierade resultat än.",
@@ -5196,6 +5197,9 @@
       "error": "Något gick fel när projektet skapades. Dina svar finns kvar — försök igen.",
       "retryWithoutAi": "Skapa utan AI i stället",
       "drivingIdea": "Du driver en delad idé. Projektet länkas till idén, och idégivaren får en notis och en inbjudan som rådgivare.",
+      "similarHeading": "Liknande idéer finns redan",
+      "similarRead": "Läs",
+      "similarHelp": "Bidra till den i stället",
       "choiceHeading": "Vad vill du göra med drömmen?",
       "driveTitle": "Jag vill driva det här",
       "driveBody": "Du startar ett projekt, blir dess ägare och bjuder in andra att hjälpa till.",
@@ -5236,5 +5240,19 @@
       "LOCAL_KNOWLEDGE": "Lokalkännedom",
       "PRACTICAL": "Praktisk hjälp"
     }
+  },
+  "IdeaArguments": {
+    "heading": "Vad talar för och emot?",
+    "pro": "För",
+    "con": "Emot",
+    "empty": "Inga än.",
+    "helpful": "Hjälpsamt",
+    "remove": "Ta bort",
+    "addPro": "Lägg till ett argument för",
+    "addCon": "Lägg till ett argument emot",
+    "cancel": "Avbryt",
+    "publish": "Publicera",
+    "tooLong": "Högst 500 tecken.",
+    "error": "Det gick inte att spara. Försök igen."
   }
 }

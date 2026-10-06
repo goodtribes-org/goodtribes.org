@@ -19,6 +19,7 @@ import { guardSocialAction } from "@/lib/socialActionGuard";
 import { runProactiveModeration } from "@/lib/proactiveModeration";
 import { IDEAS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 import { linkProjectToIdea } from "@/lib/promoteIdea";
+import { findSimilarIdeas, type SimilarIdea } from "@/lib/similarIdeas";
 import {
   GUIDE_AREAS,
   MAX_ANSWER_LENGTH,
@@ -99,6 +100,15 @@ export async function stashGuide(raw: unknown): Promise<string | null> {
   const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (!(await checkRateLimit(`dream-guide-stash:${ip}`, 20, 60 * 60))) return null;
   return stashGuideInput(input);
+}
+
+// "Liknande idéer finns redan" on the summary (#236): shared ideas that look
+// like the dream, so someone can join one instead of starting a duplicate.
+// No login needed (search is public), so it's rate-limited per address.
+export async function similarIdeasForGuide(text: string): Promise<SimilarIdea[]> {
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (!(await checkRateLimit(`dream-guide-similar:${ip}`, 30, 60 * 60))) return [];
+  return findSimilarIdeas(text.slice(0, MAX_ANSWER_LENGTH), { locale: await getLocale() });
 }
 
 // "Skapa mitt projekt". Login happens here, not before the questions: the

@@ -55,6 +55,8 @@ model Idea {
   translations         IdeaTranslation[]
   // The projects that drive this idea (#233).
   basedProjects        Project[]        @relation("ProjectBasedOnIdea")
+  // För och emot (#236).
+  arguments            IdeaArgument[]
 }
 
 // Per-locale override of title/description/problem/solution for an Idea.
@@ -190,6 +192,45 @@ model MindMap {
   createdBy   User     @relation("CreatedMindMaps", fields: [createdById], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+enum IdeaArgumentSide {
+  PRO
+  CON
+}
+
+// "Vad talar för och emot?" (#236): short arguments in two columns on the
+// idea page, sorted by how many found them helpful. Moderated through
+// ContentFlag like comments (targetType "IdeaArgument").
+model IdeaArgument {
+  id           String           @id @default(cuid())
+  ideaId       String
+  authorId     String
+  side         IdeaArgumentSide
+  text         String
+  createdAt    DateTime         @default(now())
+  hiddenAt     DateTime?
+  hiddenById   String?
+  hiddenReason ContentHideReason?
+
+  idea    Idea                  @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  author  User                  @relation("AuthoredIdeaArguments", fields: [authorId], references: [id], onDelete: Cascade)
+  helpful IdeaArgumentHelpful[]
+
+  @@index([ideaId])
+}
+
+// One "Hjälpsamt" per person and argument.
+model IdeaArgumentHelpful {
+  id         String   @id @default(cuid())
+  argumentId String
+  userId     String
+  createdAt  DateTime @default(now())
+
+  argument IdeaArgument @relation(fields: [argumentId], references: [id], onDelete: Cascade)
+  user     User         @relation("IdeaArgumentHelpfuls", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([argumentId, userId])
 }
 
 model IdeaComment {

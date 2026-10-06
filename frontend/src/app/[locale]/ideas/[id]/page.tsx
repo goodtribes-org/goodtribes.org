@@ -17,6 +17,8 @@ import IdeaRevisions from "./IdeaRevisions";
 import { isSiteAdmin } from "@/lib/authz";
 import IdeaOutcome from "./IdeaOutcome";
 import IdeaHelp from "./IdeaHelp";
+import IdeaArguments from "./IdeaArguments";
+import { findSimilarIdeas } from "@/lib/similarIdeas";
 import { resolveIdeaContent } from "@/lib/contentTranslation";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "next-intl";
@@ -94,6 +96,11 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
         votes: { select: { userId: true } },
         endorsements: { select: { userId: true, roles: true } },
         followers: { select: { userId: true } },
+        arguments: {
+          where: { hiddenAt: null },
+          orderBy: { createdAt: "asc" },
+          select: { id: true, side: true, text: true, authorId: true, author: { select: { name: true } }, helpful: { select: { userId: true } } },
+        },
         comments: {
           where: { hiddenAt: null },
           orderBy: { createdAt: "asc" },
@@ -138,6 +145,8 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
   prisma.idea.update({ where: { id }, data: { viewCount: { increment: 1 } } }).catch(() => {});
 
   const statusInfo = STATUS_COLORS[idea.status] ?? STATUS_COLORS.open;
+  // #236: ideas that look like this one (Meilisearch, no AI); [] if search is down.
+  const similar = await findSimilarIdeas([content.title, content.problem ?? content.description ?? ""].join(" "), { excludeId: idea.id, locale });
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -307,6 +316,37 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           {/* #233: anyone logged in can drive an open idea, as many times as
               it takes; each project links back and the idea stays open. */}
           <IdeaOutcome projects={idea.basedProjects} locale={locale} />
+
+          {idea.status === "open" && (
+            <IdeaArguments
+              ideaId={idea.id}
+              isLoggedIn={!!userId}
+              rows={idea.arguments.map((a) => ({
+                id: a.id,
+                side: a.side,
+                text: a.text,
+                authorName: a.author.name,
+                helpful: a.helpful.length,
+                markedByMe: !!userId && a.helpful.some((h) => h.userId === userId),
+                mine: a.authorId === userId,
+              }))}
+            />
+          )}
+
+          {similar.length > 0 && (
+            <section className="mb-8">
+              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-dark-slate">{t("similarHeading")}</h2>
+              <ul className="flex flex-col gap-1">
+                {similar.map((s) => (
+                  <li key={s.id}>
+                    <Link href={`/ideas/${s.id}`} className="text-sm text-seagrass hover:underline">
+                      {s.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {idea.status === "open" && (
             <IdeaHelp
