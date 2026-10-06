@@ -1,3 +1,4 @@
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import { auth } from "@/auth";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma"
@@ -124,7 +125,7 @@ export default async function OrgDetailPage({
       : Promise.resolve([]),
     activeTab === "projects"
       ? prisma.project.findMany({
-          where: { orgId: org.id, hiddenAt: null },
+          where: { orgId: org.id, ...PUBLIC_PROJECT_WHERE },
           select: { slug: true, title: true, phase: true, description: true, _count: { select: { members: true } } },
           orderBy: { createdAt: "desc" },
         })

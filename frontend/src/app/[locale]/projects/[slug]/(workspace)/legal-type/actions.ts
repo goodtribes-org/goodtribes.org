@@ -26,7 +26,7 @@ export async function proposeLegalTypeChange(projectId: string, projectSlug: str
   if (requestedType === "COMMERCIAL_AB") {
     const project = await prisma.project.findUnique({
       where: { id: projectId },
-      select: { isSandbox: true, legalType: true, commercialUmbrellaEntityId: true },
+      select: { legalType: true, commercialUmbrellaEntityId: true },
     });
     if (!project || !canInvoice(project)) return;
   }

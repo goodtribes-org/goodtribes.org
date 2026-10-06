@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import ProjectTopNav from "../projects/[slug]/ProjectTopNav";
-import { ProjectSandboxAnnouncer } from "@/components/SandboxIndicator";
 
-type ProjectNavInfo = { title: string; slogan: string | null; imageUrl: string | null; isOwner: boolean; isCommercial: boolean; dateLabel: string; isSandbox: boolean };
+type ProjectNavInfo = { title: string; slogan: string | null; imageUrl: string | null; isOwner: boolean; isCommercial: boolean; dateLabel: string };
 
 // Wraps /messages with the same project tab bar shown on every other
 // project subpage, whenever it's opened from a project's channel (?project=slug) —
@@ -31,7 +30,6 @@ export default function ProjectChrome({ children }: { children: React.ReactNode 
 
   return (
     <>
-      <ProjectSandboxAnnouncer isSandbox={info.isSandbox} />
       <ProjectTopNav slug={slug} title={info.title} isOwner={info.isOwner} isCommercial={info.isCommercial} />
       {/* Full-bleed, as before the side rail was removed: pages that fill the
           width (Att göra, Färdplan, ...) keep doing so; pages with their own

@@ -23,7 +23,12 @@ export type TodoItem =
   | { kind: "task"; id: string; title: string; project: string; href: string; due: Date | null; overdue: boolean }
   | { kind: "joinRequest"; id: string; name: string | null; project: string; href: string }
   // step is a ProjectPhaseChecklist key (translated in the UI)
-  | { kind: "nextStep"; id: string; project: string; step: string; href: string; projectStill: boolean };
+  | { kind: "nextStep"; id: string; project: string; step: string; href: string; projectStill: boolean }
+  // A draft you lead that has waited a while (#226): a nudge to publish it.
+  | { kind: "draft"; id: string; project: string; href: string; days: number };
+
+// How long a draft waits before "Att göra" nudges its leads to publish it.
+export const DRAFT_NUDGE_DAYS = 7;
 
 export type LastEvent =
   | { type: "activity"; who: string | null; activityType: string; title?: string; tool?: string; at: Date }
@@ -54,7 +59,7 @@ function todoRank(t: TodoItem, now: number): number {
     if (t.due && t.due.getTime() - now <= 3 * DAY) return 1;
     return 5;
   }
-  if (t.kind === "joinRequest") return 2;
+  if (t.kind === "joinRequest" || t.kind === "draft") return 2;
   return t.projectStill ? 3 : 4;
 }
 
@@ -69,7 +74,7 @@ export async function getYourTribe(userId: string, now = Date.now(), { lastEvent
 
   const memberships = await prisma.projectMember.findMany({
     where: { userId, role: { not: "FOLLOWER" }, project: liveProject },
-    select: { role: true, project: { select: { id: true, slug: true, title: true, phase: true, imageUrl: true } } },
+    select: { role: true, project: { select: { id: true, slug: true, title: true, phase: true, imageUrl: true, publishedAt: true, createdAt: true } } },
   });
   const projects = memberships.map((m) => ({ ...m.project, isLead: (PROJECT_LEAD_ROLES as string[]).includes(m.role) }));
   const ids = projects.map((p) => p.id);
@@ -164,6 +169,9 @@ export async function getYourTribe(userId: string, now = Date.now(), { lastEvent
     })),
     ...joinRequests.map((r): TodoItem => ({ kind: "joinRequest", id: r.id, name: r.user.name, project: r.project.title, href: `/projects/${r.project.slug}/members` })),
     ...steps.filter((s): s is TodoItem => !!s),
+    ...projects
+      .filter((p) => p.isLead && !p.publishedAt && now - p.createdAt.getTime() >= DRAFT_NUDGE_DAYS * DAY)
+      .map((p): TodoItem => ({ kind: "draft", id: `draft-${p.id}`, project: p.title, href: `/projects/${p.slug}`, days: Math.floor((now - p.createdAt.getTime()) / DAY) })),
   ].sort((a, b) => todoRank(a, now) - todoRank(b, now));
 
   return {

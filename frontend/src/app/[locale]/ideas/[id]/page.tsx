@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
@@ -115,7 +116,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           orderBy: { createdAt: "desc" },
         },
         basedProjects: {
-          where: { hiddenAt: null, archivedAt: null },
+          where: { ...PUBLIC_PROJECT_WHERE, archivedAt: null },
           orderBy: { createdAt: "asc" },
           select: { id: true, slug: true, title: true, phase: true, owner: { select: { name: true } } },
         },

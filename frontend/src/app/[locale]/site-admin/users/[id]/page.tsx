@@ -29,7 +29,7 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
       sessions: { orderBy: { expires: "desc" }, take: 1, select: { expires: true } },
       projectMemberships: {
         orderBy: { joinedAt: "desc" },
-        select: { role: true, joinedAt: true, project: { select: { slug: true, title: true, phase: true, isSandbox: true, hiddenAt: true } } },
+        select: { role: true, joinedAt: true, project: { select: { slug: true, title: true, phase: true, publishedAt: true, hiddenAt: true } } },
       },
     },
   });
@@ -122,7 +122,7 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
               <li key={m.project.slug} className="flex flex-wrap items-center gap-3 px-4 py-2.5 text-sm">
                 <Link href={`/projects/${m.project.slug}`} className="min-w-0 flex-1 truncate font-medium text-dark-slate hover:underline">{m.project.title}</Link>
                 {m.project.hiddenAt && <span className="text-[10px] font-semibold text-red-600">Dold</span>}
-                {m.project.isSandbox && <span className="text-[10px] text-dark-slate/45">Drömfabriken</span>}
+                {!m.project.publishedAt && <span className="text-[10px] text-dark-slate/45">Utkast</span>}
                 <span className="w-28 text-xs text-dark-slate/65">{PROJECT_ROLE[m.role] ?? m.role}</span>
                 <span className="w-24 text-right text-xs text-dark-slate/65">{(tokensBySlug.get(m.project.slug) ?? 0).toLocaleString("sv-SE")} TT</span>
                 <span className="w-24 text-right text-xs text-dark-slate/45">{date(m.joinedAt)}</span>

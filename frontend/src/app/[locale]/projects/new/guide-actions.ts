@@ -9,6 +9,7 @@ import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { getAiClientFor } from "@/lib/aiMode";
 import { createProjectRecord } from "@/lib/createProject";
+import { MAX_DRAFTS, listOwnDrafts, type OwnDraft } from "@/lib/projectVisibility";
 import { escapeHtml } from "@/lib/renderBody";
 import { markChecklistDone } from "@/app/[locale]/projects/[slug]/guide/actions";
 import { createProjectFromDream } from "./samtal/actions";
@@ -113,13 +114,21 @@ export async function similarIdeasForGuide(text: string): Promise<SimilarIdea[]>
 
 // "Skapa mitt projekt". Login happens here, not before the questions: the
 // guide keeps the answers through the login round trip and calls this again.
-export async function createProjectFromGuide(raw: unknown, stashId?: string) {
+export async function createProjectFromGuide(raw: unknown, stashId?: string): Promise<{ draftLimit: OwnDraft[] } | void> {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) redirect(await localized(`/login?callbackUrl=${encodeURIComponent(await localized("/projects/new"))}`));
 
   const input = parseGuideInput(raw);
   if (!GUIDE_AREAS.some((a) => input.answers[a])) throw new Error("Svara på minst en fråga först.");
+  // A new project is a draft (#226), at most MAX_DRAFTS at a time. Sharing
+  // the dream as an idea, or driving someone's idea (published at once),
+  // doesn't count. Checked before anything is created or any AI spent; the
+  // guide then shows the drafts to publish or remove.
+  if (!input.share && !input.basedOnIdeaId) {
+    const drafts = await listOwnDrafts(userId);
+    if (drafts.length >= MAX_DRAFTS) return { draftLimit: drafts };
+  }
   const t = await getTranslations("DreamGuide");
   const openQuestions = input.unknown.map((a) => t(`questions.${a}.title`));
   // The project is being made from these answers: don't offer them again.
@@ -192,6 +201,8 @@ async function createWithoutAi(input: GuideInput, userId: string, openQuestions:
     summary: input.answers.dream?.slice(0, 300) ?? null,
     description: sections.join(""),
     aiMode: "MANUAL",
+    // Driving a shared idea is public from the start (#226).
+    publish: !!input.basedOnIdeaId,
   });
 
   const { time, team, ambition } = input.conditions;

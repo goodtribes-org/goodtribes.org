@@ -180,7 +180,7 @@ describe("getAiClientFor", () => {
 
   it("calls without a project are metered but never charged", async () => {
     fakeClient.messages.create.mockResolvedValue({ usage: { input_tokens: 10, output_tokens: 10 } });
-    const gate = await getAiClientFor({ feature: "sandbox-seed", kind: "agent", userId: null, projectId: null });
+    const gate = await getAiClientFor({ feature: "translation", kind: "agent", userId: null, projectId: null });
     if (!gate.ok) throw new Error("expected ok");
     await gate.client.messages.create({ model: "claude-haiku-4-5", max_tokens: 1, messages: [] });
     await new Promise((r) => setImmediate(r));
@@ -200,7 +200,7 @@ describe("getAiClientFor", () => {
   });
 
   it("calls without a project only need configuration; system jobs skip the rate limit", async () => {
-    await expect(getAiClientFor({ feature: "sandbox-seed", kind: "agent", userId: null, projectId: null })).resolves.toMatchObject({ ok: true });
+    await expect(getAiClientFor({ feature: "translation", kind: "agent", userId: null, projectId: null })).resolves.toMatchObject({ ok: true });
     expect(projectFindUnique).not.toHaveBeenCalled();
     expect(checkAiRateLimit).not.toHaveBeenCalled();
   });

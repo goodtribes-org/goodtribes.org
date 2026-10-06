@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
@@ -9,6 +10,7 @@ import type { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string; locale: string }> }): Promise<Metadata> {
   const { slug, locale } = await params;
+  await notFoundUnlessVisible(slug);
   const [project, t] = await Promise.all([
     prisma.project.findUnique({ where: { slug }, select: { title: true } }),
     getTranslations({ locale, namespace: "TasksPage" }),
@@ -25,6 +27,7 @@ export default async function TasksRoutePage({
   searchParams: Promise<{ card?: string }>;
 }) {
   const { slug } = await params;
+  await notFoundUnlessVisible(slug);
   const { card: openCardId } = await searchParams;
   const project = await prisma.project.findUnique({
     where: { slug },

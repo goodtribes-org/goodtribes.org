@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,7 +23,6 @@ import PhaseProgressStrip from "./PhaseProgressStrip";
 import { getAutoDoneKeys } from "@/lib/projectSignals";
 import OwnershipBanner from "@/components/OwnershipBanner";
 import { handwritingFontThin } from "@/lib/fonts";
-import { ProjectSandboxAnnouncer } from "@/components/SandboxIndicator";
 import { isLeadRole, isSiteAdmin, isLastFounder } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
@@ -65,6 +65,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
+  await notFoundUnlessVisible(slug);
   const project = await prisma.project.findUnique({
     where: { slug },
     include: {
@@ -89,6 +90,7 @@ export default async function ProjectDetailPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  await notFoundUnlessVisible(slug);
   const session = await auth();
   const t = await getTranslations("ProjectDetailPage");
   const tPhase = await getTranslations("ProjectPhase");
@@ -287,7 +289,6 @@ export default async function ProjectDetailPage({
 
   return (
     <div className="flex flex-1 flex-col">
-      <ProjectSandboxAnnouncer isSandbox={project.isSandbox} />
       <ProjectTopNav
         slug={slug}
         title={project.title}

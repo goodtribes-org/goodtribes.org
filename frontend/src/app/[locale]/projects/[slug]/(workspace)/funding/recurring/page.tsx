@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -19,6 +20,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  await notFoundUnlessVisible(slug);
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) return {};
   return { title: `${project.title} — Återkommande finansiering — GoodTribes.org` };
@@ -30,6 +32,7 @@ export default async function RecurringFundingPage({
   params: Promise<{ locale: Locale; slug: string }>;
 }) {
   const { locale, slug } = await params;
+  await notFoundUnlessVisible(slug);
   const [session, t] = await Promise.all([
     auth(),
     getTranslations({ locale, namespace: "RecurringFundingPage" }),

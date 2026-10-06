@@ -4,6 +4,7 @@
 // organisations, pending requests and the getting-started checklist. "Your
 // projects" left with it — Översikt shows them.
 
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -191,7 +192,7 @@ export default async function FindTab({
         select: { interests: true, skills: { select: { skillId: true } } },
       }),
       prisma.skill.findMany({
-        where: { projects: { some: { project: { hiddenAt: null, archivedAt: null } } } },
+        where: { projects: { some: { project: { ...PUBLIC_PROJECT_WHERE, archivedAt: null } } } },
         select: { id: true, name: true, slug: true },
         orderBy: { name: "asc" },
       }),
@@ -230,7 +231,7 @@ export default async function FindTab({
       ? prisma.project.findMany({
           where: {
             archivedAt: null,
-            hiddenAt: null,
+            ...PUBLIC_PROJECT_WHERE,
             neededSkills: { some: { skillId: { in: userSkillIds } } },
             members: { none: { userId } },
           },
@@ -265,7 +266,7 @@ export default async function FindTab({
       ? prisma.project.findMany({
           where: {
             archivedAt: null,
-            hiddenAt: null,
+            ...PUBLIC_PROJECT_WHERE,
             sdgGoals: { hasSome: userInterests },
             members: { none: { userId } },
           },
@@ -278,7 +279,7 @@ export default async function FindTab({
     prisma.project.findMany({
       where: {
         archivedAt: null,
-        hiddenAt: null,
+        ...PUBLIC_PROJECT_WHERE,
         ...(skillSlug ? { neededSkills: { some: { skill: { slug: skillSlug } } } } : {}),
       },
       select: matchProjectSelect,

@@ -50,6 +50,9 @@ export async function GET(request: Request) {
         const when = i.due ? ` · ${i.overdue ? tTribe("overdueSince", { date: fmt.format(i.due) }) : tTribe("due", { date: fmt.format(i.due) })}` : "";
         return { id: `task-${i.id}`, icon: i.overdue ? "⏰" : "☐", urgent: i.overdue, title: i.title, meta: `${i.project}${when}`, href: i.href };
       }
+      if (i.kind === "draft") {
+        return { id: i.id, icon: "📝", title: tTribe("draftWaiting", { project: i.project }), meta: tTribe("draftWaitingMeta", { days: i.days }), href: i.href };
+      }
       if (i.kind === "joinRequest") {
         return { id: `join-${i.id}`, icon: "👋", title: t("joinRequest", { name: i.name ?? tTribe("someone"), project: i.project }), meta: tTribe("waitingForAnswer"), href: i.href };
       }

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createProjectRecord } from "@/lib/createProject";
+import { DraftLimitError } from "@/lib/projectVisibility";
 import { VALUE_PROPOSITION_FIELDS, type ValuePropositionField } from "../projects/[slug]/(workspace)/value-proposition/fields";
 
 
@@ -45,7 +46,14 @@ export async function promoteValuePropositionDraftToProject(
   const title = (formData.get("title") as string | null)?.trim();
   if (!title) return { error: "Title required" };
 
-  const project = await createProjectRecord({ title, ownerId: session.user.id, isSandbox: true });
+  // A new project is a draft (#226); at the draft limit, say so instead.
+  let project: Awaited<ReturnType<typeof createProjectRecord>>;
+  try {
+    project = await createProjectRecord({ title, ownerId: session.user.id });
+  } catch (e) {
+    if (e instanceof DraftLimitError) return { error: e.message };
+    throw e;
+  }
 
   await prisma.valueProposition.create({
     data: {

@@ -1,5 +1,6 @@
 "use server";
 
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
@@ -24,8 +25,9 @@ export async function forkProject(sourceSlug: string, formData: FormData) {
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
 
-  const source = await prisma.project.findUnique({
-    where: { slug: sourceSlug },
+  // Only a public project can be forked; a draft (#226) is its members' own.
+  const source = await prisma.project.findFirst({
+    where: { slug: sourceSlug, ...PUBLIC_PROJECT_WHERE },
     include: { wikiPages: true, neededSkills: true },
   });
   if (!source) throw new Error("Project not found");
@@ -65,6 +67,8 @@ export async function forkProject(sourceSlug: string, formData: FormData) {
             legalType: "NONPROFIT_UMBRELLA",
             ownerId: userId,
             forkedFromProjectId: source.id,
+            // A fork of a public project is public from the start (#226).
+            publishedAt: new Date(),
             // Copied content, so the same language as the original.
             contentLocale: source.contentLocale,
             ...(source.imageUrl ? { imageUrl: source.imageUrl } : {}),

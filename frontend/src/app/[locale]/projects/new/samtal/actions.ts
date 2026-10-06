@@ -12,6 +12,7 @@ import { DREAM_OPENER } from "@/lib/prompts/dreamConversation";
 import { escapeHtml } from "@/lib/renderBody";
 import { getAiClientFor, aiGateMessage, resolveAiMode } from "@/lib/aiMode";
 import { createProjectRecord } from "@/lib/createProject";
+import { DraftLimitError, MAX_DRAFTS, countOwnDrafts } from "@/lib/projectVisibility";
 import { linkProjectToIdea } from "@/lib/promoteIdea";
 import { getFieldProvenance, recordAiWrite } from "@/lib/fieldProvenance";
 import { decideAiPlacement } from "@/lib/aiSuggestions";
@@ -128,6 +129,14 @@ export async function createProjectFromDream(roomId: string) {
   const userId = await requireUser();
   if (!(await isAiProjectStartAvailable(userId))) redirect(await localized("/projects/new?manual=1"));
   const dream = await requireOwnDream(roomId, userId);
+  // Din dröm on a shared idea (#233) is published at once (#226); anything
+  // else is a draft and must fit under the draft limit — checked before any
+  // AI is spent.
+  const basedOnIdeaId = (dream.state as { basedOnIdeaId?: unknown } | null)?.basedOnIdeaId;
+  const fromIdea = typeof basedOnIdeaId === "string";
+  if (!dream.projectId && !fromIdea && (await countOwnDrafts(userId)) >= MAX_DRAFTS) {
+    throw new DraftLimitError();
+  }
 
   // Claim the conversation first so a double click can't create two projects.
   const claimed = await prisma.dreamConversation.updateMany({
@@ -193,10 +202,10 @@ export async function createProjectFromDream(roomId: string) {
         tags: (value("tags") as string[] | undefined) ?? [],
         sdgGoals: (value("sdgGoals") as number[] | undefined) ?? [],
         dreamFounderId: userId,
+        publish: fromIdea,
       });
       // Din dröm on a shared idea (#233): link back and tell its author.
-      const basedOnIdeaId = (dream.state as { basedOnIdeaId?: unknown } | null)?.basedOnIdeaId;
-      if (typeof basedOnIdeaId === "string") await linkProjectToIdea(basedOnIdeaId, project.id, userId);
+      if (fromIdea) await linkProjectToIdea(basedOnIdeaId, project.id, userId);
     }
 
     const aiUser = await getAiParticipantUser();

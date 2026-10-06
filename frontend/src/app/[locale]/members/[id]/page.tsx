@@ -1,3 +1,4 @@
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -66,7 +67,7 @@ export default async function MemberProfilePage({
         select: { skill: { select: { id: true, name: true, tag: true, slug: true } } },
       },
       projectMemberships: {
-        where: { project: { hiddenAt: null } },
+        where: { project: PUBLIC_PROJECT_WHERE },
         select: {
           role: true,
           project: {
@@ -83,7 +84,7 @@ export default async function MemberProfilePage({
   // #237: shared ideas and how many of them someone drives. No ranking.
   const [ideasShared, ideasDriven] = await Promise.all([
     prisma.idea.count({ where: { authorId: id, hiddenAt: null, status: "open" } }),
-    prisma.idea.count({ where: { authorId: id, hiddenAt: null, status: "open", basedProjects: { some: { hiddenAt: null } } } }),
+    prisma.idea.count({ where: { authorId: id, hiddenAt: null, status: "open", basedProjects: { some: PUBLIC_PROJECT_WHERE } } }),
   ]);
 
   const social = (member.socialLinks ?? {}) as Record<string, string>;

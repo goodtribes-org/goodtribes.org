@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation";
@@ -40,6 +41,7 @@ export default async function PollDetailPage({
   params: Promise<{ slug: string; pollId: string }>;
 }) {
   const { slug, pollId } = await params;
+  await notFoundUnlessVisible(slug);
   const session = await auth();
   const userId = session?.user?.id ?? null;
   const t = await getTranslations("PollDetailPage");

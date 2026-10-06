@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { getTranslations } from "next-intl/server";
 import { isCommercialLegalType } from "@/lib/legalType";
-import { approveSandboxGraduation, rejectSandboxGraduation } from "./actions";
+import { approveInvoicingRequest, rejectInvoicingRequest } from "./actions";
 import type { Locale } from "next-intl";
 
-export default async function SandboxGraduationAdminPage({ params }: { params: Promise<{ locale: Locale }> }) {
+export default async function InvoicingAdminPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   const [pendingRequests, umbrellaEntities, t] = await Promise.all([
     prisma.sandboxGraduationRequest.findMany({
@@ -13,7 +13,7 @@ export default async function SandboxGraduationAdminPage({ params }: { params: P
       include: { project: { select: { title: true, slug: true, legalType: true } } },
     }),
     prisma.commercialUmbrellaEntity.findMany({ orderBy: { createdAt: "asc" } }),
-    getTranslations({ locale, namespace: "SandboxGraduationAdminPage" }),
+    getTranslations({ locale, namespace: "InvoicingAdminPage" }),
   ]);
 
   return (
@@ -43,7 +43,7 @@ export default async function SandboxGraduationAdminPage({ params }: { params: P
                   <form
                     action={async (formData: FormData) => {
                       "use server";
-                      await approveSandboxGraduation(r.id, (formData.get("umbrellaEntityId") as string) || undefined);
+                      await approveInvoicingRequest(r.id, (formData.get("umbrellaEntityId") as string) || undefined);
                     }}
                     className="flex flex-wrap items-end gap-2 mb-2"
                   >
@@ -70,7 +70,7 @@ export default async function SandboxGraduationAdminPage({ params }: { params: P
                   <form
                     action={async (formData: FormData) => {
                       "use server";
-                      await rejectSandboxGraduation(r.id, (formData.get("note") as string) ?? "");
+                      await rejectInvoicingRequest(r.id, (formData.get("note") as string) ?? "");
                     }}
                     className="flex flex-wrap items-end gap-2"
                   >

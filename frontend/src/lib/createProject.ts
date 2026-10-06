@@ -6,6 +6,7 @@ import { isCreatableLegalType } from "@/lib/legalType";
 import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 import { normalizeContentLocale, requestContentLocale } from "@/lib/aiLanguage";
 import { createIdeaStepCards } from "@/lib/ideaStepCards";
+import { DraftLimitError, MAX_DRAFTS, countOwnDrafts } from "@/lib/projectVisibility";
 
 export type CreateProjectParams = {
   title: string;
@@ -19,7 +20,11 @@ export type CreateProjectParams = {
   sdgGoals?: number[];
   legalType?: string;
   orgId?: string | null;
-  isSandbox?: boolean;
+  // Every project starts as a draft only its members see (#226), and the
+  // owner may have at most MAX_DRAFTS of them. A project that grows out of
+  // something already public (an idea someone drives) is published at once
+  // instead, and doesn't count against the limit.
+  publish?: boolean;
   skillIds?: string[];
   // The language the project is written in; defaults to the creator's
   // locale in a request, Swedish otherwise (crons).
@@ -28,8 +33,7 @@ export type CreateProjectParams = {
   // (aiMode = NULL); "Starta utan AI" sets MANUAL so the AI stays out
   // until someone switches it on.
   aiMode?: AiMode | null;
-  // A card per Idé step on the board (lib/ideaStepCards.ts, #200). Off for
-  // the sandbox-seed cron's placeholder projects.
+  // A card per Idé step on the board (lib/ideaStepCards.ts, #200).
   ideaStepCards?: boolean;
   // Set when the project comes out of a Drömsamtal: the "Beskriv projektet"
   // card then credits the founder (told it) and GoodTribes (wrote it up).
@@ -38,20 +42,19 @@ export type CreateProjectParams = {
 
 // Shared core of project creation — slug-retry, the Project row itself, the
 // founder membership + first phase-transition + 3 default discussion
-// channels every project gets, and search indexing. Used by the full
-// project-creation form, the minimal sandbox-project creation flow, and the
-// AI sandbox-seed cron — they only differ in which fields they collect.
+// channels every project gets, and search indexing once it's published.
+// Used by Din dröm, Snabbstart, Drömsamtalet and the promotion of old
+// drafts and Idéverkstaden threads — they only differ in which fields they
+// collect. Throws DraftLimitError when the owner already has MAX_DRAFTS.
 export async function createProjectRecord(params: CreateProjectParams) {
   const {
     title, ownerId,
     slogan = null,
     summary = null, description = null, imageUrl = null, category = null,
     tags = [], sdgGoals = [], orgId = null,
-    // Every new project — whether from the full creation form or idea
-    // promotion — starts in the sandbox by default. Founders apply to
-    // graduate out (see requestSandboxGraduation) once it's ready.
-    isSandbox = true, skillIds = [], aiMode = null, ideaStepCards = true, dreamFounderId,
+    publish = false, skillIds = [], aiMode = null, ideaStepCards = true, dreamFounderId,
   } = params;
+  if (!publish && (await countOwnDrafts(ownerId)) >= MAX_DRAFTS) throw new DraftLimitError();
   const legalType = params.legalType && isCreatableLegalType(params.legalType) ? params.legalType : "NONPROFIT_UMBRELLA";
 
   const contentLocale = params.contentLocale ? normalizeContentLocale(params.contentLocale) : await requestContentLocale();
@@ -63,7 +66,8 @@ export async function createProjectRecord(params: CreateProjectParams) {
       const project = await prisma.project.create({
         data: {
           slug: candidate, title, slogan, summary, description, category, tags, sdgGoals, legalType,
-          ownerId, isSandbox, contentLocale,
+          ownerId, contentLocale,
+          ...(publish ? { publishedAt: new Date() } : {}),
           ...(imageUrl ? { imageUrl } : {}),
           ...(orgId ? { orgId } : {}),
           ...(aiMode ? { aiMode } : {}),
@@ -87,19 +91,22 @@ export async function createProjectRecord(params: CreateProjectParams) {
         });
       }
 
-      void indexDocuments("projects", [{
-        id: `project-${project.slug}`,
-        type: "project",
-        title: project.title,
-        description: project.description ?? "",
-        url: `/projects/${project.slug}`,
-        phase: project.phase,
-        sdgGoals: project.sdgGoals,
-        locale: "sv",
-      }]);
+      // A draft isn't searchable; publishProject indexes it later.
+      if (publish) {
+        void indexDocuments("projects", [{
+          id: `project-${project.slug}`,
+          type: "project",
+          title: project.title,
+          description: project.description ?? "",
+          url: `/projects/${project.slug}`,
+          phase: project.phase,
+          sdgGoals: project.sdgGoals,
+          locale: "sv",
+        }]);
+        invalidateListCache(PROJECTS_LIST_TAG);
+      }
 
       if (ideaStepCards) await createIdeaStepCards(prisma, { projectSlug: project.slug, contentLocale, dreamFounderId });
-      invalidateListCache(PROJECTS_LIST_TAG);
       return project;
     } catch (e: unknown) {
       const err = e as { code?: string };

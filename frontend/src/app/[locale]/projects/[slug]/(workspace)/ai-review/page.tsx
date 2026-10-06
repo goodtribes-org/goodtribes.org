@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
@@ -21,6 +22,7 @@ const AGENT_ICONS: Record<string, string> = {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
+  await notFoundUnlessVisible(slug);
   const locale = (await getLocale()) as Locale;
   const project = await prisma.project.findUnique({
     where: { slug },
@@ -34,6 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function AiReviewPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  await notFoundUnlessVisible(slug);
 
   const session = await auth();
   if (!session?.user?.id) {

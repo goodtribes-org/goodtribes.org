@@ -1,3 +1,4 @@
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import { prisma } from "@/lib/prisma";
 
 const TAKE = 6;
@@ -39,7 +40,7 @@ export async function findMatchingProjectsForOrg(organisationId: string): Promis
 
   return prisma.project.findMany({
     where: {
-      hiddenAt: null,
+      ...PUBLIC_PROJECT_WHERE,
       id: { notIn: existingPartnerProjectIds },
       OR: [
         org.category ? { category: org.category } : undefined,

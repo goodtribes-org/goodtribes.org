@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
+import { canViewDraft } from "@/lib/projectVisibility";
 
 // Feeds ProjectChrome on pages outside /projects/[slug] (e.g. /messages?project=...)
 // that still need the project sidebar + mini hero. Public, same info already
@@ -11,13 +12,17 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
   const { slug } = await params;
   const project = await prisma.project.findUnique({
     where: { slug },
-    select: { id: true, title: true, slogan: true, imageUrl: true, legalType: true, createdAt: true, isSandbox: true },
+    select: { id: true, title: true, slogan: true, imageUrl: true, legalType: true, createdAt: true, publishedAt: true },
   });
   if (!project) {
     return NextResponse.json({ error: "Projekt hittades inte" }, { status: 404 });
   }
 
   const session = await auth();
+  // A draft (#226) is only for its members, same 404 as the project page.
+  if (!project.publishedAt && !(await canViewDraft(project.id, session?.user?.id))) {
+    return NextResponse.json({ error: "Projekt hittades inte" }, { status: 404 });
+  }
   const isOwner = session?.user?.id
     ? await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES)
     : false;
@@ -30,6 +35,5 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
     isOwner,
     isCommercial: isCommercialLegalType(project.legalType),
     dateLabel,
-    isSandbox: project.isSandbox,
   });
 }

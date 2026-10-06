@@ -85,15 +85,17 @@ export default async function OverviewTab({ userId, locale }: { userId: string; 
                 <Row
                   key={`${item.kind}-${item.id}`}
                   href={item.href}
-                  dot={item.kind === "joinRequest" ? "#E8531F" : item.kind === "nextStep" ? "#12486C" : "#2F7D3A"}
+                  dot={item.kind === "joinRequest" ? "#E8531F" : item.kind === "nextStep" ? "#12486C" : item.kind === "draft" ? "#B45309" : "#2F7D3A"}
                   title={
                     item.kind === "task" ? item.title
                     : item.kind === "joinRequest" ? t("joinRequest", { name: item.name ?? tTribe("someone") })
+                    : item.kind === "draft" ? tTribe("draftWaiting", { project: item.project })
                     : `${item.project}: ${tStep.has(item.step) ? tStep(item.step) : item.step}`
                   }
                   meta={
                     item.kind === "task" ? `${item.project}${item.due ? ` · ${item.overdue ? tTribe("overdueSince", { date: dateFmt.format(item.due) }) : tTribe("due", { date: dateFmt.format(item.due) })}` : ""}`
                     : item.kind === "joinRequest" ? item.project
+                    : item.kind === "draft" ? tTribe("draftWaitingMeta", { days: item.days })
                     : tTribe("nextStep")
                   }
                 />

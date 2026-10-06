@@ -25,7 +25,6 @@ import ConsentGate from "@/components/ConsentGate";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import LogoMark from "@/components/LogoMark";
-import { SandboxProvider } from "@/components/SandboxIndicator";
 import { auth } from "@/auth";
 import { isSiteAdmin } from "@/lib/authz";
 import { getFooterPages } from "@/lib/sitePages";
@@ -152,7 +151,6 @@ export default async function LocaleLayout({
         <NextIntlClientProvider>
           <SessionProvider session={session}>
           <UserEventsProvider enabled={!!session?.user}>
-          <SandboxProvider>
             <ConsentGate needsAgreementConsent={!!session?.user?.needsAgreementConsent} />
             <SiteHeader>
               <nav className="relative w-full h-[74px] pl-3 pr-6 flex items-center gap-4">
@@ -299,7 +297,6 @@ export default async function LocaleLayout({
             </SiteFooter>
             {/* Personal bar along the bottom of every page: Att göra · Kalender · Följer · Aktivitet · Tack & kudos */}
             {session?.user && <PersonalBar />}
-          </SandboxProvider>
           </UserEventsProvider>
           </SessionProvider>
         </NextIntlClientProvider>

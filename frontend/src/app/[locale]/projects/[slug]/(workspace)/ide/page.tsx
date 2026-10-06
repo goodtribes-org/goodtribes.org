@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getCanvasFieldLabels } from "@/lib/canvasFieldLabels";
@@ -75,6 +76,7 @@ export default async function IdeaOverviewPage({
   searchParams: Promise<{ view?: string }>;
 }) {
   const { locale, slug } = await params;
+  await notFoundUnlessVisible(slug);
   const { view } = await searchParams;
   const session = await auth();
   if (!session?.user?.id) redirect("/login");

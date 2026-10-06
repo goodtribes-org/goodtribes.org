@@ -713,6 +713,29 @@
     "followingButton": "Följer",
     "continuePhase": "Fortsätt i {phase} — allt på en sida"
   },
+  "ProjectDraft": {
+    "heading": "📝 Utkast",
+    "bodyLead": "Bara projektets medlemmar ser det här. När ni är nöjda publicerar ni projektet, så att alla kan hitta det och vara med.",
+    "bodyMember": "Bara projektets medlemmar ser det här tills det publiceras.",
+    "missingAbout": "Skriv en kort text om projektet innan det publiceras, så att besökare förstår vad det är.",
+    "editLink": "Skriv texten",
+    "publish": "Publicera projektet",
+    "publishing": "Publicerar …",
+    "publishFailed": "Det gick inte att publicera. Försök igen.",
+    "delete": "Ta bort utkastet",
+    "confirmDelete": "Ta bort utkastet och allt i det? Det går inte att ångra.",
+    "publishedHeading": "Publicerat {date}",
+    "publishedBody": "Alla kan hitta projektet. Så länge ingen annan är med kan du göra det till ett utkast igen.",
+    "unpublish": "Gör till utkast igen",
+    "unpublishBlocked": "Projektet kan inte göras till utkast igen.",
+    "unpublishBlockedBecause": "Kan inte göras till utkast igen eftersom {reasons}. Arkivera projektet om det ska bort.",
+    "blocker": {
+      "members": "andra är medlemmar",
+      "funding": "det har en insamling",
+      "tokens": "andra har fått tokens"
+    },
+    "saving": "Sparar …"
+  },
   "ProjectSideNav": {
     "navHome": "Startsidan",
     "navTasks": "Att göra",
@@ -841,13 +864,6 @@
     "advancingButton": "Avancerar…",
     "advanceToPhaseButton": "Avancera till {phase} →",
     "finalPhaseReached": "Sista fasen uppnådd",
-    "sandboxHeading": "🧪 Drömfabriken-projekt",
-    "graduationPending": "Din ansökan granskas av Stiftelsen.",
-    "graduationRejectedWithNote": "Ansökan avslogs: {note}",
-    "graduationRejectedPlain": "Ansökan avslogs.",
-    "graduationPrompt": "Redo att lämna Drömfabriken? Ansök om att bli ett GoodTribes-godkänt projekt.",
-    "graduatingButton": "Skickar…",
-    "applyGraduationButton": "Ansök om att bli ett GoodTribes-godkänt projekt",
     "abandonedHeading": "🏳️ Herrelöst projekt",
     "abandonedHint": "Står projektet still? Markera det som herrelöst så kan andra medlemmar anmäla intresse för att ta över.",
     "confirmMarkAbandoned": "Markera projektet som herrelöst? Alla inloggade kan då anmäla intresse för att ta över det.",
@@ -879,7 +895,15 @@
     "saveChangesButton": "Spara ändringar",
     "githubColumnMapHeading": "GitHub-status → kolumn",
     "githubColumnMapHint": "Varje Status på tavlan hamnar i den kolumn du väljer här. Stängda issues och mergade pull requests hamnar alltid i Done.",
-    "saveColumnMappingButton": "Spara kolumnmappning"
+    "saveColumnMappingButton": "Spara kolumnmappning",
+    "invoicingHeading": "Fakturering",
+    "invoicingPrompt": "Kommersiella projekt fakturerar via GoodTribes paraply-AB. Ansök så kopplar Stiftelsen projektet till det.",
+    "invoicingPublishFirst": "Publicera projektet först, sedan kan ni ansöka om fakturering.",
+    "invoicingPending": "Din ansökan granskas av Stiftelsen.",
+    "invoicingRejectedWithNote": "Ansökan avslogs: {note}",
+    "invoicingRejectedPlain": "Ansökan avslogs.",
+    "invoicingApply": "Ansök om fakturering",
+    "invoicingApplying": "Skickar …"
   },
   "TranslationSuggestPanel": {
     "heading": "Engelsk översättning",
@@ -3584,13 +3608,13 @@
     "openedBy": "Öppnad av {name} — {date}",
     "unknownUser": "Okänd"
   },
-  "SandboxGraduationAdminPage": {
-    "heading": "Drömfabriken-ansökningar",
-    "intro": "Ansökningar om att lämna Drömfabriken och bli ett GoodTribes-godkänt projekt. För kommersiella projekt tilldelas samtidigt ett paraply-AB och fakturering låses upp.",
+  "InvoicingAdminPage": {
+    "heading": "Ansökningar om fakturering",
+    "intro": "Kommersiella projekt som vill kunna fakturera. Godkänn genom att välja paraply-AB; då låses fakturering upp.",
     "pendingHeading": "Väntar på Stiftelsens beslut ({count})",
     "emptyState": "Inga väntande ansökningar.",
     "commercialNote": "Kommersiellt — kräver paraply-AB innan godkännande",
-    "nonprofitNote": "Ideellt",
+    "nonprofitNote": "Ideellt (gammal ansökan från Drömfabriken) — inget att tilldela, godkänn eller avslå för att stänga den",
     "chooseUmbrella": "— välj paraply-AB —",
     "approveButton": "Godkänn",
     "rejectionPlaceholder": "Motivering för avslag…",
@@ -4631,10 +4655,22 @@
       "body": "Fullt fungerande datorer byts ut efter tre, fyra år – samtidigt som förskolor, skolor och ideella organisationer saknar utrustning. Infos Datordonation löste båda problemen: datorerna raderades säkert, fick nya program och gick vidare till skolor i bland annat Tensta, Rinkeby och Skärholmen och till organisationer som Amnesty, Greenpeace och Rädda barnen. Ur det arbetet grundades Stiftelsen GoodTribes, så att fler goda idéer ska kunna bidra till en bättre värld.",
       "supportLabel": "Möjliggjort av",
       "circles": {
-        "units": { "label": "Donerat", "unit": "datorenheter" },
-        "purchaseValue": { "label": "Inköpsvärde", "unit": "miljoner kronor" },
-        "co2": { "label": "Utsläppsminskning", "unit": "ton CO₂" },
-        "volunteers": { "label": "Frivilliga eldsjälar", "unit": "" },
+        "units": {
+          "label": "Donerat",
+          "unit": "datorenheter"
+        },
+        "purchaseValue": {
+          "label": "Inköpsvärde",
+          "unit": "miljoner kronor"
+        },
+        "co2": {
+          "label": "Utsläppsminskning",
+          "unit": "ton CO₂"
+        },
+        "volunteers": {
+          "label": "Frivilliga eldsjälar",
+          "unit": ""
+        },
         "staff": "{count} heltidare"
       }
     },
@@ -4741,7 +4777,9 @@
       "milestone_completed": "{who} nådde milstolpen ”{title}”",
       "other": "{who} uppdaterade projektet",
       "tool_edited": "{who} arbetade i {tool}"
-    }
+    },
+    "draftWaiting": "Publicera {project}?",
+    "draftWaitingMeta": "Utkast i {days} dagar"
   },
   "MyGoodTribes": {
     "projectsTitle": "Dina projekt – var de är och vad som är nästa steg",
@@ -5215,7 +5253,12 @@
       "sharing": "Delar idén …",
       "loginNoteShare": "Du loggar in med din e-post när du delar idén. Dina svar sparas så länge.",
       "errorShare": "Något gick fel när idén skulle delas. Dina svar finns kvar — försök igen.",
-      "openQuestionsLabel": "Öppna frågor"
+      "openQuestionsLabel": "Öppna frågor",
+      "draftNote": "Projektet är ett utkast som bara du och de du bjuder in ser, tills du publicerar det.",
+      "draftLimitHeading": "Du har redan {max} utkast",
+      "draftLimitBody": "Publicera eller ta bort ett av dem innan du startar ett nytt projekt.",
+      "draftLimitOpen": "Öppna",
+      "draftLimitShareHint": "Du kan också dela drömmen som en idé i stället, så kan någon annan driva den."
     },
     "resume": "Du har ett påbörjat Drömsamtal: <link>fortsätt det</link>",
     "formInstead": "Hellre ett formulär? <link>Snabbstart</link>"

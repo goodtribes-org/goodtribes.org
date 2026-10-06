@@ -1,3 +1,4 @@
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "parentSlug, region, country och projectTitle krävs" }, { status: 400 });
   }
 
-  const parent = await prisma.project.findUnique({ where: { slug: parentSlug } });
+  const parent = await prisma.project.findFirst({ where: { slug: parentSlug, ...PUBLIC_PROJECT_WHERE } });
   if (!parent) return NextResponse.json({ error: "Förälderprojekt hittades inte" }, { status: 404 });
   if (!parent.openForReplication) {
     return NextResponse.json({ error: "Projektet är inte öppet för replikering" }, { status: 403 });
@@ -65,6 +66,8 @@ export async function POST(req: NextRequest) {
       contentLocale: parent.contentLocale,
       ownerId: session.user!.id,
       orgId: null,
+      // A regional instance of a public project is public too (#226).
+      publishedAt: new Date(),
     },
   });
 

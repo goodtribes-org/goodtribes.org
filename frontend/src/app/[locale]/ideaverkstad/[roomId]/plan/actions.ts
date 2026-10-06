@@ -155,8 +155,8 @@ export async function requestPlanRevision(roomId: string, note: string) {
 // per-card AiTaskRun -> REVIEW -> human-approval gate, unchanged.
 //
 // Not one atomic $transaction end-to-end: createProjectRecord is a shared
-// utility (also used by the main creation form, sandbox flow, and the AI
-// sandbox-seed cron) that isn't transaction-client-aware, so project
+// utility (also used by Din dröm and Snabbstart) that isn't
+// transaction-client-aware, so project
 // creation happens as its own step first, then the canvas/tasks/room-link
 // writes happen together in a second transaction. A failure between the two
 // would leave a bare Project row with no canvas/tasks — judged an

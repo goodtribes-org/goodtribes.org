@@ -1,3 +1,4 @@
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getTranslations } from "next-intl/server";
@@ -17,7 +18,7 @@ export default async function ForkNewPage({
 
   const t = await getTranslations({ locale, namespace: "ForkNewPage" });
 
-  const source = await prisma.project.findUnique({ where: { slug: sourceId }, select: { title: true } });
+  const source = await prisma.project.findFirst({ where: { slug: sourceId, ...PUBLIC_PROJECT_WHERE }, select: { title: true } });
   if (!source) notFound();
   const sourceTitle = source.title;
 

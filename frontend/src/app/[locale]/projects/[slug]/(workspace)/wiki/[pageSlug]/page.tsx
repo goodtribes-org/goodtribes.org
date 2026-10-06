@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
@@ -19,6 +20,7 @@ import { escapeHtml } from "@/lib/renderBody";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string; pageSlug: string }> }): Promise<Metadata> {
   const { locale, slug, pageSlug } = await params;
+  await notFoundUnlessVisible(slug);
   const [page, project, t] = await Promise.all([
     prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: pageSlug } } }),
     prisma.project.findUnique({ where: { slug }, select: { title: true } }),
@@ -60,6 +62,7 @@ function renderMarkdown(content: string): string {
 
 export default async function WikiPageView({ params }: { params: Promise<{ locale: string; slug: string; pageSlug: string }> }) {
   const { locale, slug, pageSlug } = await params;
+  await notFoundUnlessVisible(slug);
 
   const [project, page, session, t] = await Promise.all([
     prisma.project.findUnique({

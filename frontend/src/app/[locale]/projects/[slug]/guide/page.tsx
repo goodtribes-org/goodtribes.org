@@ -1,3 +1,4 @@
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { redirect } from "next/navigation";
 import { INITIATIVE_CHECKLIST_ITEMS } from "@/lib/projectPhase";
 
@@ -11,6 +12,7 @@ export default async function IdeaGuidePage({
   searchParams: Promise<{ step?: string }>;
 }) {
   const { slug } = await params;
+  await notFoundUnlessVisible(slug);
   const { step } = await searchParams;
   const known = step && INITIATIVE_CHECKLIST_ITEMS.IDEA.some((i) => i.key === step);
   redirect(`/projects/${slug}/ide${known ? `?step=${step}` : ""}`);

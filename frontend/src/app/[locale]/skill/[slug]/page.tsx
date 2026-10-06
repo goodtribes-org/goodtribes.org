@@ -1,3 +1,4 @@
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma"
 import Link from "next/link";
@@ -43,7 +44,7 @@ export default async function SkillDetailPage({
         orderBy: { addedAt: "asc" },
       },
       projects: {
-        where: { project: { hiddenAt: null } },
+        where: { project: PUBLIC_PROJECT_WHERE },
         include: {
           project: {
             select: {

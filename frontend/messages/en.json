@@ -713,6 +713,29 @@
     "followingButton": "Following",
     "continuePhase": "Continue in {phase} — everything on one page"
   },
+  "ProjectDraft": {
+    "heading": "📝 Draft",
+    "bodyLead": "Only the project's members can see this. When you're happy with it, publish the project so everyone can find it and join.",
+    "bodyMember": "Only the project's members can see this until it is published.",
+    "missingAbout": "Write a short text about the project before publishing it, so visitors understand what it is.",
+    "editLink": "Write it",
+    "publish": "Publish the project",
+    "publishing": "Publishing …",
+    "publishFailed": "Publishing failed. Try again.",
+    "delete": "Delete the draft",
+    "confirmDelete": "Delete the draft and everything in it? This cannot be undone.",
+    "publishedHeading": "Published {date}",
+    "publishedBody": "Everyone can find the project. As long as nobody else has joined, you can turn it back into a draft.",
+    "unpublish": "Turn back into a draft",
+    "unpublishBlocked": "The project can't be turned back into a draft.",
+    "unpublishBlockedBecause": "Can't be turned back into a draft because {reasons}. Archive the project if it should go.",
+    "blocker": {
+      "members": "others are members",
+      "funding": "it has a fundraiser",
+      "tokens": "others have received tokens"
+    },
+    "saving": "Saving …"
+  },
   "ProjectSideNav": {
     "navHome": "Home",
     "navTasks": "Tasks",
@@ -841,13 +864,6 @@
     "advancingButton": "Advancing…",
     "advanceToPhaseButton": "Advance to {phase} →",
     "finalPhaseReached": "Final phase reached",
-    "sandboxHeading": "🧪 Dream Factory project",
-    "graduationPending": "Your application is being reviewed by the Foundation.",
-    "graduationRejectedWithNote": "Application rejected: {note}",
-    "graduationRejectedPlain": "Application rejected.",
-    "graduationPrompt": "Ready to leave the Dream Factory? Apply to become a GoodTribes-approved project.",
-    "graduatingButton": "Sending…",
-    "applyGraduationButton": "Apply to become a GoodTribes-approved project",
     "abandonedHeading": "🏳️ Abandoned project",
     "abandonedHint": "Is the project stalled? Mark it as abandoned so other members can express interest in taking over.",
     "confirmMarkAbandoned": "Mark the project as abandoned? Any logged-in user will then be able to express interest in taking it over.",
@@ -879,7 +895,15 @@
     "saveChangesButton": "Save changes",
     "githubColumnMapHeading": "GitHub status → column",
     "githubColumnMapHint": "Each Status on the board ends up in the column you choose here. Closed issues and merged pull requests always end up in Done.",
-    "saveColumnMappingButton": "Save column mapping"
+    "saveColumnMappingButton": "Save column mapping",
+    "invoicingHeading": "Invoicing",
+    "invoicingPrompt": "Commercial projects invoice through GoodTribes' umbrella company. Apply and the Foundation will connect the project to it.",
+    "invoicingPublishFirst": "Publish the project first, then you can apply for invoicing.",
+    "invoicingPending": "Your application is being reviewed by the Foundation.",
+    "invoicingRejectedWithNote": "Application rejected: {note}",
+    "invoicingRejectedPlain": "Application rejected.",
+    "invoicingApply": "Apply for invoicing",
+    "invoicingApplying": "Sending …"
   },
   "TranslationSuggestPanel": {
     "heading": "English translation",
@@ -3584,13 +3608,13 @@
     "openedBy": "Opened by {name} — {date}",
     "unknownUser": "Unknown"
   },
-  "SandboxGraduationAdminPage": {
-    "heading": "Dream Factory applications",
-    "intro": "Applications to leave the Dream Factory and become a GoodTribes-approved project. Commercial projects are simultaneously assigned an umbrella company and have invoicing unlocked.",
+  "InvoicingAdminPage": {
+    "heading": "Applications for invoicing",
+    "intro": "Commercial projects that want to be able to invoice. Approve by choosing an umbrella company; that unlocks invoicing.",
     "pendingHeading": "Awaiting the Foundation's decision ({count})",
     "emptyState": "No pending applications.",
     "commercialNote": "Commercial — requires an umbrella company before approval",
-    "nonprofitNote": "Non-profit",
+    "nonprofitNote": "Nonprofit (an old Dream Factory application) — nothing to assign, approve or reject to close it",
     "chooseUmbrella": "— choose umbrella company —",
     "approveButton": "Approve",
     "rejectionPlaceholder": "Reason for rejection…",
@@ -4631,10 +4655,22 @@
       "body": "Perfectly working computers are replaced after three or four years – while preschools, schools and non-profits lack equipment. Infos Datordonation solved both problems: the computers were securely wiped, got new software and went on to schools including Tensta, Rinkeby and Skärholmen and to organisations such as Amnesty, Greenpeace and Save the Children. That work led to the founding of the GoodTribes Foundation, so that more good ideas can help build a better world.",
       "supportLabel": "Made possible by",
       "circles": {
-        "units": { "label": "Donated", "unit": "computer units" },
-        "purchaseValue": { "label": "Purchase value", "unit": "million kronor" },
-        "co2": { "label": "Emissions cut", "unit": "tonnes CO₂" },
-        "volunteers": { "label": "Volunteers", "unit": "" },
+        "units": {
+          "label": "Donated",
+          "unit": "computer units"
+        },
+        "purchaseValue": {
+          "label": "Purchase value",
+          "unit": "million kronor"
+        },
+        "co2": {
+          "label": "Emissions cut",
+          "unit": "tonnes CO₂"
+        },
+        "volunteers": {
+          "label": "Volunteers",
+          "unit": ""
+        },
         "staff": "{count} full-time staff"
       }
     },
@@ -4741,7 +4777,9 @@
       "milestone_completed": "{who} reached the milestone “{title}”",
       "other": "{who} updated the project",
       "tool_edited": "{who} worked on {tool}"
-    }
+    },
+    "draftWaiting": "Publish {project}?",
+    "draftWaitingMeta": "Draft for {days} days"
   },
   "MyGoodTribes": {
     "projectsTitle": "Your projects – where they are and what's next",
@@ -5215,7 +5253,12 @@
       "sharing": "Sharing the idea …",
       "loginNoteShare": "You log in with your email when you share the idea. Your answers are kept until then.",
       "errorShare": "Something went wrong sharing the idea. Your answers are still here — try again.",
-      "openQuestionsLabel": "Open questions"
+      "openQuestionsLabel": "Open questions",
+      "draftNote": "The project is a draft that only you and the people you invite can see, until you publish it.",
+      "draftLimitHeading": "You already have {max} drafts",
+      "draftLimitBody": "Publish or delete one of them before starting a new project.",
+      "draftLimitOpen": "Open",
+      "draftLimitShareHint": "You can also share the dream as an idea instead, so someone else can drive it."
     },
     "resume": "You have a Dream conversation in progress: <link>continue it</link>",
     "formInstead": "Prefer a form? <link>Quick start</link>"

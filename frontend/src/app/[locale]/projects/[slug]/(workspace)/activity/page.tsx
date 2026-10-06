@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
@@ -12,6 +13,7 @@ const PAGE_SIZE = 20;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
   const { locale, slug } = await params;
+  await notFoundUnlessVisible(slug);
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) return {};
   const t = await getTranslations({ locale, namespace: "ActivityPage" });
@@ -26,6 +28,7 @@ export default async function ProjectActivityPage({
   searchParams: Promise<{ page?: string }>;
 }) {
   const { slug } = await params;
+  await notFoundUnlessVisible(slug);
   const { page: pageStr } = await searchParams;
   const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
   const t = await getTranslations("ActivityPage");
