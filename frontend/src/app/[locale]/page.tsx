@@ -11,7 +11,7 @@ import { fetchActivityItems, type PulseItem } from "@/lib/activityFeed";
 import { resolveIdeaContent, resolveProjectContent } from "@/lib/contentTranslation";
 import { computeTaskProgressByProject } from "@/lib/taskProgress";
 import { getThanksState } from "@/lib/thanks";
-import { DISPLAY_PHASES, PROJECT_PHASE_LABEL, toDisplayPhase } from "@/lib/projectPhase";
+import { DISPLAY_PHASES, toDisplayPhase } from "@/lib/projectPhase";
 import ProjectCard from "@/components/ProjectCard";
 import Community from "@/components/ny-startsida/Community";
 import FoundingCard from "@/components/ny-startsida/FoundingCard";
@@ -145,9 +145,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const communityEvents = events.slice(0, 6);
   const thanks = await getThanksState(communityEvents, userId ?? null);
 
+  const tPhase = await getTranslations({ locale, namespace: "ProjectPhase" });
   const phases: JourneyPhase[] = DISPLAY_PHASES.map((p) => ({
     value: p.value as JourneyPhase["value"],
-    label: PROJECT_PHASE_LABEL[p.value],
+    label: tPhase(p.value),
     count: allProjects.filter((proj) => toDisplayPhase(proj.phase) === p.value).length,
   }));
 

@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
 import { getFoundingStoryData } from "@/lib/impactReports";
 import {
-  STAT_CIRCLE_HIDE_APPROX_SYMBOL, STAT_CIRCLE_LABELS, STAT_CIRCLE_MERGE_INTO, STAT_CIRCLE_UNIT_OVERRIDES,
+  STAT_CIRCLE_HIDE_APPROX_SYMBOL, STAT_CIRCLE_MERGE_INTO, STAT_CIRCLE_UNIT_OVERRIDES,
   formatStatNumber, sponsorLogosFor,
 } from "@/components/showroom/FoundingStory";
 import { MUTED, SUBTLE, SectionHeader, card, wrap } from "./Sections";
@@ -16,6 +16,15 @@ import { newHomeDisplayFont } from "./fonts";
 const CIRCLE_COLORS = ["#E8531F", "#2F7D3A", "#12486C", "#C62828"];
 const LOGO_HEIGHTS: Record<string, number> = { "Stockholms stad": 40, Coop: 32, OKQ8: 30 };
 const PROJECT_SLUG = "infos-datordonation";
+// Report id → its circle's texts in NewHomePage.founding.circles, so the
+// label and unit follow the page's language instead of the Swedish wording
+// stored on the report. A report not listed here shows its stored unit.
+const CIRCLE_KEYS: Record<string, "units" | "purchaseValue" | "co2" | "volunteers"> = {
+  "infos-units-total": "units",
+  "infos-equipment-purchase-value": "purchaseValue",
+  "infos-co2-total": "co2",
+  "infos-volunteers": "volunteers",
+};
 
 export default async function FoundingCard({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.founding" });
@@ -49,8 +58,9 @@ export default async function FoundingCard({ locale }: { locale: Locale }) {
         {circles.length > 0 && (
           <div className="grid shrink-0 grid-cols-2 gap-5">
             {circles.map((r, i) => {
-              const label = STAT_CIRCLE_LABELS[r.id];
-              const unit = STAT_CIRCLE_UNIT_OVERRIDES[r.id] ?? r.metricUnit;
+              const key = CIRCLE_KEYS[r.id];
+              const label = key ? t(`circles.${key}.label`) : null;
+              const unit = key ? t(`circles.${key}.unit`) : r.metricUnit;
               const millionsInUnit = r.id in STAT_CIRCLE_UNIT_OVERRIDES && r.metricValue >= 1_000_000;
               const merged = delivered.find((other) => STAT_CIRCLE_MERGE_INTO[other.id] === r.id);
               return (
@@ -68,7 +78,7 @@ export default async function FoundingCard({ locale }: { locale: Locale }) {
                   </p>
                   {merged ? (
                     <p className="m-0 text-[13px]">
-                      {formatStatNumber(merged.metricValue, merged.valueQualifier, locale)} {STAT_CIRCLE_LABELS[merged.id]?.toLowerCase()}
+                      {t("circles.staff", { count: formatStatNumber(merged.metricValue, merged.valueQualifier, locale) })}
                     </p>
                   ) : (
                     unit && <p className="m-0 text-[13px]">{unit}</p>
