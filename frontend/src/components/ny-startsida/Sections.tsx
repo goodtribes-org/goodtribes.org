@@ -77,7 +77,7 @@ export async function LiveStrip({ locale, items }: { locale: Locale; items: { pr
   if (items.length === 0) return null;
   const track = [...items, ...items];
   return (
-    <div className="mb-[48px] border-y border-[#E4E4DF] bg-white">
+    <div className="border-y border-[#E4E4DF] bg-white">
       <style>{`
         @keyframes nh-marq { to { transform: translateX(-50%); } }
         @media (prefers-reduced-motion: no-preference) { .nh-marq { animation: nh-marq 40s linear infinite; } }
