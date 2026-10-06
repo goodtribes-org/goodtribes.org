@@ -12,6 +12,7 @@ import { DREAM_OPENER } from "@/lib/prompts/dreamConversation";
 import { escapeHtml } from "@/lib/renderBody";
 import { getAiClientFor, aiGateMessage, resolveAiMode } from "@/lib/aiMode";
 import { createProjectRecord } from "@/lib/createProject";
+import { linkProjectToIdea } from "@/lib/promoteIdea";
 import { getFieldProvenance, recordAiWrite } from "@/lib/fieldProvenance";
 import { decideAiPlacement } from "@/lib/aiSuggestions";
 import { buildTranscript, generateBasics, runIdeaFill, statusFor } from "@/lib/ideaFill";
@@ -193,6 +194,9 @@ export async function createProjectFromDream(roomId: string) {
         sdgGoals: (value("sdgGoals") as number[] | undefined) ?? [],
         dreamFounderId: userId,
       });
+      // Din dröm on a shared idea (#233): link back and tell its author.
+      const basedOnIdeaId = (dream.state as { basedOnIdeaId?: unknown } | null)?.basedOnIdeaId;
+      if (typeof basedOnIdeaId === "string") await linkProjectToIdea(basedOnIdeaId, project.id, userId);
     }
 
     const aiUser = await getAiParticipantUser();

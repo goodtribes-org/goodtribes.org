@@ -14,12 +14,10 @@ import { SdgIcon } from "@/components/SdgIcon";
 import { SDG_LABELS_EN } from "@/lib/sdg";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
 import IdeaRevisions from "./IdeaRevisions";
-import IdeaPromoteButton from "./IdeaPromoteButton";
+import { isSiteAdmin } from "@/lib/authz";
 import { resolveIdeaContent } from "@/lib/contentTranslation";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "next-intl";
-
-const STATUS_STEPS = ["open", "review", "shortlisted", "approved", "converted"];
 
 const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   draft:       { bg: "bg-gray-100", text: "text-gray-600" },
@@ -107,7 +105,11 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           include: { proposedBy: { select: { name: true } } },
           orderBy: { createdAt: "desc" },
         },
-        promotedToProject: { select: { slug: true } },
+        basedProjects: {
+          where: { hiddenAt: null, archivedAt: null },
+          orderBy: { createdAt: "asc" },
+          select: { slug: true, title: true, owner: { select: { name: true } } },
+        },
         translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
       },
     }),
@@ -122,10 +124,8 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
   const hasFollowed = userId ? idea.followers.some((f) => f.userId === userId) : false;
   const isAuthor = userId === idea.author.id;
 
-  const userRecord = userId
-    ? await prisma.user.findUnique({ where: { id: userId }, select: { email: true } })
-    : null;
-  const isModerator = userRecord?.email?.endsWith("@goodtribes.org") ?? false;
+  // Site admins moderate (ContentFlag); no e-mail-domain check (#233).
+  const isModerator = userId ? await isSiteAdmin(userId) : false;
 
   // A moderation-hidden idea (see ContentFlag/contentModeration.ts) stays
   // visible to its author and moderators, 404s for everyone else — same
@@ -136,7 +136,6 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
   prisma.idea.update({ where: { id }, data: { viewCount: { increment: 1 } } }).catch(() => {});
 
   const statusInfo = STATUS_COLORS[idea.status] ?? STATUS_COLORS.open;
-  const currentStep = STATUS_STEPS.indexOf(idea.status);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -155,40 +154,6 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
         </div>
       )}
 
-      {/* Status progress bar */}
-      {idea.status !== "draft" && (
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            {STATUS_STEPS.map((step, i) => {
-              const info = STATUS_COLORS[step];
-              const done = currentStep >= i;
-              const current = currentStep === i;
-              return (
-                <div key={step} className="flex-1 flex flex-col items-center">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                    done ? `${info.bg} ${info.text} ring-2 ring-offset-1 ${current ? "ring-current" : "ring-transparent"}` : "bg-gray-100 text-gray-400"
-                  }`}>
-                    {done ? "✓" : i + 1}
-                  </div>
-                  <span className={`text-[9px] mt-1 font-medium uppercase tracking-wider ${done ? info.text : "text-gray-400"}`}>
-                    {statusLabels[step] ?? step}
-                  </span>
-                  {i < STATUS_STEPS.length - 1 && (
-                    <div className={`hidden md:block absolute mt-3.5 w-full h-0.5 -right-1/2 ${done && currentStep > i ? "bg-seagrass" : "bg-gray-200"}`} />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-seagrass rounded-full transition-all"
-              style={{ width: `${Math.max(5, (currentStep / (STATUS_STEPS.length - 1)) * 100)}%` }}
-            />
-          </div>
-        </div>
-      )}
-
       {/* Main layout */}
       <div className="flex gap-8">
         {/* Sidebar — vote/endorse/follow */}
@@ -203,7 +168,6 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
             hasFollowed={hasFollowed}
             isLoggedIn={!!userId}
             isAuthor={isAuthor}
-            isModerator={isModerator}
             currentStatus={idea.status}
             shareUrl={`${APP_URL}/${locale}/ideas/${id}`}
             shareTitle={content.title}
@@ -338,35 +302,40 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
             </section>
           )}
 
-          {/* Convert to project CTA */}
-          {idea.promotedToProject ? (
-            <div className="mb-8 p-5 border-2 border-dashed border-seagrass/40 rounded-xl bg-seagrass/5">
-              <p className="text-sm font-semibold text-dark-slate mb-1">{t("becameProjectBanner")}</p>
-              <Link
-                href={`/projects/${idea.promotedToProject.slug}`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-seagrass text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
-              >
-                {t("viewProjectLink")}
-              </Link>
-            </div>
-          ) : (
-            idea.status === "approved" &&
-            userId &&
-            (isAuthor || isModerator) && (
-              <div className="mb-8 p-5 border-2 border-dashed border-seagrass/40 rounded-xl bg-seagrass/5">
-                <p className="text-sm font-semibold text-dark-slate mb-1">{t("approvedBanner")}</p>
-                <p className="text-sm text-dark-slate/60 mb-3">
-                  {t("readyToConvertText")}
-                </p>
-                <IdeaPromoteButton ideaId={idea.id} />
+          {/* #233: anyone logged in can drive an open idea, as many times as
+              it takes; each project links back and the idea stays open. */}
+          {idea.status === "open" && (
+            <div className="mb-8 rounded-xl border-2 border-dashed border-seagrass/40 bg-seagrass/5 p-5">
+              {idea.basedProjects.length > 0 && (
+                <>
+                  <p className="mb-2 text-sm font-semibold text-dark-slate">{t("drivenBy", { count: idea.basedProjects.length })}</p>
+                  <ul className="mb-4 flex flex-col gap-1">
+                    {idea.basedProjects.map((p) => (
+                      <li key={p.slug} className="text-sm">
+                        <Link href={`/projects/${p.slug}`} className="font-medium text-seagrass hover:underline">
+                          {p.title}
+                        </Link>
+                        {p.owner.name && <span className="text-dark-slate/50"> · {p.owner.name}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              <p className="text-sm font-semibold text-dark-slate">{t("driveHeading")}</p>
+              <p className="mb-3 mt-1 text-sm text-dark-slate/60">{idea.basedProjects.length > 0 ? t("driveTextMore") : t("driveText")}</p>
+              {userId ? (
                 <Link
-                  href={`/projects/new?from=${idea.id}&title=${encodeURIComponent(content.title)}`}
-                  className="inline-block mt-2 text-xs text-dark-slate/50 hover:text-dark-slate hover:underline"
+                  href={`/projects/new?from=${idea.id}`}
+                  className="inline-flex items-center gap-2 rounded-lg bg-seagrass px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
                 >
-                  {t("customizeDetailsLink")}
+                  {t("driveButton")}
                 </Link>
-              </div>
-            )
+              ) : (
+                <Link href={`/login?callbackUrl=${encodeURIComponent(`/projects/new?from=${idea.id}`)}`} className="inline-flex items-center gap-2 rounded-lg bg-seagrass px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90">
+                  {t("driveButton")}
+                </Link>
+              )}
+            </div>
           )}
 
           {!userId && (

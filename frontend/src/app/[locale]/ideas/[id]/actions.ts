@@ -6,18 +6,16 @@ import type { IdeaStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notify";
 import { isSiteAdmin } from "@/lib/authz";
-import { promoteIdeaToProject } from "@/lib/promoteIdea";
 import { guardSocialAction } from "@/lib/socialActionGuard";
 import { runProactiveModeration } from "@/lib/proactiveModeration";
 import { indexDocuments, deleteDocument } from "@/lib/meili";
 import { routing } from "@/i18n/routing";
 import { IDEAS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 
-// Same six values as IdeaInteractions.tsx's STATUS_VALUES (the dropdown this
-// is called from) -- kept as a runtime whitelist here too since a Server
-// Action's arguments are just as reachable as any other input a client can
-// send, regardless of what a <select> on the calling page restricts to.
-const IDEA_STATUS_VALUES: readonly IdeaStatus[] = ["draft", "open", "review", "shortlisted", "approved", "converted"];
+// The only statuses since #233, same as IdeaInteractions.tsx's dropdown --
+// kept as a runtime whitelist here too since a Server Action's arguments
+// are just as reachable as any other input a client can send.
+const IDEA_STATUS_VALUES: readonly IdeaStatus[] = ["draft", "open"];
 
 
 export async function toggleVote(ideaId: string) {
@@ -111,12 +109,10 @@ export async function setIdeaStatus(ideaId: string, newStatusRaw: string) {
   });
   if (!idea) return { error: "Not found" };
 
-  const isAuthor = idea.authorId === session.user.id;
-  const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { email: true } });
-  const isModerator = user?.email?.endsWith("@goodtribes.org") ?? false;
-
+  // #233: no approval step. The author moves their idea between draft and
+  // open; moderation goes through ContentFlag, not a status.
   const authorAllowed: readonly IdeaStatus[] = ["draft", "open"];
-  if (!isModerator && (!isAuthor || !authorAllowed.includes(newStatus))) {
+  if (idea.authorId !== session.user.id || !authorAllowed.includes(newStatus)) {
     return { error: "Not authorised" };
   }
 
@@ -358,15 +354,4 @@ export async function upsertIdeaTranslation(
   return { ok: true };
 }
 
-export async function promoteIdea(ideaId: string) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Not logged in" };
 
-  try {
-    const project = await promoteIdeaToProject(ideaId, session.user.id);
-    revalidatePath(`/ideas/${ideaId}`);
-    return { slug: project.slug };
-  } catch (e: unknown) {
-    return { error: e instanceof Error ? e.message : "Could not promote idea" };
-  }
-}

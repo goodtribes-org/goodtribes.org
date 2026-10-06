@@ -122,6 +122,9 @@ model Project {
   sprints            Sprint[]             @relation("ProjectSprints")
   impactMetrics      ImpactMetric[]       @relation("ProjectImpactMetrics")
   impactReports      ImpactReport[]       @relation("ProjectImpactReports")
+  // Deprecated (#233): the old one-idea-one-project link, no longer
+  // written. basedOnIdea below replaces it; the column stays until a later
+  // cleanup drops it.
   promotedFromIdea   Idea?                @relation("IdeaPromotedToProject")
   maturity           ProjectMaturity?     @relation("ProjectMaturity")
   githubBoard        ProjectGithubBoard?  @relation("ProjectGithubBoard")
@@ -191,6 +194,12 @@ model Project {
   forkTokenGrantsGiven        ForkTokenGrant[]            @relation("ForkTokenGrantForkedProject")
   ownershipInterests          ProjectOwnershipInterest[]
   translations                ProjectTranslation[]
+  // The shared idea this project drives (#233). Anyone can drive any open
+  // idea, so one idea can have many projects; the idea stays open.
+  basedOnIdeaId               String?
+  basedOnIdea                 Idea?                       @relation("ProjectBasedOnIdea", fields: [basedOnIdeaId], references: [id], onDelete: SetNull)
+
+  @@index([basedOnIdeaId])
 }
 
 // Per-locale override of title/summary/description for a Project. The base

@@ -35,6 +35,8 @@ export type GuideInput = {
   // "Någon annan får driva det" (#234): the answers become an Idea instead
   // of a project.
   share?: boolean;
+  // "Jag vill driva den här" (#233): the open idea this project drives.
+  basedOnIdeaId?: string;
 };
 
 // Short or sweeping answers get a follow-up ("alla", "världen" — the same
@@ -83,6 +85,7 @@ export function parseGuideInput(raw: unknown): GuideInput {
     name: str(r.name, MAX_NAME_LENGTH),
     withAi: r.withAi !== false,
     share: r.share === true,
+    basedOnIdeaId: str(r.basedOnIdeaId, 40) || undefined,
   };
 }
 

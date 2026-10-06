@@ -28,6 +28,9 @@ const GUIDE_KEY = "gt:dream-guide";
 const GUIDE_KEEP_MS = 24 * 60 * 60 * 1000;
 
 type FollowUp = { question: string; answer: string };
+// "Jag vill driva den här" on an open idea (#233): its texts fill the
+// answers, and the new project links back to it.
+export type FromIdea = { id: string; title: string; author: string; dream: string; problem: string; idea: string };
 
 export default function DreamGuide({
   isLoggedIn,
@@ -35,6 +38,7 @@ export default function DreamGuide({
   withoutAi = false,
   stashed = null,
   stashId,
+  fromIdea = null,
 }: {
   isLoggedIn: boolean;
   // AI configured and the flag on. Logged out it is unknown (the flag can be
@@ -45,6 +49,7 @@ export default function DreamGuide({
   // dreamGuideStash.ts), for when this origin's localStorage doesn't have them.
   stashed?: GuideInput | null;
   stashId?: string;
+  fromIdea?: FromIdea | null;
 }) {
   const t = useTranslations("DreamGuide");
   const router = useRouter();
@@ -61,6 +66,7 @@ export default function DreamGuide({
   const [withAi, setWithAi] = useState(!withoutAi && (aiAvailable || !isLoggedIn));
   // "Någon annan får driva det" (#234): share the answers as an idea.
   const [share, setShare] = useState(false);
+  const [basedOnIdeaId, setBasedOnIdeaId] = useState<string | undefined>(fromIdea?.id);
   const [fromHome, setFromHome] = useState(false);
   const [backFromLogin, setBackFromLogin] = useState(false);
   const [thinking, setThinking] = useState(false);
@@ -76,7 +82,8 @@ export default function DreamGuide({
       setConditions(g.conditions ?? {});
       setName(typeof g.name === "string" ? g.name : "");
       setWithAi(g.withAi !== false && (aiAvailable || !isLoggedIn));
-      setShare(g.share === true);
+      setShare(g.share === true && !g.basedOnIdeaId);
+      setBasedOnIdeaId(g.basedOnIdeaId);
       setBackFromLogin(isLoggedIn);
       setStep(summaryStep);
     };
@@ -90,6 +97,15 @@ export default function DreamGuide({
     } catch {}
     if (local && Date.now() - (local.at ?? 0) < GUIDE_KEEP_MS) return restore(local);
     if (stashed) return restore(stashed);
+    if (fromIdea) {
+      const clip = (s: string) => s.trim().slice(0, MAX_ANSWER_LENGTH);
+      setAnswers({
+        dream: clip(fromIdea.dream),
+        ...(fromIdea.problem.trim() ? { problem: clip(fromIdea.problem) } : {}),
+        ...(fromIdea.idea.trim() ? { idea: clip(fromIdea.idea) } : {}),
+      });
+      return;
+    }
     // From the start page: question 1 is answered, go on to question 2.
     try {
       const raw = localStorage.getItem(HOME_DRAFT_KEY);
@@ -106,7 +122,8 @@ export default function DreamGuide({
   }, []);
 
   const area: GuideArea | undefined = GUIDE_AREAS[step];
-  const input = (): GuideInput => ({ answers, followUps, unknown, conditions, name, withAi, share });
+  // Driving an existing idea is never "share it as an idea" again.
+  const input = (): GuideInput => ({ answers, followUps, unknown, conditions, name, withAi, share: share && !basedOnIdeaId, basedOnIdeaId });
   const go = (s: number) => {
     setStep(s);
     window.scrollTo({ top: 0 });
@@ -175,7 +192,14 @@ export default function DreamGuide({
       <div className="mt-4 rounded-3xl border border-dark-slate/10 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_32px_-16px_rgba(0,0,0,0.15)] sm:p-8">
         {area && (
           <>
-            {step === 0 && <p className="mb-4 text-sm text-dark-slate/65">{t("intro")}</p>}
+            {step === 0 &&
+              (basedOnIdeaId ? (
+                <p className="mb-4 rounded-xl bg-seagrass/5 p-3 text-sm text-dark-slate/75">
+                  {fromIdea ? t("fromIdea", { title: fromIdea.title, author: fromIdea.author || "—" }) : t("fromIdeaShort")}
+                </p>
+              ) : (
+                <p className="mb-4 text-sm text-dark-slate/65">{t("intro")}</p>
+              ))}
             {fromHome && step === 1 && answers.dream && (
               <div className="mb-4 rounded-xl bg-seagrass/5 p-3 text-sm text-dark-slate/75">
                 <span className="font-medium text-dark-slate">{t("fromHome")}</span>{" "}
@@ -356,11 +380,18 @@ export default function DreamGuide({
               </li>
             </ul>
 
-            <p className="mt-6 text-sm font-semibold text-dark-slate">{t("summary.choiceHeading")}</p>
-            <div className="mt-2 flex flex-col gap-3 sm:flex-row">
-              <ChoiceCard active={!share} onClick={() => setShare(false)} title={t("summary.driveTitle")} body={t("summary.driveBody")} />
-              <ChoiceCard active={share} onClick={() => setShare(true)} title={t("summary.shareTitle")} body={t("summary.shareBody")} />
-            </div>
+            {/* Driving a shared idea (#233): it is already an idea, so no choice. */}
+            {basedOnIdeaId ? (
+              <p className="mt-6 rounded-xl bg-seagrass/5 p-3 text-sm text-dark-slate/75">{t("summary.drivingIdea")}</p>
+            ) : (
+              <>
+                <p className="mt-6 text-sm font-semibold text-dark-slate">{t("summary.choiceHeading")}</p>
+                <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+                  <ChoiceCard active={!share} onClick={() => setShare(false)} title={t("summary.driveTitle")} body={t("summary.driveBody")} />
+                  <ChoiceCard active={share} onClick={() => setShare(true)} title={t("summary.shareTitle")} body={t("summary.shareBody")} />
+                </div>
+              </>
+            )}
 
             <div className="mt-5 rounded-2xl border border-dark-slate/10 p-4">
               <p className="text-sm font-semibold text-dark-slate">{share ? t("summary.whatHappensShare") : t("summary.whatHappens")}</p>

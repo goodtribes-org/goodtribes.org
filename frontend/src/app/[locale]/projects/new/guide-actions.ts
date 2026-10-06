@@ -18,6 +18,7 @@ import { indexDocuments } from "@/lib/meili";
 import { guardSocialAction } from "@/lib/socialActionGuard";
 import { runProactiveModeration } from "@/lib/proactiveModeration";
 import { IDEAS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
+import { linkProjectToIdea } from "@/lib/promoteIdea";
 import {
   GUIDE_AREAS,
   MAX_ANSWER_LENGTH,
@@ -156,7 +157,14 @@ async function createWithAi(input: GuideInput, userId: string, openQuestions: st
 
   const covered = [...GUIDE_AREAS.filter((a) => input.answers[a]), ...(conditions ? ["conditions"] : [])];
   await prisma.dreamConversation.create({
-    data: { roomId: room.id, userId, aiMode: "AGENT", state: { covered, notes: {} }, openQuestions },
+    // basedOnIdeaId (#233): createProjectFromDream links the project to it.
+    data: {
+      roomId: room.id,
+      userId,
+      aiMode: "AGENT",
+      state: { covered, notes: {}, ...(input.basedOnIdeaId ? { basedOnIdeaId: input.basedOnIdeaId } : {}) },
+      openQuestions,
+    },
   });
   // Redirects to the new project's Idé page.
   await createProjectFromDream(room.id);
@@ -201,6 +209,7 @@ async function createWithoutAi(input: GuideInput, userId: string, openQuestions:
       })),
     });
   }
+  if (input.basedOnIdeaId) await linkProjectToIdea(input.basedOnIdeaId, project.id, userId);
   await markChecklistDone(project.id, "dream_defined", userId);
   redirect(await localized(`/projects/${project.slug}/ide`));
 }

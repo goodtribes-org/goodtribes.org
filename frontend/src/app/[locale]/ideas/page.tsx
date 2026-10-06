@@ -12,14 +12,11 @@ import { getCachedIdeasPage } from "@/lib/listCache";
 import type { Locale } from "next-intl";
 import type { IdeaStatus } from "@prisma/client";
 
-// Matches the tab values below (all valid IdeaStatus members except "draft"
-// and "converted" -- there's no tab for either since drafts aren't publicly
-// listed and a converted idea's page is meant to be reached via its linked
-// project instead of this filter bar). status comes straight off the URL's
-// query string, so it's validated against this whitelist rather than cast
-// directly -- an arbitrary/stale query value now falls back to "no filter"
-// instead of Prisma throwing on an invalid enum value.
-const FILTERABLE_IDEA_STATUSES: readonly IdeaStatus[] = ["open", "review", "shortlisted", "approved"];
+// Since #233 a listed idea is always open (no approval step, drafts aren't
+// listed), so there are no status tabs. An old ?status= link is validated
+// against this whitelist rather than cast, so a stale value falls back to
+// "no filter" instead of Prisma throwing on an invalid enum value.
+const FILTERABLE_IDEA_STATUSES: readonly IdeaStatus[] = ["open"];
 
 export const metadata: Metadata = {
   title: "Ideas — GoodTribes.org",
@@ -50,14 +47,6 @@ export default async function IdeasPage({
     getTranslations("ProjectCard"),
     getCachedIdeasPage(sort, statusFilter, category, sdgNum, region, page, locale),
   ]);
-
-  const STATUS_TABS = [
-    { value: "", label: t("statusAll") },
-    { value: "open", label: t("statusOpen") },
-    { value: "review", label: t("statusReview") },
-    { value: "shortlisted", label: t("statusShortlisted") },
-    { value: "approved", label: t("statusApproved") },
-  ];
 
   function statusBadge(status: string) {
     const map: Record<string, { label: string; cls: string }> = {
@@ -90,33 +79,6 @@ export default async function IdeasPage({
             {t("shareIdeaCta")}
           </Link>
         )}
-      </div>
-
-      {/* Status tabs */}
-      <div className="flex gap-1 mb-5 border-b border-muted-teal/30 pb-0 flex-nowrap overflow-x-auto scrollbar-none" style={{ scrollbarWidth: "none" }}>
-        {STATUS_TABS.map((tab) => {
-          const active = (status ?? "") === tab.value;
-          const params = new URLSearchParams();
-          if (tab.value) params.set("status", tab.value);
-          if (sort && sort !== "new") params.set("sort", sort);
-          if (category) params.set("category", category);
-          if (region) params.set("region", region);
-          if (sdg) params.set("sdg", sdg);
-          const qs = params.toString();
-          return (
-            <Link
-              key={tab.value}
-              href={`/ideas${qs ? `?${qs}` : ""}`}
-              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                active
-                  ? "border-seagrass text-seagrass"
-                  : "border-transparent text-dark-slate/50 hover:text-dark-slate"
-              }`}
-            >
-              {tab.label}
-            </Link>
-          );
-        })}
       </div>
 
       <IdeasFilters sort={sort} category={category} region={region} sdg={sdg} status={status} total={total} />
