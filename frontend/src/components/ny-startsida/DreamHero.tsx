@@ -223,7 +223,7 @@ export default function DreamHero() {
             e.preventDefault();
             submit();
           }}
-          className="relative z-[1] flex flex-col gap-2.5 rounded-[26px] border-2 border-[#B8BBB4] bg-white text-left transition-colors focus-within:border-[var(--color-coral)]"
+          className="relative z-[1] flex flex-col gap-2.5 rounded-[26px] border border-[#B8BBB4] bg-white text-left transition-colors focus-within:border-[var(--color-coral)]"
           style={{ padding: "18px 18px 14px 22px", boxShadow: "0 10px 30px rgba(27,31,29,0.12)" }}
         >
           <label htmlFor="nh-dream" className="sr-only">
