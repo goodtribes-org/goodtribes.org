@@ -69,23 +69,29 @@ const CLOUD_SYMBOLS: Record<CloudSymbol, React.ReactNode> = {
   ),
 };
 
-// A small cloud that rises up out of the trees, fading in and out as it goes
-// (see nh-fly-up-a/b below). The stroked shapes underneath and the filled
-// ones on top together draw one outline around the whole cloud.
+// A small fluffy cloud that rises up out of the trees, fading in and out as
+// it goes (see nh-fly-up-a/b below): one big puff in the middle with smaller
+// ones all around (form D, Niklas 2026-10-07). The stroked shapes underneath
+// and the filled ones on top together draw one outline around the whole
+// cloud; the symbol is scaled to sit inside the middle puff.
 function FloatingCloud({ symbol }: { symbol: CloudSymbol }) {
   const puffs = (
     <>
-      <circle cx="18" cy="26" r="10" />
-      <circle cx="31" cy="18" r="13" />
-      <circle cx="46" cy="25" r="10" />
-      <rect x="10" y="24" width="44" height="14" rx="7" />
+      <circle cx="16" cy="30" r="9" />
+      <circle cx="24" cy="19" r="10" />
+      <circle cx="36" cy="15" r="11" />
+      <circle cx="47" cy="22" r="10" />
+      <circle cx="50" cy="33" r="8" />
+      <circle cx="36" cy="37" r="9" />
+      <circle cx="24" cy="37" r="9" />
+      <circle cx="32" cy="27" r="13" />
     </>
   );
   return (
-    <svg width="54" height="38" viewBox="0 0 64 44" fill="none" aria-hidden>
-      <g fill="#FFFFFF" stroke="#C9D3DC" strokeWidth="3">{puffs}</g>
+    <svg width="62" height="56" viewBox="0 0 64 58" fill="none" aria-hidden>
+      <g fill="#FFFFFF" stroke="#C9D3DC" strokeWidth="2.5">{puffs}</g>
       <g fill="#FFFFFF">{puffs}</g>
-      {CLOUD_SYMBOLS[symbol]}
+      <g transform="translate(33 27) scale(0.72) translate(-32 -20)">{CLOUD_SYMBOLS[symbol]}</g>
     </svg>
   );
 }
