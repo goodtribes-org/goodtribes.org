@@ -114,6 +114,7 @@ export default async function ProjectDetailPage({
         orderBy: { addedAt: "asc" },
       },
       forkedFromProject: { select: { title: true, slug: true } },
+      basedOnIdea: { select: { id: true, title: true, hiddenAt: true, author: { select: { name: true } } } },
       forks: { select: { title: true, slug: true } },
       translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
     },
@@ -483,6 +484,21 @@ export default async function ProjectDetailPage({
           userId={userId ?? null}
           alreadyExpressedInterest={!!myOwnershipInterest}
         />
+      )}
+
+      {/* #233: the shared idea this project drives, credited to its author. */}
+      {project.basedOnIdea && !project.basedOnIdea.hiddenAt && (
+        <div className="max-w-2xl mx-auto mb-4 px-4 text-sm text-dark-slate/60 text-center">
+          <span aria-hidden>💡 </span>
+          {t.rich("basedOnIdea", {
+            author: project.basedOnIdea.author.name ?? "—",
+            idea: (chunks) => (
+              <Link href={`/ideas/${project.basedOnIdea!.id}`} className="text-seagrass hover:underline">
+                {chunks}
+              </Link>
+            ),
+          })}
+        </div>
       )}
 
       {project.forkedFromProject && (

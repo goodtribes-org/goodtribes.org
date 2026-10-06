@@ -33,11 +33,12 @@ export default async function NewProjectPage({
   const { from: ideaId, fromThread, title: titleParam, manual, ai, guide } = await searchParams;
   const userId = session?.user?.id;
 
-  // Drömguiden (#214): a plain "Nytt projekt" — and the start page's dream
-  // box — start here. No login until "Skapa mitt projekt". Promoting an
-  // idea or a thread, and Snabbstart (?manual=1), still use the form below.
-  if (!ideaId && !fromThread && !manual) {
-    const [aiAvailable, inProgress, tg, stashed] = await Promise.all([
+  // Din dröm (#214, #234): a plain "Nytt projekt", the start page's dream
+  // box and "Jag vill driva den här" on an idea (?from=, #233) start here.
+  // No login until "Skapa mitt projekt". Promoting a thread, and
+  // Snabbstart (?manual=1), still use the form below.
+  if (!fromThread && !manual) {
+    const [aiAvailable, inProgress, tg, stashed, idea] = await Promise.all([
       userId ? isAiProjectStartAvailable(userId) : Promise.resolve(false),
       userId
         ? prisma.dreamConversation.findFirst({
@@ -49,6 +50,13 @@ export default async function NewProjectPage({
       getTranslations({ locale, namespace: "DreamGuide" }),
       // Back from logging in (?guide=<id>): the answers kept on the server.
       isStashId(guide) ? readStashedGuideInput(guide) : Promise.resolve(null),
+      // The open idea being driven: its texts fill the answers.
+      ideaId
+        ? prisma.idea.findFirst({
+            where: { id: ideaId, status: "open", hiddenAt: null },
+            select: { id: true, title: true, description: true, problem: true, solution: true, author: { select: { name: true } } },
+          })
+        : Promise.resolve(null),
     ]);
     return (
       <div>
@@ -69,6 +77,18 @@ export default async function NewProjectPage({
           withoutAi={ai === "off"}
           stashed={stashed}
           stashId={stashed ? guide : undefined}
+          fromIdea={
+            idea
+              ? {
+                  id: idea.id,
+                  title: idea.title,
+                  author: idea.author.name ?? "",
+                  dream: idea.description || idea.title,
+                  problem: idea.problem ?? "",
+                  idea: idea.solution ?? "",
+                }
+              : null
+          }
         />
       </div>
     );

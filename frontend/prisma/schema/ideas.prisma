@@ -5,6 +5,9 @@
 // e.g. FlagStatus) deliberately -- matches the exact string values every
 // existing Idea row and application code already uses, so converting from
 // String avoids both a data rewrite and touching any call site.
+// Only draft and open are used since #233 (no approval step: anyone can
+// drive an open idea). The other values stay in the enum so no ALTER TYPE
+// is needed; the #233 migration moved every row using them to open.
 enum IdeaStatus {
   draft
   open
@@ -44,11 +47,14 @@ model Idea {
   mindMap          MindMap?
   revisions        IdeaRevision[]
   contributors     IdeaContributor[]
-  // PRD 5.16 — one-click idea->project pipeline. Idea holds the unique FK
-  // (same role Room plays for convertedToProjectId/convertedToIdeaId).
+  // PRD 5.16 — the old one-click idea->project link. Deprecated (#233),
+  // no longer written: Project.basedOnIdeaId (basedProjects) replaces it,
+  // and a migration copied every existing link over.
   promotedToProjectId String?  @unique
   promotedToProject   Project? @relation("IdeaPromotedToProject", fields: [promotedToProjectId], references: [id], onDelete: SetNull)
   translations         IdeaTranslation[]
+  // The projects that drive this idea (#233).
+  basedProjects        Project[]        @relation("ProjectBasedOnIdea")
 }
 
 // Per-locale override of title/description/problem/solution for an Idea.

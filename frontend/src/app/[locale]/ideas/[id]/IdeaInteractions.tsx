@@ -6,7 +6,8 @@ import { toggleVote, toggleEndorsement, toggleFollow, setIdeaStatus, addComment 
 import ShareButton from "@/components/ShareButton";
 import FlagContentButton from "@/components/FlagContentButton";
 
-const STATUS_VALUES = ["draft", "open", "review", "shortlisted", "approved", "converted"] as const;
+// #233: an idea is a draft or open; there is no approval step.
+const STATUS_VALUES = ["draft", "open"] as const;
 
 interface SidebarProps {
   ideaId: string;
@@ -18,7 +19,6 @@ interface SidebarProps {
   hasFollowed: boolean;
   isLoggedIn: boolean;
   isAuthor: boolean;
-  isModerator: boolean;
   currentStatus: string;
   shareUrl: string;
   shareTitle: string;
@@ -27,15 +27,11 @@ interface SidebarProps {
 const STATUS_LABEL_KEYS: Record<string, string> = {
   draft: "statusDraft",
   open: "statusOpen",
-  review: "statusReview",
-  shortlisted: "statusShortlisted",
-  approved: "statusApproved",
-  converted: "statusConverted",
 };
 
 export function IdeaSidebar({
   ideaId, voteCount, hasVoted, endorseCount, hasEndorsed,
-  followCount, hasFollowed, isLoggedIn, isAuthor, isModerator, currentStatus,
+  followCount, hasFollowed, isLoggedIn, isAuthor, currentStatus,
   shareUrl, shareTitle,
 }: SidebarProps) {
   const t = useTranslations("IdeaInteractions");
@@ -129,8 +125,8 @@ export function IdeaSidebar({
         <span className="text-[10px] uppercase tracking-wider">{t("followingLabel")}</span>
       </button>
 
-      {/* Status change (author + moderator) */}
-      {(isAuthor || isModerator) && (
+      {/* Draft or open (the author's own) */}
+      {isAuthor && (
         <div className="mt-1">
           <label className="text-[10px] text-dark-slate/50 uppercase tracking-wider block mb-1">{t("statusFieldLabel")}</label>
           <select
@@ -139,9 +135,7 @@ export function IdeaSidebar({
             disabled={pending}
             className="w-full text-xs border border-muted-teal rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-coral"
           >
-            {STATUS_VALUES.filter((value) =>
-              isModerator || ["draft", "open"].includes(value)
-            ).map((value) => (
+            {STATUS_VALUES.map((value) => (
               <option key={value} value={value}>{t(STATUS_LABEL_KEYS[value])}</option>
             ))}
           </select>

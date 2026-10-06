@@ -7,7 +7,7 @@ import { getLocale } from "next-intl/server";
 import { suggestSdgGoals } from "@/lib/claude";
 import { logOrgActivity } from "@/lib/activity";
 import { createProjectRecord } from "@/lib/createProject";
-import { linkPromotedProject } from "@/lib/promoteIdea";
+import { linkProjectToIdea } from "@/lib/promoteIdea";
 import { parseProjectInput } from "@/lib/github";
 import { syncProjectBoardInBackground } from "@/lib/githubSync";
 import { markChecklistDone } from "../[slug]/guide/actions";
@@ -84,7 +84,7 @@ export async function createProject(formData: FormData) {
   }
 
   if (ideaId) {
-    await linkPromotedProject(ideaId, project.id, userId);
+    await linkProjectToIdea(ideaId, project.id, userId);
   }
 
   if (fromThreadId) {

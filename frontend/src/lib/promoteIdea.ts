@@ -1,81 +1,69 @@
 import { prisma } from "@/lib/prisma";
-import { createProjectRecord } from "@/lib/createProject";
 import { createNotification } from "@/lib/notify";
-import { isSiteAdmin } from "@/lib/authz";
 
-// PRD 5.16 — stamps the permanent Idea<->Project back-link, carries the
-// idea's contributors over as project members, and notifies them. Shared by
-// both the one-click promote action and the manual /projects/new?from=
-// form path so the two never drift apart. Best-effort/sequential, matching
-// the existing Room-conversion precedent (Room.convertedToProjectId) — the
-// project already exists by the time this runs, so there's nothing left to
-// roll back if a later step fails.
-export async function linkPromotedProject(ideaId: string, projectId: string, ownerId: string) {
-  await prisma.idea
-    .update({ where: { id: ideaId }, data: { promotedToProjectId: projectId, status: "converted" } })
-    .catch(() => {});
+// How long the idea author's invitation into a project that drives their
+// idea stays open. Longer than a normal invite (7 days): they didn't ask.
+const AUTHOR_INVITE_DAYS = 30;
 
-  const contributors = await prisma.ideaContributor.findMany({
-    where: { ideaId },
-    select: { userId: true },
+// #233: anyone can drive any open idea, and one idea can have many
+// projects. Links a new project to the idea it drives, and tells the
+// idea's author and contributors. The author gets an invitation to join as
+// an adviser, which they can ignore — they can't say no to the project
+// itself. Nobody is added to the project without accepting.
+//
+// Best-effort and sequential, like the room-conversion precedent: the
+// project already exists by the time this runs, so a failed step only
+// means a missing link or notice, never a broken project.
+export async function linkProjectToIdea(ideaId: string, projectId: string, ownerId: string) {
+  const idea = await prisma.idea.findFirst({
+    where: { id: ideaId, hiddenAt: null, status: "open" },
+    select: { id: true, title: true, authorId: true, author: { select: { email: true } } },
   });
-  const memberIds = contributors.map((c) => c.userId).filter((id) => id !== ownerId);
+  if (!idea) return;
 
-  if (memberIds.length > 0) {
-    await prisma.projectMember
-      .createMany({
-        data: memberIds.map((userId) => ({ projectId, userId, role: "MEMBER" as const })),
-        skipDuplicates: true,
-      })
-      .catch(() => {});
+  const project = await prisma.project
+    .update({ where: { id: projectId }, data: { basedOnIdeaId: idea.id }, select: { slug: true, title: true } })
+    .catch(() => null);
+  if (!project) return;
+  const owner = await prisma.user.findUnique({ where: { id: ownerId }, select: { name: true } });
+  const who = owner?.name ?? "Någon";
+
+  if (idea.authorId !== ownerId) {
+    // An invite tied to the author's address (acceptInvite checks it).
+    const invite = idea.author.email
+      ? await prisma.projectInvite
+          .create({
+            data: {
+              projectId,
+              email: idea.author.email,
+              createdById: ownerId,
+              expiresAt: new Date(Date.now() + AUTHOR_INVITE_DAYS * 24 * 60 * 60 * 1000),
+            },
+          })
+          .catch(() => null)
+      : null;
+    await createNotification({
+      userId: idea.authorId,
+      type: "idea_driven",
+      title: `${who} driver nu din idé "${idea.title}"`,
+      body: invite
+        ? `Projektet heter ${project.title}. Du är välkommen in som rådgivare om du vill.`
+        : `Projektet heter ${project.title}.`,
+      url: invite ? `/invite/${invite.token}` : `/projects/${project.slug}`,
+    }).catch(() => {});
   }
 
-  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { slug: true, title: true } });
+  const contributors = await prisma.ideaContributor.findMany({ where: { ideaId }, select: { userId: true } });
+  const others = [...new Set(contributors.map((c) => c.userId))].filter((id) => id !== ownerId && id !== idea.authorId);
   await Promise.all(
-    memberIds.map((userId) =>
+    others.map((userId) =>
       createNotification({
         userId,
-        type: "idea_promoted",
-        title: `An idea you contributed to became a project`,
-        body: project?.title,
-        url: project ? `/projects/${project.slug}` : undefined,
-      }).catch(() => {})
-    )
+        type: "idea_driven",
+        title: `En idé du bidragit till drivs nu av ${who}`,
+        body: project.title,
+        url: `/projects/${project.slug}`,
+      }).catch(() => {}),
+    ),
   );
-}
-
-// The one-click promotion path (PRD 5.16). Only the idea's author or a site
-// admin may promote, and only once the idea has reached "approved" — same
-// gate the existing (manual) convert-to-project CTA already used.
-export async function promoteIdeaToProject(ideaId: string, actorId: string) {
-  const idea = await prisma.idea.findUnique({
-    where: { id: ideaId },
-    select: {
-      id: true, title: true, description: true, problem: true, solution: true,
-      sdgGoals: true, category: true, tags: true, imageUrl: true,
-      status: true, authorId: true, promotedToProjectId: true,
-    },
-  });
-  if (!idea) throw new Error("Idea not found");
-  if (idea.promotedToProjectId) throw new Error("Idea already promoted to a project");
-  if (idea.status !== "approved") throw new Error("Idea must be approved before it can become a project");
-
-  const authorized = actorId === idea.authorId || (await isSiteAdmin(actorId));
-  if (!authorized) throw new Error("Not authorised");
-
-  const description = [idea.description, idea.problem, idea.solution].filter(Boolean).join("\n\n") || null;
-
-  const project = await createProjectRecord({
-    title: idea.title,
-    ownerId: idea.authorId,
-    description,
-    imageUrl: idea.imageUrl,
-    category: idea.category,
-    tags: idea.tags,
-    sdgGoals: idea.sdgGoals,
-  });
-
-  await linkPromotedProject(idea.id, project.id, idea.authorId);
-
-  return project;
 }
