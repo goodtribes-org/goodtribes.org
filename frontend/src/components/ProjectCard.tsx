@@ -92,7 +92,7 @@ export default function ProjectCard({
   return (
     <a
       href={`/projects/${project.slug}`}
-      className={`rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-white flex flex-col ${
+      className={`w-full rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-white flex flex-col ${
         effectiveVariant === "sandbox" ? "border border-orange-500 hover:border-orange-600" : "border border-seagrass hover:border-dark-slate"
       }`}
     >
