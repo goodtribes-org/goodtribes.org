@@ -41,16 +41,50 @@ function Arrow({ size }: { size: number }) {
   );
 }
 
-// A little idea-bulb-with-wings that rises up out of the trees, fading in
-// and out as it goes (see nh-fly-up-a/b below) rather than orbiting in place.
-function FlyingBulb({ style }: { style: React.CSSProperties }) {
+type CloudSymbol = "bulb" | "heart" | "leaf" | "thumb";
+
+// What each cloud carries: a lit bulb for dreams and ideas, and the tree
+// pictures' speech-bubble symbols (red heart, green leaf, blue thumb).
+const CLOUD_SYMBOLS: Record<CloudSymbol, React.ReactNode> = {
+  bulb: (
+    <>
+      <path d="M32 7.5v2.5M24.5 10.5l1.7 1.7M39.5 10.5l-1.7 1.7M21.5 17.5h2.4M40.1 17.5h2.4" stroke="#F5A300" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M32 12.5a6.6 6.6 0 00-3.8 12c.45.35.65.8.65 1.3v.6h6.3v-.6c0-.5.2-.95.65-1.3A6.6 6.6 0 0032 12.5z" fill="#FFD84D" stroke="#E8A000" strokeWidth="1.4" />
+      <path d="M29.4 29h5.2M30 31.2h4" stroke="#8A918D" strokeWidth="1.6" strokeLinecap="round" />
+    </>
+  ),
+  heart: <path d="M32 32.5s-8.5-5.2-8.5-11a4.6 4.6 0 018.5-2.5 4.6 4.6 0 018.5 2.5c0 5.8-8.5 11-8.5 11z" fill="#AB0000" />,
+  leaf: (
+    <>
+      <path d="M23.5 32c0-9.5 6-15 17-15 0 10-6.5 15-17 15z" fill="#005600" />
+      <path d="M24.5 31l10-9.5" stroke="#FFFFFF" strokeWidth="1.2" strokeLinecap="round" />
+    </>
+  ),
+  thumb: (
+    <>
+      <rect x="22.5" y="22" width="4" height="10" rx="1" fill="#0000AB" />
+      <path d="M28 32h9a2 2 0 002-1.6l1.4-6.5a2 2 0 00-2-2.4H34l.8-3.8a2 2 0 00-3.7-1.4L28 22.3z" fill="#0000AB" />
+    </>
+  ),
+};
+
+// A small cloud that rises up out of the trees, fading in and out as it goes
+// (see nh-fly-up-a/b below). The stroked shapes underneath and the filled
+// ones on top together draw one outline around the whole cloud.
+function FloatingCloud({ symbol }: { symbol: CloudSymbol }) {
+  const puffs = (
+    <>
+      <circle cx="18" cy="26" r="10" />
+      <circle cx="31" cy="18" r="13" />
+      <circle cx="46" cy="25" r="10" />
+      <rect x="10" y="24" width="44" height="14" rx="7" />
+    </>
+  );
   return (
-    <svg width="36" height="34" viewBox="0 0 40 36" fill="none" style={style} aria-hidden>
-      <path d="M15 15C8 8 -1 9 1 16c1.6 5.6 8 6.7 14 2.5" fill="#FFFFFF" fillOpacity="0.9" stroke="#F5B82E" strokeWidth="1.4" strokeLinejoin="round" />
-      <path d="M25 15c7-7 16-6 14 1-1.6 5.6-8 6.7-14 2.5" fill="#FFFFFF" fillOpacity="0.9" stroke="#F5B82E" strokeWidth="1.4" strokeLinejoin="round" />
-      <path d="M20 6a7.5 7.5 0 00-4.3 13.6c.5.35.7.9.7 1.4v.6h7.2v-.6c0-.5.2-1.05.7-1.4A7.5 7.5 0 0020 6z" fill="#FCEFC7" stroke="#E8531F" strokeWidth="1.8" />
-      <path d="M17 23.6h6M17.7 26h4.6" stroke="#8A918D" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M17.8 13l2.2 3.4 2.2-3.4" stroke="#E8531F" strokeWidth="1.1" fill="none" strokeLinecap="round" />
+    <svg width="54" height="38" viewBox="0 0 64 44" fill="none" aria-hidden>
+      <g fill="#FFFFFF" stroke="#C9D3DC" strokeWidth="3">{puffs}</g>
+      <g fill="#FFFFFF">{puffs}</g>
+      {CLOUD_SYMBOLS[symbol]}
     </svg>
   );
 }
@@ -169,18 +203,19 @@ export default function DreamHero() {
           <img className="block" src="/img/sandbox-tree-right.png" alt="" width={316} height={330} />
         </div>
 
-        {/* A few idea-bulbs with wings, rising up out of the tree crowns. */}
+        {/* A few small clouds, rising up out of the tree crowns: a lit bulb
+            (dreams, ideas), a heart, a leaf and a thumb up. */}
         <div aria-hidden className="nh-fly-up-a pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% + 175px)", left: -40 }}>
-          <FlyingBulb style={{}} />
+          <FloatingCloud symbol="bulb" />
         </div>
         <div aria-hidden className="nh-fly-up-b pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% + 140px)", left: 60, animationDelay: "-3s" }}>
-          <FlyingBulb style={{}} />
+          <FloatingCloud symbol="heart" />
         </div>
         <div aria-hidden className="nh-fly-up-b pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% + 180px)", left: 1010, animationDelay: "-1.5s" }}>
-          <FlyingBulb style={{}} />
+          <FloatingCloud symbol="leaf" />
         </div>
         <div aria-hidden className="nh-fly-up-a pointer-events-none absolute z-0 hidden xl:block" style={{ bottom: "calc(100% + 145px)", left: 900, animationDelay: "-5s" }}>
-          <FlyingBulb style={{}} />
+          <FloatingCloud symbol="thumb" />
         </div>
 
         <form
