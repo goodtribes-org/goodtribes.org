@@ -57,6 +57,7 @@ export default function IdeasFilters({ sort, category, region, sdg, status, tota
           { value: "new", label: t("sortNew") },
           { value: "top", label: t("sortTop") },
           { value: "trending", label: t("sortTrending") },
+          { value: "waiting", label: t("sortWaiting") },
         ].map((s) => (
           <Link
             key={s.value}

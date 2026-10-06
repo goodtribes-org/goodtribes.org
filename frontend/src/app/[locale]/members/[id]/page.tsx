@@ -80,6 +80,12 @@ export default async function MemberProfilePage({
 
   if (!member) notFound();
 
+  // #237: shared ideas and how many of them someone drives. No ranking.
+  const [ideasShared, ideasDriven] = await Promise.all([
+    prisma.idea.count({ where: { authorId: id, hiddenAt: null, status: "open" } }),
+    prisma.idea.count({ where: { authorId: id, hiddenAt: null, status: "open", basedProjects: { some: { hiddenAt: null } } } }),
+  ]);
+
   const social = (member.socialLinks ?? {}) as Record<string, string>;
   const initials = member.name!
     .split(" ")
@@ -145,6 +151,12 @@ export default async function MemberProfilePage({
           )}
         </div>
       </div>
+
+      {ideasShared > 0 && (
+        <p className="mb-6 inline-block rounded-full bg-coral/10 px-3 py-1 text-sm font-medium text-coral">
+          {t("ideaGiver", { shared: ideasShared, driven: ideasDriven })}
+        </p>
+      )}
 
       {member.bio && (
         <section className="mb-8">

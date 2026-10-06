@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdminSession } from "@/lib/authz";
 import { createNotification } from "@/lib/notify";
 import { PENDING_REPORT_WHERE } from "@/lib/impactReports";
+import { notifyIdeaAuthor } from "@/lib/ideaOutcome";
 
 // The Foundation's decision on a project's claimed SDG outcome (PRD 4d).
 // Verification is what turns a self-reported number into something a funder,
@@ -53,6 +54,15 @@ export async function verifyImpactReport(reportId: string, note: string) {
       title: `Impact-rapport verifierad — ${report.project.title}`,
       body: report.metricDescription,
       url: `/projects/${report.project.slug}/impact`,
+    });
+  }
+  // #237: a verified result (never support received) is part of what the
+  // idea became, so its author hears about it.
+  if (report.kind === "DELIVERED") {
+    await notifyIdeaAuthor(report.projectId, {
+      type: "idea_project_result",
+      title: (p, idea) => `${p}, som driver din idé "${idea}", har fått ett resultat verifierat`,
+      body: report.metricDescription,
     });
   }
 

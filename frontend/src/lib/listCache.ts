@@ -114,7 +114,7 @@ export const getCachedProjectsPage = unstable_cache(
 
 export const getCachedIdeasPage = unstable_cache(
   async (
-    sort: "top" | "trending" | "new",
+    sort: "top" | "trending" | "new" | "waiting",
     status: IdeaStatus | undefined,
     category: string | undefined,
     sdgNum: number | undefined,
@@ -130,10 +130,12 @@ export const getCachedIdeasPage = unstable_cache(
       ...(region ? { targetRegion: region } : {}),
     };
 
-    const orderBy =
-      sort === "top" ? { votes: { _count: "desc" as const } }
-      : sort === "trending" ? { updatedAt: "desc" as const }
-      : { createdAt: "desc" as const };
+    // "waiting" (#237): ideas nobody drives yet first, newest first among them.
+    const orderBy: Prisma.IdeaOrderByWithRelationInput[] =
+      sort === "top" ? [{ votes: { _count: "desc" } }]
+      : sort === "trending" ? [{ updatedAt: "desc" }]
+      : sort === "waiting" ? [{ basedProjects: { _count: "asc" } }, { createdAt: "desc" }]
+      : [{ createdAt: "desc" }];
 
     const [total, ideas] = await Promise.all([
       prisma.idea.count({ where }),
@@ -144,7 +146,7 @@ export const getCachedIdeasPage = unstable_cache(
         take: IDEAS_PAGE_SIZE,
         include: {
           author: { select: { name: true } },
-          _count: { select: { votes: true, comments: true, endorsements: true, followers: true } },
+          _count: { select: { votes: true, comments: true, endorsements: true, followers: true, basedProjects: { where: { hiddenAt: null } } } },
           translations: locale !== routing.defaultLocale ? { where: { locale } } : false,
         },
       }),

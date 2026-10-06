@@ -9,7 +9,8 @@ import { redirect } from "next/navigation";
 import { indexDocuments, deleteDocument } from "@/lib/meili";
 import { hasProjectRole, isSiteAdmin, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
-import { getNextPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { PROJECT_PHASE_LABEL, getNextPhase, toDisplayPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { notifyIdeaAuthor } from "@/lib/ideaOutcome";
 import { parseProjectInput } from "@/lib/github";
 import { syncProjectBoardInBackground } from "@/lib/githubSync";
 import { isColumnKey } from "@/lib/kanbanColumns";
@@ -216,6 +217,11 @@ export async function advanceProjectPhase(slug: string) {
   ]);
 
   void enqueueProjectUpdatedFundingMatch(project.id);
+  // #237: the author of the idea this project drives hears it moved on.
+  void notifyIdeaAuthor(project.id, {
+    type: "idea_project_phase",
+    title: (p, idea) => `${p}, som driver din idé "${idea}", har gått vidare till ${PROJECT_PHASE_LABEL[toDisplayPhase(nextPhase)]}`,
+  });
 
   if (!project.hiddenAt) {
     void indexDocuments("projects", [{
