@@ -23,6 +23,11 @@ const TAGLINE_WOBBLE: [number, number][] = [
   [-2, 0.05],
   [1, -0.03],
 ];
+// One colour per word of the tagline, taken from the tree pictures' speech
+// bubbles (blue thumb, red heart, green leaf) plus GoodTribes' orange and
+// black: Vi · gör · goda · drömmar · verkliga. Extra words (the English
+// "come true.") keep the last colour.
+const TAGLINE_COLORS = ["var(--color-coral)", "#1a1a1a", "#ab0000", "#0000ab", "#005600"];
 // Matches the placeholder's fade animation (nh-ph below), so each example
 // fades in, stays and fades out once.
 const EXAMPLE_INTERVAL_MS = 3200;
@@ -106,8 +111,8 @@ export default function DreamHero() {
         className={`${heroTaglineFont.className} nh-write relative text-[32px] leading-none sm:text-[40px]`}
         style={{ color: "var(--color-navy)", fontWeight: 400, transform: "rotate(-2deg)" }}
       >
-        {/* The logo's blue and no underline, so the heading's
-            "förändra?" stays the one accent on the hero. Each word gets its
+        {/* A colour per word (TAGLINE_COLORS) and no underline, so the
+            heading's "förändra?" stays the one underlined accent. Each word gets its
             own small tilt and baseline shift, the whole line leans slightly
             uphill and is "written" in left to right, so it feels handwritten.
             The message's <u> marker is stripped here — an underline is easy
@@ -120,7 +125,13 @@ export default function DreamHero() {
             const [deg, dy] = TAGLINE_WOBBLE[i % TAGLINE_WOBBLE.length];
             return (
               <span key={i}>
-                <span className="inline-block" style={{ transform: `translateY(${dy}em) rotate(${deg}deg)` }}>
+                <span
+                  className="inline-block"
+                  style={{
+                    transform: `translateY(${dy}em) rotate(${deg}deg)`,
+                    color: TAGLINE_COLORS[Math.min(i, TAGLINE_COLORS.length - 1)],
+                  }}
+                >
                   {word}
                 </span>
                 {i < words.length - 1 && " "}
