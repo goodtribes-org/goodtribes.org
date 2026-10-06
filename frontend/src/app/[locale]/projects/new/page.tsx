@@ -10,6 +10,7 @@ import { isStashId, readStashedGuideInput } from "@/lib/dreamGuideStash";
 import { Link } from "@/i18n/navigation";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { listOwnDrafts } from "@/lib/projectVisibility";
+import { openChallengeBySlug } from "@/lib/challenges";
 import type { Metadata } from "next";
 import type { Locale } from "next-intl";
 
@@ -24,14 +25,14 @@ export default async function NewProjectPage({
   searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ from?: string; fromThread?: string; title?: string; manual?: string; ai?: string; guide?: string }>;
+  searchParams: Promise<{ from?: string; fromThread?: string; title?: string; manual?: string; ai?: string; guide?: string; challenge?: string }>;
 }) {
   const { locale } = await params;
   const [session, t] = await Promise.all([
     auth(),
     getTranslations({ locale, namespace: "NewProjectPage" }),
   ]);
-  const { from: ideaId, fromThread, title: titleParam, manual, ai, guide } = await searchParams;
+  const { from: ideaId, fromThread, title: titleParam, manual, ai, guide, challenge: challengeParam } = await searchParams;
   const userId = session?.user?.id;
 
   // Din dröm (#214, #234): a plain "Nytt projekt", the start page's dream
@@ -61,6 +62,8 @@ export default async function NewProjectPage({
       // The draft limit (#226) shown on the summary.
       userId ? listOwnDrafts(userId) : Promise.resolve(null),
     ]);
+    // "Dela en idé till utmaningen" (#228), also after the login round trip.
+    const challenge = await openChallengeBySlug(challengeParam ?? stashed?.challengeSlug);
     return (
       <div>
         {inProgress && (
@@ -93,6 +96,7 @@ export default async function NewProjectPage({
               : null
           }
           ownDrafts={ownDrafts}
+          challenge={challenge ? { slug: challenge.slug, title: challenge.title, organisation: challenge.organisation.name } : null}
         />
       </div>
     );

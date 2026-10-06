@@ -170,6 +170,7 @@ model User {
   decidedAiProjectPlans          AiProjectPlan[]           @relation("AiProjectPlanDecidedBy")
   dreamConversations DreamConversation[] @relation("DreamConversations")
   roleNeedsFilled               ProjectRoleNeed[]              @relation("RoleNeedFilledBy")
+  createdChallenges             Challenge[]                    @relation("ChallengeCreator")
 }
 
 model Skill {

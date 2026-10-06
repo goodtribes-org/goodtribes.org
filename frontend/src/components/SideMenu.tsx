@@ -97,6 +97,7 @@ export default function SideMenu() {
     items: [
       { href: "/projects", label: t("discoverProjects") },
       { href: "/ideas", label: t("discoverIdeas") },
+      { href: "/challenges", label: t("discoverChallenges") },
       // Idéverkstaden redirects guests to /login — don't show a dead-end link.
       ...(loggedIn ? [{ href: "/ideaverkstad", label: t("discoverIdeaverkstad") }] : []),
       { href: "/org", label: t("discoverOrgs") },

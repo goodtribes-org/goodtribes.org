@@ -115,6 +115,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           include: { proposedBy: { select: { name: true } } },
           orderBy: { createdAt: "desc" },
         },
+        challenge: { select: { slug: true, title: true, publishedAt: true, organisation: { select: { name: true } } } },
         basedProjects: {
           where: { ...PUBLIC_PROJECT_WHERE, archivedAt: null },
           orderBy: { createdAt: "asc" },
@@ -203,6 +204,14 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
             )}
           </div>
 
+          {idea.challenge?.publishedAt && (
+            <Link
+              href={`/challenges/${idea.challenge.slug}`}
+              className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-seagrass/10 px-3 py-1 text-xs font-medium text-seagrass hover:bg-seagrass/15"
+            >
+              🎯 {t("answersChallenge", { organisation: idea.challenge.organisation.name, title: idea.challenge.title })}
+            </Link>
+          )}
           <h1 className="text-2xl font-bold text-dark-slate mb-3 leading-snug">{content.title}</h1>
 
           <div className="flex items-center gap-3 mb-6 text-sm text-dark-slate/50">

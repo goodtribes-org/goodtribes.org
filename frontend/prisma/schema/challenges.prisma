@@ -1,0 +1,37 @@
+// Utmaningar (#228). An organisation asks a concrete question with a
+// deadline ("Hur minskar vi ensamheten bland äldre i Gottsunda?"), people
+// share ideas as answers, and anyone can drive one of them — the ideas are
+// ordinary Idea rows (Idea.challengeId), so everything the idea feed does
+// (driving, "Jag vill hjälpa till", för/emot, liknande idéer) applies.
+//
+// No status column: where a challenge is comes from its dates and whether
+// the organisation has featured any ideas (lib/challenges.ts's
+// challengeStage), so it can't drift out of step with them.
+model Challenge {
+  id             String       @id @default(cuid())
+  slug           String       @unique
+  organisationId String
+  organisation   Organisation @relation("OrganisationChallenges", fields: [organisationId], references: [id], onDelete: Cascade)
+  // The question itself.
+  title          String
+  // Background, rich text — sanitizeHtml() on save and at render.
+  description    String?
+  imageUrl       String?
+  // What the organisation offers whoever drives an idea (money, premises,
+  // contacts), described in words only: no money moves through the
+  // platform for a challenge (Niklas, 2026-10-06).
+  supportText    String?
+  // Ideas can be shared until closesAt.
+  closesAt       DateTime
+  // NULL = a draft only the organisation's owners/admins see.
+  publishedAt    DateTime?
+  createdById    String
+  createdBy      User         @relation("ChallengeCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  ideas          Idea[]       @relation("ChallengeIdeas")
+
+  @@index([organisationId])
+  @@index([publishedAt, closesAt])
+}
