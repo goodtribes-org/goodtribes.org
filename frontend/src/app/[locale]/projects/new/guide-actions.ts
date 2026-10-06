@@ -14,6 +14,10 @@ import { markChecklistDone } from "@/app/[locale]/projects/[slug]/guide/actions"
 import { createProjectFromDream } from "./samtal/actions";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { dropStashedGuideInput, stashGuideInput } from "@/lib/dreamGuideStash";
+import { indexDocuments } from "@/lib/meili";
+import { guardSocialAction } from "@/lib/socialActionGuard";
+import { runProactiveModeration } from "@/lib/proactiveModeration";
+import { IDEAS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 import {
   GUIDE_AREAS,
   MAX_ANSWER_LENGTH,
@@ -110,6 +114,8 @@ export async function createProjectFromGuide(raw: unknown, stashId?: string) {
   // The project is being made from these answers: don't offer them again.
   if (stashId) await dropStashedGuideInput(stashId);
 
+  if (input.share) await shareAsIdea(input, userId, openQuestions, t);
+
   if (input.withAi && (await isAiProjectStartAvailable(userId))) {
     await createWithAi(input, userId, openQuestions, t);
   }
@@ -197,6 +203,56 @@ async function createWithoutAi(input: GuideInput, userId: string, openQuestions:
   }
   await markChecklistDone(project.id, "dream_defined", userId);
   redirect(await localized(`/projects/${project.slug}/ide`));
+}
+
+// "Någon annan får driva det" (#234): the answers become an Idea in
+// Idéflödet, word for word and without AI, so anyone can take it forward.
+// The dream is the card text (description). The idea page shows only
+// problem and solution, so problem carries every area under its own label
+// (the dream first) and solution the idea.
+async function shareAsIdea(input: GuideInput, userId: string, openQuestions: string[], t: T) {
+  const guard = await guardSocialAction(userId, "post");
+  if (!guard.ok) throw new Error(guard.error);
+  const text = (a: GuideArea) => {
+    if (!input.answers[a]) return null;
+    const f = input.followUps[a];
+    return [input.answers[a]!, f?.answer].filter(Boolean).join("\n\n");
+  };
+  const labelled = (a: GuideArea) => {
+    const body = text(a);
+    return body ? `${t(`questions.${a}.area`)}\n${body}` : null;
+  };
+  const problem =
+    [
+      labelled("dream"),
+      labelled("problem"),
+      labelled("why_you"),
+      labelled("people"),
+      openQuestions.length ? `${t("summary.openQuestionsLabel")}\n${openQuestions.map((q) => `– ${q}`).join("\n")}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n\n") || null;
+  const solution = text("idea");
+  const description = text("dream");
+
+  const idea = await prisma.idea.create({
+    // sdgGoals is NOT NULL without a default in the table; tags as the
+    // idea form leaves them. SDGs can be picked on the idea afterwards.
+    data: { title: fallbackTitle(input), description, problem, solution, sdgGoals: [], tags: [], status: "open", authorId: userId },
+  });
+  await prisma.ideaContributor.create({ data: { ideaId: idea.id, userId, role: "author" } }).catch(() => {});
+  await runProactiveModeration({
+    targetType: "Idea",
+    targetId: idea.id,
+    authorId: userId,
+    text: [idea.title, description, problem, solution].filter(Boolean).join("\n\n"),
+    url: `/ideas/${idea.id}`,
+  });
+  void indexDocuments("ideas", [
+    { id: `idea-${idea.id}`, type: "idea", title: idea.title, description: problem ?? description ?? "", url: `/ideas/${idea.id}`, locale: "sv" },
+  ]);
+  invalidateListCache(IDEAS_LIST_TAG);
+  redirect(await localized(`/ideas/${idea.id}`));
 }
 
 function conditionsText(input: GuideInput, t: T): string {

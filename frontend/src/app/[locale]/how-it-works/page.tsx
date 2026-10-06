@@ -37,7 +37,6 @@ const ANCHOR_PHASE: Record<string, ProjectPhaseValue> = {
 const WAYS = [
   { key: "start", href: "/projects/new" },
   { key: "join", href: "/projects" },
-  { key: "idea", href: "/ideas/new" },
 ] as const;
 
 const BASE = "text-dark-slate/75 [&_a]:text-coral hover:[&_a]:underline [&_p+p]:mt-3 [&_strong]:text-dark-slate";
@@ -92,7 +91,7 @@ export default async function HowItWorksPage({ params }: { params: Promise<{ loc
   const ways = (
     <section className="mt-10">
       <h2 className="text-xl font-bold text-dark-slate">{t("waysHeading")}</h2>
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {WAYS.map((w) => (
           <Link key={w.key} href={w.href} className="flex flex-col rounded-2xl border border-muted-teal/40 bg-white p-4 hover:border-seagrass/60">
             <span className="font-semibold text-dark-slate">{t(`ways.${w.key}.title`)}</span>

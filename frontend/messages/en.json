@@ -7,6 +7,7 @@
     "create": "Create",
     "createNewProject": "New project",
     "createNewIdea": "New idea",
+    "yourDream": "Your dream",
     "discover": "Discover",
     "discoverProjects": "Projects",
     "discoverIdeaverkstad": "Idea Workshop",
@@ -4862,22 +4863,17 @@
   },
   "HowItWorks": {
     "pageTitle": "How it works",
-    "waysHeading": "Three ways to take part",
+    "waysHeading": "Two ways to take part",
     "ways": {
       "start": {
-        "title": "Start a project",
-        "text": "Got an idea? Start with the AI guide, or fill in everything yourself.",
+        "title": "Tell us about your dream",
+        "text": "Run it yourself or let someone else take it forward. You choose once you've told us.",
         "cta": "Start →"
       },
       "join": {
         "title": "Help out in a project",
         "text": "See which projects are looking for someone with your skills, and join.",
         "cta": "See the projects →"
-      },
-      "idea": {
-        "title": "Share an idea",
-        "text": "Not ready to start yourself? Post the idea so others can build on it.",
-        "cta": "Share an idea →"
       }
     },
     "description": "GoodTribes is where people turn ideas that make the world better into reality, together. Someone has a dream, others help with what they can, and the project moves step by step from idea to real change.",
@@ -5085,7 +5081,7 @@
   },
   "DreamGuide": {
     "pageTitle": "Start a project",
-    "overline": "Tell us about your dream",
+    "overline": "Your dream",
     "progress": "{step} of {total}",
     "intro": "Five short questions about your idea. You can go back and change anything, and \"Don't know yet\" is always an okay answer.",
     "examplePrefix": "For example: {example}",
@@ -5167,7 +5163,7 @@
     "summary": {
       "area": "Done",
       "heading": "This is what you told us",
-      "welcomeBack": "Welcome back! Your answers are still here — look them over and create the project.",
+      "welcomeBack": "Welcome back! Your answers are still here — look them over and finish.",
       "whatHappens": "What happens when you create the project?",
       "withAi": "With AI",
       "withoutAi": "Without AI",
@@ -5181,7 +5177,23 @@
       "creating": "Creating the project …",
       "loginNote": "You log in with your email when you create the project. Your answers are kept until then.",
       "error": "Something went wrong creating the project. Your answers are still here — try again.",
-      "retryWithoutAi": "Create without AI instead"
+      "retryWithoutAi": "Create without AI instead",
+      "choiceHeading": "What do you want to do with your dream?",
+      "driveTitle": "I want to run this",
+      "driveBody": "You start a project, become its owner and invite others to help.",
+      "shareTitle": "Someone else can run it",
+      "shareBody": "Your dream becomes an idea anyone can take forward. You're credited as the one who had it.",
+      "conditionsDriveOnly": "Only needed if you run it yourself",
+      "whatHappensShare": "What happens when you share the idea?",
+      "share1": "Your answers become an idea in the idea feed, word for word. No AI is used.",
+      "share2": "Anyone can take the idea forward and start a project from it.",
+      "share3": "You're credited as the one who had the idea, and it stays in your name.",
+      "shareOpenQuestions": "Whatever you answered \"Don't know yet\" to is listed as open questions on the idea.",
+      "share": "Share my idea",
+      "sharing": "Sharing the idea …",
+      "loginNoteShare": "You log in with your email when you share the idea. Your answers are kept until then.",
+      "errorShare": "Something went wrong sharing the idea. Your answers are still here — try again.",
+      "openQuestionsLabel": "Open questions"
     },
     "resume": "You have a Dream conversation in progress: <link>continue it</link>",
     "formInstead": "Prefer a form? <link>Quick start</link>"

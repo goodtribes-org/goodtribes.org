@@ -102,7 +102,7 @@ export default async function OverviewTab({ userId, locale }: { userId: string; 
           )}
         </Panel>
 
-        <Panel title={t("ideasTitle")} link={{ href: "/ideas/new", label: t("shareIdea") }}>
+        <Panel title={t("ideasTitle")} link={{ href: "/projects/new", label: t("shareIdea") }}>
           {ideas.length === 0 ? (
             <Empty>{t("ideasEmpty")}</Empty>
           ) : (
