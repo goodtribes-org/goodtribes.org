@@ -84,7 +84,7 @@ export default async function IdeasPage({
         </div>
         {session?.user?.id && (
           <Link
-            href="/ideas/new"
+            href="/projects/new"
             className="flex-shrink-0 px-4 py-2 bg-coral text-white text-sm font-medium rounded-lg hover:bg-watermelon transition-colors"
           >
             {t("shareIdeaCta")}
@@ -125,7 +125,7 @@ export default async function IdeasPage({
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <p className="text-dark-slate/50 mb-4">{t("noIdeasFound")}</p>
           {session?.user?.id ? (
-            <Link href="/ideas/new" className="px-5 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors">
+            <Link href="/projects/new" className="px-5 py-2 bg-coral text-white text-sm font-medium rounded hover:bg-watermelon transition-colors">
               {t("shareFirstIdea")}
             </Link>
           ) : (

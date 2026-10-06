@@ -59,6 +59,8 @@ export default function DreamGuide({
   const [conditions, setConditions] = useState<GuideConditions>({});
   const [name, setName] = useState("");
   const [withAi, setWithAi] = useState(!withoutAi && (aiAvailable || !isLoggedIn));
+  // "Någon annan får driva det" (#234): share the answers as an idea.
+  const [share, setShare] = useState(false);
   const [fromHome, setFromHome] = useState(false);
   const [backFromLogin, setBackFromLogin] = useState(false);
   const [thinking, setThinking] = useState(false);
@@ -74,6 +76,7 @@ export default function DreamGuide({
       setConditions(g.conditions ?? {});
       setName(typeof g.name === "string" ? g.name : "");
       setWithAi(g.withAi !== false && (aiAvailable || !isLoggedIn));
+      setShare(g.share === true);
       setBackFromLogin(isLoggedIn);
       setStep(summaryStep);
     };
@@ -103,7 +106,7 @@ export default function DreamGuide({
   }, []);
 
   const area: GuideArea | undefined = GUIDE_AREAS[step];
-  const input = (): GuideInput => ({ answers, followUps, unknown, conditions, name, withAi });
+  const input = (): GuideInput => ({ answers, followUps, unknown, conditions, name, withAi, share });
   const go = (s: number) => {
     setStep(s);
     window.scrollTo({ top: 0 });
@@ -132,7 +135,8 @@ export default function DreamGuide({
 
   function create(ai: boolean) {
     setError(false);
-    const data = { ...input(), withAi: ai };
+    // A shared idea never uses AI.
+    const data = { ...input(), withAi: share ? false : ai };
     if (!isLoggedIn) {
       try {
         localStorage.setItem(GUIDE_KEY, JSON.stringify({ ...data, at: Date.now() }));
@@ -326,12 +330,18 @@ export default function DreamGuide({
                   )}
                 </li>
               ))}
-              <li className="rounded-xl border border-dark-slate/10 bg-dry-sage/5 p-3 text-sm text-dark-slate/80">
+              {/* Only for running it yourself: dimmed when sharing, not
+                  removed, so nothing is lost if the choice changes back. */}
+              <li className={`rounded-xl border border-dark-slate/10 bg-dry-sage/5 p-3 text-sm text-dark-slate/80 transition-opacity ${share ? "opacity-45" : ""}`}>
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-dark-slate/50">{t("conditions.area")}</p>
-                  <button type="button" onClick={() => go(GUIDE_AREAS.length)} className="text-xs text-seagrass hover:underline">
-                    {t("change")}
-                  </button>
+                  {share ? (
+                    <span className="text-xs text-dark-slate/50">{t("summary.conditionsDriveOnly")}</span>
+                  ) : (
+                    <button type="button" onClick={() => go(GUIDE_AREAS.length)} className="text-xs text-seagrass hover:underline">
+                      {t("change")}
+                    </button>
+                  )}
                 </div>
                 <p className="mt-1">
                   {[
@@ -346,9 +356,15 @@ export default function DreamGuide({
               </li>
             </ul>
 
+            <p className="mt-6 text-sm font-semibold text-dark-slate">{t("summary.choiceHeading")}</p>
+            <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+              <ChoiceCard active={!share} onClick={() => setShare(false)} title={t("summary.driveTitle")} body={t("summary.driveBody")} />
+              <ChoiceCard active={share} onClick={() => setShare(true)} title={t("summary.shareTitle")} body={t("summary.shareBody")} />
+            </div>
+
             <div className="mt-5 rounded-2xl border border-dark-slate/10 p-4">
-              <p className="text-sm font-semibold text-dark-slate">{t("summary.whatHappens")}</p>
-              {isLoggedIn && !aiAvailable ? (
+              <p className="text-sm font-semibold text-dark-slate">{share ? t("summary.whatHappensShare") : t("summary.whatHappens")}</p>
+              {share ? null : isLoggedIn && !aiAvailable ? (
                 <p className="mt-2 text-xs text-dark-slate/55">{t("summary.aiUnavailable")}</p>
               ) : (
                 <div className="mt-2 flex gap-2 text-xs">
@@ -361,7 +377,13 @@ export default function DreamGuide({
                 </div>
               )}
               <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-dark-slate/75">
-                {withAi ? (
+                {share ? (
+                  <>
+                    <li>{t("summary.share1")}</li>
+                    <li>{t("summary.share2")}</li>
+                    <li>{t("summary.share3")}</li>
+                  </>
+                ) : withAi ? (
                   <>
                     <li>{t("summary.ai1")}</li>
                     <li>{t("summary.ai2")}</li>
@@ -372,14 +394,14 @@ export default function DreamGuide({
                     <li>{t("summary.manual2")}</li>
                   </>
                 )}
-                <li>{t("summary.openQuestions")}</li>
+                <li>{share ? t("summary.shareOpenQuestions") : t("summary.openQuestions")}</li>
               </ul>
             </div>
 
             {error && (
               <div className="mt-4 rounded-xl border border-coral/40 bg-coral/5 p-3 text-sm text-dark-slate/80">
-                {t("summary.error")}
-                {withAi && (
+                {share ? t("summary.errorShare") : t("summary.error")}
+                {withAi && !share && (
                   <button type="button" onClick={() => create(false)} className="ml-2 font-medium text-seagrass hover:underline">
                     {t("summary.retryWithoutAi")}
                   </button>
@@ -397,10 +419,10 @@ export default function DreamGuide({
                 disabled={creating || !answeredAny}
                 className="rounded-full bg-seagrass px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-seagrass/90 disabled:opacity-60"
               >
-                {creating ? t("summary.creating") : t("summary.create")}
+                {share ? (creating ? t("summary.sharing") : t("summary.share")) : creating ? t("summary.creating") : t("summary.create")}
               </button>
             </div>
-            {!isLoggedIn && <p className="mt-3 text-right text-xs text-dark-slate/50">{t("summary.loginNote")}</p>}
+            {!isLoggedIn && <p className="mt-3 text-right text-xs text-dark-slate/50">{share ? t("summary.loginNoteShare") : t("summary.loginNote")}</p>}
           </>
         )}
       </div>
@@ -415,6 +437,25 @@ export default function DreamGuide({
         })}
       </p>
     </div>
+  );
+}
+
+function ChoiceCard({ active, onClick, title, body }: { active: boolean; onClick: () => void; title: string; body: string }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={`flex flex-1 items-start gap-3 rounded-2xl border-2 p-4 text-left transition-colors ${active ? "border-seagrass bg-seagrass/5" : "border-dark-slate/15 hover:border-dark-slate/30"}`}
+    >
+      <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${active ? "border-seagrass" : "border-dark-slate/25"}`}>
+        {active && <span className="h-2.5 w-2.5 rounded-full bg-seagrass" />}
+      </span>
+      <span>
+        <span className="block text-sm font-semibold text-dark-slate">{title}</span>
+        <span className="mt-1 block text-[13px] leading-snug text-dark-slate/65">{body}</span>
+      </span>
+    </button>
   );
 }
 

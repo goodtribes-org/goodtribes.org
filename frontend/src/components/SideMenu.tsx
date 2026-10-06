@@ -83,8 +83,9 @@ export default function SideMenu() {
     title: t("create"),
     icon: Plus,
     items: [
-      { href: "/projects/new", label: t("createNewProject") },
-      { href: "/ideas/new", label: t("createNewIdea") },
+      // One way in (#234): Din dröm asks first and lets you choose at the
+      // end whether to run it yourself or share it as an idea.
+      { href: "/projects/new", label: t("yourDream") },
       // No standalone canvases or whiteboards (2026-10-03): the tools are
       // tried inside a project, where they have a team, phases and AI.
     ],

@@ -7,6 +7,7 @@
     "create": "Skapa",
     "createNewProject": "Nytt projekt",
     "createNewIdea": "Ny idé",
+    "yourDream": "Din dröm",
     "discover": "Utforska",
     "discoverProjects": "Projekt",
     "discoverIdeaverkstad": "Idéverkstaden",
@@ -4862,22 +4863,17 @@
   },
   "HowItWorks": {
     "pageTitle": "Så fungerar det",
-    "waysHeading": "Tre sätt att vara med",
+    "waysHeading": "Två sätt att vara med",
     "ways": {
       "start": {
-        "title": "Starta ett projekt",
-        "text": "Har du en idé? Börja med AI-guiden, eller fyll i allt själv.",
-        "cta": "Starta →"
+        "title": "Berätta om din dröm",
+        "text": "Driv den själv eller låt någon annan ta den vidare. Du väljer när du har berättat.",
+        "cta": "Börja →"
       },
       "join": {
         "title": "Hjälp till i ett projekt",
         "text": "Se vilka projekt som söker någon med just din kompetens, och gå med.",
         "cta": "Se projekten →"
-      },
-      "idea": {
-        "title": "Dela en idé",
-        "text": "Inte redo att starta själv? Lägg ut idén så att andra kan bygga vidare på den.",
-        "cta": "Dela en idé →"
       }
     },
     "description": "GoodTribes är platsen där människor tillsammans förverkligar idéer som gör världen bättre. Någon har en dröm, andra hjälper till med det de kan, och projektet tar sig steg för steg från idé till verklig skillnad.",
@@ -5085,7 +5081,7 @@
   },
   "DreamGuide": {
     "pageTitle": "Starta ett projekt",
-    "overline": "Berätta om din dröm",
+    "overline": "Din dröm",
     "progress": "{step} av {total}",
     "intro": "Fem korta frågor om din idé. Du kan gå tillbaka och ändra när som helst, och \"Vet inte än\" är alltid ett okej svar.",
     "examplePrefix": "Till exempel: {example}",
@@ -5167,7 +5163,7 @@
     "summary": {
       "area": "Klart",
       "heading": "Det här har du berättat",
-      "welcomeBack": "Välkommen tillbaka! Dina svar finns kvar — titta igenom dem och skapa projektet.",
+      "welcomeBack": "Välkommen tillbaka! Dina svar finns kvar — titta igenom dem och gör klart.",
       "whatHappens": "Vad händer när du skapar projektet?",
       "withAi": "Med AI",
       "withoutAi": "Utan AI",
@@ -5181,7 +5177,23 @@
       "creating": "Skapar projektet …",
       "loginNote": "Du loggar in med din e-post när du skapar projektet. Dina svar sparas så länge.",
       "error": "Något gick fel när projektet skapades. Dina svar finns kvar — försök igen.",
-      "retryWithoutAi": "Skapa utan AI i stället"
+      "retryWithoutAi": "Skapa utan AI i stället",
+      "choiceHeading": "Vad vill du göra med drömmen?",
+      "driveTitle": "Jag vill driva det här",
+      "driveBody": "Du startar ett projekt, blir dess ägare och bjuder in andra att hjälpa till.",
+      "shareTitle": "Någon annan får driva det",
+      "shareBody": "Din dröm blir en idé som vem som helst kan ta vidare. Du står som idégivare.",
+      "conditionsDriveOnly": "Behövs bara om du driver själv",
+      "whatHappensShare": "Vad händer när du delar idén?",
+      "share1": "Dina svar blir en idé i Idéflödet, ordagrant. Ingen AI används.",
+      "share2": "Vem som helst kan ta idén vidare och starta ett projekt av den.",
+      "share3": "Du står som idégivare, och idén ligger kvar i ditt namn.",
+      "shareOpenQuestions": "Det du svarade \"Vet inte än\" på står som öppna frågor på idén.",
+      "share": "Dela min idé",
+      "sharing": "Delar idén …",
+      "loginNoteShare": "Du loggar in med din e-post när du delar idén. Dina svar sparas så länge.",
+      "errorShare": "Något gick fel när idén skulle delas. Dina svar finns kvar — försök igen.",
+      "openQuestionsLabel": "Öppna frågor"
     },
     "resume": "Du har ett påbörjat Drömsamtal: <link>fortsätt det</link>",
     "formInstead": "Hellre ett formulär? <link>Snabbstart</link>"

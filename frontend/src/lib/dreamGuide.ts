@@ -32,6 +32,9 @@ export type GuideInput = {
   conditions: GuideConditions;
   name: string;
   withAi: boolean;
+  // "Någon annan får driva det" (#234): the answers become an Idea instead
+  // of a project.
+  share?: boolean;
 };
 
 // Short or sweeping answers get a follow-up ("alla", "världen" — the same
@@ -79,6 +82,7 @@ export function parseGuideInput(raw: unknown): GuideInput {
     },
     name: str(r.name, MAX_NAME_LENGTH),
     withAi: r.withAi !== false,
+    share: r.share === true,
   };
 }
 

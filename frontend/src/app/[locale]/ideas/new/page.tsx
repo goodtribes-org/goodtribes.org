@@ -26,9 +26,12 @@ export default async function NewIdeaPage({
     auth(),
     getTranslations({ locale, namespace: "NewIdeaPage" }),
   ]);
-  if (!session?.user?.id) redirect("/login");
-
   const { fromThread } = await searchParams;
+  // One way in (#234): a new idea starts in Din dröm, where "Någon annan
+  // får driva det" shares it as an idea. Only an Idéverkstaden thread is
+  // still turned into an idea here.
+  if (!fromThread) redirect(`/${locale}/projects/new`);
+  if (!session?.user?.id) redirect("/login");
 
   // Prefill from an Idéverkstaden thread's opening message, mirroring how
   // projects/new prefills from ?from={ideaId}.
