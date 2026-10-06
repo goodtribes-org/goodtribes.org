@@ -27,7 +27,8 @@
     "projectAllSections": "Alla projektsidor finns i projektmenyn överst på sidan",
     "siteAdmin": "Webbplatsadmin",
     "greeting": "Hej {name}! 👋",
-    "howItWorks": "Så fungerar det"
+    "howItWorks": "Så fungerar det",
+    "discoverChallenges": "Utmaningar"
   },
   "Account": {
     "profile": "Profil",
@@ -1073,7 +1074,79 @@
     "commentsHeading": "{count, plural, one {# kommentar} other {# kommentarer}}",
     "unknownAuthor": "Okänd",
     "logInLinkText": "Logga in",
-    "toLeaveCommentSuffix": "för att lämna en kommentar."
+    "toLeaveCommentSuffix": "för att lämna en kommentar.",
+    "answersChallenge": "Svar på utmaningen ”{title}” från {organisation}"
+  },
+  "Challenges": {
+    "listTitle": "Utmaningar",
+    "listIntro": "Organisationer ställer en konkret fråga och söker idéer. Dela en idé som svar – vem som helst kan sedan driva den, och organisationen kan stötta den som gör det.",
+    "openHeading": "Pågående",
+    "closedHeading": "Avslutade",
+    "noneOpen": "Inga pågående utmaningar just nu.",
+    "cardEyebrow": "Utmaning från {organisation}",
+    "eyebrow": "Utmaning från",
+    "draft": "Utkast",
+    "daysLeft": "{days, plural, one {1 dag kvar} other {# dagar kvar}}",
+    "daysLeftLong": "{days, plural, one {1 dag kvar att dela idéer} other {# dagar kvar att dela idéer}}",
+    "closed": "Avslutad",
+    "closedOn": "Avslutades {date}",
+    "ideaCount": "{count, plural, =0 {Inga idéer än} one {1 idé} other {# idéer}}",
+    "hasSupport": "Stöd till den som driver en idé",
+    "step": {
+      "submit": "Dela idéer",
+      "refine": "Förbättra",
+      "select": "Välj ut",
+      "drive": "Driv"
+    },
+    "supportHeading": "Det här erbjuder vi den som driver en idé",
+    "shareIdea": "Dela en idé till utmaningen",
+    "closedNote": "Tiden för att dela idéer har gått ut. Alla idéer nedan är fortfarande fria att driva.",
+    "howHeading": "Så går det till",
+    "how1": "Alla kan dela idéer tills tiden går ut.",
+    "how2": "Röster och argument visar vilka som håller.",
+    "how3": "{organisation} lyfter fram några idéer.",
+    "how4": "Den som vill driva en idé startar ett projekt och kan få stödet.",
+    "featuredHeading": "Utvalda idéer",
+    "featuredNote": "{organisation} har lyft fram de här. Alla idéer går att driva.",
+    "ideasHeading": "Idéer",
+    "noIdeasYet": "Inga idéer än – dela den första.",
+    "noIdeas": "Inga idéer delades.",
+    "feature": "☆ Lyft fram",
+    "unfeature": "★ Ta bort ur utvalda",
+    "adminDraft": "Utkast – bara er organisations ägare och admins ser utmaningen. Publicera när den är klar, så öppnar den för idéer.",
+    "adminPublished": "Du kan redigera utmaningen och lyfta fram idéer.",
+    "edit": "Redigera",
+    "publish": "Publicera utmaningen",
+    "publishing": "Publicerar …",
+    "publishError": "Det gick inte att publicera.",
+    "publishDateError": "Slutdatumet har redan passerat. Ändra det först.",
+    "orgHeading": "Utmaningar",
+    "orgEmpty": "Inga utmaningar än. Ställ en fråga som ni vill ha idéer på.",
+    "newChallenge": "+ Ny utmaning"
+  },
+  "ChallengeForm": {
+    "newHeading": "Ny utmaning",
+    "newIntro": "Ställ en konkret fråga ni vill ha idéer på. Utmaningen sparas som utkast tills ni publicerar den.",
+    "editHeading": "Redigera utmaningen",
+    "title": "Frågan",
+    "titlePlaceholder": "Hur minskar vi ensamheten bland äldre i Gottsunda?",
+    "titleHint": "En konkret fråga, gärna med plats eller målgrupp.",
+    "description": "Bakgrund",
+    "descriptionHint": "Varför frågan är viktig, vad ni vet och vad en bra idé behöver klara.",
+    "closesOn": "Sista dag att dela idéer",
+    "supportText": "Stöd till den som driver en idé (valfritt)",
+    "supportPlaceholder": "T.ex. upp till 20 000 kr, lokaler, kontakter med skolor …",
+    "supportHint": "Beskriv vad ni erbjuder. Inga pengar går via GoodTribes för utmaningar.",
+    "image": "Bild (valfritt)",
+    "create": "Spara som utkast",
+    "save": "Spara",
+    "saving": "Sparar …",
+    "error": {
+      "not_allowed": "Bara ägare och admins i en verifierad organisation kan ställa utmaningar.",
+      "title": "Skriv en fråga på minst 5 tecken.",
+      "date": "Välj ett slutdatum som inte har passerat.",
+      "not_found": "Hittades inte."
+    }
   },
   "IdeaInteractions": {
     "statusDraft": "Utkast",
@@ -4627,6 +4700,11 @@
       "heading": "Hjälp till i ett projekt",
       "allLink": "Se alla projekt →"
     },
+    "challenges": {
+      "eyebrow": "Utmaningar",
+      "heading": "Organisationer som söker idéer",
+      "allLink": "Se alla utmaningar →"
+    },
     "ideas": {
       "eyebrow": "Idéer",
       "heading": "Utforska idéer",
@@ -5261,7 +5339,8 @@
       "draftLimitShareHint": "Du kan också dela drömmen som en idé i stället, så kan någon annan driva den."
     },
     "resume": "Du har ett påbörjat Drömsamtal: <link>fortsätt det</link>",
-    "formInstead": "Hellre ett formulär? <link>Snabbstart</link>"
+    "formInstead": "Hellre ett formulär? <link>Snabbstart</link>",
+    "forChallenge": "Du svarar på utmaningen ”{title}” från {organisation}. Din idé hamnar i utmaningen när du delar den."
   },
   "IdeaHelp": {
     "heading": "Jag vill hjälpa till",

@@ -1,5 +1,7 @@
 export const dynamic = "force-dynamic";
 
+import { CHALLENGE_CARD_SELECT, PUBLIC_CHALLENGE_WHERE } from "@/lib/challenges";
+import ChallengeCard from "@/components/challenges/ChallengeCard";
 import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import Link from "next/link";
 import { hasLocale, type Locale } from "next-intl";
@@ -56,7 +58,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   const [
     activity, allProjects, projectsBeyondIdea, ideaPhaseProjects,
-    pledgeSum, tokenSum, completedCards, completedSubtasks, memberCount, newMembers, latestIdeas,
+    pledgeSum, tokenSum, completedCards, completedSubtasks, memberCount, newMembers, latestIdeas, openChallenges,
   ] = await Promise.all([
     fetchActivityItems(15),
     prisma.project.findMany({ where: live, select: { phase: true, title: true, slug: true }, orderBy: { updatedAt: "desc" } }),
@@ -95,6 +97,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         _count: { select: { votes: true, comments: true, basedProjects: { where: PUBLIC_PROJECT_WHERE } } },
         translations,
       },
+    }),
+    // Utmaningar (#228) still open for ideas, closing soonest first.
+    prisma.challenge.findMany({
+      where: { ...PUBLIC_CHALLENGE_WHERE, closesAt: { gt: new Date() } },
+      orderBy: { closesAt: "asc" },
+      take: 3,
+      select: CHALLENGE_CARD_SELECT,
     }),
   ]);
 
@@ -203,6 +212,19 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             {projects.map((p) => (
               <div key={p.slug} className={`flex ${SWIPE_ITEM}`}>
                 <ProjectCard project={p} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {openChallenges.length > 0 && (
+        <section id="utmaningar" className={`${wrap} flex flex-col gap-6 pt-[48px]`}>
+          <SectionHeader eyebrow={t("challenges.eyebrow")} heading={t("challenges.heading")} link={{ href: "/challenges", label: t("challenges.allLink") }} />
+          <div className={`${SWIPE_ROW} sm:grid-cols-2 lg:grid-cols-3`}>
+            {openChallenges.map((c) => (
+              <div key={c.slug} className={`flex ${SWIPE_ITEM}`}>
+                <ChallengeCard challenge={c} locale={locale} />
               </div>
             ))}
           </div>

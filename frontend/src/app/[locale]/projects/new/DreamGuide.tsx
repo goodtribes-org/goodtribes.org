@@ -32,6 +32,8 @@ type FollowUp = { question: string; answer: string };
 // "Jag vill driva den här" on an open idea (#233): its texts fill the
 // answers, and the new project links back to it.
 export type FromIdea = { id: string; title: string; author: string; dream: string; problem: string; idea: string };
+// "Dela en idé till utmaningen" (#228): the open challenge this answers.
+export type ForChallenge = { slug: string; title: string; organisation: string };
 
 export default function DreamGuide({
   isLoggedIn,
@@ -41,6 +43,7 @@ export default function DreamGuide({
   stashId,
   fromIdea = null,
   ownDrafts = null,
+  challenge = null,
 }: {
   isLoggedIn: boolean;
   // AI configured and the flag on. Logged out it is unknown (the flag can be
@@ -55,6 +58,7 @@ export default function DreamGuide({
   // Logged in: the drafts this person owns (#226). At MAX_DRAFTS, a new
   // project needs one of them published or removed first.
   ownDrafts?: OwnDraft[] | null;
+  challenge?: ForChallenge | null;
 }) {
   const t = useTranslations("DreamGuide");
   const router = useRouter();
@@ -70,7 +74,9 @@ export default function DreamGuide({
   const [name, setName] = useState("");
   const [withAi, setWithAi] = useState(!withoutAi && (aiAvailable || !isLoggedIn));
   // "Någon annan får driva det" (#234): share the answers as an idea.
-  const [share, setShare] = useState(false);
+  // Answering a challenge (#228) means sharing, unless you pick otherwise.
+  const [share, setShare] = useState(!!challenge);
+  const [challengeSlug, setChallengeSlug] = useState<string | undefined>(challenge?.slug);
   const [basedOnIdeaId, setBasedOnIdeaId] = useState<string | undefined>(fromIdea?.id);
   const [draftLimit, setDraftLimit] = useState<OwnDraft[] | null>(ownDrafts && ownDrafts.length >= MAX_DRAFTS ? ownDrafts : null);
   const atDraftLimit = !!draftLimit && !share && !basedOnIdeaId;
@@ -92,6 +98,7 @@ export default function DreamGuide({
       setWithAi(g.withAi !== false && (aiAvailable || !isLoggedIn));
       setShare(g.share === true && !g.basedOnIdeaId);
       setBasedOnIdeaId(g.basedOnIdeaId);
+      setChallengeSlug(g.challengeSlug ?? challenge?.slug);
       setBackFromLogin(isLoggedIn);
       setStep(summaryStep);
     };
@@ -145,7 +152,7 @@ export default function DreamGuide({
 
   const area: GuideArea | undefined = GUIDE_AREAS[step];
   // Driving an existing idea is never "share it as an idea" again.
-  const input = (): GuideInput => ({ answers, followUps, unknown, conditions, name, withAi, share: share && !basedOnIdeaId, basedOnIdeaId });
+  const input = (): GuideInput => ({ answers, followUps, unknown, conditions, name, withAi, share: share && !basedOnIdeaId, basedOnIdeaId, challengeSlug });
   const go = (s: number) => {
     setStep(s);
     window.scrollTo({ top: 0 });
@@ -215,6 +222,11 @@ export default function DreamGuide({
       <div className="mt-4 rounded-3xl border border-dark-slate/10 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_32px_-16px_rgba(0,0,0,0.15)] sm:p-8">
         {area && (
           <>
+            {step === 0 && challenge && (
+              <p className="mb-4 rounded-xl border border-seagrass/30 bg-seagrass/5 p-3 text-sm text-dark-slate/75">
+                {t("forChallenge", { organisation: challenge.organisation, title: challenge.title })}
+              </p>
+            )}
             {step === 0 &&
               (basedOnIdeaId ? (
                 <p className="mb-4 rounded-xl bg-seagrass/5 p-3 text-sm text-dark-slate/75">

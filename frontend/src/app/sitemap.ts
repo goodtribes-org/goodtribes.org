@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
+import { PUBLIC_CHALLENGE_WHERE } from "@/lib/challenges";
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { routing } from "@/i18n/routing";
@@ -27,7 +28,7 @@ function localizedEntries(
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [projects, ideas, orgs, members] = await Promise.all([
+  const [projects, ideas, orgs, members, challenges] = await Promise.all([
     prisma.project.findMany({
       where: PUBLIC_PROJECT_WHERE,
       select: { slug: true, updatedAt: true },
@@ -45,12 +46,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       where: { showProfile: true, name: { not: null } },
       select: { id: true },
     }),
+    prisma.challenge.findMany({ where: PUBLIC_CHALLENGE_WHERE, select: { slug: true, updatedAt: true } }),
   ]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     ...localizedEntries("", { lastModified: new Date(), changeFrequency: "daily", priority: 1 }),
     ...localizedEntries("/projects", { lastModified: new Date(), changeFrequency: "hourly", priority: 0.9 }),
     ...localizedEntries("/ideas", { lastModified: new Date(), changeFrequency: "hourly", priority: 0.8 }),
+    ...localizedEntries("/challenges", { lastModified: new Date(), changeFrequency: "daily", priority: 0.7 }),
     ...localizedEntries("/members", { lastModified: new Date(), changeFrequency: "daily", priority: 0.7 }),
     ...localizedEntries("/org", { lastModified: new Date(), changeFrequency: "daily", priority: 0.7 }),
     ...localizedEntries("/how-it-works", { lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 }),
@@ -74,6 +77,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.6,
       }),
+    ),
+    ...challenges.flatMap((c) =>
+      localizedEntries(`/challenges/${c.slug}`, { lastModified: c.updatedAt, changeFrequency: "daily", priority: 0.7 }),
     ),
     ...orgs.flatMap((o) =>
       localizedEntries(`/org/${o.slug}`, {

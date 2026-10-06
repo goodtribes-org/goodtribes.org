@@ -27,7 +27,8 @@
     "projectAllSections": "All project pages are in the project bar at the top of the page",
     "siteAdmin": "Site admin",
     "greeting": "Hi {name}! 👋",
-    "howItWorks": "How it works"
+    "howItWorks": "How it works",
+    "discoverChallenges": "Challenges"
   },
   "Account": {
     "profile": "Profile",
@@ -1073,7 +1074,79 @@
     "commentsHeading": "{count, plural, one {# comment} other {# comments}}",
     "unknownAuthor": "Unknown",
     "logInLinkText": "Log in",
-    "toLeaveCommentSuffix": "to leave a comment."
+    "toLeaveCommentSuffix": "to leave a comment.",
+    "answersChallenge": "Answers the challenge “{title}” from {organisation}"
+  },
+  "Challenges": {
+    "listTitle": "Challenges",
+    "listIntro": "Organisations ask a concrete question and look for ideas. Share an idea as an answer – anyone can then drive it, and the organisation can support whoever does.",
+    "openHeading": "Open",
+    "closedHeading": "Closed",
+    "noneOpen": "No open challenges right now.",
+    "cardEyebrow": "Challenge from {organisation}",
+    "eyebrow": "Challenge from",
+    "draft": "Draft",
+    "daysLeft": "{days, plural, one {1 day left} other {# days left}}",
+    "daysLeftLong": "{days, plural, one {1 day left to share ideas} other {# days left to share ideas}}",
+    "closed": "Closed",
+    "closedOn": "Closed {date}",
+    "ideaCount": "{count, plural, =0 {No ideas yet} one {1 idea} other {# ideas}}",
+    "hasSupport": "Support for whoever drives an idea",
+    "step": {
+      "submit": "Share ideas",
+      "refine": "Improve",
+      "select": "Select",
+      "drive": "Drive"
+    },
+    "supportHeading": "What we offer whoever drives an idea",
+    "shareIdea": "Share an idea for the challenge",
+    "closedNote": "The time for sharing ideas is over. Every idea below is still free to drive.",
+    "howHeading": "How it works",
+    "how1": "Anyone can share ideas until the deadline.",
+    "how2": "Votes and arguments show which ones hold up.",
+    "how3": "{organisation} highlights a few ideas.",
+    "how4": "Whoever wants to drive an idea starts a project and can get the support.",
+    "featuredHeading": "Featured ideas",
+    "featuredNote": "{organisation} has highlighted these. Every idea can be driven.",
+    "ideasHeading": "Ideas",
+    "noIdeasYet": "No ideas yet – share the first one.",
+    "noIdeas": "No ideas were shared.",
+    "feature": "☆ Feature",
+    "unfeature": "★ Remove from featured",
+    "adminDraft": "Draft – only your organisation's owners and admins can see this challenge. Publish it when it's ready and it opens for ideas.",
+    "adminPublished": "You can edit the challenge and feature ideas.",
+    "edit": "Edit",
+    "publish": "Publish the challenge",
+    "publishing": "Publishing …",
+    "publishError": "Publishing failed.",
+    "publishDateError": "The deadline has already passed. Change it first.",
+    "orgHeading": "Challenges",
+    "orgEmpty": "No challenges yet. Ask a question you want ideas on.",
+    "newChallenge": "+ New challenge"
+  },
+  "ChallengeForm": {
+    "newHeading": "New challenge",
+    "newIntro": "Ask a concrete question you want ideas on. The challenge is saved as a draft until you publish it.",
+    "editHeading": "Edit the challenge",
+    "title": "The question",
+    "titlePlaceholder": "How do we reduce loneliness among older people in our area?",
+    "titleHint": "A concrete question, ideally with a place or a target group.",
+    "description": "Background",
+    "descriptionHint": "Why the question matters, what you know and what a good idea needs to handle.",
+    "closesOn": "Last day to share ideas",
+    "supportText": "Support for whoever drives an idea (optional)",
+    "supportPlaceholder": "E.g. up to SEK 20,000, premises, contacts with schools …",
+    "supportHint": "Describe what you offer. No money moves through GoodTribes for challenges.",
+    "image": "Image (optional)",
+    "create": "Save as draft",
+    "save": "Save",
+    "saving": "Saving …",
+    "error": {
+      "not_allowed": "Only owners and admins of a verified organisation can ask challenges.",
+      "title": "Write a question of at least 5 characters.",
+      "date": "Choose a deadline that hasn't passed.",
+      "not_found": "Not found."
+    }
   },
   "IdeaInteractions": {
     "statusDraft": "Draft",
@@ -4627,6 +4700,11 @@
       "heading": "Help out on a project",
       "allLink": "See all projects →"
     },
+    "challenges": {
+      "eyebrow": "Challenges",
+      "heading": "Organisations looking for ideas",
+      "allLink": "See all challenges →"
+    },
     "ideas": {
       "eyebrow": "Ideas",
       "heading": "Explore ideas",
@@ -5261,7 +5339,8 @@
       "draftLimitShareHint": "You can also share the dream as an idea instead, so someone else can drive it."
     },
     "resume": "You have a Dream conversation in progress: <link>continue it</link>",
-    "formInstead": "Prefer a form? <link>Quick start</link>"
+    "formInstead": "Prefer a form? <link>Quick start</link>",
+    "forChallenge": "You are answering the challenge “{title}” from {organisation}. Your idea joins the challenge when you share it."
   },
   "IdeaHelp": {
     "heading": "I want to help",

@@ -17,7 +17,10 @@ const AUTHOR_INVITE_DAYS = 30;
 export async function linkProjectToIdea(ideaId: string, projectId: string, ownerId: string) {
   const idea = await prisma.idea.findFirst({
     where: { id: ideaId, hiddenAt: null, status: "open" },
-    select: { id: true, title: true, authorId: true, author: { select: { email: true } } },
+    select: {
+      id: true, title: true, authorId: true, author: { select: { email: true } },
+      challenge: { select: { slug: true, title: true, organisationId: true } },
+    },
   });
   if (!idea) return;
 
@@ -84,4 +87,27 @@ export async function linkProjectToIdea(ideaId: string, projectId: string, owner
         }).catch(() => {}),
       ),
   );
+
+  // #228: an answer to a challenge got going — its organisation's owners
+  // and admins hear it, since they may have support to offer.
+  if (idea.challenge) {
+    const leads = await prisma.organisationMember.findMany({
+      where: { organisationId: idea.challenge.organisationId, role: { in: ["OWNER", "ADMIN"] } },
+      select: { userId: true },
+    });
+    const challengeTitle = idea.challenge.title;
+    await Promise.all(
+      leads
+        .filter((l) => l.userId !== ownerId)
+        .map((l) =>
+          createNotification({
+            userId: l.userId,
+            type: "challenge_idea_driven",
+            title: `${who} driver en idé från er utmaning "${challengeTitle}"`,
+            body: project.title,
+            url: `/projects/${project.slug}`,
+          }).catch(() => {}),
+        ),
+    );
+  }
 }

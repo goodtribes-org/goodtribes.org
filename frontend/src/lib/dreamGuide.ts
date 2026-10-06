@@ -37,6 +37,9 @@ export type GuideInput = {
   share?: boolean;
   // "Jag vill driva den här" (#233): the open idea this project drives.
   basedOnIdeaId?: string;
+  // "Dela en idé till utmaningen" (#228): a shared idea answers this
+  // challenge (slug). Checked again on the server when the idea is created.
+  challengeSlug?: string;
 };
 
 // Short or sweeping answers get a follow-up ("alla", "världen" — the same
@@ -86,6 +89,7 @@ export function parseGuideInput(raw: unknown): GuideInput {
     withAi: r.withAi !== false,
     share: r.share === true,
     basedOnIdeaId: str(r.basedOnIdeaId, 40) || undefined,
+    challengeSlug: str(r.challengeSlug, 120) || undefined,
   };
 }
 

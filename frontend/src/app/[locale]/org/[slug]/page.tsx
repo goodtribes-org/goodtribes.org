@@ -1,3 +1,6 @@
+import { CHALLENGE_CARD_SELECT, canManageChallenges } from "@/lib/challenges";
+import ChallengeCard from "@/components/challenges/ChallengeCard";
+import type { Locale } from "next-intl";
 import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import { auth } from "@/auth";
 import { getTranslations } from "next-intl/server";
@@ -95,7 +98,7 @@ export default async function OrgDetailPage({
         include: { user: { select: { id: true, name: true, showProfile: true } } },
         orderBy: { joinedAt: "asc" },
       },
-      _count: { select: { projects: true } },
+      _count: { select: { projects: { where: PUBLIC_PROJECT_WHERE } } },
       neededSkills: { include: { skill: { select: { id: true, name: true, slug: true } } } },
     },
   });
@@ -114,6 +117,16 @@ export default async function OrgDetailPage({
       : null;
 
   const isMemberOrOwner = isOwner || isMember;
+
+  // Utmaningar (#228): leads also see their drafts and can start a new one.
+  const canStartChallenge = await canManageChallenges(org, userId);
+  const orgChallenges = await prisma.challenge.findMany({
+    where: { organisationId: org.id, ...(canStartChallenge ? {} : { publishedAt: { not: null } }) },
+    orderBy: [{ closesAt: "desc" }],
+    take: 6,
+    select: CHALLENGE_CARD_SELECT,
+  });
+  const tChallenges = await getTranslations({ locale, namespace: "Challenges" });
 
   const [pendingJoinRequests, orgProjects, reviewAgg, recentReviews, orgFiles, orgActivity] = await Promise.all([
     isOwner
@@ -348,6 +361,26 @@ export default async function OrgDetailPage({
           initialComments={comments}
         />
       </div>
+
+      {(orgChallenges.length > 0 || canStartChallenge) && (
+        <section className="mb-10">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-dark-slate">{tChallenges("orgHeading")}</h2>
+            {canStartChallenge && (
+              <Link href={`/org/${slug}/challenges/new`} className="text-sm font-medium text-coral hover:underline">
+                {tChallenges("newChallenge")}
+              </Link>
+            )}
+          </div>
+          {orgChallenges.length === 0 ? (
+            <p className="text-sm text-dark-slate/50">{tChallenges("orgEmpty")}</p>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {orgChallenges.map((c) => <ChallengeCard key={c.slug} challenge={c} locale={locale as Locale} />)}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* BOTTOM SECTION */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-8">

@@ -36,6 +36,7 @@ model Organisation {
   files          File[]                    @relation("OrganisationFiles")
   activityEvents ActivityEvent[]
   partnerships   Partnership[]             @relation("OrganisationPartnerships")
+  challenges     Challenge[]               @relation("OrganisationChallenges")
 }
 
 // Lowercase (not the SCREAMING_SNAKE_CASE used elsewhere in this schema,

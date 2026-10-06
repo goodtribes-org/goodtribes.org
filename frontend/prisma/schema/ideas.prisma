@@ -53,10 +53,18 @@ model Idea {
   promotedToProjectId String?  @unique
   promotedToProject   Project? @relation("IdeaPromotedToProject", fields: [promotedToProjectId], references: [id], onDelete: SetNull)
   translations         IdeaTranslation[]
+  // An answer to an organisation's challenge (#228), shared from Din dröm.
+  challengeId          String?
+  challenge            Challenge?       @relation("ChallengeIdeas", fields: [challengeId], references: [id], onDelete: SetNull)
+  // The organisation lifted this idea out as one of the challenge's best.
+  // Featuring is a pointer, never a gate: every idea can still be driven.
+  challengeFeaturedAt  DateTime?
   // The projects that drive this idea (#233).
   basedProjects        Project[]        @relation("ProjectBasedOnIdea")
   // För och emot (#236).
   arguments            IdeaArgument[]
+
+  @@index([challengeId])
 }
 
 // Per-locale override of title/description/problem/solution for an Idea.
