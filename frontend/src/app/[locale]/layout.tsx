@@ -194,7 +194,7 @@ export default async function LocaleLayout({
             <main className="max-w-6xl mx-auto px-6 pt-8 pb-12 w-full flex-1 flex flex-col">{children}</main>
             <SiteFooter>
               <div className="max-w-6xl mx-auto px-6 pt-12 pb-10">
-                <div className="flex items-center justify-center gap-4 mb-12">
+                <div className="flex flex-col items-center justify-center gap-4 mb-12 sm:flex-row">
                   <Image
                     src="/img/goodtribes-logo.svg"
                     alt="GoodTribes.org"
@@ -203,7 +203,9 @@ export default async function LocaleLayout({
                     unoptimized
                     className="object-contain"
                   />
-                  <h2 className={`${heroTaglineFont.className} text-dark-slate leading-none`} style={{ fontSize: "clamp(26px,3vw,40px)", fontWeight: 400, whiteSpace: "nowrap" }}>
+                  {/* On one line from sm up; on a phone it sits under the logo and may
+                      wrap, or the whole page scrolls sideways. */}
+                  <h2 className={`${heroTaglineFont.className} text-dark-slate text-center leading-tight sm:leading-none sm:whitespace-nowrap`} style={{ fontSize: "clamp(26px,3vw,40px)", fontWeight: 400 }}>
                     {t("taglineStart")}{" "}
                     <span className="relative inline-block isolate">
                       <span className="relative z-[1]">{t("taglineHighlight")}</span>
