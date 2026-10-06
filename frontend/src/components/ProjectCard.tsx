@@ -3,6 +3,17 @@ import { SdgIcon } from "@/components/SdgIcon";
 import { sdgIconPath, SDG_COLORS } from "@/lib/sdg";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { toProxyUrl } from "@/lib/storageUrl";
+import { htmlToText } from "@/lib/htmlToText";
+
+// A description can be stored as HTML (a project created through the guide
+// gets "<h3>Problemet</h3><p>…</p>"). The card has room for a few lines of
+// running text, so headings are dropped and the rest flattened to one line;
+// React escapes the result, so no markup ever renders from it.
+function cardText(text: string | null): string | null {
+  if (!text) return null;
+  const flat = htmlToText(text.replace(/<h[1-6]\b[^>]*>[\s\S]*?<\/h[1-6]>/gi, "")).replace(/\n/g, " ");
+  return flat || null;
+}
 
 export type ProjectCardData = {
   slug: string;
@@ -163,7 +174,7 @@ export default function ProjectCard({
           </>
         )}
         <p className="text-xs text-dark-slate/70 leading-snug mb-2 line-clamp-3 flex-1">
-          {project.summary ?? project.description ?? t("noDescriptionYet")}
+          {cardText(project.summary) ?? cardText(project.description) ?? t("noDescriptionYet")}
         </p>
         {project.sdgGoals.length > 0 && (
           <div className="flex flex-wrap items-center gap-1 mb-2">
