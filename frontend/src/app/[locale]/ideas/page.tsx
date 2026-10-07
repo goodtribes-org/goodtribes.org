@@ -9,6 +9,7 @@ import Pagination from "@/components/Pagination";
 import IdeasFilters from "./IdeasFilters";
 import { SdgIcon } from "@/components/SdgIcon";
 import { getCachedIdeasPage } from "@/lib/listCache";
+import { buildMetadata } from "@/lib/metadata";
 import type { Locale } from "next-intl";
 import type { IdeaStatus } from "@prisma/client";
 
@@ -18,10 +19,11 @@ import type { IdeaStatus } from "@prisma/client";
 // "no filter" instead of Prisma throwing on an invalid enum value.
 const FILTERABLE_IDEA_STATUSES: readonly IdeaStatus[] = ["open"];
 
-export const metadata: Metadata = {
-  title: "Ideas — GoodTribes.org",
-  description: "Community ideas for impact-driven projects and organisations",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "IdeasPage" });
+  return buildMetadata({ locale, path: "/ideas", title: t("heading"), description: t("subtitle") });
+}
 
 const PAGE_SIZE = 15;
 

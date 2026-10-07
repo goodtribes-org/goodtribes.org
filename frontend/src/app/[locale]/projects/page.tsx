@@ -11,13 +11,15 @@ import ProjectCard from "@/components/ProjectCard";
 import CountryMap from "@/components/CountryMap";
 import { isValidProjectPhase } from "@/lib/projectPhase";
 import { getCachedProjectsPage } from "@/lib/listCache";
+import { buildMetadata } from "@/lib/metadata";
 import type { Locale } from "next-intl";
 import type { ProjectPhase } from "@prisma/client";
 
-export const metadata: Metadata = {
-  title: "Projects — GoodTribes.org",
-  description: "Projects built by GoodTribes.org",
-};
+export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "ProjectsPage" });
+  return buildMetadata({ locale, path: "/projects", title: t("heading"), description: t("metaDescription") });
+}
 
 const PAGE_SIZE = 12;
 
