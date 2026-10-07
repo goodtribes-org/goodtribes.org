@@ -297,8 +297,15 @@
     "sortTrending": "Trendar",
     "ideaCount": "{count, plural, one {# idé} other {# idéer}}"
   },
+  "NotFound": {
+    "heading": "Sidan finns inte",
+    "body": "Sidan finns inte, har flyttats eller är inte publicerad än. Titta bland projekten eller idéerna i stället.",
+    "projects": "Se projekten",
+    "ideas": "Se idéerna"
+  },
   "ProjectsPage": {
     "heading": "Projekt",
+    "metaDescription": "Projekt som människor driver tillsammans på GoodTribes.org.",
     "newProjectCta": "+ Nytt projekt",
     "noProjectsMatch": "Inga projekt matchar dina filter.",
     "unitLabel": "projekt"
@@ -5217,7 +5224,7 @@
     "progress": "{step} av {total}",
     "fromIdea": "Du driver idén ”{title}” av {author}. Svaren är ifyllda från idén — ändra och fyll på så att de blir dina.",
     "fromIdeaShort": "Du driver en delad idé. Ändra och fyll på svaren så att de blir dina.",
-    "intro": "Fem korta frågor om din idé. Du kan gå tillbaka och ändra när som helst, och \"Vet inte än\" är alltid ett okej svar.",
+    "intro": "Fem korta frågor om din idé och sedan några snabba val. Du kan gå tillbaka och ändra när som helst, och \"Vet inte än\" är alltid ett okej svar.",
     "examplePrefix": "Till exempel: {example}",
     "back": "← Tillbaka",
     "next": "Nästa →",

@@ -297,8 +297,15 @@
     "sortTrending": "Trending",
     "ideaCount": "{count, plural, one {# idea} other {# ideas}}"
   },
+  "NotFound": {
+    "heading": "Page not found",
+    "body": "This page doesn't exist, has been moved or isn't published yet. Try the projects or ideas instead.",
+    "projects": "Browse projects",
+    "ideas": "Explore ideas"
+  },
   "ProjectsPage": {
     "heading": "Projects",
+    "metaDescription": "Projects people run together on GoodTribes.org.",
     "newProjectCta": "+ New project",
     "noProjectsMatch": "No projects match your filters.",
     "unitLabel": "projects"
@@ -5217,7 +5224,7 @@
     "progress": "{step} of {total}",
     "fromIdea": "You're running the idea “{title}” by {author}. The answers come from the idea — change and add to them so they're yours.",
     "fromIdeaShort": "You're running a shared idea. Change and add to the answers so they're yours.",
-    "intro": "Five short questions about your idea. You can go back and change anything, and \"Don't know yet\" is always an okay answer.",
+    "intro": "Five short questions about your idea, then a few quick choices. You can go back and change anything, and \"Don't know yet\" is always an okay answer.",
     "examplePrefix": "For example: {example}",
     "back": "← Back",
     "next": "Next →",
