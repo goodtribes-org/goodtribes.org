@@ -73,7 +73,8 @@ const CLOUD_SYMBOLS: Record<CloudSymbol, React.ReactNode> = {
 // it goes (see nh-fly-up-a/b below): one big puff in the middle with smaller
 // ones all around (form D, Niklas 2026-10-07). The stroked shapes underneath
 // and the filled ones on top together draw one outline around the whole
-// cloud; the symbol is scaled to sit inside the middle puff.
+// cloud; the symbol fills the middle puff (full size since Niklas found
+// them too small, 2026-10-07).
 function FloatingCloud({ symbol }: { symbol: CloudSymbol }) {
   const puffs = (
     <>
@@ -91,7 +92,7 @@ function FloatingCloud({ symbol }: { symbol: CloudSymbol }) {
     <svg width="62" height="56" viewBox="0 0 64 58" fill="none" aria-hidden>
       <g fill="#FFFFFF" stroke="#C9D3DC" strokeWidth="2.5">{puffs}</g>
       <g fill="#FFFFFF">{puffs}</g>
-      <g transform="translate(33 27) scale(0.72) translate(-32 -20)">{CLOUD_SYMBOLS[symbol]}</g>
+      <g transform="translate(33 27) scale(1) translate(-32 -23)">{CLOUD_SYMBOLS[symbol]}</g>
     </svg>
   );
 }
