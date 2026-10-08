@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
   try {
     checkoutSession = await stripe.checkout.sessions.create({
       mode: "payment",
-      payment_method_types: buildPaymentMethods(campaign.currency),
+      allowed_payment_method_types: buildPaymentMethods(campaign.currency),
       line_items: [
         {
           price_data: {
@@ -105,9 +105,11 @@ export async function POST(request: NextRequest) {
 
 // Klarna and Bancontact each only support a subset of currencies — build the
 // method list from the campaign's currency instead of hardcoding one static
-// set, since Stripe rejects a Checkout Session offering an incompatible method.
-function buildPaymentMethods(currency: string): Stripe.Checkout.SessionCreateParams.PaymentMethodType[] {
-  const methods: Stripe.Checkout.SessionCreateParams.PaymentMethodType[] = ["card"];
+// set. Since stripe-node v23 this is `allowed_payment_method_types`, a filter
+// on what Stripe finds eligible for the session (and has switched on in the
+// Dashboard), not a forced list like the old `payment_method_types`.
+function buildPaymentMethods(currency: string): Stripe.Checkout.SessionCreateParams.AllowedPaymentMethodType[] {
+  const methods: Stripe.Checkout.SessionCreateParams.AllowedPaymentMethodType[] = ["card"];
   const upper = currency.toUpperCase();
   if (["SEK", "EUR", "DKK", "NOK", "GBP", "USD"].includes(upper)) methods.push("klarna");
   if (upper === "EUR") methods.push("bancontact");

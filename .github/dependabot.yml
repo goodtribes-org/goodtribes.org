@@ -15,6 +15,13 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # Must stay on the major @anthropic-ai/vertex-sdk depends on: we pass our
+      # own GoogleAuth into AnthropicVertex (lib/anthropic.ts), and two copies
+      # of google-auth-library don't type-check (#256, #260). Lift this once
+      # vertex-sdk moves to the next major.
+      - dependency-name: "google-auth-library"
+        update-types: ["version-update:semver-major"]
 
   # frontend/Dockerfile's base image (pinned to a digest — see the comment
   # there). Dependabot opens a PR with the new tag+digest when node:20-alpine
