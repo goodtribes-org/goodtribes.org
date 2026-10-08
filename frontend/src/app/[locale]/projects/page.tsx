@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: L
   return buildMetadata({ locale, path: "/projects", title: t("heading"), description: t("metaDescription") });
 }
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 15;
 
 export default async function ProjectsPage({
   searchParams,
@@ -77,7 +77,7 @@ export default async function ProjectsPage({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-4">
             {projectsWithLikes.map((project) => (
               <ProjectCard key={project.slug} project={project} />
             ))}

@@ -34,7 +34,7 @@ export function invalidateListCache(tag: string) {
   revalidateTag(tag, "max")
 }
 
-const PROJECTS_PAGE_SIZE = 12;
+const PROJECTS_PAGE_SIZE = 15;
 const IDEAS_PAGE_SIZE = 15;
 const MEMBERS_PAGE_SIZE = 24;
 

@@ -96,7 +96,7 @@ export default async function IdeasPage({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-4">
             {ideas.map((idea) => (
               <Link
                 key={idea.id}
@@ -111,7 +111,7 @@ export default async function IdeasPage({
                       fill
                       unoptimized
                       className="object-cover"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-dry-sage to-muted-teal/40 flex items-center justify-center p-4">
@@ -141,17 +141,17 @@ export default async function IdeasPage({
                     </div>
                   )}
                   <div className="grid grid-cols-3 divide-x divide-muted-teal/30 text-center border-t border-muted-teal/20 pt-2 mt-auto">
-                    <div className="px-1">
+                    <div className="px-1 min-w-0">
                       <p className="text-xs font-semibold text-dark-slate">{idea._count.votes}</p>
-                      <p className="text-[10px] text-dark-slate/50 leading-tight">{t("votes")}</p>
+                      <p className="text-[10px] text-dark-slate/50 leading-tight truncate" title={t("votes")}>{t("votes")}</p>
                     </div>
-                    <div className="px-1">
+                    <div className="px-1 min-w-0">
                       <p className="text-xs font-semibold text-dark-slate">{idea._count.endorsements}</p>
-                      <p className="text-[10px] text-dark-slate/50 leading-tight">{t("contributors")}</p>
+                      <p className="text-[10px] text-dark-slate/50 leading-tight truncate" title={t("contributors")}>{t("contributors")}</p>
                     </div>
-                    <div className="px-1">
+                    <div className="px-1 min-w-0">
                       <p className="text-xs font-semibold text-dark-slate">{idea._count.comments}</p>
-                      <p className="text-[10px] text-dark-slate/50 leading-tight">{t("comments")}</p>
+                      <p className="text-[10px] text-dark-slate/50 leading-tight truncate" title={t("comments")}>{t("comments")}</p>
                     </div>
                   </div>
                 </div>
