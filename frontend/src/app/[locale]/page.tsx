@@ -205,6 +205,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           {firstTasks.total > 0 ? t("hero.helpFirstTask") : t("hero.helpInstead")}
         </Link>
       </div>
+      {/* Who runs the platform, said once near the top (Niklas, 2026-10-09). */}
+      <p className="m-0 -mt-2 px-4 pb-6 text-center text-[15px]" style={{ color: INK }}>
+        {t("hero.foundation")}
+      </p>
       <LiveStrip locale={locale} items={events.slice(0, 8).map((a) => ({ project: a.projectName, action: a.action }))} />
 
       <FirstTasksSection locale={locale} tasks={firstTasks.items} total={firstTasks.total} />
