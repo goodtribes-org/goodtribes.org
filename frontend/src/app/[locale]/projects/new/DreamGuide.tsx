@@ -163,7 +163,7 @@ export default function DreamGuide({
   async function next() {
     if (area && !followUps[area] && !unknown.includes(area) && isVagueAnswer(answers[area] ?? "")) {
       setThinking(true);
-      const suggestion = await suggestGuideFollowUp(area, answers[area] ?? "").catch(() => null);
+      const suggestion = await suggestGuideFollowUp(area, answers[area] ?? "", answers.dream).catch(() => null);
       setThinking(false);
       // The AI found the answer concrete enough: move on.
       if (!suggestion || !("none" in suggestion)) {

@@ -8,7 +8,8 @@ const SHARED_RULES = `Regler som alltid gäller:
 - Utgå bara från samtalet och det som redan står om projektet. Hitta ALDRIG på fakta: inga siffror, statistik, namn på organisationer eller personer som inte nämnts.
 - Lämna hellre ett fält tomt än att gissa.
 - För varje fält: basis = "user" om initiativtagaren själv sa det, "inferred" om du härlett eller föreslagit det.
-- Skriv kort och konkret, med initiativtagarens egna ord så långt det går.`;
+- Skriv kort och konkret, med initiativtagarens egna ord så långt det går.
+- Nämn aldrig privatpersoner vid namn (t.ex. en granne eller anhörig som initiativtagaren berättar om), och inte heller deras ålder eller andra detaljer som kan peka ut dem. Skriv "en äldre granne", inte namnet.`;
 
 const field = (description: string) => ({
   type: "object" as const,
@@ -39,7 +40,7 @@ export const BASICS_TOOL = {
     properties: {
       title: field("Ett kort, beskrivande projektnamn."),
       summary: field("En mening som beskriver projektet."),
-      description: field("Två till fyra stycken om projektet: drömmen, problemet, idén och vilka som behövs."),
+      description: field("Två till fyra stycken om projektet: drömmen, problemet, idén och vilka som behövs. Skriv i vi-form, som om teamet berättar om sitt projekt (\"Vi vill …\", \"Vi har sett …\"). Skriv aldrig \"initiativtagaren\" i texten: den visas offentligt på projektsidan."),
       category: { type: "string" },
       tags: { type: "array", items: { type: "string" } },
       sdg_goals: { type: "array", items: { type: "integer" } },

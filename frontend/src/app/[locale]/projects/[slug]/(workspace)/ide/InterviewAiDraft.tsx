@@ -42,7 +42,7 @@ export default function InterviewAiDraft({ slug, hasGuide }: { slug: string; has
     <div className="mx-auto mt-6 flex w-full max-w-2xl flex-col items-center gap-3 rounded-2xl border border-seagrass/30 bg-seagrass/5 px-5 py-4 text-center">
       {!html && (
         <>
-          <p className="text-sm text-dark-slate/70">{t("interviewAiIntro")}</p>
+          <p className="text-sm text-dark-slate/70">{t(hasGuide ? "interviewAiIntroHasGuide" : "interviewAiIntro")}</p>
           <button
             type="button"
             onClick={draft}
@@ -50,7 +50,7 @@ export default function InterviewAiDraft({ slug, hasGuide }: { slug: string; has
             className="inline-flex items-center gap-2 rounded-full bg-seagrass px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-seagrass/90 disabled:opacity-60"
           >
             <span aria-hidden>✨</span>
-            {pending ? t("interviewAiWriting") : t("interviewAiWrite")}
+            {pending ? t("interviewAiWriting") : t(hasGuide ? "interviewAiWriteHasGuide" : "interviewAiWrite")}
           </button>
         </>
       )}

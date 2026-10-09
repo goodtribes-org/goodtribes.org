@@ -10,7 +10,7 @@ import ValuePropositionDraftGrid from "./ValuePropositionDraftGrid";
 import PromoteDraftForm from "./PromoteDraftForm";
 
 export const metadata: Metadata = {
-  title: "Värdeerbjudande — utkast — GoodTribes.org",
+  title: "Värdeerbjudande — utkast",
 };
 
 export default async function ValuePropositionDraftPage({

@@ -15,7 +15,7 @@ export async function generateMetadata({
   const { locale, slug } = await params;
   const page = await getSitePage(slug, locale);
   if (!page) return {};
-  return { title: `${page.title} — GoodTribes.org` };
+  return { title: `${page.title}` };
 }
 
 export default async function CustomSitePage({ params }: { params: Promise<{ locale: Locale; slug: string }> }) {

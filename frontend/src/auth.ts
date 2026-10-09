@@ -18,8 +18,10 @@ const APP_URL = process.env.NEXTAUTH_URL ?? "https://goodtribes.org";
 // per-target-email (protects a specific inbox) and per-IP (protects against
 // one source spraying many addresses). Both fail open on a Redis outage,
 // same as every other checkRateLimit call site.
+// The per-IP limit is generous because a whole room on one wifi shares an
+// address (≈50 people at an event); MAGIC_LINK_IP_LIMIT can tune it.
 const MAGIC_LINK_EMAIL_LIMIT = 3;
-const MAGIC_LINK_IP_LIMIT = 10;
+const MAGIC_LINK_IP_LIMIT = Number(process.env.MAGIC_LINK_IP_LIMIT) || 100;
 const MAGIC_LINK_WINDOW_SECONDS = 10 * 60;
 
 export const { handlers, signIn, signOut, auth } = NextAuth({

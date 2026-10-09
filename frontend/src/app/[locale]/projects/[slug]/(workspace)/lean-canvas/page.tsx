@@ -29,7 +29,7 @@ export async function generateMetadata({
   await notFoundUnlessVisible(slug);
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) return {};
-  return { title: `${project.title} — Social Lean Canvas — GoodTribes.org` };
+  return { title: `${project.title} — Social Lean Canvas` };
 }
 
 export default async function LeanCanvasPage({

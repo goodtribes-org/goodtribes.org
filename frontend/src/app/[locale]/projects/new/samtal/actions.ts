@@ -248,6 +248,8 @@ export async function createProjectFromDream(roomId: string) {
             description: "Öppen fråga från Drömsamtalet.",
             column: "BACKLOG",
             phase: "IDEA",
+            // Free-text questions about the dream: they belong to clarifying it.
+            stepKey: "dream_defined",
             order: i,
             createdById: aiUser.id,
             createdByAi: true,

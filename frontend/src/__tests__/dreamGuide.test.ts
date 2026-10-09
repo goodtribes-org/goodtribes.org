@@ -52,4 +52,9 @@ describe("isVagueAnswer", () => {
     expect(isVagueAnswer("Äldre i Gottsunda. Bostadsbolaget kan stödja. Pensionerade IT-folk som faddrar.")).toBe(false);
     expect(isVagueAnswer("Min granne på 82 kan inte boka vårdtid längre sedan allt blev digitalt")).toBe(false);
   });
+
+  it("doesn't flag a long, concrete answer just because it says folk or många", () => {
+    expect(isVagueAnswer("Jag har jobbat som undersköterska i 25 år och sett hur mycket en enkel promenad betyder. Jag känner folk i Hembygdsföreningen och kyrkan i Hässelby.")).toBe(false);
+    expect(isVagueAnswer("Volontärer får en fast promenadvän som de träffar samma dag varje vecka. I dag finns bara kommunens träffpunkt som många inte orkar ta sig till.")).toBe(false);
+  });
 });

@@ -13,7 +13,7 @@ import { countByCountry } from "@/lib/geo";
 import OrgFilters from "@/components/OrgFiltersContainer";
 
 export const metadata: Metadata = {
-  title: "Organisations — GoodTribes.org",
+  title: "Organisations",
   description: "Organisations connected to GoodTribes.org",
 };
 

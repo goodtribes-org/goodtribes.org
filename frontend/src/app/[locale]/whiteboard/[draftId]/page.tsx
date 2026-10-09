@@ -10,7 +10,7 @@ import WhiteboardDraftCanvas from "./WhiteboardDraftCanvas";
 import PromoteWhiteboardForm from "./PromoteWhiteboardForm";
 
 export const metadata: Metadata = {
-  title: "Whiteboard — utkast — GoodTribes.org",
+  title: "Whiteboard — utkast",
 };
 
 export default async function WhiteboardDraftPage({

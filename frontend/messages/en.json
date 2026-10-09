@@ -497,7 +497,7 @@
     "reject": "Reject"
   },
   "AIReviewPage": {
-    "metaTitle": "{projectTitle} — AI Review — GoodTribes.org",
+    "metaTitle": "{projectTitle} — AI Review",
     "heading": "AI Review",
     "helpText": "When an AI agent (Writer, Analyst, or Researcher) finishes a kanban card, its deliverable lands here for a human to review before it's approved or rejected. The number next to the heading shows how many are waiting.",
     "emptyState": "No AI deliverables awaiting review.",
@@ -1203,7 +1203,7 @@
     "genericError": "Something went wrong."
   },
   "FundingPage": {
-    "pageTitle": "{projectTitle} — Funding — GoodTribes.org",
+    "pageTitle": "{projectTitle} — Funding",
     "heading": "Funding",
     "helpText": "The project can raise money here through a campaign — donation-based, reward-based crowdfunding, or against Tribe Tokens. Owners and admins start and close the campaign, log expenses, and can export a report. If Stripe isn't configured, pledges are recorded manually instead of being charged automatically.",
     "noCampaignYet": "No funding campaign has been started for this project yet.",
@@ -1269,7 +1269,7 @@
     "recurringFundingLink": "Recurring funding →"
   },
   "CalendarPage": {
-    "pageTitle": "{projectTitle} — Planning — GoodTribes.org",
+    "pageTitle": "{projectTitle} — Planning",
     "pageHeading": "Calendar",
     "pageDescription": "Milestones, tasks, and events for the project — switch to Gantt for the timeline.",
     "helpText": "The calendar shows milestones, tasks with due dates, and scheduled events for the selected month — each entry's color shows its type (see the legend below the calendar). Switch months with the arrows, or switch to the Gantt view for a timeline of every task and its dependencies.\n\nThe list below the calendar shows every milestone in the project regardless of month, with a checklist and a progress bar for how much is done.",
@@ -1316,7 +1316,7 @@
     "noTasksYet": "No tasks yet."
   },
   "RoadmapPage": {
-    "pageTitle": "{projectTitle} — Roadmap — GoodTribes.org",
+    "pageTitle": "{projectTitle} — Roadmap",
     "pageHeading": "Roadmap",
     "helpText": "The phase timeline shows the project's journey through the phases Idea → Launch → Release → Establish → Scale → Impact, with the maturity score showing how ready the project is for the next step. The milestone list below shows the project's milestones and flags the ones that are overdue.",
     "phaseTimelineHeading": "Phase timeline",
@@ -1412,7 +1412,7 @@
     "finish": "Done, take me to the project"
   },
   "LegalTypePage": {
-    "pageTitle": "Legal structure — GoodTribes.org",
+    "pageTitle": "Legal structure",
     "statusPending": "Awaiting vote",
     "statusApprovedByMembers": "Approved by members — awaiting the Foundation",
     "statusRejectedByMembers": "Rejected by members",
@@ -1451,7 +1451,7 @@
     "generateReportButton": "Generate AI final report"
   },
   "TokensPage": {
-    "pageTitle": "Token distribution — {title} — GoodTribes.org",
+    "pageTitle": "Token distribution — {title}",
     "breadcrumbProjects": "Projects",
     "breadcrumbTribeTokens": "Tribe Tokens",
     "heading": "Tribe Tokens",
@@ -1480,13 +1480,13 @@
     "distributionSummary": "Operations: {operations} SEK · Impact fund: {impactFund} SEK · To contributors: {remaining} SEK ({count} personal shares)"
   },
   "ActivityPage": {
-    "pageTitle": "{title} — Feed — GoodTribes.org",
+    "pageTitle": "{title} — Feed",
     "heading": "Feed",
     "subtitle": "Latest activity in {title}",
     "emptyMessage": "No activity in the project yet."
   },
   "FilesPage": {
-    "pageTitle": "{title} — Files — GoodTribes.org",
+    "pageTitle": "{title} — Files",
     "heading": "Files",
     "helpText": "Project members upload and share files with each other here — images, documents, and anything else that belongs to the project. Only members can see and upload files.",
     "backToProject": "← {title}",
@@ -1853,7 +1853,7 @@
     "monthDec": "Dec"
   },
   "TasksPage": {
-    "pageTitle": "{projectTitle} — Tasks — GoodTribes.org",
+    "pageTitle": "{projectTitle} — Tasks",
     "pageHeading": "Tasks",
     "helpText": "Tasks is the project's task board. Drag cards between columns (Backlog, To do, Doing, Review, Done) to update their status — or switch to List or Gantt for other views of the same tasks. Each card can have an assignee, a due date, subtasks, and dependencies on other cards, and completed subtasks can earn tokens for whoever did them.",
     "helpGuideLink": "Read the full guide",
@@ -1878,7 +1878,7 @@
     "cancelButton": "Cancel"
   },
   "WikiPage": {
-    "pageTitle": "{projectTitle} — Wiki — GoodTribes.org",
+    "pageTitle": "{projectTitle} — Wiki",
     "heading": "Wiki",
     "emptyStateOwner": "No wiki pages yet. Create the first one.",
     "titlePlaceholder": "Page title",
@@ -2717,7 +2717,7 @@
     "decisionNoteLabel": "Comment: {note}"
   },
   "ImpactPage": {
-    "pageTitle": "{title} — Impact — GoodTribes.org",
+    "pageTitle": "{title} — Impact",
     "heading": "Impact",
     "helpText": "Two separate ways to show impact on this page. The metrics at the top are self-reported — the project lead adds and updates them on an ongoing basis with no review. Verified reports (further down) are scoped claims that a site admin approves or rejects, and only those show up publicly on the project page.",
     "metricsCount": "{count, plural, one {# metric} other {# metrics}}",
@@ -4231,6 +4231,8 @@
     "guideEdit": "Edit in the wiki",
     "interviewAiIntro": "Want help with the questions? The AI suggests interview questions that test the assumptions you don't yet know hold.",
     "interviewAiWrite": "Let the AI suggest interview questions",
+    "interviewAiIntroHasGuide": "You already have an interview guide. Want a new suggestion, for example after the first interviews?",
+    "interviewAiWriteHasGuide": "Suggest a new interview guide",
     "interviewAiWriting": "The AI is writing questions…",
     "interviewAiDraftLabel": "The AI's suggested interview guide",
     "interviewAiUse": "Use as our interview guide",

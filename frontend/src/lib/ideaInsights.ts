@@ -201,7 +201,8 @@ export async function runInterviewSynthesis(projectId: string, slug: string, use
       .map(
         (i) =>
           `[${i.id}] ${i.personaName} (${i.date.toISOString().slice(0, 10)}) — problem enligt personen: ${i.painPoint}` +
-          `${i.quotes ? ` — citat/anteckningar: ${i.quotes}` : ""} — initiativtagaren bedömde problemet som ${i.validated ? "bekräftat" : "inte bekräftat"}`,
+          // An unticked box only means nobody ticked it, not "not confirmed".
+          `${i.quotes ? ` — citat/anteckningar: ${i.quotes}` : ""}${i.validated ? " — initiativtagaren bedömde problemet som bekräftat" : ""}`,
       )
       .join("\n")}\n\n` +
     `Antaganden:\n${assumptions.map((a) => `${a.key}: ${a.text}`).join("\n") || "(inga)"}`;

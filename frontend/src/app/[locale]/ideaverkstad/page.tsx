@@ -10,7 +10,7 @@ import { createAiIntakeThread } from "./actions";
 import { isFeatureEnabled } from "@/lib/featureFlags";
 
 export const metadata: Metadata = {
-  title: "Idéverkstaden — GoodTribes.org",
+  title: "Idéverkstaden",
   description: "Bolla idéer med andra och med AI, från problem till projekt.",
 };
 

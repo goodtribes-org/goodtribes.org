@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   await notFoundUnlessVisible(slug);
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) return {};
-  return { title: `${project.title} — Idéverkstad — GoodTribes.org` };
+  return { title: `${project.title} — Idéverkstad` };
 }
 
 function timeAgo(date: Date, t: Awaited<ReturnType<typeof getTranslations>>): string {

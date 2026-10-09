@@ -2,6 +2,7 @@ import type { PhaseGateOutcome, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { getAiClientFor } from "@/lib/aiMode";
+import { getAutoDoneKeys } from "@/lib/projectSignals";
 import { getFieldProvenance } from "@/lib/fieldProvenance";
 import { parseOpenQuestions } from "@/lib/dreamConversation";
 import { CANVAS_FIELD_KEYS, InsightError, latestInsight, type CritiqueContent, type SynthesisContent } from "@/lib/ideaInsights";
@@ -31,6 +32,7 @@ export const IDEA_GATE_CRITERIA = [
   "ai_reviewed",
   "lean_canvas_created",
   "value_proposition_created",
+  "impact_model_created",
   "market_scan_partners",
   "target_audience_interviews",
 ] as const;
@@ -41,14 +43,16 @@ export const MIN_INTERVIEWS = 3;
 export type GateCriteria = { key: string; met: boolean }[];
 
 export async function ideaGateCriteria(projectId: string, slug: string): Promise<{ criteria: GateCriteria; interviewCount: number }> {
-  const [done, interviewCount] = await Promise.all([
+  const [done, interviewCount, autoDone] = await Promise.all([
     prisma.initiativeChecklistItem.findMany({
       where: { projectId, completedAt: { not: null }, itemKey: { in: [...IDEA_GATE_CRITERIA] } },
       select: { itemKey: true },
     }),
     prisma.interviewLogEntry.count({ where: { projectSlug: slug } }),
+    // The impact model counts as done when its fields are filled, not by a click.
+    getAutoDoneKeys(projectId, slug),
   ]);
-  const doneKeys = new Set(done.map((d) => d.itemKey));
+  const doneKeys = new Set([...done.map((d) => d.itemKey), ...autoDone]);
   return {
     interviewCount,
     criteria: IDEA_GATE_CRITERIA.map((key) => ({

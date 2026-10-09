@@ -166,7 +166,10 @@ function KanbanCardItemImpl({
       {...(canInteract ? attributes : {})}
       {...(canInteract ? listeners : {})}
       suppressHydrationWarning
-      className="bg-white border border-b-2 border-gray-200 rounded-lg shadow-[0_2px_6px_rgba(0,0,0,0.25)] group hover:shadow-[0_4px_12px_rgba(0,0,0,0.35)] hover:border-gray-300 transition-all overflow-hidden"
+      // A plain click opens the card (a drag needs 8 px of movement first, see
+      // KanbanBoard's PointerSensor); the buttons inside stop propagation.
+      onClick={() => onOpenCard(card)}
+      className="bg-white border border-b-2 border-gray-200 rounded-lg shadow-[0_2px_6px_rgba(0,0,0,0.25)] group hover:shadow-[0_4px_12px_rgba(0,0,0,0.35)] hover:border-gray-300 transition-all overflow-hidden cursor-pointer"
     >
       {categoryHex && (
         <div className="h-1" style={{ backgroundColor: categoryHex }} title={tShared(CATEGORY_LABEL_KEYS[card.category!])} />
@@ -237,7 +240,7 @@ function KanbanCardItemImpl({
               aria-label={t("editCardButton")}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M12 4v16M4 12h16" />
+                <path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
               </svg>
             </button>
           </div>
