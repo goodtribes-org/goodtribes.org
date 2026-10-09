@@ -4673,13 +4673,8 @@
       "headingHighlight": "förändra?",
       "intro": "GoodTribes är platsen där människor tillsammans förverkligar idéer som gör världen bättre. Berätta om din dröm, så tar AI-guiden dig hela vägen från idé till verklig skillnad.",
       "label": "Beskriv din dröm",
-      "examples": {
-        "0": "Jag drömmer om att färre äldre i mitt område ska känna sig ensamma…",
-        "1": "Jag drömmer om en skola som inte slänger mat…",
-        "2": "Jag drömmer om ett IT-företag där hela vinsten går till goda ändamål…",
-        "3": "Jag drömmer om ett företag som finansierar rent vatten med sin vinst…"
-      },
-      "note": "Inget konto behövs för att börja · Dina svar är privata tills du själv skapar projektet",
+      "placeholder": "Skriv din dröm här",
+      "note": "Du väljer själv när drömmen skall delas med andra",
       "submit": "Börja med AI-guiden",
       "helpInstead": "Vill du hellre hjälpa till? Se projekt som söker folk →",
       "startProject": "Starta ett projekt →"

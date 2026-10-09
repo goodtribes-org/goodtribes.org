@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { heroTaglineFont } from "@/lib/fonts";
@@ -10,7 +10,6 @@ import { newHomeDisplayFont } from "./fonts";
 // handed over in localStorage under this key (the guide reads and removes
 // it) and the guide opens on question 2. It never goes in the URL.
 const DRAFT_KEY = "gt:new-home-dream";
-const EXAMPLE_COUNT = 4;
 
 // Small per-word tilt (deg) and baseline shift (em) so the tagline reads as
 // written by hand on paper rather than typeset in a straight line. Fixed
@@ -29,9 +28,6 @@ const TAGLINE_WOBBLE: [number, number][] = [
 // (Niklas, 2026-10-07). Extra words (the English "come true.") keep the
 // last colour.
 const TAGLINE_COLORS = ["#005600", "var(--color-coral)", "#ab0000", "#0000ab", "#005600"];
-// Matches the placeholder's fade animation (nh-ph below), so each example
-// fades in, stays and fades out once.
-const EXAMPLE_INTERVAL_MS = 3200;
 
 function Arrow({ size }: { size: number }) {
   return (
@@ -103,15 +99,8 @@ function FloatingCloud({ symbol }: { symbol: CloudSymbol }) {
 export default function DreamHero() {
   const t = useTranslations("NewHomePage.hero");
   const [text, setText] = useState("");
-  const [example, setExample] = useState(0);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
-
-  useEffect(() => {
-    if (text) return;
-    const id = setInterval(() => setExample((i) => (i + 1) % EXAMPLE_COUNT), EXAMPLE_INTERVAL_MS);
-    return () => clearInterval(id);
-  }, [text]);
 
   function submit() {
     const dream = text.trim();
@@ -126,7 +115,6 @@ export default function DreamHero() {
     <section id="drom" className="relative flex flex-col items-center gap-[26px] overflow-x-clip overflow-y-visible px-4 pt-12 pb-12 text-center xl:pt-20">
       <style>{`
         @keyframes nh-grow { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-        @keyframes nh-ph { 0% { opacity: 0; transform: translateY(6px); } 12% { opacity: 1; transform: none; } 88% { opacity: 1; } 100% { opacity: 0; } }
         @keyframes nh-fly-up-a {
           0%   { transform: translate(0, 0) rotate(-8deg) scale(0.5); opacity: 0; }
           10%  { opacity: 1; }
@@ -146,7 +134,6 @@ export default function DreamHero() {
         @media (prefers-reduced-motion: no-preference) {
           .nh-grow { animation: nh-grow 1.4s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
           .nh-write { animation: nh-write 1.6s cubic-bezier(0.45, 0.05, 0.35, 1) 0.2s both; }
-          .nh-ph { animation: nh-ph 3.2s ease-in-out infinite; }
           .nh-fly-up-a { animation: nh-fly-up-a 14s ease-in-out infinite; }
           .nh-fly-up-b { animation: nh-fly-up-b 16s ease-in-out infinite; }
         }
@@ -255,8 +242,8 @@ export default function DreamHero() {
               className="absolute inset-0 h-[84px] w-full resize-none border-0 bg-transparent py-1.5 text-[17px] leading-normal text-[#1B1F1D] outline-none focus:ring-0 sm:text-[19px]"
             />
             {!text && (
-              <div key={example} aria-hidden className="nh-ph pointer-events-none absolute left-0 top-1.5 text-[17px] leading-normal text-[#8A918D] sm:text-[19px]">
-                {t(`examples.${example}`)}
+              <div aria-hidden className="pointer-events-none absolute left-0 top-1.5 text-[17px] leading-normal text-[#8A918D] sm:text-[19px]">
+                {t("placeholder")}
               </div>
             )}
           </div>
