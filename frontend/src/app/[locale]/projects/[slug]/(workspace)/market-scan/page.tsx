@@ -18,7 +18,7 @@ export async function generateMetadata({
   await notFoundUnlessVisible(slug);
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) return {};
-  return { title: `${project.title} — Omvärldsbevakning — GoodTribes.org` };
+  return { title: `${project.title} — Omvärldsbevakning` };
 }
 
 export default async function MarketScanPage({

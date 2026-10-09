@@ -8,7 +8,7 @@ import { KanalerDirectory } from "./KanalerDirectory";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Kanaler — GoodTribes.org",
+  title: "Kanaler",
   description: "Alla dina projekt- och organisationskanaler, samlade på ett ställe.",
 };
 

@@ -12,7 +12,7 @@ import CouncilVoteForm from "./CouncilVoteForm";
 import SelfNominateButton from "./SelfNominateButton";
 
 export const metadata: Metadata = {
-  title: "Granskningsrådet — GoodTribes.org",
+  title: "Granskningsrådet",
   description: "Communityns valda organ för att hantera regelbrott och etisk granskning.",
 };
 

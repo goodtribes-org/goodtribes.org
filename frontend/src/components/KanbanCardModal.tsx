@@ -19,13 +19,13 @@ import {
   CATEGORY_META,
   PRIORITY_META,
   PRIORITY_LABEL_KEYS,
-  COLUMNS,
   toDateInput,
   type Card,
   type Member,
   type Subtask,
 } from "./kanbanShared";
 import { CATEGORY_LABEL_KEYS } from "@/lib/kanbanCategories";
+import { COLUMN_LABEL_KEYS } from "@/lib/kanbanColumns";
 import { DISPLAY_PHASES, getChecklistForPhase } from "@/lib/projectPhase";
 
 // The phase/step select encodes both in one value: "" = no phase,
@@ -155,7 +155,7 @@ function CardDetailModalImpl({
     }
   }
 
-  const columnLabel = COLUMNS.find((c) => c.key === card.column)?.label ?? card.column;
+  const columnLabel = COLUMN_LABEL_KEYS[card.column] ? tShared(COLUMN_LABEL_KEYS[card.column]) : card.column;
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -245,7 +245,7 @@ function CardDetailModalImpl({
           />
 
           {/* Metadata grid */}
-          <div className="grid grid-cols-[7rem_1fr] gap-y-3 gap-x-3 text-sm">
+          <div className="grid grid-cols-[7rem_minmax(0,1fr)] gap-y-3 gap-x-3 text-sm [&_select]:max-w-full [&_input]:max-w-full">
             <span className="text-gray-400 pt-1">{tCard("priorityLabel")}</span>
             {isLead ? (
               <div>
@@ -353,6 +353,12 @@ function CardDetailModalImpl({
                 {members.map((m) => (
                   <option key={m.id} value={m.id}>{m.name ?? m.id}</option>
                 ))}
+                {/* The assignee may not be a member (GoodTribes' AI user, or someone
+                    who claimed an open card): keep them selectable, or saving
+                    would silently clear who the card is assigned to. */}
+                {card.assigneeId && !members.some((m) => m.id === card.assigneeId) && (
+                  <option value={card.assigneeId}>{card.assignee?.name ?? card.assigneeId}</option>
+                )}
               </select>
             ) : openToPublic && !cardAssigneeId && canEdit ? (
               <div>

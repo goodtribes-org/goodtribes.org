@@ -58,6 +58,7 @@ const NO_FOLLOW_UP = "INGEN";
 export async function suggestGuideFollowUp(
   area: string,
   answer: string,
+  dream?: string,
 ): Promise<{ question: string } | { none: true } | null> {
   if (!(GUIDE_AREAS as readonly string[]).includes(area)) return null;
   const text = answer.trim().slice(0, MAX_ANSWER_LENGTH);
@@ -69,6 +70,9 @@ export async function suggestGuideFollowUp(
   const gate = await getAiClientFor({ feature: "dream-conversation", kind: "assist", userId, projectId: null });
   if (!gate.ok) return null;
   const t = await getTranslations("DreamGuide");
+  // The dream itself, so the follow-up can be about it (place, who) and not generic.
+  const dreamText = area !== "dream" ? dream?.trim().slice(0, MAX_ANSWER_LENGTH) : "";
+  const dreamContext = dreamText ? `Drömmen: ${dreamText}\n` : "";
   try {
     const response = await gate.client.messages.create(
       {
@@ -79,7 +83,7 @@ export async function suggestGuideFollowUp(
           "Ställ EN kort, vänlig följdfråga som leder till något konkret (vem, var, hur märks det). " +
           "Ge inga råd och hitta inte på något. Svara bara med frågan, på samma språk som svaret. " +
           `Om svaret redan är konkret nog, svara bara: ${NO_FOLLOW_UP}`,
-        messages: [{ role: "user", content: `Fråga: ${t(`questions.${area as GuideArea}.title`)}\nSvar: ${text}` }],
+        messages: [{ role: "user", content: `${dreamContext}Fråga: ${t(`questions.${area as GuideArea}.title`)}\nSvar: ${text}` }],
       },
       { timeout: 20_000, maxRetries: 0 },
     );
@@ -101,7 +105,8 @@ export async function stashGuide(raw: unknown): Promise<string | null> {
   const input = parseGuideInput(raw);
   if (!GUIDE_AREAS.some((a) => input.answers[a])) return null;
   const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!(await checkRateLimit(`dream-guide-stash:${ip}`, 20, 60 * 60))) return null;
+  // Generous for the same reason as the magic-link IP limit: a room on one wifi.
+  if (!(await checkRateLimit(`dream-guide-stash:${ip}`, 200, 60 * 60))) return null;
   return stashGuideInput(input);
 }
 
@@ -141,7 +146,7 @@ export async function createProjectFromGuide(raw: unknown, stashId?: string): Pr
   if (input.withAi && (await isAiProjectStartAvailable(userId))) {
     await createWithAi(input, userId, openQuestions, t);
   }
-  await createWithoutAi(input, userId, openQuestions, t);
+  await createWithoutAi(input, userId, t);
 }
 
 type T = Awaited<ReturnType<typeof getTranslations<"DreamGuide">>>;
@@ -192,7 +197,16 @@ async function createWithAi(input: GuideInput, userId: string, openQuestions: st
 }
 
 // Without AI: the answers are the project's description, word for word.
-async function createWithoutAi(input: GuideInput, userId: string, openQuestions: string[], t: T) {
+// The Idé step where a "Vet inte än" answer gets found out.
+const OPEN_QUESTION_STEP: Record<GuideArea, string> = {
+  dream: "dream_defined",
+  why_you: "dream_defined",
+  problem: "target_audience_interviews",
+  people: "target_audience_interviews",
+  idea: "market_scan_partners",
+};
+
+async function createWithoutAi(input: GuideInput, userId: string, t: T) {
   const sections = GUIDE_AREAS.filter((a) => input.answers[a]).map((a) => {
     const f = input.followUps[a];
     return `<h3>${escapeHtml(t(`questions.${a}.area`))}</h3>${paragraphs(input.answers[a]!)}${f ? paragraphs(f.answer) : ""}`;
@@ -218,15 +232,17 @@ async function createWithoutAi(input: GuideInput, userId: string, openQuestions:
       },
     });
   }
-  // "Vet inte än" → a card each in the Idé phase, the founder's own.
-  if (openQuestions.length) {
+  // "Vet inte än" → a card each in the Idé phase, the founder's own, on the
+  // step where it gets answered (so the step shows it).
+  if (input.unknown.length) {
     await prisma.kanbanCard.createMany({
-      data: openQuestions.map((q, i) => ({
+      data: input.unknown.map((area, i) => ({
         projectSlug: project.slug,
-        title: q,
+        title: t(`questions.${area}.title`),
         description: t("openQuestionCard"),
         column: "BACKLOG" as const,
         phase: "IDEA" as const,
+        stepKey: OPEN_QUESTION_STEP[area],
         order: i,
         createdById: userId,
       })),

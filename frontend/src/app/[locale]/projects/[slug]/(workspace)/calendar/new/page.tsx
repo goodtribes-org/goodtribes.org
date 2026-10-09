@@ -24,7 +24,7 @@ export async function generateMetadata({
     getTranslations({ locale, namespace: "NewCalendarEventPage" }),
   ]);
   if (!project) return {};
-  return { title: `${project.title} — ${t("metaTitleSuffix")} — GoodTribes.org` };
+  return { title: `${project.title} — ${t("metaTitleSuffix")}` };
 }
 
 export default async function NewCalendarEventPage({

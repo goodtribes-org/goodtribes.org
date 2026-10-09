@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = {
-  title: "Whiteboards — GoodTribes.org",
+  title: "Whiteboards",
 };
 
 function timeAgo(date: Date, t: Awaited<ReturnType<typeof getTranslations>>): string {

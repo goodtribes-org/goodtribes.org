@@ -145,7 +145,9 @@ export async function getYourTribe(userId: string, now = Date.now(), { lastEvent
         id: p.id, slug: p.slug, title: p.title, imageUrl: p.imageUrl, isLead: p.isLead,
         phase: toDisplayPhase(p.phase as ProjectPhaseValue),
         weeks, total: weeks.reduce((s, n) => s + n, 0), last, recentAt,
-        status: pulseStatus(last?.at ?? (recentAt ? new Date(recentAt) : null), now),
+        // A project nothing has happened in yet counts from its start, so a
+        // project created today isn't "Står still".
+        status: pulseStatus(last?.at ?? (recentAt ? new Date(recentAt) : p.createdAt), now),
       };
     })
     // Most active first — seeing the projects that move is encouraging. Only

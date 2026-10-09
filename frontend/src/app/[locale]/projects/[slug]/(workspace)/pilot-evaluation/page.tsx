@@ -22,7 +22,7 @@ export async function generateMetadata({
   await notFoundUnlessVisible(slug);
   const project = await prisma.project.findUnique({ where: { slug }, select: { title: true } });
   if (!project) return {};
-  return { title: `${project.title} — Pilotutvärdering — GoodTribes.org` };
+  return { title: `${project.title} — Pilotutvärdering` };
 }
 
 export default async function PilotEvaluationPage({

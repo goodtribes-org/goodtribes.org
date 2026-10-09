@@ -497,7 +497,7 @@
     "reject": "Avvisa"
   },
   "AIReviewPage": {
-    "metaTitle": "{projectTitle} — AI Granskning — GoodTribes.org",
+    "metaTitle": "{projectTitle} — AI Granskning",
     "heading": "AI Granskning",
     "helpText": "När en AI-agent (Skribent, Analytiker eller Researcher) slutför ett kanban-kort hamnar leveransen här för mänsklig granskning innan den godkänns eller avvisas. Siffran bredvid rubriken visar hur många leveranser som väntar.",
     "emptyState": "Inga AI-leveranser väntar på granskning.",
@@ -1203,7 +1203,7 @@
     "genericError": "Något gick fel."
   },
   "FundingPage": {
-    "pageTitle": "{projectTitle} — Finansiering — GoodTribes.org",
+    "pageTitle": "{projectTitle} — Finansiering",
     "heading": "Finansiering",
     "helpText": "Här kan projektet samla in pengar via en kampanj — donation, belöningsbaserad crowdfunding eller mot Tribe Tokens. Ägare och admin startar och stänger kampanjen, loggar utgifter och kan exportera en rapport. Är Stripe inte konfigurerat registreras löften manuellt istället för att dras automatiskt.",
     "noCampaignYet": "Ingen finansieringskampanj har startats för det här projektet ännu.",
@@ -1269,7 +1269,7 @@
     "recurringFundingLink": "Återkommande finansiering →"
   },
   "CalendarPage": {
-    "pageTitle": "{projectTitle} — Planering — GoodTribes.org",
+    "pageTitle": "{projectTitle} — Planering",
     "pageHeading": "Kalender",
     "pageDescription": "Milstolpar, uppgifter och händelser för projektet — växla till Gantt för tidslinjen.",
     "helpText": "Kalendern visar milstolpar, uppgifter med förfallodatum och inbokade händelser för den valda månaden — färgen på varje post visar vilken typ det är (se förklaringen under kalendern). Byt månad med pilarna, eller växla till Gantt-vyn för en tidslinje över alla uppgifter och beroenden.\n\nListan under kalendern visar alla projektets milstolpar oavsett månad, med en avbockningsbar checklista och en progressbar för hur stor andel som är klara.",
@@ -1316,7 +1316,7 @@
     "noTasksYet": "Inga uppgifter ännu."
   },
   "RoadmapPage": {
-    "pageTitle": "{projectTitle} — Färdplan — GoodTribes.org",
+    "pageTitle": "{projectTitle} — Färdplan",
     "pageHeading": "Färdplan",
     "helpText": "Fastidslinjen visar projektets resa genom faserna Idé → Uppstart → Lansering → Etablera → Skala → Impact, med mognadspoängen som visar hur redo projektet är för nästa steg. Milstolpelistan nedanför visar projektets milstolpar och flaggar dem som är försenade.",
     "phaseTimelineHeading": "Fastidslinje",
@@ -1412,7 +1412,7 @@
     "finish": "Klar, ta mig till projektet"
   },
   "LegalTypePage": {
-    "pageTitle": "Juridisk form — GoodTribes.org",
+    "pageTitle": "Juridisk form",
     "statusPending": "Väntar på omröstning",
     "statusApprovedByMembers": "Godkänt av medlemmarna — väntar på Stiftelsen",
     "statusRejectedByMembers": "Avslaget av medlemmarna",
@@ -1451,7 +1451,7 @@
     "generateReportButton": "Generera AI Slutrapport"
   },
   "TokensPage": {
-    "pageTitle": "Token-fördelning — {title} — GoodTribes.org",
+    "pageTitle": "Token-fördelning — {title}",
     "breadcrumbProjects": "Projekt",
     "breadcrumbTribeTokens": "Tribe Tokens",
     "heading": "Tribe Tokens",
@@ -1480,13 +1480,13 @@
     "distributionSummary": "Drift: {operations} kr · Impact-fond: {impactFund} kr · Till bidragsgivare: {remaining} kr ({count} personliga andelar)"
   },
   "ActivityPage": {
-    "pageTitle": "{title} — Flöde — GoodTribes.org",
+    "pageTitle": "{title} — Flöde",
     "heading": "Flöde",
     "subtitle": "Senaste aktivitet i {title}",
     "emptyMessage": "Ingen aktivitet i projektet ännu."
   },
   "FilesPage": {
-    "pageTitle": "{title} — Filer — GoodTribes.org",
+    "pageTitle": "{title} — Filer",
     "heading": "Filer",
     "helpText": "Här laddar projektmedlemmar upp och delar filer med varandra — bilder, dokument och annat som hör till projektet. Bara medlemmar kan se och ladda upp filer.",
     "backToProject": "← {title}",
@@ -1853,7 +1853,7 @@
     "monthDec": "Dec"
   },
   "TasksPage": {
-    "pageTitle": "{projectTitle} — Uppgifter — GoodTribes.org",
+    "pageTitle": "{projectTitle} — Uppgifter",
     "pageHeading": "Att göra",
     "helpText": "Att göra är projektets uppgiftstavla. Dra kort mellan kolumnerna (Backlog, Att göra, Pågår, Granskning, Klart) för att uppdatera status — eller växla till Lista eller Gantt för andra vyer av samma uppgifter. Varje kort kan ha en ansvarig, förfallodatum, delmoment och beroenden till andra kort, och avklarade delmoment kan ge tokens till den som utförde dem.",
     "helpGuideLink": "Läs hela guiden",
@@ -1878,7 +1878,7 @@
     "cancelButton": "Avbryt"
   },
   "WikiPage": {
-    "pageTitle": "{projectTitle} — Wiki — GoodTribes.org",
+    "pageTitle": "{projectTitle} — Wiki",
     "heading": "Wiki",
     "emptyStateOwner": "Inga wikisidor än. Skapa den första.",
     "titlePlaceholder": "Sidtitel",
@@ -2717,7 +2717,7 @@
     "decisionNoteLabel": "Kommentar: {note}"
   },
   "ImpactPage": {
-    "pageTitle": "{title} — Impact — GoodTribes.org",
+    "pageTitle": "{title} — Impact",
     "heading": "Impact",
     "helpText": "Två separata sätt att visa effekt på den här sidan. Mätvärdena överst är självrapporterade — projektledningen lägger till och uppdaterar dem löpande utan granskning. Verifierade resultat (längre ner) är avgränsade påståenden som en site-admin godkänner eller avslår, och bara de visas publikt på projektsidan.",
     "metricsCount": "{count, plural, one {# mätvärde} other {# mätvärden}}",
@@ -4231,6 +4231,8 @@
     "guideEdit": "Redigera i wikin",
     "interviewAiIntro": "Vill ni ha hjälp med frågorna? AI:n föreslår intervjufrågor som testar de antaganden ni ännu inte vet om de stämmer.",
     "interviewAiWrite": "Låt AI:n föreslå intervjufrågor",
+    "interviewAiIntroHasGuide": "Ni har redan en intervjuguide. Vill ni ha ett nytt förslag, till exempel efter de första intervjuerna?",
+    "interviewAiWriteHasGuide": "Föreslå en ny intervjuguide",
     "interviewAiWriting": "AI:n skriver frågor…",
     "interviewAiDraftLabel": "AI:ns förslag på intervjuguide",
     "interviewAiUse": "Använd som vår intervjuguide",
@@ -4674,7 +4676,7 @@
       "intro": "GoodTribes är platsen där människor tillsammans förverkligar idéer som gör världen bättre. Berätta om din dröm, så tar AI-guiden dig hela vägen från idé till verklig skillnad.",
       "label": "Beskriv din dröm",
       "placeholder": "Skriv din dröm här",
-      "note": "Du väljer själv när drömmen skall delas med andra",
+      "note": "Du väljer själv när drömmen ska delas med andra",
       "submit": "Börja med AI-guiden",
       "helpInstead": "Vill du hellre hjälpa till? Se projekt som söker folk →",
       "startProject": "Starta ett projekt →"

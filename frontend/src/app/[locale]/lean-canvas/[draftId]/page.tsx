@@ -10,7 +10,7 @@ import LeanCanvasDraftGrid from "./LeanCanvasDraftGrid";
 import PromoteDraftForm from "./PromoteDraftForm";
 
 export const metadata: Metadata = {
-  title: "Lean Canvas — utkast — GoodTribes.org",
+  title: "Lean Canvas — utkast",
 };
 
 export default async function LeanCanvasDraftPage({

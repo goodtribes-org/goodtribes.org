@@ -22,6 +22,12 @@ interface Props {
   currentUserId: string | null;
 }
 
+// Today as yyyy-mm-dd in local time: most interviews are logged the same day.
+function today(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export default function InterviewLogTable({ projectSlug, entries: initialEntries, canLog, currentUserId }: Props) {
   const t = useTranslations("InterviewLogPage");
   const [entries, setEntries] = useState(initialEntries);
@@ -46,7 +52,7 @@ export default function InterviewLogTable({ projectSlug, entries: initialEntries
       const result = await addInterviewLogEntry(projectSlug, { date, personaName, painPoint, validated, quotes });
       if (result && "entry" in result && result.entry) {
         setEntries((prev) => [result.entry as EntryItem, ...prev]);
-        if (dateRef.current) dateRef.current.value = "";
+        if (dateRef.current) dateRef.current.value = today();
         if (personaRef.current) personaRef.current.value = "";
         if (painPointRef.current) painPointRef.current.value = "";
         if (validatedRef.current) validatedRef.current.checked = false;
@@ -88,7 +94,7 @@ export default function InterviewLogTable({ projectSlug, entries: initialEntries
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-dark-slate mb-1">{t("dateLabel")}</label>
-              <input ref={dateRef} type="date" required className="w-full border border-muted-teal rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-coral" />
+              <input ref={dateRef} type="date" required defaultValue={today()} suppressHydrationWarning className="w-full border border-muted-teal rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-coral" />
             </div>
             <div>
               <label className="block text-xs font-medium text-dark-slate mb-1">{t("personaLabel")}</label>

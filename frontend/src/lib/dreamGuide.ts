@@ -47,9 +47,12 @@ export type GuideInput = {
 // Whole words only: "IT-folk" or "allas" isn't sweeping. Letter-aware, since
 // \b treats å/ä/ö as word breaks.
 const SWEEPING = /(?<![\p{L}-])(alla|världen|människor|folk|samhället|många|everyone|everybody|world|people|society)(?![\p{L}-])/iu;
+// A sweeping word only counts in a short answer: "Jag känner folk i
+// Hembygdsföreningen …" in a long, concrete answer isn't vague.
+const SWEEPING_MAX_LENGTH = 100;
 export function isVagueAnswer(answer: string): boolean {
   const a = answer.trim();
-  return a.length > 0 && (a.length < 40 || SWEEPING.test(a));
+  return a.length > 0 && (a.length < 40 || (a.length < SWEEPING_MAX_LENGTH && SWEEPING.test(a)));
 }
 
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
