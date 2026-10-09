@@ -4673,13 +4673,8 @@
       "headingHighlight": "changing?",
       "intro": "GoodTribes is where people come together to make ideas that improve the world happen. Tell us about your dream, and the AI guide takes you all the way from idea to real change.",
       "label": "Describe your dream",
-      "examples": {
-        "0": "I dream that fewer older people in my area feel lonely…",
-        "1": "I dream of a school that doesn't throw food away…",
-        "2": "I dream of an IT company where all the profit goes to good causes…",
-        "3": "I dream of a company that funds clean water with its profits…"
-      },
-      "note": "No account needed to start · Your answers are private until you create the project yourself",
+      "placeholder": "Write your dream here",
+      "note": "You choose when to share your dream with others",
       "submit": "Start with the AI guide",
       "helpInstead": "Would you rather help out? See projects looking for people →",
       "startProject": "Start a project →"
