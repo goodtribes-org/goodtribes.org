@@ -55,10 +55,13 @@ const CLOUD_SYMBOLS: Record<CloudSymbol, React.ReactNode> = {
     </>
   ),
   heart: <path d="M32 32.5s-8.5-5.2-8.5-11a4.6 4.6 0 018.5-2.5 4.6 4.6 0 018.5 2.5c0 5.8-8.5 11-8.5 11z" fill="#AB0000" />,
+  // Drawn after the speech bubble's leaf: a full, rounded leaf with its
+  // stem up to the right, a white midrib and curved side veins.
   leaf: (
     <>
-      <path d="M23.5 32c0-9.5 6-15 17-15 0 10-6.5 15-17 15z" fill="#005600" />
-      <path d="M24.5 31l10-9.5" stroke="#FFFFFF" strokeWidth="1.2" strokeLinecap="round" />
+      <path d="M37 18l4-4.5" stroke="#005600" strokeWidth="1.3" strokeLinecap="round" />
+      <path d="M22.5 33.5c-2-6.5 1-13.5 7-16.5 3.5-1.7 7-1.6 8.5-.5 2 2.5 2.4 7.5.2 11.5-3 5.2-10 6.8-15.7 5.5z" fill="#005600" />
+      <path d="M24 32L37 18.3M30 25.7c-1.6-1.4-3.6-1.6-5.4-.9M33.6 21.9c.9 1.6.9 3.6.1 5.4M27.2 29.1c-.2 1.3-.7 2.3-1.4 3" stroke="#FFFFFF" strokeWidth="1" strokeLinecap="round" fill="none" />
     </>
   ),
   thumb: (
