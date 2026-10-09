@@ -13,6 +13,8 @@ interface Props {
   // as PhaseMenuBar, so the widget and the bars always agree.
   autoDoneKeys?: string[];
   canEdit: boolean;
+  // The last phase-gate decision, already worded ("Gå vidare, 12 sep").
+  lastDecision?: string | null;
 }
 
 // Sidebar counterpart to PhaseMenuBar's popover checklist — same underlying
@@ -21,12 +23,14 @@ interface Props {
 // Styled as "Din fasresa" so it visually pairs with the phase arrows above
 // (same per-phase color from PHASE_COLORS), instead of a generic
 // "Checklista: {phase}" label.
-export default function PhaseChecklistWidget({ slug, phase, completedKeys, autoDoneKeys = [], canEdit }: Props) {
+export default function PhaseChecklistWidget({ slug, phase, completedKeys, autoDoneKeys = [], canEdit, lastDecision }: Props) {
   const tPhase = useTranslations("ProjectPhase");
   const tWidget = useTranslations("PhaseChecklistWidget");
   const tChecklist = useTranslations("ProjectPhaseChecklist");
   const [ticked, setTicked] = useState<Set<string>>(new Set(completedKeys));
   const [isPending, startTransition] = useTransition();
+  // What's going on now is the point; the full checklist is one click away.
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     setTicked(new Set(completedKeys));
@@ -38,6 +42,7 @@ export default function PhaseChecklistWidget({ slug, phase, completedKeys, autoD
   if (!checklist || checklist.length === 0) return null;
 
   const doneCount = checklist.filter((item) => doneKeys.has(item.key)).length;
+  const current = checklist.find((item) => !doneKeys.has(item.key));
   const pct = Math.round((doneCount / checklist.length) * 100);
   const phaseColor = PHASE_COLORS[phase];
   const barStyle = { "--phase-color-full": phaseColor } as CSSProperties;
@@ -69,7 +74,20 @@ export default function PhaseChecklistWidget({ slug, phase, completedKeys, autoD
           style={{ width: `${pct}%` }}
         />
       </div>
-      <div className="flex flex-col gap-2 max-h-72 overflow-y-auto">
+      <p className="text-xs text-dark-slate">
+        {current ? tWidget.rich("now", { step: tChecklist(current.key), b: (c) => <b>{c}</b> }) : tWidget("allDone")}
+      </p>
+      {lastDecision && <p className="mt-1 text-xs text-dark-slate">{tWidget.rich("lastDecision", { decision: lastDecision, b: (c) => <b>{c}</b> })}</p>}
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        className="mt-2 text-xs font-medium text-seagrass hover:underline"
+      >
+        {expanded ? tWidget("hideChecklist") : tWidget("showChecklist")}
+      </button>
+      {expanded && (
+      <div className="mt-2 flex flex-col gap-2 max-h-72 overflow-y-auto">
         {checklist.map((item) => {
           const done = doneKeys.has(item.key);
           return (
@@ -91,6 +109,7 @@ export default function PhaseChecklistWidget({ slug, phase, completedKeys, autoD
           );
         })}
       </div>
+      )}
     </section>
   );
 }
