@@ -13,7 +13,8 @@ export default function ShareButton({
   title: string;
   text?: string;
   // "header": a plain share icon sized like the site header's other icons.
-  variant?: "icon" | "button" | "header";
+  // "block": fills its container, sized like the project page's Gilla button.
+  variant?: "icon" | "button" | "header" | "block";
 }) {
   const t = useTranslations("ShareButton");
   const [open, setOpen] = useState(false);
@@ -54,7 +55,7 @@ export default function ShareButton({
   ];
 
   return (
-    <div className="relative inline-block">
+    <div className={variant === "block" ? "relative block w-full" : "relative inline-block"}>
       {variant === "header" ? (
         <button
           onClick={() => setOpen((o) => !o)}
@@ -78,6 +79,13 @@ export default function ShareButton({
           aria-label={t("shareTitle")}
         >
           <span aria-hidden>⤴</span>
+        </button>
+      ) : variant === "block" ? (
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className="w-full flex items-center justify-center gap-1.5 text-sm font-medium rounded-lg py-2 border border-muted-teal/40 text-dark-slate/60 hover:text-coral hover:border-coral/40 transition-colors"
+        >
+          <span aria-hidden>⤴</span> {t("shareTitle")}
         </button>
       ) : (
         <button

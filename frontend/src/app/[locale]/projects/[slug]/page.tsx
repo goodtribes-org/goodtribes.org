@@ -15,7 +15,14 @@ import { JoinButton, JoinRequestsPanel } from "./JoinSection";
 import FlagContentButton from "@/components/FlagContentButton";
 import { SdgIcon } from "@/components/SdgIcon";
 import Tooltip from "@/components/Tooltip";
-import { SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
+import { SDG_COLORS, SDG_LABELS_SV, SDG_UN_URLS } from "@/lib/sdg";
+import { getFounderWords } from "@/lib/founderWords";
+import { latestInsight, type SynthesisContent } from "@/lib/ideaInsights";
+import { getProjectJourney } from "@/lib/projectJourney";
+import ProjectVoice from "./ProjectVoice";
+import CollapsibleStory from "./CollapsibleStory";
+import MemberNextSteps, { type NextStepItem } from "./MemberNextSteps";
+import FeedTabs from "./FeedTabs";
 import ProjectTopNav from "./ProjectTopNav";
 import ProjectSideNav from "./ProjectSideNav";
 import PhaseMenuBar from "./PhaseMenuBar";
@@ -42,6 +49,8 @@ import TasksWithSubtasksWidget from "./TasksWithSubtasksWidget";
 import RecentChannelMessagesWidget from "./RecentChannelMessagesWidget";
 
 const FEED_PREVIEW_SIZE = 10;
+// Activity events about the board, folded into one line in the "Nyheter" tab.
+const TASK_EVENT_TYPES = new Set(["task_created", "task_moved", "task_completed", "todo_completed"]);
 
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").trim();
@@ -125,7 +134,15 @@ export default async function ProjectDetailPage({
 
   const content = resolveProjectContent(project, project.translations, locale as Locale);
   // Polaroid-caption date, e.g. "19/8-26" — day/month-2digitYear, no leading zeros.
-  const createdDateLabel = `${project.createdAt.getDate()}/${project.createdAt.getMonth() + 1}-${String(project.createdAt.getFullYear()).slice(-2)}`;
+  const createdDateLabel = t("sinceDate", {
+    date: project.createdAt.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { month: "long", year: "numeric" }),
+  });
+  const sdgGoalsList = (project as typeof project & { sdgGoals: number[] }).sdgGoals;
+  const sdgColorA = SDG_COLORS[sdgGoalsList[0]] ?? "#254441";
+  const sdgColorB = SDG_COLORS[sdgGoalsList[1]] ?? "#12486C";
+  const founderWords = await getFounderWords(project.id, project.description);
+  const coverQuote = founderWords.dream ?? content.summary ?? null;
+  const founderFirstName = founderWords.dream ? project.owner.name?.split(" ")[0] ?? null : null;
 
   const userId = session?.user?.id;
   const userMembership = project.members.find((m) => m.user.id === userId);
@@ -154,14 +171,34 @@ export default async function ProjectDetailPage({
 
   // On-page preview only — always the 10 most recent, no pagination; the "Se hela
   // flödet →" link goes to /projects/[slug]/activity for the full paginated history.
-  const feedPageItems = (await fetchActivityItems(FEED_PREVIEW_SIZE, { projectId: project.id, projectSlug: slug })).slice(0, FEED_PREVIEW_SIZE);
+  // Fetched twice as deep so "Nyheter" (people's posts, without task events) still has ten.
+  const feedItems = await fetchActivityItems(FEED_PREVIEW_SIZE * 2, { projectId: project.id, projectSlug: slug });
+  const feedPageItems = feedItems.slice(0, FEED_PREVIEW_SIZE);
+  const isTaskEvent = (i: (typeof feedItems)[number]) =>
+    i.targetType === "activityEvent" && !!i.activityType && TASK_EVENT_TYPES.has(i.activityType);
+  const feedNewsItems = feedItems.filter((i) => !isTaskEvent(i)).slice(0, FEED_PREVIEW_SIZE);
+  // The task events of the last week, folded into one line above "Nyheter".
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const recentTaskEvents = feedItems.filter((i) => isTaskEvent(i) && i.date.getTime() >= weekAgo);
+  const tasksCreatedThisWeek = recentTaskEvents.filter((i) => i.activityType === "task_created").length;
+  const tasksDoneThisWeek = recentTaskEvents.filter((i) => i.activityType === "task_completed" || i.activityType === "todo_completed").length;
   const {
     likeCountByTarget: feedLikeCountByTarget,
     likedByMe: feedLikedByMe,
     commentsByTarget: feedCommentsByTarget,
     memberProjectIds: feedMemberProjectIds,
     pendingJoinProjectIds: feedPendingJoinProjectIds,
-  } = await getFeedInteractionData(feedPageItems, userId ?? null);
+  } = await getFeedInteractionData([...new Map([...feedPageItems, ...feedNewsItems].map((i) => [i.id, i])).values()], userId ?? null);
+
+  // The project's voice and what it has learned (#275), and the last gate decision.
+  const [synthesis, lastGateDecision] = await Promise.all([
+    latestInsight<SynthesisContent>(project.id, "INTERVIEW_SYNTHESIS"),
+    prisma.phaseGateDecision.findFirst({ where: { projectId: project.id }, orderBy: { createdAt: "desc" }, select: { outcome: true, createdAt: true } }),
+  ]);
+  const learnings = (synthesis?.content.learnings ?? []).slice(0, 3);
+  const lastDecisionLabel = lastGateDecision
+    ? `${t(`gateOutcome_${lastGateDecision.outcome}`)}, ${lastGateDecision.createdAt.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short" })}`
+    : null;
 
   // Month bounds for calendar
   const now = new Date();
@@ -213,6 +250,7 @@ export default async function ProjectDetailPage({
           column: true,
           title: true,
           priority: true,
+          assigneeId: true,
           source: true,
           githubType: true,
           githubState: true,
@@ -271,6 +309,27 @@ export default async function ProjectDetailPage({
   const openGithubPrs = openGithub.filter((c) => c.githubType === "pull_request").length;
 
   const upcomingEvents = monthEvents.filter((e) => e.startsAt >= now);
+
+  // Members' next steps (#275): what's waiting for them, at the top of the page.
+  const memberNextSteps: NextStepItem[] = [];
+  if (isRealMember && !project.abandonedAt) {
+    const tChecklist = await getTranslations("ProjectPhaseChecklist");
+    const inReview = kanbanCards.filter((c) => c.column === "REVIEW").length;
+    if (isOwnerOrAdmin && inReview > 0) {
+      memberNextSteps.push({ key: "review", label: t("nextStepReview", { count: inReview }), href: `/projects/${slug}/tasks`, cta: t("nextStepReviewCta") });
+    }
+    const journey = await getProjectJourney({ id: project.id, slug, phase: project.phase });
+    if (journey.nextStepKey && journey.nextStepHref) {
+      memberNextSteps.push({ key: "step", label: t("nextStepPhase", { step: tChecklist(journey.nextStepKey) }), href: journey.nextStepHref, cta: t("nextStepPhaseCta") });
+    }
+    if (isOwnerOrAdmin && project.joinRequests.length > 0) {
+      memberNextSteps.push({ key: "join", label: t("nextStepJoin", { count: project.joinRequests.length }), href: `/projects/${slug}/members`, cta: t("nextStepJoinCta") });
+    }
+    const mine = kanbanCards.filter((c) => c.assigneeId === userId && c.column !== "DONE").length;
+    if (mine > 0) {
+      memberNextSteps.push({ key: "mine", label: t("nextStepMine", { count: mine }), href: `/projects/${slug}/tasks`, cta: t("nextStepMineCta") });
+    }
+  }
   const projectLinks: string[] = (project as typeof project & { links: string[] }).links ?? [];
 
   const sortedMembers = [...project.members].sort((a, b) =>
@@ -286,6 +345,48 @@ export default async function ProjectDetailPage({
       return { id: user.id, name: user.name ?? "Okänd", image: user.image, showProfile: user.showProfile, tokens: t._sum.tokens ?? 0 };
     })
     .filter((m): m is NonNullable<typeof m> => m !== null);
+
+  const renderFeed = (items: typeof feedPageItems) => (
+    <ActivityFeed
+      pageItems={items}
+      isLoggedIn={!!userId}
+      page={1}
+      total={items.length}
+      perPage={FEED_PREVIEW_SIZE}
+      basePath={`/projects/${slug}`}
+      likeCountByTarget={feedLikeCountByTarget}
+      likedByMe={feedLikedByMe}
+      commentsByTarget={feedCommentsByTarget}
+      memberProjectIds={feedMemberProjectIds}
+      pendingJoinProjectIds={feedPendingJoinProjectIds}
+      projectId={project.id}
+      emptyMessage={t("noActivityYet")}
+    />
+  );
+  const feedSection = (
+    <section>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-base font-semibold text-dark-slate">{t("activityHeading")}</h2>
+        <Link href={`/projects/${slug}/activity`} className="text-xs text-seagrass hover:underline">
+          {t("viewFullActivityFeed")}
+        </Link>
+      </div>
+      <FeedTabs
+        labels={{ news: t("feedTabNews"), all: t("feedTabAll") }}
+        news={
+          <>
+            {tasksCreatedThisWeek + tasksDoneThisWeek > 0 && (
+              <p className="mb-3 rounded-lg border border-muted-teal/30 bg-white px-3 py-2 text-xs text-dark-slate/70">
+                {t("feedTaskSummary", { created: tasksCreatedThisWeek, done: tasksDoneThisWeek })}
+              </p>
+            )}
+            {renderFeed(feedNewsItems)}
+          </>
+        }
+        all={renderFeed(feedPageItems)}
+      />
+    </section>
+  );
 
   return (
     <div className="flex flex-1 flex-col">
@@ -308,9 +409,13 @@ export default async function ProjectDetailPage({
           style={{ height: "490px" }}
         >
           {project.imageUrl ? (
-            <Image src={project.imageUrl} alt="" fill unoptimized className="object-cover blur-2xl scale-110" sizes="100vw" />
+            <>
+              {/* Lightly blurred, so the image is still recognisable behind the cards; a soft tone keeps them standing out. */}
+              <Image src={project.imageUrl} alt="" fill unoptimized className="object-cover blur-[6px] scale-105" sizes="100vw" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/35" />
+            </>
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-dark-slate to-dark-slate/70" />
+            <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${sdgColorA}, ${sdgColorB})` }} />
           )}
         </div>
 
@@ -353,11 +458,21 @@ export default async function ProjectDetailPage({
                     40px is the smallest that keeps the clip imperceptible —
                     tested empirically, anything smaller visibly clips descenders. */}
                 <p className={`${handwritingFontThin.className} text-center truncate px-2`} style={{ fontSize: 26, lineHeight: "40px", color: "#1a3d8f", transform: "translateY(2px)" }}>
-                  {content.title} - {createdDateLabel}
+                  {content.title} – {createdDateLabel}
                 </p>
                 <div className="relative w-full h-64 sm:h-80 md:h-[400px] 2xl:h-[460px] mt-[3px]">
                   {project.imageUrl ? (
                     <Image src={project.imageUrl} alt={content.title} fill unoptimized className="object-cover" />
+                  ) : coverQuote ? (
+                    // No image yet: the dream in the founder's own words, in the project's SDG colours.
+                    <div
+                      className="relative w-full h-full flex flex-col justify-center overflow-hidden px-8 sm:px-12"
+                      style={{ background: `radial-gradient(circle at 85% 15%, ${sdgColorB} 0%, transparent 55%), linear-gradient(135deg, ${sdgColorA}, #12486C)` }}
+                    >
+                      <span aria-hidden className="absolute -right-4 -top-10 select-none text-[180px] font-black leading-none text-white/10">”</span>
+                      <p className={`${handwritingFontThin.className} text-white text-2xl sm:text-[32px] leading-snug line-clamp-5`}>”{coverQuote}”</p>
+                      {founderFirstName && <p className="mt-3 text-sm text-white/80">— {founderFirstName}</p>}
+                    </div>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-dry-sage/20">
                       <span className="text-6xl font-bold text-dark-slate/20">{content.title[0]}</span>
@@ -536,35 +651,31 @@ export default async function ProjectDetailPage({
       <div className="flex flex-col md:flex-row gap-5 items-stretch md:items-start md:-mr-7">
         {/* Left: project story */}
         <div className="flex-1 min-w-0 space-y-8">
-          {isRealMember && (
-            <section>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-semibold text-dark-slate">{t("activityHeading")}</h2>
-                <Link href={`/projects/${slug}/activity`} className="text-xs text-seagrass hover:underline">
-                  {t("viewFullActivityFeed")}
-                </Link>
-              </div>
-              <ActivityFeed
-                pageItems={feedPageItems}
-                isLoggedIn={!!userId}
-                page={1}
-                total={feedPageItems.length}
-                perPage={FEED_PREVIEW_SIZE}
-                basePath={`/projects/${slug}`}
-                likeCountByTarget={feedLikeCountByTarget}
-                likedByMe={feedLikedByMe}
-                commentsByTarget={feedCommentsByTarget}
-                memberProjectIds={feedMemberProjectIds}
-                pendingJoinProjectIds={feedPendingJoinProjectIds}
-                projectId={project.id}
-                emptyMessage={t("noActivityYet")}
-              />
-            </section>
-          )}
+          <MemberNextSteps
+            heading={session?.user?.name ? t("nextStepsHeading", { name: session.user.name.split(" ")[0] }) : t("nextStepsHeadingNoName")}
+            items={memberNextSteps}
+          />
+
+          {isRealMember && feedSection}
+
+          <ProjectVoice
+            why={founderWords.why}
+            founderName={project.owner.name}
+            learnings={learnings}
+            accent={sdgColorA}
+            labels={{
+              why: t("whyHeading"),
+              whyBy: t("whyBy", { name: project.owner.name?.split(" ")[0] ?? "" }),
+              learned: t("learnedHeading"),
+              learnedSource: t("learnedSource"),
+            }}
+          />
 
           <section>
             <h2 className="text-base font-semibold text-dark-slate mb-4">{t("aboutProjectHeading")}</h2>
             <div className="bg-white border border-muted-teal/30 rounded-xl p-6">
+              {content.summary && <p className="max-w-[760px] mx-auto mb-4 text-xl font-bold leading-snug text-dark-slate">{content.summary}</p>}
+              <CollapsibleStory more={t("readFullStory")} less={t("showLess")}>
               {content.description ? (
                 content.description.trimStart().startsWith("<") ? (
                   <article
@@ -585,6 +696,7 @@ export default async function ProjectDetailPage({
               ) : (
                 <p className="text-dark-slate/40 italic text-sm">{t("noDescriptionYet")}</p>
               )}
+              </CollapsibleStory>
             </div>
           </section>
 
@@ -609,31 +721,7 @@ export default async function ProjectDetailPage({
             </section>
           )}
 
-          {!isRealMember && (
-            <section>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-semibold text-dark-slate">{t("activityHeading")}</h2>
-                <Link href={`/projects/${slug}/activity`} className="text-xs text-seagrass hover:underline">
-                  {t("viewFullActivityFeed")}
-                </Link>
-              </div>
-              <ActivityFeed
-                pageItems={feedPageItems}
-                isLoggedIn={!!userId}
-                page={1}
-                total={feedPageItems.length}
-                perPage={FEED_PREVIEW_SIZE}
-                basePath={`/projects/${slug}`}
-                likeCountByTarget={feedLikeCountByTarget}
-                likedByMe={feedLikedByMe}
-                commentsByTarget={feedCommentsByTarget}
-                memberProjectIds={feedMemberProjectIds}
-                pendingJoinProjectIds={feedPendingJoinProjectIds}
-                projectId={project.id}
-                emptyMessage={t("noActivityYet")}
-              />
-            </section>
-          )}
+          {!isRealMember && feedSection}
         </div>
 
         {/* Right sidebar — 320px to align with hero right card */}
@@ -667,6 +755,7 @@ export default async function ProjectDetailPage({
             completedKeys={checklistItems.map((c) => c.itemKey)}
             autoDoneKeys={autoDoneKeys}
             canEdit={isOwnerOrAdmin}
+            lastDecision={lastDecisionLabel}
           />
           <Link
             href={`/projects/${slug}/roadmap`}
@@ -723,9 +812,10 @@ export default async function ProjectDetailPage({
 
           <MostActiveMembersWidget members={mostActiveMembers} slug={slug} t={t} />
 
-          <KanbanSummaryWidget cards={kanbanCards} slug={slug} t={t} />
+          {/* Empty boxes say nothing to a visitor (#275); members always see them. */}
+          {(isRealMember || kanbanCards.length > 0) && <KanbanSummaryWidget cards={kanbanCards} slug={slug} t={t} />}
 
-          <TasksWithSubtasksWidget cards={kanbanCards} slug={slug} t={t} />
+          {(isRealMember || kanbanCards.length > 0) && <TasksWithSubtasksWidget cards={kanbanCards} slug={slug} t={t} />}
 
           <RecentChannelMessagesWidget
             messages={recentChannelMessages.map((msg) => ({
@@ -740,7 +830,7 @@ export default async function ProjectDetailPage({
           />
 
           {/* GitHub — read-only mirror of the mapped project board */}
-          {project.githubBoard && (
+          {project.githubBoard && (isRealMember || openGithubIssues + openGithubPrs > 0) && (
             <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
               <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("githubHeading")}</h2>
               <a
@@ -785,7 +875,8 @@ export default async function ProjectDetailPage({
             </section>
           )}
 
-          {/* Calendar widget */}
+          {/* Calendar widget — for visitors only when something is coming up */}
+          {(isRealMember || upcomingEvents.length > 0) && (
           <section className="bg-white border border-muted-teal/30 rounded-xl p-4">
             <h2 className="text-sm font-semibold text-dark-slate mb-3">{t("calendarHeading")}</h2>
             <MiniCalendar events={monthEvents} t={t} />
@@ -808,6 +899,7 @@ export default async function ProjectDetailPage({
               {t("openCalendarLink")}
             </Link>
           </section>
+          )}
 
           {/* Costs */}
           {fundingCampaign && fundingCampaign.expenses.length > 0 && (
