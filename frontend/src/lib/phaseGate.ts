@@ -1,4 +1,5 @@
 import type { PhaseGateOutcome, Prisma } from "@prisma/client";
+import { isWrittenPhaseWiki } from "@/lib/phaseWikiTemplates";
 import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma";
 import { draftText, type DraftText } from "@/lib/aiLanguage";
@@ -396,7 +397,7 @@ export async function lanseringGateCriteria(projectId: string, slug: string): Pr
     prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true, executionNotes: true, resultsSummary: true } }),
     prisma.impactMetric.count({ where: { projectSlug: slug } }),
     prisma.launchPlan.findUnique({ where: { projectSlug: slug }, select: { targetAudience: true, positioning: true } }),
-    prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "arbetsfloden" } }, select: { id: true } }),
+    prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "arbetsfloden" } }, select: { content: true } }),
   ]);
   const doneKeys = new Set(done.map((d) => d.itemKey));
   const logCount = logEntryCount(evaluation?.executionNotes);
@@ -406,7 +407,8 @@ export async function lanseringGateCriteria(projectId: string, slug: string): Pr
     pilot_results_collected: !!evaluation?.resultsSummary?.trim(),
     impact_measurement_setup: metricCount > 0,
     launch_marketing_plan_created: !!(launch?.targetAudience?.trim() || launch?.positioning?.trim()),
-    workflows_formalized: !!workflows,
+    // An untouched "Skriv själv" template isn't written yet (#311).
+    workflows_formalized: isWrittenPhaseWiki("arbetsfloden", workflows?.content),
   };
   return { logCount, criteria: LANSERING_GATE_CRITERIA.map((key) => ({ key, met: doneKeys.has(key) || has[key] })) };
 }
@@ -545,7 +547,7 @@ export async function etableraGateCriteria(projectId: string, slug: string): Pro
     prisma.fundingCampaign.findUnique({ where: { projectId }, select: { id: true, _count: { select: { pledges: { where: { pledgeStatus: "confirmed" } } } } } }),
     prisma.fundingApplication.findMany({ where: { projectId, status: { in: ["submitted", "awarded"] } }, select: { status: true } }),
     prisma.partnership.count({ where: { projectId, status: "active" } }),
-    prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "playbook" } }, select: { id: true } }),
+    prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "playbook" } }, select: { content: true } }),
     prisma.reviewCouncilRequest.findFirst({ where: { projectId, status: "completed" }, select: { id: true } }),
   ]);
   const doneKeys = new Set(done.map((d) => d.itemKey));
@@ -553,7 +555,7 @@ export async function etableraGateCriteria(projectId: string, slug: string): Pro
     stable_operations_funding: !!campaign || applications.length > 0,
     funding_secured: applications.some((a) => a.status === "awarded") || (campaign?._count.pledges ?? 0) > 0,
     partnerships_formalized: partnerships > 0,
-    playbook_documented: !!playbook,
+    playbook_documented: isWrittenPhaseWiki("playbook", playbook?.content),
     review_council_deep_review: !!review,
   };
   return { criteria: ETABLERA_GATE_CRITERIA.map((key) => ({ key, met: doneKeys.has(key) || !!has[key] })) };

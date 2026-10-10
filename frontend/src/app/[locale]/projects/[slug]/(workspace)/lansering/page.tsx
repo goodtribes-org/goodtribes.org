@@ -1,4 +1,5 @@
 import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
+import { startPhaseWikiPage } from "../phase-wiki-actions";
 import { resolveAiMode } from "@/lib/aiMode";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -238,7 +239,11 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
         fill={fill.workflows}
         writingLabel={writing}
         failedNote={<>{t("failedWorkflows")}{retry("workflows")}</>}
-        action={workflows ? editLink("wiki/arbetsfloden") : undefined}
+        action={workflows ? editLink("wiki/arbetsfloden") : (canEdit ? (
+          <form action={startPhaseWikiPage.bind(null, slug, "arbetsfloden")}>
+            <button type="submit" className="text-sm font-medium text-coral hover:underline">{t("writeYourself")}</button>
+          </form>
+        ) : undefined)}
       >
         {workflows?.content ? (
           <WikiHtml html={workflows.content} />
