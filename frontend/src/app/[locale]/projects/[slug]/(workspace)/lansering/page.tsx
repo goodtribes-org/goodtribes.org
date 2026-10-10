@@ -62,13 +62,14 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
       prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "arbetsfloden" } }, select: { content: true } }),
       prisma.impactMetric.findMany({ where: { projectSlug: slug }, orderBy: { createdAt: "asc" }, select: { id: true, label: true, unit: true, targetValue: true, currentValue: true, description: true } }),
       prisma.launchPlan.findUnique({ where: { projectSlug: slug }, include: { channels: { orderBy: { createdAt: "asc" }, select: { id: true, name: true, tactic: true } } } }),
+      // This phase's own open cards (#312); earlier phases' leftovers show in the gate.
       prisma.kanbanCard.findMany({
-        where: { projectSlug: slug, column: { not: "DONE" } },
+        where: { projectSlug: slug, phase: "PRODUCTION", column: { not: "DONE" } },
         orderBy: [{ createdAt: "desc" }],
         take: 8,
         select: { id: true, title: true, createdByAi: true },
       }),
-      prisma.kanbanCard.count({ where: { projectSlug: slug, column: { not: "DONE" } } }),
+      prisma.kanbanCard.count({ where: { projectSlug: slug, phase: "PRODUCTION", column: { not: "DONE" } } }),
       getTranslations({ locale, namespace: "PhaseGate" }),
       hasProjectRole(project.id, session.user.id, ["FOUNDER"]),
       lanseringGateCriteria(project.id, slug),

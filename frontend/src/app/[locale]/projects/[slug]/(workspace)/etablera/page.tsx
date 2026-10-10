@@ -72,13 +72,14 @@ export default async function EtableraOverviewPage({ params }: { params: Promise
         select: { id: true, status: true, type: true, organisation: { select: { name: true } } },
       }),
       prisma.reviewCouncilRequest.findFirst({ where: { projectId: project.id }, orderBy: { createdAt: "desc" }, select: { status: true, outcomeNote: true } }),
+      // This phase's own open cards (#312); earlier phases' leftovers show in the gate.
       prisma.kanbanCard.findMany({
-        where: { projectSlug: slug, column: { not: "DONE" } },
+        where: { projectSlug: slug, phase: "ESTABLISH", column: { not: "DONE" } },
         orderBy: [{ createdAt: "desc" }],
         take: 8,
         select: { id: true, title: true, createdByAi: true },
       }),
-      prisma.kanbanCard.count({ where: { projectSlug: slug, column: { not: "DONE" } } }),
+      prisma.kanbanCard.count({ where: { projectSlug: slug, phase: "ESTABLISH", column: { not: "DONE" } } }),
       etableraGateCriteria(project.id, slug),
       latestInsight<GateBrief>(project.id, "ETABLERA_GATE"),
       prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: "ESTABLISH" }, orderBy: { createdAt: "desc" } }),
