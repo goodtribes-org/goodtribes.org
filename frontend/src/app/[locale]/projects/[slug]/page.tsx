@@ -21,6 +21,7 @@ import { latestInsight, type SynthesisContent } from "@/lib/ideaInsights";
 import { getProjectJourney } from "@/lib/projectJourney";
 import ProjectVoice from "./ProjectVoice";
 import PublishedShare from "./PublishedShare";
+import ProposeChange from "@/components/ProposeChange";
 import QRCode from "qrcode";
 import CollapsibleStory from "./CollapsibleStory";
 import MemberNextSteps, { type NextStepItem } from "./MemberNextSteps";
@@ -159,6 +160,10 @@ export default async function ProjectDetailPage({
   // established precedent, see requireProjectRole's allowSiteAdmin default.
   const isOwnerOrAdmin = isLeadRole(userMembership?.role) || (!!userId && (await isSiteAdmin(userId)));
   const isMember = !!userMembership;
+  // Föreslå en ändring (#290): leads see what waits, everyone else logged in can propose.
+  const canPropose = !!userId && !isOwnerOrAdmin && !!project.publishedAt && !project.hiddenAt;
+  const pendingRevisions = isOwnerOrAdmin ? await prisma.projectRevision.count({ where: { projectId: project.id, status: "PENDING" } }) : 0;
+  const tRev = await getTranslations("ProjectRevisions");
   // The AI-guided journey: link the phase menu to each phase's one-page
   // overview, and give leads a way straight back into the current phase.
   const showOverviews = !!userId && (await isFeatureEnabled("ai-project-start", userId));
@@ -734,7 +739,24 @@ export default async function ProjectDetailPage({
           />
 
           <section>
-            <h2 className="text-base font-semibold text-dark-slate mb-4">{t("aboutProjectHeading")}</h2>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-base font-semibold text-dark-slate">{t("aboutProjectHeading")}</h2>
+              {canPropose && (
+                <ProposeChange
+                  slug={slug}
+                  variant="button"
+                  fields={[
+                    { field: "project.summary", label: tRev("field.summary"), current: project.summary },
+                    { field: "project.description", label: tRev("field.description"), current: project.description, rich: true },
+                  ]}
+                />
+              )}
+              {pendingRevisions > 0 && (
+                <Link href={`/projects/${slug}/changes`} className="rounded-full bg-coral/10 px-3 py-1 text-sm font-semibold text-coral hover:bg-coral/20">
+                  {tRev("pendingBadge", { count: pendingRevisions })} →
+                </Link>
+              )}
+            </div>
             <div className="bg-white border border-muted-teal/30 rounded-xl p-6">
               {content.summary && <p className="max-w-[760px] mx-auto mb-4 text-xl font-bold leading-snug text-dark-slate">{content.summary}</p>}
               <CollapsibleStory more={t("readFullStory")} less={t("showLess")}>

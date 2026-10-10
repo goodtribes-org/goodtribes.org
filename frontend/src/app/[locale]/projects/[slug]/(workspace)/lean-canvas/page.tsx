@@ -49,6 +49,8 @@ export default async function LeanCanvasPage({
     select: {
       id: true,
       title: true,
+      publishedAt: true,
+      hiddenAt: true,
       leanCanvas: { include: { updatedBy: { select: { name: true } } } },
     },
   });
@@ -58,6 +60,8 @@ export default async function LeanCanvasPage({
     ? await hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES)
     : false;
   const canComment = session?.user?.id ? await isRealMember(project.id, session.user.id) : false;
+  // Everyone else logged in proposes a change instead (#290), on a published project.
+  const canPropose = !!session?.user?.id && !canEdit && !!project.publishedAt && !project.hiddenAt;
   const canvas = project.leanCanvas;
   // vet/antar marking ships dark behind the ai-project-start flag.
   const ai = (await isFeatureEnabled("ai-project-start", session?.user?.id))
@@ -98,6 +102,7 @@ export default async function LeanCanvasPage({
           projectSlug={slug}
           canvas={canvas}
           canEdit={canEdit}
+          canPropose={canPropose}
           provenance={ai?.provenance}
           suggestions={ai?.suggestions}
         />
