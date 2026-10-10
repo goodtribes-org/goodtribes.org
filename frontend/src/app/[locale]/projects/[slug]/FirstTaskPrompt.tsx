@@ -12,8 +12,12 @@ import { createFirstTask, suggestFirstTasksAction } from "./first-task-actions";
 // a first task on the board and on the project page.
 const TIMES = ["MIN15", "HOUR1", "HOURS2_4", "RECURRING"] as const;
 
-export default function FirstTaskPrompt({ projectId, slug, published, aiAvailable }: { projectId: string; slug: string; published: boolean; aiAvailable: boolean }) {
+// `created`: shown on the Idé page right after Drömguiden — the dream was
+// just made, with a "Senare" to put the question off (it stays on the
+// project page until a first task is open).
+export default function FirstTaskPrompt({ projectId, slug, published, aiAvailable, created }: { projectId: string; slug: string; published: boolean; aiAvailable: boolean; created?: boolean }) {
   const t = useTranslations("FirstTasks");
+  const [dismissed, setDismissed] = useState(false);
   const [opened, setOpened] = useState<{ cardId: string; title: string }[]>([]);
   const [openError, setOpenError] = useState(false);
   const [suggestions, setSuggestions] = useState<FirstTaskSuggestion[] | null>(null);
@@ -50,8 +54,25 @@ export default function FirstTaskPrompt({ projectId, slug, published, aiAvailabl
     setTitle(s.title); setWhy(s.why); setTime(s.time); setChoose(s.choose); setQuestion(s.question ?? ""); setWriting(true);
   }
 
+  if (dismissed) return null;
+
   return (
     <section className="rounded-xl border border-seagrass/30 bg-seagrass/5 p-5">
+      {created && (
+        <div className="mb-2 flex items-start justify-between gap-3">
+          <p className="text-lg font-bold text-dark-slate">{t("createdHeading")}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setDismissed(true);
+              window.history.replaceState(null, "", window.location.pathname + window.location.search.replace(/([?&])skapad=1&?/, "$1").replace(/[?&]$/, ""));
+            }}
+            className="shrink-0 text-sm text-dark-slate/60 hover:text-dark-slate"
+          >
+            {t("createdLater")}
+          </button>
+        </div>
+      )}
       <h2 className="text-base font-semibold text-dark-slate">{t("promptHeading")}</h2>
       <p className="mt-1 text-sm text-dark-slate/70">{t("promptIntro")}</p>
       {!published && <p className="mt-2 text-xs text-dark-slate/60">{t("promptDraftNote")}</p>}

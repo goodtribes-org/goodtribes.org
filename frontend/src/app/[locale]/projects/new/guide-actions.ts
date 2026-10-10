@@ -274,7 +274,8 @@ async function createWithoutAi(input: GuideInput, userId: string, t: T) {
   }
   if (input.basedOnIdeaId) await linkProjectToIdea(input.basedOnIdeaId, project.id, userId);
   await markChecklistDone(project.id, "dream_defined", userId);
-  redirect(await localized(`/projects/${project.slug}/ide`));
+  // ?skapad=1: the Idé page greets the new dream with the first-task question (#284).
+  redirect(await localized(`/projects/${project.slug}/ide?skapad=1`));
 }
 
 // "Någon annan får driva det" (#234): the answers become an Idea in

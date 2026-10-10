@@ -5531,7 +5531,9 @@
     "openedHeading": "{count, plural, one {The task is open} other {# tasks are open}}",
     "openedNote": "It now shows on the project page and under First tasks. You'll get a notification when someone takes it or signs up.",
     "newAccountCap": "New accounts can have at most {count} first tasks going at once. Finish one, or wait until a project has answered your sign-up.",
-    "newAccount": "New account ({days, plural, =0 {today} one {# day} other {# days}})"
+    "newAccount": "New account ({days, plural, =0 {today} one {# day} other {# days}})",
+    "createdHeading": "Your dream is created 🎉",
+    "createdLater": "Later"
   },
   "FirstTasksDiscover": {
     "allSdgs": "All global goals",
