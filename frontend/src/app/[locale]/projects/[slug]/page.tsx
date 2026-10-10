@@ -5,7 +5,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { getTranslations } from "next-intl/server";
-import { isFeatureEnabled } from "@/lib/featureFlags";
 import { overviewPathFor } from "@/lib/projectPhase";
 import type { useTranslations } from "next-intl";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
@@ -166,7 +165,9 @@ export default async function ProjectDetailPage({
   const tRev = await getTranslations("ProjectRevisions");
   // The AI-guided journey: link the phase menu to each phase's one-page
   // overview, and give leads a way straight back into the current phase.
-  const showOverviews = !!userId && (await isFeatureEnabled("ai-project-start", userId));
+  // The phase pages are for every project (#309); logged-out visitors would
+  // only meet the login page there.
+  const showOverviews = !!userId;
 
   // A site-admin-hidden project (suspected criminal activity, see
   // contentModeration.ts) stays visible to its own members and site-admins,

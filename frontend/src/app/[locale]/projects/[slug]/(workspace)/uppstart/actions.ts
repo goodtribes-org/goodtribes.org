@@ -201,10 +201,11 @@ export async function decideUppstartGate(projectSlug: string, outcome: string, n
   revalidatePath(`/projects/${projectSlug}`, "layout");
   if (decision !== "CONTINUE") return {};
   await advanceProjectPhase(project.slug);
-  // On to the Lansering overview. In AGENT mode the AI starts drafting it
-  // right away; without AI, the step-by-step guide.
-  if (!(await isAiProjectStartAvailable(userId))) return { next: `/projects/${project.slug}/guide/production` };
-  const { mode } = await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "PRODUCTION" });
-  if (mode === "AGENT") await startLanseringFill({ projectId: project.id, projectSlug: project.slug, userId });
+  // On to the next phase page (#309). With AI and in AGENT mode it starts
+  // drafting right away; without AI the page is there to fill in by hand.
+  if (await isAiProjectStartAvailable(userId)) {
+    const { mode } = await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "PRODUCTION" });
+    if (mode === "AGENT") await startLanseringFill({ projectId: project.id, projectSlug: project.slug, userId });
+  }
   return { next: `/projects/${project.slug}/lansering` };
 }

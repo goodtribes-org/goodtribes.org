@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { stepHref } from "@/lib/phaseProgress";
 import { useTranslations } from "next-intl";
 import Tooltip from "@/components/Tooltip";
 import { getChecklistForPhase, numberChecklist, type ProjectPhaseValue } from "@/lib/projectPhase";
@@ -355,14 +356,9 @@ export default function RoadmapGantt({ phases, milestones, checklistItems, isOwn
                           : effectiveStart
                           ? `${t("startDateLabel")}: ${formatDateSv(effectiveStart)}`
                           : t("noTargetDateSet");
-                      // Same fallback PhaseMenuBar's own checklist popover uses: an item
-                      // with no dedicated tool page still links somewhere, to that phase's
-                      // guide anchored at this step, instead of being unclickable.
-                      const href = item.href
-                        ? `/projects/${slug}/${item.href}`
-                        : p.value === "IDEA"
-                        ? `/projects/${slug}/guide?step=${item.key}`
-                        : `/projects/${slug}/guide/${p.value.toLowerCase()}?step=${item.key}`;
+                      // Same link PhaseMenuBar's own checklist popover uses (stepHref):
+                      // the step's tool page, the Idé page, or the phase page.
+                      const href = stepHref(slug, p.value, item);
                       return (
                         <div key={item.key} className="flex border-b border-muted-teal/10 bg-gray-50/40" style={{ minHeight: ROW_H }}>
                           <div
