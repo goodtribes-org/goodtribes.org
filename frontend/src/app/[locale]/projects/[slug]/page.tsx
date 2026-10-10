@@ -20,6 +20,8 @@ import { getFounderWords } from "@/lib/founderWords";
 import { latestInsight, type SynthesisContent } from "@/lib/ideaInsights";
 import { getProjectJourney } from "@/lib/projectJourney";
 import ProjectVoice from "./ProjectVoice";
+import PublishedShare from "./PublishedShare";
+import QRCode from "qrcode";
 import CollapsibleStory from "./CollapsibleStory";
 import MemberNextSteps, { type NextStepItem } from "./MemberNextSteps";
 import FeedTabs from "./FeedTabs";
@@ -37,6 +39,7 @@ import { handwritingFontThin } from "@/lib/fonts";
 import { isLeadRole, isSiteAdmin, isLastFounder } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
+import { shareDescription } from "@/lib/shareCard";
 import { getLikeCommentData } from "@/lib/socialInteractions";
 import ActivityFeed from "@/components/ActivityFeed";
 import { fetchActivityItems, getFeedInteractionData } from "@/lib/activityFeed";
@@ -56,9 +59,6 @@ const FEED_PREVIEW_SIZE = 10;
 // Activity events about the board, folded into one line in the "Nyheter" tab.
 const TASK_EVENT_TYPES = new Set(["task_created", "task_moved", "task_completed", "todo_completed"]);
 
-function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, "").trim();
-}
 
 function relativeTime(date: Date, t: ReturnType<typeof useTranslations>): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -88,21 +88,25 @@ export async function generateMetadata({
   if (!project) return {};
   const content = resolveProjectContent(project, project.translations, locale as Locale);
   const t = await getTranslations({ locale, namespace: "ProjectDetailPage" });
+  const founder = await getFounderWords(project.id, project.description);
   return buildMetadata({
     locale,
     path: `/projects/${slug}`,
     title: content.title,
-    description: content.description ? stripHtml(content.description) : t("defaultProjectDescription"),
-    imageUrl: project.imageUrl,
+    description: shareDescription({ summary: content.summary, dream: founder.dream, description: content.description }) ?? t("defaultProjectDescription"),
+    generatedImage: true,
   });
 }
 
 export default async function ProjectDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<{ published?: string }>;
 }) {
   const { locale, slug } = await params;
+  const { published } = await searchParams;
   await notFoundUnlessVisible(slug);
   const session = await auth();
   const t = await getTranslations("ProjectDetailPage");
@@ -172,7 +176,13 @@ export default async function ProjectDetailPage({
 
   const { likeCount, liked } = await getLikeCommentData("project", project.id, userId ?? null);
   const shareUrl = `${APP_URL}/${locale}/projects/${slug}`;
-  const shareText = content.description ? stripHtml(content.description) : undefined;
+  const shareText = shareDescription({ summary: content.summary, dream: founderWords.dream, description: content.description }) ?? undefined;
+  // Just published (#273): the draft banner and the settings page send the
+  // lead here with ?published=1 for the share view.
+  const showPublishedShare = published === "1" && !!project.publishedAt && isOwnerOrAdmin;
+  const publishedQr = showPublishedShare
+    ? await QRCode.toDataURL(shareUrl, { margin: 1, width: 600, color: { dark: "#1B1F1D", light: "#FFFFFF" } })
+    : null;
 
   // On-page preview only — always the 10 most recent, no pagination; the "Se hela
   // flödet →" link goes to /projects/[slug]/activity for the full paginated history.
@@ -411,6 +421,7 @@ export default async function ProjectDetailPage({
 
   return (
     <div className="flex flex-1 flex-col">
+      {publishedQr && <PublishedShare url={shareUrl} title={content.title} text={shareText} qr={publishedQr} slug={slug} />}
       <ProjectTopNav
         slug={slug}
         title={project.title}

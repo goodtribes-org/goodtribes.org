@@ -30,7 +30,9 @@ export default function DraftBanner({
     start(async () => {
       const res = await publishProject(slug);
       if ("error" in res) setError(res.error === "missing" ? t("missingAbout") : t("publishFailed"));
-      else router.refresh();
+      // The project page opens its share view (#273); a refresh alone would
+      // just unmount this banner.
+      else router.push(`/projects/${slug}?published=1`);
     });
   }
 

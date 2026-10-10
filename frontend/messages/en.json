@@ -5578,5 +5578,17 @@
     "feed_TAKE": "{who} took the task “{task}” in {project}",
     "barStep": "Step {step} of 3 tonight",
     "barDone": "All three steps done – thanks for tonight!"
+  },
+  "ShareCard": {
+    "tagline": "We make good dreams come true.",
+    "people": "{count} co-creators",
+    "join": "Become a co-creator"
+  },
+  "PublishedShare": {
+    "heading": "Your project is published 🎉",
+    "body": "Anyone can find it now. Share the link with people who should be part of it, or show the QR code.",
+    "qrAlt": "QR code for the project",
+    "downloadQr": "Download the QR code",
+    "close": "Done"
   }
 }

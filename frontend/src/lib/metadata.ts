@@ -10,6 +10,7 @@ export function buildMetadata({
   title,
   description,
   imageUrl,
+  generatedImage,
 }: {
   locale: string;
   /** e.g. `/projects/${slug}` — no locale prefix, this helper adds it. */
@@ -17,6 +18,10 @@ export function buildMetadata({
   title: string;
   description?: string | null;
   imageUrl?: string | null;
+  /** The route has its own opengraph-image file, which Next adds to the
+   *  metadata itself (and which wins over imageUrl) — ask for the large
+   *  card so X and others show it full width. */
+  generatedImage?: boolean;
 }): Metadata {
   // Resolved against metadataBase (set in app/[locale]/layout.tsx) into an
   // absolute, locale-prefixed URL — next-intl's routing always uses a
@@ -36,7 +41,7 @@ export function buildMetadata({
       ...(imageUrl ? { images: [{ url: imageUrl, alt: title }] } : {}),
     },
     twitter: {
-      card: imageUrl ? "summary_large_image" : "summary",
+      card: imageUrl || generatedImage ? "summary_large_image" : "summary",
       title: ogTitle,
       description: desc,
       ...(imageUrl ? { images: [imageUrl] } : {}),
