@@ -5578,5 +5578,17 @@
     "feed_TAKE": "{who} tog uppgiften ”{task}” i {project}",
     "barStep": "Steg {step} av 3 ikväll",
     "barDone": "Alla tre steg klara – tack för ikväll!"
+  },
+  "ShareCard": {
+    "tagline": "Vi gör goda drömmar verkliga.",
+    "people": "{count} medskapare",
+    "join": "Bli medskapare"
+  },
+  "PublishedShare": {
+    "heading": "Ditt projekt är publicerat 🎉",
+    "body": "Nu kan vem som helst hitta det. Dela länken med dem som borde vara med, eller visa QR-koden.",
+    "qrAlt": "QR-kod till projektet",
+    "downloadQr": "Ladda ner QR-koden",
+    "close": "Klar"
   }
 }

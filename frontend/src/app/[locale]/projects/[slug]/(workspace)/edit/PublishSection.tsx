@@ -29,6 +29,8 @@ export default function PublishSection({
     start(async () => {
       const res = await action(slug);
       if ("error" in res) setError(res.error === "missing" ? t("missingAbout") : res.error === "blocked" ? t("unpublishBlocked") : t("publishFailed"));
+      // Publishing ends on the project page's share view (#273).
+      else if (action === publishProject) router.push(`/projects/${slug}?published=1`);
       else router.refresh();
     });
   }
