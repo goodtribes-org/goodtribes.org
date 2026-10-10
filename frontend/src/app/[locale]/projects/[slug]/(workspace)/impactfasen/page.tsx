@@ -1,4 +1,5 @@
 import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
+import { resolveAiMode } from "@/lib/aiMode";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
@@ -38,7 +39,7 @@ export default async function ImpactOverviewPage({ params }: { params: Promise<{
   const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true } });
   if (!project) notFound();
 
-  const [t, tCheck, canEdit, isFounder, aiAvailable, fillRow, focusBrief, focusDecision, doneKeys, metrics, reports, summary, followup, nextBrief, cards, openCardCount] = await Promise.all([
+  const [t, tCheck, canEdit, isFounder, aiConfigured, fillRow, focusBrief, focusDecision, doneKeys, metrics, reports, summary, followup, nextBrief, cards, openCardCount] = await Promise.all([
     getTranslations({ locale, namespace: "ImpactOverview" }),
     getTranslations({ locale, namespace: "ProjectPhaseChecklist" }),
     hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES),
@@ -61,6 +62,9 @@ export default async function ImpactOverviewPage({ params }: { params: Promise<{
     }),
     prisma.kanbanCard.count({ where: { projectSlug: slug, column: { not: "DONE" } } }),
   ]);
+  // AI only where the project uses it (#310): a project or phase set to
+  // MANUAL sees no AI buttons and no claims that the AI drafted anything.
+  const aiAvailable = aiConfigured && (await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "IMPACT" })).mode !== "MANUAL";
 
   const fill: ImpactFillStatus = fillRow ? parseImpactStatus(fillRow.status, fillRow.updatedAt) : {};
   const notYet = project.phase !== "IMPACT";
@@ -86,7 +90,7 @@ export default async function ImpactOverviewPage({ params }: { params: Promise<{
       <PhaseProgressStrip projectId={project.id} slug={slug} viewing="IMPACT" />
       <OverviewHeader
         heading={t("heading")}
-        intro={isImpactFillInProgress(fill) ? t("introWriting") : t("intro")}
+        intro={isImpactFillInProgress(fill) ? t("introWriting") : fillRow ? `${t("intro")} ${t("introAi")}` : t("intro")}
         polling={isImpactFillInProgress(fill)}
         stepByStep={{ href: `/projects/${slug}/guide/impact`, label: t("stepByStep") }}
         notYet={notYet ? { text: t("notYet"), href: `/projects/${slug}/skala#fasgrind`, linkLabel: t("toGate") } : null}

@@ -47,7 +47,7 @@ export default function NextStepSection({
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-dark-slate/70">{t("nextIntro")}</p>
+      <p className="text-sm text-dark-slate/70">{t("nextIntro")}{aiAvailable ? ` ${t("nextIntroAi")}` : ""}</p>
       {current && (
         <p className="rounded-lg border border-seagrass/30 bg-seagrass/5 px-3 py-2 text-sm text-dark-slate/80">
           {t("nextDecided", { choice: t(`next_${current}`) })}

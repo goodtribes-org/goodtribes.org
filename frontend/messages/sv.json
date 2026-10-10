@@ -4395,7 +4395,7 @@
   },
   "UppstartOverview": {
     "heading": "Uppstart",
-    "intro": "Här bildar ni kärnteamet, testar lösningen i en Design Sprint och planerar piloten. AI:n har tagit fram utkast — ändra fritt.",
+    "intro": "Här bildar ni kärnteamet, testar lösningen i en Design Sprint och planerar piloten.",
     "introWriting": "AI:n förbereder Uppstart utifrån Idéfasens underlag. Delarna dyker upp här när de är klara.",
     "stepByStep": "Steg för steg",
     "stillInIdea": "Projektet är fortfarande i Idéfasen.",
@@ -4430,7 +4430,7 @@
     "cancel": "Avbryt",
     "failedTeam": "AI:n kunde inte föreslå roller. Lägg till dem själva nedan.",
     "sprintHeading": "Design Sprint",
-    "sprintIntro": "Sprinten testar era viktigaste lösningsantaganden på fem steg. Det gör teamet tillsammans — AI:n har förberett sprintplanen och de första frågorna.",
+    "sprintIntro": "Sprinten testar era viktigaste lösningsantaganden på fem steg. Det gör teamet tillsammans.",
     "openSprint": "Öppna sprinten",
     "sprintNow": "Pågår nu",
     "sprintName": "Sprint: {name}",
@@ -4452,11 +4452,13 @@
     "onePageLink": "Se hela Uppstart på en sida, med AI:ns utkast",
     "gateHeading": "Fasgrind: redo för Lansering?",
     "gateClosed": "Uppstart avslutades {date} med beslutet att gå vidare.",
-    "gateClosedLink": "Till Lansering →"
+    "gateClosedLink": "Till Lansering →",
+    "introAi": "AI:n har tagit fram utkast — ändra fritt.",
+    "sprintIntroAi": "AI:n har förberett sprintplanen och de första frågorna."
   },
   "LanseringOverview": {
     "heading": "Lansering",
-    "intro": "Här genomför ni piloten, loggar vad som händer och utvärderar resultatet — och gör lösningen redo för fler. AI:n har tagit fram utkast — ändra fritt.",
+    "intro": "Här genomför ni piloten, loggar vad som händer och utvärderar resultatet — och gör lösningen redo för fler.",
     "introWriting": "AI:n förbereder Lansering utifrån Uppstartens underlag. Delarna dyker upp här när de är klara.",
     "stepByStep": "Steg för steg",
     "notYet": "Projektet är inte i Lansering ännu.",
@@ -4517,11 +4519,12 @@
     "onePageLink": "Se hela Lansering på en sida, med AI:ns utkast",
     "gateHeading": "Fasgrind: go/no-go för piloten",
     "gateClosed": "Lansering avslutades {date} med go för piloten.",
-    "gateClosedLink": "Till Etablera →"
+    "gateClosedLink": "Till Etablera →",
+    "introAi": "AI:n har tagit fram utkast — ändra fritt."
   },
   "EtableraOverview": {
     "heading": "Etablera",
-    "intro": "Här gör ni det som fungerade i piloten till stabil drift: återkommande finansiering, formaliserade partnerskap, en supporterbas och en playbook så att andra kan göra samma sak. AI:n har tagit fram utkast — ändra fritt.",
+    "intro": "Här gör ni det som fungerade i piloten till stabil drift: återkommande finansiering, formaliserade partnerskap, en supporterbas och en playbook så att andra kan göra samma sak.",
     "introWriting": "AI:n förbereder Etablera utifrån pilotens resultat. Delarna dyker upp här när de är klara.",
     "stepByStep": "Steg för steg",
     "notYet": "Projektet är inte i Etablera ännu.",
@@ -4573,11 +4576,12 @@
     "tasksEmpty": "Inga uppgifter på tavlan ännu.",
     "gateHeading": "Fasgrind: redo att skala?",
     "gateClosedLink": "Till Skala →",
-    "onePageLink": "Se hela Etablera på en sida, med AI:ns utkast"
+    "onePageLink": "Se hela Etablera på en sida, med AI:ns utkast",
+    "introAi": "AI:n har tagit fram utkast — ändra fritt."
   },
   "SkalaOverview": {
     "heading": "Skala",
-    "intro": "Här växer projektet till fler platser eller målgrupper — genom att samma projekt växer, att andra replikerar modellen eller att någon forkar den. AI:n har tagit fram utkast — ändra fritt.",
+    "intro": "Här växer projektet till fler platser eller målgrupper — genom att samma projekt växer, att andra replikerar modellen eller att någon forkar den.",
     "introWriting": "AI:n förbereder Skala utifrån Etablera. Delarna dyker upp här när de är klara.",
     "stepByStep": "Steg för steg",
     "notYet": "Projektet är inte i Skala ännu.",
@@ -4596,7 +4600,7 @@
     "aiDraft": "AI-utkast",
     "focusHeading": "Från förra fasgrinden — fokus i Skala",
     "choiceHeading": "Skalning eller fork?",
-    "choiceIntro": "Samma projekt kan växa med regionala instanser, öppna för att andra replikerar modellen, eller forkas till ett nytt oberoende initiativ. Beslutet är ert — här är AI:ns bedömning.",
+    "choiceIntro": "Samma projekt kan växa med regionala instanser, öppna för att andra replikerar modellen, eller forkas till ett nytt oberoende initiativ. Beslutet är ert.",
     "decideHere": "Besluta här",
     "planHeading": "Skalningsplan",
     "planGoals": "Mätbara skalningsmål",
@@ -4617,11 +4621,13 @@
     "tasksEmpty": "Inga uppgifter på tavlan ännu.",
     "gateHeading": "Fasgrind: redo för Impact?",
     "gateClosedLink": "Till Impact →",
-    "onePageLink": "Se hela Skala på en sida, med AI:ns utkast"
+    "onePageLink": "Se hela Skala på en sida, med AI:ns utkast",
+    "introAi": "AI:n har tagit fram utkast — ändra fritt.",
+    "choiceIntroAi": "Här är AI:ns bedömning."
   },
   "ImpactOverview": {
     "heading": "Impact",
-    "intro": "Den sista fasen: mät och rapportera den faktiska påverkan, få den externt verifierad, fira resultaten — och bestäm vad som händer sedan. AI:n har tagit fram utkast — ändra fritt.",
+    "intro": "Den sista fasen: mät och rapportera den faktiska påverkan, få den externt verifierad, fira resultaten — och bestäm vad som händer sedan.",
     "introWriting": "AI:n förbereder Impact. Delarna dyker upp här när de är klara.",
     "stepByStep": "Steg för steg",
     "notYet": "Projektet är inte i Impact ännu.",
@@ -4655,7 +4661,7 @@
     "moreTasks": "+ {count} till på tavlan",
     "tasksEmpty": "Inga uppgifter på tavlan ännu.",
     "nextHeading": "Nästa steg: fortsätta, replikera eller avsluta?",
-    "nextIntro": "Resans sista beslut. Fortsätt driva projektet, låt modellen spridas, eller avsluta ansvarsfullt — det är ert beslut, AI:n kan ta fram ett underlag.",
+    "nextIntro": "Resans sista beslut. Fortsätt driva projektet, låt modellen spridas, eller avsluta ansvarsfullt — det är ert beslut.",
     "nextDecided": "Ni har beslutat: {choice}.",
     "nextBriefHeading": "Beslutsunderlag",
     "nextBriefAgain": "Ta fram igen",
@@ -4676,7 +4682,9 @@
     "confirm_close": "Bekräfta: avsluta ansvarsfullt",
     "saving": "Sparar …",
     "cancel": "Avbryt",
-    "onePageLink": "Se hela Impact på en sida, med AI:ns utkast"
+    "onePageLink": "Se hela Impact på en sida, med AI:ns utkast",
+    "introAi": "AI:n har tagit fram utkast — ändra fritt.",
+    "nextIntroAi": "AI:n kan ta fram ett underlag."
   },
   "OverviewSkeleton": {
     "loading": "Hämtar fasen …"

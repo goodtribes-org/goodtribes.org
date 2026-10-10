@@ -1,4 +1,5 @@
 import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
+import { resolveAiMode } from "@/lib/aiMode";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
@@ -44,7 +45,7 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
   const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true } });
   if (!project) notFound();
 
-  const [t, tCheck, canEdit, canLog, aiAvailable, fillRow, brief, decision, done, evaluation, pilotPlan, workflows, metrics, launch, cards, openCardCount, tGate, isFounder, gate, gateBrief, gateDecision] =
+  const [t, tCheck, canEdit, canLog, aiConfigured, fillRow, brief, decision, done, evaluation, pilotPlan, workflows, metrics, launch, cards, openCardCount, tGate, isFounder, gate, gateBrief, gateDecision] =
     await Promise.all([
       getTranslations({ locale, namespace: "LanseringOverview" }),
       getTranslations({ locale, namespace: "ProjectPhaseChecklist" }),
@@ -73,6 +74,9 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
       latestInsight<GateBrief>(project.id, "LANSERING_GATE"),
       prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: "PRODUCTION" }, orderBy: { createdAt: "desc" } }),
     ]);
+  // AI only where the project uses it (#310): a project or phase set to
+  // MANUAL sees no AI buttons and no claims that the AI drafted anything.
+  const aiAvailable = aiConfigured && (await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "PRODUCTION" })).mode !== "MANUAL";
   const criterionLabel = (key: string) => tCheck(key as Parameters<typeof tCheck>[0]);
   const work = await getPhaseWork(slug, "PRODUCTION");
   const decisionDate = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -105,7 +109,7 @@ export default async function LanseringOverviewPage({ params }: { params: Promis
       <PhaseProgressStrip projectId={project.id} slug={slug} viewing="PRODUCTION" />
       <OverviewHeader
         heading={t("heading")}
-        intro={isLanseringFillInProgress(fill) ? t("introWriting") : t("intro")}
+        intro={isLanseringFillInProgress(fill) ? t("introWriting") : fillRow ? `${t("intro")} ${t("introAi")}` : t("intro")}
         polling={isLanseringFillInProgress(fill)}
         stepByStep={{ href: `/projects/${slug}/guide/production`, label: t("stepByStep") }}
         notYet={notYet ? { text: t("notYet"), href: `/projects/${slug}/uppstart#fasgrind`, linkLabel: t("toGate") } : null}
