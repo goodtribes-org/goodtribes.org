@@ -1,0 +1,40 @@
+// Eventläge (#281): an evening where people meet GoodTribes in one room (the
+// 3 December presentation). The QR link carries the event's code; what people
+// do during it — write a dream, open a first task in it, take or sign up for
+// someone else's — is logged as EventAction, for the evening's three steps
+// and the big screen. Nothing else about a project or task changes.
+model Event {
+  id          String        @id @default(cuid())
+  code        String        @unique // in the QR link, /api/e/<code>
+  title       String
+  startsAt    DateTime?
+  endsAt      DateTime?
+  createdById String
+  createdBy   User          @relation("EventsCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  actions     EventAction[]
+}
+
+enum EventActionType {
+  DREAM      // created a project from Drömguiden
+  FIRST_TASK // opened a first task in their dream
+  OFFER      // signed up for someone else's first task
+  TAKE       // took someone else's first task
+}
+
+model EventAction {
+  id        String          @id @default(cuid())
+  eventId   String
+  event     Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User            @relation("EventActions", fields: [userId], references: [id], onDelete: Cascade)
+  type      EventActionType
+  projectId String?
+  project   Project?        @relation("EventActions", fields: [projectId], references: [id], onDelete: SetNull)
+  cardId    String?
+  card      KanbanCard?     @relation("EventActions", fields: [cardId], references: [id], onDelete: SetNull)
+  createdAt DateTime        @default(now())
+
+  @@index([eventId, createdAt])
+  @@index([eventId, userId])
+}

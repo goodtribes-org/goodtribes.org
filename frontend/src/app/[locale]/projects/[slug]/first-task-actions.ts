@@ -8,6 +8,7 @@ import { createNotification } from "@/lib/notify";
 import { logActivity } from "@/lib/activity";
 import { publishToKanban } from "@/lib/redis";
 import { hasProjectRole, isExcludedFromProject, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { logEventAction } from "@/lib/events";
 import { getTrackRecords, isOpenFirstTask, MAX_OFFER_TEXT, offersFull, parseFirstTaskFields } from "@/lib/firstTasks";
 
 // Första uppgifter (#277): open a card for someone from outside, take it or
@@ -78,6 +79,7 @@ export async function saveFirstTask(cardId: string, open: boolean, raw: unknown)
     },
   });
   publishToKanban(card.projectSlug, { action: "updated", card: updated });
+  if (open) await logEventAction("FIRST_TASK", user.id, { cardId, projectId: card.project.id });
   refresh(card.projectSlug);
   return { ok: true };
 }
@@ -111,6 +113,7 @@ export async function takeFirstTask(cardId: string, message: unknown): Promise<R
   const t = await getTranslations("FirstTasks");
   const note = text(message);
   await logActivity(card.project.id, user.id, "task_claimed", { title: card.title, cardId: card.id });
+  await logEventAction("TAKE", user.id, { cardId: card.id, projectId: card.project.id });
   await Promise.all(
     card.project.members.map((m) =>
       createNotification({
@@ -149,6 +152,7 @@ export async function offerFirstTask(cardId: string, answer: unknown, message: u
     update: data,
   });
   await followProject(card.project.id, user.id);
+  await logEventAction("OFFER", user.id, { cardId: card.id, projectId: card.project.id });
 
   const t = await getTranslations("FirstTasks");
   await Promise.all(

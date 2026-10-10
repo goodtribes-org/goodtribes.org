@@ -161,9 +161,14 @@ export type FirstTaskListItem = {
   founder: { name: string | null; image: string | null };
 };
 
-function firstTaskWhere(f: FirstTaskFilters): Prisma.KanbanCardWhereInput {
+// onlyProjectIds: the evening's dreams (#281); notOwnedBy: not your own.
+export type FirstTaskScope = { onlyProjectIds?: string[]; notOwnedBy?: string | null };
+
+function firstTaskWhere(f: FirstTaskFilters, scope: FirstTaskScope = {}): Prisma.KanbanCardWhereInput {
   const project: Prisma.ProjectWhereInput = {
     ...PUBLIC_PROJECT_WHERE,
+    ...(scope.onlyProjectIds ? { id: { in: scope.onlyProjectIds } } : {}),
+    ...(scope.notOwnedBy ? { ownerId: { not: scope.notOwnedBy } } : {}),
     ...(f.sdg ? { sdgGoals: { has: f.sdg } } : {}),
     ...(f.form === "commercial" ? { legalType: { in: [...COMMERCIAL_TYPES] } } : f.form === "nonprofit" ? { legalType: { notIn: [...COMMERCIAL_TYPES] } } : {}),
     // The Idé step on screen is IDEA and SPRINT together (lib/projectPhase.ts).
@@ -190,8 +195,8 @@ function firstTaskWhere(f: FirstTaskFilters): Prisma.KanbanCardWhereInput {
   };
 }
 
-export async function searchFirstTasks(f: FirstTaskFilters, page: { take: number; skip?: number }): Promise<{ total: number; items: FirstTaskListItem[] }> {
-  const where = firstTaskWhere(f);
+export async function searchFirstTasks(f: FirstTaskFilters, page: { take: number; skip?: number }, scope: FirstTaskScope = {}): Promise<{ total: number; items: FirstTaskListItem[] }> {
+  const where = firstTaskWhere(f, scope);
   const [total, cards] = await Promise.all([
     prisma.kanbanCard.count({ where }),
     prisma.kanbanCard.findMany({

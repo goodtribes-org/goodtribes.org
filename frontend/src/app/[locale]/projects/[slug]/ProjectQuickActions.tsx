@@ -29,6 +29,7 @@ export default function ProjectQuickActions({
   shareTitle,
   shareText,
   firstTasks,
+  hasFirstTasks = false,
 }: {
   projectId: string;
   slug: string;
@@ -44,6 +45,7 @@ export default function ProjectQuickActions({
   shareText?: string;
   // Step 2 for visitors (#277): the project's open first tasks.
   firstTasks?: React.ReactNode;
+  hasFirstTasks?: boolean;
 }) {
   const t = useTranslations("ProjectDetailPage");
   const tLike = useTranslations("LikeCommentBlock");
@@ -160,7 +162,7 @@ export default function ProjectQuickActions({
           </div>
         )}
 
-        {!effectiveIsRealMember && firstTasks && <div className="border-t border-muted-teal/20 pt-3">{firstTasks}</div>}
+        {!effectiveIsRealMember && firstTasks && <div className={hasFirstTasks ? "border-t border-muted-teal/20 pt-3" : ""}>{firstTasks}</div>}
 
         {effectiveIsRealMember ? (
           canLeave && (
@@ -188,7 +190,7 @@ export default function ProjectQuickActions({
             {t("joinCta")}
           </Link>
         )}
-        {!effectiveIsRealMember && firstTasks && <p className="-mt-1 text-center text-[10px] text-dark-slate/45">{tFirst("joinNote")}</p>}
+        {!effectiveIsRealMember && hasFirstTasks && <p className="-mt-1 text-center text-[10px] text-dark-slate/45">{tFirst("joinNote")}</p>}
       </div>
     </section>
   );
