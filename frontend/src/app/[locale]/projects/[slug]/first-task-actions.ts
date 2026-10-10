@@ -12,7 +12,7 @@ import { logEventAction } from "@/lib/events";
 import { suggestFirstTasks, type SuggestResult } from "@/lib/firstTaskSuggest";
 import { toDisplayPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
-import { getHelpersToInvite, getTrackRecords, isOpenFirstTask, MAX_OFFER_TEXT, offersFull, parseFirstTaskFields } from "@/lib/firstTasks";
+import { atNewAccountCap, getHelpersToInvite, getTrackRecords, isOpenFirstTask, MAX_OFFER_TEXT, offersFull, parseFirstTaskFields } from "@/lib/firstTasks";
 
 // Första uppgifter (#277): open a card for someone from outside, take it or
 // sign up for it, and — when the leads choose — pick one. Taking a card is
@@ -105,6 +105,7 @@ export async function takeFirstTask(cardId: string, message: unknown): Promise<R
   if (card.firstTaskChoose) return { error: "The project chooses among sign-ups" };
   const problem = await checkHelper(card, user.id);
   if (problem) return { error: problem };
+  if (await atNewAccountCap(user.id)) return { error: "new_account_cap" };
 
   const claimed = await prisma.kanbanCard.updateMany({
     where: { id: cardId, assigneeId: null, openToPublic: true },
@@ -143,6 +144,7 @@ export async function offerFirstTask(cardId: string, answer: unknown, message: u
   if (!card.firstTaskChoose) return { error: "Take the task directly" };
   const problem = await checkHelper(card, user.id);
   if (problem) return { error: problem };
+  if (await atNewAccountCap(user.id)) return { error: "new_account_cap" };
   const existing = await prisma.taskOffer.findUnique({ where: { cardId_userId: { cardId, userId: user.id } }, select: { status: true } });
   if (existing?.status === "PENDING" || existing?.status === "CHOSEN") return { ok: true };
   const pending = await prisma.taskOffer.count({ where: { cardId, status: "PENDING" } });

@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 import { computeCardPayees, CREATOR_BONUS_TOKENS, APPROVER_BONUS_TOKENS, type SubtaskForPayout } from "./payoutMath";
 
 export { computeCardPayees, CREATOR_BONUS_TOKENS, APPROVER_BONUS_TOKENS, type SubtaskForPayout };
@@ -178,7 +179,23 @@ export async function mintCardCompletion(
     tokens: APPROVER_BONUS_TOKENS,
     reason: `Godkännande-bonus: ${params.card.title}`,
   });
+  await warnOnManyPayouts(tx, payees.map((p) => p.userId));
   return payees;
+}
+
+// #294: someone paid for many cards in a day is worth a human look (token
+// farming). Only logged — the payout above stands, and nothing is written.
+export const MANY_PAYOUTS_PER_DAY = 10;
+async function warnOnManyPayouts(tx: Prisma.TransactionClient, userIds: string[]) {
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  for (const userId of new Set(userIds)) {
+    const cards = await tx.tokenLedger.findMany({
+      where: { userId, kanbanCardId: { not: null }, reason: { startsWith: "Prioritetsbaserad utbetalning" }, createdAt: { gte: since } },
+      distinct: ["kanbanCardId"],
+      select: { kanbanCardId: true },
+    });
+    if (cards.length > MANY_PAYOUTS_PER_DAY) logger.warn("many card payouts", { userId, cardsLast24h: cards.length });
+  }
 }
 
 // Undoes every token award tied to a card — used when a card is moved back
