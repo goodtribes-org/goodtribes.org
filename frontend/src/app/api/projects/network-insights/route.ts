@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
@@ -51,9 +52,9 @@ export async function POST(req: Request) {
     messages: [
       {
         role: "user",
-        content: `Analysera nätverket av instanser för projektet "${project.title}" (ursprungsprojektet listas först nedan).
+        content: `Analysera nätverket av instanser för projektet nedan (ursprungsprojektet listas först).
 
-${instanceSummary}
+${wrapUntrusted("instanserna", `Projekt: ${project.title}\n${instanceSummary}`)}
 
 Identifiera vilken instans som presterar bäst och ge en hypotes om varför, baserat enbart på siffrorna ovan.
 Ge också 1-2 konkreta förslag på vad de andra instanserna kan lära av den bäst presterande.

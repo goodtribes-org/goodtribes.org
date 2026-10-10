@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { wrapUntrusted } from "@/lib/untrusted";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { getAiClientFor, aiGateStatus, aiGateMessage } from "@/lib/aiMode";
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const systemPrompt = buildSystemPrompt(card.project.title, card.project.description, agentType);
-    const userMessage = `Utför följande uppgift:\n\n**${card.title}**\n\n${card.description ?? ""}\n\n${additionalContext ?? ""}`;
+    const userMessage = `Utför uppgiften som beskrivs i kortet nedan.\n\n${wrapUntrusted("kortet", `**${card.title}**\n\n${card.description ?? ""}\n\n${additionalContext ?? ""}`)}`;
 
     const message = await client.messages.create({
       model: "claude-sonnet-4-6",

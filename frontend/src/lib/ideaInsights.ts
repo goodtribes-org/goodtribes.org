@@ -1,4 +1,5 @@
 import type Anthropic from "@anthropic-ai/sdk";
+import { wrapUntrusted } from "@/lib/untrusted";
 import type { AiInsightKind, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getAiClientFor } from "@/lib/aiMode";
@@ -109,7 +110,7 @@ async function callTool(client: Anthropic, system: string, tool: Anthropic.Tool,
       system,
       tools: [tool],
       tool_choice: { type: "tool", name: tool.name },
-      messages: [{ role: "user", content }],
+      messages: [{ role: "user", content: wrapUntrusted("projektets material", content) }],
     },
     REQUEST_OPTIONS,
   );

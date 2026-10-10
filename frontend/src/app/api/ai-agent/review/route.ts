@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { wrapUntrusted } from "@/lib/untrusted";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma"
 import { getAiClientFor, aiGateStatus, aiGateMessage } from "@/lib/aiMode";
@@ -169,7 +170,7 @@ export async function POST(req: NextRequest) {
         card.project.description,
         aiTaskRun.agentType,
       );
-      const baseUserMessage = `Utför följande uppgift:\n\n**${card.title}**\n\n${card.description ?? ""}`;
+      const baseUserMessage = `Utför uppgiften som beskrivs i kortet nedan.\n\n${wrapUntrusted("kortet", `**${card.title}**\n\n${card.description ?? ""}`)}`;
       const userMessage = feedback
         ? `${baseUserMessage}\n\nPrevious attempt feedback: ${feedback}`
         : baseUserMessage;

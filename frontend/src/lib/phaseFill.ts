@@ -1,4 +1,5 @@
 import type Anthropic from "@anthropic-ai/sdk";
+import { wrapUntrusted } from "@/lib/untrusted";
 import type { Prisma, ProjectPhase } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { cardPhaseFor, isStepOf } from "@/lib/phaseWork";
@@ -96,7 +97,7 @@ export function emptyFieldsToWrite<F extends string>(
 
 export async function callFillTool(client: Anthropic, system: string, tool: Anthropic.Tool, content: string): Promise<unknown> {
   const response = await client.messages.create(
-    { model: MODEL, max_tokens: 3000, system, tools: [tool], tool_choice: { type: "tool", name: tool.name }, messages: [{ role: "user", content }] },
+    { model: MODEL, max_tokens: 3000, system, tools: [tool], tool_choice: { type: "tool", name: tool.name }, messages: [{ role: "user", content: wrapUntrusted("projektets material", content) }] },
     { timeout: 90_000, maxRetries: 1 },
   );
   const toolUse = response.content.find((b) => b.type === "tool_use");

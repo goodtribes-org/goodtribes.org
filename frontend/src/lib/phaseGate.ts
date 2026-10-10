@@ -1,4 +1,5 @@
 import type { PhaseGateOutcome, Prisma } from "@prisma/client";
+import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma";
 import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { getAiClientFor } from "@/lib/aiMode";
@@ -172,7 +173,7 @@ export async function runGateBrief(projectId: string, slug: string, userId: stri
       system: PHASE_GATE_SYSTEM_PROMPT,
       tools: [PHASE_GATE_TOOL],
       tool_choice: { type: "tool", name: PHASE_GATE_TOOL.name },
-      messages: [{ role: "user", content }],
+      messages: [{ role: "user", content: wrapUntrusted("projektets material", content) }],
     },
     { timeout: 90_000, maxRetries: 1 },
   );
@@ -331,7 +332,7 @@ export async function runUppstartGateBrief(projectId: string, slug: string, user
       system: UPPSTART_GATE_SYSTEM_PROMPT,
       tools: [UPPSTART_GATE_TOOL],
       tool_choice: { type: "tool", name: UPPSTART_GATE_TOOL.name },
-      messages: [{ role: "user", content }],
+      messages: [{ role: "user", content: wrapUntrusted("projektets material", content) }],
     },
     { timeout: 90_000, maxRetries: 1 },
   );
@@ -463,7 +464,7 @@ export async function runLanseringGateBrief(projectId: string, slug: string, use
       system: LANSERING_GATE_SYSTEM_PROMPT,
       tools: [LANSERING_GATE_TOOL],
       tool_choice: { type: "tool", name: LANSERING_GATE_TOOL.name },
-      messages: [{ role: "user", content }],
+      messages: [{ role: "user", content: wrapUntrusted("projektets material", content) }],
     },
     { timeout: 90_000, maxRetries: 1 },
   );
@@ -610,7 +611,7 @@ export async function runEtableraGateBrief(projectId: string, slug: string, user
       system: ETABLERA_GATE_SYSTEM_PROMPT,
       tools: [ETABLERA_GATE_TOOL],
       tool_choice: { type: "tool", name: ETABLERA_GATE_TOOL.name },
-      messages: [{ role: "user", content }],
+      messages: [{ role: "user", content: wrapUntrusted("projektets material", content) }],
     },
     { timeout: 90_000, maxRetries: 1 },
   );
@@ -696,7 +697,7 @@ export async function runSkalaGateBrief(projectId: string, slug: string, userId:
       system: SKALA_GATE_SYSTEM_PROMPT,
       tools: [SKALA_GATE_TOOL],
       tool_choice: { type: "tool", name: SKALA_GATE_TOOL.name },
-      messages: [{ role: "user", content }],
+      messages: [{ role: "user", content: wrapUntrusted("projektets material", content) }],
     },
     { timeout: 90_000, maxRetries: 1 },
   );

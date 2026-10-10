@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
@@ -83,7 +84,7 @@ export async function suggestGuideFollowUp(
           "Ställ EN kort, vänlig följdfråga som leder till något konkret (vem, var, hur märks det). " +
           "Ge inga råd och hitta inte på något. Svara bara med frågan, på samma språk som svaret. " +
           `Om svaret redan är konkret nog, svara bara: ${NO_FOLLOW_UP}`,
-        messages: [{ role: "user", content: `${dreamContext}Fråga: ${t(`questions.${area as GuideArea}.title`)}\nSvar: ${text}` }],
+        messages: [{ role: "user", content: `Fråga: ${t(`questions.${area as GuideArea}.title`)}\n${wrapUntrusted("svaret", `${dreamContext}Svar: ${text}`)}` }],
       },
       { timeout: 20_000, maxRetries: 0 },
     );
