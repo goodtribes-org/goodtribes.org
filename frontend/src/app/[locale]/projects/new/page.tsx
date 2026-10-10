@@ -43,11 +43,7 @@ export default async function NewProjectPage({
     const [aiAvailable, inProgress, tg, stashed, idea, ownDrafts] = await Promise.all([
       userId ? isAiProjectStartAvailable(userId) : Promise.resolve(false),
       userId
-        ? prisma.dreamConversation.findFirst({
-            where: { userId, status: "in_progress" },
-            orderBy: { updatedAt: "desc" },
-            select: { roomId: true },
-          })
+        ? resumableDream(userId)
         : Promise.resolve(null),
       getTranslations({ locale, namespace: "DreamGuide" }),
       // Back from logging in (?guide=<id>): the answers kept on the server.
@@ -167,4 +163,18 @@ export default async function NewProjectPage({
       />
     </div>
   );
+}
+
+// "Du har ett påbörjat Drömsamtal" (#268): only a conversation that is still
+// open, has no project, and that the person hasn't moved on from by making a
+// project some other way since.
+async function resumableDream(userId: string) {
+  const dream = await prisma.dreamConversation.findFirst({
+    where: { userId, status: "in_progress", projectId: null },
+    orderBy: { updatedAt: "desc" },
+    select: { roomId: true, updatedAt: true },
+  });
+  if (!dream) return null;
+  const madeSince = await prisma.project.count({ where: { ownerId: userId, createdAt: { gt: dream.updatedAt } } });
+  return madeSince ? null : dream;
 }

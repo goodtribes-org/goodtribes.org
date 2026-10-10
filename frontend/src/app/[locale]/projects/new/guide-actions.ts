@@ -194,7 +194,30 @@ async function createWithAi(input: GuideInput, userId: string, openQuestions: st
     },
   });
   // Redirects to the new project's Idé page.
-  await createProjectFromDream(room.id);
+  try {
+    await createProjectFromDream(room.id);
+  } catch (err) {
+    // redirect() works by throwing — let it through untouched.
+    if (err && typeof err === "object" && "digest" in err && String((err as { digest: unknown }).digest).startsWith("NEXT_REDIRECT")) throw err;
+    await discardFailedGuideConversation(room.id);
+    throw err;
+  }
+}
+
+// #268: when AI fails at "Skapa mitt projekt", the guide offers "Skapa utan
+// AI i stället" — so the half-made conversation must not linger and pull the
+// person into the old Drömsamtal chat ("Du har ett påbörjat Drömsamtal").
+// Nothing made yet: the room goes, and with it (cascade) the conversation and
+// its messages. A project already made before the failure keeps its
+// conversation, which then isn't open any more.
+async function discardFailedGuideConversation(roomId: string) {
+  try {
+    const dream = await prisma.dreamConversation.findUnique({ where: { roomId }, select: { id: true, projectId: true } });
+    if (!dream?.projectId) await prisma.room.delete({ where: { id: roomId } });
+    else await prisma.dreamConversation.update({ where: { id: dream.id }, data: { status: "abandoned" } });
+  } catch {
+    // best-effort: the error the person sees is the original one
+  }
 }
 
 // Without AI: the answers are the project's description, word for word.
