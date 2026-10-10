@@ -4520,7 +4520,8 @@
     "gateHeading": "Phase gate: go/no-go for the pilot",
     "gateClosed": "Launch was closed on {date} with a go for the pilot.",
     "gateClosedLink": "To Establish →",
-    "introAi": "The AI has drafted a starting point — change anything."
+    "introAi": "The AI has drafted a starting point — change anything.",
+    "writeYourself": "Write it yourself"
   },
   "EtableraOverview": {
     "heading": "Establish",
@@ -4577,7 +4578,8 @@
     "gateHeading": "Phase gate: ready to scale?",
     "gateClosedLink": "To Scale →",
     "onePageLink": "See all of Establish on one page, with the AI's drafts",
-    "introAi": "The AI has drafted a starting point — change anything."
+    "introAi": "The AI has drafted a starting point — change anything.",
+    "writeYourself": "Write it yourself"
   },
   "SkalaOverview": {
     "heading": "Scale",

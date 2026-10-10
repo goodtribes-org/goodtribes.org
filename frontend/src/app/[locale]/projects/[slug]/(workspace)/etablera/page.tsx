@@ -1,4 +1,5 @@
 import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
+import { startPhaseWikiPage } from "../phase-wiki-actions";
 import { resolveAiMode } from "@/lib/aiMode";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -193,7 +194,11 @@ export default async function EtableraOverviewPage({ params }: { params: Promise
         fill={fill.playbook}
         writingLabel={writing}
         failedNote={<>{t("failed")}{retry("playbook")}</>}
-        action={wiki("playbook") ? link("wiki/playbook", editOrOpen) : undefined}
+        action={wiki("playbook") ? link("wiki/playbook", editOrOpen) : (canEdit ? (
+          <form action={startPhaseWikiPage.bind(null, slug, "playbook")}>
+            <button type="submit" className="text-sm font-medium text-coral hover:underline">{t("writeYourself")}</button>
+          </form>
+        ) : undefined)}
       >
         <p className="mb-3 text-sm text-dark-slate/70">{t("playbookIntro")}</p>
         {wiki("playbook") ? <WikiHtml html={wiki("playbook")!} /> : <p className="text-sm text-dark-slate/50">{t("empty")}</p>}

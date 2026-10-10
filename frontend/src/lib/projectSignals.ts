@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { isWrittenPhaseWiki } from "@/lib/phaseWikiTemplates";
 import { prisma } from "@/lib/prisma";
 import { autoDoneKeys, type ProjectSignals } from "@/lib/phaseProgress";
 import { LEAN_CANVAS_BLOCKS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
@@ -42,7 +43,7 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
     prisma.phaseGateDecision.findFirst({ where: { projectId, fromPhase: "PRODUCTION" }, select: { id: true } }),
     prisma.impactMetric.count({ where: { projectSlug: slug } }),
     prisma.launchPlan.findUnique({ where: { projectSlug: slug }, select: { targetAudience: true, positioning: true } }),
-    prisma.wikiPage.findMany({ where: { projectSlug: slug, slug: { in: ["arbetsfloden", "playbook"] } }, select: { slug: true } }),
+    prisma.wikiPage.findMany({ where: { projectSlug: slug, slug: { in: ["arbetsfloden", "playbook"] } }, select: { slug: true, content: true } }),
     prisma.fundingCampaign.findUnique({ where: { projectId }, select: { id: true, _count: { select: { pledges: { where: { pledgeStatus: "confirmed" } } } } } }),
     prisma.fundingApplication.findMany({ where: { projectId, status: { in: ["submitted", "awarded"] } }, select: { status: true } }),
     prisma.partnership.count({ where: { projectId, status: "active" } }),
@@ -57,7 +58,8 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
       distinct: ["stepKey"],
     }),
   ]);
-  const pageSlugs = new Set(pages.map((p) => p.slug));
+  // An untouched "Skriv själv" template doesn't count as written (#311).
+  const pageSlugs = new Set(pages.filter((p) => isWrittenPhaseWiki(p.slug, p.content)).map((p) => p.slug));
   const awarded = applications.some((a) => a.status === "awarded");
   return {
     ideaStepsInReview: inReview.map((c) => c.stepKey!),

@@ -4520,7 +4520,8 @@
     "gateHeading": "Fasgrind: go/no-go för piloten",
     "gateClosed": "Lansering avslutades {date} med go för piloten.",
     "gateClosedLink": "Till Etablera →",
-    "introAi": "AI:n har tagit fram utkast — ändra fritt."
+    "introAi": "AI:n har tagit fram utkast — ändra fritt.",
+    "writeYourself": "Skriv själv"
   },
   "EtableraOverview": {
     "heading": "Etablera",
@@ -4577,7 +4578,8 @@
     "gateHeading": "Fasgrind: redo att skala?",
     "gateClosedLink": "Till Skala →",
     "onePageLink": "Se hela Etablera på en sida, med AI:ns utkast",
-    "introAi": "AI:n har tagit fram utkast — ändra fritt."
+    "introAi": "AI:n har tagit fram utkast — ändra fritt.",
+    "writeYourself": "Skriv själv"
   },
   "SkalaOverview": {
     "heading": "Skala",
