@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { indexDocuments } from "@/lib/meili";
@@ -56,11 +57,11 @@ export async function suggestProjectTranslation(
       messages: [
         {
           role: "user",
-          content: JSON.stringify({
+          content: wrapUntrusted("texten att översätta", JSON.stringify({
             title: project.title,
             summary: project.summary,
             description: project.description,
-          }),
+          })),
         },
       ],
     });

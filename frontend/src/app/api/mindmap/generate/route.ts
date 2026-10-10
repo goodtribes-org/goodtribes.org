@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { wrapUntrusted } from "@/lib/untrusted";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { computeRadialLayout, toReactFlowEdges, type RawMindMapNode, type RawMindMapEdge } from "@/lib/mindmapLayout";
@@ -91,7 +92,7 @@ export async function POST(req: Request) {
     model: "claude-haiku-4-5",
     max_tokens: 1500,
     system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: contentText }],
+    messages: [{ role: "user", content: wrapUntrusted("innehållet", contentText) }],
   });
 
   const raw = message.content[0].type === "text" ? message.content[0].text : "";

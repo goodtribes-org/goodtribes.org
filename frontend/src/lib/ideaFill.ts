@@ -1,4 +1,5 @@
 import type Anthropic from "@anthropic-ai/sdk";
+import { wrapUntrusted } from "@/lib/untrusted";
 import type { AiMode, FieldKnowledgeStatus, MarketScanEntryType, ProjectAmbition, TeamMode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { CATEGORIES } from "@/lib/categories";
@@ -284,7 +285,7 @@ async function callTool(
     system: params.system,
     tools: [params.tool],
     tool_choice: { type: "tool", name: params.tool.name },
-    messages: [{ role: "user", content: params.content }],
+    messages: [{ role: "user", content: wrapUntrusted("projektets material", params.content) }],
   }, REQUEST_OPTIONS);
   const toolUse = response.content.find((b) => b.type === "tool_use");
   return toolUse && toolUse.type === "tool_use" ? toolUse.input : null;
@@ -307,7 +308,7 @@ export async function researchMarket(
   // runs code between searches and regularly took over two minutes here;
   // three plain searches are enough for a first scan.
   const tools: Anthropic.ToolUnion[] = [{ type: "web_search_20250305", name: "web_search", max_uses: 3 }, MARKET_SCAN_TOOL];
-  const messages: Anthropic.MessageParam[] = [{ role: "user", content: context }];
+  const messages: Anthropic.MessageParam[] = [{ role: "user", content: wrapUntrusted("projektets material", context) }];
   const allContent: Anthropic.ContentBlock[] = [];
   for (let i = 0; i < 2; i++) {
     const response = await client.messages.create({

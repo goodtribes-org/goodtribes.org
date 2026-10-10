@@ -1,4 +1,5 @@
 import type { FirstTaskTime } from "@prisma/client";
+import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma";
 import { getAiClientFor } from "@/lib/aiMode";
 import { parseOpenQuestions } from "@/lib/dreamConversation";
@@ -121,7 +122,7 @@ export async function suggestFirstTasks(projectId: string, userId: string): Prom
 
   try {
     const response = await gate.client.messages.create(
-      { model: MODEL, max_tokens: 1200, system: SYSTEM, tools: [TOOL], tool_choice: { type: "tool", name: TOOL.name }, messages: [{ role: "user", content: context }] },
+      { model: MODEL, max_tokens: 1200, system: SYSTEM, tools: [TOOL], tool_choice: { type: "tool", name: TOOL.name }, messages: [{ role: "user", content: wrapUntrusted("projektets material", context) }] },
       { timeout: 60_000, maxRetries: 1 },
     );
     const block = response.content.find((b) => b.type === "tool_use");

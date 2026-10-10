@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma";
 import { cardPhaseAfterGate, countOpenPhaseTasks } from "@/lib/phaseWork";
 import { redirect } from "next/navigation";
@@ -370,7 +371,7 @@ export async function draftAboutText(
       system: ABOUT_DRAFT_PROMPT,
       tools: [ABOUT_DRAFT_TOOL],
       tool_choice: { type: "tool", name: ABOUT_DRAFT_TOOL.name },
-      messages: [{ role: "user", content: context }],
+      messages: [{ role: "user", content: wrapUntrusted("projektets material", context) }],
     });
     const block = res.content.find((b) => b.type === "tool_use");
     const input = (block && "input" in block ? block.input : {}) as { summary?: unknown; paragraphs?: unknown };

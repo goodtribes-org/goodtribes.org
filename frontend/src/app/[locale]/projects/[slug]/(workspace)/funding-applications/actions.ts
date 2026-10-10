@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -114,7 +115,7 @@ Finansieringskällans beskrivning: ${application.fundingSource.description ?? "E
       max_tokens: 2000,
       system:
         "Du är en erfaren bidragsansökningsskribent för svenska ideella och kommersiella impact-projekt. Skriv ett komplett utkast till bidragsansökan i markdown-format, baserat på projektets Lean Canvas och värdeerbjudande. Var konkret, undvik floskler, och anpassa tonen efter finansiärens beskrivning.",
-      messages: [{ role: "user", content: context }],
+      messages: [{ role: "user", content: wrapUntrusted("projektets material", context) }],
     });
     const draftMarkdown = message.content[0].type === "text" ? message.content[0].text : "";
 

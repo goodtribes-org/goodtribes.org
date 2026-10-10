@@ -1,4 +1,5 @@
 import type AnthropicSdk from "@anthropic-ai/sdk";
+import { withUntrustedContentRule } from "@/lib/untrusted";
 import { redisPub } from "@/lib/redis";
 import { checkRateLimit, RATE_LIMIT_TIMEOUT_MS, withTimeout } from "@/lib/rateLimit";
 import { permanentAiFailure } from "@/lib/aiFailure";
@@ -218,12 +219,14 @@ export function withCacheBreakpoint(messages: AnthropicSdk.MessageParam[]): Anth
 // getAiClientFor() in lib/aiMode.ts, which also enforces the project's AI
 // mode (AGENT/ASSIST/MANUAL) and the rate limit. __tests__/aiGate.test.ts
 // fails if anything other than lib/aiMode.ts imports this.
+// Every client gets the prompt-injection rule (#291, lib/untrusted.ts) added
+// to its system prompt, whichever provider serves it.
 export async function createAnthropicClient(): Promise<AnthropicSdk | null> {
   if (!isAiEnabled()) return null;
-  if (aiProvider() === "relay") return (await import("@/lib/aiRelay")).createRelayClient();
-  if (aiProvider() === "vertex") return withOutageBreaker(await createVertexClient());
+  if (aiProvider() === "relay") return withUntrustedContentRule((await import("@/lib/aiRelay")).createRelayClient());
+  if (aiProvider() === "vertex") return withUntrustedContentRule(withOutageBreaker(await createVertexClient()));
   const Anthropic = (await import("@anthropic-ai/sdk")).default;
-  return withOutageBreaker(new Anthropic());
+  return withUntrustedContentRule(withOutageBreaker(new Anthropic()));
 }
 
 // ─── Configured but not working ─────────────────────────────────────────────

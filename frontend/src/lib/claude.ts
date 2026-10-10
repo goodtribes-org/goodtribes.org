@@ -1,4 +1,5 @@
 import { getAiClientFor } from "@/lib/aiMode";
+import { wrapUntrusted } from "@/lib/untrusted";
 
 // SDG suggestions for a free-text description (idea feed, project creation,
 // project edit). Goes through the AI gate like every other call: rate-limited
@@ -21,7 +22,7 @@ export async function suggestSdgGoals(
 Analyze the text and return ONLY valid JSON (no markdown, no explanation):
 {"suggested_sdgs": [array of 1-5 SDG numbers most relevant, sorted by relevance], "reasoning": "one sentence"}
 SDG numbers are 1-17.`,
-      messages: [{ role: "user", content: text }],
+      messages: [{ role: "user", content: wrapUntrusted("texten", text) }],
     });
 
     const raw = response.content.find((b) => b.type === "text")?.text ?? "";

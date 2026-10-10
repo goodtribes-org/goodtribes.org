@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -97,7 +98,7 @@ export async function generateAiProjectPlan(roomId: string) {
   });
   const threadMessages = history.map((m) => ({
     role: (m.isAi ? "assistant" : "user") as "assistant" | "user",
-    content: `${m.author.name ?? "Någon"}: ${m.body.replace(/<[^>]*>/g, "").trim()}`,
+    content: m.isAi ? m.body.replace(/<[^>]*>/g, "").trim() : wrapUntrusted(`inlägg av ${m.author.name ?? "Någon"}`, m.body.replace(/<[^>]*>/g, "").trim()),
   }));
   // The API requires the last message to have role "user" -- but in AI_INTAKE,
   // triggerAiThreadReply already answered the latest user turn by the time this

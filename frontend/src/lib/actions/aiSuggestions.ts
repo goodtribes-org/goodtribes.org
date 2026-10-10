@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -126,7 +127,7 @@ export async function reviewCanvas(projectSlug: string, entity: string): Promise
     (entity === "impactModel"
       ? "Det här är projektets impactmodell, dess förändringsteori: problem → deltagare → aktiviteter → kort-, medel- och långsiktiga utfall → impact. Titta särskilt på om stegen hänger ihop.\n\n"
       : "") +
-    fields.map((f) => `${label(f)}: ${typeof row?.[f] === "string" && (row[f] as string).trim() ? row[f] : "(tomt)"}`).join("\n");
+    wrapUntrusted("canvasen", fields.map((f) => `${label(f)}: ${typeof row?.[f] === "string" && (row[f] as string).trim() ? row[f] : "(tomt)"}`).join("\n"));
 
   try {
     const response = await gate.client.messages.create({

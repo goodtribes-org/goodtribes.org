@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
@@ -68,11 +69,10 @@ export async function POST(req: Request) {
     messages: [
       {
         role: "user",
-        content: `Skriv en slutrapport på svenska för projektet "${project.title}".
-Beskrivning: ${project.description ?? "Ej angiven"}
+        content: `Skriv en slutrapport på svenska för projektet nedan.
+${wrapUntrusted("projektet", `Projekt: ${project.title}\nBeskrivning: ${project.description ?? "Ej angiven"}\nImpact-mätvärden: ${impactSummary}`)}
 Antal bidragsgivare: ${alumniCount}
 Mognadsbedömning: ${score}/100
-Impact-mätvärden: ${impactSummary}
 
 Inkludera: vad projektet åstadkommit, viktigaste lärdomar, och ett uppmuntrande avslut.
 Max 400 ord. Använd markdown-rubriker (##).`,

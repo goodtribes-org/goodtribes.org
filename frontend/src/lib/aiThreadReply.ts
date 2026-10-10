@@ -1,4 +1,5 @@
 import { getAiClientFor } from "@/lib/aiMode";
+import { wrapUntrusted } from "@/lib/untrusted";
 import { cachedSystemBlock, withCacheBreakpoint } from "@/lib/anthropic";
 import { prisma } from "@/lib/prisma";
 import { publishToRoom, publishToUser } from "@/lib/redis";
@@ -135,7 +136,8 @@ export async function triggerAiThreadReply(room: Room, triggeredByUserId: string
 
     const threadMessages = history.map((m) => ({
       role: (m.isAi ? "assistant" : "user") as "assistant" | "user",
-      content: `${m.author.name ?? "Någon"}: ${htmlToText(m.body)}`,
+      // Several people post here; each one's words are marked as theirs (#291).
+      content: m.isAi ? htmlToText(m.body) : wrapUntrusted(`inlägg av ${m.author.name ?? "Någon"}`, htmlToText(m.body)),
     }));
 
     const system = await buildSystemPrompt(room);

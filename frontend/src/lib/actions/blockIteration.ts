@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -118,7 +119,7 @@ export async function iterateCanvasBlock(
       system: [...cachedSystemBlock(BLOCK_ITERATION_SYSTEM_PROMPT), { type: "text", text: MODE_INSTRUCTIONS[m] }],
       tools: [tool],
       tool_choice: { type: "tool", name: tool.name },
-      messages: [{ role: "user", content }],
+      messages: [{ role: "user", content: wrapUntrusted("projektets material", content) }],
     });
     const toolUse = response.content.find((b) => b.type === "tool_use");
     const input = toolUse && toolUse.type === "tool_use" ? toolUse.input : null;

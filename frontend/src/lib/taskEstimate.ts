@@ -1,4 +1,5 @@
 import { getAiClientFor } from "@/lib/aiMode";
+import { wrapUntrusted } from "@/lib/untrusted";
 
 // userId rate-limits like every other AI call site (inside getAiClientFor) —
 // this runs on every kanban card creation, not behind a dedicated "ask AI"
@@ -30,10 +31,7 @@ export async function estimateTask(
       messages: [
         {
           role: "user",
-          content:
-            "Uppgift: " +
-            title +
-            (description ? "\n\nBeskrivning: " + description : ""),
+          content: wrapUntrusted("uppgiften", "Uppgift: " + title + (description ? "\n\nBeskrivning: " + description : "")),
         },
       ],
     });
