@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
+import { getAutoDoneKeys } from "@/lib/projectSignals";
+import { phaseStepProgress } from "@/lib/phaseProgress";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -8,7 +10,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { isLeadRole } from "@/lib/authz";
 import { calculateMaturityScore } from "@/lib/projectMaturity";
-import { DISPLAY_PHASES } from "@/lib/projectPhase";
+import { DISPLAY_PHASES, toDisplayPhase } from "@/lib/projectPhase";
 import { getPhaseTimelineStatus, getMilestoneTimelineStatus } from "@/lib/roadmap";
 import RoadmapGantt, { type GanttPhaseRow, type GanttMilestoneRow } from "./RoadmapGantt";
 import WorkspacePageHeader from "@/components/WorkspacePageHeader";
@@ -71,11 +73,16 @@ export default async function RoadmapPage({
     }),
     calculateMaturityScore(slug),
   ]);
+  // The same steps the phase bar counts (#312): ticked or shown by the data.
+  const autoDone = await getAutoDoneKeys(project.id, slug);
+  const doneKeys = new Set([...checklistItems.filter((c) => c.completedAt).map((c) => c.itemKey), ...autoDone]);
+  const stepsByPhase = new Map(phaseStepProgress(doneKeys).map((p) => [p.phase, p]));
 
   const targetsByPhase = new Map(phaseTargets.map((pt) => [pt.phase, pt]));
 
   const ganttPhases: GanttPhaseRow[] = DISPLAY_PHASES.map((phaseDef) => {
     const target = targetsByPhase.get(phaseDef.value);
+    const steps = stepsByPhase.get(toDisplayPhase(phaseDef.value));
     return {
       value: phaseDef.value,
       label: phaseDef.label,
@@ -86,6 +93,7 @@ export default async function RoadmapPage({
       }),
       startDate: target?.startDate ?? null,
       targetDate: target?.targetDate ?? null,
+      steps: steps ? { done: steps.done, total: steps.total } : undefined,
     };
   });
 
@@ -114,7 +122,7 @@ export default async function RoadmapPage({
           milestones={ganttMilestones}
           checklistItems={checklistItems.map((c) => ({
             itemKey: c.itemKey,
-            done: c.completedAt !== null,
+            done: doneKeys.has(c.itemKey),
             startDate: c.startDate,
             dueDate: c.dueDate,
           }))}

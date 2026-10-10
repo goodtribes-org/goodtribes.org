@@ -73,13 +73,14 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
         select: { id: true, name: true, status: true, currentPhase: true },
       }),
       prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "sprintplan" } }, select: { content: true } }),
+      // This phase's own open cards (#312); earlier phases' leftovers show in the gate.
       prisma.kanbanCard.findMany({
-        where: { projectSlug: slug, column: { not: "DONE" } },
+        where: { projectSlug: slug, phase: "PILOT", column: { not: "DONE" } },
         orderBy: [{ createdAt: "desc" }],
         take: 8,
         select: { id: true, title: true, createdByAi: true },
       }),
-      prisma.kanbanCard.count({ where: { projectSlug: slug, column: { not: "DONE" } } }),
+      prisma.kanbanCard.count({ where: { projectSlug: slug, phase: "PILOT", column: { not: "DONE" } } }),
       prisma.projectPlan.findUnique({ where: { projectSlug: slug } }),
       getTranslations({ locale, namespace: "PhaseGate" }),
       getCanvasFieldLabels(locale),

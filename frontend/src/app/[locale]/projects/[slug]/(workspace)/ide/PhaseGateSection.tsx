@@ -71,6 +71,9 @@ export default function PhaseGateSection({
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // Its own pending state (#312), so saving a decision doesn't make the
+  // brief button say the AI is writing.
+  const [briefing, startBrief] = useTransition();
   const missing = criteria.filter((c) => !c.met);
   const actions = ACTIONS[gate];
   // Wording that differs per gate lives under PhaseGate.<gate>.*.
@@ -78,7 +81,7 @@ export default function PhaseGateSection({
 
   function makeBrief() {
     setError(null);
-    startTransition(async () => {
+    startBrief(async () => {
       const res = await actions.brief(slug);
       if (res.error) setError(res.error);
       else router.refresh();
@@ -136,7 +139,7 @@ export default function PhaseGateSection({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="font-semibold text-dark-slate">{t("briefHeading")}</h3>
             {canEdit && aiAvailable && (
-              <button type="button" onClick={makeBrief} disabled={pending} className="text-xs font-medium text-dark-slate/50 hover:text-seagrass disabled:opacity-60">
+              <button type="button" onClick={makeBrief} disabled={pending || briefing} className="text-xs font-medium text-dark-slate/50 hover:text-seagrass disabled:opacity-60">
                 {t("briefAgain")}
               </button>
             )}
@@ -204,8 +207,8 @@ export default function PhaseGateSection({
       ) : (
         canEdit && aiAvailable && (
           <div>
-            <button type="button" onClick={makeBrief} disabled={pending} className="rounded-lg border border-seagrass/60 px-4 py-2 text-sm font-medium text-seagrass hover:bg-seagrass/10 disabled:opacity-60">
-              {pending ? t("briefWorking") : t("briefCreate")}
+            <button type="button" onClick={makeBrief} disabled={pending || briefing} className="rounded-lg border border-seagrass/60 px-4 py-2 text-sm font-medium text-seagrass hover:bg-seagrass/10 disabled:opacity-60">
+              {briefing ? t("briefWorking") : t("briefCreate")}
             </button>
             <p className="mt-1 text-xs text-dark-slate/50">{tg("briefHint")}</p>
           </div>

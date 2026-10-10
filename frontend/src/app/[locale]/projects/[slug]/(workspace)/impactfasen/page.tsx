@@ -54,13 +54,14 @@ export default async function ImpactOverviewPage({ params }: { params: Promise<{
     prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "impactsammanfattning" } }, select: { content: true } }),
     prisma.impactFollowup.findUnique({ where: { projectSlug: slug } }),
     latestInsight<NextStepBrief>(project.id, "IMPACT_NEXT_STEP"),
+    // This phase's own open cards (#312); earlier phases' leftovers show in the gate.
     prisma.kanbanCard.findMany({
-      where: { projectSlug: slug, column: { not: "DONE" } },
+      where: { projectSlug: slug, phase: "IMPACT", column: { not: "DONE" } },
       orderBy: [{ createdAt: "desc" }],
       take: 8,
       select: { id: true, title: true, createdByAi: true },
     }),
-    prisma.kanbanCard.count({ where: { projectSlug: slug, column: { not: "DONE" } } }),
+    prisma.kanbanCard.count({ where: { projectSlug: slug, phase: "IMPACT", column: { not: "DONE" } } }),
   ]);
   // AI only where the project uses it (#310): a project or phase set to
   // MANUAL sees no AI buttons and no claims that the AI drafted anything.

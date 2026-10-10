@@ -15,6 +15,8 @@ export type GanttPhaseRow = {
   status: PhaseTimelineStatus;
   startDate: Date | null;
   targetDate: Date | null;
+  // The phase's steps, as the phase bar counts them (#312).
+  steps?: { done: number; total: number };
 };
 
 export type GanttMilestoneRow = {
@@ -258,7 +260,11 @@ export default function RoadmapGantt({ phases, milestones, checklistItems, isOwn
                             p.status === "at_risk" ? "text-watermelon" : p.status === "completed" ? "text-seagrass" : "text-dark-slate/40"
                           }`}
                         >
-                          {t(STATUS_LABEL_KEYS[p.status])}
+                          {/* A phase the project has moved past isn't "Klar" while its
+                              steps are open: say so, as the phase bar does (#312). */}
+                          {p.status === "completed" && p.steps && p.steps.done < p.steps.total
+                            ? t("statusPassed", { done: p.steps.done, total: p.steps.total })
+                            : t(STATUS_LABEL_KEYS[p.status])}
                         </span>
                       </div>
 

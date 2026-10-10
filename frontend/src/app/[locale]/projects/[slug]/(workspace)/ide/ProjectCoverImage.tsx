@@ -102,14 +102,15 @@ export default function ProjectCoverImage({ slug, imageUrl, title, canEdit }: { 
   );
 }
 
-// How the text measures up: the summary should be one sentence, the
+// How the text measures up: the summary should be one or two short
+// sentences (as the settings page asks, #312), the
 // description long enough to say problem, idea and who's needed — but short
 // enough that people read it to the end.
 export function TextLengthMeter({ kind, value }: { kind: "summary" | "description"; value: string }) {
   const t = useTranslations("IdeaOverview");
   const plain = value.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").trim();
   const n = kind === "summary" ? plain.length : plain ? plain.split(/\s+/).length : 0;
-  const [min, max] = kind === "summary" ? [40, 160] : [80, 300];
+  const [min, max] = kind === "summary" ? [40, 220] : [80, 300];
   const state = n < min ? "short" : n > max ? "long" : "good";
   const color = state === "good" ? "bg-seagrass" : "bg-[#E08A00]";
   const pct = Math.min(100, Math.round((n / (max * 1.25)) * 100));

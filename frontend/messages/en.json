@@ -1362,7 +1362,8 @@
     "overdueLabel": "Overdue — ",
     "dueLabel": "Due ",
     "noTargetDateSet": "No date set",
-    "noMilestonesYet": "No milestones yet."
+    "noMilestonesYet": "No milestones yet.",
+    "statusPassed": "Passed · {done} of {total}"
   },
   "NewEventForm": {
     "titleLabel": "Title",
@@ -4255,7 +4256,7 @@
       "summary": {
         "short": "{n} characters — too short, say what you do and for whom",
         "good": "{n} characters — just right",
-        "long": "{n} characters — too long, one sentence is enough"
+        "long": "{n} characters — too long, one or two short sentences are enough"
       },
       "description": {
         "short": "{n} words — too short, tell about the problem, the idea and who you need",
@@ -4312,7 +4313,7 @@
     "outcomeDesc_PAUSE": "Put the project on hold. It can be picked up again later.",
     "missingWarning": "You're moving on without: {items}. That's fine — it's noted with the decision.",
     "noteLabel": "Note (optional) — why you're deciding this",
-    "deciding": "Saving …",
+    "deciding": "Saving the decision …",
     "confirm_CONTINUE": "Confirm: move on to Start-up",
     "confirm_ADJUST": "Confirm: adjust",
     "confirm_PIVOT": "Confirm: pivot",
@@ -4440,7 +4441,7 @@
     "tasksHeading": "First tasks",
     "openBoard": "Open the board",
     "moreTasks": "+ {count} more on the board",
-    "tasksEmpty": "No tasks on the board yet.",
+    "tasksEmpty": "No tasks in this phase yet.",
     "failedTasks": "The AI couldn't suggest tasks.",
     "planHeading": "Project plan: budget and pilot scope",
     "planGoal": "Goal and scope",
@@ -4514,7 +4515,7 @@
     "tasksHeading": "Tasks",
     "openBoard": "Open the board",
     "moreTasks": "+ {count} more on the board",
-    "tasksEmpty": "No tasks on the board yet.",
+    "tasksEmpty": "No tasks in this phase yet.",
     "failedTasks": "The AI couldn't suggest tasks.",
     "onePageLink": "See all of Launch on one page, with the AI's drafts",
     "gateHeading": "Phase gate: go/no-go for the pilot",
@@ -4574,7 +4575,7 @@
     "tasksHeading": "Tasks",
     "openBoard": "Open the board",
     "moreTasks": "+ {count} more on the board",
-    "tasksEmpty": "No tasks on the board yet.",
+    "tasksEmpty": "No tasks in this phase yet.",
     "gateHeading": "Phase gate: ready to scale?",
     "gateClosedLink": "To Scale →",
     "onePageLink": "See all of Establish on one page, with the AI's drafts",
@@ -4620,7 +4621,7 @@
     "tasksHeading": "Tasks",
     "openBoard": "Open the board",
     "moreTasks": "+ {count} more on the board",
-    "tasksEmpty": "No tasks on the board yet.",
+    "tasksEmpty": "No tasks in this phase yet.",
     "gateHeading": "Phase gate: ready for Impact?",
     "gateClosedLink": "To Impact →",
     "onePageLink": "See all of Scale on one page, with the AI's drafts",
@@ -4661,7 +4662,7 @@
     "tasksHeading": "Tasks",
     "openBoard": "Open the board",
     "moreTasks": "+ {count} more on the board",
-    "tasksEmpty": "No tasks on the board yet.",
+    "tasksEmpty": "No tasks in this phase yet.",
     "nextHeading": "Next step: continue, replicate or close?",
     "nextIntro": "The journey's last decision. Keep running the project, let the model spread, or close responsibly — it's your decision.",
     "nextDecided": "You have decided: {choice}.",

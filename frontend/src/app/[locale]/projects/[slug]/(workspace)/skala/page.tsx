@@ -55,13 +55,14 @@ export default async function SkalaOverviewPage({ params }: { params: Promise<{ 
       prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "skalningsval" } }, select: { content: true } }),
       prisma.projectInstance.findMany({ where: { parentSlug: slug }, orderBy: { createdAt: "asc" }, select: { id: true, region: true, country: true, status: true } }),
       prisma.project.count({ where: { forkedFromProjectId: project.id } }),
+      // This phase's own open cards (#312); earlier phases' leftovers show in the gate.
       prisma.kanbanCard.findMany({
-        where: { projectSlug: slug, column: { not: "DONE" } },
+        where: { projectSlug: slug, phase: "SCALE", column: { not: "DONE" } },
         orderBy: [{ createdAt: "desc" }],
         take: 8,
         select: { id: true, title: true, createdByAi: true },
       }),
-      prisma.kanbanCard.count({ where: { projectSlug: slug, column: { not: "DONE" } } }),
+      prisma.kanbanCard.count({ where: { projectSlug: slug, phase: "SCALE", column: { not: "DONE" } } }),
       skalaGateCriteria(project.id, slug),
       latestInsight<GateBrief>(project.id, "SKALA_GATE"),
       prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: "SCALE" }, orderBy: { createdAt: "desc" } }),

@@ -1362,7 +1362,8 @@
     "overdueLabel": "Försenad — ",
     "dueLabel": "Förfaller ",
     "noTargetDateSet": "Inget datum satt",
-    "noMilestonesYet": "Inga milstolpar ännu."
+    "noMilestonesYet": "Inga milstolpar ännu.",
+    "statusPassed": "Passerad · {done} av {total}"
   },
   "NewEventForm": {
     "titleLabel": "Titel",
@@ -4255,7 +4256,7 @@
       "summary": {
         "short": "{n} tecken — för kort, säg vad ni gör och för vem",
         "good": "{n} tecken — lagom",
-        "long": "{n} tecken — för långt, en mening räcker"
+        "long": "{n} tecken — för långt, 1–2 korta meningar räcker"
       },
       "description": {
         "short": "{n} ord — för kort, berätta om problemet, idén och vilka ni behöver",
@@ -4312,7 +4313,7 @@
     "outcomeDesc_PAUSE": "Lägg projektet vilande. Det kan tas upp igen senare.",
     "missingWarning": "Ni går vidare utan: {items}. Det är okej — det noteras med beslutet.",
     "noteLabel": "Anteckning (valfritt) — varför ni beslutar så här",
-    "deciding": "Sparar …",
+    "deciding": "Sparar beslutet …",
     "confirm_CONTINUE": "Bekräfta: gå vidare till Uppstart",
     "confirm_ADJUST": "Bekräfta: justera",
     "confirm_PIVOT": "Bekräfta: pivotera",
@@ -4440,7 +4441,7 @@
     "tasksHeading": "Första uppgifterna",
     "openBoard": "Öppna tavlan",
     "moreTasks": "+ {count} till på tavlan",
-    "tasksEmpty": "Inga uppgifter på tavlan ännu.",
+    "tasksEmpty": "Inga uppgifter i fasen ännu.",
     "failedTasks": "AI:n kunde inte föreslå uppgifter.",
     "planHeading": "Projektplan: budget och pilotens avgränsning",
     "planGoal": "Mål och avgränsning",
@@ -4514,7 +4515,7 @@
     "tasksHeading": "Uppgifter",
     "openBoard": "Öppna tavlan",
     "moreTasks": "+ {count} till på tavlan",
-    "tasksEmpty": "Inga uppgifter på tavlan ännu.",
+    "tasksEmpty": "Inga uppgifter i fasen ännu.",
     "failedTasks": "AI:n kunde inte föreslå uppgifter.",
     "onePageLink": "Se hela Lansering på en sida, med AI:ns utkast",
     "gateHeading": "Fasgrind: go/no-go för piloten",
@@ -4574,7 +4575,7 @@
     "tasksHeading": "Uppgifter",
     "openBoard": "Öppna tavlan",
     "moreTasks": "+ {count} till på tavlan",
-    "tasksEmpty": "Inga uppgifter på tavlan ännu.",
+    "tasksEmpty": "Inga uppgifter i fasen ännu.",
     "gateHeading": "Fasgrind: redo att skala?",
     "gateClosedLink": "Till Skala →",
     "onePageLink": "Se hela Etablera på en sida, med AI:ns utkast",
@@ -4620,7 +4621,7 @@
     "tasksHeading": "Uppgifter",
     "openBoard": "Öppna tavlan",
     "moreTasks": "+ {count} till på tavlan",
-    "tasksEmpty": "Inga uppgifter på tavlan ännu.",
+    "tasksEmpty": "Inga uppgifter i fasen ännu.",
     "gateHeading": "Fasgrind: redo för Impact?",
     "gateClosedLink": "Till Impact →",
     "onePageLink": "Se hela Skala på en sida, med AI:ns utkast",
@@ -4661,7 +4662,7 @@
     "tasksHeading": "Uppgifter",
     "openBoard": "Öppna tavlan",
     "moreTasks": "+ {count} till på tavlan",
-    "tasksEmpty": "Inga uppgifter på tavlan ännu.",
+    "tasksEmpty": "Inga uppgifter i fasen ännu.",
     "nextHeading": "Nästa steg: fortsätta, replikera eller avsluta?",
     "nextIntro": "Resans sista beslut. Fortsätt driva projektet, låt modellen spridas, eller avsluta ansvarsfullt — det är ert beslut.",
     "nextDecided": "Ni har beslutat: {choice}.",
