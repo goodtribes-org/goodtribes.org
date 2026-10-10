@@ -416,14 +416,11 @@ export async function fillImpactModel(
   return { written, proposed: Object.keys(proposals).length };
 }
 
-// The AI wrote this step's work: tick the step, and make GoodTribes the
-// assignee of its cards, waiting in Review for a lead's approval (#200).
-async function markDone(projectId: string, itemKey: string, userId: string, projectSlug: string) {
-  await prisma.initiativeChecklistItem.upsert({
-    where: { projectId_itemKey: { projectId, itemKey } },
-    create: { projectId, phase: "IDEA", itemKey, completedAt: new Date(), completedById: userId },
-    update: { completedAt: new Date(), completedById: userId },
-  });
+// The AI wrote this step's work: GoodTribes becomes the assignee of its
+// cards, waiting in Review (#200). The step itself isn't ticked (#271) — it
+// is done when a lead approves the card (moveKanbanCard →
+// markStepDoneIfCardsDone) or clicks "Klar", not the moment the AI finishes.
+async function markDone(projectSlug: string, itemKey: string) {
   await creditAiForStep(projectSlug, itemKey);
 }
 
@@ -482,7 +479,7 @@ export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
   const leanCanvasDone = !wanted("leanCanvas") ? null : run("leanCanvas", async () => {
     const raw = await callTool(client, { system: LEAN_CANVAS_SYSTEM_PROMPT, tool: LEAN_CANVAS_TOOL, content: context });
     const { written } = await applyCanvas(p.projectId, p.projectSlug, "leanCanvas", coerceProposals(raw, LEAN_CANVAS_FIELDS), p.mode);
-    if (written) await markDone(p.projectId, "lean_canvas_created", p.userId, p.projectSlug);
+    if (written) await markDone(p.projectSlug, "lean_canvas_created");
   });
 
   // After the canvas, so the chain can start from its purpose and end in
@@ -498,7 +495,7 @@ export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
   const valuePropositionDone = !wanted("valueProposition") ? null : run("valueProposition", async () => {
     const raw = await callTool(client, { system: VALUE_PROPOSITION_SYSTEM_PROMPT, tool: VALUE_PROPOSITION_TOOL, content: context });
     const { written } = await applyCanvas(p.projectId, p.projectSlug, "valueProposition", coerceProposals(raw, VALUE_PROPOSITION_FIELDS), p.mode);
-    if (written) await markDone(p.projectId, "value_proposition_created", p.userId, p.projectSlug);
+    if (written) await markDone(p.projectSlug, "value_proposition_created");
   });
 
   await Promise.all([
@@ -513,7 +510,7 @@ export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
           const { runAndSaveMarketScan } = await import("@/lib/marketScan");
           const found = await runAndSaveMarketScan(client, p.projectSlug, `Drömsamtalet:\n${p.transcript}`);
           if (found > 0) {
-            await markDone(p.projectId, "market_scan_partners", p.userId, p.projectSlug);
+            await markDone(p.projectSlug, "market_scan_partners");
           }
         })
       : setFillState(p.dreamId, "marketScan", "skipped"),

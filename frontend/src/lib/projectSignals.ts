@@ -16,7 +16,7 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
   const [
     project, activeMemberCount, interviewCount, marketScanCount, sprints,
     testFeedbackCount, roles, evaluation, pilotGate, impactMetricCount, launch, pages, campaign, applications,
-    activePartnerships, councilReview, scalingPlan, instances, reports, followup,
+    activePartnerships, councilReview, scalingPlan, instances, reports, followup, inReview,
   ] = await Promise.all([
     prisma.project.findUnique({
       where: { id: projectId },
@@ -51,10 +51,16 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
     prisma.projectInstance.findMany({ where: { parentSlug: slug }, select: { status: true } }),
     prisma.impactReport.findMany({ where: { projectId, kind: "DELIVERED", rejectedAt: null }, select: { verifiedAt: true } }),
     prisma.impactFollowup.findUnique({ where: { projectSlug: slug }, select: { celebrationNotes: true } }),
+    prisma.kanbanCard.findMany({
+      where: { projectSlug: slug, phase: { in: ["IDEA", "SPRINT"] }, stepKey: { not: null }, column: "REVIEW" },
+      select: { stepKey: true },
+      distinct: ["stepKey"],
+    }),
   ]);
   const pageSlugs = new Set(pages.map((p) => p.slug));
   const awarded = applications.some((a) => a.status === "awarded");
   return {
+    ideaStepsInReview: inReview.map((c) => c.stepKey!),
     dreamConfirmed: project?.dreamConversation?.status === "confirmed",
     hasSummaryAndDescription: !!project?.summary?.trim() && !!project?.description?.trim(),
     sdgCount: project?.sdgGoals.length ?? 0,
