@@ -2,6 +2,7 @@ import type { FirstTaskTime, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getPriorityTokenValue } from "@/lib/priorityTokens";
 import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
+import { isNewAccount, newAccountCapReached } from "@/lib/firstTaskLimits";
 
 // Första uppgifter (#277): the way into a project for someone from outside.
 // A first task is an ordinary board card with openToPublic, written for a
@@ -93,6 +94,17 @@ export async function getOpenFirstTasks(projectSlug: string, userId: string | nu
     full: offersFull(c, c.taskOffers.length),
     myOffer: myByCard.get(c.id) ?? null,
   }));
+}
+
+// True when this account may not take on another first task right now (#294).
+export async function atNewAccountCap(userId: string): Promise<boolean> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { createdAt: true } });
+  if (!user || !isNewAccount(user.createdAt)) return false;
+  const [offers, taken] = await Promise.all([
+    prisma.taskOffer.count({ where: { userId, status: "PENDING" } }),
+    prisma.kanbanCard.count({ where: { assigneeId: userId, openToPublic: true, column: { not: "DONE" } } }),
+  ]);
+  return newAccountCapReached(user.createdAt, offers + taken);
 }
 
 export type TrackRecord = { tasksDone: number; projects: number; thanked: number; since: Date };

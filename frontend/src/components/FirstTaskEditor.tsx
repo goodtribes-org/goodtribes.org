@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import type { Card } from "@/components/kanbanShared";
+import { accountAgeDays, isNewAccount } from "@/lib/firstTaskLimits";
 import { chooseOffer, declineOffer, listOffers, saveFirstTask, type OfferView } from "@/app/[locale]/projects/[slug]/first-task-actions";
 
 // In the card editor, for a project's leads (#277): how an open card reads to
@@ -40,6 +41,9 @@ function Offers({ cardId, onChosen }: { cardId: string; onChosen: (offer: OfferV
             <p className="text-[11px] text-gray-500">
               {o.record && o.record.tasksDone > 0 ? t("record", { tasks: o.record.tasksDone, projects: o.record.projects }) : t("recordNew")}
               {o.record && o.record.thanked > 0 && <> · {t("recordThanked", { count: o.record.thanked })}</>}
+              {o.record && isNewAccount(new Date(o.record.since)) && (
+                <> · <span className="font-semibold text-amber-700">{t("newAccount", { days: accountAgeDays(new Date(o.record.since)) })}</span></>
+              )}
             </p>
             {o.answer && <p className="mt-1.5 rounded-md bg-gray-50 p-2 text-sm text-gray-700">”{o.answer}”</p>}
             {o.message && <p className="mt-1 text-xs text-gray-600">{o.message}</p>}

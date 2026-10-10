@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { OpenFirstTask } from "@/lib/firstTasks";
 import { offerFirstTask, takeFirstTask, withdrawOffer } from "./first-task-actions";
+import { NEW_ACCOUNT_MAX_OPEN } from "@/lib/firstTaskLimits";
 
 // "Bli en del av drömmen" (#277): the project's open first tasks for someone
 // from outside, as step 2 between Följ and Gå med. Logged out, what they
@@ -63,7 +64,7 @@ function TakeSheet({ task, slug, projectTitle, userId, onClose, onDone }: {
     }
     startTransition(async () => {
       const res = task.choose ? await offerFirstTask(task.id, answer, message) : await takeFirstTask(task.id, message);
-      if ("error" in res) return setError(t("error"));
+      if ("error" in res) return setError(res.error === "new_account_cap" ? t("newAccountCap", { count: NEW_ACCOUNT_MAX_OPEN }) : t("error"));
       try { localStorage.removeItem(draftKey(task.id)); } catch {}
       setSent(true);
       onDone();
