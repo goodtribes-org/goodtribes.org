@@ -66,19 +66,19 @@ describe("the phase journey, gate by gate", () => {
       expect(await decideIdeaGate(slug, "CONTINUE", "")).toEqual({});
       expect(await phaseOf(project.id)).toBe("PILOT");
 
-      expect(await decideUppstartGate(slug, "CONTINUE", "")).toEqual({ next: `/projects/${slug}/guide/production` });
+      expect(await decideUppstartGate(slug, "CONTINUE", "")).toEqual({ next: `/projects/${slug}/lansering` });
       expect(await phaseOf(project.id)).toBe("PRODUCTION");
 
       // Lansering's go also lands on the pilot evaluation and ticks go/no-go.
-      expect(await decideLanseringGate(slug, "CONTINUE", "Go!")).toEqual({ next: `/projects/${slug}/guide/establish` });
+      expect(await decideLanseringGate(slug, "CONTINUE", "Go!")).toEqual({ next: `/projects/${slug}/etablera` });
       expect(await phaseOf(project.id)).toBe("ESTABLISH");
       expect((await prisma.pilotEvaluation.findUniqueOrThrow({ where: { projectSlug: slug } })).decision).toBe("GO");
       expect(await prisma.initiativeChecklistItem.findFirst({ where: { projectId: project.id, itemKey: "pilot_go_no_go", completedAt: { not: null } } })).not.toBeNull();
 
-      expect(await decideEtableraGate(slug, "CONTINUE", "")).toEqual({ next: `/projects/${slug}/guide/scale` });
+      expect(await decideEtableraGate(slug, "CONTINUE", "")).toEqual({ next: `/projects/${slug}/skala` });
       expect(await phaseOf(project.id)).toBe("SCALE");
 
-      expect(await decideSkalaGate(slug, "CONTINUE", "")).toEqual({ next: `/projects/${slug}/guide/impact` });
+      expect(await decideSkalaGate(slug, "CONTINUE", "")).toEqual({ next: `/projects/${slug}/impactfasen` });
       expect(await phaseOf(project.id)).toBe("IMPACT");
 
       // The last decision: closing is the founder's call.
