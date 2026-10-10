@@ -236,6 +236,8 @@ export default async function IdeaOverviewPage({
       ])
     : [{ mode: "MANUAL" as const }, { mode: "MANUAL" as const }, { mode: "MANUAL" as const }, { mode: "MANUAL" as const }];
   const marketScanConclusion = await prisma.marketScanConclusion.findUnique({ where: { projectSlug: slug } });
+  // The gate's AI brief, like every AI button, only where the project uses AI (#310).
+  const gateAiMode = aiAvailable ? (await resolveAiMode({ projectId: project.id, feature: "critique", phase: "IDEA" })).mode : "MANUAL";
   // Right after Drömguiden (#284, ?skapad=1): "Din dröm är skapad" and the
   // first-task question, for a lead whose project has no open first task yet.
   const showCreatedPrompt = skapad === "1" && canEdit
@@ -531,7 +533,7 @@ export default async function IdeaOverviewPage({
             work={gateWork(work, criterionLabel)}
             canEdit={canEdit}
             isFounder={isFounder}
-            aiAvailable={aiAvailable}
+            aiAvailable={aiAvailable && gateAiMode !== "MANUAL"}
           />
         </OverviewSection>
       ) : (

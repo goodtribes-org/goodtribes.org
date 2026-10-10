@@ -1,4 +1,5 @@
 import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
+import { resolveAiMode } from "@/lib/aiMode";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getCanvasFieldLabels } from "@/lib/canvasFieldLabels";
@@ -46,7 +47,7 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
   const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true, title: true } });
   if (!project) notFound();
 
-  const [t, tCheck, canEdit, aiAvailable, fillRow, brief, decision, done, roles, members, sprint, sprintPlan, cards, openCardCount, plan, tGate, fieldLabels, isFounder, gate, gateBrief, gateDecision] =
+  const [t, tCheck, canEdit, aiConfigured, fillRow, brief, decision, done, roles, members, sprint, sprintPlan, cards, openCardCount, plan, tGate, fieldLabels, isFounder, gate, gateBrief, gateDecision] =
     await Promise.all([
       getTranslations({ locale, namespace: "UppstartOverview" }),
       getTranslations({ locale, namespace: "ProjectPhaseChecklist" }),
@@ -87,6 +88,9 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
       latestInsight<GateBrief>(project.id, "UPPSTART_GATE"),
       prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: "PILOT" }, orderBy: { createdAt: "desc" } }),
     ]);
+  // AI only where the project uses it (#310): a project or phase set to
+  // MANUAL sees no AI buttons and no claims that the AI drafted anything.
+  const aiAvailable = aiConfigured && (await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "PILOT" })).mode !== "MANUAL";
 
   const fill: UppstartFillStatus = fillRow ? parseUppstartStatus(fillRow.status, fillRow.updatedAt) : {};
   const doneKeys = new Set(done.map((d) => d.itemKey));
@@ -116,7 +120,7 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
       <PhaseProgressStrip projectId={project.id} slug={slug} viewing="PILOT" />
       <OverviewHeader
         heading={t("heading")}
-        intro={isUppstartFillInProgress(fill) ? t("introWriting") : t("intro")}
+        intro={isUppstartFillInProgress(fill) ? t("introWriting") : fillRow ? `${t("intro")} ${t("introAi")}` : t("intro")}
         polling={isUppstartFillInProgress(fill)}
         stepByStep={{ href: `/projects/${slug}/guide/pilot`, label: t("stepByStep") }}
         notYet={stillInIdea ? { text: t("stillInIdea"), href: `/projects/${slug}/ide#fasgrind`, linkLabel: t("toGate") } : null}
@@ -175,7 +179,7 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
           )
         }
       >
-        <p className="mb-3 text-sm text-dark-slate/70">{t("sprintIntro")}</p>
+        <p className="mb-3 text-sm text-dark-slate/70">{t("sprintIntro")}{sprintPlan ? ` ${t("sprintIntroAi")}` : ""}</p>
         <ol className="grid gap-2 sm:grid-cols-5">
           {SPRINT_STEP_KEYS.map((key, i) => {
             const state = sprintStepState(i);

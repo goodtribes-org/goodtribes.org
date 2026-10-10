@@ -4395,7 +4395,7 @@
   },
   "UppstartOverview": {
     "heading": "Start-up",
-    "intro": "Here you form the core team, test the solution in a Design Sprint and plan the pilot. The AI has drafted a starting point — change anything.",
+    "intro": "Here you form the core team, test the solution in a Design Sprint and plan the pilot.",
     "introWriting": "The AI is preparing Start-up from the Idea phase's work. The parts appear here as they finish.",
     "stepByStep": "Step by step",
     "stillInIdea": "The project is still in the Idea phase.",
@@ -4430,7 +4430,7 @@
     "cancel": "Cancel",
     "failedTeam": "The AI couldn't suggest roles. Add them yourselves below.",
     "sprintHeading": "Design Sprint",
-    "sprintIntro": "The sprint tests your most important solution assumptions in five steps. The team does it together — the AI has prepared the sprint plan and the first questions.",
+    "sprintIntro": "The sprint tests your most important solution assumptions in five steps. The team does it together.",
     "openSprint": "Open the sprint",
     "sprintNow": "In progress",
     "sprintName": "Sprint: {name}",
@@ -4452,11 +4452,13 @@
     "onePageLink": "See all of Start-up on one page, with the AI's drafts",
     "gateHeading": "Phase gate: ready for Launch?",
     "gateClosed": "Start-up was closed on {date} with the decision to move on.",
-    "gateClosedLink": "To Launch →"
+    "gateClosedLink": "To Launch →",
+    "introAi": "The AI has drafted a starting point — change anything.",
+    "sprintIntroAi": "The AI has prepared the sprint plan and the first questions."
   },
   "LanseringOverview": {
     "heading": "Launch",
-    "intro": "Here you run the pilot, log what happens and evaluate the results — and get the solution ready for more people. The AI has drafted a starting point — change anything.",
+    "intro": "Here you run the pilot, log what happens and evaluate the results — and get the solution ready for more people.",
     "introWriting": "The AI is preparing Launch from the Start-up work. The parts appear here as they finish.",
     "stepByStep": "Step by step",
     "notYet": "The project isn't in Launch yet.",
@@ -4517,11 +4519,12 @@
     "onePageLink": "See all of Launch on one page, with the AI's drafts",
     "gateHeading": "Phase gate: go/no-go for the pilot",
     "gateClosed": "Launch was closed on {date} with a go for the pilot.",
-    "gateClosedLink": "To Establish →"
+    "gateClosedLink": "To Establish →",
+    "introAi": "The AI has drafted a starting point — change anything."
   },
   "EtableraOverview": {
     "heading": "Establish",
-    "intro": "Here you turn what worked in the pilot into stable operations: recurring funding, formal partnerships, a supporter base and a playbook so others can do the same. The AI has drafted a starting point — change anything.",
+    "intro": "Here you turn what worked in the pilot into stable operations: recurring funding, formal partnerships, a supporter base and a playbook so others can do the same.",
     "introWriting": "The AI is preparing Establish from the pilot's results. The parts appear here as they finish.",
     "stepByStep": "Step by step",
     "notYet": "The project isn't in Establish yet.",
@@ -4573,11 +4576,12 @@
     "tasksEmpty": "No tasks on the board yet.",
     "gateHeading": "Phase gate: ready to scale?",
     "gateClosedLink": "To Scale →",
-    "onePageLink": "See all of Establish on one page, with the AI's drafts"
+    "onePageLink": "See all of Establish on one page, with the AI's drafts",
+    "introAi": "The AI has drafted a starting point — change anything."
   },
   "SkalaOverview": {
     "heading": "Scale",
-    "intro": "Here the project grows to more places or groups — by the same project growing, by others replicating the model, or by someone forking it. The AI has drafted a starting point — change anything.",
+    "intro": "Here the project grows to more places or groups — by the same project growing, by others replicating the model, or by someone forking it.",
     "introWriting": "The AI is preparing Scale from Establish. The parts appear here as they finish.",
     "stepByStep": "Step by step",
     "notYet": "The project isn't in Scale yet.",
@@ -4596,7 +4600,7 @@
     "aiDraft": "AI draft",
     "focusHeading": "From the last phase gate — focus in Scale",
     "choiceHeading": "Scale or fork?",
-    "choiceIntro": "The same project can grow with regional instances, open up for others to replicate the model, or be forked into a new independent initiative. The decision is yours — here is the AI's assessment.",
+    "choiceIntro": "The same project can grow with regional instances, open up for others to replicate the model, or be forked into a new independent initiative. The decision is yours.",
     "decideHere": "Decide here",
     "planHeading": "Scaling plan",
     "planGoals": "Measurable scaling goals",
@@ -4617,11 +4621,13 @@
     "tasksEmpty": "No tasks on the board yet.",
     "gateHeading": "Phase gate: ready for Impact?",
     "gateClosedLink": "To Impact →",
-    "onePageLink": "See all of Scale on one page, with the AI's drafts"
+    "onePageLink": "See all of Scale on one page, with the AI's drafts",
+    "introAi": "The AI has drafted a starting point — change anything.",
+    "choiceIntroAi": "Here is the AI's assessment."
   },
   "ImpactOverview": {
     "heading": "Impact",
-    "intro": "The last phase: measure and report the actual impact, get it externally verified, celebrate the results — and decide what happens next. The AI has drafted a starting point — change anything.",
+    "intro": "The last phase: measure and report the actual impact, get it externally verified, celebrate the results — and decide what happens next.",
     "introWriting": "The AI is preparing Impact. The parts appear here as they finish.",
     "stepByStep": "Step by step",
     "notYet": "The project isn't in Impact yet.",
@@ -4655,7 +4661,7 @@
     "moreTasks": "+ {count} more on the board",
     "tasksEmpty": "No tasks on the board yet.",
     "nextHeading": "Next step: continue, replicate or close?",
-    "nextIntro": "The journey's last decision. Keep running the project, let the model spread, or close responsibly — it's your decision; the AI can prepare a brief.",
+    "nextIntro": "The journey's last decision. Keep running the project, let the model spread, or close responsibly — it's your decision.",
     "nextDecided": "You have decided: {choice}.",
     "nextBriefHeading": "Decision brief",
     "nextBriefAgain": "Generate again",
@@ -4676,7 +4682,9 @@
     "confirm_close": "Confirm: close responsibly",
     "saving": "Saving …",
     "cancel": "Cancel",
-    "onePageLink": "See all of Impact on one page, with the AI's drafts"
+    "onePageLink": "See all of Impact on one page, with the AI's drafts",
+    "introAi": "The AI has drafted a starting point — change anything.",
+    "nextIntroAi": "The AI can prepare a brief."
   },
   "OverviewSkeleton": {
     "loading": "Loading the phase …"

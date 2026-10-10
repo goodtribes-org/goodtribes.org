@@ -1,4 +1,5 @@
 import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
+import { resolveAiMode } from "@/lib/aiMode";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
@@ -38,7 +39,7 @@ export default async function SkalaOverviewPage({ params }: { params: Promise<{ 
   const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true, openForReplication: true } });
   if (!project) notFound();
 
-  const [t, tCheck, tGate, canEdit, isFounder, aiAvailable, fillRow, focusBrief, focusDecision, done, plan, choice, instances, forkCount, cards, openCardCount, gate, gateBrief, gateDecision] =
+  const [t, tCheck, tGate, canEdit, isFounder, aiConfigured, fillRow, focusBrief, focusDecision, done, plan, choice, instances, forkCount, cards, openCardCount, gate, gateBrief, gateDecision] =
     await Promise.all([
       getTranslations({ locale, namespace: "SkalaOverview" }),
       getTranslations({ locale, namespace: "ProjectPhaseChecklist" }),
@@ -65,6 +66,9 @@ export default async function SkalaOverviewPage({ params }: { params: Promise<{ 
       latestInsight<GateBrief>(project.id, "SKALA_GATE"),
       prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: "SCALE" }, orderBy: { createdAt: "desc" } }),
     ]);
+  // AI only where the project uses it (#310): a project or phase set to
+  // MANUAL sees no AI buttons and no claims that the AI drafted anything.
+  const aiAvailable = aiConfigured && (await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "SCALE" })).mode !== "MANUAL";
 
   const fill: SkalaFillStatus = fillRow ? parseSkalaStatus(fillRow.status, fillRow.updatedAt) : {};
   const doneKeys = new Set(done.map((d) => d.itemKey));
@@ -92,7 +96,7 @@ export default async function SkalaOverviewPage({ params }: { params: Promise<{ 
       <PhaseProgressStrip projectId={project.id} slug={slug} viewing="SCALE" />
       <OverviewHeader
         heading={t("heading")}
-        intro={isSkalaFillInProgress(fill) ? t("introWriting") : t("intro")}
+        intro={isSkalaFillInProgress(fill) ? t("introWriting") : fillRow ? `${t("intro")} ${t("introAi")}` : t("intro")}
         polling={isSkalaFillInProgress(fill)}
         stepByStep={{ href: `/projects/${slug}/guide/scale`, label: t("stepByStep") }}
         notYet={notYet ? { text: t("notYet"), href: `/projects/${slug}/etablera#fasgrind`, linkLabel: t("toGate") } : null}
@@ -110,7 +114,7 @@ export default async function SkalaOverviewPage({ params }: { params: Promise<{ 
       <FocusBox heading={t("focusHeading")} items={focusBrief?.content.nextFocus ?? []} note={focusDecision?.note} />
 
       <OverviewSection id="val" title={t("choiceHeading")} badge={t("yourTurn")} fill={fill.choice} writingLabel={writing} failedNote={<>{t("failed")}{retry("choice")}</>} action={link("scale", t("decideHere"))}>
-        <p className="mb-3 text-sm text-dark-slate/70">{t("choiceIntro")}</p>
+        <p className="mb-3 text-sm text-dark-slate/70">{t("choiceIntro")}{choice ? ` ${t("choiceIntroAi")}` : ""}</p>
         {choice?.content ? <WikiHtml html={choice.content} /> : <p className="text-sm text-dark-slate/50">{t("empty")}</p>}
       </OverviewSection>
 

@@ -1,4 +1,5 @@
 import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
+import { resolveAiMode } from "@/lib/aiMode";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "next-intl";
@@ -41,7 +42,7 @@ export default async function EtableraOverviewPage({ params }: { params: Promise
   const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true } });
   if (!project) notFound();
 
-  const [t, tCheck, tGate, canEdit, isFounder, aiAvailable, fillRow, focusBrief, focusDecision, done, plan, wikis, campaign, applications, partnerships, review, cards, openCardCount, gate, gateBrief, gateDecision] =
+  const [t, tCheck, tGate, canEdit, isFounder, aiConfigured, fillRow, focusBrief, focusDecision, done, plan, wikis, campaign, applications, partnerships, review, cards, openCardCount, gate, gateBrief, gateDecision] =
     await Promise.all([
       getTranslations({ locale, namespace: "EtableraOverview" }),
       getTranslations({ locale, namespace: "ProjectPhaseChecklist" }),
@@ -81,6 +82,9 @@ export default async function EtableraOverviewPage({ params }: { params: Promise
       latestInsight<GateBrief>(project.id, "ETABLERA_GATE"),
       prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: "ESTABLISH" }, orderBy: { createdAt: "desc" } }),
     ]);
+  // AI only where the project uses it (#310): a project or phase set to
+  // MANUAL sees no AI buttons and no claims that the AI drafted anything.
+  const aiAvailable = aiConfigured && (await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "ESTABLISH" })).mode !== "MANUAL";
 
   const fill: EtableraFillStatus = fillRow ? parseEtableraStatus(fillRow.status, fillRow.updatedAt) : {};
   const doneKeys = new Set(done.map((d) => d.itemKey));
@@ -110,7 +114,7 @@ export default async function EtableraOverviewPage({ params }: { params: Promise
       <PhaseProgressStrip projectId={project.id} slug={slug} viewing="ESTABLISH" />
       <OverviewHeader
         heading={t("heading")}
-        intro={isEtableraFillInProgress(fill) ? t("introWriting") : t("intro")}
+        intro={isEtableraFillInProgress(fill) ? t("introWriting") : fillRow ? `${t("intro")} ${t("introAi")}` : t("intro")}
         polling={isEtableraFillInProgress(fill)}
         stepByStep={{ href: `/projects/${slug}/guide/establish`, label: t("stepByStep") }}
         notYet={notYet ? { text: t("notYet"), href: `/projects/${slug}/lansering#fasgrind`, linkLabel: t("toGate") } : null}
