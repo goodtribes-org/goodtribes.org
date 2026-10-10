@@ -173,7 +173,6 @@ export default function FirstTasksPanel({ tasks, slug, projectTitle, userId }: {
                 </button>
               )}
             </div>
-            {task.choose && task.myOffer !== "PENDING" && !task.full && <p className="mt-1 text-[10px] text-dark-slate/45">{t("chooseNote")}</p>}
           </li>
         ))}
       </ul>
