@@ -14,6 +14,7 @@ import SearchButton from "@/components/SearchButton";
 import HeaderShareButton from "@/components/HeaderShareButton";
 import ToolsMenu from "@/components/ToolsMenu";
 import PersonalBar from "@/components/PersonalBar";
+import EventBar from "@/components/EventBar";
 import NotificationBell from "@/components/NotificationBell";
 import MessagesLink from "@/components/MessagesLink";
 import PresenceHeartbeat from "@/components/PresenceHeartbeat";
@@ -189,6 +190,7 @@ export default async function LocaleLayout({
                 <AuthNav />
               </nav>
             </SiteHeader>
+            <EventBar />
             <main className="max-w-6xl mx-auto px-6 pt-8 pb-12 w-full flex-1 flex flex-col">{children}</main>
             <SiteFooter>
               <div className="max-w-6xl mx-auto px-6 pt-12 pb-10">

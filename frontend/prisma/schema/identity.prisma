@@ -52,6 +52,8 @@ model User {
   notifications           Notification[]            @relation("UserNotifications")
   assignedKanbanCards     KanbanCard[]              @relation("AssignedKanbanCards")
   taskOffers              TaskOffer[]               @relation("TaskOffers")
+  eventsCreated           Event[]                   @relation("EventsCreated")
+  eventActions            EventAction[]             @relation("EventActions")
   createdMilestones       Milestone[]               @relation("MilestoneCreatedBy")
   activityEvents          ActivityEvent[]           @relation("ActivityEvents")
   createdProjectInvites   ProjectInvite[]           @relation("CreatedProjectInvites")

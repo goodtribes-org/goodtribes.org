@@ -108,6 +108,7 @@ model Project {
   members            ProjectMember[]
   joinRequests       ProjectJoinRequest[]
   kanbanCards        KanbanCard[]
+  eventActions       EventAction[]        @relation("EventActions")
   todoLists          TodoList[]
   todoItems          TodoItem[]
   blogPosts          BlogPost[]

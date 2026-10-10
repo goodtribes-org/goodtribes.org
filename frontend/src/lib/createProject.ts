@@ -7,6 +7,7 @@ import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 import { normalizeContentLocale, requestContentLocale } from "@/lib/aiLanguage";
 import { createIdeaStepCards } from "@/lib/ideaStepCards";
 import { DraftLimitError, MAX_DRAFTS, countOwnDrafts } from "@/lib/projectVisibility";
+import { logEventAction } from "@/lib/events";
 
 export type CreateProjectParams = {
   title: string;
@@ -107,6 +108,8 @@ export async function createProjectRecord(params: CreateProjectParams) {
       }
 
       if (ideaStepCards) await createIdeaStepCards(prisma, { projectSlug: project.slug, contentLocale, dreamFounderId });
+      // Eventläge (#281): a dream written during an evening counts for it.
+      await logEventAction("DREAM", ownerId, { projectId: project.id });
       return project;
     } catch (e: unknown) {
       const err = e as { code?: string };

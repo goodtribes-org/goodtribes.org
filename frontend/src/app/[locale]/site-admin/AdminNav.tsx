@@ -2,7 +2,7 @@
 
 import {
   Award, BookOpen, Building2, Coins, FileText, Flag, FolderKanban, Gavel, GraduationCap, HandCoins, Home,
-  Landmark, LayoutDashboard, MessageSquareText, PieChart, Scale, ShoppingBag, Sparkles, ToggleLeft, Users,
+  Landmark, LayoutDashboard, MessageSquareText, PieChart, QrCode, Scale, ShoppingBag, Sparkles, ToggleLeft, Users,
   type LucideIcon,
 } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
@@ -29,6 +29,7 @@ const ICONS: Record<string, LucideIcon> = {
   "/site-admin/about-pillars": Sparkles,
   "/site-admin/site-copy": FileText,
   "/site-admin/feature-flags": ToggleLeft,
+  "/site-admin/events": QrCode,
 };
 
 // The site-admin menu, in the same look as the project pages' left menu

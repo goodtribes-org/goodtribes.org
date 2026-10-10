@@ -144,9 +144,13 @@ export default function FirstTasksPanel({ tasks, slug, projectTitle, userId }: {
     if (task) setOpen(task);
   }, [tasks, router]);
 
-  if (tasks.length === 0) return null;
+  // With no open tasks left (the last one was just taken) only the sheet's
+  // confirmation stays. The sheet keeps its place in the tree either way, so
+  // a refresh doesn't remount it and lose "sent".
   return (
     <div id="forsta-uppgifter" className="scroll-mt-24">
+      {tasks.length > 0 && (
+      <>
       <p className="text-sm font-semibold text-dark-slate">
         {t("panelHeading")} <span className="text-[11px] font-normal text-dark-slate/50">· {t("panelStep")}</span>
       </p>
@@ -176,6 +180,8 @@ export default function FirstTasksPanel({ tasks, slug, projectTitle, userId }: {
           </li>
         ))}
       </ul>
+      </>
+      )}
       {open && (
         <TakeSheet task={open} slug={slug} projectTitle={projectTitle} userId={userId} onClose={() => setOpen(null)} onDone={() => router.refresh()} />
       )}

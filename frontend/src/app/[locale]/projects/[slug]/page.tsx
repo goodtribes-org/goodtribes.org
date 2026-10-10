@@ -781,11 +781,9 @@ export default async function ProjectDetailPage({
             shareUrl={shareUrl}
             shareTitle={content.title}
             shareText={shareText}
-            firstTasks={
-              openFirstTasks.length > 0 ? (
-                <FirstTasksPanel tasks={openFirstTasks} slug={slug} projectTitle={content.title} userId={userId ?? null} />
-              ) : undefined
-            }
+            // Rendered even when empty, so a just-taken last task keeps its confirmation.
+            firstTasks={isRealMember ? undefined : <FirstTasksPanel tasks={openFirstTasks} slug={slug} projectTitle={content.title} userId={userId ?? null} />}
+            hasFirstTasks={openFirstTasks.length > 0}
           />
 
           {/* Verified impact (PRD 4d) — renders nothing until the Foundation

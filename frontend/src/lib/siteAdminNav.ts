@@ -53,6 +53,7 @@ export const SITE_ADMIN_GROUPS: AdminNavGroup[] = [
       { href: "/site-admin/hero-carousel", label: "Startsidan" },
       { href: "/site-admin/about-pillars", label: "Rutorna på Om oss" },
       { href: "/site-admin/site-copy", label: "Sidtexter" },
+      { href: "/site-admin/events", label: "Event (QR-kväll)", short: "Event" },
       { href: "/site-admin/feature-flags", label: "Funktionsflaggor" },
     ],
   },
