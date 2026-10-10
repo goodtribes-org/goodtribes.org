@@ -5531,7 +5531,9 @@
     "openedHeading": "{count, plural, one {Uppgiften är öppen} other {# uppgifter är öppna}}",
     "openedNote": "Den syns nu på projektsidan och under Första uppgifter. Du får en notis när någon tar den eller anmäler sig.",
     "newAccountCap": "Nya konton kan ha högst {count} första uppgifter på gång samtidigt. Gör klart en, eller vänta tills ett projekt har svarat på din anmälan.",
-    "newAccount": "Nytt konto ({days, plural, =0 {i dag} one {# dag} other {# dagar}})"
+    "newAccount": "Nytt konto ({days, plural, =0 {i dag} one {# dag} other {# dagar}})",
+    "createdHeading": "Din dröm är skapad 🎉",
+    "createdLater": "Senare"
   },
   "FirstTasksDiscover": {
     "allSdgs": "Alla globala mål",

@@ -272,7 +272,7 @@ export async function createProjectFromDream(roomId: string) {
     // The rest of phase 1 fills in while the user already looks at it.
     void runIdeaFill({ dreamId: dream.id, projectId: project.id, projectSlug: project.slug, mode, transcript, userId });
 
-    redirect(await localized(agent ? `/projects/${project.slug}/ide` : `/projects/${project.slug}/guide`));
+    redirect(await localized(agent ? `/projects/${project.slug}/ide?skapad=1` : `/projects/${project.slug}/guide`));
   } catch (err) {
     // redirect() works by throwing — let it through untouched.
     if (err && typeof err === "object" && "digest" in err && String((err as { digest: unknown }).digest).startsWith("NEXT_REDIRECT")) throw err;

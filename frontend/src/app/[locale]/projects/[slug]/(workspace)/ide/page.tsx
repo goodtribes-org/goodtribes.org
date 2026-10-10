@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
+import FirstTaskPrompt from "../../FirstTaskPrompt";
 import { canSeeInterviewNotes } from "@/lib/interviewAccess";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -74,18 +75,18 @@ export default async function IdeaOverviewPage({
   searchParams,
 }: {
   params: Promise<{ locale: Locale; slug: string }>;
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<{ view?: string; skapad?: string }>;
 }) {
   const { locale, slug } = await params;
   await notFoundUnlessVisible(slug);
-  const { view } = await searchParams;
+  const { view, skapad } = await searchParams;
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const [project] = await Promise.all([
     prisma.project.findUnique({
     where: { slug },
     select: {
-      id: true, phase: true, title: true, summary: true, description: true, imageUrl: true, inviteQuestionDismissedAt: true, category: true, tags: true, sdgGoals: true,
+      id: true, phase: true, title: true, publishedAt: true, summary: true, description: true, imageUrl: true, inviteQuestionDismissedAt: true, category: true, tags: true, sdgGoals: true,
       leanCanvas: true, valueProposition: true, impactModel: true,
       dreamConversation: { select: { fillStatus: true, openQuestions: true, updatedAt: true } },
     },
@@ -235,6 +236,10 @@ export default async function IdeaOverviewPage({
       ])
     : [{ mode: "MANUAL" as const }, { mode: "MANUAL" as const }, { mode: "MANUAL" as const }, { mode: "MANUAL" as const }];
   const marketScanConclusion = await prisma.marketScanConclusion.findUnique({ where: { projectSlug: slug } });
+  // Right after Drömguiden (#284, ?skapad=1): "Din dröm är skapad" and the
+  // first-task question, for a lead whose project has no open first task yet.
+  const showCreatedPrompt = skapad === "1" && canEdit
+    && (await prisma.kanbanCard.count({ where: { projectSlug: slug, openToPublic: true, column: { not: "DONE" } } })) === 0;
   const canvasRowForScan = (project.leanCanvas ?? {}) as Record<string, string | null>;
 
   return (
@@ -249,6 +254,11 @@ export default async function IdeaOverviewPage({
         <PhaseProgressStrip projectId={project.id} slug={slug} viewing="IDEA" />
         {isFillInProgress(fill) && <FillPoller />}
       </div>
+      {showCreatedPrompt && (
+        <div data-keep>
+          <FirstTaskPrompt projectId={project.id} slug={slug} published={!!project.publishedAt} aiAvailable={aiAvailable} created />
+        </div>
+      )}
 
       <div data-overview className="flex flex-wrap items-end justify-between gap-3">
         <div>
