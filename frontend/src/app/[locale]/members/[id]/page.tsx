@@ -9,7 +9,7 @@ import MessageButton from "@/components/MessageButton";
 import ShareButton from "@/components/ShareButton";
 import FlagContentButton from "@/components/FlagContentButton";
 import { getTranslations } from "next-intl/server";
-import { isLeadRole } from "@/lib/authz";
+import { getContributions } from "@/lib/contributions";
 import { buildMetadata, APP_URL } from "@/lib/metadata";
 
 export const dynamic = "force-dynamic";
@@ -66,25 +66,16 @@ export default async function MemberProfilePage({
       skills: {
         select: { skill: { select: { id: true, name: true, tag: true, slug: true } } },
       },
-      projectMemberships: {
-        where: { project: PUBLIC_PROJECT_WHERE },
-        select: {
-          role: true,
-          project: {
-            select: { slug: true, title: true, phase: true, description: true },
-          },
-        },
-        orderBy: { joinedAt: "desc" },
-      },
     },
   });
 
   if (!member) notFound();
 
   // #237: shared ideas and how many of them someone drives. No ranking.
-  const [ideasShared, ideasDriven] = await Promise.all([
+  const [ideasShared, ideasDriven, contributions] = await Promise.all([
     prisma.idea.count({ where: { authorId: id, hiddenAt: null, status: "open" } }),
     prisma.idea.count({ where: { authorId: id, hiddenAt: null, status: "open", basedProjects: { some: PUBLIC_PROJECT_WHERE } } }),
+    getContributions(id),
   ]);
 
   const social = (member.socialLinks ?? {}) as Record<string, string>;
@@ -95,7 +86,13 @@ export default async function MemberProfilePage({
     .slice(0, 2)
     .toUpperCase();
   const skills = member.skills.map((us) => us.skill);
-  const projects = member.projectMemberships.map((pm) => ({ ...pm.project, role: pm.role }));
+  const { projects, tasksDone, thanks } = contributions;
+  const isSelf = session?.user?.id === id;
+  const monthYear = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { month: "long", year: "numeric" });
+  const summary = [
+    t("contributionsSummary", { tasks: tasksDone, projects: projects.length }),
+    thanks.count > 0 ? t("thanksCount", { count: thanks.count }) : null,
+  ].filter(Boolean).join(" · ");
 
   return (
     <div className="max-w-2xl">
@@ -188,39 +185,73 @@ export default async function MemberProfilePage({
       )}
 
       {projects.length > 0 && (
-        <section className="mb-8">
-          <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-3">
-            {t("projectsHeading")}
-          </h2>
+        <section id="bidrag" className="mb-8 scroll-mt-24">
+          <div className="mb-1 flex items-center justify-between gap-3">
+            <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide">
+              {t("contributionsHeading")}
+            </h2>
+            {isSelf && (
+              <ShareButton
+                url={`${APP_URL}/${locale}/members/${id}#bidrag`}
+                title={t("meritTitle", { name: member.name ?? t("fallbackTitle") })}
+                text={summary}
+                variant="icon"
+              />
+            )}
+          </div>
+          <p className="mb-3 text-sm font-semibold text-dark-slate">{summary}</p>
           <div className="flex flex-col gap-3">
             {projects.map((project) => (
               <Link
                 key={project.slug}
                 href={`/projects/${project.slug}`}
-                className="flex items-start justify-between gap-3 border border-muted-teal/40 rounded-lg p-4 hover:shadow-md hover:border-muted-teal transition-all bg-white"
+                className="block border border-muted-teal/40 rounded-lg p-4 hover:shadow-md hover:border-muted-teal transition-all bg-white"
               >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-medium text-dark-slate truncate">{project.title}</p>
-                    <span className="text-xs bg-dry-sage text-dark-slate/60 px-2 py-0.5 rounded capitalize flex-shrink-0">
-                      {tPhase(project.phase)}
-                    </span>
-                    {isLeadRole(project.role) && (
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-coral flex-shrink-0">
-                        {project.role}
-                      </span>
-                    )}
-                  </div>
-                  {project.description && (
-                    <p className="text-sm text-dark-slate/60 line-clamp-2">{project.description}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-medium text-dark-slate">{project.title}</p>
+                  <span className="text-xs bg-dry-sage text-dark-slate/60 px-2 py-0.5 rounded">
+                    {tPhase(project.phase)}
+                  </span>
+                  {project.verifiedImpact > 0 && (
+                    <span className="text-xs font-semibold text-seagrass">{t("verifiedImpact")}</span>
                   )}
                 </div>
-                <svg className="w-4 h-4 text-dark-slate/30 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+                <p className="mt-1 text-xs text-dark-slate/60">
+                  <span className="font-semibold text-coral">{t(`role.${project.role ?? "HELPER"}`)}</span>
+                  {" · "}{t("since", { date: monthYear(project.since) })}
+                  {" · "}{project.tasksDone > 0 ? t("tasksDone", { count: project.tasksDone }) : t("noTasksYet")}
+                  {project.subtasksDone > 0 && ` + ${t("subtasksDone", { count: project.subtasksDone })}`}
+                </p>
+                {project.recentTasks.length > 0 && (
+                  <ul className="mt-2 space-y-0.5 text-sm text-dark-slate/80">
+                    {project.recentTasks.map((title, i) => (
+                      <li key={i} className="flex gap-2"><span className="text-seagrass">✓</span><span className="min-w-0 truncate">{title}</span></li>
+                    ))}
+                  </ul>
+                )}
               </Link>
             ))}
           </div>
+        </section>
+      )}
+
+      {thanks.recent.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-sm font-medium text-dark-slate/60 uppercase tracking-wide mb-3">
+            {t("thanksHeading")}
+          </h2>
+          <ul className="flex flex-col gap-3">
+            {thanks.recent.map((k, i) => (
+              <li key={i} className="rounded-lg border-l-4 border-coral/40 bg-white px-4 py-3">
+                <p className="text-sm text-dark-slate">&ldquo;{k.message}&rdquo;</p>
+                {(k.from || k.project) && (
+                  <p className="mt-1 text-xs text-dark-slate/50">
+                    – {[k.from, k.project].filter(Boolean).join(", ")}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 
