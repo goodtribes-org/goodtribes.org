@@ -3284,7 +3284,25 @@
     "skillsHeading": "Kompetenser",
     "projectsHeading": "Projekt",
     "linksHeading": "Länkar",
-    "website": "Webbplats"
+    "website": "Webbplats",
+    "contributionsHeading": "Bidrag",
+    "contributionsSummary": "{tasks, plural, =0 {Med} one {# uppgift klar} other {# uppgifter klara}} i {projects, plural, one {# projekt} other {# projekt}}",
+    "thanksCount": "{count, plural, one {# tack} other {# tack}}",
+    "role": {
+      "FOUNDER": "Grundare",
+      "ADMIN": "Leder projektet",
+      "MEMBER": "Medskapare",
+      "FOLLOWER": "Följare",
+      "HELPER": "Hjälpte till"
+    },
+    "since": "sedan {date}",
+    "tasksDone": "{count, plural, one {# uppgift klar} other {# uppgifter klara}}",
+    "subtasksDone": "{count, plural, one {# deluppgift} other {# deluppgifter}}",
+    "noTasksYet": "Inga klara uppgifter än",
+    "verifiedImpact": "✓ Verifierad impact",
+    "thanksHeading": "Tack från andra",
+    "shareMerit": "Dela som merit",
+    "meritTitle": "{name} på GoodTribes.org"
   },
   "WorkplacePage": {
     "greetingWithName": "Hej, {name}",

@@ -3284,7 +3284,25 @@
     "skillsHeading": "Skills",
     "projectsHeading": "Projects",
     "linksHeading": "Links",
-    "website": "Website"
+    "website": "Website",
+    "contributionsHeading": "Contributions",
+    "contributionsSummary": "{tasks, plural, =0 {Part of} one {# task done} other {# tasks done}} in {projects, plural, one {# project} other {# projects}}",
+    "thanksCount": "{count, plural, one {# thank-you} other {# thank-yous}}",
+    "role": {
+      "FOUNDER": "Founder",
+      "ADMIN": "Leads the project",
+      "MEMBER": "Co-creator",
+      "FOLLOWER": "Follower",
+      "HELPER": "Helped out"
+    },
+    "since": "since {date}",
+    "tasksDone": "{count, plural, one {# task done} other {# tasks done}}",
+    "subtasksDone": "{count, plural, one {# subtask} other {# subtasks}}",
+    "noTasksYet": "No finished tasks yet",
+    "verifiedImpact": "✓ Verified impact",
+    "thanksHeading": "Thanks from others",
+    "shareMerit": "Share as a merit",
+    "meritTitle": "{name} on GoodTribes.org"
   },
   "WorkplacePage": {
     "greetingWithName": "Hello, {name}",
