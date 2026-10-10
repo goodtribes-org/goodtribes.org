@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
+import { canSeeInterviewNotes } from "@/lib/interviewAccess";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getCanvasFieldLabels } from "@/lib/canvasFieldLabels";
@@ -122,6 +123,8 @@ export default async function IdeaOverviewPage({
   const work = await getPhaseWork(slug, "IDEA");
   const decisionDate = (d: Date) => d.toLocaleDateString(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
   const interviewCount = interviews.length;
+  // Who was interviewed is for the team only (#276); the count and what was learned are open.
+  const canSeeNotes = await canSeeInterviewNotes(project.id, session.user.id);
 
   // The steps of the phase, in #201's order, each with where it stands: done
   // (ticked, or detected from the data), an AI draft waiting for review,
@@ -466,7 +469,7 @@ export default async function IdeaOverviewPage({
           synthesis={synthesis?.content ?? null}
           stillAssumed={assumptions.map((a) => a.key)}
           fieldLabels={fieldLabels}
-          personaById={Object.fromEntries(interviews.map((i) => [i.id, i.personaName]))}
+          personaById={canSeeNotes ? Object.fromEntries(interviews.map((i) => [i.id, i.personaName])) : {}}
           canEdit={canEdit}
           aiAvailable={aiAvailable}
         />

@@ -3116,7 +3116,10 @@
     "columnValidated": "Validated",
     "columnQuotes": "Quotes",
     "removeButton": "Remove",
-    "emptyState": "No interviews logged yet."
+    "emptyState": "No interviews logged yet.",
+    "membersOnlyHeading": "Interview notes are only visible to the team",
+    "membersOnlyBody": "They are about real people, so only the project members see them. What the team learned from the interviews is on the project page.",
+    "membersOnlyLink": "To the project page →"
   },
   "MarketScanPage": {
     "heading": "Market scan",
@@ -4279,7 +4282,8 @@
     "interviewAiDraftLabel": "The AI's suggested interview guide",
     "interviewAiUse": "Use as our interview guide",
     "interviewAiReplace": "Replace our interview guide",
-    "interviewAiReplaceNote": "You already have an interview guide. The suggestion replaces it, and the old one is saved as its own page in the wiki."
+    "interviewAiReplaceNote": "You already have an interview guide. The suggestion replaces it, and the old one is saved as its own page in the wiki.",
+    "basedOnCount": "Based on {count, plural, one {# interview} other {# interviews}}"
   },
   "PhaseGate": {
     "intro": "The Idea phase is done when you know enough to start testing the solution. Here you see what's done, what the evidence says — and you make the call. You can move on even if something is missing; it's just noted.",
