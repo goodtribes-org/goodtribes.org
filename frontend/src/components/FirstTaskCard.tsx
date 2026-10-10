@@ -40,7 +40,6 @@ export default async function FirstTaskCard({ task }: { task: FirstTaskListItem 
       >
         {task.choose ? tTask("signUp") : tTask("take")}
       </Link>
-      {task.choose && <p className="-mt-1 text-center text-[11px] text-[#6B726E]">{tTask("chooseNote")}</p>}
     </div>
   );
 }
