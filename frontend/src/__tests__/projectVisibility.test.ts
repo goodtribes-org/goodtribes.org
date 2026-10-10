@@ -40,7 +40,8 @@ const PUBLIC_SURFACES = [
   "src/app/[locale]/members/[id]/page.tsx",
   "src/app/[locale]/org/[slug]/page.tsx",
   "src/app/[locale]/skill/[slug]/page.tsx",
-  "src/app/[locale]/micro-tasks/page.tsx",
+  // The first-task list and the start page section query through lib/firstTasks.ts (#279).
+  "src/lib/firstTasks.ts",
   "src/app/[locale]/hall-of-impact/page.tsx",
   "src/app/[locale]/my-goodtribes/FindTab.tsx",
   "src/app/[locale]/impact-fond/mina-fordelningar/page.tsx",

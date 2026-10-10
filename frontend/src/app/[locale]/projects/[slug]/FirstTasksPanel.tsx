@@ -128,7 +128,8 @@ export default function FirstTasksPanel({ tasks, slug, projectTitle, userId }: {
   const [, startTransition] = useTransition();
   const resumed = useRef(false);
 
-  // Back from the login page with ?take=<card>: open that task again.
+  // ?take=<card> — back from the login page, or from the list of all first
+  // tasks (#279): open that task.
   useEffect(() => {
     if (resumed.current) return;
     resumed.current = true;
@@ -137,9 +138,11 @@ export default function FirstTasksPanel({ tasks, slug, projectTitle, userId }: {
     if (!id) return;
     url.searchParams.delete("take");
     router.replace(url.pathname + url.search, { scroll: false });
+    // Also when logged out (from the list of all first tasks): they write
+    // first and log in when they send.
     const task = tasks.find((x) => x.id === id);
-    if (task && userId) setOpen(task);
-  }, [tasks, userId, router]);
+    if (task) setOpen(task);
+  }, [tasks, router]);
 
   if (tasks.length === 0) return null;
   return (

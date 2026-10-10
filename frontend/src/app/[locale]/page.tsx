@@ -19,6 +19,8 @@ import ProjectCard from "@/components/ProjectCard";
 import Community from "@/components/ny-startsida/Community";
 import FoundingCard from "@/components/ny-startsida/FoundingCard";
 import DreamHero from "@/components/ny-startsida/DreamHero";
+import FirstTasksSection from "@/components/ny-startsida/FirstTasksSection";
+import { searchFirstTasks, parseFirstTaskFilters } from "@/lib/firstTasks";
 import IdeaCard from "@/components/ny-startsida/IdeaCard";
 import {
   INK, LiveStrip, PhaseJourney, PlatformStats, SectionHeader, SWIPE_ITEM, SWIPE_ROW, wrap, type JourneyPhase,
@@ -58,7 +60,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   const [
     activity, allProjects, projectsBeyondIdea, ideaPhaseProjects,
-    pledgeSum, tokenSum, completedCards, completedSubtasks, memberCount, newMembers, latestIdeas, openChallenges,
+    pledgeSum, tokenSum, completedCards, completedSubtasks, memberCount, newMembers, latestIdeas, openChallenges, firstTasks,
   ] = await Promise.all([
     fetchActivityItems(15),
     prisma.project.findMany({ where: live, select: { phase: true, title: true, slug: true }, orderBy: { updatedAt: "desc" } }),
@@ -105,6 +107,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       take: 3,
       select: CHALLENGE_CARD_SELECT,
     }),
+    // Första uppgifter (#279): the other way in, right under the dream box.
+    searchFirstTasks(parseFirstTaskFilters({}), { take: 5 }),
   ]);
 
   const cardProjects = [...projectsBeyondIdea, ...ideaPhaseProjects].slice(0, PROJECT_CARDS);
@@ -194,14 +198,16 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           {t("hero.startProject")}
         </Link>
         <Link
-          href="/projects"
+          href={firstTasks.total > 0 ? "/micro-tasks" : "/projects"}
           className="inline-flex items-center rounded-full border border-[#E4E4DF] bg-white px-4 py-2 text-[15px] font-semibold hover:border-[#C2410C]"
           style={{ color: INK }}
         >
-          {t("hero.helpInstead")}
+          {firstTasks.total > 0 ? t("hero.helpFirstTask") : t("hero.helpInstead")}
         </Link>
       </div>
       <LiveStrip locale={locale} items={events.slice(0, 8).map((a) => ({ project: a.projectName, action: a.action }))} />
+
+      <FirstTasksSection locale={locale} tasks={firstTasks.items} total={firstTasks.total} />
 
       <FoundingCard locale={locale} />
 
