@@ -704,7 +704,7 @@ export default async function ProjectDetailPage({
           />
 
           {isOwnerOrAdmin && leadOpenFirstTaskCount === 0 && (
-            <FirstTaskPrompt projectId={project.id} published={!!project.publishedAt} aiAvailable={aiForPrompt} />
+            <FirstTaskPrompt projectId={project.id} slug={slug} published={!!project.publishedAt} aiAvailable={aiForPrompt} />
           )}
 
           {isRealMember && feedSection}

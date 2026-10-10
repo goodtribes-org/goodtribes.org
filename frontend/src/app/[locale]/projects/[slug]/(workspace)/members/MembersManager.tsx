@@ -183,13 +183,14 @@ export default function MembersManager({
                 ) : (
                   <>
                     <select
-                      value={m.role === "ADMIN" ? "ADMIN" : "MEMBER"}
+                      value={m.role === "ADMIN" || m.role === "FOLLOWER" ? m.role : "MEMBER"}
                       disabled={isPending}
                       onChange={(e) => handleRoleChange(m.userId, e.target.value as ProjectRole)}
                       className="text-xs border border-gray-200 rounded-md px-2 py-1 bg-white text-dark-slate/70 focus:outline-none focus:border-seagrass disabled:opacity-50"
                     >
                       <option value="ADMIN">{t("roleAdmin")}</option>
                       <option value="MEMBER">{t("roleMemberOption")}</option>
+                      <option value="FOLLOWER">{t("roleFollower")}</option>
                     </select>
                     {(viewerIsFounder || viewerIsSiteAdmin) && !isSelf && (
                       <button

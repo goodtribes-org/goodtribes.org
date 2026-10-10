@@ -5504,7 +5504,9 @@
     "helpersIntro": "De här har gjort en första uppgift i projektet men är inte med i teamet än.",
     "helperDid": "Gjorde: {tasks}",
     "inviteToTeam": "Bjud in till teamet",
-    "helperInvited": "Med i teamet ✓"
+    "helperInvited": "Med i teamet ✓",
+    "openedHeading": "{count, plural, one {Uppgiften är öppen} other {# uppgifter är öppna}}",
+    "openedNote": "Den syns nu på projektsidan och under Första uppgifter. Du får en notis när någon tar den eller anmäler sig."
   },
   "FirstTasksDiscover": {
     "allSdgs": "Alla globala mål",
