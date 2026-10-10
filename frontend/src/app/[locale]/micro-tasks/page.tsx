@@ -1,143 +1,79 @@
 export const dynamic = "force-dynamic";
 
-import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Prisma } from "@prisma/client"
-import { prisma } from "@/lib/prisma"
 import { getTranslations } from "next-intl/server";
-import { buildMetadata } from "@/lib/metadata";
-
-import Pagination from "@/components/Pagination";
-import { CATEGORY_META, PRIORITY_META, formatDate } from "@/components/kanbanShared";
 import type { Locale } from "next-intl";
+import { buildMetadata } from "@/lib/metadata";
+import Pagination from "@/components/Pagination";
+import FirstTaskCard from "@/components/FirstTaskCard";
+import { firstTaskSdgs, parseFirstTaskFilters, searchFirstTasks } from "@/lib/firstTasks";
+import { SDG_LABELS_EN, SDG_LABELS_SV } from "@/lib/sdg";
+import FirstTaskFilters from "@/components/FirstTaskFilters";
+
+// Första uppgifter (#279): every open first task across published projects,
+// with search and filters (global goal, nonprofit/commercial, phase, time,
+// place) as dropdowns like the project list. Filters live in the URL, so a
+// filtered list can be shared. Keeps the old /micro-tasks address, which this page replaces.
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "MicroTasksPage" });
-  return buildMetadata({ locale, path: "/micro-tasks", title: t("heading"), description: t("pageDescription") });
+  const t = await getTranslations({ locale, namespace: "FirstTasksDiscover" });
+  return buildMetadata({ locale, path: "/micro-tasks", title: t("pageTitle"), description: t("pageDescription") });
 }
 
 const PAGE_SIZE = 12;
+const KEYS = ["q", "sdg", "form", "phase", "time", "place"] as const;
 
-export default async function MicroTasksPage({
+
+
+
+export default async function FirstTasksPage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ category?: string; page?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "MicroTasksPage" });
-  const { category, page: pageStr } = await searchParams;
-  const page = Math.max(1, parseInt(pageStr ?? "1") || 1);
-
-  const where: Prisma.KanbanCardWhereInput = {
-    openToPublic: true,
-    assigneeId: null,
-    column: { not: "DONE" },
-    project: PUBLIC_PROJECT_WHERE,
-    ...(category ? { category } : {}),
-  };
-
-  const [total, cards] = await Promise.all([
-    prisma.kanbanCard.count({ where }),
-    prisma.kanbanCard.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-      include: {
-        project: { select: { slug: true, title: true, imageUrl: true } },
-        estimate: true,
-      },
-    }),
+  const sp = await searchParams;
+  const t = await getTranslations({ locale, namespace: "FirstTasksDiscover" });
+  const f = parseFirstTaskFilters(sp);
+  const page = Math.max(1, parseInt(typeof sp.page === "string" ? sp.page : "1") || 1);
+  const [{ total, items }, sdgs] = await Promise.all([
+    searchFirstTasks(f, { take: PAGE_SIZE, skip: (page - 1) * PAGE_SIZE }),
+    firstTaskSdgs(),
   ]);
-
-  const rawParams = { category, page: pageStr };
+  const anyFilter = KEYS.some((k) => f[k] !== null);
+  const sdgLabels = locale === "sv" ? SDG_LABELS_SV : SDG_LABELS_EN;
+  const rawParams = Object.fromEntries(KEYS.map((k) => [k, f[k] === null ? undefined : String(f[k])]));
 
   return (
-    <div>
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold text-dark-slate">
-          {t("heading")}{" "}
-          <span className="text-dark-slate/40 font-normal">({total})</span>
-        </h1>
-        <p className="text-sm text-dark-slate/60 mt-1">{t("intro")}</p>
+    <div className="flex flex-col gap-6">
+      <div>
+        <p className="text-sm font-bold uppercase tracking-[.12em] text-[#C2410C]">{t("eyebrow")}</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#1B1F1D] sm:text-4xl">{t("heading")}</h1>
+        <p className="mt-2 max-w-2xl text-base text-[#4A514D]">{t("intro")}</p>
       </div>
 
-      <div className="flex flex-wrap gap-1.5 mb-4">
-        <Link
-          href="/micro-tasks"
-          className={`text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
-            !category ? "border-gray-400 bg-gray-100 text-gray-600" : "border-gray-200 text-gray-400 hover:border-gray-300"
-          }`}
-        >
-          {t("allFilter")}
-        </Link>
-        {Object.entries(CATEGORY_META).map(([key, meta]) => (
-          <Link
-            key={key}
-            href={`/micro-tasks?category=${key}`}
-            style={category === key ? { backgroundColor: meta.hex + "22", borderColor: meta.hex, color: meta.hex } : {}}
-            className={`text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
-              category === key ? "" : "border-gray-200 text-gray-400 hover:border-gray-300"
-            }`}
-          >
-            {meta.label}
-          </Link>
-        ))}
+      <FirstTaskFilters filters={f} sdgs={sdgs} sdgLabels={sdgLabels} />
+
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-semibold text-[#4A514D]">{t("count", { count: total })}</p>
+        {anyFilter && <Link href="/micro-tasks" className="text-sm font-semibold text-[#C2410C] hover:underline">{t("clear")}</Link>}
       </div>
 
-      {cards.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-dark-slate/50 mb-4">{t("emptyState")}</p>
-          {category && (
-            <Link href="/micro-tasks" className="text-coral hover:underline text-sm">
-              {t("clearFilter")}
-            </Link>
-          )}
+      {items.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-[#E4E4DF] p-10 text-center text-[#6B726E]">
+          {anyFilter ? t("empty") : t("emptyNone")}
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            {cards.map((card) => {
-              const priorityMeta = PRIORITY_META[card.priority] ?? PRIORITY_META.normal;
-              const categoryMeta = card.category ? CATEGORY_META[card.category] : null;
-              return (
-                <Link
-                  key={card.id}
-                  href={`/projects/${card.project.slug}/tasks?card=${card.id}`}
-                  className="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-gray-300 transition-all overflow-hidden"
-                >
-                  {categoryMeta && <div className="h-1" style={{ backgroundColor: categoryMeta.hex }} />}
-                  <div className="p-4">
-                    <p className="text-xs font-medium text-seagrass truncate">{card.project.title}</p>
-                    <p className="text-sm font-semibold text-gray-800 mt-1 leading-snug">{card.title}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className={`inline-block w-2 h-2 rounded-full ${priorityMeta.dot}`} />
-                      <span className="text-xs text-gray-400">{priorityMeta.label}</span>
-                      {card.estimate?.aiHours != null && (
-                        <span className="text-xs text-gray-400">· ~{card.estimate.aiHours}h</span>
-                      )}
-                      {card.dueDate && (
-                        <span className="text-xs text-gray-400">· {formatDate(card.dueDate)}</span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-          <Pagination
-            page={page}
-            total={total}
-            perPage={PAGE_SIZE}
-            searchParams={rawParams}
-            basePath="/micro-tasks"
-          />
-        </>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {items.map((task) => <FirstTaskCard key={task.id} task={task} />)}
+        </div>
       )}
+
+      <Pagination page={page} total={total} perPage={PAGE_SIZE} searchParams={rawParams} basePath="/micro-tasks" />
     </div>
   );
 }

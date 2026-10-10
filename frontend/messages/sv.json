@@ -12,7 +12,7 @@
     "discoverProjects": "Projekt",
     "discoverIdeaverkstad": "Idéverkstaden",
     "discoverOrgs": "Organisationer",
-    "discoverMicroTasks": "Öppna uppgifter",
+    "discoverMicroTasks": "Första uppgifter",
     "discoverSkills": "Kompetenser",
     "discoverMentors": "Mentorer",
     "myAccount": "Mitt konto",
@@ -3593,14 +3593,6 @@
     "fromThreadNote": "Startar från en idésession i Idéverkstaden — ge projektet ett namn, fyll i resten direkt efter.",
     "fromThreadDescriptionSuffix": "(Från en diskussion i Idéverkstaden.)"
   },
-  "MicroTasksPage": {
-    "pageDescription": "Ta dig an en enskild, avgränsad uppgift på ett projekt — utan att gå med i projektet.",
-    "heading": "Öppna uppgifter",
-    "intro": "Ta dig an en enskild uppgift på ett projekt — inget medlemskap krävs. Perfekt om du vill bidra en gång utan att binda dig.",
-    "allFilter": "Alla",
-    "emptyState": "Inga öppna uppgifter just nu.",
-    "clearFilter": "Rensa filter"
-  },
   "ProfileSetupPage": {
     "editHeading": "Redigera profil",
     "welcomeHeading": "Välkommen!",
@@ -4711,6 +4703,7 @@
       "note": "Du väljer själv när drömmen ska delas med andra",
       "submit": "Börja med AI-guiden",
       "helpInstead": "Vill du hellre hjälpa till? Se projekt som söker folk →",
+      "helpFirstTask": "Vill du hellre hjälpa till? Hitta en första uppgift →",
       "startProject": "Starta ett projekt →"
     },
     "live": {
@@ -5486,5 +5479,36 @@
     "recordThanked": "tackad {count, plural, one {en gång} other {# gånger}}",
     "chosenDone": "{name} gör uppgiften. De andra som anmälde sig har fått ett tack.",
     "noName": "Utan namn"
+  },
+  "FirstTasksDiscover": {
+    "allSdgs": "Alla globala mål",
+    "allForms": "Ideellt och kommersiellt",
+    "allPhases": "Alla faser",
+    "allTimes": "All tid",
+    "allPlaces": "Alla platser",
+    "eyebrow": "Bli en del av något",
+    "heading": "Första uppgifter i drömmar som pågår",
+    "intro": "Små, konkreta uppgifter som för en dröm ett steg närmare. Varje uppgift gör dig till medskapare, och Tribe Tokens ger dig en röst i projektets beslut.",
+    "seeAll": "Se alla {count, plural, one {# första uppgift} other {# första uppgifter}} →",
+    "pageTitle": "Första uppgifter",
+    "pageDescription": "Små, konkreta uppgifter i projekt som gör världen bättre. Ta en och bli medskapare.",
+    "searchPlaceholder": "Sök, t.ex. äldre, cykel, design, Gottsunda …",
+    "search": "Sök",
+    "filterSdg": "Globala mål",
+    "filterForm": "Form",
+    "filterPhase": "Fas",
+    "filterTime": "Tid",
+    "filterPlace": "Plats",
+    "all": "Alla",
+    "nonprofit": "Ideellt",
+    "commercial": "Kommersiellt",
+    "timeShort": "Under 1 timme",
+    "timeRecurring": "Återkommande",
+    "placeRemote": "På distans",
+    "placeOnsite": "På plats",
+    "count": "{count, plural, one {# första uppgift} other {# första uppgifter}}",
+    "empty": "Inga första uppgifter matchar. Prova att ta bort ett filter.",
+    "emptyNone": "Inga första uppgifter just nu. Titta in igen snart, eller starta en egen dröm.",
+    "clear": "Rensa filter"
   }
 }

@@ -1,4 +1,4 @@
-import { isOpenFirstTask, offersFull, parseFirstTaskFields } from "../lib/firstTasks";
+import { isOpenFirstTask, offersFull, parseFirstTaskFields, parseFirstTaskFilters } from "../lib/firstTasks";
 
 describe("parseFirstTaskFields", () => {
   it("keeps known values, trims text and drops the rest", () => {
@@ -37,5 +37,19 @@ describe("offersFull", () => {
     expect(offersFull({ firstTaskChoose: true, firstTaskMaxOffers: 3 }, 2)).toBe(false);
     expect(offersFull({ firstTaskChoose: true, firstTaskMaxOffers: null }, 50)).toBe(false);
     expect(offersFull({ firstTaskChoose: false, firstTaskMaxOffers: 1 }, 5)).toBe(false);
+  });
+});
+
+describe("parseFirstTaskFilters", () => {
+  it("keeps known filter values from the URL", () => {
+    expect(parseFirstTaskFilters({ q: "  Gottsunda ", sdg: "4", form: "commercial", phase: "PILOT", time: "short", place: "onsite" })).toEqual({
+      q: "Gottsunda", sdg: 4, form: "commercial", phase: "PILOT", time: "short", place: "onsite",
+    });
+  });
+
+  it("drops unknown or malformed values", () => {
+    expect(parseFirstTaskFilters({ q: "   ", sdg: "18", form: "x", phase: "SPRINT", time: ["short"], place: "moon" })).toEqual({
+      q: null, sdg: null, form: null, phase: null, time: null, place: null,
+    });
   });
 });

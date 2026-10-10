@@ -1,6 +1,7 @@
-import type { FirstTaskTime } from "@prisma/client";
+import type { FirstTaskTime, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getPriorityTokenValue } from "@/lib/priorityTokens";
+import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 
 // Första uppgifter (#277): the way into a project for someone from outside.
 // A first task is an ordinary board card with openToPublic, written for a
@@ -117,4 +118,118 @@ export async function getTrackRecords(userIds: string[]): Promise<Map<string, Tr
     });
   }
   return out;
+}
+
+// ─── Finding first tasks across projects (#279) ─────────────────────────────
+
+export type FirstTaskFilters = {
+  q: string | null;
+  sdg: number | null;
+  form: "nonprofit" | "commercial" | null;
+  phase: "IDEA" | "PILOT" | "PRODUCTION" | "ESTABLISH" | "SCALE" | "IMPACT" | null;
+  time: "short" | "recurring" | null;
+  place: "remote" | "onsite" | null;
+};
+
+const PHASE_FILTERS = ["IDEA", "PILOT", "PRODUCTION", "ESTABLISH", "SCALE", "IMPACT"] as const;
+const COMMERCIAL_TYPES = ["COMMERCIAL_UMBRELLA", "COMMERCIAL_AB"] as const;
+
+// From the URL, so rebuilt value by value.
+export function parseFirstTaskFilters(sp: Record<string, string | string[] | undefined>): FirstTaskFilters {
+  const one = (k: string) => (typeof sp[k] === "string" ? (sp[k] as string) : null);
+  const sdg = Number(one("sdg"));
+  const pick = <T extends string>(v: string | null, allowed: readonly T[]) => (allowed as readonly string[]).includes(v ?? "") ? (v as T) : null;
+  return {
+    q: one("q")?.trim().slice(0, 100) || null,
+    sdg: Number.isInteger(sdg) && sdg >= 1 && sdg <= 17 ? sdg : null,
+    form: pick(one("form"), ["nonprofit", "commercial"] as const),
+    phase: pick(one("phase"), PHASE_FILTERS),
+    time: pick(one("time"), ["short", "recurring"] as const),
+    place: pick(one("place"), ["remote", "onsite"] as const),
+  };
+}
+
+export type FirstTaskListItem = {
+  id: string;
+  title: string;
+  why: string | null;
+  time: FirstTaskTime | null;
+  place: string | null;
+  choose: boolean;
+  tokens: number;
+  project: { slug: string; title: string; sdgGoals: number[]; commercial: boolean; phase: string };
+  founder: { name: string | null; image: string | null };
+};
+
+function firstTaskWhere(f: FirstTaskFilters): Prisma.KanbanCardWhereInput {
+  const project: Prisma.ProjectWhereInput = {
+    ...PUBLIC_PROJECT_WHERE,
+    ...(f.sdg ? { sdgGoals: { has: f.sdg } } : {}),
+    ...(f.form === "commercial" ? { legalType: { in: [...COMMERCIAL_TYPES] } } : f.form === "nonprofit" ? { legalType: { notIn: [...COMMERCIAL_TYPES] } } : {}),
+    // The Idé step on screen is IDEA and SPRINT together (lib/projectPhase.ts).
+    ...(f.phase === "IDEA" ? { phase: { in: ["IDEA", "SPRINT"] } } : f.phase ? { phase: f.phase } : {}),
+  };
+  return {
+    openToPublic: true,
+    assigneeId: null,
+    column: { not: "DONE" },
+    source: { not: "github" },
+    project,
+    ...(f.time === "short" ? { firstTaskTime: { in: ["MIN15", "HOUR1"] } } : f.time === "recurring" ? { firstTaskTime: "RECURRING" } : {}),
+    ...(f.place === "remote" ? { firstTaskPlace: null } : f.place === "onsite" ? { firstTaskPlace: { not: null } } : {}),
+    ...(f.q
+      ? {
+          OR: [
+            { title: { contains: f.q, mode: "insensitive" } },
+            { firstTaskWhy: { contains: f.q, mode: "insensitive" } },
+            { firstTaskPlace: { contains: f.q, mode: "insensitive" } },
+            { project: { title: { contains: f.q, mode: "insensitive" } } },
+          ],
+        }
+      : {}),
+  };
+}
+
+export async function searchFirstTasks(f: FirstTaskFilters, page: { take: number; skip?: number }): Promise<{ total: number; items: FirstTaskListItem[] }> {
+  const where = firstTaskWhere(f);
+  const [total, cards] = await Promise.all([
+    prisma.kanbanCard.count({ where }),
+    prisma.kanbanCard.findMany({
+      where,
+      orderBy: { updatedAt: "desc" },
+      take: page.take,
+      skip: page.skip ?? 0,
+      select: {
+        id: true, title: true, priority: true, lockedTokenValue: true,
+        firstTaskWhy: true, firstTaskTime: true, firstTaskPlace: true, firstTaskChoose: true,
+        project: { select: { slug: true, title: true, sdgGoals: true, legalType: true, phase: true, owner: { select: { name: true, image: true } } } },
+      },
+    }),
+  ]);
+  return {
+    total,
+    items: cards.map((c) => ({
+      id: c.id,
+      title: c.title,
+      why: c.firstTaskWhy,
+      time: c.firstTaskTime,
+      place: c.firstTaskPlace,
+      choose: c.firstTaskChoose,
+      tokens: c.lockedTokenValue ?? getPriorityTokenValue(c.priority),
+      project: {
+        slug: c.project.slug, title: c.project.title, sdgGoals: c.project.sdgGoals,
+        commercial: (COMMERCIAL_TYPES as readonly string[]).includes(c.project.legalType), phase: c.project.phase,
+      },
+      founder: { name: c.project.owner.name, image: c.project.owner.image },
+    })),
+  };
+}
+
+// The global goals that open first tasks are about, for the filter row.
+export async function firstTaskSdgs(): Promise<number[]> {
+  const rows = await prisma.project.findMany({
+    where: { ...PUBLIC_PROJECT_WHERE, kanbanCards: { some: { openToPublic: true, assigneeId: null, column: { not: "DONE" } } } },
+    select: { sdgGoals: true },
+  });
+  return [...new Set(rows.flatMap((r) => r.sdgGoals))].sort((a, b) => a - b);
 }

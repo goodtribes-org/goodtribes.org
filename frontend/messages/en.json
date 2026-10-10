@@ -12,7 +12,7 @@
     "discoverProjects": "Projects",
     "discoverIdeaverkstad": "Idea Workshop",
     "discoverOrgs": "Organizations",
-    "discoverMicroTasks": "Open tasks",
+    "discoverMicroTasks": "First tasks",
     "discoverSkills": "Skills",
     "discoverMentors": "Mentors",
     "myAccount": "My account",
@@ -3593,14 +3593,6 @@
     "fromThreadNote": "Starting from an idea session in the Idea Workshop — give the project a name, then fill in the rest right after.",
     "fromThreadDescriptionSuffix": "(From a discussion in the Idea Workshop.)"
   },
-  "MicroTasksPage": {
-    "pageDescription": "Take on a single, well-scoped task on a project — without joining it.",
-    "heading": "Open tasks",
-    "intro": "Take on a single task on a project — no membership required. Perfect if you want to contribute once without committing.",
-    "allFilter": "All",
-    "emptyState": "No open tasks right now.",
-    "clearFilter": "Clear filter"
-  },
   "ProfileSetupPage": {
     "editHeading": "Edit profile",
     "welcomeHeading": "Welcome!",
@@ -4711,6 +4703,7 @@
       "note": "You choose when to share your dream with others",
       "submit": "Start with the AI guide",
       "helpInstead": "Would you rather help out? See projects looking for people →",
+      "helpFirstTask": "Rather help out? Find a first task →",
       "startProject": "Start a project →"
     },
     "live": {
@@ -5486,5 +5479,36 @@
     "recordThanked": "thanked {count, plural, one {once} other {# times}}",
     "chosenDone": "{name} is doing the task. The others who signed up have been thanked.",
     "noName": "No name"
+  },
+  "FirstTasksDiscover": {
+    "allSdgs": "All global goals",
+    "allForms": "Nonprofit and commercial",
+    "allPhases": "All phases",
+    "allTimes": "Any time",
+    "allPlaces": "Any place",
+    "eyebrow": "Become part of something",
+    "heading": "First tasks in dreams under way",
+    "intro": "Small, concrete tasks that bring a dream one step closer. Each task makes you a co-creator, and Tribe Tokens give you a voice in the project's decisions.",
+    "seeAll": "See all {count, plural, one {# first task} other {# first tasks}} →",
+    "pageTitle": "First tasks",
+    "pageDescription": "Small, concrete tasks in projects that make the world better. Take one and become a co-creator.",
+    "searchPlaceholder": "Search, e.g. elderly, bikes, design, Gottsunda …",
+    "search": "Search",
+    "filterSdg": "Global goals",
+    "filterForm": "Form",
+    "filterPhase": "Phase",
+    "filterTime": "Time",
+    "filterPlace": "Place",
+    "all": "All",
+    "nonprofit": "Nonprofit",
+    "commercial": "Commercial",
+    "timeShort": "Under 1 hour",
+    "timeRecurring": "Recurring",
+    "placeRemote": "Remote",
+    "placeOnsite": "On site",
+    "count": "{count, plural, one {# first task} other {# first tasks}}",
+    "empty": "No first tasks match. Try removing a filter.",
+    "emptyNone": "No first tasks right now. Check back soon, or start a dream of your own.",
+    "clear": "Clear filters"
   }
 }
