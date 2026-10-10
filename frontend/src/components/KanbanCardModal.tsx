@@ -15,6 +15,7 @@ import GithubCardMeta, { isGithubCard } from "@/components/GithubCardMeta";
 import KanbanCardModalComments from "@/components/KanbanCardModalComments";
 import KanbanCardModalSubtasks from "@/components/KanbanCardModalSubtasks";
 import KanbanCardModalFooter from "@/components/KanbanCardModalFooter";
+import FirstTaskEditor from "@/components/FirstTaskEditor";
 import {
   CATEGORY_META,
   PRIORITY_META,
@@ -93,6 +94,11 @@ function CardDetailModalImpl({
   }, [localSubtasks, card.id, onSubtasksChanged]);
   const [openToPublic, setOpenToPublic] = useState(!!card.openToPublic);
   const [cardAssigneeId, setCardAssigneeId] = useState(card.assigneeId ?? null);
+  // An assignee who isn't a member (the AI user, a claimant, someone chosen for
+  // a first task): kept as an option so the select can show and keep them.
+  const [extraAssignee, setExtraAssignee] = useState<Member | null>(
+    card.assignee && card.assigneeId && !members.some((m) => m.id === card.assigneeId) ? card.assignee : null,
+  );
   const [claimError, setClaimError] = useState<string | null>(null);
   const [claimPending, setClaimPending] = useState(false);
   const [, startTransition] = useTransition();
@@ -356,8 +362,8 @@ function CardDetailModalImpl({
                 {/* The assignee may not be a member (GoodTribes' AI user, or someone
                     who claimed an open card): keep them selectable, or saving
                     would silently clear who the card is assigned to. */}
-                {card.assigneeId && !members.some((m) => m.id === card.assigneeId) && (
-                  <option value={card.assigneeId}>{card.assignee?.name ?? card.assigneeId}</option>
+                {extraAssignee && (
+                  <option value={extraAssignee.id}>{extraAssignee.name ?? extraAssignee.id}</option>
                 )}
               </select>
             ) : openToPublic && !cardAssigneeId && canEdit ? (
@@ -409,6 +415,19 @@ function CardDetailModalImpl({
                   />
                   <span className="text-xs text-gray-500">{t("openToPublicHelp")}</span>
                 </label>
+                {openToPublic && !isNew && card.source !== "github" && (
+                  <FirstTaskEditor
+                    card={card}
+                    onSaved={(patch) => {
+                      onSaved(card.id, patch);
+                      if (patch.assignee) {
+                        if (!members.some((m) => m.id === patch.assignee!.id)) setExtraAssignee(patch.assignee);
+                        setAssigneeId(patch.assignee.id);
+                        setCardAssigneeId(patch.assignee.id);
+                      }
+                    }}
+                  />
+                )}
               </>
             )}
 

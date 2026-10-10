@@ -44,6 +44,13 @@ export type Card = {
   assignee: Member | null;
   openToPublic?: boolean;
   claimedAt?: Date | string | null;
+  // Första uppgift (#277): how an openToPublic card reads to someone from outside.
+  firstTaskWhy?: string | null;
+  firstTaskTime?: string | null;
+  firstTaskPlace?: string | null;
+  firstTaskChoose?: boolean;
+  firstTaskQuestion?: string | null;
+  firstTaskMaxOffers?: number | null;
   createdById: string;
   createdByAi?: boolean;
   // Which phase/step of the journey the card is work for (lib/phaseWork.ts).

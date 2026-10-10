@@ -28,6 +28,7 @@ export default function ProjectQuickActions({
   shareUrl,
   shareTitle,
   shareText,
+  firstTasks,
 }: {
   projectId: string;
   slug: string;
@@ -41,15 +42,21 @@ export default function ProjectQuickActions({
   shareUrl: string;
   shareTitle: string;
   shareText?: string;
+  // Step 2 for visitors (#277): the project's open first tasks.
+  firstTasks?: React.ReactNode;
 }) {
   const t = useTranslations("ProjectDetailPage");
   const tLike = useTranslations("LikeCommentBlock");
+  const tFirst = useTranslations("FirstTasks");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [likeCount, setLikeCount] = useState(initialLikeCount);
   const [liked, setLiked] = useState(initialLiked);
   const [left, setLeft] = useState(false);
   const [following, setFollowing] = useState(initialIsFollowing);
+  // Taking a first task follows the project on the server (#277); pick that up
+  // when the page refreshes.
+  useEffect(() => setFollowing(initialIsFollowing), [initialIsFollowing]);
 
   // Logged out: the click goes to the login page and comes back with ?do=…,
   // and the action runs then — no greyed-out buttons that look broken.
@@ -153,6 +160,8 @@ export default function ProjectQuickActions({
           </div>
         )}
 
+        {!effectiveIsRealMember && firstTasks && <div className="border-t border-muted-teal/20 pt-3">{firstTasks}</div>}
+
         {effectiveIsRealMember ? (
           canLeave && (
             <button
@@ -179,6 +188,7 @@ export default function ProjectQuickActions({
             {t("joinCta")}
           </Link>
         )}
+        {!effectiveIsRealMember && firstTasks && <p className="-mt-1 text-center text-[10px] text-dark-slate/45">{tFirst("joinNote")}</p>}
       </div>
     </section>
   );

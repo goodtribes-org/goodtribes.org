@@ -23,6 +23,8 @@ import ProjectVoice from "./ProjectVoice";
 import CollapsibleStory from "./CollapsibleStory";
 import MemberNextSteps, { type NextStepItem } from "./MemberNextSteps";
 import FeedTabs from "./FeedTabs";
+import FirstTasksPanel from "./FirstTasksPanel";
+import { getOpenFirstTasks } from "@/lib/firstTasks";
 import ProjectTopNav from "./ProjectTopNav";
 import ProjectSideNav from "./ProjectSideNav";
 import PhaseMenuBar from "./PhaseMenuBar";
@@ -103,6 +105,7 @@ export default async function ProjectDetailPage({
   const session = await auth();
   const t = await getTranslations("ProjectDetailPage");
   const tPhase = await getTranslations("ProjectPhase");
+  const tFirst = await getTranslations("FirstTasks");
 
   const project = await prisma.project.findUnique({
     where: { slug },
@@ -310,11 +313,22 @@ export default async function ProjectDetailPage({
 
   const upcomingEvents = monthEvents.filter((e) => e.startsAt >= now);
 
+  // Första uppgifter (#277): open to visitors; leads see how many sign-ups wait.
+  const [openFirstTasks, pendingOffers] = await Promise.all([
+    isRealMember ? Promise.resolve([]) : getOpenFirstTasks(slug, userId ?? null),
+    isOwnerOrAdmin
+      ? prisma.taskOffer.findMany({ where: { status: "PENDING", card: { projectSlug: slug } }, select: { cardId: true }, orderBy: { createdAt: "asc" } })
+      : Promise.resolve([]),
+  ]);
+
   // Members' next steps (#275): what's waiting for them, at the top of the page.
   const memberNextSteps: NextStepItem[] = [];
   if (isRealMember && !project.abandonedAt) {
     const tChecklist = await getTranslations("ProjectPhaseChecklist");
     const inReview = kanbanCards.filter((c) => c.column === "REVIEW").length;
+    if (pendingOffers.length > 0) {
+      memberNextSteps.push({ key: "offers", label: t("nextStepOffers", { count: pendingOffers.length }), href: `/projects/${slug}/tasks?card=${pendingOffers[0].cardId}`, cta: t("nextStepOffersCta") });
+    }
     if (isOwnerOrAdmin && inReview > 0) {
       memberNextSteps.push({ key: "review", label: t("nextStepReview", { count: inReview }), href: `/projects/${slug}/tasks`, cta: t("nextStepReviewCta") });
     }
@@ -527,7 +541,33 @@ export default async function ProjectDetailPage({
                   </div>
                 )}
                 <div className="flex-1" />
-                {!isMember && (
+                {/* With open first tasks, the way in is one of them (#277); "gå med direkt" stays as a link. */}
+                {!isRealMember && openFirstTasks.length > 0 ? (
+                  <div className="mb-3">
+                    <a
+                      href="#forsta-uppgifter"
+                      className="flex justify-center w-full py-2.5 bg-coral text-white rounded-xl font-bold text-base hover:bg-coral/90 transition-colors shadow-md"
+                    >
+                      {tFirst("heroCta")}
+                    </a>
+                    <p className="mt-1.5 text-center text-[11px] text-dark-slate/60">
+                      {tFirst("heroCtaNote", { count: openFirstTasks.length })}{" "}
+                      {isMember ? null : userId ? (
+                        <JoinButton
+                          projectId={project.id}
+                          slug={slug}
+                          existingStatus={userJoinRequest?.status ?? null}
+                          label={tFirst("heroJoinDirect")}
+                          className="underline hover:text-coral"
+                        />
+                      ) : (
+                        <Link href={`/login?callbackUrl=${encodeURIComponent(`/projects/${slug}`)}`} className="underline hover:text-coral">
+                          {tFirst("heroJoinDirect")}
+                        </Link>
+                      )}
+                    </p>
+                  </div>
+                ) : !isMember && (
                   <div className="mb-3">
                     {userId ? (
                       <JoinButton
@@ -741,6 +781,11 @@ export default async function ProjectDetailPage({
             shareUrl={shareUrl}
             shareTitle={content.title}
             shareText={shareText}
+            firstTasks={
+              openFirstTasks.length > 0 ? (
+                <FirstTasksPanel tasks={openFirstTasks} slug={slug} projectTitle={content.title} userId={userId ?? null} />
+              ) : undefined
+            }
           />
 
           {/* Verified impact (PRD 4d) — renders nothing until the Foundation
