@@ -9,7 +9,6 @@ import PhaseGuide from "./PhaseGuide";
 import { getAutoDoneKeys } from "@/lib/projectSignals";
 import PhaseMenuBar from "../../PhaseMenuBar";
 import { Link } from "@/i18n/navigation";
-import { isFeatureEnabled } from "@/lib/featureFlags";
 
 // Idé has its own bespoke guide (see ../page.tsx and ../IdeaGuide.tsx) —
 // this generic, checklist-driven guide covers every phase after it.
@@ -50,8 +49,8 @@ export default async function PhaseGuidePage({
     SCALE: { href: "skala", namespace: "SkalaOverview" },
     IMPACT: { href: "impactfasen", namespace: "ImpactOverview" },
   };
-  const journeyOn = await isFeatureEnabled("ai-project-start", session.user.id);
-  const onePage = ONE_PAGE[phase] && journeyOn ? ONE_PAGE[phase] : null;
+  // The phase page exists for every project (#309): the guide links to it.
+  const onePage = ONE_PAGE[phase] ?? null;
   const tOnePage = await getTranslations({ locale, namespace: onePage?.namespace ?? "UppstartOverview" });
 
   const autoDoneKeys = await getAutoDoneKeys(project.id, slug);
@@ -66,7 +65,7 @@ export default async function PhaseGuidePage({
           canEdit={true}
           showNextStep
           viewingPhase={phase}
-          showOverviews={journeyOn}
+          showOverviews
         />
       </div>
       <div className="max-w-3xl mx-auto">

@@ -1,4 +1,4 @@
-import { DISPLAY_PHASES, getChecklistForPhase, toDisplayPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { DISPLAY_PHASES, getChecklistForPhase, overviewPathFor, toDisplayPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 
 // How far a project has come in each phase — what fills the phase bars
 // (docs/plans/fasframsteg-och-overblick.md). A checklist task counts as
@@ -204,10 +204,10 @@ export function nextStep(phase: ProjectPhaseValue, doneKeys: ReadonlySet<string>
 // on the one Idé phase page since 2026-10-03 (#206), so it goes there, never
 // to the step's old standalone page (an Idé item's href, e.g. "lean-canvas",
 // is only for the legacy guide). Later phases: the step's own page, or the
-// guide.
+// phase page (#309; it used to be the legacy guide).
 export function stepHref(slug: string, phase: ProjectPhaseValue, step: { key: string; href?: string }): string {
   const display = toDisplayPhase(phase);
   if (display === "IDEA") return `/projects/${slug}/ide?step=${step.key}`;
   if (step.href) return `/projects/${slug}/${step.href}`;
-  return `/projects/${slug}/guide/${display.toLowerCase()}?step=${step.key}`;
+  return `/projects/${slug}/${overviewPathFor(display)}`;
 }

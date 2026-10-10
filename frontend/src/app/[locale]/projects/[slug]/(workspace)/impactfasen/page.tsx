@@ -6,7 +6,6 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { Link } from "@/i18n/navigation";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
-import { isFeatureEnabled } from "@/lib/featureFlags";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { latestInsight } from "@/lib/ideaInsights";
 import type { GateBrief } from "@/lib/phaseGate";
@@ -35,11 +34,8 @@ export default async function ImpactOverviewPage({ params }: { params: Promise<{
   await notFoundUnlessVisible(slug);
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  const [journeyOn, project] = await Promise.all([
-    isFeatureEnabled("ai-project-start", session.user.id),
-    prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true } }),
-  ]);
-  if (!journeyOn) redirect(`/projects/${slug}/guide/impact`);
+  // The phase page for every project (#309); only its AI parts need AI.
+  const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true } });
   if (!project) notFound();
 
   const [t, tCheck, canEdit, isFounder, aiAvailable, fillRow, focusBrief, focusDecision, doneKeys, metrics, reports, summary, followup, nextBrief, cards, openCardCount] = await Promise.all([

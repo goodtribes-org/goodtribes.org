@@ -10,6 +10,6 @@ describe("stepHref", () => {
 
   it("keeps a later phase's own page, or its guide", () => {
     expect(stepHref("p", "PILOT", { key: "core_team_formed", href: "members" })).toBe("/projects/p/members");
-    expect(stepHref("p", "PILOT", { key: "x" })).toBe("/projects/p/guide/pilot?step=x");
+    expect(stepHref("p", "PILOT", { key: "x" })).toBe("/projects/p/uppstart");
   });
 });
