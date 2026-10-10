@@ -11,13 +11,14 @@ interface Props {
   projectSlug: string;
   canvas: Partial<Record<LeanCanvasField, string | null>> | null;
   canEdit: boolean;
+  canPropose?: boolean;
   // Per-field provenance, passed only when vet/antar marking is enabled.
   provenance?: Record<string, ProvenanceInfo>;
   // Pending AI suggestions per field (same flag).
   suggestions?: Record<string, { id: string; content: string }>;
 }
 
-export default function LeanCanvasGrid({ projectSlug, canvas, canEdit, provenance, suggestions }: Props) {
+export default function LeanCanvasGrid({ projectSlug, canvas, canEdit, canPropose, provenance, suggestions }: Props) {
   const tField = useTranslations("LeanCanvasHistory");
   const tHint = useTranslations("LeanCanvasFields");
   return (
@@ -35,6 +36,7 @@ export default function LeanCanvasGrid({ projectSlug, canvas, canEdit, provenanc
             hint={tHint(`hint${b.translationKey}` as Parameters<typeof tHint>[0])}
             value={canvas ? (canvas[b.field] ?? null) : null}
             canEdit={canEdit}
+            canPropose={canPropose}
             provenance={provenance ? (provenance[b.field] ?? null) : undefined}
             suggestion={suggestions?.[b.field]}
           />

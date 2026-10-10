@@ -111,6 +111,7 @@ model KanbanCard {
   dependents      KanbanCardDependency[]     @relation("CardDependencyOf")
   taskOffers      TaskOffer[]
   eventActions    EventAction[]              @relation("EventActions")
+  revisions       ProjectRevision[]          @relation("ProjectRevisionCards")
 
   @@unique([projectSlug, githubItemId])
   @@index([projectSlug, column])

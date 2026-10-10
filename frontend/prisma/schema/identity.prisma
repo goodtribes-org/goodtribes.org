@@ -54,6 +54,8 @@ model User {
   taskOffers              TaskOffer[]               @relation("TaskOffers")
   eventsCreated           Event[]                   @relation("EventsCreated")
   eventActions            EventAction[]             @relation("EventActions")
+  revisionsAuthored       ProjectRevision[]         @relation("ProjectRevisionsAuthored")
+  revisionsDecided        ProjectRevision[]         @relation("ProjectRevisionsDecided")
   createdMilestones       Milestone[]               @relation("MilestoneCreatedBy")
   activityEvents          ActivityEvent[]           @relation("ActivityEvents")
   createdProjectInvites   ProjectInvite[]           @relation("CreatedProjectInvites")

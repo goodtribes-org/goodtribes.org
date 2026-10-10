@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma"
 import { recordHumanEdits } from "@/lib/fieldProvenance";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { indexDocuments, deleteDocument } from "@/lib/meili";
+import { indexDocuments } from "@/lib/meili";
 import { hasProjectRole, isSiteAdmin, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
@@ -16,6 +16,7 @@ import { parseProjectInput } from "@/lib/github";
 import { syncProjectBoardInBackground } from "@/lib/githubSync";
 import { isColumnKey } from "@/lib/kanbanColumns";
 import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
+import { syncProjectSearch } from "@/lib/projectTextSave";
 import { enqueueProjectUpdatedFundingMatch } from "@/lib/fundingMatching";
 
 
@@ -164,23 +165,7 @@ export async function updateProject(slug: string, formData: FormData) {
 
   await updateGithubMapping(slug, formData.get("githubProject") as string | null);
 
-  // Sync Meilisearch — remove old slug entry if slug changed (slug doesn't change here, but keep in sync)
-  // A draft (#226) stays out of search until it is published.
-  if (!project.hiddenAt && project.publishedAt) {
-    void indexDocuments("projects", [{
-      id: `project-${slug}`,
-      type: "project",
-      title,
-      description: description ?? "",
-      url: `/projects/${slug}`,
-      phase: project.phase,
-      sdgGoals,
-      locale: "sv",
-    }]);
-  } else {
-    void deleteDocument("projects", `project-${slug}`);
-    void deleteDocument("projects", `project-${slug}__en`);
-  }
+  syncProjectSearch({ slug, title, description, phase: project.phase, sdgGoals, hiddenAt: project.hiddenAt, publishedAt: project.publishedAt });
 
   invalidateListCache(PROJECTS_LIST_TAG);
   revalidatePath(`/projects/${slug}`);

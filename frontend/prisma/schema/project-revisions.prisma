@@ -1,0 +1,37 @@
+// Föreslå en ändring (#290): anyone who isn't a lead proposes a new value
+// for a project's summary, description or a Social Lean Canvas field; a lead
+// accepts or declines it. GoodTribes' answer to a pull request — so that a
+// better sentence doesn't need a fork or a membership. Logic in
+// lib/projectRevisions.ts.
+
+enum ProjectRevisionStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model ProjectRevision {
+  id            String                @id @default(cuid())
+  projectId     String
+  project       Project               @relation("ProjectRevisions", fields: [projectId], references: [id], onDelete: Cascade)
+  authorId      String
+  author        User                  @relation("ProjectRevisionsAuthored", fields: [authorId], references: [id], onDelete: Cascade)
+  // "project.summary" | "project.description" | "leanCanvas.<field>"
+  field         String
+  // The value when the proposal was written, to show whether it changed since.
+  baseValue     String?               @db.Text
+  proposedValue String                @db.Text
+  reason        String?               @db.Text
+  status        ProjectRevisionStatus @default(PENDING)
+  decidedById   String?
+  decidedBy     User?                 @relation("ProjectRevisionsDecided", fields: [decidedById], references: [id], onDelete: SetNull)
+  decidedAt     DateTime?
+  decisionNote  String?               @db.Text
+  // The card that credits an accepted proposal (paid through moveKanbanCard).
+  cardId        String?
+  card          KanbanCard?           @relation("ProjectRevisionCards", fields: [cardId], references: [id], onDelete: SetNull)
+  createdAt     DateTime              @default(now())
+
+  @@index([projectId, status])
+  @@index([authorId])
+}

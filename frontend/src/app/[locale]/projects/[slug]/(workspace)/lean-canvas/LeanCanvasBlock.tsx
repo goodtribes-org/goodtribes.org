@@ -12,6 +12,7 @@ import { CANVAS_BLOCK_BORDER, CANVAS_BLOCK_SHADOW, canvasBlockStatus } from "@/l
 import { updateLeanCanvasBlock } from "./actions";
 import type { LeanCanvasField } from "./fields";
 import InlineBlockText from "@/components/canvas/InlineBlockText";
+import ProposeChange from "@/components/ProposeChange";
 
 interface Props {
   projectSlug: string;
@@ -21,6 +22,8 @@ interface Props {
   hint: string;
   value: string | null;
   canEdit: boolean;
+  // Logged in but not a lead (#290): may propose a new text instead.
+  canPropose?: boolean;
   // Present only when provenance marking is enabled (ai-project-start flag);
   // undefined hides the vet/antar badge entirely. null = no row for this field.
   provenance?: ProvenanceInfo | null;
@@ -28,7 +31,7 @@ interface Props {
   suggestion?: { id: string; content: string };
 }
 
-export default function LeanCanvasBlock({ projectSlug, field, area, label, hint, value, canEdit, provenance, suggestion }: Props) {
+export default function LeanCanvasBlock({ projectSlug, field, area, label, hint, value, canEdit, canPropose, provenance, suggestion }: Props) {
   const t = useTranslations("LeanCanvasBlock");
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -100,6 +103,7 @@ export default function LeanCanvasBlock({ projectSlug, field, area, label, hint,
         }}
         onSave={handleSave}
       />
+      {canPropose && !canEdit && <ProposeChange slug={projectSlug} fields={[{ field: `leanCanvas.${field}`, label, current: value }]} />}
       {!editing && <BlockIterateMenu projectSlug={projectSlug} entity="leanCanvas" field={field} hasContent={!!value?.trim()} />}
       {changed && !editing && <ChangeImpactHint projectSlug={projectSlug} fieldKey={`leanCanvas.${field}`} onClose={() => setChanged(false)} />}
       {suggestion && !editing && (
