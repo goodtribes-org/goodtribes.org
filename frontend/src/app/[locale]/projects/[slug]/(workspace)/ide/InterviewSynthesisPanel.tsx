@@ -116,7 +116,9 @@ export default function InterviewSynthesisPanel({
                       {v.reason && <p className="mt-1 text-dark-slate/75">{v.reason}</p>}
                       {v.interviewIds.length > 0 && (
                         <p className="mt-1 text-xs text-dark-slate/50">
-                          {t("basedOn")}: {v.interviewIds.map((id) => personaById[id] ?? "?").join(", ")}
+                          {v.interviewIds.some((id) => personaById[id])
+                            ? `${t("basedOn")}: ${v.interviewIds.map((id) => personaById[id] ?? "?").join(", ")}`
+                            : t("basedOnCount", { count: v.interviewIds.length })}
                         </p>
                       )}
                       {canEdit && v.verdict === "confirmed" && (
