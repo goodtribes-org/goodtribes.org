@@ -24,6 +24,7 @@ export const SITE_ADMIN_GROUPS: AdminNavGroup[] = [
   {
     title: "Människor",
     items: [
+      { href: "/site-admin/metrics", label: "Tratt och North Star", short: "Tratten" },
       { href: "/site-admin/users", label: "Användare" },
       { href: "/site-admin/organisations", label: "Organisationer" },
       { href: "/site-admin/council", label: "Granskningsrådet" },
