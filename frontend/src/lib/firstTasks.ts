@@ -238,3 +238,28 @@ export async function firstTaskSdgs(): Promise<number[]> {
   });
   return [...new Set(rows.flatMap((r) => r.sdgGoals))].sort((a, b) => a - b);
 }
+
+export type HelperToInvite = { userId: string; name: string | null; image: string | null; tasks: string[] };
+
+// Helpers who finished a first task (in Done) and aren't on the team yet —
+// for "Bjud in till teamet?" on the members page (#284). Followers count as
+// not on the team: taking a first task makes you one.
+export async function getHelpersToInvite(projectId: string, projectSlug: string): Promise<HelperToInvite[]> {
+  const [cards, team] = await Promise.all([
+    prisma.kanbanCard.findMany({
+      where: { projectSlug, openToPublic: true, column: "DONE", assigneeId: { not: null } },
+      orderBy: { updatedAt: "desc" },
+      select: { title: true, assignee: { select: { id: true, name: true, image: true } } },
+    }),
+    prisma.projectMember.findMany({ where: { projectId, NOT: { role: "FOLLOWER" } }, select: { userId: true } }),
+  ]);
+  const onTeam = new Set(team.map((m) => m.userId));
+  const byUser = new Map<string, HelperToInvite>();
+  for (const c of cards) {
+    if (!c.assignee || onTeam.has(c.assignee.id)) continue;
+    const h = byUser.get(c.assignee.id) ?? { userId: c.assignee.id, name: c.assignee.name, image: c.assignee.image, tasks: [] };
+    h.tasks.push(c.title);
+    byUser.set(c.assignee.id, h);
+  }
+  return [...byUser.values()];
+}

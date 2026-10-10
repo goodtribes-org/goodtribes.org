@@ -28,7 +28,8 @@ export type AiFeature =
   | "dream-conversation"
   | "canvas-review"
   | "impact-model"
-  | "critique";
+  | "critique"
+  | "first-tasks";
 
 // What kind of help the call gives, which decides which modes allow it:
 //   "agent"  — AI performs the work and writes a result (a card run, a

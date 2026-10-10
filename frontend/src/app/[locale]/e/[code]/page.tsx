@@ -11,6 +11,7 @@ import FirstTaskCard from "@/components/FirstTaskCard";
 import { EVENT_COOKIE, getEventByCode, getEventProgress, getEventProjectIds } from "@/lib/events";
 import { parseFirstTaskFilters, searchFirstTasks } from "@/lib/firstTasks";
 import EventFirstTaskForm from "./EventFirstTaskForm";
+import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 
 // The evening's page (#281), where the QR code lands: three steps — write
 // your dream, open a first task in it, help someone else in the room — with a
@@ -59,6 +60,7 @@ export default async function EventPage({ params, searchParams }: { params: Prom
     ? await searchFirstTasks(parseFirstTaskFilters({}), { take: 6 }, { notOwnedBy: userId })
     : { items: [], total: 0 };
   const moreItems = more.items.filter((m) => !fromTonight.items.some((x) => x.id === m.id));
+  const aiAvailable = userId ? await isAiProjectStartAvailable(userId) : false;
   const stepsDone = [progress.dreams.length > 0, progress.openedTask, progress.helped].filter(Boolean).length;
 
   return (
@@ -78,7 +80,7 @@ export default async function EventPage({ params, searchParams }: { params: Prom
 
       <Step n={2} done={progress.openedTask} title={t("step2Title")} body={progress.openedTask ? t("step2Done") : t("step2Body")}>
         {!progress.openedTask && progress.dreams.length > 0 && (
-          <EventFirstTaskForm dreams={progress.dreams.map((d) => ({ id: d.id, title: d.title, published: !!d.publishedAt }))} />
+          <EventFirstTaskForm dreams={progress.dreams.map((d) => ({ id: d.id, title: d.title, published: !!d.publishedAt }))} aiAvailable={aiAvailable} />
         )}
         {!progress.openedTask && progress.dreams.length === 0 && <p className="mt-2 text-xs text-[#6B726E]">{t("step2Waiting")}</p>}
       </Step>

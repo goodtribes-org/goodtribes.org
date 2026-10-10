@@ -9,7 +9,10 @@ import { logActivity } from "@/lib/activity";
 import { publishToKanban } from "@/lib/redis";
 import { hasProjectRole, isExcludedFromProject, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { logEventAction } from "@/lib/events";
-import { getTrackRecords, isOpenFirstTask, MAX_OFFER_TEXT, offersFull, parseFirstTaskFields } from "@/lib/firstTasks";
+import { suggestFirstTasks, type SuggestResult } from "@/lib/firstTaskSuggest";
+import { toDisplayPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
+import { getHelpersToInvite, getTrackRecords, isOpenFirstTask, MAX_OFFER_TEXT, offersFull, parseFirstTaskFields } from "@/lib/firstTasks";
 
 // Första uppgifter (#277): open a card for someone from outside, take it or
 // sign up for it, and — when the leads choose — pick one. Taking a card is
@@ -286,4 +289,69 @@ export async function listOffers(cardId: string): Promise<OfferView[] | { error:
       record: r ? { tasksDone: r.tasksDone, projects: r.projects, thanked: r.thanked, since: r.since.toISOString() } : null,
     };
   });
+}
+
+// ─── AI suggestions and opening a new first task (#284) ─────────────────────
+
+export async function suggestFirstTasksAction(projectId: string): Promise<SuggestResult | { ok: false; reason: "not_allowed" }> {
+  const user = await sessionUser();
+  if (!user || !(await hasProjectRole(projectId, user.id, PROJECT_LEAD_ROLES))) return { ok: false, reason: "not_allowed" };
+  return suggestFirstTasks(projectId, user.id);
+}
+
+// Leads only: a new card, opened as a first task straight away (from a
+// suggestion or written by hand). A draft's task is only seen once the
+// project is published — the prompt says so; it doesn't publish by itself.
+export async function createFirstTask(projectId: string, title: unknown, raw: unknown): Promise<Result> {
+  const user = await sessionUser();
+  if (!user) return { error: "Not logged in" };
+  const name = typeof title === "string" ? title.trim().slice(0, 200) : "";
+  if (!name) return { error: "A task needs a title" };
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { id: true, slug: true, phase: true } });
+  if (!project || !(await hasProjectRole(project.id, user.id, PROJECT_LEAD_ROLES))) return { error: "Not authorized" };
+  const f = parseFirstTaskFields(raw);
+  const card = await prisma.kanbanCard.create({
+    data: {
+      projectSlug: project.slug, title: name, column: "TODO", createdById: user.id,
+      phase: toDisplayPhase(project.phase as ProjectPhaseValue),
+      openToPublic: true,
+      firstTaskWhy: f.why, firstTaskTime: f.time, firstTaskPlace: f.place,
+      firstTaskChoose: f.choose, firstTaskQuestion: f.question, firstTaskMaxOffers: f.maxOffers,
+    },
+  });
+  publishToKanban(project.slug, { action: "created", card });
+  await logEventAction("FIRST_TASK", user.id, { cardId: card.id, projectId: project.id });
+  refresh(project.slug);
+  return { ok: true };
+}
+
+// Leads only: someone who finished a first task joins the team (#284). Only
+// for a helper the members page offers — one with a first task in Done here —
+// so this can't add an arbitrary account.
+export async function inviteHelperToTeam(projectId: string, helperId: string): Promise<Result> {
+  const user = await sessionUser();
+  if (!user) return { error: "Not logged in" };
+  const project = await prisma.project.findUnique({ where: { id: projectId }, select: { id: true, slug: true, title: true } });
+  if (!project || !(await hasProjectRole(project.id, user.id, PROJECT_LEAD_ROLES))) return { error: "Not authorized" };
+  const helpers = await getHelpersToInvite(project.id, project.slug);
+  if (!helpers.some((h) => h.userId === helperId)) return { error: "Not a helper here" };
+  if (await isExcludedFromProject(helperId, project.id)) return { error: "Not allowed" };
+
+  await prisma.projectMember.upsert({
+    where: { projectId_userId: { projectId: project.id, userId: helperId } },
+    create: { projectId: project.id, userId: helperId, role: "MEMBER" },
+    update: { role: "MEMBER" },
+  });
+  invalidateListCache(PROJECTS_LIST_TAG);
+  await logActivity(project.id, helperId, "member_joined");
+  const t = await getTranslations("FirstTasks");
+  await createNotification({
+    userId: helperId,
+    type: "added_to_project",
+    title: t("notifyJoinedTeam", { project: project.title }),
+    url: `/projects/${project.slug}`,
+  });
+  revalidatePath(`/projects/${project.slug}/members`);
+  refresh(project.slug);
+  return { ok: true };
 }
