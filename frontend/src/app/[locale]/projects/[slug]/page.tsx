@@ -25,6 +25,8 @@ import MemberNextSteps, { type NextStepItem } from "./MemberNextSteps";
 import FeedTabs from "./FeedTabs";
 import FirstTasksPanel from "./FirstTasksPanel";
 import { getOpenFirstTasks } from "@/lib/firstTasks";
+import FirstTaskPrompt from "./FirstTaskPrompt";
+import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import ProjectTopNav from "./ProjectTopNav";
 import ProjectSideNav from "./ProjectSideNav";
 import PhaseMenuBar from "./PhaseMenuBar";
@@ -314,11 +316,16 @@ export default async function ProjectDetailPage({
   const upcomingEvents = monthEvents.filter((e) => e.startsAt >= now);
 
   // Första uppgifter (#277): open to visitors; leads see how many sign-ups wait.
-  const [openFirstTasks, pendingOffers] = await Promise.all([
+  const [openFirstTasks, pendingOffers, leadOpenFirstTaskCount, aiForPrompt] = await Promise.all([
     isRealMember ? Promise.resolve([]) : getOpenFirstTasks(slug, userId ?? null),
     isOwnerOrAdmin
       ? prisma.taskOffer.findMany({ where: { status: "PENDING", card: { projectSlug: slug } }, select: { cardId: true }, orderBy: { createdAt: "asc" } })
       : Promise.resolve([]),
+    // #284: leads are asked for a first task until one is open.
+    isOwnerOrAdmin && !project.abandonedAt
+      ? prisma.kanbanCard.count({ where: { projectSlug: slug, openToPublic: true, column: { not: "DONE" } } })
+      : Promise.resolve(1),
+    isOwnerOrAdmin ? isAiProjectStartAvailable(userId) : Promise.resolve(false),
   ]);
 
   // Members' next steps (#275): what's waiting for them, at the top of the page.
@@ -695,6 +702,10 @@ export default async function ProjectDetailPage({
             heading={session?.user?.name ? t("nextStepsHeading", { name: session.user.name.split(" ")[0] }) : t("nextStepsHeadingNoName")}
             items={memberNextSteps}
           />
+
+          {isOwnerOrAdmin && leadOpenFirstTaskCount === 0 && (
+            <FirstTaskPrompt projectId={project.id} published={!!project.publishedAt} aiAvailable={aiForPrompt} />
+          )}
 
           {isRealMember && feedSection}
 

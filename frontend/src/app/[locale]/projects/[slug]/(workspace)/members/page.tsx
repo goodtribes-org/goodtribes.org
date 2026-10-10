@@ -3,6 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import MembersManager from "./MembersManager";
+import HelpersToInvite from "./HelpersToInvite";
+import { getHelpersToInvite } from "@/lib/firstTasks";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { isLeadRole, isSiteAdmin } from "@/lib/authz";
@@ -19,8 +21,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: L
   return { title: `${project.title} — ${t("metaTitleSuffix")}` };
 }
 
-export default async function MembersPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function MembersPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ helper?: string }> }) {
   const { slug } = await params;
+  const { helper } = await searchParams;
   await notFoundUnlessVisible(slug);
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
@@ -47,27 +50,31 @@ export default async function MembersPage({ params }: { params: Promise<{ slug: 
   const viewerIsSiteAdmin = await isSiteAdmin(session.user.id);
   const isOwnerOrAdmin = isLeadRole(membership?.role) || viewerIsSiteAdmin;
   if (!isOwnerOrAdmin) redirect(`/projects/${slug}`);
+  const helpers = await getHelpersToInvite(project.id, slug);
 
   return (
-    <MembersManager
-      project={{ id: project.id, slug, title: project.title }}
-      viewerRole={membership?.role ?? null}
-      viewerIsSiteAdmin={viewerIsSiteAdmin}
-      members={project.members.map((m) => ({
-        userId: m.user.id,
-        name: m.user.name,
-        image: m.user.image,
-        email: m.user.email,
-        role: m.role,
-        joinedAt: m.joinedAt.toISOString(),
-      }))}
-      joinRequests={project.joinRequests.map((r) => ({
-        id: r.id,
-        message: r.message,
-        user: r.user,
-        createdAt: r.createdAt.toISOString(),
-      }))}
-      currentUserId={session.user.id}
-    />
+    <>
+      <HelpersToInvite projectId={project.id} helpers={helpers} highlight={helper ?? null} />
+      <MembersManager
+        project={{ id: project.id, slug, title: project.title }}
+        viewerRole={membership?.role ?? null}
+        viewerIsSiteAdmin={viewerIsSiteAdmin}
+        members={project.members.map((m) => ({
+          userId: m.user.id,
+          name: m.user.name,
+          image: m.user.image,
+          email: m.user.email,
+          role: m.role,
+          joinedAt: m.joinedAt.toISOString(),
+        }))}
+        joinRequests={project.joinRequests.map((r) => ({
+          id: r.id,
+          message: r.message,
+          user: r.user,
+          createdAt: r.createdAt.toISOString(),
+        }))}
+        currentUserId={session.user.id}
+      />
+    </>
   );
 }

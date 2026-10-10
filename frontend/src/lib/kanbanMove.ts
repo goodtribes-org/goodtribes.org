@@ -179,6 +179,7 @@ export async function moveKanbanCard(cardId: string, newColumn: string, userId: 
         url: `/projects/${card.projectSlug}/tokens`,
       });
     }
+    if (card.openToPublic) await suggestInvite(project.id, card.id);
   }
 
   // Moving a card back out of Done means its completion no longer stands —
@@ -213,4 +214,35 @@ export async function moveKanbanCard(cardId: string, newColumn: string, userId: 
   revalidatePath(`/projects/${card.projectSlug}/tokens`);
 
   return { ok: true, card: updated };
+}
+
+// A helper's first task landed in Done (#284): ask the leads whether to
+// invite them to the team. Only for someone who isn't a real member yet, and
+// only once per card. Best-effort — never undoes the move.
+async function suggestInvite(projectId: string, cardId: string) {
+  try {
+    const card = await prisma.kanbanCard.findUnique({ where: { id: cardId }, select: { assigneeId: true, projectSlug: true } });
+    if (!card?.assigneeId || (await isRealMember(projectId, card.assigneeId))) return;
+    const url = `/projects/${card.projectSlug}/members?helper=${card.assigneeId}`;
+    if (await prisma.notification.findFirst({ where: { type: "first_task_invite", url }, select: { id: true } })) return;
+    const [helper, project, leads] = await Promise.all([
+      prisma.user.findUnique({ where: { id: card.assigneeId }, select: { name: true } }),
+      prisma.project.findUnique({ where: { id: projectId }, select: { title: true } }),
+      prisma.projectMember.findMany({ where: { projectId, role: { in: [...PROJECT_LEAD_ROLES] } }, select: { userId: true } }),
+    ]);
+    const { getTranslations } = await import("next-intl/server");
+    const t = await getTranslations("FirstTasks");
+    await Promise.all(
+      leads.map((l) =>
+        createNotification({
+          userId: l.userId,
+          type: "first_task_invite",
+          title: t("notifyInvite", { name: helper?.name ?? t("someone"), project: project?.title ?? "" }),
+          url,
+        }),
+      ),
+    );
+  } catch {
+    // best-effort
+  }
 }
