@@ -302,7 +302,10 @@ export async function suggestFirstTasksAction(projectId: string): Promise<Sugges
 // Leads only: a new card, opened as a first task straight away (from a
 // suggestion or written by hand). A draft's task is only seen once the
 // project is published — the prompt says so; it doesn't publish by itself.
-export async function createFirstTask(projectId: string, title: unknown, raw: unknown): Promise<Result> {
+// Nothing is revalidated here: in a server action that re-renders the current
+// page, which would unmount the prompt before its "open" confirmation shows.
+// The board gets the card live (publishToKanban); pages are dynamic.
+export async function createFirstTask(projectId: string, title: unknown, raw: unknown): Promise<{ ok: true; cardId: string } | { error: string }> {
   const user = await sessionUser();
   if (!user) return { error: "Not logged in" };
   const name = typeof title === "string" ? title.trim().slice(0, 200) : "";
@@ -321,8 +324,7 @@ export async function createFirstTask(projectId: string, title: unknown, raw: un
   });
   publishToKanban(project.slug, { action: "created", card });
   await logEventAction("FIRST_TASK", user.id, { cardId: card.id, projectId: project.id });
-  refresh(project.slug);
-  return { ok: true };
+  return { ok: true, cardId: card.id };
 }
 
 // Leads only: someone who finished a first task joins the team (#284). Only

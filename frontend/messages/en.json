@@ -5504,7 +5504,9 @@
     "helpersIntro": "These people have done a first task in the project but aren't on the team yet.",
     "helperDid": "Did: {tasks}",
     "inviteToTeam": "Invite to the team",
-    "helperInvited": "On the team ✓"
+    "helperInvited": "On the team ✓",
+    "openedHeading": "{count, plural, one {The task is open} other {# tasks are open}}",
+    "openedNote": "It now shows on the project page and under First tasks. You'll get a notification when someone takes it or signs up."
   },
   "FirstTasksDiscover": {
     "allSdgs": "All global goals",

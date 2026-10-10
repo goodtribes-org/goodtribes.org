@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import type { FirstTaskSuggestion } from "@/lib/firstTaskSuggest";
 import { createFirstTask, suggestFirstTasksAction } from "./first-task-actions";
@@ -12,9 +12,10 @@ import { createFirstTask, suggestFirstTasksAction } from "./first-task-actions";
 // a first task on the board and on the project page.
 const TIMES = ["MIN15", "HOUR1", "HOURS2_4", "RECURRING"] as const;
 
-export default function FirstTaskPrompt({ projectId, published, aiAvailable }: { projectId: string; published: boolean; aiAvailable: boolean }) {
+export default function FirstTaskPrompt({ projectId, slug, published, aiAvailable }: { projectId: string; slug: string; published: boolean; aiAvailable: boolean }) {
   const t = useTranslations("FirstTasks");
-  const router = useRouter();
+  const [opened, setOpened] = useState<{ cardId: string; title: string }[]>([]);
+  const [openError, setOpenError] = useState(false);
   const [suggestions, setSuggestions] = useState<FirstTaskSuggestion[] | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
   const [title, setTitle] = useState("");
@@ -36,9 +37,13 @@ export default function FirstTaskPrompt({ projectId, published, aiAvailable }: {
     });
   }
   function open(fields: { title: string; why: string; time: string | null; choose: boolean; question: string | null }) {
+    setOpenError(false);
     startOpen(async () => {
       const r = await createFirstTask(projectId, fields.title, { why: fields.why, time: fields.time, choose: fields.choose, question: fields.question });
-      if ("ok" in r) router.refresh();
+      if (!("ok" in r)) return setOpenError(true);
+      setOpened((v) => [...v, { cardId: r.cardId, title: fields.title }]);
+      setSuggestions((v) => v?.filter((s) => s.title !== fields.title) ?? null);
+      setWriting(false); setTitle(""); setWhy(""); setTime(null); setChoose(false); setQuestion("");
     });
   }
   function edit(s: FirstTaskSuggestion) {
@@ -62,8 +67,23 @@ export default function FirstTaskPrompt({ projectId, published, aiAvailable }: {
         </button>
       </div>
       {aiError && <p className="mt-2 text-sm text-watermelon">{aiError}</p>}
+      {openError && <p className="mt-2 text-sm text-watermelon">{t("error")}</p>}
 
-      {suggestions && (
+      {opened.length > 0 && (
+        <div className="mt-3 rounded-lg border border-seagrass/40 bg-white p-3">
+          <p className="text-sm font-semibold text-seagrass">{t("openedHeading", { count: opened.length })}</p>
+          <ul className="mt-1 space-y-0.5 text-sm">
+            {opened.map((o) => (
+              <li key={o.cardId}>
+                ✓ <Link href={`/projects/${slug}/tasks?card=${o.cardId}`} className="text-dark-slate underline-offset-2 hover:underline">{o.title}</Link>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-1 text-xs text-dark-slate/60">{published ? t("openedNote") : t("promptDraftNote")}</p>
+        </div>
+      )}
+
+      {suggestions && suggestions.length > 0 && (
         <ul className="mt-3 space-y-2">
           {suggestions.map((s) => (
             <li key={s.title} className="rounded-lg border border-muted-teal/30 bg-white p-3">
