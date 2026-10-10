@@ -50,6 +50,16 @@ model KanbanCard {
   assigneeId  String?
   openToPublic Boolean  @default(false)
   claimedAt   DateTime?
+  // A "första uppgift" (#277): an openToPublic card written for someone from
+  // outside — why it matters, roughly how long, where, and whether the
+  // project's leads choose among those who sign up (with an optional question
+  // to them, and a cap on sign-ups). Tokens are paid as for every card.
+  firstTaskWhy       String?
+  firstTaskTime      FirstTaskTime?
+  firstTaskPlace     String?   // null = remote
+  firstTaskChoose    Boolean   @default(false)
+  firstTaskQuestion  String?
+  firstTaskMaxOffers Int?
   column      String    @default("BACKLOG")
   order       Int       @default(0)
   createdById String
@@ -99,6 +109,7 @@ model KanbanCard {
   priorityChanges KanbanCardPriorityChange[]
   dependencies    KanbanCardDependency[]     @relation("CardDependsOn")
   dependents      KanbanCardDependency[]     @relation("CardDependencyOf")
+  taskOffers      TaskOffer[]
 
   @@unique([projectSlug, githubItemId])
   @@index([projectSlug, column])
@@ -325,4 +336,39 @@ model ProjectGithubBoard {
   lastSyncError  String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+}
+
+// Roughly how long a första uppgift takes, as the helper reads it.
+enum FirstTaskTime {
+  MIN15
+  HOUR1
+  HOURS2_4
+  RECURRING
+}
+
+enum TaskOfferStatus {
+  PENDING
+  CHOSEN
+  DECLINED
+  WITHDRAWN
+}
+
+// Someone from outside signing up for a första uppgift whose leads choose
+// (#277). Choosing one makes them the card's assignee, as claimCard does;
+// the others are thanked. One sign-up per person and card.
+model TaskOffer {
+  id        String          @id @default(cuid())
+  cardId    String
+  card      KanbanCard      @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User            @relation("TaskOffers", fields: [userId], references: [id], onDelete: Cascade)
+  answer    String?         @db.Text // to the card's firstTaskQuestion
+  message   String?         @db.Text
+  status    TaskOfferStatus @default(PENDING)
+  decidedAt DateTime?
+  createdAt DateTime        @default(now())
+
+  @@unique([cardId, userId])
+  @@index([cardId, status])
+  @@index([userId])
 }
