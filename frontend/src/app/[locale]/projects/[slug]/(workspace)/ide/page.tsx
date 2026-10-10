@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
+import { decidedSince, lastRestartAt } from "@/lib/phaseRestart";
 import FirstTaskPrompt from "../../FirstTaskPrompt";
 import { canSeeInterviewNotes } from "@/lib/interviewAccess";
 import { notFound, redirect } from "next/navigation";
@@ -93,6 +94,8 @@ export default async function IdeaOverviewPage({
     }),
   ]);
   if (!project) notFound();
+  // A restart (#313) reopens this phase's gate: only decisions since then count.
+  const restartAt = await lastRestartAt(project.id);
 
   const [
     t, fieldLabels, canEdit, projectProv, leanCanvasAi, valuePropositionAi, marketScan, interviewGuide, interviews,
@@ -116,7 +119,7 @@ export default async function IdeaOverviewPage({
     hasProjectRole(project.id, session.user.id, ["FOUNDER"]),
     ideaGateCriteria(project.id, slug),
     latestInsight<GateBrief>(project.id, "PHASE_GATE"),
-    prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: { in: ["IDEA", "SPRINT"] } }, orderBy: { createdAt: "desc" } }),
+    prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, ...decidedSince(restartAt), fromPhase: { in: ["IDEA", "SPRINT"] } }, orderBy: { createdAt: "desc" } }),
     getCanvasAiContext(project.id, "impactModel"),
   ]);
   const inIdeaPhase = project.phase === "IDEA" || project.phase === "SPRINT";

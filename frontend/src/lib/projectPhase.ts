@@ -54,6 +54,19 @@ export const PHASE_OVERVIEW_PATH: Record<Exclude<ProjectPhaseValue, "SPRINT">, s
   IMPACT: "impactfasen",
 };
 
+// Starta om från en tidigare fas (#313; lib/phaseRestart.ts). Where a phase
+// sits in the visible order, the earlier ones a project can restart from, and
+// whether a move goes backwards.
+export function phaseIndex(phase: ProjectPhaseValue): number {
+  return DISPLAY_PHASES.findIndex((p) => p.value === toDisplayPhase(phase));
+}
+
+export function earlierPhases(phase: ProjectPhaseValue): ProjectPhaseValue[] {
+  return DISPLAY_PHASES.slice(0, Math.max(0, phaseIndex(phase))).map((p) => p.value as ProjectPhaseValue);
+}
+
+export const isMoveBack = (from: ProjectPhaseValue | null, to: ProjectPhaseValue) => !!from && phaseIndex(to) < phaseIndex(from);
+
 export function overviewPathFor(phase: ProjectPhaseValue): string {
   return PHASE_OVERVIEW_PATH[toDisplayPhase(phase)];
 }

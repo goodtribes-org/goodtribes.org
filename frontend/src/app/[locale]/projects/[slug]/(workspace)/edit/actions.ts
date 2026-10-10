@@ -10,13 +10,14 @@ import { indexDocuments } from "@/lib/meili";
 import { hasProjectRole, isSiteAdmin, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isCommercialLegalType } from "@/lib/legalType";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
-import { PROJECT_PHASE_LABEL, getNextPhase, toDisplayPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { PROJECT_PHASE_LABEL, getNextPhase, isMoveBack, isValidProjectPhase, toDisplayPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 import { notifyIdeaAuthor } from "@/lib/ideaOutcome";
 import { parseProjectInput } from "@/lib/github";
 import { syncProjectBoardInBackground } from "@/lib/githubSync";
 import { isColumnKey } from "@/lib/kanbanColumns";
 import { PROJECTS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
 import { syncProjectSearch } from "@/lib/projectTextSave";
+import { logActivity } from "@/lib/activity";
 import { enqueueProjectUpdatedFundingMatch } from "@/lib/fundingMatching";
 
 
@@ -315,4 +316,34 @@ export async function upsertChecklistItemDates(
   });
 
   revalidatePath(`/projects/${slug}/roadmap`);
+}
+
+// Starta om från en tidigare fas (#313): the one exception to "phases only go
+// forward" (PRD 4d), for a team that starts over. A lead or site admin picks
+// an earlier phase and says why; nothing is deleted — earlier decisions,
+// ticks and documents stay, and the reopened gates only read decisions made
+// after this (lib/phaseRestart.ts). Shown in the project's activity feed.
+const MIN_RESTART_NOTE = 10;
+const MAX_RESTART_NOTE = 1000;
+
+export async function restartFromPhase(slug: string, toPhase: string, note: string): Promise<{ ok: true } | { error: "not_allowed" | "invalid_phase" | "note_required" }> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { error: "not_allowed" };
+  const project = await prisma.project.findUnique({ where: { slug } });
+  if (!project) return { error: "not_allowed" };
+  if (!(await hasProjectRole(project.id, userId, PROJECT_LEAD_ROLES)) && !(await isSiteAdmin(userId))) return { error: "not_allowed" };
+  if (!isValidProjectPhase(toPhase) || !isMoveBack(project.phase as ProjectPhaseValue, toPhase)) return { error: "invalid_phase" };
+  const why = note.trim().slice(0, MAX_RESTART_NOTE);
+  if (why.length < MIN_RESTART_NOTE) return { error: "note_required" };
+
+  await prisma.$transaction([
+    prisma.project.update({ where: { id: project.id }, data: { phase: toPhase, checklistDismissedAt: null, abandonedAt: null } }),
+    prisma.phaseTransition.create({ data: { projectId: project.id, fromPhase: project.phase, toPhase, changedById: userId } }),
+  ]);
+  await logActivity(project.id, userId, "phase_restarted", { title: PROJECT_PHASE_LABEL[toDisplayPhase(toPhase)], description: why, fromPhase: project.phase, toPhase });
+  syncProjectSearch({ slug, title: project.title, description: project.description, phase: toPhase, sdgGoals: project.sdgGoals, hiddenAt: project.hiddenAt, publishedAt: project.publishedAt });
+  invalidateListCache(PROJECTS_LIST_TAG);
+  revalidatePath(`/projects/${slug}`, "layout");
+  return { ok: true };
 }

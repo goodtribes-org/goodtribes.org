@@ -133,7 +133,8 @@ export async function fetchActivityItems(
           }),
       prisma.activityEvent.findMany({
         where: {
-          type: { in: ["task_completed", "task_created", "task_moved", "todo_completed", "member_joined"] },
+          // A restart (#313) shows in the project's own feed, not the platform-wide one.
+          type: { in: ["task_completed", "task_created", "task_moved", "todo_completed", "member_joined", ...(opts ? ["phase_restarted"] : [])] },
           ...(opts ? { projectId: opts.projectId } : { project: PUBLIC_PROJECT_WHERE }),
         },
         orderBy: { createdAt: "desc" },
@@ -263,6 +264,8 @@ export async function fetchActivityItems(
               title: payload.title,
               column: columnLabel[payload.toColumn ?? ""] ?? payload.toColumn ?? "",
             })
+          : a.type === "phase_restarted" && payload?.title
+          ? t("phaseRestarted", { phase: payload.title })
           : a.type === "tool_edited" && payload?.tool && t.has(`tools.${payload.tool}`)
           ? t("toolEdited", { tool: t(`tools.${payload.tool}`) })
           : activityLabel[a.type] ?? t("genericActivity");

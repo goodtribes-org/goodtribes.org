@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { decidedSince, lastRestartAt } from "@/lib/phaseRestart";
 import { isWrittenPhaseWiki } from "@/lib/phaseWikiTemplates";
 import { prisma } from "@/lib/prisma";
 import { autoDoneKeys, type ProjectSignals } from "@/lib/phaseProgress";
@@ -40,7 +41,8 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
     prisma.sprintContribution.count({ where: { type: "FEEDBACK", sprintPhase: { phase: "VALIDATE", sprint: { projectSlug: slug } } } }),
     prisma.projectRoleNeed.findMany({ where: { projectId }, select: { filledById: true } }),
     prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true, executionNotes: true, resultsSummary: true } }),
-    prisma.phaseGateDecision.findFirst({ where: { projectId, fromPhase: "PRODUCTION" }, select: { id: true } }),
+    // Since the latest restart (#313): a moved-back project decides again.
+    lastRestartAt(projectId).then((restartAt) => prisma.phaseGateDecision.findFirst({ where: { projectId, fromPhase: "PRODUCTION", ...decidedSince(restartAt) }, select: { id: true } })),
     prisma.impactMetric.count({ where: { projectSlug: slug } }),
     prisma.launchPlan.findUnique({ where: { projectSlug: slug }, select: { targetAudience: true, positioning: true } }),
     prisma.wikiPage.findMany({ where: { projectSlug: slug, slug: { in: ["arbetsfloden", "playbook"] } }, select: { slug: true, content: true } }),
