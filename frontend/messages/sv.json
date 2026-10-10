@@ -3214,7 +3214,8 @@
       "wiki": "wikin",
       "polls": "omröstningarna"
     },
-    "toolEdited": "arbetade i {tool}"
+    "toolEdited": "arbetade i {tool}",
+    "phaseRestarted": "startade om från fasen {phase}"
   },
   "MembersFilter": {
     "filterBySkill": "Filtrera efter kompetens",
@@ -5681,6 +5682,21 @@
       "already_decided": "Någon har redan bestämt om förslaget.",
       "invalid": "Något gick fel.",
       "generic": "Något gick fel. Försök igen."
+    }
+  },
+  "RestartPhase": {
+    "heading": "Starta om från en tidigare fas",
+    "intro": "För ett projekt som börjar om. Projektet flyttas till fasen du väljer och dess fasgrindar öppnas igen. Inget raderas: tidigare beslut, avbockningar och dokument finns kvar, och flytten syns i projektets flöde.",
+    "toLabel": "Starta om från",
+    "noteLabel": "Varför startar ni om?",
+    "notePlaceholder": "Till exempel: vi tar upp verksamheten igen efter ett uppehåll och vill börja med att förstå behovet i dag.",
+    "submit": "Starta om",
+    "saving": "Flyttar …",
+    "confirm": "Flytta projektet till {phase}? Inget raderas.",
+    "error": {
+      "not_allowed": "Bara projektets ledare kan starta om.",
+      "invalid_phase": "Välj en fas före den nuvarande.",
+      "note_required": "Skriv några ord om varför (minst 10 tecken)."
     }
   }
 }

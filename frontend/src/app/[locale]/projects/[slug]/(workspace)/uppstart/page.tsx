@@ -1,4 +1,5 @@
 import { notFoundUnlessVisible } from "@/lib/projectDraftGate";
+import { decidedSince, lastRestartAt } from "@/lib/phaseRestart";
 import { resolveAiMode } from "@/lib/aiMode";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -46,6 +47,8 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
   // The phase page for every project (#309); only its AI parts need AI.
   const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true, title: true } });
   if (!project) notFound();
+  // A restart (#313) reopens this phase's gate: only decisions since then count.
+  const restartAt = await lastRestartAt(project.id);
 
   const [t, tCheck, canEdit, aiConfigured, fillRow, brief, decision, done, roles, members, sprint, sprintPlan, cards, openCardCount, plan, tGate, fieldLabels, isFounder, gate, gateBrief, gateDecision] =
     await Promise.all([
@@ -87,7 +90,7 @@ export default async function UppstartOverviewPage({ params }: { params: Promise
       hasProjectRole(project.id, session.user.id, ["FOUNDER"]),
       uppstartGateCriteria(project.id, slug),
       latestInsight<GateBrief>(project.id, "UPPSTART_GATE"),
-      prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: "PILOT" }, orderBy: { createdAt: "desc" } }),
+      prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, ...decidedSince(restartAt), fromPhase: "PILOT" }, orderBy: { createdAt: "desc" } }),
     ]);
   // AI only where the project uses it (#310): a project or phase set to
   // MANUAL sees no AI buttons and no claims that the AI drafted anything.

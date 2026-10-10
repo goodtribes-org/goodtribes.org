@@ -3214,7 +3214,8 @@
       "wiki": "the wiki",
       "polls": "the polls"
     },
-    "toolEdited": "worked on {tool}"
+    "toolEdited": "worked on {tool}",
+    "phaseRestarted": "restarted from the {phase} phase"
   },
   "MembersFilter": {
     "filterBySkill": "Filter by skill",
@@ -5681,6 +5682,21 @@
       "already_decided": "Someone has already decided on this suggestion.",
       "invalid": "Something went wrong.",
       "generic": "Something went wrong. Try again."
+    }
+  },
+  "RestartPhase": {
+    "heading": "Restart from an earlier phase",
+    "intro": "For a project that starts over. The project moves to the phase you choose and its phase gates open again. Nothing is deleted: earlier decisions, ticks and documents stay, and the move shows in the project feed.",
+    "toLabel": "Restart from",
+    "noteLabel": "Why are you restarting?",
+    "notePlaceholder": "For example: we are picking the work up again after a break and want to start by understanding the need today.",
+    "submit": "Restart",
+    "saving": "Moving …",
+    "confirm": "Move the project to {phase}? Nothing is deleted.",
+    "error": {
+      "not_allowed": "Only the project leads can restart.",
+      "invalid_phase": "Choose a phase before the current one.",
+      "note_required": "Write a few words about why (at least 10 characters)."
     }
   }
 }

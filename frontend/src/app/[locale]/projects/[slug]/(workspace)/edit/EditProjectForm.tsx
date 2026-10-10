@@ -4,6 +4,7 @@ import { useState, useTransition, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { updateProject, advanceProjectPhase, requestInvoicing, toggleChecklistItem, updateGithubColumnMap } from "./actions";
 import PublishSection from "./PublishSection";
+import RestartPhase from "./RestartPhase";
 import { COLUMNS, COLUMN_LABEL_KEYS } from "@/lib/kanbanColumns";
 import { columnForStatus } from "@/lib/githubColumnMap";
 import { markProjectAbandoned, unmarkProjectAbandoned, transferOwnership } from "@/app/[locale]/projects/[slug]/ownership-actions";
@@ -276,6 +277,8 @@ export default function EditProjectForm({ slug, projectId, showTranslationSugges
           <span className="text-xs text-dark-slate/40 flex-shrink-0">{t("finalPhaseReached")}</span>
         )}
       </div>
+
+      {isValidProjectPhase(initial.phase) && <RestartPhase slug={slug} phase={initial.phase} />}
 
       <PublishSection slug={slug} publishedAt={initial.publishedAt} blockers={unpublishBlockers} missing={publishMissing} />
 
