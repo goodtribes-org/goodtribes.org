@@ -174,3 +174,33 @@ describe("phaseProgress", () => {
     expect(isPhaseFinished({ complete: false }, { done: 3, total: 3 })).toBe(false);
   });
 });
+
+describe("AI work waiting in Granskas (#271)", () => {
+  const filledIdea: ProjectSignals = {
+    ...none,
+    dreamConfirmed: true,
+    sdgCount: 3,
+    leanCanvasFilled: 11,
+    valuePropositionFilled: 6,
+    impactModelFilled: 5,
+    impactModelFields: 5,
+    marketScanCount: 4,
+  };
+
+  it("a filled Idé phase counts as done once nothing waits for review", () => {
+    expect(autoDoneKeys(filledIdea)).toEqual(
+      expect.arrayContaining(["dream_defined", "ai_reviewed", "lean_canvas_created", "value_proposition_created", "impact_model_created", "market_scan_partners"]),
+    );
+  });
+
+  it("steps whose card waits in Granskas aren't done, however full the canvas", () => {
+    const waiting = ["dream_defined", "ai_reviewed", "lean_canvas_created", "value_proposition_created", "impact_model_created", "market_scan_partners"];
+    expect(autoDoneKeys({ ...filledIdea, ideaStepsInReview: waiting })).toEqual([]);
+  });
+
+  it("only the steps still in review are held back", () => {
+    const keys = autoDoneKeys({ ...filledIdea, ideaStepsInReview: ["lean_canvas_created"] });
+    expect(keys).not.toContain("lean_canvas_created");
+    expect(keys).toContain("value_proposition_created");
+  });
+});

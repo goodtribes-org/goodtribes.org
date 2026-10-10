@@ -154,8 +154,10 @@ export default async function IdeaOverviewPage({
     Object.values(prov).some((p) => p?.author === "AI" && p.status !== "VET");
   // Unanswered AI guesses win over "done": a step ticked off while the AI's
   // guesses in it are still waiting isn't really done yet.
+  // A step whose card waits in Granskas is an AI draft to review too (#271).
+  const inReview = new Set(stepCardRows.filter((c) => c.column === "REVIEW").map((c) => c.stepKey!));
   const stepStatus = (key: string, hasContent: boolean, guesses: boolean): PhaseStep["status"] =>
-    doneKeys.has(key) ? "done" : guesses ? "review" : hasContent ? "started" : "empty";
+    doneKeys.has(key) ? "done" : guesses || inReview.has(key) ? "review" : hasContent ? "started" : "empty";
 
   const fill = project.dreamConversation
     ? withStaleAsFailed(parseFillStatus(project.dreamConversation.fillStatus), project.dreamConversation.updatedAt)

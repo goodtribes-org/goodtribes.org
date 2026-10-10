@@ -9,6 +9,10 @@ import { DISPLAY_PHASES, getChecklistForPhase, toDisplayPhase, type ProjectPhase
 // gates stay advisory.
 
 export type ProjectSignals = {
+  // Idé steps with a card waiting in Granskas (#271): the AI (or someone)
+  // did the work, a lead hasn't approved it yet — so not done, however full
+  // the canvas looks.
+  ideaStepsInReview?: string[];
   dreamConfirmed: boolean;
   hasSummaryAndDescription: boolean;
   sdgCount: number;
@@ -119,7 +123,10 @@ export function autoDoneKeys(s: ProjectSignals): string[] {
   add("sdg_impact_measured", s.deliveredReports > 0);
   add("impact_externally_verified", s.verifiedDeliveredReports > 0);
   add("results_celebrated", s.celebrationWritten);
-  return [...new Set(done)];
+  // An Idé step whose card waits in Granskas isn't done until a lead
+  // approves it (moveKanbanCard → markStepDoneIfCardsDone ticks it then).
+  const waiting = new Set(s.ideaStepsInReview ?? []);
+  return [...new Set(done)].filter((k) => !waiting.has(k));
 }
 
 export type PhaseProgress = {
