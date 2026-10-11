@@ -9,7 +9,7 @@ const SHARED_RULES = `Regler som alltid gäller:
 - Impactmodellen är teamets plan (förändringsteori), inte resultat. Jämför gärna de planerade utfallen med det som rapporterats, men beskriv aldrig ett planerat utfall som uppnått.
 - Kort och konkret. Allt är utkast som teamet ändrar.`;
 
-const PHASE_CONTEXT = `Projektet är nu i Impact, den sista fasen: mäta och rapportera den faktiska påverkan på FN:s globala mål, få den externt verifierad, fira och synliggöra resultaten för community och finansiärer, och besluta om nästa steg — fortsätta, replikera eller avsluta ansvarsfullt. På GoodTribes verifieras en impactrapport av plattformens granskare mot ett underlag (t.ex. en årsrapport, en utvärdering eller ett dataset); bara verifierade rapporter visas publikt.`;
+const PHASE_CONTEXT = `Projektet är nu i Impact, den sista fasen: visa ärligt vad projektet åstadkommit — utan administration — tacka dem som bidragit och bestäm vad som händer sen: fortsätta, replikera eller avsluta ansvarsfullt. Det handlar inte om att bevisa allt, utan om att berätta sant och tydligt med det som redan finns. På GoodTribes kan en rapport granskas av plattformen mot ett underlag. Skriv utan facktermer.`;
 
 const withRules = (task: string, tool: string) => `${PHASE_CONTEXT}\n\n${task}\n\n${SHARED_RULES}\n\nSvara genom verktyget "${tool}".`;
 
@@ -45,6 +45,20 @@ export const VERIFICATION_SYSTEM_PROMPT = withRules(
 export const CELEBRATION_SYSTEM_PROMPT = withRules(
   `Ta fram förslag på hur resultaten firas och synliggörs för community, deltagare och finansiärer. Vanlig text, korta rader med "- ", högst 8 rader: vem som ska tackas och hur, vilka kanaler som passar (utgå från projektets egna), vad som ska berättas (med rapporterade siffror, inte egna summor) och ett enkelt sätt att fira tillsammans.`,
   "fira",
+);
+
+export const STORY_SYSTEM_PROMPT = withRules(
+  `Skriv projektets berättelse, vanlig text, 8–15 rader, i tre delar med en kort rubrik var:
+- Vad vi gjorde: vad projektet gjort och för vem, konkret.
+- Det här hände: siffrorna exakt som de rapporterats (med "minst", "ca" och "total sedan start" där det står så), och vad piloten visade. Summera ALDRIG siffror till egna totaler och räkna inte om dem.
+- Vad det betydde: vad det innebar för dem det gäller, bara det som underlaget säger — citera gärna en deltagare om ett citat finns.
+Jämför gärna med impactmodellen: säg vad som hänt av det planerade och vad som inte hänt än. Ärligt, varmt och utan att överdriva.`,
+  "berattelse",
+);
+
+export const LESSONS_SYSTEM_PROMPT = withRules(
+  `Skriv 3–5 lärdomar som andra projekt kan ha nytta av — vanlig text, korta rader med "- ". Det som fungerade, det som inte gjorde det, och vad ni skulle gjort annorlunda. Bara det som underlaget visar.`,
+  "lardomar",
 );
 
 export const TEXT_TOOL = (name: string, description: string) => ({

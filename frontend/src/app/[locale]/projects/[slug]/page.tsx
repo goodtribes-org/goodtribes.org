@@ -48,6 +48,7 @@ import { routing } from "@/i18n/routing";
 import type { Locale } from "next-intl";
 import MiniCalendar from "./MiniCalendar";
 import { VerifiedImpactPanel } from "@/components/VerifiedImpactPanel";
+import { ImpactStoryCard } from "@/components/ImpactStoryCard";
 import PhaseChecklistWidget from "./PhaseChecklistWidget";
 import ProjectQuickActions from "./ProjectQuickActions";
 import MostActiveMembersWidget from "./MostActiveMembersWidget";
@@ -835,6 +836,9 @@ export default async function ProjectDetailPage({
               has verified at least one report, so it can only ever add
               credibility, never advertise its absence */}
           <VerifiedImpactPanel projectId={project.id} locale={locale} />
+
+          {/* The story from the Impact phase (#334): nothing until written */}
+          <ImpactStoryCard projectId={project.id} slug={slug} locale={locale} />
 
           {/* Phase checklist — same items/toggle as PhaseMenuBar's popover, always visible for the current phase */}
           <PhaseChecklistWidget

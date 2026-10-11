@@ -19,9 +19,7 @@ const none: ProjectSignals = {
   pilotGateDecided: false,
   etableraDone: { playbook_documented: false, stable_operations_funding: false, partnerships_formalized: false, supporter_base_built: false },
   skalaDone: { scaling_goals_set: false, scale_vs_fork_decided: false, core_defined: false, local_teams_or_license: false, expansion_capital_secured: false },
-  deliveredReports: 0,
-  verifiedDeliveredReports: 0,
-  celebrationWritten: false,
+  impactDone: { sdg_impact_measured: false, voice_shared: false, impact_externally_verified: false, results_celebrated: false, next_step_decided: false },
 };
 
 describe("phaseProgress", () => {
@@ -70,8 +68,7 @@ describe("phaseProgress", () => {
       pilotGateDecided: true,
       etableraDone: { playbook_documented: false, stable_operations_funding: true, partnerships_formalized: true, supporter_base_built: false },
       skalaDone: { scaling_goals_set: true, scale_vs_fork_decided: false, core_defined: false, local_teams_or_license: false, expansion_capital_secured: false },
-      deliveredReports: 1,
-      verifiedDeliveredReports: 0,
+      impactDone: { sdg_impact_measured: true, voice_shared: false, impact_externally_verified: false, results_celebrated: false, next_step_decided: false },
     });
     expect(keys).toEqual(
       expect.arrayContaining([
@@ -117,7 +114,7 @@ describe("phaseProgress", () => {
   });
 
   it("the bars have one segment per main step", () => {
-    expect(phaseStepProgress(new Set()).map((p) => p.total)).toEqual([7, 4, 4, 4, 5, 4]);
+    expect(phaseStepProgress(new Set()).map((p) => p.total)).toEqual([7, 4, 4, 4, 5, 5]);
   });
 
   it("counts steps done and fills by fraction", () => {

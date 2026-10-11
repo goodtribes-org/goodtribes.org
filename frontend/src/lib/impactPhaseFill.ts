@@ -11,30 +11,27 @@ import { tasksToolFor } from "@/lib/prompts/uppstartFill";
 import {
   addAiCards,
   callFillTool,
-  createWikiPage,
-  emptyFieldsToWrite,
   fillList,
   fillStr,
   isPhaseFillInProgress,
   parsePhaseFillStatus,
   startPhaseFill,
   wikiHtml,
-  wikiPageExists,
   type PhaseFillState,
 } from "@/lib/phaseFill";
 import { IMPACT_MODEL_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
 import {
-  CELEBRATION_SYSTEM_PROMPT,
-  IMPACT_SUMMARY_SYSTEM_PROMPT,
-  IMPACT_SUMMARY_TOOL,
   IMPACT_TASKS_SYSTEM_PROMPT,
+  LESSONS_SYSTEM_PROMPT,
   NEXT_STEP_SYSTEM_PROMPT,
   NEXT_STEP_TOOL,
+  STORY_SYSTEM_PROMPT,
   TEXT_TOOL,
-  VERIFICATION_SYSTEM_PROMPT,
 } from "@/lib/prompts/impactPhaseFill";
+import { parseCriteria, resultsFor } from "@/lib/pilot";
+import { criteriaLines } from "@/lib/lanseringFill";
 
-export const IMPACT_SECTIONS = ["summary", "verification", "celebration", "tasks"] as const;
+export const IMPACT_SECTIONS = ["story", "lessons", "tasks"] as const;
 export type ImpactSection = (typeof IMPACT_SECTIONS)[number];
 export type ImpactFillStatus = Partial<Record<ImpactSection, PhaseFillState>>;
 
@@ -110,7 +107,7 @@ export function impactModelPlanText(model: Record<string, unknown> | null): stri
   return `Impactmodellen (teamets plan, INTE resultat):\n${lines.map(([f, v]) => `${f}: ${v}`).join("\n")}`;
 }
 
-async function buildContext(projectId: string, slug: string): Promise<string> {
+export async function buildContext(projectId: string, slug: string): Promise<string> {
   const [project, metrics, reports, brief, plan, instances, forks, launch, playbook, impactModel] = await Promise.all([
     prisma.project.findUnique({ where: { id: projectId }, select: { title: true, summary: true, sdgGoals: true, openForReplication: true } }),
     prisma.impactMetric.findMany({
@@ -129,6 +126,11 @@ async function buildContext(projectId: string, slug: string): Promise<string> {
     prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "playbook" } }, select: { content: true } }),
     prisma.impactModel.findUnique({ where: { projectSlug: slug } }),
   ]);
+  const [evaluation, followup] = await Promise.all([
+    prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true, criteriaResults: true, resultsSummary: true } }),
+    prisma.impactFollowup.findUnique({ where: { projectSlug: slug }, select: { voiceQuote: true, voiceWho: true, voiceConsent: true } }),
+  ]);
+  const pilot = resultsFor(parseCriteria(evaluation?.successCriteria), evaluation?.criteriaResults);
   const day = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : "?");
   return [
     `Projekt: ${project?.title ?? slug} — ${project?.summary ?? ""}. Globala mål projektet siktar på: ${project?.sdgGoals.join(", ") || "inga angivna"}.`,
@@ -150,7 +152,10 @@ async function buildContext(projectId: string, slug: string): Promise<string> {
     plan?.goals ? `Skalningsmål: ${plan.goals}` : "",
     `Nätverk: öppet för replikering ${project?.openForReplication ? "ja" : "nej"}; instanser ${instances.map((i) => `${i.region} (${i.status})`).join(", ") || "inga"}; forkar ${forks}.`,
     launch?.channels.length ? `Projektets kanaler: ${launch.channels.map((c) => c.name).join(", ")}` : "",
-    playbook ? `Playbook finns: ${strip(playbook.content).slice(0, 500)} …` : "Ingen playbook.",
+    playbook ? `Så här gör vi: ${strip(playbook.content).slice(0, 500)} …` : "",
+    pilot.length ? `Pilotens framgångskriterier och teamets bedömning:\n${criteriaLines(pilot)}` : "",
+    evaluation?.resultsSummary ? `Vad piloten visade: ${evaluation.resultsSummary}` : "",
+    followup?.voiceQuote && followup.voiceConsent ? `En deltagares röst (med samtycke): "${followup.voiceQuote}"${followup.voiceWho ? ` — ${followup.voiceWho}` : ""}` : "",
   ]
     .filter(Boolean)
     .join("\n\n");
@@ -160,14 +165,14 @@ async function buildContext(projectId: string, slug: string): Promise<string> {
 
 export async function startImpactFill(p: { projectId: string; projectSlug: string; userId: string; only?: ImpactSection[] }) {
   const { projectId, projectSlug: slug } = p;
-  const followupField = (field: (typeof FOLLOWUP_FIELDS)[number], system: string, toolName: string) =>
+  const followupText = (field: "story" | "celebrationNotes", system: string, toolName: string) =>
     async ({ client, context, aiUserId }: { client: Parameters<typeof callFillTool>[0]; context: string; aiUserId: string }) => {
-      const current = await prisma.impactFollowup.findUnique({ where: { projectSlug: slug } });
+      const current = await prisma.impactFollowup.findUnique({ where: { projectSlug: slug }, select: { story: true, celebrationNotes: true } });
       if (current?.[field]?.trim()) return;
       const raw = (await callFillTool(client, system, TEXT_TOOL(toolName, toolName), context)) as { text?: unknown } | null;
-      const writes = emptyFieldsToWrite(FOLLOWUP_FIELDS, current, { [field]: fillStr(raw?.text) });
-      if (!writes[field]) throw new Error(`no ${field}`);
-      await prisma.impactFollowup.upsert({ where: { projectSlug: slug }, create: { projectSlug: slug, ...writes, updatedById: aiUserId }, update: { ...writes, updatedById: aiUserId } });
+      const text = fillStr(raw?.text);
+      if (!text) throw new Error(`no ${field}`);
+      await prisma.impactFollowup.upsert({ where: { projectSlug: slug }, create: { projectSlug: slug, [field]: text, updatedById: aiUserId }, update: { [field]: text, updatedById: aiUserId } });
     };
 
   await startPhaseFill({
@@ -176,14 +181,8 @@ export async function startImpactFill(p: { projectId: string; projectSlug: strin
     sections: p.only ?? IMPACT_SECTIONS,
     buildContext: () => buildContext(projectId, slug),
     work: {
-      summary: async ({ client, context, aiUserId, t }) => {
-        if (await wikiPageExists(slug, "impactsammanfattning")) return;
-        const html = impactSummaryHtml(await callFillTool(client, IMPACT_SUMMARY_SYSTEM_PROMPT, IMPACT_SUMMARY_TOOL, context), t);
-        if (!html) throw new Error("no impact summary");
-        await createWikiPage(slug, "impactsammanfattning", t.titleImpactSummary, html, aiUserId);
-      },
-      verification: followupField("externalVerificationNotes", VERIFICATION_SYSTEM_PROMPT, "verifiering"),
-      celebration: followupField("celebrationNotes", CELEBRATION_SYSTEM_PROMPT, "fira"),
+      story: followupText("story", STORY_SYSTEM_PROMPT, "berattelse"),
+      lessons: followupText("celebrationNotes", LESSONS_SYSTEM_PROMPT, "lardomar"),
       tasks: async ({ client, context, aiUserId }) => {
         const tasks = coerceTasks(await callFillTool(client, IMPACT_TASKS_SYSTEM_PROMPT, tasksToolFor(getChecklistForPhase("IMPACT")), context), stepKeysFor("IMPACT"));
         if (!tasks.length) throw new Error("no tasks");
@@ -202,26 +201,9 @@ export async function runNextStepBrief(projectId: string, slug: string, userId: 
     buildContext(projectId, slug),
     prisma.impactFollowup.findUnique({ where: { projectSlug: slug }, select: { externalVerificationNotes: true, celebrationNotes: true } }),
   ]);
-  const content = `${context}\n\nVerifieringsplan: ${followup?.externalVerificationNotes ?? "—"}\nFirande: ${followup?.celebrationNotes ?? "—"}`;
+  const content = `${context}\n\nVem mer har sett resultaten: ${followup?.externalVerificationNotes ?? "—"}\nLärdomar: ${followup?.celebrationNotes ?? "—"}`;
   const brief = coerceNextStepBrief(await callFillTool(gate.client, NEXT_STEP_SYSTEM_PROMPT, NEXT_STEP_TOOL, content));
   if (!brief.reasons.length) throw new InsightError("empty");
   await prisma.aiInsight.create({ data: { projectId, kind: "IMPACT_NEXT_STEP", content: brief as unknown as Prisma.InputJsonValue } });
   return brief;
-}
-
-// What the phase has done, for the progress chips: ticked, or shown by
-// the data (reported metric values, a verified delivered report, notes
-// written, a decision taken).
-export async function impactStepsDone(projectId: string, slug: string): Promise<Set<string>> {
-  const [done, updates, verified, followup] = await Promise.all([
-    prisma.initiativeChecklistItem.findMany({ where: { projectId, completedAt: { not: null } }, select: { itemKey: true } }),
-    prisma.impactUpdate.count({ where: { impactMetric: { projectSlug: slug } } }),
-    prisma.impactReport.count({ where: { projectId, kind: "DELIVERED", verifiedAt: { not: null } } }),
-    prisma.impactFollowup.findUnique({ where: { projectSlug: slug }, select: { nextStepDecision: true } }),
-  ]);
-  const keys = new Set(done.map((d) => d.itemKey));
-  if (updates > 0) keys.add("sdg_impact_measured");
-  if (verified > 0) keys.add("impact_externally_verified");
-  if (followup && followup.nextStepDecision !== "UNDECIDED") keys.add("next_step_decided");
-  return keys;
 }

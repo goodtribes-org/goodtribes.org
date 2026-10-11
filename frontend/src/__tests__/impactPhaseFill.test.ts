@@ -38,7 +38,7 @@ describe("next-step brief", () => {
 
 describe("impact fill status", () => {
   it("parses its sections", () => {
-    expect(parseImpactStatus({ summary: "done", plan: "done" })).toEqual({ summary: "done" });
+    expect(parseImpactStatus({ story: "done", summary: "done" })).toEqual({ story: "done" });
   });
 });
 

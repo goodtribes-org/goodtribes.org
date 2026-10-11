@@ -12,10 +12,10 @@ describe("stepHref", () => {
     expect(stepHref("p", "PILOT", { key: "mvp_tested" })).toBe("/projects/p/uppstart?step=mvp_tested");
   });
 
-  it("Lansering's steps go to the Lansering page (#327); later phases keep their own page, or the phase page", () => {
+  it("every later phase's steps go to the step on its phase page (#327–#334)", () => {
     expect(stepHref("p", "PRODUCTION", { key: "launch_marketing_plan_created" })).toBe("/projects/p/lansering?step=launch_marketing_plan_created");
     expect(stepHref("p", "ESTABLISH", { key: "partnerships_formalized" })).toBe("/projects/p/etablera?step=partnerships_formalized");
     expect(stepHref("p", "SCALE", { key: "core_defined" })).toBe("/projects/p/skala?step=core_defined");
-    expect(stepHref("p", "IMPACT", { key: "sdg_impact_measured", href: "impact" })).toBe("/projects/p/impact");
+    expect(stepHref("p", "IMPACT", { key: "voice_shared" })).toBe("/projects/p/impactfasen?step=voice_shared");
   });
 });
