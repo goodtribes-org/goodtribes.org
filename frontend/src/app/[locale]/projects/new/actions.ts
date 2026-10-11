@@ -7,7 +7,7 @@ import { getLocale } from "next-intl/server";
 import { suggestSdgGoals } from "@/lib/claude";
 import { logOrgActivity } from "@/lib/activity";
 import { createProjectRecord } from "@/lib/createProject";
-import { linkProjectToIdea } from "@/lib/promoteIdea";
+import { ideaFundingCallId, linkProjectToIdea } from "@/lib/promoteIdea";
 import { parseProjectInput } from "@/lib/github";
 import { syncProjectBoardInBackground } from "@/lib/githubSync";
 import { markChecklistDone } from "../[slug]/guide/actions";
@@ -55,8 +55,9 @@ export async function createProject(formData: FormData) {
     legalType: legalTypeRaw, ownerId: userId, skillIds,
     aiMode: withoutAi ? "MANUAL" : null,
     // Promoting a public idea is public from the start (#226); everything
-    // else starts as a draft.
+    // else starts as a draft — and so does an idea for a funding call (#345).
     publish: !!ideaId,
+    fundingCallId: await ideaFundingCallId(ideaId),
   });
 
   // This form already covers everything the guide's "Beskriv projektet"

@@ -13,7 +13,7 @@ import { escapeHtml } from "@/lib/renderBody";
 import { getAiClientFor, aiGateMessage, resolveAiMode } from "@/lib/aiMode";
 import { createProjectRecord } from "@/lib/createProject";
 import { DraftLimitError, MAX_DRAFTS, countOwnDrafts } from "@/lib/projectVisibility";
-import { linkProjectToIdea } from "@/lib/promoteIdea";
+import { ideaFundingCallId, linkProjectToIdea } from "@/lib/promoteIdea";
 import { getFieldProvenance, recordAiWrite } from "@/lib/fieldProvenance";
 import { decideAiPlacement } from "@/lib/aiSuggestions";
 import { buildTranscript, generateBasics, runIdeaFill, statusFor } from "@/lib/ideaFill";
@@ -203,6 +203,8 @@ export async function createProjectFromDream(roomId: string) {
         sdgGoals: (value("sdgGoals") as number[] | undefined) ?? [],
         dreamFounderId: userId,
         publish: fromIdea,
+        // An idea for a funding call: a private application project (#345).
+        fundingCallId: fromIdea ? await ideaFundingCallId(basedOnIdeaId) : null,
       });
       // Din dröm on a shared idea (#233): link back and tell its author.
       if (fromIdea) await linkProjectToIdea(basedOnIdeaId, project.id, userId);

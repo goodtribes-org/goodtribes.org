@@ -5,6 +5,17 @@ import { createNotification } from "@/lib/notify";
 // idea stays open. Longer than a normal invite (7 days): they didn't ask.
 const AUTHOR_INVITE_DAYS = 30;
 
+// Utlysningar (#345): the open funding call an idea was shared to, if any —
+// a project driving it is then the call's private application project.
+export async function ideaFundingCallId(ideaId: string | null | undefined): Promise<string | null> {
+  if (!ideaId) return null;
+  const idea = await prisma.idea.findFirst({
+    where: { id: ideaId, hiddenAt: null, status: "open", fundingCall: { status: "PUBLISHED" } },
+    select: { fundingCallId: true },
+  });
+  return idea?.fundingCallId ?? null;
+}
+
 // #233: anyone can drive any open idea, and one idea can have many
 // projects. Links a new project to the idea it drives, and tells the
 // idea's author and contributors. The author gets an invitation to join as
@@ -20,9 +31,24 @@ export async function linkProjectToIdea(ideaId: string, projectId: string, owner
     select: {
       id: true, title: true, authorId: true, author: { select: { email: true } },
       challenge: { select: { slug: true, title: true, organisationId: true } },
+      fundingCall: { select: { title: true, deadline: true, fundingSource: { select: { name: true } } } },
     },
   });
   if (!idea) return;
+  // An application project (#345): the call's deadline is the frame.
+  if (idea.fundingCall?.deadline) {
+    await prisma.milestone
+      .create({
+        data: {
+          projectId,
+          title: `Ansökan till ${idea.fundingCall.fundingSource.name} ska vara inlämnad`,
+          description: idea.fundingCall.title,
+          dueDate: idea.fundingCall.deadline,
+          createdById: ownerId,
+        },
+      })
+      .catch(() => null);
+  }
 
   const project = await prisma.project
     .update({ where: { id: projectId }, data: { basedOnIdeaId: idea.id }, select: { slug: true, title: true } })

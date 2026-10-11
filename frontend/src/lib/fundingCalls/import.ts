@@ -5,6 +5,7 @@ import { logger } from "@/lib/logger";
 import { shortQuote, stockholmLabel, type Provenance, type RawCall } from "./types";
 import { fetchVinnovaCalls } from "./vinnova";
 import { fetchGdpCalls, GDP_FUNDERS, type GdpAdapter } from "./gdp";
+import { notifyDeadlineChanged } from "./reminders";
 
 // Utlysningar (#343): fetch new and changed calls from every active source
 // that has an adapter. Run daily by the cron route, or by a site admin's
@@ -68,7 +69,7 @@ export async function importFundingCalls({ now = Date.now(), sourceId }: { now?:
         const hash = callHash(raw);
         const existing = await prisma.fundingCall.findUnique({
           where: { fundingSourceId_externalId: { fundingSourceId: source.id, externalId: raw.externalId } },
-          select: { id: true, contentHash: true, status: true, provenance: true },
+          select: { id: true, contentHash: true, status: true, provenance: true, deadline: true },
         });
         const data = Object.fromEntries(SOURCE_FIELDS.map((k) => [k, raw[k]])) as Pick<RawCall, (typeof SOURCE_FIELDS)[number]>;
         if (!existing) {
@@ -91,6 +92,10 @@ export async function importFundingCalls({ now = Date.now(), sourceId }: { now?:
             },
           });
           result.updated++;
+          // A new deadline on a published call: its application projects are told (#345).
+          if (existing.status === "PUBLISHED" && (existing.deadline?.getTime() ?? null) !== (raw.deadline?.getTime() ?? null)) {
+            await notifyDeadlineChanged(existing.id, raw.title, raw.deadline).catch((err) => logger.error("funding-calls deadline notice failed", { id: existing.id, err: String(err) }));
+          }
         }
       }
       await prisma.fundingSource.update({ where: { id: source.id }, data: { lastFetchedAt: new Date(now) } });

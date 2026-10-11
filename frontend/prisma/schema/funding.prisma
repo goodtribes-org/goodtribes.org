@@ -347,7 +347,29 @@ model FundingCall {
   updatedAt           DateTime               @updatedAt
 
   ideas               Idea[]                 @relation("FundingCallIdeas")
+  projects            Project[]              @relation("FundingCallProjects")
+  matches             FundingCallMatch[]
 
   @@unique([fundingSourceId, externalId])
   @@index([status, deadline])
+}
+
+// Utlysningar (#345): a published call that fits an existing project, found
+// by rules (lib/fundingCalls/matching.ts) — shared SDGs, who may apply,
+// amount. One row per (call, project) makes matching idempotent; the leads
+// are told once, with the reasons. dismissedAt hides it for the project.
+model FundingCallMatch {
+  id            String      @id @default(cuid())
+  fundingCallId String
+  fundingCall   FundingCall @relation(fields: [fundingCallId], references: [id], onDelete: Cascade)
+  projectId     String
+  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  reasons       String[]    @default([])
+  matchedAt     DateTime    @default(now())
+  notifiedAt    DateTime?
+  dismissedAt   DateTime?
+  dismissedById String?
+
+  @@unique([fundingCallId, projectId])
+  @@index([projectId])
 }

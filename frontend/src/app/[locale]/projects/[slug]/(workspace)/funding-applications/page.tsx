@@ -10,6 +10,9 @@ import WorkspacePageHeader from "@/components/WorkspacePageHeader";
 import MatchList from "./MatchList";
 import ApplicationList from "./ApplicationList";
 import FundingNeedField from "./FundingNeedField";
+import CallMatches from "./CallMatches";
+import { closesIn } from "@/lib/fundingCalls/matching";
+import { Link } from "@/i18n/navigation";
 
 export async function generateMetadata({
   params,
@@ -37,6 +40,13 @@ export default async function FundingApplicationsPage({
     select: {
       id: true,
       estimatedFundingNeedSek: true,
+      // Utlysningar (#345): the call this project applies to, and calls that fit.
+      fundingCall: { select: { slug: true, title: true, deadline: true, rolling: true, status: true, fundingSource: { select: { name: true } } } },
+      fundingCallMatches: {
+        where: { dismissedAt: null, fundingCall: { status: "PUBLISHED", OR: [{ rolling: true }, { deadline: { gt: new Date() } }] } },
+        orderBy: { matchedAt: "desc" },
+        select: { id: true, reasons: true, fundingCall: { select: { slug: true, title: true, deadline: true, rolling: true, fundingSource: { select: { name: true } } } } },
+      },
       fundingMatches: {
         where: { dismissedAt: null },
         orderBy: { matchedAt: "desc" },
@@ -66,7 +76,41 @@ export default async function FundingApplicationsPage({
         help="Matchande fonder och bidrag baserat på projektets SDG-mål, juridiska form och finansieringsbehov, samt spårning av era ansökningar."
       />
 
+      {project.fundingCall?.slug && (
+        <div className="mb-6 rounded-xl border border-coral/30 bg-coral/5 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-coral">
+            Projektet söker · {project.fundingCall.fundingSource.name} · {closesIn(project.fundingCall.rolling ? null : project.fundingCall.deadline)}
+          </p>
+          <Link href={`/utlysningar/${project.fundingCall.slug}`} className="mt-0.5 block font-semibold text-dark-slate hover:underline">
+            {project.fundingCall.title}
+          </Link>
+          <p className="mt-1 text-sm text-dark-slate/70">
+            Projektet är ett privat utkast: bara teamet ser det, eftersom flera kan söka samma pengar. Ansökan lämnas in i en GoodTribes-enhets namn och granskas av GoodTribes först.
+          </p>
+        </div>
+      )}
+
       {canManage && <FundingNeedField projectSlug={slug} initialValue={project.estimatedFundingNeedSek} />}
+
+      {project.fundingCallMatches.length > 0 && (
+        <>
+          <h2 className="text-xs font-semibold text-dark-slate/40 uppercase tracking-wide mb-2">Utlysningar som passar</h2>
+          <div className="mb-8">
+            <CallMatches
+              projectSlug={slug}
+              canManage={canManage}
+              matches={project.fundingCallMatches.filter((m) => m.fundingCall.slug).map((m) => ({
+                id: m.id,
+                slug: m.fundingCall.slug!,
+                title: m.fundingCall.title,
+                funder: m.fundingCall.fundingSource.name,
+                closes: closesIn(m.fundingCall.rolling ? null : m.fundingCall.deadline),
+                reasons: m.reasons,
+              }))}
+            />
+          </div>
+        </>
+      )}
 
       <h2 className="text-xs font-semibold text-dark-slate/40 uppercase tracking-wide mb-2">Matchningar</h2>
       {openMatches.length === 0 ? (

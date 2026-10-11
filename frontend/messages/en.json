@@ -1109,7 +1109,8 @@
     "unknownAuthor": "Unknown",
     "logInLinkText": "Log in",
     "toLeaveCommentSuffix": "to leave a comment.",
-    "answersChallenge": "Answers the challenge “{title}” from {organisation}"
+    "answersChallenge": "Answers the challenge “{title}” from {organisation}",
+    "forFundingCall": "Idea for the call from {funder}: {title}"
   },
   "Challenges": {
     "listTitle": "Challenges",
@@ -5768,7 +5769,9 @@
     "resume": "You have a Dream conversation in progress: <link>continue it</link>",
     "formInstead": "Prefer a form? <link>Quick start</link>",
     "forChallenge": "You are answering the challenge “{title}” from {organisation}. Your idea joins the challenge when you share it.",
-    "forCall": "You are sharing an idea for the call “{title}” from {funder}. Describe what an application could contain. Your idea appears on the call's page when you share it, and anyone can then drive it."
+    "forCall": "You are sharing an idea for the call “{title}” from {funder}. Describe what an application could contain. Your idea appears on the call's page when you share it, and anyone can then drive it.",
+    "fromCallIdea": "This idea belongs to the call “{title}” from {funder}. You become project lead and are responsible for the application and the team. The project becomes a private draft only the team sees, since several may apply for the same money. The application is submitted in the name of a GoodTribes entity and is reviewed by GoodTribes first. What you create belongs to the GoodTribes Foundation.",
+    "agreementLink": "Read the Participant Agreement"
   },
   "IdeaHelp": {
     "heading": "I want to help",

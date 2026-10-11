@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { registerOutboxHandler, enqueueOutboxEvent } from "@/lib/outbox";
 import { createNotification } from "@/lib/notify";
 import { logger } from "@/lib/logger";
+import { matchProjectAgainstCalls } from "@/lib/fundingCalls/matching";
 import type { FundingSource, LegalType, Prisma } from "@prisma/client";
 
 // Callers trigger matching through these two functions rather than calling
@@ -116,6 +117,9 @@ registerOutboxHandler("funding.projectUpdated", async (payload) => {
   const { projectId } = payload as { projectId: string };
   const project = await prisma.project.findUnique({ where: { id: projectId }, select: PROJECT_SELECT });
   if (!project) return;
+
+  // Utlysningar (#345): the project against every open call too.
+  await matchProjectAgainstCalls(projectId);
 
   const sources = await prisma.fundingSource.findMany({ where: { status: "ACTIVE" } });
   for (const source of sources) {
