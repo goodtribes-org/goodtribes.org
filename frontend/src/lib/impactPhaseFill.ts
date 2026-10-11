@@ -126,9 +126,11 @@ export async function buildContext(projectId: string, slug: string): Promise<str
     prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "playbook" } }, select: { content: true } }),
     prisma.impactModel.findUnique({ where: { projectSlug: slug } }),
   ]);
-  const [evaluation, followup] = await Promise.all([
+  const [evaluation, followup, pulses] = await Promise.all([
     prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true, criteriaResults: true, resultsSummary: true } }),
     prisma.impactFollowup.findUnique({ where: { projectSlug: slug }, select: { voiceQuote: true, voiceWho: true, voiceConsent: true } }),
+    // The team's monthly pulse sentences (#335), in their own words.
+    prisma.impactPulse.findMany({ where: { projectId, note: { not: null } }, orderBy: { createdAt: "asc" }, take: 36, select: { note: true, createdAt: true } }),
   ]);
   const pilot = resultsFor(parseCriteria(evaluation?.successCriteria), evaluation?.criteriaResults);
   const day = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : "?");
@@ -155,6 +157,7 @@ export async function buildContext(projectId: string, slug: string): Promise<str
     playbook ? `Så här gör vi: ${strip(playbook.content).slice(0, 500)} …` : "",
     pilot.length ? `Pilotens framgångskriterier och teamets bedömning:\n${criteriaLines(pilot)}` : "",
     evaluation?.resultsSummary ? `Vad piloten visade: ${evaluation.resultsSummary}` : "",
+    pulses.length ? `Teamets månadspuls (egna ord, en rad per månad):\n${pulses.map((p) => `${day(p.createdAt)}: ${p.note}`).join("\n")}` : "",
     followup?.voiceQuote && followup.voiceConsent ? `En deltagares röst (med samtycke): "${followup.voiceQuote}"${followup.voiceWho ? ` — ${followup.voiceWho}` : ""}` : "",
   ]
     .filter(Boolean)

@@ -29,7 +29,7 @@ describe("Impact steps (#334)", () => {
 });
 
 describe("the story's start without AI", () => {
-  const t = { did: "Vad vi gjorde:", numbers: "Det här hände:", meant: "Vad det betydde:", next: "Vad vi gör nu:", cumulative: "totalt sedan start", atLeast: "minst", approx: "ca" };
+  const t = { did: "Vad vi gjorde:", numbers: "Det här hände:", meant: "Vad det betydde:", next: "Vad vi gör nu:", cumulative: "totalt sedan start", atLeast: "minst", approx: "ca", moments: "Månad för månad:" };
   it("lists the figures exactly as reported, never summed", () => {
     const text = storyTemplate(
       t,
@@ -44,5 +44,11 @@ describe("the story's start without AI", () => {
     expect(text).toContain("- Datorer: minst 25000 st (totalt sedan start)");
     expect(text).toContain("- Datorer 2025: 3200 st");
     expect(text).not.toContain("28200");
+  });
+  it("puts the team's monthly pulse sentences in, only when there are any", () => {
+    expect(storyTemplate(t, [], [])).not.toContain("Månad för månad");
+    const text = storyTemplate(t, [], [], ["september 2026: Första båten i sjön", "oktober 2026: Tolv barn kom"]);
+    expect(text).toContain("Månad för månad:\n- september 2026: Första båten i sjön\n- oktober 2026: Tolv barn kom");
+    expect(text.indexOf("Månad för månad")).toBeLessThan(text.indexOf("Vad det betydde"));
   });
 });

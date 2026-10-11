@@ -41,6 +41,7 @@ function buildActivityLabel(t: Awaited<ReturnType<typeof getTranslations<"Activi
     task_created: t("taskCreated"),
     task_moved: t("taskMoved"),
     todo_completed: t("todoCompleted"),
+    impact_pulse: t("impactPulse"),
   };
 }
 
@@ -133,8 +134,9 @@ export async function fetchActivityItems(
           }),
       prisma.activityEvent.findMany({
         where: {
-          // A restart (#313) shows in the project's own feed, not the platform-wide one.
-          type: { in: ["task_completed", "task_created", "task_moved", "todo_completed", "member_joined", ...(opts ? ["phase_restarted"] : [])] },
+          // A restart (#313) and the team's monthly impact pulse (#335) show in
+          // the project's own feed, not the platform-wide one.
+          type: { in: ["task_completed", "task_created", "task_moved", "todo_completed", "member_joined", ...(opts ? ["phase_restarted", "impact_pulse"] : [])] },
           ...(opts ? { projectId: opts.projectId } : { project: PUBLIC_PROJECT_WHERE }),
         },
         orderBy: { createdAt: "desc" },

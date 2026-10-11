@@ -58,7 +58,7 @@ export default async function ImpactOverviewPage({
   const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true } });
   if (!project) notFound();
 
-  const [t, tCheck, tUpp, fieldLabels, canEdit, isFounder, aiConfigured, fillRow, focusBrief, focusDecision, checked, metrics, reports, followup, impactModel, nextBrief, cards, members, helpers, givers, aiUser] =
+  const [t, tCheck, tUpp, fieldLabels, canEdit, isFounder, aiConfigured, fillRow, focusBrief, focusDecision, checked, metrics, reports, followup, impactModel, nextBrief, cards, members, helpers, givers, aiUser, pulses] =
     await Promise.all([
       getTranslations({ locale, namespace: "ImpactOverview" }),
       getTranslations({ locale, namespace: "ProjectPhaseChecklist" }),
@@ -89,6 +89,13 @@ export default async function ImpactOverviewPage({
       prisma.kanbanCard.findMany({ where: { projectSlug: slug, column: "DONE", assigneeId: { not: null } }, select: { assigneeId: true }, distinct: ["assigneeId"] }),
       prisma.fundingPledge.findMany({ where: { campaign: { projectId: project.id }, pledgeStatus: "confirmed" }, select: { userId: true }, distinct: ["userId"] }),
       getAiParticipantUser(),
+      // The team's monthly pulse (#335): sentences and photos, oldest first.
+      prisma.impactPulse.findMany({
+        where: { projectId: project.id, OR: [{ note: { not: null } }, { imageUrl: { not: null } }] },
+        orderBy: { createdAt: "asc" },
+        take: 36,
+        select: { id: true, note: true, imageUrl: true, createdAt: true },
+      }),
     ]);
   // AI only where the project uses it (#310), per step for the AI buttons.
   const aiAvailable = aiConfigured && (await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "IMPACT" })).mode !== "MANUAL";
@@ -167,10 +174,12 @@ export default async function ImpactOverviewPage({
   const decision = followup?.nextStepDecision ?? "UNDECIDED";
   const reported = metrics.filter((m) => m._count.updates > 0);
   // The start "Fyll i från projektets siffror" puts in the story field.
+  const monthFmt = new Intl.DateTimeFormat(locale === "sv" ? "sv-SE" : "en-GB", { month: "long", year: "numeric" });
   const storyStart = storyTemplate(
-    { did: t("tplDid"), numbers: t("tplNumbers"), meant: t("tplMeant"), next: t("tplNext"), cumulative: t("tplCumulative"), atLeast: t("tplAtLeast"), approx: t("tplApprox") },
+    { did: t("tplDid"), numbers: t("tplNumbers"), meant: t("tplMeant"), next: t("tplNext"), cumulative: t("tplCumulative"), atLeast: t("tplAtLeast"), approx: t("tplApprox"), moments: t("tplMoments") },
     metrics.map((m) => ({ label: m.label, unit: m.unit, currentValue: m.currentValue, updates: m._count.updates })),
     reports,
+    pulses.filter((p) => p.note?.trim()).map((p) => `${monthFmt.format(p.createdAt)}: ${p.note!.trim()}`),
   );
 
   return (
@@ -245,6 +254,19 @@ export default async function ImpactOverviewPage({
           )}
           <p className="mt-2 text-xs text-dark-slate/50">{t("neverSummed")}</p>
           <div className="mt-2">{toolLink("impact", t("reportMore"))}</div>
+          {sub(t("pulseHeading"))}
+          {pulses.length > 0 && (
+            <ul className="mb-2 flex flex-col gap-2 text-sm">
+              {pulses.map((p) => (
+                <li key={p.id} className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-dark-slate/50">{monthFmt.format(p.createdAt)}</span>
+                  {p.note && <span className="text-dark-slate/80">{p.note}</span>}
+                  {p.imageUrl && <img src={p.imageUrl} alt="" className="max-h-40 w-full max-w-xs rounded-lg object-cover" />}
+                </li>
+              ))}
+            </ul>
+          )}
+          {toolLink("puls", t("pulseLink"))}
           {planned.length > 0 && (
             <>
               {sub(t("plannedHeading"))}

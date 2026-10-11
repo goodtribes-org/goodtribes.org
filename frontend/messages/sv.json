@@ -3193,6 +3193,7 @@
     "taskCreated": "skapade en uppgift",
     "taskMoved": "flyttade en uppgift",
     "todoCompleted": "checkade av en punkt",
+    "impactPulse": "delade månadens impactpuls",
     "genericActivity": "aktivitet",
     "taskCompletedWithTitle": "slutförde uppgiften \"{title}\"",
     "taskCreatedWithTitle": "skapade uppgiften \"{title}\"",
@@ -5025,6 +5026,9 @@
     "tplCumulative": "totalt sedan start",
     "tplAtLeast": "minst",
     "tplApprox": "ca",
+    "tplMoments": "Månad för månad:",
+    "pulseHeading": "Månad för månad",
+    "pulseLink": "Svara på månadens puls",
     "storyFillIn": "Fyll i det som saknas innan du sparar."
   },
   "OverviewSkeleton": {
@@ -5258,7 +5262,9 @@
       "tool_edited": "{who} arbetade i {tool}"
     },
     "draftWaiting": "Publicera {project}?",
-    "draftWaitingMeta": "Utkast i {days} dagar"
+    "draftWaitingMeta": "Utkast i {days} dagar",
+    "pulseDue": "Hur gick det för {project} den här månaden?",
+    "pulseDueMeta": "Impactpuls · 30 sekunder"
   },
   "MyGoodTribes": {
     "projectsTitle": "Dina projekt – var de är och vad som är nästa steg",
@@ -6059,5 +6065,35 @@
     "sending": "Skickar …",
     "cancel": "Avbryt",
     "thanks": "Tack! Teamet ser nu att det behövs där du bor."
+  },
+  "ImpactPulse": {
+    "eyebrow": "Impactpuls",
+    "heading": "Hur gick det i {month}?",
+    "intro": "30 sekunder: en mening, ett foto eller en siffra. Det hamnar i loggen, i mätetalen och i er berättelse i Impact, så att ni slipper skriva den i efterhand.",
+    "notYet": "Pulsen börjar när projektet är i Lansering.",
+    "doneThisMonth": "{name} har redan svarat den här månaden. Nästa påminnelse kommer om {days} dagar, men ni får gärna lägga till mer.",
+    "someone": "Någon",
+    "earlier": "Det ni har berättat",
+    "earlierEmpty": "Inget än. Första pulsen blir början på er berättelse.",
+    "toImpact": "Till Impact",
+    "noteLabel": "En mening om månaden",
+    "notePlaceholder": "Något som hände, någon ni mötte, något som gick bättre eller sämre än ni trodde …",
+    "numberLabel": "En siffra (om ni har en)",
+    "noMetrics": "Ni har inga mätetal än.",
+    "addMetric": "Lägg till ett",
+    "photoLabel": "Ett foto (om ni vill)",
+    "addPhoto": "Lägg till foto",
+    "changePhoto": "Byt foto",
+    "removePhoto": "Ta bort",
+    "uploading": "Laddar upp …",
+    "photoTooLarge": "Bilden är större än 5 MB",
+    "photoFailed": "Bilden kunde inte laddas upp",
+    "save": "Spara",
+    "saving": "Sparar …",
+    "snooze": "Påminn mig om en vecka",
+    "thanks": "Tack!",
+    "thanksWhere": "Det syns nu i loggen och i Impact.",
+    "snoozed": "Vi påminner er om en vecka.",
+    "backToProject": "Tillbaka till projektet"
   }
 }

@@ -53,6 +53,9 @@ export async function GET(request: Request) {
       if (i.kind === "draft") {
         return { id: i.id, icon: "📝", title: tTribe("draftWaiting", { project: i.project }), meta: tTribe("draftWaitingMeta", { days: i.days }), href: i.href };
       }
+      if (i.kind === "impactPulse") {
+        return { id: i.id, icon: "💚", title: tTribe("pulseDue", { project: i.project }), meta: tTribe("pulseDueMeta"), href: i.href };
+      }
       if (i.kind === "joinRequest") {
         return { id: `join-${i.id}`, icon: "👋", title: t("joinRequest", { name: i.name ?? tTribe("someone"), project: i.project }), meta: tTribe("waitingForAnswer"), href: i.href };
       }

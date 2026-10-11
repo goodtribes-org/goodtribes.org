@@ -150,6 +150,7 @@ model Project {
   establishmentPlan  EstablishmentPlan?   @relation("ProjectEstablishmentPlan")
   scalingPlan        ScalingPlan?         @relation("ProjectScalingPlan")
   impactFollowup     ImpactFollowup?      @relation("ProjectImpactFollowup")
+  impactPulses       ImpactPulse[]        @relation("ImpactPulses")
   promotedFromLeanCanvasDraft LeanCanvasDraft? @relation("LeanCanvasDraftPromotedToProject")
   promotedFromWhiteboardDraft WhiteboardDraft? @relation("WhiteboardDraftPromotedToProject")
   valueProposition         ValueProposition?         @relation("ProjectValueProposition")

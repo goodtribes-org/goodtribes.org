@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { getProjectJourney } from "@/lib/projectJourney";
 import { toDisplayPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
+import { PULSE_PHASES, pulseDue, pulseLookback } from "@/lib/impactPulse";
 
 // A logged-in member's own view, answering two questions — what should I do
 // ("Att göra"), and are my projects moving or standing still (the pulse). Used
@@ -25,7 +26,9 @@ export type TodoItem =
   // step is a ProjectPhaseChecklist key (translated in the UI)
   | { kind: "nextStep"; id: string; project: string; step: string; href: string; projectStill: boolean }
   // A draft you lead that has waited a while (#226): a nudge to publish it.
-  | { kind: "draft"; id: string; project: string; href: string; days: number };
+  | { kind: "draft"; id: string; project: string; href: string; days: number }
+  // Impactpuls (#335): once a month from Lansering on, "Hur gick det?".
+  | { kind: "impactPulse"; id: string; project: string; href: string };
 
 // How long a draft waits before "Att göra" nudges its leads to publish it.
 export const DRAFT_NUDGE_DAYS = 7;
@@ -59,7 +62,7 @@ function todoRank(t: TodoItem, now: number): number {
     if (t.due && t.due.getTime() - now <= 3 * DAY) return 1;
     return 5;
   }
-  if (t.kind === "joinRequest" || t.kind === "draft") return 2;
+  if (t.kind === "joinRequest" || t.kind === "draft" || t.kind === "impactPulse") return 2;
   return t.projectStill ? 3 : 4;
 }
 
@@ -80,8 +83,9 @@ export async function getYourTribe(userId: string, now = Date.now(), { lastEvent
   const ids = projects.map((p) => p.id);
   const slugs = projects.map((p) => p.slug);
   const leadIds = projects.filter((p) => p.isLead).map((p) => p.id);
+  const pulseIds = projects.filter((p) => PULSE_PHASES.includes(p.phase)).map((p) => p.id);
 
-  const [tasks, joinRequests, unreadNotifications, newKudos, events, messages, posts, lastEvents] = await Promise.all([
+  const [tasks, joinRequests, unreadNotifications, newKudos, events, messages, posts, impactPulses, lastEvents] = await Promise.all([
     prisma.kanbanCard.findMany({
       where: { assigneeId: userId, column: { not: "DONE" }, project: liveProject },
       select: { id: true, title: true, dueDate: true, project: { select: { slug: true, title: true } } },
@@ -106,6 +110,12 @@ export async function getYourTribe(userId: string, now = Date.now(), { lastEvent
       : Promise.resolve([]),
     slugs.length
       ? prisma.blogPost.findMany({ where: { projectSlug: { in: slugs }, createdAt: { gte: since } }, select: { projectSlug: true, createdAt: true } })
+      : Promise.resolve([]),
+    pulseIds.length
+      ? prisma.impactPulse.findMany({
+          where: { projectId: { in: pulseIds }, createdAt: { gte: pulseLookback(now) } },
+          select: { projectId: true, note: true, imageUrl: true, impactUpdateId: true, snoozedUntil: true, createdAt: true },
+        })
       : Promise.resolve([]),
     // The latest thing that happened in each project, of any age.
     Promise.all(
@@ -174,6 +184,10 @@ export async function getYourTribe(userId: string, now = Date.now(), { lastEvent
     ...projects
       .filter((p) => p.isLead && !p.publishedAt && now - p.createdAt.getTime() >= DRAFT_NUDGE_DAYS * DAY)
       .map((p): TodoItem => ({ kind: "draft", id: `draft-${p.id}`, project: p.title, href: `/projects/${p.slug}`, days: Math.floor((now - p.createdAt.getTime()) / DAY) })),
+    // The whole team sees it; one answer (or snooze) clears it for everyone.
+    ...projects
+      .filter((p) => pulseDue(p.phase, impactPulses.filter((r) => r.projectId === p.id), now))
+      .map((p): TodoItem => ({ kind: "impactPulse", id: `pulse-${p.id}`, project: p.title, href: `/projects/${p.slug}/puls` })),
   ].sort((a, b) => todoRank(a, now) - todoRank(b, now));
 
   return {
