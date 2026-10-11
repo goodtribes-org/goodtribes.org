@@ -1,4 +1,5 @@
 import type { PhaseGateOutcome, Prisma } from "@prisma/client";
+import { evidenceSummary, uppstartStepsDone, UPPSTART_STEPS, type Evidence } from "@/lib/mvp";
 import { isWrittenPhaseWiki } from "@/lib/phaseWikiTemplates";
 import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma";
@@ -219,109 +220,67 @@ export function cardsForDecision(
 
 // ─── Uppstart → Lansering ───────────────────────────────────────────────────
 
-// Checklist keys, so the labels are the ones the phase menu already uses.
-// "Testa med användare" counts as met by what the sprint actually
-// collected (test feedback), or when someone ticked it.
-export const UPPSTART_GATE_CRITERIA = [
-  "core_team_formed",
-  "test_with_users",
-  "rough_budget_estimated",
-  "pilot_scope_defined",
-] as const;
+// Uppstart (#320): the four steps of lib/mvp.ts are the criteria, met by
+// what the project actually has (or when someone ticked them). Like every
+// gate it only shows and records — and it says how strong the evidence from
+// the tests is, so a team going on on weak evidence knows it.
+export const UPPSTART_GATE_CRITERIA = UPPSTART_STEPS;
 
-export const MIN_TEST_FEEDBACK = 3;
-
-export async function uppstartGateCriteria(projectId: string, slug: string): Promise<{ criteria: GateCriteria; feedbackCount: number }> {
-  const [done, feedbackCount, roles] = await Promise.all([
+export async function uppstartGateCriteria(projectId: string, slug: string): Promise<{ criteria: GateCriteria; evidence: Evidence }> {
+  const [done, plan, tests, evaluation] = await Promise.all([
     prisma.initiativeChecklistItem.findMany({
       where: { projectId, completedAt: { not: null }, itemKey: { in: [...UPPSTART_GATE_CRITERIA] } },
       select: { itemKey: true },
     }),
-    prisma.sprintContribution.count({ where: { type: "FEEDBACK", sprintPhase: { phase: "VALIDATE", sprint: { projectSlug: slug } } } }),
-    prisma.projectRoleNeed.findMany({ where: { projectId }, select: { filledById: true } }),
+    prisma.projectPlan.findUnique({ where: { projectSlug: slug }, select: { hypothesis: true, mvpType: true, mvpDescription: true, pilotWhere: true, pilotWho: true, pilotDuration: true } }),
+    prisma.mvpTest.findMany({ where: { projectId }, select: { signal: true } }),
+    prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true } }),
   ]);
   const doneKeys = new Set(done.map((d) => d.itemKey));
-  const rolesFilled = roles.length > 0 && roles.every((r) => r.filledById);
+  const shown = uppstartStepsDone(plan, tests.length, evaluation?.successCriteria);
   return {
-    feedbackCount,
-    criteria: UPPSTART_GATE_CRITERIA.map((key) => ({
-      key,
-      met:
-        key === "test_with_users"
-          ? doneKeys.has(key) || feedbackCount >= MIN_TEST_FEEDBACK
-          : key === "core_team_formed"
-            ? doneKeys.has(key) || rolesFilled
-            : doneKeys.has(key),
-    })),
+    evidence: evidenceSummary(tests.map((t) => t.signal)),
+    criteria: UPPSTART_GATE_CRITERIA.map((key) => ({ key, met: doneKeys.has(key) || shown[key] })),
   };
 }
-
-const SPRINT_PHASE_LABEL: Record<string, string> = {
-  UNDERSTAND: "Kartlägga & förstå",
-  DIVERGE: "Skissa lösningar",
-  DECIDE: "Beslut & planera",
-  PROTOTYPE: "Bygga prototyp",
-  VALIDATE: "Testa med användare",
-};
 
 export async function runUppstartGateBrief(projectId: string, slug: string, userId: string): Promise<GateBrief> {
   const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId, language: "project" });
   if (!gate.ok) throw new InsightError(gate.reason);
 
-  const [project, lcProv, vpProv, sprint, sprintPlan, plan, roles, { feedbackCount }] = await Promise.all([
+  const [project, lcProv, vpProv, plan, tests, evaluation] = await Promise.all([
     prisma.project.findUnique({ where: { id: projectId }, select: { title: true, summary: true, leanCanvas: true, valueProposition: true } }),
     getFieldProvenance(projectId, "leanCanvas"),
     getFieldProvenance(projectId, "valueProposition"),
-    prisma.sprint.findFirst({
-      where: { projectSlug: slug },
-      orderBy: { createdAt: "desc" },
-      select: {
-        name: true,
-        currentPhase: true,
-        status: true,
-        phases: {
-          select: {
-            phase: true,
-            contributions: { orderBy: { createdAt: "asc" }, select: { type: true, content: true, _count: { select: { votes: true } } } },
-          },
-        },
-      },
-    }),
-    prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "sprintplan" } }, select: { content: true } }),
-    prisma.projectPlan.findUnique({ where: { projectSlug: slug }, select: { goal: true, resources: true } }),
-    prisma.projectRoleNeed.findMany({ where: { projectId }, select: { title: true, filledById: true } }),
-    uppstartGateCriteria(projectId, slug),
+    prisma.projectPlan.findUnique({ where: { projectSlug: slug } }),
+    prisma.mvpTest.findMany({ where: { projectId }, orderBy: { createdAt: "asc" }, select: { who: true, happened: true, signal: true } }),
+    prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true } }),
   ]);
   if (!project) throw new InsightError("not_found");
 
-  // The fields a sprint tests: the solution side of both canvases.
+  // The fields the smallest version tests: the solution side of both canvases.
   const SOLUTION_FIELDS = new Set(["solution", "uniqueValueProposition", "channels", "vpProducts", "vpRelievers", "vpCreators"]);
   const fieldLines = (entity: string, row: Record<string, unknown> | null, fields: readonly string[], prov: Record<string, { status: string }>) =>
     fields
       .filter((f) => SOLUTION_FIELDS.has(f) && typeof row?.[f] === "string" && (row[f] as string).trim())
       .map((f) => `${entity}.${f} [${prov[f]?.status === "VET" ? "VET" : "ANTAR"}]: ${row![f]}`)
       .join("\n");
-  const strip = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-  const sprintText = sprint
-    ? [
-        `Sprint: ${sprint.name} (nu i steget ${SPRINT_PHASE_LABEL[sprint.currentPhase]}${sprint.status === "COMPLETED" ? ", avslutad" : ""})`,
-        ...sprint.phases.map(
-          (ph) =>
-            `${SPRINT_PHASE_LABEL[ph.phase]}:\n${
-              ph.contributions.map((c) => `- [${c.type}${c._count.votes ? `, ${c._count.votes} röster` : ""}] ${c.content}`).join("\n") || "(inga bidrag)"
-            }`,
-        ),
-        `Antal feedback-bidrag från testpersoner: ${feedbackCount}`,
-      ].join("\n")
-    : "Ingen Design Sprint har gjorts.";
+  const evidence = evidenceSummary(tests.map((t) => t.signal));
+  const SIGNAL_TEXT: Record<string, string> = { LIKED: "tyckte det var bra", CONTINUE: "vill fortsätta / anmälde sig", HELPING: "hjälper till / tog med någon", PAID: "betalade / lovade att betala" };
 
   const content = [
     `Projekt: ${project.title} — ${project.summary ?? ""}`,
-    sprintPlan ? `Sprintplan: ${strip(sprintPlan.content)}` : "Ingen sprintplan.",
-    sprintText,
+    plan?.hypothesis ? `Det teamet testar: ${plan.hypothesis}` : "Ingen hypotes formulerad.",
+    plan?.mvpType ? `Minsta version (${plan.mvpType}): ${plan.mvpDescription ?? ""}` : "Ingen minsta version beskriven.",
+    tests.length
+      ? `Tester (${tests.length}; ${evidence.counts.PAID} betalade, ${evidence.counts.HELPING} hjälper till, ${evidence.counts.CONTINUE} vill fortsätta, ${evidence.counts.LIKED} bara positiva):\n${tests.map((t) => `- ${t.who}: ${SIGNAL_TEXT[t.signal]}${t.happened ? ` — ${t.happened}` : ""}`).join("\n")}`
+      : "Inga tester gjorda.",
+    plan?.learnings ? `Teamets lärdomar: ${plan.learnings}` : "",
     `Canvasens lösningsfält:\n${fieldLines("leanCanvas", project.leanCanvas as Record<string, unknown> | null, LEAN_CANVAS_FIELDS, lcProv)}\n${fieldLines("valueProposition", project.valueProposition as Record<string, unknown> | null, VALUE_PROPOSITION_FIELDS, vpProv)}`,
-    plan?.goal ? `Projektplanens mål och avgränsning: ${plan.goal}` : "",
-    `Kärnteam: ${roles.length ? roles.map((r) => `${r.title} (${r.filledById ? "tillsatt" : "vakant"})`).join(", ") : "inga roller definierade"}`,
+    plan?.pilotWhere || plan?.pilotWho || plan?.pilotDuration
+      ? `Pilotplan: var ${plan?.pilotWhere ?? "—"}; för vem ${plan?.pilotWho ?? "—"}; hur länge ${plan?.pilotDuration ?? "—"}; team ${plan?.pilotTeam ?? "—"}; budget ${plan?.pilotBudget ?? "—"}`
+      : "Ingen pilotplan.",
+    evaluation?.successCriteria ? `Framgångskriterier för piloten: ${evaluation.successCriteria}` : "",
   ]
     .filter(Boolean)
     .join("\n\n");
@@ -344,8 +303,8 @@ export async function runUppstartGateBrief(projectId: string, slug: string, user
   return brief;
 }
 
-// ADJUST: test the sprint questions still open. PIVOT: rework the
-// solution fields that didn't hold. Pure, like cardsForDecision.
+// ADJUST: test the questions still open. PIVOT: rework the solution fields
+// that didn't hold. Pure, like cardsForDecision.
 export function cardsForUppstartDecision(
   outcome: PhaseGateOutcome,
   brief: GateBrief | null,

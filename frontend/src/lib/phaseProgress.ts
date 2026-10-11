@@ -1,3 +1,4 @@
+import { UPPSTART_STEPS, type UppstartStep } from "@/lib/mvp";
 import { DISPLAY_PHASES, getChecklistForPhase, overviewPathFor, toDisplayPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 
 // How far a project has come in each phase — what fills the phase bars
@@ -16,8 +17,6 @@ export type ProjectSignals = {
   dreamConfirmed: boolean;
   hasSummaryAndDescription: boolean;
   sdgCount: number;
-  // Members who aren't just followers.
-  activeMemberCount: number;
   leanCanvasFilled: number;
   // How many of the impact model's own links are filled (IMPACT_MODEL_FIELDS).
   impactModelFilled: number;
@@ -25,13 +24,8 @@ export type ProjectSignals = {
   valuePropositionFilled: number;
   interviewCount: number;
   marketScanCount: number;
-  sprintCount: number;
-  // Design-sprint steps (SprintPhaseName) closed in any sprint.
-  closedSprintSteps: string[];
-  fundingNeedSet: boolean;
-  // Uppstart (same data as uppstartGateCriteria)
-  testFeedbackCount: number;
-  allRolesFilled: boolean;
+  // Uppstart (#320, same data as uppstartGateCriteria — lib/mvp.ts)
+  uppstartDone: Record<UppstartStep, boolean>;
   // Lansering (same data as lanseringGateCriteria)
   pilotSuccessCriteria: boolean;
   pilotLogEntries: number;
@@ -64,18 +58,10 @@ export type ProjectSignals = {
 export const MIN_LEAN_CANVAS_BLOCKS = 6; // of 11
 export const MIN_VALUE_PROPOSITION_FIELDS = 4; // of 6
 export const MIN_INTERVIEWS = 3;
-// Match MIN_TEST_FEEDBACK / MIN_LOG_ENTRIES in lib/phaseGate.ts (the test
-// keeps them in sync) — the bars and the gates must never disagree.
-export const MIN_TEST_FEEDBACK = 3;
+// Match MIN_LOG_ENTRIES in lib/phaseGate.ts (the test keeps them in sync) —
+// the bars and the gates must never disagree.
 export const MIN_LOG_ENTRIES = 3;
 
-const SPRINT_STEP_KEYS: Record<string, string> = {
-  UNDERSTAND: "map_understand",
-  DIVERGE: "sketch_solutions",
-  DECIDE: "decide_plan",
-  PROTOTYPE: "build_prototype",
-  VALIDATE: "test_with_users",
-};
 
 // Every phase. For Uppstart → Skala the rules are the same ones the phase
 // gates already use (lib/phaseGate.ts's *GateCriteria), so a bar and its
@@ -91,13 +77,8 @@ export function autoDoneKeys(s: ProjectSignals): string[] {
   add("impact_model_created", s.impactModelFields > 0 && s.impactModelFilled >= s.impactModelFields);
   add("target_audience_interviews", s.interviewCount >= MIN_INTERVIEWS);
   add("market_scan_partners", s.marketScanCount > 0);
-  add("core_team_formed", s.activeMemberCount >= 2);
-  add("sprint_prepped", s.sprintCount > 0);
-  for (const step of s.closedSprintSteps) if (SPRINT_STEP_KEYS[step]) done.push(SPRINT_STEP_KEYS[step]);
-  add("rough_budget_estimated", s.fundingNeedSet);
-  // Uppstart, as in uppstartGateCriteria
-  add("test_with_users", s.testFeedbackCount >= MIN_TEST_FEEDBACK);
-  add("core_team_formed", s.allRolesFilled);
+  // Uppstart (#320), as in uppstartGateCriteria (lib/mvp.ts)
+  for (const step of UPPSTART_STEPS) add(step, s.uppstartDone[step]);
   // Lansering, as in lanseringGateCriteria (+ the go/no-go decision itself)
   add("pilot_success_criteria", s.pilotSuccessCriteria);
   add("pilot_executed_documented", s.pilotLogEntries >= MIN_LOG_ENTRIES);

@@ -8,7 +8,8 @@ import { revalidatePath } from "next/cache";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { startUppstartFill, UPPSTART_SECTIONS, type UppstartSection } from "@/lib/uppstartFill";
-import type { PhaseGateOutcome } from "@prisma/client";
+import type { MvpSignal, MvpType, PhaseGateOutcome } from "@prisma/client";
+import { MVP_SIGNALS, MVP_TYPES } from "@/lib/mvp";
 import { getCanvasFieldLabels } from "@/lib/canvasFieldLabels";
 import { logger } from "@/lib/logger";
 import { aiGateMessage, resolveAiMode, type AiGateBlockReason } from "@/lib/aiMode";
@@ -48,62 +49,52 @@ export async function startUppstartDrafts(projectSlug: string, section?: string)
   return done(projectSlug);
 }
 
-// ─── Kärnteamets roller ─────────────────────────────────────────────────────
+// ─── De fyra stegen (#320) ──────────────────────────────────────────────────
 
-function cleanRole(title: string, description: string) {
-  return { title: title.trim().slice(0, 200), description: description.trim().slice(0, 2000) || null };
-}
+// Text fields a lead can write on the page; successCriteria lives on the
+// pilot evaluation, where Lansering reads it.
+const PLAN_TEXT_FIELDS = ["hypothesis", "mvpDescription", "pilotWhere", "pilotWho", "pilotDuration", "pilotTeam", "pilotBudget"] as const;
+type PlanTextField = (typeof PLAN_TEXT_FIELDS)[number];
+export type UppstartPlanPatch = Partial<Record<PlanTextField | "successCriteria" | "mvpType", string>>;
 
-export async function addRoleNeed(projectSlug: string, title: string, description: string): Promise<{ error?: string }> {
+const clean = (v: string) => v.trim().slice(0, 5000) || null;
+
+export async function saveUppstartPlan(projectSlug: string, patch: UppstartPlanPatch): Promise<{ error?: string }> {
   const ctx = await requireLead(projectSlug);
   if (!ctx) return { error: "Forbidden" };
-  const data = cleanRole(title, description);
-  if (!data.title) return { error: "Rollen behöver en titel" };
-  const max = await prisma.projectRoleNeed.aggregate({ where: { projectId: ctx.project.id }, _max: { order: true } });
-  await prisma.projectRoleNeed.create({ data: { projectId: ctx.project.id, ...data, order: (max._max.order ?? -1) + 1 } });
-  return done(projectSlug);
-}
-
-export async function updateRoleNeed(projectSlug: string, roleId: string, title: string, description: string): Promise<{ error?: string }> {
-  const ctx = await requireLead(projectSlug);
-  if (!ctx) return { error: "Forbidden" };
-  const data = cleanRole(title, description);
-  if (!data.title) return { error: "Rollen behöver en titel" };
-  await prisma.projectRoleNeed.updateMany({ where: { id: roleId, projectId: ctx.project.id }, data });
-  return done(projectSlug);
-}
-
-export async function deleteRoleNeed(projectSlug: string, roleId: string): Promise<{ error?: string }> {
-  const ctx = await requireLead(projectSlug);
-  if (!ctx) return { error: "Forbidden" };
-  await prisma.projectRoleNeed.deleteMany({ where: { id: roleId, projectId: ctx.project.id } });
-  return done(projectSlug);
-}
-
-// Points a role at a project member (or clears it). Only real members —
-// not followers — can fill a role. When every role is filled, the
-// checklist step "Definiera roller och bilda kärnteam" is done.
-export async function assignRoleNeed(projectSlug: string, roleId: string, userId: string | null): Promise<{ error?: string }> {
-  const ctx = await requireLead(projectSlug);
-  if (!ctx) return { error: "Forbidden" };
-  if (userId) {
-    const member = await prisma.projectMember.findUnique({
-      where: { projectId_userId: { projectId: ctx.project.id, userId } },
-      select: { role: true },
-    });
-    if (!member || member.role === "FOLLOWER") return { error: "Personen är inte medlem i projektet" };
-  }
-  await prisma.projectRoleNeed.updateMany({ where: { id: roleId, projectId: ctx.project.id }, data: { filledById: userId } });
-
-  const roles = await prisma.projectRoleNeed.findMany({ where: { projectId: ctx.project.id }, select: { filledById: true } });
-  // Never un-ticks: someone may have marked the step done by hand.
-  if (roles.length > 0 && roles.every((r) => r.filledById)) {
-    await prisma.initiativeChecklistItem.upsert({
-      where: { projectId_itemKey: { projectId: ctx.project.id, itemKey: "core_team_formed" } },
-      create: { projectId: ctx.project.id, phase: "PILOT", itemKey: "core_team_formed", completedAt: new Date(), completedById: ctx.userId },
-      update: { completedAt: new Date(), completedById: ctx.userId },
+  const data: Record<string, string | null> = {};
+  for (const f of PLAN_TEXT_FIELDS) if (typeof patch[f] === "string") data[f] = clean(patch[f]!);
+  const mvpType = typeof patch.mvpType === "string" ? (patch.mvpType ? patch.mvpType : null) : undefined;
+  if (mvpType && !MVP_TYPES.includes(mvpType as MvpType)) return { error: "Okänd typ" };
+  const planData = { ...data, ...(mvpType !== undefined ? { mvpType: mvpType as MvpType | null } : {}), updatedById: ctx.userId };
+  await prisma.projectPlan.upsert({ where: { projectSlug }, create: { projectSlug, ...planData }, update: planData });
+  if (typeof patch.successCriteria === "string") {
+    const successCriteria = clean(patch.successCriteria);
+    await prisma.pilotEvaluation.upsert({
+      where: { projectSlug },
+      create: { projectSlug, successCriteria, updatedById: ctx.userId },
+      update: { successCriteria, updatedById: ctx.userId },
     });
   }
+  return done(projectSlug);
+}
+
+// One person who tried the smallest version, and how strong a signal it gave.
+export async function addMvpTest(projectSlug: string, who: string, happened: string, signal: string): Promise<{ error?: string }> {
+  const ctx = await requireLead(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  if (!who.trim()) return { error: "Skriv vem som provade" };
+  if (!MVP_SIGNALS.includes(signal as MvpSignal)) return { error: "Välj vad som hände" };
+  await prisma.mvpTest.create({
+    data: { projectId: ctx.project.id, who: who.trim().slice(0, 200), happened: clean(happened), signal: signal as MvpSignal, createdById: ctx.userId },
+  });
+  return done(projectSlug);
+}
+
+export async function deleteMvpTest(projectSlug: string, testId: string): Promise<{ error?: string }> {
+  const ctx = await requireLead(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  await prisma.mvpTest.deleteMany({ where: { id: testId, projectId: ctx.project.id } });
   return done(projectSlug);
 }
 

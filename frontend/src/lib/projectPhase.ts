@@ -155,16 +155,13 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
     { key: "market_scan_partners", label: "Omvärldsbevakning", href: "market-scan" },
   ],
   SPRINT: [],
+  // Uppstart (#320): test whether anyone wants it, fast, with the smallest
+  // version. The four steps live on the Uppstart page (lib/mvp.ts).
   PILOT: [
-    { key: "core_team_formed", label: "Bilda kärnteamet och fördela rollerna", href: "members" },
-    { key: "sprint_prepped", label: "Design Sprint (5 steg)", href: "sprints" },
-    { key: "map_understand", label: "Kartlägga & förstå", href: "sprints", parentKey: "sprint_prepped" },
-    { key: "sketch_solutions", label: "Skissa lösningar", href: "sprints", parentKey: "sprint_prepped" },
-    { key: "decide_plan", label: "Beslut & planera", href: "sprints", parentKey: "sprint_prepped" },
-    { key: "build_prototype", label: "Bygga prototyp", href: "sprints", parentKey: "sprint_prepped" },
-    { key: "test_with_users", label: "Testa med användare", href: "sprints", parentKey: "sprint_prepped" },
-    { key: "rough_budget_estimated", label: "Ta fram grov budget/resursbehov", href: "project-plan" },
-    { key: "pilot_scope_defined", label: "Planera och avgränsa piloten", href: "project-plan" },
+    { key: "mvp_hypothesis", label: "Vad testar vi?" },
+    { key: "mvp_built", label: "Vår minsta version" },
+    { key: "mvp_tested", label: "Låt dem prova" },
+    { key: "pilot_planned", label: "Beslut och plan för piloten" },
   ],
   PRODUCTION: [
     { key: "pilot_success_criteria", label: "Definiera framgångskriterier för pilotfasen", href: "pilot-evaluation" },

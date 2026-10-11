@@ -1,5 +1,5 @@
-import { autoDoneKeys, MIN_INTERVIEWS, MIN_LOG_ENTRIES, MIN_TEST_FEEDBACK, isPhaseFinished, nextStep, phaseProgress, phaseStepProgress, phaseSteps, type ProjectSignals } from "../lib/phaseProgress";
-import { MIN_INTERVIEWS as GATE_MIN_INTERVIEWS, MIN_LOG_ENTRIES as GATE_MIN_LOG, MIN_TEST_FEEDBACK as GATE_MIN_FEEDBACK } from "../lib/phaseGate";
+import { autoDoneKeys, MIN_INTERVIEWS, MIN_LOG_ENTRIES, isPhaseFinished, nextStep, phaseProgress, phaseStepProgress, phaseSteps, type ProjectSignals } from "../lib/phaseProgress";
+import { MIN_INTERVIEWS as GATE_MIN_INTERVIEWS, MIN_LOG_ENTRIES as GATE_MIN_LOG } from "../lib/phaseGate";
 
 jest.mock("../lib/prisma", () => ({ prisma: {} }));
 jest.mock("../lib/aiMode", () => ({ getAiClientFor: jest.fn() }));
@@ -8,18 +8,13 @@ const none: ProjectSignals = {
   dreamConfirmed: false,
   hasSummaryAndDescription: false,
   sdgCount: 0,
-  activeMemberCount: 1,
   leanCanvasFilled: 0,
   impactModelFilled: 0,
   impactModelFields: 6,
   valuePropositionFilled: 0,
   interviewCount: 0,
   marketScanCount: 0,
-  sprintCount: 0,
-  closedSprintSteps: [],
-  fundingNeedSet: false,
-  testFeedbackCount: 0,
-  allRolesFilled: false,
+  uppstartDone: { mvp_hypothesis: false, mvp_built: false, mvp_tested: false, pilot_planned: false },
   pilotSuccessCriteria: false,
   pilotLogEntries: 0,
   pilotResultsSummary: false,
@@ -56,9 +51,6 @@ describe("phaseProgress", () => {
       valuePropositionFilled: 3,
       interviewCount: 3,
       marketScanCount: 1,
-      sprintCount: 1,
-      closedSprintSteps: ["UNDERSTAND", "DIVERGE"],
-      fundingNeedSet: true,
     });
     expect(keys).toEqual(
       expect.arrayContaining([
@@ -67,31 +59,26 @@ describe("phaseProgress", () => {
         "lean_canvas_created",
         "target_audience_interviews",
         "market_scan_partners",
-        "sprint_prepped",
-        "map_understand",
-        "sketch_solutions",
-        "rough_budget_estimated",
       ]),
     );
-    // Below threshold: 3 of 6 VP fields; one member isn't a team. The old
-    // invite and board steps are gone (#201).
+    // Below threshold: 3 of 6 VP fields. The old invite and board steps are
+    // gone (#201), and so are Uppstart's team and sprint steps (#320).
     expect(keys).not.toContain("value_proposition_created");
     expect(keys).not.toContain("peer_feedback_requested");
     expect(keys).not.toContain("kanban_seeded");
     expect(keys).not.toContain("core_team_formed");
+    expect(keys).not.toContain("mvp_tested");
   });
 
   it("uses the same thresholds as the phase gates", () => {
     expect(MIN_INTERVIEWS).toBe(GATE_MIN_INTERVIEWS);
-    expect(MIN_TEST_FEEDBACK).toBe(GATE_MIN_FEEDBACK);
     expect(MIN_LOG_ENTRIES).toBe(GATE_MIN_LOG);
   });
 
   it("later phases: marks tasks from the same data the gates use", () => {
     const keys = autoDoneKeys({
       ...none,
-      testFeedbackCount: 3,
-      allRolesFilled: true,
+      uppstartDone: { mvp_hypothesis: true, mvp_built: false, mvp_tested: true, pilot_planned: false },
       pilotSuccessCriteria: true,
       pilotLogEntries: 2,
       pilotGateDecided: true,
@@ -104,8 +91,8 @@ describe("phaseProgress", () => {
     });
     expect(keys).toEqual(
       expect.arrayContaining([
-        "test_with_users",
-        "core_team_formed",
+        "mvp_hypothesis",
+        "mvp_tested",
         "pilot_success_criteria",
         "pilot_go_no_go",
         "impact_measurement_setup",
@@ -119,7 +106,8 @@ describe("phaseProgress", () => {
     expect(keys).not.toContain("pilot_executed_documented");
     expect(keys).not.toContain("funding_secured");
     expect(keys).not.toContain("impact_externally_verified");
-    // No key is listed twice (core_team_formed has two signals).
+    expect(keys).not.toContain("mvp_built");
+    // No key is listed twice.
     expect(new Set(keys).size).toBe(keys.length);
   });
 
@@ -142,8 +130,8 @@ describe("phaseProgress", () => {
   });
 
   it("skips a parent step while its sub-steps are what's left", () => {
-    const done = new Set(["core_team_formed"]);
-    expect(nextStep("PILOT", done)?.key).toBe("map_understand");
+    const done = new Set(["process_scaled_up"]);
+    expect(nextStep("ESTABLISH", done)?.key).toBe("funding_secured");
   });
 
   it("the bars have one segment per main step, sub-steps fold into their parent", () => {
@@ -151,20 +139,19 @@ describe("phaseProgress", () => {
   });
 
   it("a step with sub-steps fills as they get done", () => {
-    const sprint = phaseSteps("PILOT", new Set(["map_understand", "sketch_solutions"])).find((s) => s.key === "sprint_prepped");
-    expect(sprint).toMatchObject({ done: false, frac: 0.4, subDone: 2, subTotal: 5 });
+    const funding = phaseSteps("ESTABLISH", new Set()).find((s) => s.key === "stable_operations_funding");
+    expect(funding).toMatchObject({ done: false, frac: 0, subDone: 0, subTotal: 1 });
   });
 
   it("a step is done when ticked itself or when all its sub-steps are", () => {
-    const subs = ["map_understand", "sketch_solutions", "decide_plan", "build_prototype", "test_with_users"];
-    expect(phaseSteps("PILOT", new Set(subs)).find((s) => s.key === "sprint_prepped")).toMatchObject({ done: true, frac: 1 });
-    expect(phaseSteps("PILOT", new Set(["sprint_prepped"])).find((s) => s.key === "sprint_prepped")).toMatchObject({ done: true, frac: 1 });
+    expect(phaseSteps("ESTABLISH", new Set(["funding_secured"])).find((s) => s.key === "stable_operations_funding")).toMatchObject({ done: true, frac: 1 });
+    expect(phaseSteps("ESTABLISH", new Set(["stable_operations_funding"])).find((s) => s.key === "stable_operations_funding")).toMatchObject({ done: true, frac: 1 });
   });
 
   it("counts steps done and fills by fraction", () => {
-    const p = phaseStepProgress(new Set(["core_team_formed", "map_understand", "sketch_solutions"]))[1];
-    // Uppstart has 4 main steps (the board step left with #201): 1 + 2/5 of the sprint.
-    expect(p).toMatchObject({ done: 1, total: 4, pct: 35, complete: false });
+    const p = phaseStepProgress(new Set(["mvp_hypothesis", "mvp_built"]))[1];
+    // Uppstart has four steps (#320): what we test, the smallest version, the tests, the pilot plan.
+    expect(p).toMatchObject({ done: 2, total: 4, pct: 50, complete: false });
   });
 
   it("a phase is finished only when its steps and its kanban cards are done", () => {
