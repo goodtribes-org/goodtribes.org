@@ -7,17 +7,20 @@ import { hasVoice, trustLevel } from "@/lib/impactStory";
 // how far up the trust ladder it is. Renders nothing until there's a story —
 // like VerifiedImpactPanel, it can only add, never advertise an absence.
 export async function ImpactStoryCard({ projectId, slug, locale }: { projectId: string; slug: string; locale: string }) {
-  const [followup, delivered, verified, t] = await Promise.all([
+  const [followup, delivered, verified, confirmations, t] = await Promise.all([
     prisma.impactFollowup.findUnique({
       where: { projectSlug: slug },
       select: { story: true, voiceQuote: true, voiceWho: true, voiceConsent: true, externalVerificationNotes: true },
     }),
     prisma.impactReport.count({ where: { projectId, kind: "DELIVERED", rejectedAt: null } }),
     prisma.impactReport.count({ where: { projectId, kind: "DELIVERED", verifiedAt: { not: null } } }),
+    // Partners who confirmed it (#336); only organisations that said yes are named.
+    prisma.impactConfirmation.findMany({ where: { projectId, confirmedAt: { not: null } }, orderBy: { confirmedAt: "asc" }, select: { confirmerOrg: true, showOrgPublicly: true } }),
     getTranslations({ locale, namespace: "ImpactStoryCard" }),
   ]);
   if (!followup?.story?.trim()) return null;
-  const level = trustLevel({ followup, deliveredReports: delivered, verifiedDeliveredReports: verified });
+  const level = trustLevel({ followup, deliveredReports: delivered, verifiedDeliveredReports: verified, partnerConfirmations: confirmations.length });
+  const namedOrgs = [...new Set(confirmations.filter((c) => c.showOrgPublicly && c.confirmerOrg).map((c) => c.confirmerOrg!))];
   return (
     <section aria-labelledby="impact-story-heading" className="rounded-2xl border border-seagrass/30 bg-white p-5">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -33,6 +36,11 @@ export async function ImpactStoryCard({ projectId, slug, locale }: { projectId: 
         <blockquote className="mt-4 border-l-4 border-seagrass/50 pl-4 text-base italic text-dark-slate/85">
           ”{followup.voiceQuote}”{followup.voiceWho && <span className="mt-1 block text-sm not-italic text-dark-slate/60">— {followup.voiceWho}</span>}
         </blockquote>
+      )}
+      {confirmations.length > 0 && (
+        <p className="mt-4 text-sm text-seagrass">
+          ✓ {namedOrgs.length ? t("confirmedBy", { orgs: namedOrgs.join(", ") }) : t("confirmedByCount", { count: confirmations.length })}
+        </p>
       )}
     </section>
   );

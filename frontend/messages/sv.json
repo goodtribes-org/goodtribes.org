@@ -5029,7 +5029,22 @@
     "tplMoments": "Månad för månad:",
     "pulseHeading": "Månad för månad",
     "pulseLink": "Svara på månadens puls",
-    "storyFillIn": "Fyll i det som saknas innan du sparar."
+    "storyFillIn": "Fyll i det som saknas innan du sparar.",
+    "partnerHeading": "Be en partner bekräfta",
+    "partnerIntro": "Skicka en länk till en partner, skola eller kommun. De ser er berättelse och era siffror och kan bekräfta med ett klick att det stämmer, utan konto. Då når ni ⭐⭐⭐.",
+    "partnerLabelPlaceholder": "Vem skickar ni till? T.ex. Vällingby skola",
+    "partnerCreate": "Skapa länk",
+    "partnerNeedsStory": "Skriv er berättelse först. Det är den partnern bekräftar.",
+    "partnerMade": "Länken till {label}:",
+    "partnerCopy": "Kopiera",
+    "partnerCopied": "Kopierad",
+    "partnerOnce": "Spara eller skicka den nu. Av säkerhetsskäl visas den bara en gång. Den fungerar i 30 dagar och kan användas en gång.",
+    "partnerState_waiting": "Väntar · gäller till {date}",
+    "partnerState_confirmed": "Bekräftad {date}",
+    "partnerState_revoked": "Återkallad {date}",
+    "partnerState_expired": "Gick ut {date}",
+    "partnerRevoke": "Dra tillbaka länken",
+    "partnerNotPublic": "organisationen visas inte publikt"
   },
   "OverviewSkeleton": {
     "loading": "Hämtar fasen …"
@@ -6048,7 +6063,9 @@
     "trust1": "Vi berättar",
     "trust2": "Deltagare berättar",
     "trust3": "Någon annan har sett det",
-    "trust4": "Granskat av GoodTribes"
+    "trust4": "Granskat av GoodTribes",
+    "confirmedBy": "Bekräftat av {orgs}",
+    "confirmedByCount": "Bekräftat av {count, plural, one {en partner} other {# partner}}"
   },
   "InterestSection": {
     "heading": "Vill du ha det här där du bor?",
@@ -6095,5 +6112,29 @@
     "thanksWhere": "Det syns nu i loggen och i Impact.",
     "snoozed": "Vi påminner er om en vecka.",
     "backToProject": "Tillbaka till projektet"
+  },
+  "ImpactConfirm": {
+    "eyebrow": "Stämmer det här?",
+    "intro": "Projektet har bett dig titta på vad de har åstadkommit. Läs berättelsen och bekräfta om den stämmer med det du har sett. Det tar en minut och kräver inget konto.",
+    "storyHeading": "Deras berättelse",
+    "numbersHeading": "Siffrorna",
+    "neverSummed": "Siffrorna står som de rapporterats, de räknas aldrig ihop.",
+    "atLeast": "minst",
+    "approx": "ca",
+    "cumulative": "totalt sedan start",
+    "formHeading": "Bekräfta att det stämmer",
+    "namePlaceholder": "Ditt namn",
+    "orgPlaceholder": "Din organisation",
+    "commentPlaceholder": "Vill du lägga till något? (valfritt)",
+    "showOrg": "Det är okej att visa min organisations namn på projektets sida",
+    "privacy": "Ditt namn och din kommentar ser bara projektets team.",
+    "confirm": "Ja, det här stämmer",
+    "sending": "Skickar …",
+    "thanks": "Tack!",
+    "thanksText": "Teamet har fått veta att du har bekräftat deras berättelse.",
+    "alreadyHeading": "Tack! Det är bekräftat",
+    "alreadyText": "Teamet har fått veta att berättelsen stämmer med det du har sett. Länken kan bara användas en gång.",
+    "goneHeading": "Länken fungerar inte",
+    "goneText": "Länken har gått ut eller dragits tillbaka. Be projektet om en ny om du vill bekräfta."
   }
 }

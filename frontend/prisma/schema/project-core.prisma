@@ -158,6 +158,7 @@ model Project {
   promotedFromValuePropositionDraft ValuePropositionDraft? @relation("ValuePropositionDraftPromotedToProject")
   parentInstances    ProjectInstance[]    @relation("ParentInstances")
   interestSignals    InterestSignal[]     @relation("InterestSignals")
+  impactConfirmations ImpactConfirmation[] @relation("ImpactConfirmations")
   childInstance      ProjectInstance?     @relation("ChildInstance")
   alumni             ProjectAlumni[]      @relation("ProjectAlumni")
   openForReplication Boolean              @default(false)
