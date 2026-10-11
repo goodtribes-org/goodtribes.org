@@ -15,6 +15,12 @@ export const FEATURE_FLAGS = {
     // lib/aiProjectStart.ts); the admin page warns about it.
     requiresAi: true,
   },
+  "funding-calls-ai": {
+    label: "AI-förslag för utlysningar",
+    description:
+      "Knappen \"Föreslå med AI\" på /site-admin/funding-calls: AI läser utlysningens texter och föreslår sammanfattning, vem som får söka, belopp och krav, med ett citat som källa per fält. Utan flaggan fyller administratören i fälten själv.",
+    requiresAi: true,
+  },
 } as const satisfies Record<string, { label: string; description: string; requiresAi?: boolean }>;
 
 export type FeatureFlagKey = keyof typeof FEATURE_FLAGS;

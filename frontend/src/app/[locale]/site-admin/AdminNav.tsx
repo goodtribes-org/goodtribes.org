@@ -2,7 +2,7 @@
 
 import {
   Award, BookOpen, Building2, Coins, FileText, Flag, FolderKanban, Gavel, GraduationCap, HandCoins, Home,
-  Landmark, LayoutDashboard, MessageSquareText, PieChart, QrCode, Scale, ShoppingBag, Sparkles, ToggleLeft, TrendingUp, Users,
+  Landmark, LayoutDashboard, Megaphone, MessageSquareText, PieChart, QrCode, Scale, ShoppingBag, Sparkles, ToggleLeft, TrendingUp, Users,
   type LucideIcon,
 } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
@@ -24,6 +24,7 @@ const ICONS: Record<string, LucideIcon> = {
   "/site-admin/profit-distribution": PieChart,
   "/site-admin/impact-fund": HandCoins,
   "/site-admin/funding-sources": BookOpen,
+  "/site-admin/funding-calls": Megaphone,
   "/site-admin/shop": ShoppingBag,
   "/site-admin/token-backfill": Coins,
   "/site-admin/hero-carousel": Home,

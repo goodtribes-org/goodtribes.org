@@ -5,7 +5,7 @@
 // `count` names a queue in getAdminQueueCounts (lib/siteAdminCounts.ts):
 // the item shows how many are waiting.
 
-export type AdminQueue = "contentFlags" | "ethics" | "suggestions" | "impactReports" | "invoicing" | "legalType" | "profitDistribution";
+export type AdminQueue = "contentFlags" | "ethics" | "suggestions" | "impactReports" | "invoicing" | "legalType" | "profitDistribution" | "fundingCalls";
 
 // `short`: the menu's label where the full one doesn't fit its width.
 export type AdminNavItem = { href: string; label: string; short?: string; count?: AdminQueue };
@@ -44,6 +44,7 @@ export const SITE_ADMIN_GROUPS: AdminNavGroup[] = [
       { href: "/site-admin/profit-distribution", label: "Vinstfördelning", count: "profitDistribution" },
       { href: "/site-admin/impact-fund", label: "Impactfonden" },
       { href: "/site-admin/funding-sources", label: "Fondkatalog" },
+      { href: "/site-admin/funding-calls", label: "Utlysningar", count: "fundingCalls" },
       { href: "/site-admin/shop", label: "Shop" },
       { href: "/site-admin/token-backfill", label: "Token-bakfyllning" },
     ],
