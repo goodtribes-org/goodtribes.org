@@ -12,6 +12,7 @@ import { getAiClientFor } from "@/lib/aiMode";
 import { createProjectRecord } from "@/lib/createProject";
 import { MAX_DRAFTS, listOwnDrafts, type OwnDraft } from "@/lib/projectVisibility";
 import { openChallengeBySlug } from "@/lib/challenges";
+import { openCallBySlug } from "@/lib/fundingCalls/public";
 import { revalidatePath } from "next/cache";
 import { escapeHtml } from "@/lib/renderBody";
 import { markChecklistDone } from "@/app/[locale]/projects/[slug]/guide/actions";
@@ -310,12 +311,15 @@ async function shareAsIdea(input: GuideInput, userId: string, openQuestions: str
 
   // An answer to an organisation's challenge (#228) — only while it's open.
   const challenge = await openChallengeBySlug(input.challengeSlug);
+  // An idea for a funding call's application (#344) — only while it's open.
+  const call = await openCallBySlug(input.callSlug);
   const idea = await prisma.idea.create({
     // sdgGoals is NOT NULL without a default in the table; tags as the
     // idea form leaves them. SDGs can be picked on the idea afterwards.
     data: {
       title: fallbackTitle(input), description, problem, solution, sdgGoals: [], tags: [], status: "open", authorId: userId,
       ...(challenge ? { challengeId: challenge.id } : {}),
+      ...(call ? { fundingCallId: call.id } : {}),
     },
   });
   await prisma.ideaContributor.create({ data: { ideaId: idea.id, userId, role: "author" } }).catch(() => {});
@@ -331,6 +335,7 @@ async function shareAsIdea(input: GuideInput, userId: string, openQuestions: str
   ]);
   invalidateListCache(IDEAS_LIST_TAG);
   if (challenge) revalidatePath(`/challenges/${challenge.slug}`);
+  if (call) revalidatePath(`/utlysningar/${call.slug}`);
   redirect(await localized(`/ideas/${idea.id}`));
 }
 

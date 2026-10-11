@@ -11,6 +11,7 @@ import { Link } from "@/i18n/navigation";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { listOwnDrafts } from "@/lib/projectVisibility";
 import { openChallengeBySlug } from "@/lib/challenges";
+import { openCallBySlug } from "@/lib/fundingCalls/public";
 import type { Metadata } from "next";
 import type { Locale } from "next-intl";
 
@@ -25,14 +26,14 @@ export default async function NewProjectPage({
   searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ from?: string; fromThread?: string; title?: string; manual?: string; ai?: string; guide?: string; challenge?: string }>;
+  searchParams: Promise<{ from?: string; fromThread?: string; title?: string; manual?: string; ai?: string; guide?: string; challenge?: string; utlysning?: string }>;
 }) {
   const { locale } = await params;
   const [session, t] = await Promise.all([
     auth(),
     getTranslations({ locale, namespace: "NewProjectPage" }),
   ]);
-  const { from: ideaId, fromThread, title: titleParam, manual, ai, guide, challenge: challengeParam } = await searchParams;
+  const { from: ideaId, fromThread, title: titleParam, manual, ai, guide, challenge: challengeParam, utlysning: callParam } = await searchParams;
   const userId = session?.user?.id;
 
   // Din dröm (#214, #234): a plain "Nytt projekt", the start page's dream
@@ -60,6 +61,8 @@ export default async function NewProjectPage({
     ]);
     // "Dela en idé till utmaningen" (#228), also after the login round trip.
     const challenge = await openChallengeBySlug(challengeParam ?? stashed?.challengeSlug);
+    // "Dela en idé till utlysningen" (#344), the same way.
+    const forCall = await openCallBySlug(callParam ?? stashed?.callSlug);
     return (
       <div>
         {inProgress && (
@@ -93,6 +96,7 @@ export default async function NewProjectPage({
           }
           ownDrafts={ownDrafts}
           challenge={challenge ? { slug: challenge.slug, title: challenge.title, organisation: challenge.organisation.name } : null}
+          forCall={forCall ? { slug: forCall.slug!, title: forCall.title, funder: forCall.fundingSource.name } : null}
         />
       </div>
     );

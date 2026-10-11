@@ -305,6 +305,8 @@ enum FundingApplicantType {
 // never the source's full text.
 model FundingCall {
   id                  String                 @id @default(cuid())
+  // The public address, /utlysningar/<slug>; set when first published (#344).
+  slug                String?                @unique
   fundingSourceId     String
   fundingSource       FundingSource          @relation(fields: [fundingSourceId], references: [id], onDelete: Cascade)
   // The source's id (Vinnova's diarienummer); NULL for hand-added calls.
@@ -343,6 +345,8 @@ model FundingCall {
   publishedById       String?
   createdAt           DateTime               @default(now())
   updatedAt           DateTime               @updatedAt
+
+  ideas               Idea[]                 @relation("FundingCallIdeas")
 
   @@unique([fundingSourceId, externalId])
   @@index([status, deadline])

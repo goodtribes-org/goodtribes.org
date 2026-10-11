@@ -3,6 +3,7 @@ import { parseGdpCalls } from "@/lib/fundingCalls/gdp";
 import { callHash, sourceProvenance } from "@/lib/fundingCalls/import";
 import { acceptSuggestion, isGrounded } from "@/lib/fundingCalls/analyze";
 import { shortQuote, stockholmTime, QUOTE_MAX } from "@/lib/fundingCalls/types";
+import { amountLabel, compactKr } from "@/lib/fundingCalls/public";
 
 jest.mock("../lib/prisma", () => ({ prisma: {} }));
 jest.mock("../lib/aiMode", () => ({ getAiClientFor: jest.fn() }));
@@ -123,5 +124,19 @@ describe("AI suggestions", () => {
     expect(data.summary).toContain("500 000");
     expect(data.sdgGoals).toEqual([9]);
     expect(provenance.amountMaxSek.url).toBe("https://vinnova.se");
+  });
+});
+
+describe("public cards", () => {
+  it("shows amounts as the funder gave them", () => {
+    const t = { upTo: "Upp till", from: "Från" };
+    expect(amountLabel(null, 500000, t)?.replace(/\s/g, " ")).toBe("Upp till 500 000 kr");
+    expect(amountLabel(1000000, 10000000, t)?.replace(/\s/g, " ")).toBe("1 000 000–10 000 000 kr");
+    expect(amountLabel(null, null, t)).toBeNull();
+  });
+  it("fits a card's narrow cell", () => {
+    expect(compactKr(500000).replace(/\s/g, " ")).toBe("500 tkr");
+    expect(compactKr(3500000).replace(/\s/g, " ")).toBe("3,5 mkr");
+    expect(compactKr(800)).toBe("800 kr");
   });
 });

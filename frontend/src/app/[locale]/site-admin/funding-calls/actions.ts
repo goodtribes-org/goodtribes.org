@@ -10,6 +10,7 @@ import { aiGateMessage } from "@/lib/aiMode";
 import { importFundingCalls, type SourceResult } from "@/lib/fundingCalls/import";
 import { APPLICANT_TYPES, suggestCallFields } from "@/lib/fundingCalls/analyze";
 import { safeExternalUrl } from "@/lib/impactReports";
+import { uniqueCallSlug } from "@/lib/fundingCalls/public";
 import { toProxyUrl } from "@/lib/storageUrl";
 
 // Utlysningar (#343), the site admin's side: which sources are fetched and
@@ -116,12 +117,16 @@ export async function saveCall(id: string, f: CallFields): Promise<{ error?: str
 // What a call needs before anyone sees it.
 export async function publishCall(id: string): Promise<{ error?: string }> {
   const userId = await requireAdminSession();
-  const call = await prisma.fundingCall.findUnique({ where: { id }, select: { summary: true, url: true, deadline: true, rolling: true } });
+  const call = await prisma.fundingCall.findUnique({ where: { id }, select: { title: true, slug: true, summary: true, url: true, deadline: true, rolling: true } });
   if (!call) return { error: "Utlysningen hittades inte" };
   const missing = [!call.summary?.trim() && "sammanfattning", !call.url && "länk till finansiären", !call.deadline && !call.rolling && "deadline"].filter(Boolean);
   if (missing.length) return { error: `Saknas: ${missing.join(", ")}` };
   if (call.deadline && call.deadline.getTime() < Date.now()) return { error: "Deadline har redan passerat" };
-  await prisma.fundingCall.update({ where: { id }, data: { status: "PUBLISHED", publishedAt: new Date(), publishedById: userId, changedAt: null } });
+  // The public address is set once and kept, so shared links don't break.
+  const slug = call.slug ?? (await uniqueCallSlug(call.title));
+  await prisma.fundingCall.update({ where: { id }, data: { status: "PUBLISHED", slug, publishedAt: new Date(), publishedById: userId, changedAt: null } });
+  revalidatePath("/utlysningar");
+  revalidatePath(`/utlysningar/${slug}`);
   return done(id);
 }
 
