@@ -3193,6 +3193,7 @@
     "taskCreated": "created a task",
     "taskMoved": "moved a task",
     "todoCompleted": "checked off an item",
+    "impactPulse": "shared this month's impact pulse",
     "genericActivity": "activity",
     "taskCompletedWithTitle": "completed the task \"{title}\"",
     "taskCreatedWithTitle": "created the task \"{title}\"",
@@ -5025,6 +5026,9 @@
     "tplCumulative": "total since start",
     "tplAtLeast": "at least",
     "tplApprox": "approx.",
+    "tplMoments": "Month by month:",
+    "pulseHeading": "Month by month",
+    "pulseLink": "Answer this month's pulse",
     "storyFillIn": "Fill in what is missing before you save."
   },
   "OverviewSkeleton": {
@@ -5258,7 +5262,9 @@
       "tool_edited": "{who} worked on {tool}"
     },
     "draftWaiting": "Publish {project}?",
-    "draftWaitingMeta": "Draft for {days} days"
+    "draftWaitingMeta": "Draft for {days} days",
+    "pulseDue": "How did {project} do this month?",
+    "pulseDueMeta": "Impact pulse · 30 seconds"
   },
   "MyGoodTribes": {
     "projectsTitle": "Your projects – where they are and what's next",
@@ -6059,5 +6065,35 @@
     "sending": "Sending …",
     "cancel": "Cancel",
     "thanks": "Thank you! The team can now see it's needed where you live."
+  },
+  "ImpactPulse": {
+    "eyebrow": "Impact pulse",
+    "heading": "How did {month} go?",
+    "intro": "30 seconds: a sentence, a photo or a figure. It goes into the log, the metrics and your story in Impact, so you don't have to write it afterwards.",
+    "notYet": "The pulse starts when the project is in Launch.",
+    "doneThisMonth": "{name} has already answered this month. The next reminder comes in {days} days, but you're welcome to add more.",
+    "someone": "Someone",
+    "earlier": "What you've told so far",
+    "earlierEmpty": "Nothing yet. The first pulse is the start of your story.",
+    "toImpact": "To Impact",
+    "noteLabel": "One sentence about the month",
+    "notePlaceholder": "Something that happened, someone you met, something that went better or worse than expected …",
+    "numberLabel": "A figure (if you have one)",
+    "noMetrics": "You have no metrics yet.",
+    "addMetric": "Add one",
+    "photoLabel": "A photo (if you like)",
+    "addPhoto": "Add photo",
+    "changePhoto": "Change photo",
+    "removePhoto": "Remove",
+    "uploading": "Uploading …",
+    "photoTooLarge": "The image is larger than 5 MB",
+    "photoFailed": "The image couldn't be uploaded",
+    "save": "Save",
+    "saving": "Saving …",
+    "snooze": "Remind me in a week",
+    "thanks": "Thank you!",
+    "thanksWhere": "It now shows in the log and in Impact.",
+    "snoozed": "We'll remind you in a week.",
+    "backToProject": "Back to the project"
   }
 }

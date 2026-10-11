@@ -63,11 +63,14 @@ const fmt = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1).repla
 
 // "Fyll i från projektets siffror": the story's start without AI — what the
 // project already has, figures exactly as reported (never summed, a
-// cumulative figure marked as such), headings for the team to fill in.
+// cumulative figure marked as such), the team's own monthly pulse sentences
+// (#335, oldest first, already labelled with their month), headings for the
+// team to fill in.
 export function storyTemplate(
-  t: { did: string; numbers: string; meant: string; next: string; cumulative: string; atLeast: string; approx: string },
+  t: { did: string; numbers: string; meant: string; next: string; cumulative: string; atLeast: string; approx: string; moments: string },
   metrics: Metric[],
   reports: Report[],
+  moments: string[] = [],
 ): string {
   const numbers = [
     ...metrics.filter((m) => m.updates > 0).map((m) => `- ${m.label}: ${fmt(m.currentValue)} ${m.unit}`),
@@ -76,5 +79,11 @@ export function storyTemplate(
         `- ${r.metricDescription}: ${r.valueQualifier === "AT_LEAST" ? `${t.atLeast} ` : r.valueQualifier === "APPROXIMATE" ? `${t.approx} ` : ""}${fmt(r.metricValue)}${r.metricUnit ? ` ${r.metricUnit}` : ""}${r.isCumulative ? ` (${t.cumulative})` : ""}`,
     ),
   ];
-  return [`${t.did}\n`, `${t.numbers}\n${numbers.join("\n") || "- "}`, `\n${t.meant}\n`, `\n${t.next}\n`].join("\n");
+  return [
+    `${t.did}\n`,
+    `${t.numbers}\n${numbers.join("\n") || "- "}`,
+    ...(moments.length ? [`\n${t.moments}\n${moments.map((m) => `- ${m}`).join("\n")}`] : []),
+    `\n${t.meant}\n`,
+    `\n${t.next}\n`,
+  ].join("\n");
 }

@@ -66,6 +66,7 @@ model ImpactUpdate {
   note           String?
   updatedById    String
   updatedBy      User         @relation("ImpactUpdates", fields: [updatedById], references: [id])
+  pulse          ImpactPulse?
   createdAt      DateTime     @default(now())
 
   @@index([impactMetricId])
@@ -255,4 +256,26 @@ model InterestSignal {
   createdAt   DateTime @default(now())
 
   @@index([projectId])
+}
+
+// Impactpuls (#335): once a month, from Lansering on, the team answers "Hur
+// gick det den här månaden?" in 30 seconds — a sentence, a photo, and/or a
+// figure for one of the project's metrics (recorded as an ImpactUpdate). The
+// reminder in "Att göra" is computed from these rows, no cron. A row with
+// only snoozedUntil set is "Påminn mig om en vecka": no content, it just
+// moves the reminder.
+model ImpactPulse {
+  id             String        @id @default(cuid())
+  projectId      String
+  project        Project       @relation("ImpactPulses", fields: [projectId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User          @relation("ImpactPulses", fields: [userId], references: [id], onDelete: Cascade)
+  note           String?
+  imageUrl       String?
+  impactUpdateId String?       @unique
+  impactUpdate   ImpactUpdate? @relation(fields: [impactUpdateId], references: [id], onDelete: SetNull)
+  snoozedUntil   DateTime?
+  createdAt      DateTime      @default(now())
+
+  @@index([projectId, createdAt])
 }
