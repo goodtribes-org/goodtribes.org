@@ -238,3 +238,21 @@ model MentorshipFeedback {
   comment             String?
   createdAt           DateTime          @default(now())
 }
+
+// "Jag vill att det här startar där jag bor" (#332): someone elsewhere wants
+// the project where they live. Anyone may say so, logged in or not; the
+// place and the count are public, the name and contact only for the
+// project's leads (and only given by those who want to help start it).
+model InterestSignal {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation("InterestSignals", fields: [projectId], references: [id], onDelete: Cascade)
+  place       String
+  wantsToHelp Boolean  @default(false)
+  name        String?
+  contact     String?
+  userId      String?
+  createdAt   DateTime @default(now())
+
+  @@index([projectId])
+}

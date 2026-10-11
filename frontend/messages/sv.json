@@ -4915,7 +4915,15 @@
     "aiIntro_choice": "AI:n kan jämföra de fyra sätten att växa för just ert projekt.",
     "aiIntro_core": "AI:n kan föreslå vad som är kärnan och vad som får anpassas.",
     "aiIntro_firstPlace": "AI:n kan föreslå hur första nya platsen startar.",
-    "aiIntro_capital": "AI:n kan föreslå vad det kostar att växa och vem som kan betala."
+    "aiIntro_capital": "AI:n kan föreslå vad det kostar att växa och vem som kan betala.",
+    "interestHeading": "Där andra vill att det startar",
+    "interestIntro": "{people, plural, one {# person} other {# personer}} har visat att de vill ha det där de bor:",
+    "interestHelpers": "{count, plural, one {# vill hjälpa till} other {# vill hjälpa till}}",
+    "interestContactsHeading": "De som vill hjälpa till att starta",
+    "interestAnonymous": "Utan namn",
+    "interestPrivate": "Bara ni som leder projektet ser namn och kontaktuppgifter.",
+    "interestNone": "Ingen har visat intresse än. Knappen finns på projektsidan.",
+    "interestClosed": "Knappen på projektsidan visas när ni öppnar för att andra startar egna, eller när projektet är i Skala."
   },
   "ImpactOverview": {
     "heading": "Impact",
@@ -6035,5 +6043,21 @@
     "trust2": "Deltagare berättar",
     "trust3": "Någon annan har sett det",
     "trust4": "Granskat av GoodTribes"
+  },
+  "InterestSection": {
+    "heading": "Vill du ha det här där du bor?",
+    "button": "Jag vill att det här startar där jag bor",
+    "empty": "Bli den första att visa var det behövs.",
+    "summary": "{people, plural, one {# person} other {# personer}} på {places, plural, one {# ort} other {# orter}} vill att det startar där de bor.",
+    "placeLabel": "Var bor du?",
+    "placePlaceholder": "Var bor du? T.ex. Göteborg eller Rinkeby",
+    "helpLabel": "Jag vill hjälpa till att starta det där",
+    "namePlaceholder": "Ditt namn (valfritt)",
+    "contactPlaceholder": "E-post eller telefon, så att teamet kan höra av sig",
+    "privacy": "Bara projektets ledare ser ditt namn och din kontaktuppgift. Publikt syns bara orten.",
+    "send": "Skicka",
+    "sending": "Skickar …",
+    "cancel": "Avbryt",
+    "thanks": "Tack! Teamet ser nu att det behövs där du bor."
   }
 }

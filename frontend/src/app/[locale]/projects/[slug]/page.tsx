@@ -49,6 +49,7 @@ import type { Locale } from "next-intl";
 import MiniCalendar from "./MiniCalendar";
 import { VerifiedImpactPanel } from "@/components/VerifiedImpactPanel";
 import { ImpactStoryCard } from "@/components/ImpactStoryCard";
+import { InterestSection } from "@/components/InterestSection";
 import PhaseChecklistWidget from "./PhaseChecklistWidget";
 import ProjectQuickActions from "./ProjectQuickActions";
 import MostActiveMembersWidget from "./MostActiveMembersWidget";
@@ -839,6 +840,9 @@ export default async function ProjectDetailPage({
 
           {/* The story from the Impact phase (#334): nothing until written */}
           <ImpactStoryCard projectId={project.id} slug={slug} locale={locale} />
+
+          {/* "Jag vill att det här startar där jag bor" (#332) */}
+          <InterestSection projectId={project.id} slug={slug} locale={locale} />
 
           {/* Phase checklist — same items/toggle as PhaseMenuBar's popover, always visible for the current phase */}
           <PhaseChecklistWidget
