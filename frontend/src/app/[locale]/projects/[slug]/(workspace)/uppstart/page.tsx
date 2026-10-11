@@ -21,6 +21,7 @@ import PhaseSteps, { type PhaseStep } from "../ide/PhaseSteps";
 import FillPoller from "../ide/FillPoller";
 import PlanFields from "./PlanFields";
 import HypothesisFields from "./HypothesisFields";
+import StepAiHelp, { TestSummaryHelp } from "./StepAiHelp";
 import { draftText } from "@/lib/aiLanguage";
 import MvpTests from "./MvpTests";
 import DraftButton from "./DraftButton";
@@ -95,6 +96,11 @@ export default async function UppstartOverviewPage({
   // AI only where the project uses it (#310): a project or phase set to
   // MANUAL sees no AI buttons and no claims that the AI drafted anything.
   const aiAvailable = aiConfigured && (await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "PILOT" })).mode !== "MANUAL";
+  // "Föreslå med AI" per step (#322), only where that step isn't MANUAL.
+  const stepAiModes = aiConfigured
+    ? await Promise.all(UPPSTART_STEPS.map((stepKey) => resolveAiMode({ projectId: project.id, feature: "project-plan", stepKey, phase: "PILOT" })))
+    : [];
+  const stepAi = (key: UppstartStep) => canEdit && aiConfigured && stepAiModes[UPPSTART_STEPS.indexOf(key)]?.mode !== "MANUAL";
 
   const fill: UppstartFillStatus = fillRow ? parseUppstartStatus(fillRow.status, fillRow.updatedAt) : {};
   const doneKeys = new Set(done.map((d) => d.itemKey));
@@ -173,6 +179,33 @@ export default async function UppstartOverviewPage({
   // The words around the three fields, in the project's language.
   const { hypWe, hypWant, hypKnow } = draftText(project.contentLocale);
   const hypothesisWords = { hypWe, hypWant, hypKnow };
+  // Help that needs no AI (#322): tips for the kind of smallest version
+  // picked (or every kind, before one is), and a fixed test script.
+  const tipTypes = plan?.mvpType ? [plan.mvpType] : MVP_TYPES;
+  const mvpTips = (
+    <div className="mt-6 border-t border-muted-teal/20 pt-4">
+      <h3 className="mb-2 text-sm font-semibold text-dark-slate">{plan?.mvpType ? t("tipsHeadingFor", { type: t(`mvpType_${plan.mvpType}`) }) : t("tipsHeading")}</h3>
+      <div className={`grid gap-3 ${tipTypes.length > 1 ? "sm:grid-cols-2" : ""}`}>
+        {tipTypes.map((m) => (
+          <div key={m}>
+            {tipTypes.length > 1 && <p className="text-xs font-semibold uppercase tracking-wide text-dark-slate/50">{t(`mvpType_${m}`)}</p>}
+            <ul className="mt-1 list-disc pl-5 text-sm text-dark-slate/75">
+              {[1, 2, 3].map((n) => <li key={n}>{t(`tip_${m}_${n}`)}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+  const testScript = (
+    <div className="mt-6 border-t border-muted-teal/20 pt-4 text-sm text-dark-slate/75">
+      <h3 className="mb-2 text-sm font-semibold text-dark-slate">{t("scriptHeading")}</h3>
+      <ol className="list-decimal pl-5">
+        {[1, 2, 3, 4, 5].map((n) => <li key={n}>{t(`scriptQ${n}`)}</li>)}
+      </ol>
+      <p className="mt-2 font-medium text-dark-slate">💰 {t("scriptAskFixed")}</p>
+    </div>
+  );
   const stepIntro = (text: string) => <p className="mb-4 text-center text-sm text-dark-slate/70">{text}</p>;
   const draftCta =
     !fillRow && canEdit && aiAvailable && !stillInIdea ? (
@@ -222,6 +255,7 @@ export default async function UppstartOverviewPage({
           {stepIntro(t("hypothesisIntro"))}
           <HypothesisFields key={keyOf(plan?.hypothesis)} slug={slug} value={plan?.hypothesis ?? null} words={hypothesisWords} canEdit={canEdit} />
           {stepTasks("mvp_hypothesis")}
+          {stepAi("mvp_hypothesis") && <StepAiHelp slug={slug} step="mvp_hypothesis" words={hypothesisWords} />}
         </OverviewSection>
       </div>
 
@@ -237,7 +271,9 @@ export default async function UppstartOverviewPage({
               { key: "mvpDescription", label: t("mvpDescriptionLabel"), value: plan?.mvpDescription ?? null, placeholder: t("mvpDescriptionPlaceholder"), rows: 3 },
             ]}
           />
+          {mvpTips}
           {stepTasks("mvp_built")}
+          {stepAi("mvp_built") && <StepAiHelp slug={slug} step="mvp_built" words={hypothesisWords} />}
         </OverviewSection>
       </div>
 
@@ -246,7 +282,10 @@ export default async function UppstartOverviewPage({
           {stepIntro(t("testsIntro", { min: MIN_MVP_TESTS }))}
           <div className="mb-4">{evidenceBox}</div>
           <MvpTests slug={slug} tests={tests} canEdit={canEdit} />
+          {stepAi("mvp_tested") && tests.length >= MIN_MVP_TESTS && <TestSummaryHelp slug={slug} />}
+          {testScript}
           {stepTasks("mvp_tested")}
+          {stepAi("mvp_tested") && <StepAiHelp slug={slug} step="mvp_tested" words={hypothesisWords} />}
         </OverviewSection>
       </div>
 
@@ -267,6 +306,21 @@ export default async function UppstartOverviewPage({
             ]}
           />
           {stepTasks("pilot_planned")}
+          {stepAi("pilot_planned") && (
+            <StepAiHelp
+              slug={slug}
+              step="pilot_planned"
+              words={hypothesisWords}
+              current={{
+                pilotWhere: plan?.pilotWhere ?? null,
+                pilotWho: plan?.pilotWho ?? null,
+                pilotDuration: plan?.pilotDuration ?? null,
+                pilotTeam: plan?.pilotTeam ?? null,
+                pilotBudget: plan?.pilotBudget ?? null,
+                successCriteria: evaluation?.successCriteria ?? null,
+              }}
+            />
+          )}
           {hasOldPlan && (
             <details className="mt-5 border-t border-muted-teal/20 pt-4">
               <summary className="cursor-pointer text-sm font-medium text-dark-slate/60">{t("oldPlanHeading")}</summary>

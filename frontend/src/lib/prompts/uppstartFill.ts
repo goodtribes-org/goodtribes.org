@@ -135,3 +135,125 @@ export const PILOT_PLAN_TOOL = {
     required: ["pilot_where", "pilot_who", "pilot_duration", "success_criteria"],
   },
 };
+
+// ─── AI-hjälp per steg (#322) ───────────────────────────────────────────────
+// Asked for from a step's "Föreslå med AI" button: the answer is shown as a
+// draft and saved only when the team picks it, never written on its own.
+
+export const HYPOTHESIS_SYSTEM_PROMPT = `${PHASE_CONTEXT}
+
+Föreslå vad teamet ska testa först. Utgå från det antagande om lösningen som är mest riskfyllt (fält märkta ANTAR, och fokus från fasgrinden) — det som allt hänger på.
+Svara i tre korta delar som sätts ihop till "Vi tror att [vilka] vill [vad], och vi vet det när [tecken]":
+- who: vilka det gäller, så konkret som möjligt.
+- what: vad de vill ha eller göra.
+- sign: ett tecken folk gör, inte säger (bokar, kommer tillbaka, betalar, anmäler sig).
+- why: en mening om varför just detta är viktigast att testa.
+
+${SHARED_RULES}
+
+Svara genom verktyget "vad_vi_testar".`;
+
+export const HYPOTHESIS_TOOL = {
+  name: "vad_vi_testar",
+  description: "Förslag på vad teamet testar först.",
+  input_schema: {
+    type: "object" as const,
+    properties: { who: { type: "string" }, what: { type: "string" }, sign: { type: "string" }, why: { type: "string" } },
+    required: ["who", "what", "sign", "why"],
+  },
+};
+
+export const MVP_OPTIONS_SYSTEM_PROMPT = `${PHASE_CONTEXT}
+
+Föreslå två eller tre olika sätt att testa det teamet tror (hypotesen), från det allra enklaste. Olika sorters test, inte varianter av samma: t.ex. göra det för hand för några få, en första träff, en skiss på papper att visa, en intresseanmälan.
+För varje förslag:
+- type: MANUAL, EVENT, PROTOTYPE (en skiss eller enkel modell att peka på), SIGNUP eller OTHER.
+- title: en kort rubrik (högst 8 ord).
+- description: 2–3 meningar om vad man gör och med vem.
+- needs: vad det kräver — tid, saker, personer — i en mening. Utan pengar eller med väldigt lite.
+Skriv utan facktermer som MVP.
+
+${SHARED_RULES}
+
+Svara genom verktyget "satt_att_testa".`;
+
+export const MVP_OPTIONS_TOOL = {
+  name: "satt_att_testa",
+  description: "Två eller tre sätt att testa idén på.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      options: {
+        type: "array",
+        minItems: 2,
+        maxItems: 3,
+        items: {
+          type: "object",
+          properties: {
+            type: { type: "string", enum: ["MANUAL", "EVENT", "PROTOTYPE", "SIGNUP", "OTHER"] },
+            title: { type: "string" },
+            description: { type: "string" },
+            needs: { type: "string" },
+          },
+          required: ["type", "title", "description", "needs"],
+        },
+      },
+    },
+    required: ["options"],
+  },
+};
+
+export const TEST_SCRIPT_SYSTEM_PROMPT = `${PHASE_CONTEXT}
+
+Skriv ett kort testmanus för när teamet låter någon prova den minsta versionen.
+- who_to_ask: 2–4 sorters personer att fråga, utifrån de tidiga användarna och målgruppen i canvasen. Inga namn på privatpersoner.
+- opening: vad man säger när man börjar, 1–2 meningar, vardagligt.
+- questions: 4–6 frågor om hur det var och vad de gör i dag — inte "skulle du gilla …". Folk är för snälla mot idéer.
+- ask: hur man till sist ber om något konkret: en anmälan, att de hjälper till, eller att de betalar eller lovar att betala. En eller två meningar.
+
+${SHARED_RULES}
+
+Svara genom verktyget "testmanus".`;
+
+export const TEST_SCRIPT_TOOL = {
+  name: "testmanus",
+  description: "Ett kort testmanus.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      who_to_ask: { type: "array", items: { type: "string" }, maxItems: 4 },
+      opening: { type: "string" },
+      questions: { type: "array", items: { type: "string" }, maxItems: 6 },
+      ask: { type: "string" },
+    },
+    required: ["who_to_ask", "opening", "questions", "ask"],
+  },
+};
+
+export const TEST_SUMMARY_SYSTEM_PROMPT = `${PHASE_CONTEXT}
+
+Sammanfatta vad testerna visar. Varje test har en signal, från svagast till starkast: tyckte det var bra, vill fortsätta, hjälper till, betalade.
+- patterns: 2–4 mönster i vad som hände, med stöd i testerna.
+- strongest: det starkaste tecknet hittills, i en mening.
+- missing: det testerna inte svarar på än (0–3).
+- next: en mening om vad teamet kan göra härnäst för att bli säkrare — gärna be om en betalning eller anmälan om ingen har gjort det.
+Bara det som står i testerna; räkna inte om signalerna till procent eller egna siffror.
+
+${SHARED_RULES}
+
+Svara genom verktyget "vad_testerna_visar".`;
+
+export const TEST_SUMMARY_TOOL = {
+  name: "vad_testerna_visar",
+  description: "Vad testerna visar.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      patterns: { type: "array", items: { type: "string" }, maxItems: 4 },
+      strongest: { type: "string" },
+      missing: { type: "array", items: { type: "string" }, maxItems: 3 },
+      next: { type: "string" },
+    },
+    required: ["patterns", "strongest", "missing", "next"],
+  },
+};
