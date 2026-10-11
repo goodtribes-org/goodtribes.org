@@ -14,6 +14,7 @@ import { latestInsight } from "@/lib/ideaInsights";
 import { skalaGateCriteria, type GateBrief } from "@/lib/phaseGate";
 import { SKALA_STEPS, skalaStepsDone, type SkalaStep } from "@/lib/scaling";
 import { parseCriteria } from "@/lib/pilot";
+import { groupByPlace } from "@/lib/interest";
 import { isSkalaFillInProgress, parseSkalaStatus, type SkalaFillStatus } from "@/lib/skalaFill";
 import OverviewSection from "../ide/OverviewSection";
 import PhaseSteps, { type PhaseStep } from "../ide/PhaseSteps";
@@ -57,7 +58,7 @@ export default async function SkalaOverviewPage({
   // A restart (#313) reopens this phase's gate: only decisions since then count.
   const restartAt = await lastRestartAt(project.id);
 
-  const [t, tCheck, tGate, tUpp, canEdit, isFounder, aiConfigured, fillRow, focusBrief, focusDecision, done, plan, choice, instances, forkCount, metrics, evaluation, campaign, applications, cards, gate, gateBrief, gateDecision] =
+  const [t, tCheck, tGate, tUpp, canEdit, isFounder, aiConfigured, fillRow, focusBrief, focusDecision, done, plan, choice, instances, forkCount, metrics, evaluation, campaign, applications, cards, gate, gateBrief, gateDecision, interest] =
     await Promise.all([
       getTranslations({ locale, namespace: "SkalaOverview" }),
       getTranslations({ locale, namespace: "ProjectPhaseChecklist" }),
@@ -86,6 +87,8 @@ export default async function SkalaOverviewPage({
       skalaGateCriteria(project.id, slug),
       latestInsight<GateBrief>(project.id, "SKALA_GATE"),
       prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, ...decidedSince(restartAt), fromPhase: "SCALE" }, orderBy: { createdAt: "desc" } }),
+      // Where people want it to start (#332).
+      prisma.interestSignal.findMany({ where: { projectId: project.id }, orderBy: { createdAt: "desc" }, select: { id: true, place: true, wantsToHelp: true, name: true, contact: true } }),
     ]);
   // AI only where the project uses it (#310), per step for the AI buttons.
   const aiAvailable = aiConfigured && (await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "SCALE" })).mode !== "MANUAL";
@@ -225,6 +228,36 @@ export default async function SkalaOverviewPage({
               { key: "geographies", label: t("whereLabel"), value: plan?.geographies ?? null, placeholder: t("wherePlaceholder"), rows: 3 },
             ]}
           />
+          {sub(t("interestHeading"))}
+          {interest.length ? (
+            <>
+              <p className="mb-2 text-sm text-dark-slate/70">{t("interestIntro", { people: interest.length })}</p>
+              <ul className="mb-3 flex flex-wrap gap-2 text-sm">
+                {groupByPlace(interest).map((p) => (
+                  <li key={p.place} className="rounded-lg border border-muted-teal/30 px-3 py-1.5 text-dark-slate/80">
+                    📍 {p.place} · <span className="font-semibold">{p.count}</span>
+                    {p.helpers > 0 && <span className="text-seagrass"> · {t("interestHelpers", { count: p.helpers })}</span>}
+                  </li>
+                ))}
+              </ul>
+              {canEdit && interest.some((i) => i.wantsToHelp) && (
+                <div className="rounded-xl border border-seagrass/30 bg-seagrass/5 p-4 text-sm">
+                  <p className="mb-2 font-semibold text-dark-slate">{t("interestContactsHeading")}</p>
+                  <ul className="flex flex-col gap-1 text-dark-slate/80">
+                    {interest.filter((i) => i.wantsToHelp).map((i) => (
+                      <li key={i.id}>
+                        {i.name || t("interestAnonymous")} · {i.place}
+                        {i.contact && <span className="text-dark-slate/60"> · {i.contact}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 text-xs text-dark-slate/50">{t("interestPrivate")}</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-sm text-dark-slate/50">{project.openForReplication || project.phase === "SCALE" ? t("interestNone") : t("interestClosed")}</p>
+          )}
           {stepTasks("scaling_goals_set")}
           {stepAi("scaling_goals_set") && !(plan?.goals?.trim() && plan?.geographies?.trim()) && <SkalaAiHelp slug={slug} kind="goals" current={current} />}
         </OverviewSection>

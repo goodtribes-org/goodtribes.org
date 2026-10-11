@@ -4915,7 +4915,15 @@
     "aiIntro_choice": "The AI can compare the four ways to grow for your project.",
     "aiIntro_core": "The AI can suggest what the core is and what may be adapted.",
     "aiIntro_firstPlace": "The AI can suggest how the first new place starts.",
-    "aiIntro_capital": "The AI can suggest what growing costs and who could pay."
+    "aiIntro_capital": "The AI can suggest what growing costs and who could pay.",
+    "interestHeading": "Where others want it to start",
+    "interestIntro": "{people, plural, one {# person has} other {# people have}} shown they want it where they live:",
+    "interestHelpers": "{count, plural, one {# wants to help} other {# want to help}}",
+    "interestContactsHeading": "Those who want to help start it",
+    "interestAnonymous": "No name",
+    "interestPrivate": "Only you who lead the project see names and contacts.",
+    "interestNone": "Nobody has shown interest yet. The button is on the project page.",
+    "interestClosed": "The button on the project page appears when you open for others to start their own, or when the project is in Scale."
   },
   "ImpactOverview": {
     "heading": "Impact",
@@ -6035,5 +6043,21 @@
     "trust2": "Participants tell",
     "trust3": "Someone else has seen it",
     "trust4": "Reviewed by GoodTribes"
+  },
+  "InterestSection": {
+    "heading": "Want this where you live?",
+    "button": "I want this to start where I live",
+    "empty": "Be the first to show where it's needed.",
+    "summary": "{people, plural, one {# person} other {# people}} in {places, plural, one {# place} other {# places}} want it to start where they live.",
+    "placeLabel": "Where do you live?",
+    "placePlaceholder": "Where do you live? E.g. Gothenburg",
+    "helpLabel": "I want to help start it there",
+    "namePlaceholder": "Your name (optional)",
+    "contactPlaceholder": "Email or phone, so the team can get in touch",
+    "privacy": "Only the project's leads see your name and contact. Publicly, only the place is shown.",
+    "send": "Send",
+    "sending": "Sending …",
+    "cancel": "Cancel",
+    "thanks": "Thank you! The team can now see it's needed where you live."
   }
 }
