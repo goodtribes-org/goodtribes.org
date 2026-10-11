@@ -3,6 +3,7 @@ import { uppstartStepsDone } from "@/lib/mvp";
 import { lanseringStepsDone } from "@/lib/pilot";
 import { etableraStepsDone } from "@/lib/establish";
 import { skalaStepsDone } from "@/lib/scaling";
+import { impactStepsDone } from "@/lib/impactStory";
 import { decidedSince, lastRestartAt } from "@/lib/phaseRestart";
 import { prisma } from "@/lib/prisma";
 import { autoDoneKeys, type ProjectSignals } from "@/lib/phaseProgress";
@@ -51,7 +52,10 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
     prisma.scalingPlan.findUnique({ where: { projectSlug: slug }, select: { goals: true, geographies: true, growthPath: true, coreFixed: true, teamOrLicenseModel: true, capitalPlan: true } }),
     prisma.projectInstance.findMany({ where: { parentSlug: slug }, select: { status: true } }),
     prisma.impactReport.findMany({ where: { projectId, kind: "DELIVERED", rejectedAt: null }, select: { verifiedAt: true } }),
-    prisma.impactFollowup.findUnique({ where: { projectSlug: slug }, select: { celebrationNotes: true } }),
+    prisma.impactFollowup.findUnique({
+      where: { projectSlug: slug },
+      select: { story: true, voiceQuote: true, voiceConsent: true, externalVerificationNotes: true, celebrationNotes: true, storySharedAt: true, nextStepDecision: true },
+    }),
     prisma.kanbanCard.findMany({
       where: { projectSlug: slug, phase: { in: ["IDEA", "SPRINT"] }, stepKey: { not: null }, column: "REVIEW" },
       select: { stepKey: true },
@@ -84,9 +88,7 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
       replicationOpened: !!project?.openForReplication || instances.length > 0,
       approvedInstance: instances.some((i) => i.status === "approved"),
     }),
-    deliveredReports: reports.length,
-    verifiedDeliveredReports: reports.filter((r) => r.verifiedAt).length,
-    celebrationWritten: !!followup?.celebrationNotes?.trim(),
+    impactDone: impactStepsDone({ followup, deliveredReports: reports.length, verifiedDeliveredReports: reports.filter((r) => r.verifiedAt).length }),
   };
 });
 

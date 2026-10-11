@@ -466,6 +466,16 @@ model ImpactFollowup {
   externalVerificationNotes  String?          @db.Text
   celebrationNotes           String?          @db.Text
   nextStepDecision           NextStepDecision @default(UNDECIDED)
+  // Impact (#334): the story the platform puts together and the team edits,
+  // a participant's voice (shown only with their consent), and when "Det
+  // här gjorde ni möjligt" went to everyone who contributed (once).
+  // externalVerificationNotes is "Vem mer har sett det", celebrationNotes
+  // the lessons worth sharing.
+  story                      String?          @db.Text
+  voiceQuote                 String?          @db.Text
+  voiceWho                   String?
+  voiceConsent               Boolean          @default(false)
+  storySharedAt              DateTime?
   updatedById                String?
   updatedBy                  User?            @relation("ImpactFollowupUpdatedBy", fields: [updatedById], references: [id])
   createdAt                  DateTime         @default(now())

@@ -191,11 +191,14 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
     { key: "local_teams_or_license", label: "Första nya platsen" },
     { key: "expansion_capital_secured", label: "Pengar för att växa" },
   ],
+  // Impact (#334): show honestly what you achieved, without administration
+  // (lib/impactStory.ts).
   IMPACT: [
-    { key: "sdg_impact_measured", label: "Mäta och rapportera faktisk SDG-påverkan", href: "impact" },
-    { key: "impact_externally_verified", label: "Extern verifiering/impact-rapport", href: "impact-followup" },
-    { key: "results_celebrated", label: "Fira och synliggöra resultat för community och finansiärer", href: "impact-followup" },
-    { key: "next_step_decided", label: "Besluta om nästa steg: fortsätta, replikera, eller avsluta ansvarsfullt", href: "impact-followup" },
+    { key: "sdg_impact_measured", label: "Er berättelse" },
+    { key: "voice_shared", label: "En röst" },
+    { key: "impact_externally_verified", label: "Vem har sett det?" },
+    { key: "results_celebrated", label: "Tacka och dela" },
+    { key: "next_step_decided", label: "Vad händer nu?" },
   ],
 };
 

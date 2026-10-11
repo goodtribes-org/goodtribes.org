@@ -61,6 +61,7 @@ const PAGE_SECTION_INTROS: Record<string, string[]> = {
   lansering: ["pilotStart", "pilotFollow", "pilotResults", "planForward", "lanseringGate"],
   etablera: ["howWeDoIt", "moneyThatLasts", "partnerships", "peopleAround", "etableraGate"],
   skala: ["whoElse", "howYouGrow", "theCore", "firstPlace", "moneyToGrow", "skalaGate"],
+  impactfasen: ["yourStory", "aVoice", "whoHasSeen", "thankAndShare", "whatNow"],
   "lean-canvas": ["leanCanvasPage"],
   "customer-model": ["customerModelPage"],
   "value-proposition": ["valuePropositionPage"],
