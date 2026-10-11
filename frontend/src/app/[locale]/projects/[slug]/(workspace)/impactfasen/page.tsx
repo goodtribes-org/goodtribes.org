@@ -24,6 +24,8 @@ import { DraftCta, FocusBox } from "../_overview/parts";
 import NextStepSection from "./NextStepSection";
 import { saveImpactFollowup } from "./actions";
 import { ImpactAiHelp, ShareStory, StoryStart, VoiceForm } from "./ImpactSteps";
+import PartnerLinks, { type PartnerLink } from "./PartnerLinks";
+import { confirmationState } from "@/lib/impactConfirmation";
 import PhaseProgressStrip from "../../PhaseProgressStrip";
 
 // Which section of this page each Impact step lives in (#334).
@@ -58,7 +60,7 @@ export default async function ImpactOverviewPage({
   const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true } });
   if (!project) notFound();
 
-  const [t, tCheck, tUpp, fieldLabels, canEdit, isFounder, aiConfigured, fillRow, focusBrief, focusDecision, checked, metrics, reports, followup, impactModel, nextBrief, cards, members, helpers, givers, aiUser, pulses] =
+  const [t, tCheck, tUpp, fieldLabels, canEdit, isFounder, aiConfigured, fillRow, focusBrief, focusDecision, checked, metrics, reports, followup, impactModel, nextBrief, cards, members, helpers, givers, aiUser, pulses, confirmations] =
     await Promise.all([
       getTranslations({ locale, namespace: "ImpactOverview" }),
       getTranslations({ locale, namespace: "ProjectPhaseChecklist" }),
@@ -96,6 +98,12 @@ export default async function ImpactOverviewPage({
         take: 36,
         select: { id: true, note: true, imageUrl: true, createdAt: true },
       }),
+      // Partner confirmation links (#336), newest first.
+      prisma.impactConfirmation.findMany({
+        where: { projectId: project.id },
+        orderBy: { createdAt: "desc" },
+        select: { id: true, label: true, createdAt: true, expiresAt: true, revokedAt: true, confirmedAt: true, confirmerName: true, confirmerOrg: true, comment: true, showOrgPublicly: true },
+      }),
     ]);
   // AI only where the project uses it (#310), per step for the AI buttons.
   const aiAvailable = aiConfigured && (await resolveAiMode({ projectId: project.id, feature: "project-plan", phase: "IMPACT" })).mode !== "MANUAL";
@@ -121,7 +129,7 @@ export default async function ImpactOverviewPage({
   );
 
   const verified = reports.filter((r) => r.verifiedAt).length;
-  const data = { followup, deliveredReports: reports.length, verifiedDeliveredReports: verified };
+  const data = { followup, deliveredReports: reports.length, verifiedDeliveredReports: verified, partnerConfirmations: confirmations.filter((c) => c.confirmedAt).length };
   const shown = impactStepsDone(data);
   const level = trustLevel(data);
   const doneKeys = new Set(checked.map((c) => c.itemKey));
@@ -132,12 +140,21 @@ export default async function ImpactOverviewPage({
     const hasContent =
       key === "sdg_impact_measured" ? metrics.some((m) => m._count.updates > 0)
       : key === "voice_shared" ? !!followup?.voiceQuote?.trim()
-      : key === "impact_externally_verified" ? reports.length > 0
+      : key === "impact_externally_verified" ? reports.length > 0 || confirmations.length > 0
       : key === "results_celebrated" ? false
       : !!nextBrief;
     return { key, anchor: STEP_ANCHOR[key], label: criterionLabel(key), status: doneKeys.has(key) || shown[key] ? "done" : hasContent ? "started" : "empty" };
   });
 
+  const dayFmt = new Intl.DateTimeFormat(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "short" });
+  const partnerLinks: PartnerLink[] = confirmations.map((c) => {
+    const state = confirmationState(c, Date.now());
+    return {
+      id: c.id, label: c.label, state,
+      date: dayFmt.format(state === "confirmed" ? c.confirmedAt! : state === "revoked" ? c.revokedAt! : c.expiresAt),
+      confirmerName: c.confirmerName, confirmerOrg: c.confirmerOrg, comment: c.comment, showOrgPublicly: c.showOrgPublicly,
+    };
+  });
   const stepIntro = (text: string) => <p className="mb-4 text-center text-sm text-dark-slate/70">{text}</p>;
   const sub = (title: string) => <h3 className="mb-2 mt-6 border-t border-muted-teal/20 pt-4 text-base font-semibold text-dark-slate">{title}</h3>;
   const keyOf = (...v: (string | null | undefined)[]) => v.map((x) => x ?? "").join("|");
@@ -315,6 +332,8 @@ export default async function ImpactOverviewPage({
             save={saveImpactFollowup}
             fields={[{ key: "externalVerificationNotes", label: t("othersLabel"), value: followup?.externalVerificationNotes ?? null, placeholder: t("othersPlaceholder"), rows: 3 }]}
           />
+          {sub(t("partnerHeading"))}
+          <PartnerLinks slug={slug} canEdit={canEdit} hasStory={!!followup?.story?.trim()} links={partnerLinks} />
           <div className="mt-4">{toolLink("impact", t("sendForReview"))}</div>
           {stepTasks("impact_externally_verified")}
         </OverviewSection>

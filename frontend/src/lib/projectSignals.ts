@@ -21,7 +21,7 @@ const filled = (row: Record<string, unknown> | null | undefined, fields: readonl
 export const getProjectSignals = cache(async (projectId: string, slug: string): Promise<ProjectSignals> => {
   const [
     project, interviewCount, marketScanCount, uppstartPlan, mvpTestCount, evaluation, pilotGate, launch, pages, campaign, applications,
-    activePartnerships, establishment, scalingPlan, instances, reports, followup, inReview,
+    activePartnerships, establishment, scalingPlan, instances, reports, followup, inReview, partnerConfirmations,
   ] = await Promise.all([
     prisma.project.findUnique({
       where: { id: projectId },
@@ -61,6 +61,7 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
       select: { stepKey: true },
       distinct: ["stepKey"],
     }),
+    prisma.impactConfirmation.count({ where: { projectId, confirmedAt: { not: null } } }),
   ]);
   const awarded = applications.some((a) => a.status === "awarded");
   return {
@@ -88,7 +89,7 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
       replicationOpened: !!project?.openForReplication || instances.length > 0,
       approvedInstance: instances.some((i) => i.status === "approved"),
     }),
-    impactDone: impactStepsDone({ followup, deliveredReports: reports.length, verifiedDeliveredReports: reports.filter((r) => r.verifiedAt).length }),
+    impactDone: impactStepsDone({ followup, deliveredReports: reports.length, verifiedDeliveredReports: reports.filter((r) => r.verifiedAt).length, partnerConfirmations }),
   };
 });
 

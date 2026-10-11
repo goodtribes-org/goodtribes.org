@@ -482,6 +482,34 @@ model ImpactFollowup {
   updatedAt                  DateTime         @updatedAt
 }
 
+// Partnerbekräftelse (#336): the team sends a link to a partner, school or
+// municipality, who sees the project's story and figures and confirms with
+// one click that it's right — no account. One link per recipient, used once.
+// Only the SHA-256 of the token is stored; the link itself is shown to the
+// team once. A confirmation is rung 3 on Impact's trust ladder ("Någon annan
+// har sett det"). The confirmer's organisation is shown publicly only when
+// they said yes; their name and comment only to the team.
+model ImpactConfirmation {
+  id              String    @id @default(cuid())
+  projectId       String
+  project         Project   @relation("ImpactConfirmations", fields: [projectId], references: [id], onDelete: Cascade)
+  tokenHash       String    @unique
+  // Who the team sent it to, in their own words ("Vällingby skola").
+  label           String
+  createdById     String
+  createdBy       User      @relation("ImpactConfirmationsCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  expiresAt       DateTime
+  revokedAt       DateTime?
+  confirmedAt     DateTime?
+  confirmerName   String?
+  confirmerOrg    String?
+  comment         String?   @db.Text
+  showOrgPublicly Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+
+  @@index([projectId])
+}
+
 // A project-less Excalidraw scratchpad — same idea as LeanCanvasDraft, for
 // the "try the whiteboard before starting a project" Sandbox tool. Single
 // owner only (no live collaborators, unlike SprintPhase.documentState —

@@ -130,6 +130,7 @@ model User {
   establishmentPlanEdits     EstablishmentPlan[]      @relation("EstablishmentPlanUpdatedBy")
   scalingPlanEdits           ScalingPlan[]            @relation("ScalingPlanUpdatedBy")
   impactFollowupEdits        ImpactFollowup[]         @relation("ImpactFollowupUpdatedBy")
+  impactConfirmationsCreated ImpactConfirmation[]     @relation("ImpactConfirmationsCreated")
   valuePropositionEdits         ValueProposition[]        @relation("ValuePropositionUpdatedBy")
   valuePropositionVersionsSaved ValuePropositionVersion[] @relation("ValuePropositionVersionSavedBy")
   valuePropositionDrafts        ValuePropositionDraft[]   @relation("ValuePropositionDraftOwner")

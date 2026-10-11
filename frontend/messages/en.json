@@ -5029,7 +5029,22 @@
     "tplMoments": "Month by month:",
     "pulseHeading": "Month by month",
     "pulseLink": "Answer this month's pulse",
-    "storyFillIn": "Fill in what is missing before you save."
+    "storyFillIn": "Fill in what is missing before you save.",
+    "partnerHeading": "Ask a partner to confirm",
+    "partnerIntro": "Send a link to a partner, school or municipality. They see your story and figures and can confirm with one click that it's right, without an account. That reaches ⭐⭐⭐.",
+    "partnerLabelPlaceholder": "Who are you sending it to? E.g. Vällingby school",
+    "partnerCreate": "Create link",
+    "partnerNeedsStory": "Write your story first. That's what the partner confirms.",
+    "partnerMade": "The link for {label}:",
+    "partnerCopy": "Copy",
+    "partnerCopied": "Copied",
+    "partnerOnce": "Save or send it now. For security it's only shown once. It works for 30 days and can be used once.",
+    "partnerState_waiting": "Waiting · valid until {date}",
+    "partnerState_confirmed": "Confirmed {date}",
+    "partnerState_revoked": "Taken back {date}",
+    "partnerState_expired": "Expired {date}",
+    "partnerRevoke": "Take the link back",
+    "partnerNotPublic": "organisation not shown publicly"
   },
   "OverviewSkeleton": {
     "loading": "Loading the phase …"
@@ -6048,7 +6063,9 @@
     "trust1": "We tell",
     "trust2": "Participants tell",
     "trust3": "Someone else has seen it",
-    "trust4": "Reviewed by GoodTribes"
+    "trust4": "Reviewed by GoodTribes",
+    "confirmedBy": "Confirmed by {orgs}",
+    "confirmedByCount": "Confirmed by {count, plural, one {a partner} other {# partners}}"
   },
   "InterestSection": {
     "heading": "Want this where you live?",
@@ -6095,5 +6112,29 @@
     "thanksWhere": "It now shows in the log and in Impact.",
     "snoozed": "We'll remind you in a week.",
     "backToProject": "Back to the project"
+  },
+  "ImpactConfirm": {
+    "eyebrow": "Is this right?",
+    "intro": "The project has asked you to look at what they have achieved. Read the story and confirm whether it matches what you have seen. It takes a minute and needs no account.",
+    "storyHeading": "Their story",
+    "numbersHeading": "The figures",
+    "neverSummed": "Figures are shown as reported, never added together.",
+    "atLeast": "at least",
+    "approx": "approx.",
+    "cumulative": "total since start",
+    "formHeading": "Confirm that it's right",
+    "namePlaceholder": "Your name",
+    "orgPlaceholder": "Your organisation",
+    "commentPlaceholder": "Anything to add? (optional)",
+    "showOrg": "It's fine to show my organisation's name on the project page",
+    "privacy": "Only the project's team sees your name and comment.",
+    "confirm": "Yes, this is right",
+    "sending": "Sending …",
+    "thanks": "Thank you!",
+    "thanksText": "The team has been told that you confirmed their story.",
+    "alreadyHeading": "Thank you! It's confirmed",
+    "alreadyText": "The team has been told that the story matches what you have seen. The link can only be used once.",
+    "goneHeading": "The link doesn't work",
+    "goneText": "The link has expired or been taken back. Ask the project for a new one if you'd like to confirm."
   }
 }

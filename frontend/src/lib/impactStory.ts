@@ -25,6 +25,8 @@ export type ImpactData = {
   // DELIVERED reports only — a grant received is support in, not impact out.
   deliveredReports: number;
   verifiedDeliveredReports: number;
+  // Partners who confirmed the story through a link (#336).
+  partnerConfirmations?: number;
 };
 
 // A voice is shown only when the person said yes.
@@ -33,13 +35,14 @@ export function hasVoice(f: ImpactData["followup"]): boolean {
 }
 
 // The trust ladder: 1 we tell, 2 participants tell, 3 someone else has
-// seen it, 4 reviewed by GoodTribes. The highest rung reached counts; none
+// seen it (the team says who, or a partner confirmed through a link — #336),
+// 4 reviewed by GoodTribes. The highest rung reached counts; none
 // is required. 0 = nothing told yet.
 export type TrustLevel = 0 | 1 | 2 | 3 | 4;
 
 export function trustLevel(d: ImpactData): TrustLevel {
   if (d.verifiedDeliveredReports > 0) return 4;
-  if (filled(d.followup?.externalVerificationNotes)) return 3;
+  if (filled(d.followup?.externalVerificationNotes) || (d.partnerConfirmations ?? 0) > 0) return 3;
   if (hasVoice(d.followup)) return 2;
   if (filled(d.followup?.story) || d.deliveredReports > 0) return 1;
   return 0;
@@ -50,7 +53,7 @@ export function impactStepsDone(d: ImpactData): Record<ImpactStep, boolean> {
   return {
     sdg_impact_measured: filled(f?.story) || d.deliveredReports > 0,
     voice_shared: hasVoice(f),
-    impact_externally_verified: filled(f?.externalVerificationNotes) || d.verifiedDeliveredReports > 0,
+    impact_externally_verified: filled(f?.externalVerificationNotes) || d.verifiedDeliveredReports > 0 || (d.partnerConfirmations ?? 0) > 0,
     results_celebrated: !!f?.storySharedAt || filled(f?.celebrationNotes),
     next_step_decided: !!f?.nextStepDecision && f.nextStepDecision !== "UNDECIDED",
   };
