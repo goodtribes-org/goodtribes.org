@@ -1,4 +1,5 @@
-import { evidenceSummary, uppstartStepsDone } from "../lib/mvp";
+import { composeHypothesis, evidenceSummary, parseHypothesis, uppstartStepsDone } from "../lib/mvp";
+import { draftText } from "../lib/aiLanguage";
 
 describe("Uppstart steps (#320)", () => {
   it("nothing is done for an empty plan", () => {
@@ -29,5 +30,24 @@ describe("how strong the evidence is (#320)", () => {
   });
   it("counts each signal", () => {
     expect(evidenceSummary(["LIKED", "PAID", "PAID"]).counts).toEqual({ LIKED: 1, CONTINUE: 0, HELPING: 0, PAID: 2 });
+  });
+});
+
+describe("the hypothesis in three parts (#320)", () => {
+  const sv = draftText("sv");
+  const en = draftText("en");
+  it("writes the sentence in the project's language and reads it back", () => {
+    const text = composeHypothesis({ who: "äldre i Hässelby", what: "gå en fast promenad", sign: "tre av fem vill fortsätta." }, sv);
+    expect(text).toBe("Vi tror att äldre i Hässelby vill gå en fast promenad, och vi vet det när tre av fem vill fortsätta.");
+    expect(parseHypothesis(text, sv)).toEqual({ who: "äldre i Hässelby", what: "gå en fast promenad", sign: "tre av fem vill fortsätta" });
+    const eng = composeHypothesis({ who: "parents", what: "to borrow a boat", sign: "five families book" }, en);
+    expect(parseHypothesis(eng, en)).toEqual({ who: "parents", what: "to borrow a boat", sign: "five families book" });
+  });
+  it("a freely written sentence isn't forced into parts", () => {
+    expect(parseHypothesis("Folk behöver båtar.", sv)).toBeNull();
+    expect(parseHypothesis(null, sv)).toBeNull();
+  });
+  it("nothing written is nothing stored", () => {
+    expect(composeHypothesis({ who: " ", what: "", sign: "" }, sv)).toBe("");
   });
 });

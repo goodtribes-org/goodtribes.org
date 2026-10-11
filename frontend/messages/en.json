@@ -4059,8 +4059,8 @@
     },
     "mvpBuilt": {
       "title": "Do the simplest thing that works",
-      "body": "The smallest version isn't a small product but a test. Do it by hand, arrange a meetup or describe the offer and see who bites. It should be doable next week.",
-      "tip": "If it takes more than a couple of weeks to build it's too big. Cut until it feels almost too simple."
+      "body": "This isn't a finished product but the least you can show or do to see if anyone wants it. Pen and paper go a long way: draw how it will work and show the sketch to a few people who could become users.",
+      "tip": "If it takes more than a couple of weeks to make it's too big. Cut until it feels almost too simple."
     },
     "mvpTested": {
       "title": "Let real people try it",
@@ -4456,17 +4456,15 @@
     "gateClosedLink": "To Launch →",
     "introAi": "The AI has drafted a starting point — change anything.",
     "failedMvp": "The AI couldn't suggest a smallest version. Write it yourselves here.",
-    "hypothesisIntro": "Write in a sentence or two what you believe and want to find out. For example: \"We believe parents in Vällingby want to borrow a boat on a Saturday, and we'll know when five families book.\"",
-    "hypothesisLabel": "We believe …",
-    "hypothesisPlaceholder": "We believe [who] want [what], and we'll know when [sign].",
-    "mvpIntro": "The smallest version is the simplest thing you can do next week to see if anyone wants it. No app, no website — starting by hand is fine.",
+    "hypothesisIntro": "Fill in the three parts and they become one sentence about what you believe and how you'll see if it's true.",
+    "mvpIntro": "Start with a sketch on pen and paper, ideally together with someone who could become a user. Then do the simplest thing you can to let someone try it: a sketch to point at, a service you do by hand or a first meetup. It should be doable next week.",
     "mvpTypeLabel": "What kind of smallest version?",
     "mvpType_MANUAL": "Do it by hand",
     "mvpTypeHint_MANUAL": "You deliver the service yourselves for a few people.",
     "mvpType_EVENT": "A first meetup",
     "mvpTypeHint_EVENT": "Invite people and see who comes.",
-    "mvpType_PROTOTYPE": "A simple prototype",
-    "mvpTypeHint_PROTOTYPE": "A sketch, a model or a sheet of paper to point at.",
+    "mvpType_PROTOTYPE": "A sketch to show",
+    "mvpTypeHint_PROTOTYPE": "Draw it on paper, or make a simple model to point at.",
     "mvpType_SIGNUP": "A sign-up",
     "mvpTypeHint_SIGNUP": "Describe the offer and see who signs up.",
     "mvpType_OTHER": "Something else",
@@ -4505,7 +4503,10 @@
     "oldPlanHeading": "Earlier project plan",
     "saving": "Saving …",
     "stepTasksHeading": "Tasks in this step",
-    "stepTasksDone": "Every task in this step is done."
+    "stepTasksDone": "Every task in this step is done.",
+    "hypothesisWhoPlaceholder": "who? E.g. parents in Vällingby",
+    "hypothesisWhatPlaceholder": "what? E.g. to borrow a boat on a Saturday",
+    "hypothesisSignPlaceholder": "which sign? E.g. five families book"
   },
   "LanseringOverview": {
     "heading": "Launch",

@@ -52,3 +52,30 @@ export function evidenceSummary(signals: readonly MvpSignal[]): Evidence {
     signals.length === 0 ? "none" : counts.PAID > 0 ? "strong" : counts.CONTINUE + counts.HELPING > 0 ? "some" : "weak";
   return { total: signals.length, counts, strength };
 }
+
+// "Vad testar vi?" in three short parts (#320), so nobody has to know what a
+// hypothesis is: "Vi tror att [vilka] vill [vad], och vi vet det när
+// [tecken]." Stored as the one sentence (ProjectPlan.hypothesis, what the AI
+// and the gate read), in the project's language (aiLanguage's draftText).
+export type HypothesisWords = { hypWe: string; hypWant: string; hypKnow: string };
+export type HypothesisParts = { who: string; what: string; sign: string };
+
+const clip = (v: string) => v.trim().replace(/[.\s]+$/, "");
+
+export function composeHypothesis(parts: HypothesisParts, w: HypothesisWords): string {
+  const who = clip(parts.who);
+  const what = clip(parts.what);
+  const sign = clip(parts.sign);
+  if (!who && !what && !sign) return "";
+  return `${w.hypWe} ${who} ${w.hypWant} ${what}, ${w.hypKnow} ${sign}.`;
+}
+
+const escape = (v: string) => v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// The three parts back from a sentence written with the template, or null
+// for one written freely (by hand before #320, or reworded).
+export function parseHypothesis(text: string | null | undefined, w: HypothesisWords): HypothesisParts | null {
+  const re = new RegExp(`^${escape(w.hypWe)}\\s+(.+?)\\s+${escape(w.hypWant)}\\s+(.+?),\\s*${escape(w.hypKnow)}\\s+(.+?)\\.?$`, "is");
+  const m = text?.trim().match(re);
+  return m ? { who: m[1].trim(), what: m[2].trim(), sign: m[3].trim() } : null;
+}

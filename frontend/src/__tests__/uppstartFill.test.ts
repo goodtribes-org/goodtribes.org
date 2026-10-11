@@ -34,15 +34,20 @@ describe("tasks", () => {
 });
 
 describe("the smallest version (#320)", () => {
-  it("keeps a known type and trims the texts", () => {
-    expect(coerceMvp({ hypothesis: " Vi tror att … ", mvp_type: "EVENT", mvp_description: "En träff i föreningslokalen." })).toEqual({
-      hypothesis: "Vi tror att …",
+  const words = { hypWe: "Vi tror att", hypWant: "vill", hypKnow: "och vi vet det när" };
+  it("puts the hypothesis together from its three parts and keeps a known type", () => {
+    expect(
+      coerceMvp({ hypothesis_who: " småbarnsföräldrar ", hypothesis_what: "låna en båt", hypothesis_sign: "fem familjer bokar.", mvp_type: "EVENT", mvp_description: "En träff i föreningslokalen." }, words),
+    ).toEqual({
+      hypothesis: "Vi tror att småbarnsföräldrar vill låna en båt, och vi vet det när fem familjer bokar.",
       mvpType: "EVENT",
       mvpDescription: "En träff i föreningslokalen.",
     });
   });
-  it("drops a type it doesn't know", () => {
-    expect(coerceMvp({ mvp_type: "APP" }).mvpType).toBeNull();
+  it("drops a type it doesn't know, and a hypothesis missing a part", () => {
+    const draft = coerceMvp({ mvp_type: "APP", hypothesis_who: "äldre", hypothesis_what: "promenera" }, words);
+    expect(draft.mvpType).toBeNull();
+    expect(draft.hypothesis).toBe("");
   });
 });
 

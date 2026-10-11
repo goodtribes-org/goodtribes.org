@@ -63,6 +63,10 @@ const TEXT = {
     proposalSuffix: "(Förslag från AI:n — justera nivåerna.)",
     gateProposalSuffix: "(Förslag från beslutsunderlaget vid fasgrinden — justera nivåerna.)",
     // Wiki page titles (slugs stay the same in every language)
+    // "Vad testar vi?" (#320, lib/mvp.ts composeHypothesis)
+    hypWe: "Vi tror att",
+    hypWant: "vill",
+    hypKnow: "och vi vet det när",
     titleInterviewGuide: "Intervjuguide",
     titlePilotPlan: "Pilotplan",
     titleWorkflows: "Arbetsflöden och ansvar",
@@ -143,6 +147,9 @@ const TEXT = {
     draftNoteImpact: "AI draft — figures are given as reported, never summed.",
     proposalSuffix: "(Proposed by the AI — adjust the levels.)",
     gateProposalSuffix: "(Proposed in the phase-gate brief — adjust the levels.)",
+    hypWe: "We believe",
+    hypWant: "want",
+    hypKnow: "and we'll know when",
     titleInterviewGuide: "Interview guide",
     titlePilotPlan: "Pilot plan",
     titleWorkflows: "Workflows and responsibilities",
