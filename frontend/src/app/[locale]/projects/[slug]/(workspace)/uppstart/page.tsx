@@ -20,6 +20,8 @@ import { DraftCta, FieldGrid, FocusBox, GateClosed } from "../_overview/parts";
 import PhaseSteps, { type PhaseStep } from "../ide/PhaseSteps";
 import FillPoller from "../ide/FillPoller";
 import PlanFields from "./PlanFields";
+import HypothesisFields from "./HypothesisFields";
+import { draftText } from "@/lib/aiLanguage";
 import MvpTests from "./MvpTests";
 import DraftButton from "./DraftButton";
 import PhaseGateSection from "../ide/PhaseGateSection";
@@ -59,7 +61,7 @@ export default async function UppstartOverviewPage({
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   // The phase page for every project (#309); only its AI parts need AI.
-  const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true, title: true } });
+  const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true, title: true, contentLocale: true } });
   if (!project) notFound();
   // A restart (#313) reopens this phase's gate: only decisions since then count.
   const restartAt = await lastRestartAt(project.id);
@@ -168,6 +170,9 @@ export default async function UppstartOverviewPage({
       </div>
     );
   };
+  // The words around the three fields, in the project's language.
+  const { hypWe, hypWant, hypKnow } = draftText(project.contentLocale);
+  const hypothesisWords = { hypWe, hypWant, hypKnow };
   const stepIntro = (text: string) => <p className="mb-4 text-center text-sm text-dark-slate/70">{text}</p>;
   const draftCta =
     !fillRow && canEdit && aiAvailable && !stillInIdea ? (
@@ -215,12 +220,7 @@ export default async function UppstartOverviewPage({
         <FocusBox heading={t("focusHeading")} items={brief?.content.nextFocus ?? []} note={decision?.note} />
         <OverviewSection id="hypotes" introKey="mvpHypothesis" title={criterionLabel("mvp_hypothesis")} fill={fill.mvp} writingLabel={writing} failedNote={<>{t("failedMvp")}{retry("mvp")}</>}>
           {stepIntro(t("hypothesisIntro"))}
-          <PlanFields
-            key={keyOf(plan?.hypothesis)}
-            slug={slug}
-            canEdit={canEdit}
-            fields={[{ key: "hypothesis", label: t("hypothesisLabel"), value: plan?.hypothesis ?? null, placeholder: t("hypothesisPlaceholder"), rows: 3 }]}
-          />
+          <HypothesisFields key={keyOf(plan?.hypothesis)} slug={slug} value={plan?.hypothesis ?? null} words={hypothesisWords} canEdit={canEdit} />
           {stepTasks("mvp_hypothesis")}
         </OverviewSection>
       </div>

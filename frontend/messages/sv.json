@@ -4059,8 +4059,8 @@
     },
     "mvpBuilt": {
       "title": "Gör det enklaste som fungerar",
-      "body": "Den minsta versionen är inte en liten produkt utan ett test. Gör det för hand, ordna en träff eller beskriv erbjudandet och se vem som nappar. Det ska gå att göra nästa vecka.",
-      "tip": "Om det tar mer än ett par veckor att bygga är det för stort. Skala bort tills det känns nästan för enkelt."
+      "body": "Det här är inte en färdig produkt, utan det minsta ni kan visa eller göra för att se om någon vill ha det. Penna och papper räcker långt: rita hur det ska fungera och visa skissen för några som kan bli användare.",
+      "tip": "Om det tar mer än ett par veckor att ta fram är det för stort. Skala bort tills det känns nästan för enkelt."
     },
     "mvpTested": {
       "title": "Låt riktiga människor prova",
@@ -4456,17 +4456,15 @@
     "gateClosedLink": "Till Lansering →",
     "introAi": "AI:n har tagit fram utkast — ändra fritt.",
     "failedMvp": "AI:n kunde inte föreslå en minsta version. Skriv den själva här.",
-    "hypothesisIntro": "Skriv i en eller två meningar vad ni tror och vill ta reda på. Till exempel: ”Vi tror att småbarnsföräldrar i Vällingby vill låna en båt en lördag, och vi vet det när fem familjer bokar.”",
-    "hypothesisLabel": "Vi tror att …",
-    "hypothesisPlaceholder": "Vi tror att [vilka] vill [vad], och vi vet det när [tecken].",
-    "mvpIntro": "Den minsta versionen är det enklaste ni kan göra nästa vecka för att se om någon vill ha det. Ingen app, ingen hemsida — börja gärna för hand.",
+    "hypothesisIntro": "Fyll i de tre delarna, så blir det en mening om vad ni tror och hur ni ser om det stämmer.",
+    "mvpIntro": "Börja med en skiss med penna och papper, gärna tillsammans med någon som kan bli användare. Gör sedan det enklaste ni kan för att låta någon prova: en skiss att peka på, en tjänst ni gör för hand eller en första träff. Det ska gå att göra nästa vecka.",
     "mvpTypeLabel": "Vilken sorts minsta version?",
     "mvpType_MANUAL": "Gör det för hand",
     "mvpTypeHint_MANUAL": "Ni gör tjänsten själva för några få personer.",
     "mvpType_EVENT": "En första träff",
     "mvpTypeHint_EVENT": "Bjud in och se vilka som kommer.",
-    "mvpType_PROTOTYPE": "En enkel prototyp",
-    "mvpTypeHint_PROTOTYPE": "En skiss, en modell eller ett papper att peka på.",
+    "mvpType_PROTOTYPE": "En skiss att visa",
+    "mvpTypeHint_PROTOTYPE": "Rita på papper, eller gör en enkel modell att peka på.",
     "mvpType_SIGNUP": "En anmälan",
     "mvpTypeHint_SIGNUP": "Beskriv erbjudandet och se vilka som anmäler sig.",
     "mvpType_OTHER": "Något annat",
@@ -4505,7 +4503,10 @@
     "oldPlanHeading": "Tidigare projektplan",
     "saving": "Sparar …",
     "stepTasksHeading": "Uppgifter i steget",
-    "stepTasksDone": "Alla uppgifter i steget är klara."
+    "stepTasksDone": "Alla uppgifter i steget är klara.",
+    "hypothesisWhoPlaceholder": "vilka? T.ex. småbarnsföräldrar i Vällingby",
+    "hypothesisWhatPlaceholder": "vad? T.ex. låna en båt en lördag",
+    "hypothesisSignPlaceholder": "vilket tecken? T.ex. fem familjer bokar"
   },
   "LanseringOverview": {
     "heading": "Lansering",

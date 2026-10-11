@@ -24,7 +24,7 @@ import {
   TASKS_SYSTEM_PROMPT,
   tasksToolFor,
 } from "@/lib/prompts/uppstartFill";
-import { MVP_TYPES } from "@/lib/mvp";
+import { composeHypothesis, MVP_TYPES, type HypothesisWords } from "@/lib/mvp";
 import type { MvpType } from "@prisma/client";
 
 // ─── Fill status (drives the Uppstart page's placeholders) ─────────────────
@@ -65,10 +65,18 @@ export function coerceTasks(raw: unknown, steps: readonly string[] = []): { titl
 
 export type MvpDraft = { hypothesis: string; mvpType: MvpType | null; mvpDescription: string };
 
-export function coerceMvp(raw: unknown): MvpDraft {
+// The hypothesis comes in three parts and is stored as the template's one
+// sentence in the project's language (composeHypothesis), so the page can
+// show it as the same three fields a person fills in.
+export function coerceMvp(raw: unknown, words: HypothesisWords): MvpDraft {
   const o = (raw ?? {}) as Record<string, unknown>;
   const type = str(o.mvp_type) as MvpType;
-  return { hypothesis: str(o.hypothesis), mvpType: MVP_TYPES.includes(type) ? type : null, mvpDescription: str(o.mvp_description) };
+  const parts = { who: str(o.hypothesis_who), what: str(o.hypothesis_what), sign: str(o.hypothesis_sign) };
+  return {
+    hypothesis: parts.who && parts.what && parts.sign ? composeHypothesis(parts, words) : "",
+    mvpType: MVP_TYPES.includes(type) ? type : null,
+    mvpDescription: str(o.mvp_description),
+  };
 }
 
 export const PILOT_PLAN_FIELDS = ["pilotWhere", "pilotWho", "pilotDuration", "pilotTeam", "pilotBudget"] as const;
@@ -156,10 +164,10 @@ export async function startUppstartFill(p: UppstartFillParams): Promise<void> {
     sections: p.only ?? UPPSTART_SECTIONS,
     buildContext: () => buildContext(p.projectId, slug),
     work: {
-      mvp: async ({ client, context, aiUserId }) => {
+      mvp: async ({ client, context, aiUserId, t }) => {
         const current = await prisma.projectPlan.findUnique({ where: { projectSlug: slug }, select: { hypothesis: true, mvpType: true, mvpDescription: true } });
         if (current?.hypothesis?.trim() && current.mvpType && current.mvpDescription?.trim()) return;
-        const draft = coerceMvp(await callFillTool(client, MVP_SYSTEM_PROMPT, MVP_TOOL, context));
+        const draft = coerceMvp(await callFillTool(client, MVP_SYSTEM_PROMPT, MVP_TOOL, context), t);
         const writes = {
           ...emptyOnly(["hypothesis", "mvpDescription"] as const, current, draft),
           ...(!current?.mvpType && draft.mvpType ? { mvpType: draft.mvpType } : {}),

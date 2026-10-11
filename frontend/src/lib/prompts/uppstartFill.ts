@@ -15,9 +15,12 @@ const PHASE_CONTEXT = `Projektet har just gått från Idéfasen till Uppstart. I
 export const MVP_SYSTEM_PROMPT = `${PHASE_CONTEXT}
 
 Föreslå vad teamet ska testa och den minsta versionen att testa det med. Utgå från det mest riskfyllda antagandet om lösningen (fält märkta ANTAR, och fokus från fasgrinden).
-- hypothesis: en mening — "Vi tror att … " — om vem som vill ha vad, och gärna vem som kan betala eller bära det.
-- mvp_type: den enklaste formen som kan ge svar: MANUAL (gör det för hand för några få), EVENT (en första träff), PROTOTYPE (en enkel prototyp att visa), SIGNUP (en intresseanmälan) eller OTHER.
-- mvp_description: 2–4 meningar om vad den minsta versionen är och hur den görs på en dag eller två, utan pengar eller med väldigt lite.
+Det teamet tror skrivs i tre korta delar som sätts ihop till "Vi tror att [vilka] vill [vad], och vi vet det när [tecken]":
+- hypothesis_who: vilka det gäller, så konkret som möjligt (t.ex. "småbarnsföräldrar i Vällingby").
+- hypothesis_what: vad de vill ha eller göra (t.ex. "låna en båt en lördag").
+- hypothesis_sign: ett tecken folk gör, inte säger, som visar att det stämmer (t.ex. "fem familjer bokar").
+- mvp_type: den enklaste formen som kan ge svar: MANUAL (gör det för hand för några få), EVENT (en första träff), PROTOTYPE (en skiss på papper eller en enkel prototyp att peka på), SIGNUP (en intresseanmälan) eller OTHER. Välj det enklaste — en skiss med penna och papper räcker ofta för att börja.
+- mvp_description: 2–4 meningar om vad den minsta versionen är och hur den görs på en dag eller två, utan pengar eller med väldigt lite. Skriv utan facktermer som MVP.
 
 ${SHARED_RULES}
 
@@ -29,11 +32,13 @@ export const MVP_TOOL = {
   input_schema: {
     type: "object" as const,
     properties: {
-      hypothesis: { type: "string" },
+      hypothesis_who: { type: "string" },
+      hypothesis_what: { type: "string" },
+      hypothesis_sign: { type: "string" },
       mvp_type: { type: "string", enum: ["MANUAL", "EVENT", "PROTOTYPE", "SIGNUP", "OTHER"] },
       mvp_description: { type: "string" },
     },
-    required: ["hypothesis", "mvp_type", "mvp_description"],
+    required: ["hypothesis_who", "hypothesis_what", "hypothesis_sign", "mvp_type", "mvp_description"],
   },
 };
 
