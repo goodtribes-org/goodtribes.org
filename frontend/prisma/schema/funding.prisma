@@ -186,6 +186,11 @@ model FundingSource {
   rollingDeadline    Boolean               @default(false)
   nextDeadline       DateTime?
   status             FundingSourceStatus   @default(ACTIVE)
+  // Utlysningar (#343): where this source's calls are fetched from, and
+  // when that last ran. MANUAL = calls are added by hand (e.g. Arvsfonden,
+  // which takes applications continuously and has no feed).
+  adapter            FundingCallAdapter    @default(MANUAL)
+  lastFetchedAt      DateTime?
   createdById        String
   createdBy          User                  @relation(fields: [createdById], references: [id])
   createdAt          DateTime              @default(now())
@@ -193,6 +198,7 @@ model FundingSource {
 
   matches      FundingMatch[]
   applications FundingApplication[]
+  calls        FundingCall[]
 
   @@index([status])
 }
@@ -255,4 +261,89 @@ model FundingApplication {
   @@index([projectId])
   @@index([fundingSourceId])
   @@index([deadline])
+}
+
+// Where a FundingSource's calls come from (#343). VINNOVA = Vinnova's open
+// data API (data.vinnova.se, no key, CC0). GDP_FORMAS = the funders' joint
+// GDP API (api.formas.se/gdp_formas, needs FORMAS_GDP_API_KEY from
+// gdphub.se). Forte and Vetenskapsrådet use the same GDP API and can be
+// added as further values.
+enum FundingCallAdapter {
+  MANUAL
+  VINNOVA
+  GDP_FORMAS
+}
+
+enum FundingCallStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+// Who a call is open to, as a closed set the matching can compare.
+enum FundingApplicantType {
+  COMPANY
+  NONPROFIT
+  UNIVERSITY
+  MUNICIPALITY
+  PUBLIC_AGENCY
+  CONSORTIUM
+  INDIVIDUAL
+  OTHER
+}
+
+// Utlysningar (#343): one call for proposals (an application round) from a
+// FundingSource, imported or added by hand. Nothing is public until a site
+// admin has checked it and published it.
+//
+// Two kinds of fields. The source's own texts (sourceDescription,
+// eligibilityText, amountText, deadline, urls) are refreshed by every
+// import; a change after publishing sets changedAt. Our fields (summary,
+// applicantTypes, amounts, requirements, …) are filled by the AI as a
+// suggestion or by an admin, and an import never overwrites them.
+// `provenance` holds, per field, a short quote and the URL it came from —
+// never the source's full text.
+model FundingCall {
+  id                  String                 @id @default(cuid())
+  fundingSourceId     String
+  fundingSource       FundingSource          @relation(fields: [fundingSourceId], references: [id], onDelete: Cascade)
+  // The source's id (Vinnova's diarienummer); NULL for hand-added calls.
+  externalId          String?
+  title               String
+  // The card's picture, chosen by the admin (falls back to the funder's).
+  imageUrl            String?
+  url                 String?
+  applyUrl            String?
+  sourceDescription   String?                @db.Text
+  eligibilityText     String?                @db.Text
+  amountText          String?                @db.Text
+  opensAt             DateTime?
+  deadline            DateTime?
+  // Applications taken continuously (no deadline), like Arvsfonden.
+  rolling             Boolean                @default(false)
+  summary             String?                @db.Text
+  applicantTypes      FundingApplicantType[]
+  amountMinSek        Int?
+  amountMaxSek        Int?
+  totalBudgetSek      Int?
+  cofunding           String?
+  projectStart        DateTime?
+  projectLengthMonths Int?
+  sdgGoals            Int[]
+  tags                String[]               @default([])
+  requirements        String[]               @default([])
+  stateAidRule        String?
+  provenance          Json?
+  status              FundingCallStatus      @default(DRAFT)
+  contentHash         String?
+  fetchedAt           DateTime?
+  changedAt           DateTime?
+  aiSuggestedAt       DateTime?
+  publishedAt         DateTime?
+  publishedById       String?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  @@unique([fundingSourceId, externalId])
+  @@index([status, deadline])
 }

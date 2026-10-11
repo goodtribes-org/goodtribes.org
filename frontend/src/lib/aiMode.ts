@@ -29,7 +29,9 @@ export type AiFeature =
   | "canvas-review"
   | "impact-model"
   | "critique"
-  | "first-tasks";
+  | "first-tasks"
+  // Utlysningar (#343): a site admin's "Föreslå med AI" on an imported call.
+  | "funding-calls";
 
 // What kind of help the call gives, which decides which modes allow it:
 //   "agent"  — AI performs the work and writes a result (a card run, a
