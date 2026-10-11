@@ -4533,11 +4533,11 @@
   },
   "UppstartOverview": {
     "heading": "Start-up",
-    "intro": "Find out fast whether anyone wants it: build the smallest version of the idea, let a few real people try it and plan the pilot from what happened.",
+    "intro": "Shape the solution and find out fast whether anyone wants it: what you offer, the smallest version, let a few real people try it, the change you want to see — and plan the pilot.",
     "introWriting": "The AI is preparing Start-up from the Idea phase's work. The parts appear here as they finish.",
     "stillInIdea": "The project is still in the Idea phase.",
     "toGate": "To the phase gate →",
-    "draftIntro": "Let the AI draft from the Idea phase: what you're testing, a suggested smallest version, the first tasks and a plan for the pilot. Nothing you already have is overwritten.",
+    "draftIntro": "Let the AI draft from the Idea phase: the value proposition, what you're testing, a smallest version, the impact model, the first tasks and a plan for the pilot. Nothing you already have is overwritten.",
     "draftAll": "Let the AI draft",
     "starting": "Starting …",
     "retry": "Try again",
@@ -4675,7 +4675,9 @@
     "sketchPhotoReplace": "Replace photo",
     "sketchPhotoAlt": "The team's sketch",
     "sketchUploadFailed": "The photo couldn't be uploaded — try again.",
-    "sketchShowHeading": "The sketch to show"
+    "sketchShowHeading": "The sketch to show",
+    "valuePropositionIntro": "What do you offer, and which problems does it solve? Build on what you heard in the interviews. The smallest version you make next should test the most important part of it.",
+    "impactModelIntro": "What change do you want to see, step by step? The impact model becomes the ground for what the pilot should show — the success criteria in the next step."
   },
   "LanseringOverview": {
     "heading": "Launch",

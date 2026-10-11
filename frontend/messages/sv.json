@@ -4533,11 +4533,11 @@
   },
   "UppstartOverview": {
     "heading": "Uppstart",
-    "intro": "Testa snabbt om någon vill ha det: bygg den minsta versionen av idén, låt några riktiga människor prova och planera piloten utifrån vad som hände.",
+    "intro": "Forma lösningen och testa snabbt om någon vill ha den: vad ni erbjuder, den minsta versionen, låt några riktiga människor prova, vilken förändring ni vill se — och planera piloten.",
     "introWriting": "AI:n förbereder Uppstart utifrån Idéfasens underlag. Delarna dyker upp här när de är klara.",
     "stillInIdea": "Projektet är fortfarande i Idéfasen.",
     "toGate": "Till fasgrinden →",
-    "draftIntro": "Låt AI:n ta fram utkast utifrån Idéfasen: vad ni testar, ett förslag på en minsta version, de första uppgifterna och en plan för piloten. Inget ni redan har skrivs över.",
+    "draftIntro": "Låt AI:n ta fram utkast utifrån Idéfasen: värdeerbjudandet, vad ni testar, en minsta version, impactmodellen, de första uppgifterna och en plan för piloten. Inget ni redan har skrivs över.",
     "draftAll": "Låt AI:n ta fram utkast",
     "starting": "Startar …",
     "retry": "Försök igen",
@@ -4675,7 +4675,9 @@
     "sketchPhotoReplace": "Byt foto",
     "sketchPhotoAlt": "Teamets skiss",
     "sketchUploadFailed": "Fotot gick inte att lägga upp — försök igen.",
-    "sketchShowHeading": "Skissen att visa"
+    "sketchShowHeading": "Skissen att visa",
+    "valuePropositionIntro": "Vad erbjuder ni, och vilka problem löser det? Bygg på det ni hörde i intervjuerna. Den minsta versionen ni gör sedan ska pröva det viktigaste här.",
+    "impactModelIntro": "Vilken förändring vill ni se, steg för steg? Impactmodellen blir grunden för vad piloten ska visa — framgångskriterierna i nästa steg."
   },
   "LanseringOverview": {
     "heading": "Lansering",

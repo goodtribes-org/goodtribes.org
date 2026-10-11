@@ -1,5 +1,5 @@
 import type { PhaseGateOutcome, Prisma } from "@prisma/client";
-import { evidenceSummary, uppstartStepsDone, UPPSTART_STEPS, type Evidence } from "@/lib/mvp";
+import { evidenceSummary, uppstartStepsDone, UPPSTART_PAGE_STEPS, type Evidence } from "@/lib/mvp";
 import { ETABLERA_STEPS, etableraStepsDone } from "@/lib/establish";
 import { SKALA_STEPS, skalaStepsDone } from "@/lib/scaling";
 import { LANSERING_STEPS, lanseringStepsDone, logEntries, MIN_PILOT_LOG_ENTRIES, outcomeCounts, parseCriteria, resultsFor, type OutcomeCounts } from "@/lib/pilot";
@@ -32,12 +32,11 @@ import {
 // What the Idé phase should have produced before moving on. The gate is a
 // decision point, not a lock: unmet criteria are shown and recorded with
 // the decision ("went ahead without interviews"), never enforced.
+// #326 moved the value proposition and the impact model to Uppstart.
 export const IDEA_GATE_CRITERIA = [
   "dream_defined",
   "ai_reviewed",
   "lean_canvas_created",
-  "value_proposition_created",
-  "impact_model_created",
   "market_scan_partners",
   "target_audience_interviews",
 ] as const;
@@ -226,10 +225,12 @@ export function cardsForDecision(
 // what the project actually has (or when someone ticked them). Like every
 // gate it only shows and records — and it says how strong the evidence from
 // the tests is, so a team going on on weak evidence knows it.
-export const UPPSTART_GATE_CRITERIA = UPPSTART_STEPS;
+// The whole phase (#326): the value proposition and the impact model are done
+// by their canvases' data (autoDoneKeys), the rest by uppstartStepsDone.
+export const UPPSTART_GATE_CRITERIA = UPPSTART_PAGE_STEPS;
 
 export async function uppstartGateCriteria(projectId: string, slug: string): Promise<{ criteria: GateCriteria; evidence: Evidence }> {
-  const [done, plan, tests, evaluation] = await Promise.all([
+  const [done, plan, tests, evaluation, autoDone] = await Promise.all([
     prisma.initiativeChecklistItem.findMany({
       where: { projectId, completedAt: { not: null }, itemKey: { in: [...UPPSTART_GATE_CRITERIA] } },
       select: { itemKey: true },
@@ -237,12 +238,13 @@ export async function uppstartGateCriteria(projectId: string, slug: string): Pro
     prisma.projectPlan.findUnique({ where: { projectSlug: slug }, select: { hypothesis: true, mvpType: true, mvpDescription: true, pilotWhere: true, pilotWho: true, pilotDuration: true } }),
     prisma.mvpTest.findMany({ where: { projectId }, select: { signal: true } }),
     prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true } }),
+    getAutoDoneKeys(projectId, slug),
   ]);
-  const doneKeys = new Set(done.map((d) => d.itemKey));
-  const shown = uppstartStepsDone(plan, tests.length, evaluation?.successCriteria);
+  const doneKeys = new Set([...done.map((d) => d.itemKey), ...autoDone]);
+  const shown: Record<string, boolean> = uppstartStepsDone(plan, tests.length, evaluation?.successCriteria);
   return {
     evidence: evidenceSummary(tests.map((t) => t.signal)),
-    criteria: UPPSTART_GATE_CRITERIA.map((key) => ({ key, met: doneKeys.has(key) || shown[key] })),
+    criteria: UPPSTART_GATE_CRITERIA.map((key) => ({ key, met: doneKeys.has(key) || !!shown[key] })),
   };
 }
 

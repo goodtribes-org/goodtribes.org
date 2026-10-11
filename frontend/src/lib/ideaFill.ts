@@ -416,6 +416,18 @@ export async function fillImpactModel(
   return { written, proposed: Object.keys(proposals).length };
 }
 
+// The value proposition in one call, placed by the never-overwrite rule.
+// Shared by the Idé fill (on request) and Uppstart's fill (#326).
+export async function fillValueProposition(
+  client: Anthropic,
+  p: { projectId: string; projectSlug: string; mode: AiMode; context: string },
+): Promise<{ written: number; proposed: number }> {
+  const raw = await callTool(client, { system: VALUE_PROPOSITION_SYSTEM_PROMPT, tool: VALUE_PROPOSITION_TOOL, content: p.context });
+  const proposals = coerceProposals(raw, VALUE_PROPOSITION_FIELDS);
+  const { written } = await applyCanvas(p.projectId, p.projectSlug, "valueProposition", proposals, p.mode);
+  return { written, proposed: Object.keys(proposals).length };
+}
+
 // The AI wrote this step's work: GoodTribes becomes the assignee of its
 // cards, waiting in Review (#200). The step itself isn't ticked (#271) — it
 // is done when a lead approves the card (moveKanbanCard →
@@ -449,7 +461,9 @@ export type IdeaFillParams = {
 export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
   // The project's monthly AI budget applies (projectId); no per-user limit.
   const gate = await getAiClientFor({ feature: "dream-conversation", kind: "assist", userId: null, projectId: p.projectId, language: "project" });
-  const sections: FillSection[] = p.only ?? ["leanCanvas", "impactModel", "valueProposition", "marketScan", "interviewGuide", "critique"];
+  // The value proposition and the impact model are Uppstart's since #326
+  // (lib/uppstartFill.ts); a retry can still ask for them by name.
+  const sections: FillSection[] = p.only ?? ["leanCanvas", "marketScan", "interviewGuide", "critique"];
   const wanted = (section: FillSection) => sections.includes(section);
   if (!gate.ok) {
     await Promise.all(sections.map((s) => setFillState(p.dreamId, s, "failed")));
@@ -493,8 +507,7 @@ export async function runIdeaFill(p: IdeaFillParams): Promise<void> {
     });
   })();
   const valuePropositionDone = !wanted("valueProposition") ? null : run("valueProposition", async () => {
-    const raw = await callTool(client, { system: VALUE_PROPOSITION_SYSTEM_PROMPT, tool: VALUE_PROPOSITION_TOOL, content: context });
-    const { written } = await applyCanvas(p.projectId, p.projectSlug, "valueProposition", coerceProposals(raw, VALUE_PROPOSITION_FIELDS), p.mode);
+    const { written } = await fillValueProposition(client, { ...p, context });
     if (written) await markDone(p.projectSlug, "value_proposition_created");
   });
 

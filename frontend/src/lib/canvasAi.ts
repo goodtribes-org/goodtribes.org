@@ -17,12 +17,12 @@ export type CanvasAiContext = {
 
 export type CanvasAiEntity = "leanCanvas" | "valueProposition" | "impactModel";
 
-// The impact model has no checklist step of its own: it breaks down the
-// canvas's Impact block, so it follows the canvas step's AI mode.
+// Each canvas follows its own step's AI mode. The impact model has had a
+// step of its own in Uppstart since #326 (it used to follow the canvas).
 export const STEP_FOR: Record<CanvasAiEntity, string> = {
   leanCanvas: "lean_canvas_created",
   valueProposition: "value_proposition_created",
-  impactModel: "lean_canvas_created",
+  impactModel: "impact_model_created",
 };
 
 // Everything a canvas view needs for its AI features (vet/antar marking,

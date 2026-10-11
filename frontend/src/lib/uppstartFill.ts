@@ -24,12 +24,14 @@ import {
   TASKS_SYSTEM_PROMPT,
   tasksToolFor,
 } from "@/lib/prompts/uppstartFill";
+import { fillImpactModel, fillValueProposition } from "@/lib/ideaFill";
+import { resolveAiMode } from "@/lib/aiMode";
 import { composeHypothesis, MVP_TYPES, type HypothesisWords } from "@/lib/mvp";
 import type { MvpType } from "@prisma/client";
 
 // ─── Fill status (drives the Uppstart page's placeholders) ─────────────────
 
-export const UPPSTART_SECTIONS = ["mvp", "tasks", "plan"] as const;
+export const UPPSTART_SECTIONS = ["valueProposition", "mvp", "impactModel", "tasks", "plan"] as const;
 export type UppstartSection = (typeof UPPSTART_SECTIONS)[number];
 export type UppstartFillState = PhaseFillState;
 export type UppstartFillStatus = Partial<Record<UppstartSection, UppstartFillState>>;
@@ -164,6 +166,19 @@ export async function startUppstartFill(p: UppstartFillParams): Promise<void> {
     sections: p.only ?? UPPSTART_SECTIONS,
     buildContext: () => buildContext(p.projectId, slug),
     work: {
+      // The value proposition and the impact model moved here from Idé
+      // (#326): the same canvas fills, never overwriting what's written; in
+      // ASSIST mode they become suggestions next to the fields.
+      valueProposition: async ({ client, context }) => {
+        const { mode } = await resolveAiMode({ projectId: p.projectId, feature: "project-plan", stepKey: "value_proposition_created", phase: "PILOT" });
+        const { written, proposed } = await fillValueProposition(client, { projectId: p.projectId, projectSlug: slug, mode, context });
+        if (!written && !proposed) throw new Error("no value proposition");
+      },
+      impactModel: async ({ client, context }) => {
+        const { mode } = await resolveAiMode({ projectId: p.projectId, feature: "project-plan", stepKey: "impact_model_created", phase: "PILOT" });
+        const { written, proposed } = await fillImpactModel(client, { projectId: p.projectId, projectSlug: slug, mode, context });
+        if (!written && !proposed) throw new Error("no impact model");
+      },
       mvp: async ({ client, context, aiUserId, t }) => {
         const current = await prisma.projectPlan.findUnique({ where: { projectSlug: slug }, select: { hypothesis: true, mvpType: true, mvpDescription: true } });
         if (current?.hypothesis?.trim() && current.mvpType && current.mvpDescription?.trim()) return;
