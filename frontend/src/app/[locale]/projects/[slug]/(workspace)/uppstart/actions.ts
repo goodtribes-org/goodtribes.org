@@ -9,7 +9,8 @@ import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { startUppstartFill, UPPSTART_SECTIONS, type UppstartSection } from "@/lib/uppstartFill";
 import type { MvpSignal, MvpType, PhaseGateOutcome } from "@prisma/client";
-import { MVP_SIGNALS, MVP_TYPES } from "@/lib/mvp";
+import { MIN_MVP_TESTS, MVP_SIGNALS, MVP_TYPES } from "@/lib/mvp";
+import { DRAFT_STEPS, draftUppstartStep, summarizeMvpTests, type DraftStep, type TestSummary, type UppstartDraft } from "@/lib/uppstartDrafts";
 import { getCanvasFieldLabels } from "@/lib/canvasFieldLabels";
 import { logger } from "@/lib/logger";
 import { aiGateMessage, resolveAiMode, type AiGateBlockReason } from "@/lib/aiMode";
@@ -96,6 +97,41 @@ export async function deleteMvpTest(projectSlug: string, testId: string): Promis
   if (!ctx) return { error: "Forbidden" };
   await prisma.mvpTest.deleteMany({ where: { id: testId, projectId: ctx.project.id } });
   return done(projectSlug);
+}
+
+// ─── AI-hjälp per steg (#322) ───────────────────────────────────────────────
+
+function draftError(reason: string): string {
+  if (reason === "empty") return "AI:n kom inte fram till något förslag — försök igen.";
+  return aiGateMessage(reason as AiGateBlockReason);
+}
+
+// "Föreslå med AI": a draft for one step, shown on the page and saved only
+// if the team picks it (through saveUppstartPlan, like their own text).
+export async function suggestForStep(projectSlug: string, step: string): Promise<{ draft?: UppstartDraft; error?: string }> {
+  const ctx = await requireLead(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  if (!DRAFT_STEPS.includes(step as DraftStep)) return { error: "Okänt steg" };
+  try {
+    const res = await draftUppstartStep(ctx.project.id, ctx.project.slug, ctx.userId, step as DraftStep);
+    return res.ok ? { draft: res.value } : { error: draftError(res.reason) };
+  } catch (err) {
+    logger.error("uppstart step draft failed", { step, err: String(err) });
+    return { error: "Kunde inte göra det just nu — försök igen." };
+  }
+}
+
+export async function summarizeTests(projectSlug: string): Promise<{ summary?: TestSummary; error?: string }> {
+  const ctx = await requireLead(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  if ((await prisma.mvpTest.count({ where: { projectId: ctx.project.id } })) < MIN_MVP_TESTS) return { error: "Låt minst tre personer prova först." };
+  try {
+    const res = await summarizeMvpTests(ctx.project.id, ctx.project.slug, ctx.userId);
+    return res.ok ? { summary: res.value } : { error: draftError(res.reason) };
+  } catch (err) {
+    logger.error("uppstart test summary failed", { err: String(err) });
+    return { error: "Kunde inte göra det just nu — försök igen." };
+  }
 }
 
 // ─── Fasgrind Uppstart → Lansering ──────────────────────────────────────────────

@@ -103,7 +103,7 @@ export function emptyOnly<K extends string>(keys: readonly K[], current: Partial
 
 // ─── Context ────────────────────────────────────────────────────────────────
 
-async function buildContext(projectId: string, slug: string): Promise<string> {
+export async function buildContext(projectId: string, slug: string): Promise<string> {
   const [project, lcProv, vpProv, imProv, brief, synthesis, decision] = await Promise.all([
     prisma.project.findUnique({
       where: { id: projectId },
