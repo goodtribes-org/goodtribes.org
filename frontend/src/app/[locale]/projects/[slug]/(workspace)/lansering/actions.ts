@@ -11,8 +11,10 @@ import { aiGateMessage, resolveAiMode, type AiGateBlockReason } from "@/lib/aiMo
 import { startEtableraFill } from "@/lib/etableraFill";
 import { InsightError } from "@/lib/ideaInsights";
 import { logger } from "@/lib/logger";
-import { appendLogEntry, LANSERING_SECTIONS, startLanseringFill, summarizePilotResults, type LanseringSection } from "@/lib/lanseringFill";
-import type { PhaseGateOutcome } from "@prisma/client";
+import { addCriterionMetrics, appendLogEntry, LANSERING_SECTIONS, PLAN_FORWARD_FIELDS, startLanseringFill, type LanseringSection } from "@/lib/lanseringFill";
+import { draftLansering, LANSERING_DRAFT_KINDS, type LanseringDraft, type LanseringDraftKind } from "@/lib/lanseringDrafts";
+import { OUTCOMES as PILOT_OUTCOMES, withResult, type Outcome } from "@/lib/pilot";
+import type { PhaseGateOutcome, Prisma } from "@prisma/client";
 import { getAiParticipantUser } from "@/lib/aiParticipant";
 import { latestInsight } from "@/lib/ideaInsights";
 import {
@@ -55,8 +57,8 @@ export async function startLanseringDrafts(projectSlug: string, section?: string
 }
 
 // "Logga en lärdom": one dated line in the pilot log. Anyone on the team
-// (not followers) can log — the pilot is run by the whole team. The first
-// entry ticks "Genomföra piloten och dokumentera lärdomar löpande".
+// (not followers) can log — the pilot is run by the whole team. "Följ
+// piloten" counts as done from three entries (lib/pilot.ts), not by a tick.
 export async function addPilotLogEntry(projectSlug: string, text: string): Promise<{ error?: string }> {
   const ctx = await requireProject(projectSlug);
   if (!ctx || !(await isRealMember(ctx.project.id, ctx.userId))) return { error: "Forbidden" };
@@ -70,37 +72,123 @@ export async function addPilotLogEntry(projectSlug: string, text: string): Promi
       create: { projectSlug: ctx.project.slug, executionNotes, updatedById: ctx.userId },
       update: { executionNotes, updatedById: ctx.userId },
     });
-    await tx.initiativeChecklistItem.upsert({
-      where: { projectId_itemKey: { projectId: ctx.project.id, itemKey: "pilot_executed_documented" } },
-      create: { projectId: ctx.project.id, phase: "PRODUCTION", itemKey: "pilot_executed_documented", completedAt: new Date(), completedById: ctx.userId },
-      update: {},
-    });
   });
   return done(projectSlug);
 }
 
-// "Sammanfatta resultaten": an AI draft of the results from the log and
-// the impact values. Replacing an existing summary needs `replace` — the
-// page asks first.
-export async function summarizeResults(projectSlug: string, replace: boolean): Promise<{ error?: string }> {
+// ─── Lanseringens steg (#327) ───────────────────────────────────────────────
+
+async function requireLeadCtx(projectSlug: string) {
   const ctx = await requireProject(projectSlug);
-  if (!ctx || !(await hasProjectRole(ctx.project.id, ctx.userId, PROJECT_LEAD_ROLES))) return { error: "Forbidden" };
-  if (!(await isAiProjectStartAvailable(ctx.userId))) return { error: "AI är inte tillgänglig just nu." };
-  const current = await prisma.pilotEvaluation.findUnique({ where: { projectSlug: ctx.project.slug }, select: { resultsSummary: true } });
-  if (current?.resultsSummary?.trim() && !replace) return { error: "Det finns redan en sammanfattning." };
+  if (!ctx || !(await hasProjectRole(ctx.project.id, ctx.userId, PROJECT_LEAD_ROLES))) return null;
+  return ctx;
+}
+
+// "Starta piloten": the start date (yyyy-mm-dd), or none.
+export async function setPilotStart(projectSlug: string, date: string | null): Promise<{ error?: string }> {
+  const ctx = await requireLeadCtx(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  const startedAt = date ? new Date(`${date}T12:00:00Z`) : null;
+  if (startedAt && Number.isNaN(startedAt.getTime())) return { error: "Ogiltigt datum" };
+  await prisma.pilotEvaluation.upsert({
+    where: { projectSlug },
+    create: { projectSlug, startedAt, updatedById: ctx.userId },
+    update: { startedAt, updatedById: ctx.userId },
+  });
+  return done(projectSlug);
+}
+
+// A metric for one success criterion, tied to it — by hand or the team
+// picking one of the AI's suggestions.
+export async function addMetricForCriterion(
+  projectSlug: string,
+  criterion: string,
+  label: string,
+  unit: string,
+  target: string,
+): Promise<{ error?: string }> {
+  const ctx = await requireLeadCtx(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  if (!label.trim() || !unit.trim()) return { error: "Skriv vad som räknas och i vilken enhet" };
+  const t = target.trim() ? Number(target.replace(",", ".")) : null;
+  if (t !== null && (!Number.isFinite(t) || t <= 0)) return { error: "Målet behöver vara ett tal" };
+  const added = await addCriterionMetrics(projectSlug, async (open) =>
+    open.includes(criterion) ? [{ criterion, label: label.trim().slice(0, 120), unit: unit.trim().slice(0, 40), targetValue: t, description: "" }] : [],
+  );
+  if (!added) return { error: "Kriteriet har redan ett mätetal" };
+  return done(projectSlug);
+}
+
+// A new value for a metric, from "Följ piloten". Everyone on the team runs
+// the pilot, so every member may report (followers may not).
+export async function reportMetricValue(projectSlug: string, metricId: string, value: string, note: string): Promise<{ error?: string }> {
+  const ctx = await requireProject(projectSlug);
+  if (!ctx || !(await isRealMember(ctx.project.id, ctx.userId))) return { error: "Forbidden" };
+  const v = Number(value.replace(",", "."));
+  if (!value.trim() || !Number.isFinite(v)) return { error: "Skriv ett tal" };
+  const metric = await prisma.impactMetric.findFirst({ where: { id: metricId, projectSlug }, select: { id: true } });
+  if (!metric) return { error: "Mätetalet hittades inte" };
+  await prisma.$transaction([
+    prisma.impactUpdate.create({ data: { impactMetricId: metricId, value: v, note: note.trim().slice(0, 500) || null, updatedById: ctx.userId } }),
+    prisma.impactMetric.update({ where: { id: metricId }, data: { currentValue: v } }),
+  ]);
+  revalidatePath(`/projects/${projectSlug}/impact`);
+  return done(projectSlug);
+}
+
+// "Vad visade piloten?": how one criterion went, in the team's own words.
+export async function setCriterionOutcome(projectSlug: string, criterion: string, outcome: string | null, note: string): Promise<{ error?: string }> {
+  const ctx = await requireLeadCtx(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  if (outcome && !PILOT_OUTCOMES.includes(outcome as Outcome)) return { error: "Okänt utfall" };
+  const evaluation = await prisma.pilotEvaluation.findUnique({ where: { projectSlug }, select: { criteriaResults: true } });
+  const criteriaResults = withResult(evaluation?.criteriaResults, criterion, { outcome: (outcome as Outcome) || null, note: note.trim().slice(0, 1000) || null });
+  await prisma.pilotEvaluation.upsert({
+    where: { projectSlug },
+    create: { projectSlug, criteriaResults: criteriaResults as Prisma.InputJsonValue, updatedById: ctx.userId },
+    update: { criteriaResults: criteriaResults as Prisma.InputJsonValue, updatedById: ctx.userId },
+  });
+  return done(projectSlug);
+}
+
+export async function saveResultsSummary(projectSlug: string, patch: Record<string, string>): Promise<{ error?: string }> {
+  const ctx = await requireLeadCtx(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  const resultsSummary = (patch.resultsSummary ?? "").trim().slice(0, 5000) || null;
+  await prisma.pilotEvaluation.upsert({
+    where: { projectSlug },
+    create: { projectSlug, resultsSummary, updatedById: ctx.userId },
+    update: { resultsSummary, updatedById: ctx.userId },
+  });
+  return done(projectSlug);
+}
+
+// "Plan framåt", stored in LaunchPlan (PLAN_FORWARD_FIELDS).
+export async function savePlanForward(projectSlug: string, patch: Record<string, string>): Promise<{ error?: string }> {
+  const ctx = await requireLeadCtx(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  const data: Record<string, string | null> = {};
+  for (const f of PLAN_FORWARD_FIELDS) if (typeof patch[f] === "string") data[f] = patch[f].trim().slice(0, 5000) || null;
+  await prisma.launchPlan.upsert({ where: { projectSlug }, create: { projectSlug, ...data, updatedById: ctx.userId }, update: { ...data, updatedById: ctx.userId } });
+  return done(projectSlug);
+}
+
+// "Föreslå med AI" in Lansering (#327): drafts only, saved by the team.
+export async function suggestLansering(projectSlug: string, kind: string): Promise<{ draft?: LanseringDraft; error?: string }> {
+  const ctx = await requireLeadCtx(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  if (!LANSERING_DRAFT_KINDS.includes(kind as LanseringDraftKind)) return { error: "Okänt förslag" };
   try {
-    const resultsSummary = await summarizePilotResults(ctx.project.id, ctx.project.slug, ctx.userId);
-    await prisma.pilotEvaluation.update({ where: { projectSlug: ctx.project.slug }, data: { resultsSummary, updatedById: ctx.userId } });
+    const res = await draftLansering(ctx.project.id, ctx.project.slug, ctx.userId, kind as LanseringDraftKind);
+    if (res.ok) return { draft: res.value };
+    if (res.reason === "no_log") return { error: "Logga minst en lärdom från piloten först." };
+    if (res.reason === "no_criteria") return { error: "Skriv framgångskriterierna först." };
+    if (res.reason === "empty") return { error: "AI:n kom inte fram till något förslag — försök igen." };
+    return { error: aiGateMessage(res.reason as AiGateBlockReason) };
   } catch (err) {
-    const reason = err instanceof InsightError ? err.message : "";
-    if (!(err instanceof InsightError) || reason === "empty") logger.error("pilot results summary failed", { err: String(err) });
-    if (reason === "no_log") return { error: "Logga minst en lärdom från piloten först." };
-    if (reason === "budget_exceeded" || reason === "rate_limited" || reason === "mode" || reason === "not_configured") {
-      return { error: aiGateMessage(reason as AiGateBlockReason) };
-    }
+    logger.error("lansering draft failed", { kind, err: String(err) });
     return { error: "Kunde inte göra det just nu — försök igen." };
   }
-  return done(projectSlug);
 }
 
 // ─── Fasgrind Lansering → Etablera (pilotens go/no-go) ──────────────────────

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { saveUppstartPlan, type UppstartPlanPatch } from "./actions";
 
 export type PlanField = {
-  key: keyof UppstartPlanPatch;
+  key: keyof UppstartPlanPatch | string;
   label: string;
   value: string | null;
   placeholder?: string;
@@ -18,7 +18,19 @@ export type PlanField = {
 // A few of the Uppstart plan's fields, shown as text and edited in place by
 // a lead. Open for writing as long as any field is empty, so a lead never
 // has to click to see what's left to fill in.
-export default function PlanFields({ slug, fields, canEdit }: { slug: string; fields: PlanField[]; canEdit: boolean }) {
+// `save` stores the fields somewhere else than the Uppstart plan (Lansering's
+// results summary and plan forward, #327); by default saveUppstartPlan.
+export default function PlanFields({
+  slug,
+  fields,
+  canEdit,
+  save: saveTo = saveUppstartPlan,
+}: {
+  slug: string;
+  fields: PlanField[];
+  canEdit: boolean;
+  save?: (slug: string, patch: Record<string, string>) => Promise<{ error?: string }>;
+}) {
   const t = useTranslations("UppstartOverview");
   const router = useRouter();
   const complete = fields.every((f) => !!f.value?.trim());
@@ -31,7 +43,7 @@ export default function PlanFields({ slug, fields, canEdit }: { slug: string; fi
   function save() {
     setError(null);
     startTransition(async () => {
-      const res = await saveUppstartPlan(slug, values);
+      const res = await saveTo(slug, values);
       if (res.error) setError(res.error);
       else {
         setEditing(false);

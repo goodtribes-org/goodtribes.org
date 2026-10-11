@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { uppstartStepsDone } from "@/lib/mvp";
+import { lanseringStepsDone } from "@/lib/pilot";
 import { decidedSince, lastRestartAt } from "@/lib/phaseRestart";
 import { isWrittenPhaseWiki } from "@/lib/phaseWikiTemplates";
 import { prisma } from "@/lib/prisma";
@@ -17,7 +18,7 @@ const filled = (row: Record<string, unknown> | null | undefined, fields: readonl
 // renders both the phase bar and the checklist widget from it.
 export const getProjectSignals = cache(async (projectId: string, slug: string): Promise<ProjectSignals> => {
   const [
-    project, interviewCount, marketScanCount, uppstartPlan, mvpTestCount, evaluation, pilotGate, impactMetricCount, launch, pages, campaign, applications,
+    project, interviewCount, marketScanCount, uppstartPlan, mvpTestCount, evaluation, pilotGate, launch, pages, campaign, applications,
     activePartnerships, councilReview, scalingPlan, instances, reports, followup, inReview,
   ] = await Promise.all([
     prisma.project.findUnique({
@@ -37,11 +38,10 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
     prisma.marketScanEntry.count({ where: { projectSlug: slug } }),
     prisma.projectPlan.findUnique({ where: { projectSlug: slug }, select: { hypothesis: true, mvpType: true, mvpDescription: true, pilotWhere: true, pilotWho: true, pilotDuration: true } }),
     prisma.mvpTest.count({ where: { projectId } }),
-    prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true, executionNotes: true, resultsSummary: true } }),
+    prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true, executionNotes: true, startedAt: true, criteriaResults: true } }),
     // Since the latest restart (#313): a moved-back project decides again.
     lastRestartAt(projectId).then((restartAt) => prisma.phaseGateDecision.findFirst({ where: { projectId, fromPhase: "PRODUCTION", ...decidedSince(restartAt) }, select: { id: true } })),
-    prisma.impactMetric.count({ where: { projectSlug: slug } }),
-    prisma.launchPlan.findUnique({ where: { projectSlug: slug }, select: { targetAudience: true, positioning: true } }),
+    prisma.launchPlan.findUnique({ where: { projectSlug: slug }, select: { targetAudience: true, howToReach: true } }),
     prisma.wikiPage.findMany({ where: { projectSlug: slug, slug: { in: ["arbetsfloden", "playbook"] } }, select: { slug: true, content: true } }),
     prisma.fundingCampaign.findUnique({ where: { projectId }, select: { id: true, _count: { select: { pledges: { where: { pledgeStatus: "confirmed" } } } } } }),
     prisma.fundingApplication.findMany({ where: { projectId, status: { in: ["submitted", "awarded"] } }, select: { status: true } }),
@@ -72,12 +72,8 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
     interviewCount,
     marketScanCount,
     uppstartDone: uppstartStepsDone(uppstartPlan, mvpTestCount, evaluation?.successCriteria),
-    pilotSuccessCriteria: !!evaluation?.successCriteria?.trim(),
-    pilotLogEntries: (evaluation?.executionNotes ?? "").split("\n").filter((l) => l.trim()).length,
-    pilotResultsSummary: !!evaluation?.resultsSummary?.trim(),
+    lanseringDone: lanseringStepsDone({ evaluation, launch }),
     pilotGateDecided: !!pilotGate,
-    impactMetricCount,
-    launchPlanWritten: !!(launch?.targetAudience?.trim() || launch?.positioning?.trim()),
     workflowsPage: pageSlugs.has("arbetsfloden"),
     fundingApplied: !!campaign || applications.length > 0,
     fundingSecured: awarded || (campaign?._count.pledges ?? 0) > 0,
