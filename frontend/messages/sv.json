@@ -5208,6 +5208,11 @@
       "step4Label": "En bättre värld",
       "step4Title": "Tillsammans skapar ni en bättre värld",
       "step4Body": "Varje förverkligad dröm ger dig och andra möjligheten att Leva Gott, Må Gott och Göra Gott."
+    },
+    "fundingCalls": {
+      "eyebrow": "Utlysningar",
+      "heading": "Pengar att söka just nu",
+      "allLink": "Se alla utlysningar →"
     }
   },
   "HeaderTools": {
@@ -5762,7 +5767,8 @@
     },
     "resume": "Du har ett påbörjat Drömsamtal: <link>fortsätt det</link>",
     "formInstead": "Hellre ett formulär? <link>Snabbstart</link>",
-    "forChallenge": "Du svarar på utmaningen ”{title}” från {organisation}. Din idé hamnar i utmaningen när du delar den."
+    "forChallenge": "Du svarar på utmaningen ”{title}” från {organisation}. Din idé hamnar i utmaningen när du delar den.",
+    "forCall": "Du delar en idé till utlysningen ”{title}” från {funder}. Beskriv vad en ansökan skulle kunna innehålla. Din idé hamnar på utlysningens sida när du delar den, och vem som helst kan sedan driva den."
   },
   "IdeaHelp": {
     "heading": "Jag vill hjälpa till",
@@ -6136,5 +6142,55 @@
     "alreadyText": "Teamet har fått veta att berättelsen stämmer med det du har sett. Länken kan bara användas en gång.",
     "goneHeading": "Länken fungerar inte",
     "goneText": "Länken har gått ut eller dragits tillbaka. Be projektet om en ny om du vill bekräfta."
+  },
+  "FundingCalls": {
+    "listTitle": "Utlysningar",
+    "listIntro": "Pengar att söka från Vinnova, Formas och andra finansiärer. Dela en idé om vad en ansökan kan innehålla, eller ta ansvar för en och driv den som ett projekt.",
+    "filterAll": "Alla",
+    "noneOpen": "Inga öppna utlysningar just nu.",
+    "sourceNote": "Sammanfattningarna är GoodTribes egna. Läs alltid hela utlysningen hos finansiären innan ni söker.",
+    "upTo": "Upp till",
+    "from": "Från",
+    "rolling": "Löpande",
+    "daysLeft": "{days, plural, one {# dag kvar} other {# dagar kvar}}",
+    "daysLeftLong": "{days, plural, one {# dag kvar att söka} other {# dagar kvar att söka}}",
+    "closed": "Stängd",
+    "amount": "Belopp",
+    "whoCanApply": "Vem får söka",
+    "ideas": "Idéer",
+    "ideaCount": "{count, plural, one {# idé} other {# idéer}}",
+    "applicant": {
+      "COMPANY": "Företag",
+      "NONPROFIT": "Ideell förening",
+      "UNIVERSITY": "Lärosäte",
+      "MUNICIPALITY": "Kommun eller region",
+      "PUBLIC_AGENCY": "Myndighet",
+      "CONSORTIUM": "Konsortium",
+      "INDIVIDUAL": "Privatperson",
+      "OTHER": "Annan"
+    },
+    "allCalls": "Alla utlysningar",
+    "eyebrow": "Utlysning från {funder}",
+    "deadline": "Sista dag att söka",
+    "cofunding": "Medfinansiering",
+    "projectLength": "Projekttid",
+    "months": "{count, plural, one {# månad} other {# månader}}",
+    "stateAid": "Statsstöd",
+    "requirements": "Det här ska ansökan innehålla",
+    "summaryNote": "Sammanfattningen är GoodTribes egen. Det är utlysningen hos {funder} som gäller.",
+    "shareIdea": "Dela en idé till utlysningen",
+    "readAtFunder": "Läs utlysningen hos {funder}",
+    "howHeading": "Så fungerar det",
+    "how1": "Dela en idé om vad en ansökan kan innehålla.",
+    "how2": "Andra röstar, kommenterar och bygger vidare.",
+    "how3": "Någon tar ansvar och driver idén som ett projekt.",
+    "how4": "GoodTribes granskar ansökan innan den skickas in.",
+    "ownership": "Det som skapas på GoodTribes tillhör Stiftelsen GoodTribes, som är gemensam för alla som bidrar.",
+    "agreement": "Läs Deltagaravtalet",
+    "ideasHeading": "Idéer till ansökan",
+    "ideasIntro": "Vad kan en ansökan innehålla? Rösta på de idéer du tror på, eller driv en själv.",
+    "noIdeasYet": "Inga idéer än. Bli den första att dela en.",
+    "noIdeas": "Inga idéer delades.",
+    "atMost": "Högst"
   }
 }

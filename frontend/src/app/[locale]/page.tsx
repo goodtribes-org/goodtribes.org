@@ -2,6 +2,8 @@ export const dynamic = "force-dynamic";
 
 import { CHALLENGE_CARD_SELECT, PUBLIC_CHALLENGE_WHERE } from "@/lib/challenges";
 import ChallengeCard from "@/components/challenges/ChallengeCard";
+import FundingCallCard from "@/components/fundingCalls/FundingCallCard";
+import { CALL_CARD_SELECT, CALL_ORDER, publicCallWhere } from "@/lib/fundingCalls/public";
 import { PUBLIC_PROJECT_WHERE } from "@/lib/projectVisibility";
 import Link from "next/link";
 import { hasLocale, type Locale } from "next-intl";
@@ -60,7 +62,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   const [
     activity, allProjects, projectsBeyondIdea, ideaPhaseProjects,
-    pledgeSum, tokenSum, completedCards, completedSubtasks, memberCount, newMembers, latestIdeas, openChallenges, firstTasks,
+    pledgeSum, tokenSum, completedCards, completedSubtasks, memberCount, newMembers, latestIdeas, openChallenges, firstTasks, openCalls,
   ] = await Promise.all([
     fetchActivityItems(15),
     prisma.project.findMany({ where: live, select: { phase: true, title: true, slug: true }, orderBy: { updatedAt: "desc" } }),
@@ -109,6 +111,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     }),
     // Första uppgifter (#279): the other way in, right under the dream box.
     searchFirstTasks(parseFirstTaskFilters({}), { take: 5 }),
+    // Utlysningar (#344): ten open calls, closing soonest first.
+    prisma.fundingCall.findMany({ where: publicCallWhere(), orderBy: CALL_ORDER, take: 10, select: CALL_CARD_SELECT }),
   ]);
 
   const cardProjects = [...projectsBeyondIdea, ...ideaPhaseProjects].slice(0, PROJECT_CARDS);
@@ -222,6 +226,19 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             {projects.map((p) => (
               <div key={p.slug} className={`flex ${SWIPE_ITEM}`}>
                 <ProjectCard project={p} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {openCalls.length > 0 && (
+        <section id="utlysningar" className={`${wrap} flex flex-col gap-6 pt-[48px]`}>
+          <SectionHeader eyebrow={t("fundingCalls.eyebrow")} heading={t("fundingCalls.heading")} link={{ href: "/utlysningar", label: t("fundingCalls.allLink") }} />
+          <div className={`${SWIPE_ROW} sm:grid-cols-2 lg:grid-cols-5`}>
+            {openCalls.map((c) => (
+              <div key={c.slug} className={`flex ${SWIPE_ITEM}`}>
+                <FundingCallCard call={c} />
               </div>
             ))}
           </div>
