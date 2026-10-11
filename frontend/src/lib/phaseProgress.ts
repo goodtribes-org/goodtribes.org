@@ -1,4 +1,5 @@
 import { UPPSTART_STEPS, type UppstartStep } from "@/lib/mvp";
+import { LANSERING_STEPS, MIN_PILOT_LOG_ENTRIES, type LanseringStep } from "@/lib/pilot";
 import { DISPLAY_PHASES, getChecklistForPhase, overviewPathFor, toDisplayPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 
 // How far a project has come in each phase — what fills the phase bars
@@ -26,13 +27,10 @@ export type ProjectSignals = {
   marketScanCount: number;
   // Uppstart (#320, same data as uppstartGateCriteria — lib/mvp.ts)
   uppstartDone: Record<UppstartStep, boolean>;
-  // Lansering (same data as lanseringGateCriteria)
-  pilotSuccessCriteria: boolean;
-  pilotLogEntries: number;
-  pilotResultsSummary: boolean;
+  // Lansering (#327, same data as lanseringGateCriteria — lib/pilot.ts)
+  lanseringDone: Record<LanseringStep, boolean>;
   pilotGateDecided: boolean;
-  impactMetricCount: number;
-  launchPlanWritten: boolean;
+  // Arbetsflöden moved to Etablera with #327.
   workflowsPage: boolean;
   // Etablera (same data as etableraGateCriteria)
   fundingApplied: boolean;
@@ -60,7 +58,7 @@ export const MIN_VALUE_PROPOSITION_FIELDS = 4; // of 6
 export const MIN_INTERVIEWS = 3;
 // Match MIN_LOG_ENTRIES in lib/phaseGate.ts (the test keeps them in sync) —
 // the bars and the gates must never disagree.
-export const MIN_LOG_ENTRIES = 3;
+export const MIN_LOG_ENTRIES = MIN_PILOT_LOG_ENTRIES;
 
 
 // Every phase. For Uppstart → Skala the rules are the same ones the phase
@@ -79,13 +77,10 @@ export function autoDoneKeys(s: ProjectSignals): string[] {
   add("market_scan_partners", s.marketScanCount > 0);
   // Uppstart (#320), as in uppstartGateCriteria (lib/mvp.ts)
   for (const step of UPPSTART_STEPS) add(step, s.uppstartDone[step]);
-  // Lansering, as in lanseringGateCriteria (+ the go/no-go decision itself)
-  add("pilot_success_criteria", s.pilotSuccessCriteria);
-  add("pilot_executed_documented", s.pilotLogEntries >= MIN_LOG_ENTRIES);
-  add("pilot_results_collected", s.pilotResultsSummary);
+  // Lansering (#327), as in lanseringGateCriteria (lib/pilot.ts); the
+  // old go/no-go key still follows the gate decision for older ticks.
+  for (const step of LANSERING_STEPS) add(step, s.lanseringDone[step]);
   add("pilot_go_no_go", s.pilotGateDecided);
-  add("impact_measurement_setup", s.impactMetricCount > 0);
-  add("launch_marketing_plan_created", s.launchPlanWritten);
   add("workflows_formalized", s.workflowsPage);
   // Etablera, as in etableraGateCriteria
   add("stable_operations_funding", s.fundingApplied);
@@ -187,9 +182,10 @@ export function nextStep(phase: ProjectPhaseValue, doneKeys: ReadonlySet<string>
 // to the step's old standalone page (an Idé item's href, e.g. "lean-canvas",
 // is only for the legacy guide). Later phases: the step's own page, or the
 // phase page (#309; it used to be the legacy guide).
-// Phases whose page shows one step at a time (?step=<key>): Idé (#206) and
-// Uppstart (#320). Their steps link to the step on the phase page.
-export const STEP_PAGES: Partial<Record<ProjectPhaseValue, string>> = { IDEA: "ide", PILOT: "uppstart" };
+// Phases whose page shows one step at a time (?step=<key>): Idé (#206),
+// Uppstart (#320) and Lansering (#327). Their steps link to the step on the
+// phase page.
+export const STEP_PAGES: Partial<Record<ProjectPhaseValue, string>> = { IDEA: "ide", PILOT: "uppstart", PRODUCTION: "lansering" };
 
 export function stepHref(slug: string, phase: ProjectPhaseValue, step: { key: string; href?: string }): string {
   const display = toDisplayPhase(phase);

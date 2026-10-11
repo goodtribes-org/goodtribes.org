@@ -1,5 +1,6 @@
 import type { PhaseGateOutcome, Prisma } from "@prisma/client";
 import { evidenceSummary, uppstartStepsDone, UPPSTART_STEPS, type Evidence } from "@/lib/mvp";
+import { LANSERING_STEPS, lanseringStepsDone, logEntries, MIN_PILOT_LOG_ENTRIES, outcomeCounts, parseCriteria, resultsFor, type OutcomeCounts } from "@/lib/pilot";
 import { isWrittenPhaseWiki } from "@/lib/phaseWikiTemplates";
 import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma";
@@ -328,72 +329,64 @@ export function cardsForUppstartDecision(
 
 // ─── Lansering → Etablera (pilotens go/no-go) ───────────────────────────────
 
-// Checklist keys again. Each counts as met by what the project actually
-// has (criteria written, log entries, a results summary, a launch plan,
-// workflows, metrics) or when someone ticked it. The go/no-go step itself
-// (pilot_go_no_go) is what this gate records, so it isn't a criterion.
-export const LANSERING_GATE_CRITERIA = [
-  "pilot_success_criteria",
-  "pilot_executed_documented",
-  "pilot_results_collected",
-  "impact_measurement_setup",
-  "launch_marketing_plan_created",
-  "workflows_formalized",
-] as const;
+// Lansering (#327): the four steps of lib/pilot.ts — started with a metric
+// per criterion, followed in the log, every criterion assessed, a plan
+// forward. Each is met by the project's data or a tick. The go/no-go is
+// what this gate records, so it isn't a criterion; neither is any of it a
+// lock.
+export const LANSERING_GATE_CRITERIA = LANSERING_STEPS;
 
-export const MIN_LOG_ENTRIES = 3;
+export const MIN_LOG_ENTRIES = MIN_PILOT_LOG_ENTRIES;
 
 export function logEntryCount(log: string | null | undefined): number {
-  return (log ?? "").split("\n").filter((l) => l.trim()).length;
+  return logEntries(log);
 }
 
-export async function lanseringGateCriteria(projectId: string, slug: string): Promise<{ criteria: GateCriteria; logCount: number }> {
-  const [done, evaluation, metricCount, launch, workflows] = await Promise.all([
+export async function lanseringGateCriteria(
+  projectId: string,
+  slug: string,
+): Promise<{ criteria: GateCriteria; logCount: number; outcomes: OutcomeCounts }> {
+  const [done, evaluation, launch] = await Promise.all([
     prisma.initiativeChecklistItem.findMany({
       where: { projectId, completedAt: { not: null }, itemKey: { in: [...LANSERING_GATE_CRITERIA] } },
       select: { itemKey: true },
     }),
-    prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true, executionNotes: true, resultsSummary: true } }),
-    prisma.impactMetric.count({ where: { projectSlug: slug } }),
-    prisma.launchPlan.findUnique({ where: { projectSlug: slug }, select: { targetAudience: true, positioning: true } }),
-    prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "arbetsfloden" } }, select: { content: true } }),
+    prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true, executionNotes: true, startedAt: true, criteriaResults: true } }),
+    prisma.launchPlan.findUnique({ where: { projectSlug: slug }, select: { targetAudience: true, howToReach: true } }),
   ]);
   const doneKeys = new Set(done.map((d) => d.itemKey));
-  const logCount = logEntryCount(evaluation?.executionNotes);
-  const has: Record<(typeof LANSERING_GATE_CRITERIA)[number], boolean> = {
-    pilot_success_criteria: !!evaluation?.successCriteria?.trim(),
-    pilot_executed_documented: logCount >= MIN_LOG_ENTRIES,
-    pilot_results_collected: !!evaluation?.resultsSummary?.trim(),
-    impact_measurement_setup: metricCount > 0,
-    launch_marketing_plan_created: !!(launch?.targetAudience?.trim() || launch?.positioning?.trim()),
-    // An untouched "Skriv själv" template isn't written yet (#311).
-    workflows_formalized: isWrittenPhaseWiki("arbetsfloden", workflows?.content),
+  const shown = lanseringStepsDone({ evaluation, launch });
+  return {
+    logCount: logEntries(evaluation?.executionNotes),
+    outcomes: outcomeCounts(resultsFor(parseCriteria(evaluation?.successCriteria), evaluation?.criteriaResults)),
+    criteria: LANSERING_GATE_CRITERIA.map((key) => ({ key, met: doneKeys.has(key) || shown[key] })),
   };
-  return { logCount, criteria: LANSERING_GATE_CRITERIA.map((key) => ({ key, met: doneKeys.has(key) || has[key] })) };
 }
 
 export async function runLanseringGateBrief(projectId: string, slug: string, userId: string): Promise<GateBrief> {
   const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId, language: "project" });
   if (!gate.ok) throw new InsightError(gate.reason);
 
-  const [project, evaluation, metrics, launch, workflows, roles, previous] = await Promise.all([
+  const [project, evaluation, metrics, launch, previous] = await Promise.all([
     prisma.project.findUnique({ where: { id: projectId }, select: { title: true, summary: true } }),
-    prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true, executionNotes: true, resultsSummary: true } }),
+    prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true, executionNotes: true, resultsSummary: true, startedAt: true, criteriaResults: true } }),
     prisma.impactMetric.findMany({
       where: { projectSlug: slug },
       select: { label: true, unit: true, targetValue: true, currentValue: true, updates: { orderBy: { createdAt: "asc" }, select: { value: true, note: true, createdAt: true } } },
     }),
-    prisma.launchPlan.findUnique({ where: { projectSlug: slug }, include: { channels: { select: { name: true } } } }),
-    prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "arbetsfloden" } }, select: { content: true } }),
-    prisma.projectRoleNeed.findMany({ where: { projectId }, select: { title: true, filledById: true } }),
+    prisma.launchPlan.findUnique({ where: { projectSlug: slug }, select: { targetAudience: true, howToReach: true, budgetOverview: true, whoPays: true } }),
     latestInsight<GateBrief>(projectId, "UPPSTART_GATE"),
   ]);
   if (!project) throw new InsightError("not_found");
-  const strip = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  const OUTCOME_TEXT: Record<string, string> = { MET: "nådde", PARTLY: "nådde delvis", NOT_MET: "nådde inte" };
+  const results = resultsFor(parseCriteria(evaluation?.successCriteria), evaluation?.criteriaResults);
 
   const content = [
     `Projekt: ${project.title} — ${project.summary ?? ""}`,
-    `Framgångskriterier:\n${evaluation?.successCriteria?.trim() || "(inga angivna)"}`,
+    evaluation?.startedAt ? `Piloten startade ${evaluation.startedAt.toISOString().slice(0, 10)}.` : "Inget startdatum angivet.",
+    `Framgångskriterier och teamets bedömning:\n${
+      results.map((r) => `- ${r.criterion}: ${r.outcome ? OUTCOME_TEXT[r.outcome] : "inte bedömt"}${r.note ? ` — ${r.note}` : ""}`).join("\n") || "(inga angivna)"
+    }`,
     `Pilotlogg:\n${evaluation?.executionNotes?.trim() || "(inget loggat)"}`,
     evaluation?.resultsSummary?.trim() ? `Resultatsammanfattning:\n${evaluation.resultsSummary}` : "Ingen resultatsammanfattning.",
     `Impact-mätetal:\n${
@@ -409,10 +402,8 @@ export async function runLanseringGateBrief(projectId: string, slug: string, use
         .join("\n") || "(inga)"
     }`,
     launch
-      ? `Lanseringsplan: målgrupp ${launch.targetAudience ?? "—"}; budskap ${launch.positioning ?? "—"}; kanaler ${launch.channels.map((c) => c.name).join(", ") || "—"}`
-      : "Ingen lanseringsplan.",
-    workflows ? `Arbetsflöden och ansvar: ${strip(workflows.content).slice(0, 1500)}` : "Arbetsflöden och ansvar är inte beskrivna.",
-    `Kärnteam: ${roles.length ? roles.map((r) => `${r.title} (${r.filledById ? "tillsatt" : "vakant"})`).join(", ") : "inga roller definierade"}`,
+      ? `Plan framåt: vilka fler ${launch.targetAudience ?? "—"}; hur ${launch.howToReach ?? "—"}; vad det kostar ${launch.budgetOverview ?? "—"}; vem betalar ${launch.whoPays ?? "—"}`
+      : "Ingen plan framåt.",
     previous ? `Fokus som sattes för piloten vid förra fasgrinden: ${previous.content.nextFocus.join(" | ")}` : "",
   ]
     .filter(Boolean)

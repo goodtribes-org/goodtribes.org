@@ -4,11 +4,11 @@
 // touching code.
 
 const SHARED_RULES = `Regler som alltid gäller:
-- Utgå bara från underlaget: canvasen, beslutsunderlaget från fasgrinden (vad sprinttesterna visade, fokus i piloten, framgångskriterier), projektplanen och kärnteamet. Hitta ALDRIG på fakta: inga siffror, statistik, organisationer eller personer som inte nämnts.
+- Utgå bara från underlaget: canvasen, beslutsunderlaget från fasgrinden (vad testerna visade, fokus i piloten), pilotplanen och framgångskriterierna från Uppstart, och det teamet loggat. Hitta ALDRIG på fakta: inga siffror, statistik, organisationer eller personer som inte nämnts.
 - Allt du skriver är ett utkast som teamet granskar och ändrar. Kort och konkret.
 - Projekten drivs av ideella deltagare med begränsad tid — håll det enkelt och genomförbart.`;
 
-const PHASE_CONTEXT = `Projektet har just gått från Uppstart till Lansering. I Lansering genomförs piloten: lösningen körs på riktigt i liten skala, lärdomar dokumenteras löpande, resultat samlas in och utvärderas mot framgångskriterierna. Samtidigt tas en lanserings- och marknadsplan fram, arbetsflöden och ansvar formaliseras och impact börjar mätas.`;
+const PHASE_CONTEXT = `Projektet har just gått från Uppstart till Lansering. I Lansering körs piloten: lösningen prövas på riktigt i liten skala under en bestämd tid. Teamet mäter det som framgångskriterierna säger, skriver ner vad som händer, bedömer till sist varje kriterium och gör en kort plan för hur de går vidare. Skriv utan facktermer.`;
 
 // ─── Pilotplan ──────────────────────────────────────────────────────────────
 
@@ -156,7 +156,7 @@ export const WORKFLOWS_TOOL = {
 
 export const LANSERING_TASKS_SYSTEM_PROMPT = `${PHASE_CONTEXT}
 
-Föreslå de första 4–7 uppgifterna för att få piloten att starta — konkreta saker en person kan ta och göra klart på några timmar till ett par dagar (t.ex. få ett godkännande, bjuda in de första deltagarna, förbereda material, boka första pilottillfället). Inga uppgifter som redan är gjorda.
+Föreslå de första 4–7 uppgifterna för att köra piloten — konkreta saker en person kan ta och göra klart på några timmar till ett par dagar (t.ex. få ett godkännande, bjuda in de första deltagarna, förbereda material, boka första pilottillfället). Inga uppgifter som redan är gjorda.
 
 Varje uppgift: en kort titel som börjar med ett verb, och en eller två meningar om vad och varför.
 
@@ -166,14 +166,14 @@ Svara genom verktyget "uppgifter".`;
 
 // ─── Sammanfatta pilotens resultat (på begäran) ─────────────────────────────
 
-export const RESULTS_SYSTEM_PROMPT = `Du hjälper ett socialt projekt på GoodTribes.org att sammanfatta resultatet av sin pilot. Du får framgångskriterierna, teamets löpande pilotlogg och de impact-värden som rapporterats.
+export const RESULTS_SYSTEM_PROMPT = `Du hjälper ett socialt projekt på GoodTribes.org att sammanfatta resultatet av sin pilot. Du får framgångskriterierna med teamets egen bedömning (nådde, delvis, inte, eller inte bedömt), teamets löpande pilotlogg och de mätvärden som rapporterats.
 
 Skriv en kort resultatsammanfattning, högst ca 12 rader. Vanlig text utan markdown — inga **, * eller #; använd korta rader som börjar med "- ":
-- En rad per framgångskriterium: vad loggen och värdena visar, och om det ser ut att vara uppnått, inte uppnått eller oklart.
+- En rad per framgångskriterium: vad loggen och värdena visar, och om det stöder teamets bedömning.
 - De viktigaste lärdomarna (2–3 rader).
 - Vad som saknas för att kunna utvärdera ordentligt (1–2 rader).
 
-Grunda allt på loggen och värdena — hitta aldrig på resultat. Är underlaget tunt: säg det. Ett impact-värde som står på 0 utan uppdateringar har bara inte rapporterats ännu — säg det, kalla det inte fel.
+Grunda allt på loggen och värdena — hitta aldrig på resultat och summera aldrig siffror till egna totaler. Är underlaget tunt: säg det. Ett impact-värde som står på 0 utan uppdateringar har bara inte rapporterats ännu — säg det, kalla det inte fel.
 
 Svara genom verktyget "resultat".`;
 
@@ -184,5 +184,76 @@ export const RESULTS_TOOL = {
     type: "object" as const,
     properties: { summary: { type: "string" } },
     required: ["summary"],
+  },
+};
+
+// ─── Mätetal per framgångskriterium (#327) ──────────────────────────────────
+
+export const CRITERIA_METRICS_SYSTEM_PROMPT = `${PHASE_CONTEXT}
+
+Föreslå ett mätetal för varje kriterium under "Kriterier som saknar mätetal" — det som teamet räknar under piloten för att se om kriteriet nås.
+För varje kriterium:
+- criterion_number: kriteriets nummer i listan "Kriterier som saknar mätetal" (1, 2, 3 …).
+- label: vad som räknas, kort (t.ex. "Familjer som bokat två gånger").
+- unit: enhet (t.ex. "familjer", "promenader", "kr").
+- target: målvärdet som ett tal, om kriteriet anger ett — annars utelämna.
+- description: en mening om hur och när det räknas.
+
+${SHARED_RULES}
+
+Svara genom verktyget "matetal".`;
+
+export const CRITERIA_METRICS_TOOL = {
+  name: "matetal",
+  description: "Ett mätetal per framgångskriterium.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      metrics: {
+        type: "array",
+        maxItems: 6,
+        items: {
+          type: "object",
+          properties: {
+            criterion_number: { type: "integer" },
+            label: { type: "string" },
+            unit: { type: "string" },
+            target: { type: "number" },
+            description: { type: "string" },
+          },
+          required: ["criterion_number", "label", "unit"],
+        },
+      },
+    },
+    required: ["metrics"],
+  },
+};
+
+// ─── Plan framåt (#327) ─────────────────────────────────────────────────────
+
+export const PLAN_FORWARD_SYSTEM_PROMPT = `${PHASE_CONTEXT}
+
+Skriv ett utkast till en kort plan framåt, utifrån canvasen och det piloten visat (bedömningen av kriterierna, loggen och mätetalen). 1–3 meningar per fält:
+- who_more: vilka fler ni vill nå efter piloten.
+- how_to_reach: hur ni når dem — kanaler, samarbeten, mun till mun.
+- running_cost: vad det kostar att driva verksamheten i större skala, i tid, saker och pengar. Ange bara belopp om underlaget ger stöd för dem; annars skriv vad som behöver räknas ut.
+- who_pays: vem som betalar driften — användarna, en kommun, en förening, bidrag, sponsorer — utifrån det canvasen säger om intäkter. Hitta inte på finansiärer.
+
+${SHARED_RULES}
+
+Svara genom verktyget "plan_framat".`;
+
+export const PLAN_FORWARD_TOOL = {
+  name: "plan_framat",
+  description: "Utkast till plan framåt.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      who_more: { type: "string" },
+      how_to_reach: { type: "string" },
+      running_cost: { type: "string" },
+      who_pays: { type: "string" },
+    },
+    required: ["who_more", "how_to_reach", "running_cost", "who_pays"],
   },
 };

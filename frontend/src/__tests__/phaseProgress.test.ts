@@ -15,12 +15,8 @@ const none: ProjectSignals = {
   interviewCount: 0,
   marketScanCount: 0,
   uppstartDone: { mvp_hypothesis: false, mvp_built: false, mvp_tested: false, pilot_planned: false },
-  pilotSuccessCriteria: false,
-  pilotLogEntries: 0,
-  pilotResultsSummary: false,
+  lanseringDone: { pilot_success_criteria: false, pilot_executed_documented: false, pilot_results_collected: false, launch_marketing_plan_created: false },
   pilotGateDecided: false,
-  impactMetricCount: 0,
-  launchPlanWritten: false,
   workflowsPage: false,
   fundingApplied: false,
   fundingSecured: false,
@@ -79,10 +75,8 @@ describe("phaseProgress", () => {
     const keys = autoDoneKeys({
       ...none,
       uppstartDone: { mvp_hypothesis: true, mvp_built: false, mvp_tested: true, pilot_planned: false },
-      pilotSuccessCriteria: true,
-      pilotLogEntries: 2,
+      lanseringDone: { pilot_success_criteria: true, pilot_executed_documented: false, pilot_results_collected: false, launch_marketing_plan_created: false },
       pilotGateDecided: true,
-      impactMetricCount: 1,
       fundingApplied: true,
       activePartnerships: 1,
       scalingGoalsWritten: true,
@@ -95,14 +89,13 @@ describe("phaseProgress", () => {
         "mvp_tested",
         "pilot_success_criteria",
         "pilot_go_no_go",
-        "impact_measurement_setup",
         "stable_operations_funding",
         "partnerships_formalized",
         "scaling_goals_set",
         "sdg_impact_measured",
       ]),
     );
-    // 2 log entries < 3; applied isn't secured; a report isn't verified.
+    // The log isn't long enough yet; applied isn't secured; a report isn't verified.
     expect(keys).not.toContain("pilot_executed_documented");
     expect(keys).not.toContain("funding_secured");
     expect(keys).not.toContain("impact_externally_verified");
@@ -135,7 +128,7 @@ describe("phaseProgress", () => {
   });
 
   it("the bars have one segment per main step, sub-steps fold into their parent", () => {
-    expect(phaseStepProgress(new Set()).map((p) => p.total)).toEqual([7, 4, 7, 6, 5, 4]);
+    expect(phaseStepProgress(new Set()).map((p) => p.total)).toEqual([7, 4, 4, 7, 5, 4]);
   });
 
   it("a step with sub-steps fills as they get done", () => {

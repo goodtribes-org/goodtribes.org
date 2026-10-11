@@ -330,6 +330,10 @@ model LaunchPlan {
   positioning    String?               @db.Text
   budgetOverview String?               @db.Text
   successMetrics String?               @db.Text
+  // "Plan framåt" (#327): targetAudience = vilka fler ni vill nå,
+  // budgetOverview = vad det kostar att driva, plus these two.
+  howToReach     String?               @db.Text
+  whoPays        String?               @db.Text
   updatedById    String?
   updatedBy      User?                 @relation("LaunchPlanUpdatedBy", fields: [updatedById], references: [id])
   channels       LaunchPlanChannel[]
@@ -382,6 +386,11 @@ model PilotEvaluation {
   successCriteria   String?       @db.Text
   executionNotes    String?       @db.Text
   resultsSummary    String?       @db.Text
+  // Lansering (#327): when the pilot started, and per success criterion
+  // (matched by its text, one per line in successCriteria) the metric that
+  // follows it and how it went: [{ criterion, metricId?, outcome?, note? }].
+  startedAt         DateTime?
+  criteriaResults   Json?
   decision          PilotDecision @default(PENDING)
   updatedById       String?
   updatedBy         User?         @relation("PilotEvaluationUpdatedBy", fields: [updatedById], references: [id])

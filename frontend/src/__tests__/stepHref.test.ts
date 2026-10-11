@@ -12,8 +12,8 @@ describe("stepHref", () => {
     expect(stepHref("p", "PILOT", { key: "mvp_tested" })).toBe("/projects/p/uppstart?step=mvp_tested");
   });
 
-  it("keeps a later phase's own page, or its phase page", () => {
-    expect(stepHref("p", "PRODUCTION", { key: "launch_marketing_plan_created", href: "launch-plan" })).toBe("/projects/p/launch-plan");
+  it("Lansering's steps go to the Lansering page (#327); later phases keep their own page, or the phase page", () => {
+    expect(stepHref("p", "PRODUCTION", { key: "launch_marketing_plan_created" })).toBe("/projects/p/lansering?step=launch_marketing_plan_created");
     expect(stepHref("p", "ESTABLISH", { key: "x" })).toBe("/projects/p/etablera");
   });
 });

@@ -58,6 +58,7 @@ export type HelpContext = {
 const PAGE_SECTION_INTROS: Record<string, string[]> = {
   ide: ["about", "leanCanvas", "valueProposition", "impactModel", "sdg", "interviews", "marketScan", "gate"],
   uppstart: ["mvpHypothesis", "mvpBuilt", "mvpTested", "pilotPlanned", "uppstartGate"],
+  lansering: ["pilotStart", "pilotFollow", "pilotResults", "planForward", "lanseringGate"],
   "lean-canvas": ["leanCanvasPage"],
   "customer-model": ["customerModelPage"],
   "value-proposition": ["valuePropositionPage"],

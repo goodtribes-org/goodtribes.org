@@ -4,13 +4,12 @@ jest.mock("../lib/aiParticipant", () => ({ getAiParticipantUser: jest.fn() }));
 
 import {
   appendLogEntry,
+  coerceCriterionMetrics,
   coerceImpactMetrics,
-  coerceLaunchPlan,
-  coercePilotPlan,
-  launchFieldsToWrite,
+  coercePlanForward,
+  criteriaLines,
   parseLanseringStatus,
   plainText,
-  pilotPlanHtml,
   successCriteriaText,
   workflowsHtml,
 } from "../lib/lanseringFill";
@@ -19,20 +18,9 @@ import { isPhaseFillInProgress, parsePhaseFillStatus } from "../lib/phaseFill";
 describe("phase fill status", () => {
   it("keeps known sections and marks stale waiting ones failed", () => {
     const updated = new Date("2026-09-24T10:00:00Z");
-    expect(parseLanseringStatus({ pilot: "done", impact: "running", nope: "done" })).toEqual({ pilot: "done", impact: "running" });
+    expect(parseLanseringStatus({ metrics: "done", plan: "running", pilot: "done" })).toEqual({ metrics: "done", plan: "running" });
     expect(parsePhaseFillStatus({ a: "pending" }, ["a"] as const, updated, updated.getTime() + 6 * 60_000)).toEqual({ a: "failed" });
     expect(isPhaseFillInProgress({ a: "done", b: "pending" })).toBe(true);
-  });
-});
-
-describe("pilot plan", () => {
-  it("needs a setup or steps, and escapes the wiki page", () => {
-    expect(coercePilotPlan({ measure: ["x"] })).toBeNull();
-    const p = coercePilotPlan({ setup: "En skola <b>4 veckor</b>", weeks: ["Vecka 1: start"], success_criteria: ["Minst 10 hämtningar"] })!;
-    expect(p.successCriteria).toEqual(["Minst 10 hämtningar"]);
-    const html = pilotPlanHtml(p);
-    expect(html).toContain("&lt;b&gt;");
-    expect(html).not.toContain("<b>");
   });
 });
 
@@ -54,14 +42,39 @@ describe("impact metrics", () => {
   });
 });
 
-describe("launch plan — never overwrite", () => {
-  it("fills only empty fields and keeps named channels", () => {
-    const draft = coerceLaunchPlan({ target_audience: "Familjer", positioning: "Neutralt", budget_overview: "", success_metrics: "Anmälningar", channels: [{ name: "Föräldrabrev", tactic: "Via skolan" }, { tactic: "saknar namn" }] });
-    expect(draft.channels).toEqual([{ name: "Föräldrabrev", tactic: "Via skolan" }]);
-    expect(launchFieldsToWrite({ targetAudience: "Teamets egen", positioning: null, budgetOverview: null, successMetrics: " " }, draft)).toEqual({
-      positioning: "Neutralt",
-      successMetrics: "Anmälningar",
+describe("a metric per success criterion (#327)", () => {
+  it("ties each metric to the numbered criterion, one per criterion", () => {
+    const criteria = ["Minst 10 familjer bokar två gånger", "Hälften kommer tillbaka"];
+    expect(
+      coerceCriterionMetrics(
+        {
+          metrics: [
+            { criterion_number: 1, label: "Familjer som bokat två gånger", unit: "familjer", target: 10 },
+            { criterion_number: 1, label: "Dubblett", unit: "st" },
+            { criterion_number: 7, label: "Finns inte", unit: "st" },
+            { criterion_number: 2, label: "Återkommande", unit: "familjer" },
+          ],
+        },
+        criteria,
+      ),
+    ).toEqual([
+      { criterion: criteria[0], label: "Familjer som bokat två gånger", unit: "familjer", targetValue: 10, description: "" },
+      { criterion: criteria[1], label: "Återkommande", unit: "familjer", targetValue: null, description: "" },
+    ]);
+  });
+});
+
+describe("plan forward (#327)", () => {
+  it("maps the AI's fields onto the launch plan's", () => {
+    expect(coercePlanForward({ who_more: " Fler skolor ", how_to_reach: "Föräldrabrev", running_cost: "", who_pays: "Kommunen" })).toEqual({
+      targetAudience: "Fler skolor",
+      howToReach: "Föräldrabrev",
+      budgetOverview: "",
+      whoPays: "Kommunen",
     });
+  });
+  it("lists the criteria with the team's own judgement", () => {
+    expect(criteriaLines([{ criterion: "A", outcome: "MET" }, { criterion: "B", outcome: null, note: null }])).toBe("1. A — nådde\n2. B — inte bedömt");
   });
 });
 

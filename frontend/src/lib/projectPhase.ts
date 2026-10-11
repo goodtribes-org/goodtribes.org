@@ -163,14 +163,15 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
     { key: "mvp_tested", label: "Låt dem prova" },
     { key: "pilot_planned", label: "Beslut och plan för piloten" },
   ],
+  // Lansering (#327): run the pilot, learn and decide (lib/pilot.ts). The
+  // keys are the old ones, so ticks and cards carry over; the go/no-go is
+  // the phase gate, success criteria are set in Uppstart, impact metrics
+  // are part of starting the pilot, and Arbetsflöden moved to Etablera.
   PRODUCTION: [
-    { key: "pilot_success_criteria", label: "Definiera framgångskriterier för pilotfasen", href: "pilot-evaluation" },
-    { key: "pilot_executed_documented", label: "Genomföra piloten och dokumentera lärdomar löpande", href: "pilot-evaluation" },
-    { key: "pilot_results_collected", label: "Samla in kvantitativa/kvalitativa resultat", href: "pilot-evaluation" },
-    { key: "pilot_go_no_go", label: "Utvärdera piloten mot framgångskriterierna → go/no-go beslut", href: "pilot-evaluation" },
-    { key: "launch_marketing_plan_created", label: "Lanserings- och marknadsplan", href: "launch-plan" },
-    { key: "workflows_formalized", label: "Formalisera arbetsflöden och ansvar", href: "wiki" },
-    { key: "impact_measurement_setup", label: "Sätta upp mätning/rapportering av impact", href: "impact" },
+    { key: "pilot_success_criteria", label: "Starta piloten" },
+    { key: "pilot_executed_documented", label: "Följ piloten" },
+    { key: "pilot_results_collected", label: "Vad visade piloten?" },
+    { key: "launch_marketing_plan_created", label: "Plan framåt" },
   ],
   ESTABLISH: [
     { key: "process_scaled_up", label: "Skala upp processen som fungerade i piloten", href: "establishment-plan" },
@@ -179,6 +180,7 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
     { key: "partnerships_formalized", label: "Formalisera partnerskap och samarbeten", href: "partnerships" },
     { key: "supporter_base_built", label: "Bygga upp en stabil community/supporterbas", href: "establishment-plan" },
     { key: "playbook_documented", label: "Dokumentera \"playbook\" så andra kan replikera", href: "wiki" },
+    { key: "workflows_formalized", label: "Formalisera arbetsflöden och ansvar", href: "wiki" },
     { key: "review_council_deep_review", label: "Granskningsråd gör en djupare granskning inför skalning", href: "review-request" },
   ],
   SCALE: [
