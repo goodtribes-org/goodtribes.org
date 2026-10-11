@@ -1,7 +1,7 @@
 import type { PhaseGateOutcome, Prisma } from "@prisma/client";
 import { evidenceSummary, uppstartStepsDone, UPPSTART_STEPS, type Evidence } from "@/lib/mvp";
+import { ETABLERA_STEPS, etableraStepsDone } from "@/lib/establish";
 import { LANSERING_STEPS, lanseringStepsDone, logEntries, MIN_PILOT_LOG_ENTRIES, outcomeCounts, parseCriteria, resultsFor, type OutcomeCounts } from "@/lib/pilot";
-import { isWrittenPhaseWiki } from "@/lib/phaseWikiTemplates";
 import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma";
 import { draftText, type DraftText } from "@/lib/aiLanguage";
@@ -473,52 +473,46 @@ export function pilotDecisionFor(outcome: PhaseGateOutcome): "GO" | "NO_GO" | nu
 
 // ─── Etablera → Skala ───────────────────────────────────────────────────────
 
-export const ETABLERA_GATE_CRITERIA = [
-  "process_scaled_up",
-  "stable_operations_funding",
-  "funding_secured",
-  "partnerships_formalized",
-  "supporter_base_built",
-  "playbook_documented",
-  "review_council_deep_review",
-] as const;
+// Etablera (#329): the four steps of lib/establish.ts. The review
+// council's review is asked for in the gate and shown with its status, but
+// isn't a criterion — the team can't tick off what an outside body does.
+export const ETABLERA_GATE_CRITERIA = ETABLERA_STEPS;
 
 export const ETABLERA_CARD_WORDS = cardWords("etablera");
 
-// Checklist keys; each counts as met when ticked, or when the project's
-// own data shows it (funding applied for or pledged, funding awarded, an
-// active partnership, a playbook page, a completed council review).
-export async function etableraGateCriteria(projectId: string, slug: string): Promise<{ criteria: GateCriteria }> {
-  const [done, campaign, applications, partnerships, playbook, review] = await Promise.all([
+export type CouncilReview = { status: string; outcomeNote: string | null } | null;
+
+export async function etableraGateCriteria(projectId: string, slug: string): Promise<{ criteria: GateCriteria; review: CouncilReview }> {
+  const [done, campaign, applications, partnerships, playbook, plan, review] = await Promise.all([
     prisma.initiativeChecklistItem.findMany({
       where: { projectId, completedAt: { not: null }, itemKey: { in: [...ETABLERA_GATE_CRITERIA] } },
       select: { itemKey: true },
     }),
     prisma.fundingCampaign.findUnique({ where: { projectId }, select: { id: true, _count: { select: { pledges: { where: { pledgeStatus: "confirmed" } } } } } }),
-    prisma.fundingApplication.findMany({ where: { projectId, status: { in: ["submitted", "awarded"] } }, select: { status: true } }),
+    prisma.fundingApplication.findMany({ where: { projectId, status: "awarded" }, select: { id: true } }),
     prisma.partnership.count({ where: { projectId, status: "active" } }),
     prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "playbook" } }, select: { content: true } }),
-    prisma.reviewCouncilRequest.findFirst({ where: { projectId, status: "completed" }, select: { id: true } }),
+    prisma.establishmentPlan.findUnique({ where: { projectSlug: slug }, select: { supporterBaseNotes: true } }),
+    prisma.reviewCouncilRequest.findFirst({ where: { projectId }, orderBy: { createdAt: "desc" }, select: { status: true, outcomeNote: true } }),
   ]);
   const doneKeys = new Set(done.map((d) => d.itemKey));
-  const has: Partial<Record<(typeof ETABLERA_GATE_CRITERIA)[number], boolean>> = {
-    stable_operations_funding: !!campaign || applications.length > 0,
-    funding_secured: applications.some((a) => a.status === "awarded") || (campaign?._count.pledges ?? 0) > 0,
-    partnerships_formalized: partnerships > 0,
-    playbook_documented: isWrittenPhaseWiki("playbook", playbook?.content),
-    review_council_deep_review: !!review,
-  };
-  return { criteria: ETABLERA_GATE_CRITERIA.map((key) => ({ key, met: doneKeys.has(key) || !!has[key] })) };
+  const shown = etableraStepsDone({
+    playbookHtml: playbook?.content,
+    fundingSecured: applications.length > 0 || (campaign?._count.pledges ?? 0) > 0,
+    activePartnerships: partnerships,
+    supporterBaseNotes: plan?.supporterBaseNotes,
+  });
+  return { review, criteria: ETABLERA_GATE_CRITERIA.map((key) => ({ key, met: doneKeys.has(key) || shown[key] })) };
 }
 
 export async function runEtableraGateBrief(projectId: string, slug: string, userId: string): Promise<GateBrief> {
   const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId, language: "project" });
   if (!gate.ok) throw new InsightError(gate.reason);
 
-  const [project, plan, wikis, campaign, applications, partnerships, review, metrics, roles, previous] = await Promise.all([
+  const [project, plan, wikis, campaign, applications, partnerships, review, metrics, launch, previous] = await Promise.all([
     prisma.project.findUnique({ where: { id: projectId }, select: { title: true, summary: true } }),
     prisma.establishmentPlan.findUnique({ where: { projectSlug: slug }, select: { scaledProcessNotes: true, supporterBaseNotes: true } }),
-    prisma.wikiPage.findMany({ where: { projectSlug: slug, slug: { in: ["finansieringsplan", "partnerskap", "playbook"] } }, select: { slug: true, content: true } }),
+    prisma.wikiPage.findMany({ where: { projectSlug: slug, slug: { in: ["finansieringsplan", "partnerskap", "playbook", "arbetsfloden"] } }, select: { slug: true, content: true } }),
     prisma.fundingCampaign.findUnique({
       where: { projectId },
       select: { title: true, goal: true, currency: true, status: true, pledges: { where: { pledgeStatus: "confirmed" }, select: { amount: true } } },
@@ -527,7 +521,7 @@ export async function runEtableraGateBrief(projectId: string, slug: string, user
     prisma.partnership.findMany({ where: { projectId }, select: { type: true, status: true, description: true, organisation: { select: { name: true } } } }),
     prisma.reviewCouncilRequest.findFirst({ where: { projectId }, orderBy: { createdAt: "desc" }, select: { status: true, outcomeNote: true } }),
     prisma.impactMetric.findMany({ where: { projectSlug: slug }, select: { label: true, unit: true, currentValue: true, targetValue: true, _count: { select: { updates: true } } } }),
-    prisma.projectRoleNeed.findMany({ where: { projectId }, select: { title: true, filledById: true } }),
+    prisma.launchPlan.findUnique({ where: { projectSlug: slug }, select: { budgetOverview: true, whoPays: true } }),
     latestInsight<GateBrief>(projectId, "LANSERING_GATE"),
   ]);
   if (!project) throw new InsightError("not_found");
@@ -537,7 +531,11 @@ export async function runEtableraGateBrief(projectId: string, slug: string, user
 
   const content = [
     `Projekt: ${project.title} — ${project.summary ?? ""}`,
-    plan ? `Etableringsplan:\nDrift: ${plan.scaledProcessNotes ?? "—"}\nSupporterbas: ${plan.supporterBaseNotes ?? "—"}` : "Ingen etableringsplan.",
+    wiki("playbook") ? `Så här gör vi (rutiner, vem gör vad, hur nya kommer igång): ${strip(wiki("playbook")!).slice(0, 1500)}` : "Inget dokument om hur verksamheten drivs.",
+    wiki("arbetsfloden") ? `Arbetsflöden (äldre text): ${strip(wiki("arbetsfloden")!).slice(0, 600)}` : "",
+    plan?.scaledProcessNotes ? `Processen (äldre text): ${plan.scaledProcessNotes}` : "",
+    plan?.supporterBaseNotes ? `Människor runt projektet: ${plan.supporterBaseNotes}` : "Inget skrivet om människorna runt projektet.",
+    launch ? `Driften kostar: ${launch.budgetOverview ?? "—"}; vem betalar: ${launch.whoPays ?? "—"}` : "",
     wiki("finansieringsplan") ? `Finansieringsplan: ${strip(wiki("finansieringsplan")!).slice(0, 1200)}` : "Ingen finansieringsplan.",
     campaign ? `Insamlingskampanj "${campaign.title}" (${campaign.status}): ${pledged} av ${campaign.goal} ${campaign.currency} insamlat` : "Ingen insamlingskampanj.",
     applications.length
@@ -547,11 +545,9 @@ export async function runEtableraGateBrief(projectId: string, slug: string, user
       ? `Partnerskap: ${partnerships.map((p) => `${p.organisation.name} (${p.type}, ${p.status})${p.description ? ` — ${p.description}` : ""}`).join("; ")}`
       : "Inga registrerade partnerskap.",
     wiki("partnerskap") ? `Partnerskapsplan: ${strip(wiki("partnerskap")!).slice(0, 800)}` : "",
-    wiki("playbook") ? `Playbook finns: ${strip(wiki("playbook")!).slice(0, 600)} …` : "Ingen playbook.",
     review ? `Granskningsrådet: ${review.status}${review.outcomeNote ? ` — ${review.outcomeNote}` : ""}` : "Ingen granskning begärd.",
     `Impact: ${metrics.map((m) => `${m.label} ${m.currentValue} ${m.unit}${m.targetValue ? ` (mål ${m.targetValue})` : ""}${m._count.updates ? "" : " — inte rapporterat"}`).join("; ") || "inga mätetal"}`,
-    `Kärnteam: ${roles.map((r) => `${r.title} (${r.filledById ? "tillsatt" : "vakant"})`).join(", ") || "inga roller definierade"}`,
-    previous ? `Fokus som sattes för Etablera vid pilotens go/no-go: ${previous.content.nextFocus.join(" | ")}` : "",
+    previous ? `Fokus som sattes för Etablera vid fasgrinden efter piloten: ${previous.content.nextFocus.join(" | ")}` : "",
   ]
     .filter(Boolean)
     .join("\n\n");

@@ -173,15 +173,15 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
     { key: "pilot_results_collected", label: "Vad visade piloten?" },
     { key: "launch_marketing_plan_created", label: "Plan framåt" },
   ],
+  // Etablera (#329): get it running on its own (lib/establish.ts). Old keys,
+  // so ticks and cards carry over; the process, the workflows and the
+  // playbook are one document now, funding is one step, and the review
+  // council's review is asked for in the gate.
   ESTABLISH: [
-    { key: "process_scaled_up", label: "Skala upp processen som fungerade i piloten", href: "establishment-plan" },
-    { key: "stable_operations_funding", label: "Bygga stabil drift och återkommande finansiering", href: "funding" },
-    { key: "funding_secured", label: "Säkra finansiering", href: "funding", parentKey: "stable_operations_funding" },
-    { key: "partnerships_formalized", label: "Formalisera partnerskap och samarbeten", href: "partnerships" },
-    { key: "supporter_base_built", label: "Bygga upp en stabil community/supporterbas", href: "establishment-plan" },
-    { key: "playbook_documented", label: "Dokumentera \"playbook\" så andra kan replikera", href: "wiki" },
-    { key: "workflows_formalized", label: "Formalisera arbetsflöden och ansvar", href: "wiki" },
-    { key: "review_council_deep_review", label: "Granskningsråd gör en djupare granskning inför skalning", href: "review-request" },
+    { key: "playbook_documented", label: "Så här gör vi" },
+    { key: "stable_operations_funding", label: "Pengar som räcker" },
+    { key: "partnerships_formalized", label: "Samarbeten" },
+    { key: "supporter_base_built", label: "Människor runt projektet" },
   ],
   SCALE: [
     { key: "scale_vs_fork_decided", label: "Bestämma Skalning vs. Fork (samma projekt växer vs. nytt oberoende initiativ)", href: "scale" },

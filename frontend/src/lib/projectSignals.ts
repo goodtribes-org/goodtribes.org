@@ -1,8 +1,8 @@
 import { cache } from "react";
 import { uppstartStepsDone } from "@/lib/mvp";
 import { lanseringStepsDone } from "@/lib/pilot";
+import { etableraStepsDone } from "@/lib/establish";
 import { decidedSince, lastRestartAt } from "@/lib/phaseRestart";
-import { isWrittenPhaseWiki } from "@/lib/phaseWikiTemplates";
 import { prisma } from "@/lib/prisma";
 import { autoDoneKeys, type ProjectSignals } from "@/lib/phaseProgress";
 import { LEAN_CANVAS_BLOCKS } from "@/app/[locale]/projects/[slug]/(workspace)/lean-canvas/fields";
@@ -19,7 +19,7 @@ const filled = (row: Record<string, unknown> | null | undefined, fields: readonl
 export const getProjectSignals = cache(async (projectId: string, slug: string): Promise<ProjectSignals> => {
   const [
     project, interviewCount, marketScanCount, uppstartPlan, mvpTestCount, evaluation, pilotGate, launch, pages, campaign, applications,
-    activePartnerships, councilReview, scalingPlan, instances, reports, followup, inReview,
+    activePartnerships, establishment, scalingPlan, instances, reports, followup, inReview,
   ] = await Promise.all([
     prisma.project.findUnique({
       where: { id: projectId },
@@ -42,11 +42,11 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
     // Since the latest restart (#313): a moved-back project decides again.
     lastRestartAt(projectId).then((restartAt) => prisma.phaseGateDecision.findFirst({ where: { projectId, fromPhase: "PRODUCTION", ...decidedSince(restartAt) }, select: { id: true } })),
     prisma.launchPlan.findUnique({ where: { projectSlug: slug }, select: { targetAudience: true, howToReach: true } }),
-    prisma.wikiPage.findMany({ where: { projectSlug: slug, slug: { in: ["arbetsfloden", "playbook"] } }, select: { slug: true, content: true } }),
+    prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "playbook" } }, select: { content: true } }),
     prisma.fundingCampaign.findUnique({ where: { projectId }, select: { id: true, _count: { select: { pledges: { where: { pledgeStatus: "confirmed" } } } } } }),
     prisma.fundingApplication.findMany({ where: { projectId, status: { in: ["submitted", "awarded"] } }, select: { status: true } }),
     prisma.partnership.count({ where: { projectId, status: "active" } }),
-    prisma.reviewCouncilRequest.findFirst({ where: { projectId, status: "completed" }, select: { id: true } }),
+    prisma.establishmentPlan.findUnique({ where: { projectSlug: slug }, select: { supporterBaseNotes: true } }),
     prisma.scalingPlan.findUnique({ where: { projectSlug: slug }, select: { goals: true, geographies: true } }),
     prisma.projectInstance.findMany({ where: { parentSlug: slug }, select: { status: true } }),
     prisma.impactReport.findMany({ where: { projectId, kind: "DELIVERED", rejectedAt: null }, select: { verifiedAt: true } }),
@@ -57,8 +57,6 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
       distinct: ["stepKey"],
     }),
   ]);
-  // An untouched "Skriv själv" template doesn't count as written (#311).
-  const pageSlugs = new Set(pages.filter((p) => isWrittenPhaseWiki(p.slug, p.content)).map((p) => p.slug));
   const awarded = applications.some((a) => a.status === "awarded");
   return {
     ideaStepsInReview: inReview.map((c) => c.stepKey!),
@@ -74,12 +72,12 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
     uppstartDone: uppstartStepsDone(uppstartPlan, mvpTestCount, evaluation?.successCriteria),
     lanseringDone: lanseringStepsDone({ evaluation, launch }),
     pilotGateDecided: !!pilotGate,
-    workflowsPage: pageSlugs.has("arbetsfloden"),
-    fundingApplied: !!campaign || applications.length > 0,
-    fundingSecured: awarded || (campaign?._count.pledges ?? 0) > 0,
-    activePartnerships,
-    playbookPage: pageSlugs.has("playbook"),
-    councilReviewCompleted: !!councilReview,
+    etableraDone: etableraStepsDone({
+      playbookHtml: pages?.content,
+      fundingSecured: awarded || (campaign?._count.pledges ?? 0) > 0,
+      activePartnerships,
+      supporterBaseNotes: establishment?.supporterBaseNotes,
+    }),
     replicationOpened: !!project?.openForReplication || instances.length > 0,
     scalingGoalsWritten: !!scalingPlan?.goals?.trim(),
     geographiesWritten: !!scalingPlan?.geographies?.trim(),

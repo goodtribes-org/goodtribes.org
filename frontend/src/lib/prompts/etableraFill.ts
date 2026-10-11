@@ -6,26 +6,24 @@ const SHARED_RULES = `Regler som alltid gäller:
 - Allt du skriver är ett utkast som teamet granskar och ändrar. Kort och konkret.
 - Projekten drivs av ideella deltagare med begränsad tid — håll det enkelt och genomförbart.`;
 
-const PHASE_CONTEXT = `Projektets pilot fick go och projektet är nu i Etablera: skala upp processen som fungerade i piloten, bygga stabil drift och återkommande finansiering, formalisera partnerskap, bygga en stabil community/supporterbas, dokumentera en "playbook" så att andra kan replikera, och låta Granskningsrådet göra en djupare granskning inför skalning.`;
+const PHASE_CONTEXT = `Piloten är klar och projektet är nu i Etablera: det ska rulla av sig självt, så att det inte hänger på några få eldsjälar. Teamet skriver ner hur de gör (vem gör vad, rutiner, hur en ny person kommer igång), ser till att pengarna räcker, bygger samarbeten och tar hand om människorna runt projektet. Skriv utan facktermer.`;
 
 const withRules = (task: string, tool: string) => `${PHASE_CONTEXT}\n\n${task}\n\n${SHARED_RULES}\n\nSvara genom verktyget "${tool}".`;
 
 // ─── Etableringsplan ────────────────────────────────────────────────────────
 
-export const ESTABLISHMENT_PLAN_SYSTEM_PROMPT = withRules(
-  `Ta fram ett första utkast till etableringsplan. Två fält, vanlig text (korta rader med "- " går bra), högst 8 rader var:
-- scaled_process: hur processen som fungerade i piloten görs till stabil, återkommande drift — vad som ska göras oftare eller på fler ställen, vad som behöver bli rutin, och vad som måste lösas först (t.ex. det som var oklart vid go/no-go).
-- supporter_base: hur ni bygger en stabil community och supporterbas — vilka som ska engageras (användare, volontärer, lokala aktörer), hur de hålls kvar, och hur de kan bidra.`,
-  "etableringsplan",
+export const SUPPORTERS_SYSTEM_PROMPT = withRules(
+  `Skriv ett första utkast om människorna runt projektet, vanlig text (korta rader med "- " går bra), högst 8 rader: vilka som är med eller kan vara med (deltagare, volontärer, lokala aktörer), hur ni välkomnar nya, hur ni håller kvar dem som är med, och hur de kan bidra. Bygg på det piloten visat.`,
+  "manniskor",
 );
 
-export const ESTABLISHMENT_PLAN_TOOL = {
-  name: "etableringsplan",
-  description: "Utkast till etableringsplan.",
+export const SUPPORTERS_TOOL = {
+  name: "manniskor",
+  description: "Utkast om människorna runt projektet.",
   input_schema: {
     type: "object" as const,
-    properties: { scaled_process: { type: "string" }, supporter_base: { type: "string" } },
-    required: ["scaled_process", "supporter_base"],
+    properties: { supporters: { type: "string" } },
+    required: ["supporters"],
   },
 };
 
@@ -82,12 +80,12 @@ export const PARTNERSHIPS_TOOL = {
 // ─── Playbook ───────────────────────────────────────────────────────────────
 
 export const PLAYBOOK_SYSTEM_PROMPT = withRules(
-  `Skriv en "playbook" så att någon annan — en ny grupp på en annan ort — kan starta samma sak. Bygg på pilotplanen, arbetsflödena och vad piloten lärde er. Ta fram:
+  `Skriv dokumentet "Så här gör vi": hur verksamheten drivs, skrivet så att en ny person — eller en ny grupp på en annan ort — kan ta över. Bygg på pilotplanen, loggen, arbetsflödena och vad piloten lärde er. Ta fram:
 - summary: vad projektet gör och för vem, i 2–3 meningar.
-- prerequisites: vad som måste finnas innan man startar (tillstånd, partner, personer, verktyg) — 3–6 punkter.
-- steps: hur man kommer igång, steg för steg (4–8 steg).
-- roles: vilka roller som behövs och vad de gör (en punkt per roll).
-- routines: de återkommande rutinerna (3–5).
+- roles: vem gör vad — en punkt per roll: vad den gör och bestämmer.
+- routines: det som görs varje vecka eller månad, och vem som gör det (3–5).
+- steps: så kommer en ny person igång — det första hen behöver veta och göra (4–8 steg).
+- prerequisites: det här behövs — lokaler, saker, tillstånd och kontakter (3–6 punkter).
 - lessons: lärdomar och fallgropar från piloten (3–5).
 - measure: vad man mäter för att veta att det fungerar (2–4).`,
   "playbook",
