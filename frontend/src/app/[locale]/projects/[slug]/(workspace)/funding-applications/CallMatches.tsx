@@ -4,8 +4,9 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { dismissCallMatch } from "./actions";
+import StartCallApplication from "./StartCallApplication";
 
-export type CallMatchRow = { id: string; slug: string; title: string; funder: string; closes: string; reasons: string[] };
+export type CallMatchRow = { id: string; callId: string; applied: boolean; slug: string; title: string; funder: string; closes: string; reasons: string[] };
 
 // Utlysningar (#345): published calls that fit this project, with why.
 export default function CallMatches({ matches, projectSlug, canManage }: { matches: CallMatchRow[]; projectSlug: string; canManage: boolean }) {
@@ -21,9 +22,10 @@ export default function CallMatches({ matches, projectSlug, canManage }: { match
             {m.reasons.map((r) => <li key={r}>{r}</li>)}
           </ul>
           <div className="mt-3 flex items-center gap-3">
-            <Link href={`/utlysningar/${m.slug}`} className="rounded-md bg-coral px-3 py-1.5 text-xs font-medium text-white hover:bg-watermelon">
+            <Link href={`/utlysningar/${m.slug}`} className="text-xs font-medium text-seagrass hover:underline">
               Läs utlysningen
             </Link>
+            {canManage && !m.applied && <StartCallApplication projectSlug={projectSlug} fundingCallId={m.callId} />}
             {canManage && (
               <button
                 type="button"

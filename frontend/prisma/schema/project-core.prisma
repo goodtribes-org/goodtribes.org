@@ -359,13 +359,43 @@ model ProjectInvite {
 
 // The Foundation-owned umbrella AB(s) a commercial_umbrella project's
 // product line sits under (PRD 4c), e.g. "GoodTribes Ventures AB".
+// A GoodTribes legal entity. Started as the commercial umbrella AB a
+// project invoices through (PRD 4c); since #346 also the entity that stands
+// as applicant for a funding call — kept as one table, since both answer
+// "which GoodTribes entity is behind this". Administered by site admins,
+// never hardcoded: the group structure is not final (open questions in #342).
 model CommercialUmbrellaEntity {
-  id                    String   @id @default(cuid())
+  id                    String                 @id @default(cuid())
   name                  String
   foundationAbOrgNumber String?
-  createdAt             DateTime @default(now())
+  kind                  GoodTribesEntityKind   @default(LIMITED_COMPANY)
+  status                GoodTribesEntityStatus @default(EXISTS)
+  // Who this entity can apply as, matched against FundingCall.applicantTypes.
+  applicantTypes        FundingApplicantType[]
+  // Who signs for the entity (firmatecknare).
+  signatoryName         String?
+  signatoryEmail        String?
+  // Who may review applications in this entity's name. Empty = any site admin.
+  reviewers             User[]                 @relation("EntityReviewers")
+  createdAt             DateTime               @default(now())
 
-  projects Project[]
+  projects     Project[]
+  applications FundingApplication[]
+}
+
+enum GoodTribesEntityKind {
+  LIMITED_COMPANY
+  FOUNDATION
+  NONPROFIT
+  // An outside organisation in the team (a company, a university) that
+  // applies itself — GoodTribes is then not the applicant and doesn't review.
+  PARTNER
+}
+
+enum GoodTribesEntityStatus {
+  PLANNED
+  EXISTS
+  OPEN_QUESTION
 }
 
 // A role the core team needs (Uppstart: "Definiera roller och bilda

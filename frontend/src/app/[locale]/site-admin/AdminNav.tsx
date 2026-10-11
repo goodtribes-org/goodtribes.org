@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Award, BookOpen, Building2, Coins, FileText, Flag, FolderKanban, Gavel, GraduationCap, HandCoins, Home,
+  Award, BookOpen, Building, Building2, ClipboardCheck, Coins, FileText, Flag, FolderKanban, Gavel, GraduationCap, HandCoins, Home,
   Landmark, LayoutDashboard, Megaphone, MessageSquareText, PieChart, QrCode, Scale, ShoppingBag, Sparkles, ToggleLeft, TrendingUp, Users,
   type LucideIcon,
 } from "lucide-react";
@@ -25,6 +25,8 @@ const ICONS: Record<string, LucideIcon> = {
   "/site-admin/impact-fund": HandCoins,
   "/site-admin/funding-sources": BookOpen,
   "/site-admin/funding-calls": Megaphone,
+  "/site-admin/applications": ClipboardCheck,
+  "/site-admin/entities": Building,
   "/site-admin/shop": ShoppingBag,
   "/site-admin/token-backfill": Coins,
   "/site-admin/hero-carousel": Home,

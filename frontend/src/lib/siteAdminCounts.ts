@@ -6,7 +6,7 @@ import type { AdminQueue } from "@/lib/siteAdminNav";
 // each queue's own page lists. A queue nobody can see the depth of is a
 // queue nobody works.
 export async function getAdminQueueCounts(): Promise<Record<AdminQueue, number>> {
-  const [contentFlags, ethics, impactReports, suggestions, invoicing, legalType, profitDistribution, fundingCalls] = await Promise.all([
+  const [contentFlags, ethics, impactReports, suggestions, invoicing, legalType, profitDistribution, fundingCalls, applications] = await Promise.all([
     prisma.contentFlag.count({ where: { status: "PENDING" } }),
     prisma.projectFlag.count({ where: { status: "pending" } }),
     countPendingImpactReports(),
@@ -18,6 +18,8 @@ export async function getAdminQueueCounts(): Promise<Record<AdminQueue, number>>
     prisma.fundingCall.count({
       where: { OR: [{ status: "DRAFT", OR: [{ rolling: true }, { deadline: { gt: new Date() } }] }, { status: "PUBLISHED", changedAt: { not: null } }] },
     }),
+    // Applications waiting for GoodTribes' review (#346).
+    prisma.fundingApplication.count({ where: { status: "in_review" } }),
   ]);
-  return { contentFlags, ethics, impactReports, suggestions, invoicing, legalType, profitDistribution, fundingCalls };
+  return { contentFlags, ethics, impactReports, suggestions, invoicing, legalType, profitDistribution, fundingCalls, applications };
 }
