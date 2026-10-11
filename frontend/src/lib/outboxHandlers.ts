@@ -4,3 +4,5 @@
 // /api/cron/process-outbox. Add a line here whenever a new feature
 // registers a handler via src/lib/outbox.ts's registerOutboxHandler.
 import "@/lib/notify";
+import "@/lib/fundingMatching";
+import "@/lib/fundingCalls/matching";

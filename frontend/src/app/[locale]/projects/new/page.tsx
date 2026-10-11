@@ -53,7 +53,10 @@ export default async function NewProjectPage({
       ideaId
         ? prisma.idea.findFirst({
             where: { id: ideaId, status: "open", hiddenAt: null },
-            select: { id: true, title: true, description: true, problem: true, solution: true, author: { select: { name: true } } },
+            select: {
+              id: true, title: true, description: true, problem: true, solution: true, author: { select: { name: true } },
+              fundingCall: { select: { title: true, status: true, fundingSource: { select: { name: true } } } },
+            },
           })
         : Promise.resolve(null),
       // The draft limit (#226) shown on the summary.
@@ -91,6 +94,8 @@ export default async function NewProjectPage({
                   dream: idea.description || idea.title,
                   problem: idea.problem ?? "",
                   idea: idea.solution ?? "",
+                  // An idea for a funding call (#345): the project becomes its private application project.
+                  call: idea.fundingCall?.status === "PUBLISHED" ? { title: idea.fundingCall.title, funder: idea.fundingCall.fundingSource.name } : null,
                 }
               : null
           }

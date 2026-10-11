@@ -186,3 +186,12 @@ export async function recordOutcome(
 
   revalidatePath(`/projects/${projectSlug}/funding-applications`);
 }
+
+// Utlysningar (#345): hide a matching call for this project.
+export async function dismissCallMatch(matchId: string, projectSlug: string) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+  const project = await requireLead(projectSlug, session.user.id);
+  await prisma.fundingCallMatch.updateMany({ where: { id: matchId, projectId: project.id }, data: { dismissedAt: new Date(), dismissedById: session.user.id } });
+  revalidatePath(`/projects/${projectSlug}/funding-applications`);
+}

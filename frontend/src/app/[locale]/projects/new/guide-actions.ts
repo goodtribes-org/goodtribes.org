@@ -23,7 +23,7 @@ import { indexDocuments } from "@/lib/meili";
 import { guardSocialAction } from "@/lib/socialActionGuard";
 import { runProactiveModeration } from "@/lib/proactiveModeration";
 import { IDEAS_LIST_TAG, invalidateListCache } from "@/lib/listCache";
-import { linkProjectToIdea } from "@/lib/promoteIdea";
+import { ideaFundingCallId, linkProjectToIdea } from "@/lib/promoteIdea";
 import { findSimilarIdeas, type SimilarIdea } from "@/lib/similarIdeas";
 import {
   GUIDE_AREAS,
@@ -242,8 +242,10 @@ async function createWithoutAi(input: GuideInput, userId: string, t: T) {
     summary: input.answers.dream?.slice(0, 300) ?? null,
     description: sections.join(""),
     aiMode: "MANUAL",
-    // Driving a shared idea is public from the start (#226).
+    // Driving a shared idea is public from the start (#226) — unless the
+    // idea is for a funding call: then a private application project (#345).
     publish: !!input.basedOnIdeaId,
+    fundingCallId: await ideaFundingCallId(input.basedOnIdeaId),
   });
 
   const { time, team, ambition } = input.conditions;

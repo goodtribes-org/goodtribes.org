@@ -32,9 +32,10 @@ export async function canViewDraft(projectId: string, userId: string | null | un
   return isSiteAdmin(userId);
 }
 
-// The drafts someone owns (archived ones don't count against the limit).
+// The drafts someone owns (archived ones don't count against the limit, and
+// nor do private application projects for a funding call, #345).
 export function ownDraftsWhere(userId: string): Prisma.ProjectWhereInput {
-  return { ownerId: userId, publishedAt: null, archivedAt: null };
+  return { ownerId: userId, publishedAt: null, archivedAt: null, fundingCallId: null };
 }
 
 export async function countOwnDrafts(userId: string): Promise<number> {

@@ -31,7 +31,7 @@ const GUIDE_KEEP_MS = 24 * 60 * 60 * 1000;
 type FollowUp = { question: string; answer: string };
 // "Jag vill driva den här" on an open idea (#233): its texts fill the
 // answers, and the new project links back to it.
-export type FromIdea = { id: string; title: string; author: string; dream: string; problem: string; idea: string };
+export type FromIdea = { id: string; title: string; author: string; dream: string; problem: string; idea: string; call?: { title: string; funder: string } | null };
 // "Dela en idé till utmaningen" (#228): the open challenge this answers.
 export type ForChallenge = { slug: string; title: string; organisation: string };
 // "Dela en idé till utlysningen" (#344): the open funding call it's for.
@@ -240,9 +240,17 @@ export default function DreamGuide({
             )}
             {step === 0 &&
               (basedOnIdeaId ? (
-                <p className="mb-4 rounded-xl bg-seagrass/5 p-3 text-sm text-dark-slate/75">
-                  {fromIdea ? t("fromIdea", { title: fromIdea.title, author: fromIdea.author || "—" }) : t("fromIdeaShort")}
-                </p>
+                <>
+                  <p className="mb-4 rounded-xl bg-seagrass/5 p-3 text-sm text-dark-slate/75">
+                    {fromIdea ? t("fromIdea", { title: fromIdea.title, author: fromIdea.author || "—" }) : t("fromIdeaShort")}
+                  </p>
+                  {fromIdea?.call && (
+                    <p className="mb-4 rounded-xl border border-coral/30 bg-coral/5 p-3 text-sm text-dark-slate/75">
+                      {t("fromCallIdea", { title: fromIdea.call.title, funder: fromIdea.call.funder })}{" "}
+                      <a href="/participant-agreement" target="_blank" className="font-semibold text-seagrass hover:underline">{t("agreementLink")}</a>
+                    </p>
+                  )}
+                </>
               ) : (
                 <p className="mb-4 text-sm text-dark-slate/65">{t("intro")}</p>
               ))}

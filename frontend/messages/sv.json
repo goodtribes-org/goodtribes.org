@@ -1109,7 +1109,8 @@
     "unknownAuthor": "Okänd",
     "logInLinkText": "Logga in",
     "toLeaveCommentSuffix": "för att lämna en kommentar.",
-    "answersChallenge": "Svar på utmaningen ”{title}” från {organisation}"
+    "answersChallenge": "Svar på utmaningen ”{title}” från {organisation}",
+    "forFundingCall": "Idé till utlysningen från {funder}: {title}"
   },
   "Challenges": {
     "listTitle": "Utmaningar",
@@ -5768,7 +5769,9 @@
     "resume": "Du har ett påbörjat Drömsamtal: <link>fortsätt det</link>",
     "formInstead": "Hellre ett formulär? <link>Snabbstart</link>",
     "forChallenge": "Du svarar på utmaningen ”{title}” från {organisation}. Din idé hamnar i utmaningen när du delar den.",
-    "forCall": "Du delar en idé till utlysningen ”{title}” från {funder}. Beskriv vad en ansökan skulle kunna innehålla. Din idé hamnar på utlysningens sida när du delar den, och vem som helst kan sedan driva den."
+    "forCall": "Du delar en idé till utlysningen ”{title}” från {funder}. Beskriv vad en ansökan skulle kunna innehålla. Din idé hamnar på utlysningens sida när du delar den, och vem som helst kan sedan driva den.",
+    "fromCallIdea": "Idén hör till utlysningen ”{title}” från {funder}. Du blir projektledare och ansvarar för ansökan och teamet. Projektet blir ett privat utkast som bara teamet ser, eftersom flera kan söka samma pengar. Ansökan lämnas in i en GoodTribes-enhets namn och granskas av GoodTribes först. Det ni skapar tillhör Stiftelsen GoodTribes.",
+    "agreementLink": "Läs Deltagaravtalet"
   },
   "IdeaHelp": {
     "heading": "Jag vill hjälpa till",

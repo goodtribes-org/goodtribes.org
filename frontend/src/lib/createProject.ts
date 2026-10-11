@@ -39,6 +39,9 @@ export type CreateProjectParams = {
   // Set when the project comes out of a Drömsamtal: the "Beskriv projektet"
   // card then credits the founder (told it) and GoodTribes (wrote it up).
   dreamFounderId?: string;
+  // Utlysningar (#345): started for this funding call. Always a private
+  // draft (applicants compete), and outside the MAX_DRAFTS limit.
+  fundingCallId?: string | null;
 };
 
 // Shared core of project creation — slug-retry, the Project row itself, the
@@ -53,9 +56,10 @@ export async function createProjectRecord(params: CreateProjectParams) {
     slogan = null,
     summary = null, description = null, imageUrl = null, category = null,
     tags = [], sdgGoals = [], orgId = null,
-    publish = false, skillIds = [], aiMode = null, ideaStepCards = true, dreamFounderId,
+    skillIds = [], aiMode = null, ideaStepCards = true, dreamFounderId, fundingCallId = null,
   } = params;
-  if (!publish && (await countOwnDrafts(ownerId)) >= MAX_DRAFTS) throw new DraftLimitError();
+  const publish = !fundingCallId && (params.publish ?? false);
+  if (!publish && !fundingCallId && (await countOwnDrafts(ownerId)) >= MAX_DRAFTS) throw new DraftLimitError();
   const legalType = params.legalType && isCreatableLegalType(params.legalType) ? params.legalType : "NONPROFIT_UMBRELLA";
 
   const contentLocale = params.contentLocale ? normalizeContentLocale(params.contentLocale) : await requestContentLocale();
@@ -72,6 +76,7 @@ export async function createProjectRecord(params: CreateProjectParams) {
           ...(imageUrl ? { imageUrl } : {}),
           ...(orgId ? { orgId } : {}),
           ...(aiMode ? { aiMode } : {}),
+          ...(fundingCallId ? { fundingCallId } : {}),
         },
       });
       await prisma.projectMember.create({ data: { projectId: project.id, userId: ownerId, role: "FOUNDER" } });

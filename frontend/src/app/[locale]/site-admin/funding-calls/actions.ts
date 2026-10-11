@@ -11,6 +11,7 @@ import { importFundingCalls, type SourceResult } from "@/lib/fundingCalls/import
 import { APPLICANT_TYPES, suggestCallFields } from "@/lib/fundingCalls/analyze";
 import { safeExternalUrl } from "@/lib/impactReports";
 import { uniqueCallSlug } from "@/lib/fundingCalls/public";
+import { enqueueCallPublishedMatch } from "@/lib/fundingCalls/matching";
 import { toProxyUrl } from "@/lib/storageUrl";
 
 // Utlysningar (#343), the site admin's side: which sources are fetched and
@@ -127,6 +128,8 @@ export async function publishCall(id: string): Promise<{ error?: string }> {
   await prisma.fundingCall.update({ where: { id }, data: { status: "PUBLISHED", slug, publishedAt: new Date(), publishedById: userId, changedAt: null } });
   revalidatePath("/utlysningar");
   revalidatePath(`/utlysningar/${slug}`);
+  // Projects it fits hear about it (#345).
+  await enqueueCallPublishedMatch(id);
   return done(id);
 }
 

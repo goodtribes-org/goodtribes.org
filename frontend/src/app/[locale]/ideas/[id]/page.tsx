@@ -116,6 +116,7 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
           orderBy: { createdAt: "desc" },
         },
         challenge: { select: { slug: true, title: true, publishedAt: true, organisation: { select: { name: true } } } },
+        fundingCall: { select: { slug: true, title: true, publishedAt: true, fundingSource: { select: { name: true } } } },
         basedProjects: {
           where: { ...PUBLIC_PROJECT_WHERE, archivedAt: null },
           orderBy: { createdAt: "asc" },
@@ -210,6 +211,14 @@ export default async function IdeaDetailPage({ params }: { params: Promise<{ loc
               className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-seagrass/10 px-3 py-1 text-xs font-medium text-seagrass hover:bg-seagrass/15"
             >
               🎯 {t("answersChallenge", { organisation: idea.challenge.organisation.name, title: idea.challenge.title })}
+            </Link>
+          )}
+          {idea.fundingCall?.publishedAt && idea.fundingCall.slug && (
+            <Link
+              href={`/utlysningar/${idea.fundingCall.slug}`}
+              className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-coral/10 px-3 py-1 text-xs font-medium text-coral hover:bg-coral/15"
+            >
+              💰 {t("forFundingCall", { funder: idea.fundingCall.fundingSource.name, title: idea.fundingCall.title })}
             </Link>
           )}
           <h1 className="text-2xl font-bold text-dark-slate mb-3 leading-snug">{content.title}</h1>
