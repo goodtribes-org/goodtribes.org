@@ -17,7 +17,9 @@ describe("helpContextFor", () => {
 
   it("a project page without its own text still knows the project", () => {
     expect(helpContextFor("/projects/x")).toEqual({ projectSlug: "x", pageHelp: null, sectionIntros: [] });
-    expect(helpContextFor("/projects/x/uppstart")).toEqual({ projectSlug: "x", pageHelp: null, sectionIntros: [] });
+    expect(helpContextFor("/projects/x/uppstart")).toEqual({
+      projectSlug: "x", pageHelp: null, sectionIntros: ["mvpHypothesis", "mvpBuilt", "mvpTested", "pilotPlanned", "uppstartGate"],
+    });
   });
 
   it("outside a project, and on /projects/new, there's no project", () => {

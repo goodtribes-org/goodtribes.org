@@ -8,8 +8,12 @@ describe("stepHref", () => {
     expect(stepHref("p", "SPRINT", { key: "market_scan_partners", href: "market-scan" })).toBe("/projects/p/ide?step=market_scan_partners");
   });
 
-  it("keeps a later phase's own page, or its guide", () => {
-    expect(stepHref("p", "PILOT", { key: "core_team_formed", href: "members" })).toBe("/projects/p/members");
-    expect(stepHref("p", "PILOT", { key: "x" })).toBe("/projects/p/uppstart");
+  it("sends every Uppstart step to its step on the Uppstart page (#320)", () => {
+    expect(stepHref("p", "PILOT", { key: "mvp_tested" })).toBe("/projects/p/uppstart?step=mvp_tested");
+  });
+
+  it("keeps a later phase's own page, or its phase page", () => {
+    expect(stepHref("p", "PRODUCTION", { key: "launch_marketing_plan_created", href: "launch-plan" })).toBe("/projects/p/launch-plan");
+    expect(stepHref("p", "ESTABLISH", { key: "x" })).toBe("/projects/p/etablera");
   });
 });

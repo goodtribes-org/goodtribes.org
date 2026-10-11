@@ -4051,6 +4051,31 @@
       "title": "How to build your impact model",
       "body": "Go from left to right: the problem, the participants, the activities, then the outcomes in the short, medium and long term. This is your plan for change, not a result you've already achieved.",
       "tip": "Short-term outcomes should be visible within a year. They're the ones you measure first."
+    },
+    "mvpHypothesis": {
+      "title": "Start with what you want to know",
+      "body": "Write down what you believe in one sentence, and what would show it is true. Then you know what the test should answer, and when you have the answer.",
+      "tip": "Pick a sign people act on, not what they say: they book, come back or pay."
+    },
+    "mvpBuilt": {
+      "title": "Do the simplest thing that works",
+      "body": "The smallest version isn't a small product but a test. Do it by hand, arrange a meetup or describe the offer and see who bites. It should be doable next week.",
+      "tip": "If it takes more than a couple of weeks to build it's too big. Cut until it feels almost too simple."
+    },
+    "mvpTested": {
+      "title": "Let real people try it",
+      "body": "Write down each person who tries it and what happened. The signal says how strong the evidence is: someone paying weighs most, someone liking it weighs least.",
+      "tip": "Ask for something small — a sign-up, a helping hand or a little money. That is where you see if it is real."
+    },
+    "pilotPlanned": {
+      "title": "Plan the pilot",
+      "body": "The pilot is the same thing on a slightly larger scale for a set time. Decide where, with whom, for how long and what has to happen for you to call it a success.",
+      "tip": "Two or three success criteria are enough. Write them so someone outside the team can tell if they were met."
+    },
+    "uppstartGate": {
+      "title": "Is the evidence enough?",
+      "body": "Here you see what the tests showed and decide whether to move on to the pilot, test more, change the idea or pause. The gate is a support, not a lock.",
+      "tip": "Weak evidence doesn't close the door, but consider whether one more test would make you surer."
     }
   },
   "ChangeImpactHint": {
@@ -4403,10 +4428,8 @@
     "heading": "Start-up",
     "intro": "Find out fast whether anyone wants it: build the smallest version of the idea, let a few real people try it and plan the pilot from what happened.",
     "introWriting": "The AI is preparing Start-up from the Idea phase's work. The parts appear here as they finish.",
-    "stepByStep": "Step by step",
     "stillInIdea": "The project is still in the Idea phase.",
     "toGate": "To the phase gate →",
-    "progressLabel": "Start-up steps",
     "draftIntro": "Let the AI draft from the Idea phase: what you're testing, a suggested smallest version, the first tasks and a plan for the pilot. Nothing you already have is overwritten.",
     "draftAll": "Let the AI draft",
     "starting": "Starting …",
@@ -4420,10 +4443,7 @@
     "confirmDelete": "Yes, delete",
     "save": "Save",
     "cancel": "Cancel",
-    "tasksHeading": "First tasks",
     "openBoard": "Open the board",
-    "moreTasks": "+ {count} more on the board",
-    "tasksEmpty": "No tasks in this phase yet.",
     "failedTasks": "The AI couldn't suggest tasks.",
     "planGoal": "Goal and scope",
     "planMilestones": "Milestones",
@@ -4483,7 +4503,9 @@
     "pilotBudgetLabel": "What it costs",
     "pilotBudgetPlaceholder": "Roughly what the pilot costs and what you need to borrow or get",
     "oldPlanHeading": "Earlier project plan",
-    "saving": "Saving …"
+    "saving": "Saving …",
+    "stepTasksHeading": "Tasks in this step",
+    "stepTasksDone": "Every task in this step is done."
   },
   "LanseringOverview": {
     "heading": "Launch",
