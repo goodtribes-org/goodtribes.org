@@ -60,6 +60,7 @@ const PAGE_SECTION_INTROS: Record<string, string[]> = {
   uppstart: ["mvpHypothesis", "mvpBuilt", "mvpTested", "pilotPlanned", "uppstartGate"],
   lansering: ["pilotStart", "pilotFollow", "pilotResults", "planForward", "lanseringGate"],
   etablera: ["howWeDoIt", "moneyThatLasts", "partnerships", "peopleAround", "etableraGate"],
+  skala: ["whoElse", "howYouGrow", "theCore", "firstPlace", "moneyToGrow", "skalaGate"],
   "lean-canvas": ["leanCanvasPage"],
   "customer-model": ["customerModelPage"],
   "value-proposition": ["valuePropositionPage"],

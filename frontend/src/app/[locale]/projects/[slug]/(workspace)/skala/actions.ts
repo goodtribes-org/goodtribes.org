@@ -12,7 +12,13 @@ import { cardWords, cardsForLanseringDecision, skalaGateCriteria, runSkalaGateBr
 import { checkGateDecider, gateBriefErrorMessage, recordGateDecision } from "@/lib/gateDecision";
 import { advanceProjectPhase } from "../edit/actions";
 import { draftText } from "@/lib/aiLanguage";
-import { resolveAiMode } from "@/lib/aiMode";
+import { aiGateMessage, resolveAiMode } from "@/lib/aiMode";
+import type { ScalingPath } from "@prisma/client";
+import { OPENS_REPLICATION, SCALING_PATHS } from "@/lib/scaling";
+import { draftSkala, SKALA_DRAFT_KINDS, type SkalaDraft, type SkalaDraftKind } from "@/lib/skalaDrafts";
+import { createWikiPage, wikiPageExists } from "@/lib/phaseFill";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
+import { logger } from "@/lib/logger";
 import { startImpactFill } from "@/lib/impactPhaseFill";
 
 async function requireLead(projectSlug: string) {
@@ -32,6 +38,65 @@ export async function startSkalaDrafts(projectSlug: string, section?: string): P
   await startSkalaFill({ projectId: ctx.project.id, projectSlug: ctx.project.slug, userId: ctx.userId, only: section ? [section as SkalaSection] : undefined });
   revalidatePath(`/projects/${projectSlug}/skala`);
   return {};
+}
+
+// ─── Skalas steg (#331) ─────────────────────────────────────────────────────
+
+function done(projectSlug: string) {
+  revalidatePath(`/projects/${projectSlug}/skala`);
+  return {};
+}
+
+const PLAN_TEXT_FIELDS = ["goals", "geographies", "coreFixed", "coreAdaptable", "teamOrLicenseModel", "capitalPlan"] as const;
+
+// The plan's texts, from any step (only the fields sent are changed).
+export async function saveScalingPlan(projectSlug: string, patch: Record<string, string>): Promise<{ error?: string }> {
+  const ctx = await requireLead(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  const data: Record<string, string | null> = {};
+  for (const f of PLAN_TEXT_FIELDS) if (typeof patch[f] === "string") data[f] = patch[f].trim().slice(0, 5000) || null;
+  await prisma.scalingPlan.upsert({ where: { projectSlug }, create: { projectSlug, ...data, updatedById: ctx.userId }, update: { ...data, updatedById: ctx.userId } });
+  return done(projectSlug);
+}
+
+// "Hur ni växer": the way is saved, and the ways where others start their
+// own open the project for that (the same flag as the toggle on /scale).
+export async function setGrowthPath(projectSlug: string, path: string | null): Promise<{ error?: string }> {
+  const ctx = await requireLead(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  if (path && !SCALING_PATHS.includes(path as ScalingPath)) return { error: "Okänt val" };
+  const growthPath = (path as ScalingPath) || null;
+  await prisma.$transaction(async (tx) => {
+    await tx.scalingPlan.upsert({ where: { projectSlug }, create: { projectSlug, growthPath, updatedById: ctx.userId }, update: { growthPath, updatedById: ctx.userId } });
+    if (growthPath && OPENS_REPLICATION.includes(growthPath)) await tx.project.update({ where: { id: ctx.project.id }, data: { openForReplication: true } });
+  });
+  return done(projectSlug);
+}
+
+export async function suggestSkala(projectSlug: string, kind: string): Promise<{ draft?: SkalaDraft; error?: string }> {
+  const ctx = await requireLead(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  if (!SKALA_DRAFT_KINDS.includes(kind as SkalaDraftKind)) return { error: "Okänt förslag" };
+  try {
+    const res = await draftSkala(ctx.project.id, ctx.project.slug, ctx.userId, kind as SkalaDraftKind);
+    if (res.ok) return { draft: res.value };
+    if (res.reason === "empty") return { error: "AI:n kom inte fram till något förslag — försök igen." };
+    return { error: aiGateMessage(res.reason) };
+  } catch (err) {
+    logger.error("skala draft failed", { kind, err: String(err) });
+    return { error: "Kunde inte göra det just nu — försök igen." };
+  }
+}
+
+// The AI's comparison of the four ways, saved as the "skalningsval" page
+// when the team keeps it (only if there's none yet).
+export async function keepGrowthComparison(projectSlug: string, html: string): Promise<{ error?: string }> {
+  const ctx = await requireLead(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  if (await wikiPageExists(projectSlug, "skalningsval")) return { error: "Det finns redan en jämförelse." };
+  const project = await prisma.project.findUnique({ where: { id: ctx.project.id }, select: { contentLocale: true } });
+  await createWikiPage(projectSlug, "skalningsval", draftText(project?.contentLocale).titleScaleChoice, sanitizeHtml(html), ctx.userId);
+  return done(projectSlug);
 }
 
 // ─── Fasgrind Skala → Impact ──────────────────────────────────────────────

@@ -1,6 +1,7 @@
 import { UPPSTART_STEPS, type UppstartStep } from "@/lib/mvp";
 import { LANSERING_STEPS, MIN_PILOT_LOG_ENTRIES, type LanseringStep } from "@/lib/pilot";
 import { ETABLERA_STEPS, type EtableraStep } from "@/lib/establish";
+import { SKALA_STEPS, type SkalaStep } from "@/lib/scaling";
 import { DISPLAY_PHASES, getChecklistForPhase, overviewPathFor, toDisplayPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 
 // How far a project has come in each phase — what fills the phase bars
@@ -34,11 +35,7 @@ export type ProjectSignals = {
   // Etablera (#329, same data as etableraGateCriteria — lib/establish.ts)
   etableraDone: Record<EtableraStep, boolean>;
   // Skala (same data as skalaGateCriteria)
-  replicationOpened: boolean;
-  scalingGoalsWritten: boolean;
-  geographiesWritten: boolean;
-  fundingAwarded: boolean;
-  approvedInstance: boolean;
+  skalaDone: Record<SkalaStep, boolean>;
   // Impact
   deliveredReports: number;
   verifiedDeliveredReports: number;
@@ -79,12 +76,8 @@ export function autoDoneKeys(s: ProjectSignals): string[] {
 
   // Etablera (#329), as in etableraGateCriteria (lib/establish.ts)
   for (const step of ETABLERA_STEPS) add(step, s.etableraDone[step]);
-  // Skala, as in skalaGateCriteria
-  add("scale_vs_fork_decided", s.replicationOpened);
-  add("scaling_goals_set", s.scalingGoalsWritten);
-  add("new_geographies_identified", s.geographiesWritten);
-  add("expansion_capital_secured", s.fundingAwarded);
-  add("local_teams_or_license", s.approvedInstance);
+  // Skala (#331), as in skalaGateCriteria (lib/scaling.ts)
+  for (const step of SKALA_STEPS) add(step, s.skalaDone[step]);
   // Impact: only DELIVERED reports count — a grant received is support in,
   // not impact out (see CLAUDE.md's impact-measurement note).
   add("sdg_impact_measured", s.deliveredReports > 0);
@@ -174,9 +167,9 @@ export function nextStep(phase: ProjectPhaseValue, doneKeys: ReadonlySet<string>
 // is only for the legacy guide). Later phases: the step's own page, or the
 // phase page (#309; it used to be the legacy guide).
 // Phases whose page shows one step at a time (?step=<key>): Idé (#206),
-// Uppstart (#320), Lansering (#327) and Etablera (#329). Their steps link to
-// the step on the phase page.
-export const STEP_PAGES: Partial<Record<ProjectPhaseValue, string>> = { IDEA: "ide", PILOT: "uppstart", PRODUCTION: "lansering", ESTABLISH: "etablera" };
+// Uppstart (#320), Lansering (#327), Etablera (#329) and Skala (#331). Their
+// steps link to the step on the phase page.
+export const STEP_PAGES: Partial<Record<ProjectPhaseValue, string>> = { IDEA: "ide", PILOT: "uppstart", PRODUCTION: "lansering", ESTABLISH: "etablera", SCALE: "skala" };
 
 export function stepHref(slug: string, phase: ProjectPhaseValue, step: { key: string; href?: string }): string {
   const display = toDisplayPhase(phase);

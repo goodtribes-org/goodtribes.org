@@ -2,6 +2,7 @@ import { cache } from "react";
 import { uppstartStepsDone } from "@/lib/mvp";
 import { lanseringStepsDone } from "@/lib/pilot";
 import { etableraStepsDone } from "@/lib/establish";
+import { skalaStepsDone } from "@/lib/scaling";
 import { decidedSince, lastRestartAt } from "@/lib/phaseRestart";
 import { prisma } from "@/lib/prisma";
 import { autoDoneKeys, type ProjectSignals } from "@/lib/phaseProgress";
@@ -47,7 +48,7 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
     prisma.fundingApplication.findMany({ where: { projectId, status: { in: ["submitted", "awarded"] } }, select: { status: true } }),
     prisma.partnership.count({ where: { projectId, status: "active" } }),
     prisma.establishmentPlan.findUnique({ where: { projectSlug: slug }, select: { supporterBaseNotes: true } }),
-    prisma.scalingPlan.findUnique({ where: { projectSlug: slug }, select: { goals: true, geographies: true } }),
+    prisma.scalingPlan.findUnique({ where: { projectSlug: slug }, select: { goals: true, geographies: true, growthPath: true, coreFixed: true, teamOrLicenseModel: true, capitalPlan: true } }),
     prisma.projectInstance.findMany({ where: { parentSlug: slug }, select: { status: true } }),
     prisma.impactReport.findMany({ where: { projectId, kind: "DELIVERED", rejectedAt: null }, select: { verifiedAt: true } }),
     prisma.impactFollowup.findUnique({ where: { projectSlug: slug }, select: { celebrationNotes: true } }),
@@ -78,11 +79,11 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
       activePartnerships,
       supporterBaseNotes: establishment?.supporterBaseNotes,
     }),
-    replicationOpened: !!project?.openForReplication || instances.length > 0,
-    scalingGoalsWritten: !!scalingPlan?.goals?.trim(),
-    geographiesWritten: !!scalingPlan?.geographies?.trim(),
-    fundingAwarded: awarded,
-    approvedInstance: instances.some((i) => i.status === "approved"),
+    skalaDone: skalaStepsDone({
+      plan: scalingPlan,
+      replicationOpened: !!project?.openForReplication || instances.length > 0,
+      approvedInstance: instances.some((i) => i.status === "approved"),
+    }),
     deliveredReports: reports.length,
     verifiedDeliveredReports: reports.filter((r) => r.verifiedAt).length,
     celebrationWritten: !!followup?.celebrationNotes?.trim(),
