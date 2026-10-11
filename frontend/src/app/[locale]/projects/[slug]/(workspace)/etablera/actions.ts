@@ -7,12 +7,15 @@ import { revalidatePath } from "next/cache";
 import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { latestInsight } from "@/lib/ideaInsights";
-import { ETABLERA_SECTIONS, startEtableraFill, type EtableraSection } from "@/lib/etableraFill";
+import { ETABLERA_SECTIONS, ETABLERA_WIKI, saveEtableraWiki, startEtableraFill, type EtableraSection, type EtableraWikiSlug } from "@/lib/etableraFill";
+import { draftEtablera, ETABLERA_DRAFT_KINDS, type EtableraDraft, type EtableraDraftKind } from "@/lib/etableraDrafts";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
+import { logger } from "@/lib/logger";
 import { cardWords, cardsForLanseringDecision, etableraGateCriteria, runEtableraGateBrief, type GateBrief } from "@/lib/phaseGate";
 import { checkGateDecider, gateBriefErrorMessage, recordGateDecision } from "@/lib/gateDecision";
 import { advanceProjectPhase } from "../edit/actions";
 import { draftText } from "@/lib/aiLanguage";
-import { resolveAiMode } from "@/lib/aiMode";
+import { aiGateMessage, resolveAiMode } from "@/lib/aiMode";
 import { startSkalaFill } from "@/lib/skalaFill";
 
 async function requireLead(projectSlug: string) {
@@ -32,6 +35,54 @@ export async function startEtableraDrafts(projectSlug: string, section?: string)
   await startEtableraFill({ projectId: ctx.project.id, projectSlug: ctx.project.slug, userId: ctx.userId, only: section ? [section as EtableraSection] : undefined });
   revalidatePath(`/projects/${projectSlug}/etablera`);
   return {};
+}
+
+// ─── Etableras steg (#329) ──────────────────────────────────────────────────
+
+function done(projectSlug: string) {
+  revalidatePath(`/projects/${projectSlug}/etablera`);
+  return {};
+}
+
+// "Människor runt projektet": the team's own text.
+export async function saveSupporterNotes(projectSlug: string, patch: Record<string, string>): Promise<{ error?: string }> {
+  const ctx = await requireLead(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  const supporterBaseNotes = (patch.supporterBaseNotes ?? "").trim().slice(0, 5000) || null;
+  await prisma.establishmentPlan.upsert({
+    where: { projectSlug },
+    create: { projectSlug, supporterBaseNotes, updatedById: ctx.userId },
+    update: { supporterBaseNotes, updatedById: ctx.userId },
+  });
+  return done(projectSlug);
+}
+
+// "Föreslå med AI": a draft for one step, shown and saved only if picked.
+export async function suggestEtablera(projectSlug: string, kind: string): Promise<{ draft?: EtableraDraft; error?: string }> {
+  const ctx = await requireLead(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  if (!ETABLERA_DRAFT_KINDS.includes(kind as EtableraDraftKind)) return { error: "Okänt förslag" };
+  try {
+    const res = await draftEtablera(ctx.project.id, ctx.project.slug, ctx.userId, kind as EtableraDraftKind);
+    if (res.ok) return { draft: res.value };
+    if (res.reason === "empty") return { error: "AI:n kom inte fram till något förslag — försök igen." };
+    return { error: aiGateMessage(res.reason) };
+  } catch (err) {
+    logger.error("etablera draft failed", { kind, err: String(err) });
+    return { error: "Kunde inte göra det just nu — försök igen." };
+  }
+}
+
+// Saves a picked draft as the step's wiki page — never over text someone
+// wrote (an untouched template may be filled).
+export async function applyEtableraWikiDraft(projectSlug: string, wikiSlug: string, html: string): Promise<{ error?: string }> {
+  const ctx = await requireLead(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  if (!(wikiSlug in ETABLERA_WIKI)) return { error: "Okänd sida" };
+  const project = await prisma.project.findUnique({ where: { id: ctx.project.id }, select: { contentLocale: true } });
+  const saved = await saveEtableraWiki(projectSlug, wikiSlug as EtableraWikiSlug, sanitizeHtml(html), ctx.userId, draftText(project?.contentLocale));
+  if (!saved) return { error: "Sidan har redan text — öppna den och redigera i stället." };
+  return done(projectSlug);
 }
 
 // ─── Fasgrind Etablera → Skala ──────────────────────────────────────────────

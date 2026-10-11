@@ -1,4 +1,4 @@
-import { autoDoneKeys, MIN_INTERVIEWS, MIN_LOG_ENTRIES, isPhaseFinished, nextStep, phaseProgress, phaseStepProgress, phaseSteps, type ProjectSignals } from "../lib/phaseProgress";
+import { autoDoneKeys, MIN_INTERVIEWS, MIN_LOG_ENTRIES, isPhaseFinished, nextStep, phaseProgress, phaseStepProgress, type ProjectSignals } from "../lib/phaseProgress";
 import { MIN_INTERVIEWS as GATE_MIN_INTERVIEWS, MIN_LOG_ENTRIES as GATE_MIN_LOG } from "../lib/phaseGate";
 
 jest.mock("../lib/prisma", () => ({ prisma: {} }));
@@ -17,12 +17,7 @@ const none: ProjectSignals = {
   uppstartDone: { mvp_hypothesis: false, mvp_built: false, mvp_tested: false, pilot_planned: false },
   lanseringDone: { pilot_success_criteria: false, pilot_executed_documented: false, pilot_results_collected: false, launch_marketing_plan_created: false },
   pilotGateDecided: false,
-  workflowsPage: false,
-  fundingApplied: false,
-  fundingSecured: false,
-  activePartnerships: 0,
-  playbookPage: false,
-  councilReviewCompleted: false,
+  etableraDone: { playbook_documented: false, stable_operations_funding: false, partnerships_formalized: false, supporter_base_built: false },
   replicationOpened: false,
   scalingGoalsWritten: false,
   geographiesWritten: false,
@@ -77,8 +72,7 @@ describe("phaseProgress", () => {
       uppstartDone: { mvp_hypothesis: true, mvp_built: false, mvp_tested: true, pilot_planned: false },
       lanseringDone: { pilot_success_criteria: true, pilot_executed_documented: false, pilot_results_collected: false, launch_marketing_plan_created: false },
       pilotGateDecided: true,
-      fundingApplied: true,
-      activePartnerships: 1,
+      etableraDone: { playbook_documented: false, stable_operations_funding: true, partnerships_formalized: true, supporter_base_built: false },
       scalingGoalsWritten: true,
       deliveredReports: 1,
       verifiedDeliveredReports: 0,
@@ -95,9 +89,9 @@ describe("phaseProgress", () => {
         "sdg_impact_measured",
       ]),
     );
-    // The log isn't long enough yet; applied isn't secured; a report isn't verified.
+    // The log isn't long enough yet; no playbook; a report isn't verified.
     expect(keys).not.toContain("pilot_executed_documented");
-    expect(keys).not.toContain("funding_secured");
+    expect(keys).not.toContain("playbook_documented");
     expect(keys).not.toContain("impact_externally_verified");
     expect(keys).not.toContain("mvp_built");
     // No key is listed twice.
@@ -122,23 +116,12 @@ describe("phaseProgress", () => {
     expect(nextStep("IDEA", new Set(["dream_defined", "lean_canvas_created", "value_proposition_created", "impact_model_created", "ai_reviewed", "target_audience_interviews", "market_scan_partners"]))).toBeNull();
   });
 
-  it("skips a parent step while its sub-steps are what's left", () => {
-    const done = new Set(["process_scaled_up"]);
-    expect(nextStep("ESTABLISH", done)?.key).toBe("funding_secured");
+  it("Etablera's next step is the first open of its four (#329)", () => {
+    expect(nextStep("ESTABLISH", new Set(["playbook_documented"]))?.key).toBe("stable_operations_funding");
   });
 
-  it("the bars have one segment per main step, sub-steps fold into their parent", () => {
-    expect(phaseStepProgress(new Set()).map((p) => p.total)).toEqual([7, 4, 4, 7, 5, 4]);
-  });
-
-  it("a step with sub-steps fills as they get done", () => {
-    const funding = phaseSteps("ESTABLISH", new Set()).find((s) => s.key === "stable_operations_funding");
-    expect(funding).toMatchObject({ done: false, frac: 0, subDone: 0, subTotal: 1 });
-  });
-
-  it("a step is done when ticked itself or when all its sub-steps are", () => {
-    expect(phaseSteps("ESTABLISH", new Set(["funding_secured"])).find((s) => s.key === "stable_operations_funding")).toMatchObject({ done: true, frac: 1 });
-    expect(phaseSteps("ESTABLISH", new Set(["stable_operations_funding"])).find((s) => s.key === "stable_operations_funding")).toMatchObject({ done: true, frac: 1 });
+  it("the bars have one segment per main step", () => {
+    expect(phaseStepProgress(new Set()).map((p) => p.total)).toEqual([7, 4, 4, 4, 5, 4]);
   });
 
   it("counts steps done and fills by fraction", () => {

@@ -2,7 +2,7 @@ jest.mock("../lib/prisma", () => ({ prisma: {} }));
 jest.mock("../lib/aiMode", () => ({ getAiClientFor: jest.fn() }));
 jest.mock("../lib/aiParticipant", () => ({ getAiParticipantUser: jest.fn() }));
 
-import { coerceEstablishmentPlan, fundingPlanHtml, parseEtableraStatus, partnershipsHtml, playbookHtml, ESTABLISHMENT_FIELDS } from "../lib/etableraFill";
+import { coerceSupporters, fundingPlanHtml, parseEtableraStatus, partnershipsHtml, playbookHtml } from "../lib/etableraFill";
 import { emptyFieldsToWrite, wikiHtml } from "../lib/phaseFill";
 import { cardsForLanseringDecision, coerceGateBrief, ETABLERA_CARD_WORDS } from "../lib/phaseGate";
 
@@ -15,9 +15,12 @@ describe("shared fill helpers", () => {
   });
 
   it("emptyFieldsToWrite never overwrites", () => {
-    expect(emptyFieldsToWrite(ESTABLISHMENT_FIELDS, { scaledProcessNotes: "Teamets", supporterBaseNotes: " " }, coerceEstablishmentPlan({ scaled_process: "AI", supporter_base: "AI 2" }))).toEqual({
-      supporterBaseNotes: "AI 2",
-    });
+    expect(emptyFieldsToWrite(["a", "b"] as const, { a: "Teamets", b: " " }, { a: "AI", b: "AI 2" })).toEqual({ b: "AI 2" });
+  });
+
+  it("the people around the project come as one text (#329)", () => {
+    expect(coerceSupporters({ supporters: " - Volontärer från kyrkan " })).toBe("- Volontärer från kyrkan");
+    expect(coerceSupporters(null)).toBe("");
   });
 });
 
@@ -26,7 +29,7 @@ describe("Etablera drafts", () => {
     expect(fundingPlanHtml({ next_steps: ["x"] })).toBeNull();
     expect(partnershipsHtml({ agreement: ["x"] })).toBeNull();
     expect(playbookHtml({ summary: "x" })).toBeNull();
-    expect(playbookHtml({ summary: "Skolmat", steps: ["Hitta ett kök"], roles: ["Samordnare"] })).toContain("Så kommer ni igång");
+    expect(playbookHtml({ summary: "Skolmat", steps: ["Hitta ett kök"], roles: ["Samordnare"] })).toContain("Så kommer en ny person igång");
     expect(fundingPlanHtml({ sources: ["Kommunal överenskommelse"] })).toContain("Möjliga finansieringskällor");
   });
 

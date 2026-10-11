@@ -1,5 +1,6 @@
 import { UPPSTART_STEPS, type UppstartStep } from "@/lib/mvp";
 import { LANSERING_STEPS, MIN_PILOT_LOG_ENTRIES, type LanseringStep } from "@/lib/pilot";
+import { ETABLERA_STEPS, type EtableraStep } from "@/lib/establish";
 import { DISPLAY_PHASES, getChecklistForPhase, overviewPathFor, toDisplayPhase, type ProjectPhaseValue } from "@/lib/projectPhase";
 
 // How far a project has come in each phase — what fills the phase bars
@@ -30,14 +31,8 @@ export type ProjectSignals = {
   // Lansering (#327, same data as lanseringGateCriteria — lib/pilot.ts)
   lanseringDone: Record<LanseringStep, boolean>;
   pilotGateDecided: boolean;
-  // Arbetsflöden moved to Etablera with #327.
-  workflowsPage: boolean;
-  // Etablera (same data as etableraGateCriteria)
-  fundingApplied: boolean;
-  fundingSecured: boolean;
-  activePartnerships: number;
-  playbookPage: boolean;
-  councilReviewCompleted: boolean;
+  // Etablera (#329, same data as etableraGateCriteria — lib/establish.ts)
+  etableraDone: Record<EtableraStep, boolean>;
   // Skala (same data as skalaGateCriteria)
   replicationOpened: boolean;
   scalingGoalsWritten: boolean;
@@ -81,13 +76,9 @@ export function autoDoneKeys(s: ProjectSignals): string[] {
   // old go/no-go key still follows the gate decision for older ticks.
   for (const step of LANSERING_STEPS) add(step, s.lanseringDone[step]);
   add("pilot_go_no_go", s.pilotGateDecided);
-  add("workflows_formalized", s.workflowsPage);
-  // Etablera, as in etableraGateCriteria
-  add("stable_operations_funding", s.fundingApplied);
-  add("funding_secured", s.fundingSecured);
-  add("partnerships_formalized", s.activePartnerships > 0);
-  add("playbook_documented", s.playbookPage);
-  add("review_council_deep_review", s.councilReviewCompleted);
+
+  // Etablera (#329), as in etableraGateCriteria (lib/establish.ts)
+  for (const step of ETABLERA_STEPS) add(step, s.etableraDone[step]);
   // Skala, as in skalaGateCriteria
   add("scale_vs_fork_decided", s.replicationOpened);
   add("scaling_goals_set", s.scalingGoalsWritten);
@@ -183,9 +174,9 @@ export function nextStep(phase: ProjectPhaseValue, doneKeys: ReadonlySet<string>
 // is only for the legacy guide). Later phases: the step's own page, or the
 // phase page (#309; it used to be the legacy guide).
 // Phases whose page shows one step at a time (?step=<key>): Idé (#206),
-// Uppstart (#320) and Lansering (#327). Their steps link to the step on the
-// phase page.
-export const STEP_PAGES: Partial<Record<ProjectPhaseValue, string>> = { IDEA: "ide", PILOT: "uppstart", PRODUCTION: "lansering" };
+// Uppstart (#320), Lansering (#327) and Etablera (#329). Their steps link to
+// the step on the phase page.
+export const STEP_PAGES: Partial<Record<ProjectPhaseValue, string>> = { IDEA: "ide", PILOT: "uppstart", PRODUCTION: "lansering", ESTABLISH: "etablera" };
 
 export function stepHref(slug: string, phase: ProjectPhaseValue, step: { key: string; href?: string }): string {
   const display = toDisplayPhase(phase);
