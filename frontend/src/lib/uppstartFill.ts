@@ -1,19 +1,15 @@
 import { stepKeysFor } from "@/lib/phaseWork";
+import { successCriteriaText } from "@/lib/lanseringFill";
 import { getChecklistForPhase } from "@/lib/projectPhase";
 import { prisma } from "@/lib/prisma";
 import {
   addAiCards,
   callFillTool,
-  createWikiPage,
   isPhaseFillInProgress,
-  markStepDone,
   parsePhaseFillStatus,
   startPhaseFill,
-  wikiPageExists,
   type PhaseFillState,
 } from "@/lib/phaseFill";
-import { escapeHtml } from "@/lib/renderBody";
-import { draftText, type DraftText } from "@/lib/aiLanguage";
 import { getFieldProvenance } from "@/lib/fieldProvenance";
 import { latestInsight, type SynthesisContent } from "@/lib/ideaInsights";
 import type { GateBrief } from "@/lib/phaseGate";
@@ -21,19 +17,19 @@ import { LEAN_CANVAS_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/l
 import { IMPACT_MODEL_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/impact-model/fields";
 import { VALUE_PROPOSITION_FIELDS } from "@/app/[locale]/projects/[slug]/(workspace)/value-proposition/fields";
 import {
-  PLAN_SYSTEM_PROMPT,
-  PLAN_TOOL,
-  ROLES_SYSTEM_PROMPT,
-  ROLES_TOOL,
-  SPRINT_SYSTEM_PROMPT,
-  SPRINT_TOOL,
+  MVP_SYSTEM_PROMPT,
+  MVP_TOOL,
+  PILOT_PLAN_SYSTEM_PROMPT,
+  PILOT_PLAN_TOOL,
   TASKS_SYSTEM_PROMPT,
   tasksToolFor,
 } from "@/lib/prompts/uppstartFill";
+import { MVP_TYPES } from "@/lib/mvp";
+import type { MvpType } from "@prisma/client";
 
 // ─── Fill status (drives the Uppstart page's placeholders) ─────────────────
 
-export const UPPSTART_SECTIONS = ["team", "sprint", "tasks", "plan"] as const;
+export const UPPSTART_SECTIONS = ["mvp", "tasks", "plan"] as const;
 export type UppstartSection = (typeof UPPSTART_SECTIONS)[number];
 export type UppstartFillState = PhaseFillState;
 export type UppstartFillStatus = Partial<Record<UppstartSection, UppstartFillState>>;
@@ -53,20 +49,6 @@ function str(v: unknown): string {
 function list(v: unknown, max: number): string[] {
   return Array.isArray(v) ? v.map(str).filter(Boolean).slice(0, max) : [];
 }
-function titled(v: unknown, max: number): { title: string; description: string }[] {
-  return (Array.isArray(v) ? v : [])
-    .map((x) => {
-      const o = (x ?? {}) as Record<string, unknown>;
-      return { title: str(o.title).slice(0, 200), description: str(o.description) };
-    })
-    .filter((x) => x.title)
-    .slice(0, max);
-}
-
-export function coerceRoles(raw: unknown) {
-  return titled((raw as { roles?: unknown } | null)?.roles, 5);
-}
-
 // With `steps`, each task keeps the step the AI tied it to — if it is one
 // of them; anything else is dropped (the card stays tied to the phase only).
 export function coerceTasks(raw: unknown, steps: readonly string[] = []): { title: string; description: string; stepKey: string | null }[] {
@@ -81,60 +63,33 @@ export function coerceTasks(raw: unknown, steps: readonly string[] = []): { titl
     .slice(0, 7);
 }
 
-export type SprintPlan = {
-  sprintName: string;
-  longTermGoal: string;
-  sprintQuestions: string[];
-  targetUser: string;
-  hmw: string[];
-  prototypeHint: string;
-  testQuestions: string[];
-};
+export type MvpDraft = { hypothesis: string; mvpType: MvpType | null; mvpDescription: string };
 
-export function coerceSprintPlan(raw: unknown, t: DraftText = draftText("sv")): SprintPlan | null {
+export function coerceMvp(raw: unknown): MvpDraft {
   const o = (raw ?? {}) as Record<string, unknown>;
-  const plan: SprintPlan = {
-    sprintName: str(o.sprint_name).slice(0, 120) || t.defaultSprintName,
-    longTermGoal: str(o.long_term_goal),
-    sprintQuestions: list(o.sprint_questions, 4),
-    targetUser: str(o.target_user),
-    hmw: list(o.hmw, 6),
-    prototypeHint: str(o.prototype_hint),
-    testQuestions: list(o.test_questions, 6),
+  const type = str(o.mvp_type) as MvpType;
+  return { hypothesis: str(o.hypothesis), mvpType: MVP_TYPES.includes(type) ? type : null, mvpDescription: str(o.mvp_description) };
+}
+
+export const PILOT_PLAN_FIELDS = ["pilotWhere", "pilotWho", "pilotDuration", "pilotTeam", "pilotBudget"] as const;
+export type PilotPlanDraft = Record<(typeof PILOT_PLAN_FIELDS)[number], string> & { successCriteria: string[] };
+
+export function coercePilotPlan(raw: unknown): PilotPlanDraft {
+  const o = (raw ?? {}) as Record<string, unknown>;
+  return {
+    pilotWhere: str(o.pilot_where),
+    pilotWho: str(o.pilot_who),
+    pilotDuration: str(o.pilot_duration),
+    pilotTeam: str(o.pilot_team),
+    pilotBudget: str(o.pilot_budget),
+    successCriteria: list(o.success_criteria, 3),
   };
-  // Without the questions the sprint is meant to answer, there's no plan.
-  return plan.sprintQuestions.length ? plan : null;
 }
 
-// The sprint plan as a wiki page — escaped, so model output can never
-// inject markup.
-export function sprintPlanHtml(p: SprintPlan, t: DraftText = draftText("sv")): string {
-  const ul = (items: string[]) => `<ul>${items.map((i) => `<li>${escapeHtml(i)}</li>`).join("")}</ul>`;
-  return [
-    p.longTermGoal && `<h2>${escapeHtml(t.hLongTermGoal)}</h2><p>${escapeHtml(p.longTermGoal)}</p>`,
-    `<h2>${escapeHtml(t.hSprintQuestions)}</h2>${ul(p.sprintQuestions)}`,
-    p.targetUser && `<h2>${escapeHtml(t.hTargetUser)}</h2><p>${escapeHtml(p.targetUser)}</p>`,
-    p.hmw.length && `<h2>${escapeHtml(t.hHmw)}</h2>${ul(p.hmw)}`,
-    p.prototypeHint && `<h2>${escapeHtml(t.hPrototype)}</h2><p>${escapeHtml(p.prototypeHint)}</p>`,
-    p.testQuestions.length && `<h2>${escapeHtml(t.hTestQuestions)}</h2>${ul(p.testQuestions)}`,
-    `<p><em>${escapeHtml(t.draftNoteFromIdea)}</em></p>`,
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
-export const PLAN_FIELDS = ["goal", "milestones", "resources", "risks"] as const;
-export type PlanDraft = Record<(typeof PLAN_FIELDS)[number], string>;
-
-export function coercePlan(raw: unknown): PlanDraft {
-  const o = (raw ?? {}) as Record<string, unknown>;
-  return { goal: str(o.goal), milestones: str(o.milestones), resources: str(o.resources), risks: str(o.risks) };
-}
-
-// Never overwrite: only the plan fields that are still empty get the draft.
-export function planFieldsToWrite(current: Partial<Record<(typeof PLAN_FIELDS)[number], string | null>> | null, draft: PlanDraft): Partial<PlanDraft> {
-  const out: Partial<PlanDraft> = {};
-  for (const f of PLAN_FIELDS) if (draft[f] && !current?.[f]?.trim()) out[f] = draft[f];
+// Never overwrite: only the fields that are still empty get the draft.
+export function emptyOnly<K extends string>(keys: readonly K[], current: Partial<Record<K, string | null>> | null, draft: Partial<Record<K, string>>): Partial<Record<K, string>> {
+  const out: Partial<Record<K, string>> = {};
+  for (const k of keys) if (draft[k] && !current?.[k]?.trim()) out[k] = draft[k];
   return out;
 }
 
@@ -189,9 +144,9 @@ export type UppstartFillParams = {
   only?: UppstartSection[];
 };
 
-// Drafts what AI can do in Uppstart; humans form the team, run the sprint
-// and build/test the prototype. Every section only adds — it never
-// replaces what the team already has (existing roles, sprint, plan text).
+// Drafts what AI can do in Uppstart (#320): what to test and the smallest
+// version, first tasks, a pilot plan. People build the version and let
+// others try it. Every section only fills what is still empty.
 // Runs in the background via the shared runner (lib/phaseFill.ts).
 export async function startUppstartFill(p: UppstartFillParams): Promise<void> {
   const slug = p.projectSlug;
@@ -201,41 +156,16 @@ export async function startUppstartFill(p: UppstartFillParams): Promise<void> {
     sections: p.only ?? UPPSTART_SECTIONS,
     buildContext: () => buildContext(p.projectId, slug),
     work: {
-      team: async ({ client, context }) => {
-        if (await prisma.projectRoleNeed.count({ where: { projectId: p.projectId } })) return;
-        const roles = coerceRoles(await callFillTool(client, ROLES_SYSTEM_PROMPT, ROLES_TOOL, context));
-        if (!roles.length) throw new Error("no roles");
-        await prisma.projectRoleNeed.createMany({
-          data: roles.map((r, i) => ({ projectId: p.projectId, title: r.title, description: r.description || null, order: i, createdByAi: true })),
-        });
-      },
-
-      sprint: async ({ client, context, aiUserId, t }) => {
-        const [sprintCount, wiki] = await Promise.all([prisma.sprint.count({ where: { projectSlug: slug } }), wikiPageExists(slug, "sprintplan")]);
-        if (sprintCount && wiki) return;
-        const plan = coerceSprintPlan(await callFillTool(client, SPRINT_SYSTEM_PROMPT, SPRINT_TOOL, context), t);
-        if (!plan) throw new Error("no sprint plan");
-        if (!wiki) await createWikiPage(slug, "sprintplan", t.titleSprintPlan, sprintPlanHtml(plan, t), aiUserId);
-        if (!sprintCount) {
-          // Same shape as createSprint (together, no deadlines — the team
-          // picks its pace), with the HMW questions waiting in step 1.
-          await prisma.sprint.create({
-            data: {
-              projectSlug: slug,
-              createdById: p.userId,
-              name: plan.sprintName,
-              pace: "TOGETHER",
-              phases: {
-                create: {
-                  phase: "UNDERSTAND",
-                  status: "OPEN",
-                  openedAt: new Date(),
-                  contributions: { create: plan.hmw.map((content) => ({ authorId: aiUserId, type: "HMW" as const, content, visibleAuthor: false })) },
-                },
-              },
-            },
-          });
-        }
+      mvp: async ({ client, context, aiUserId }) => {
+        const current = await prisma.projectPlan.findUnique({ where: { projectSlug: slug }, select: { hypothesis: true, mvpType: true, mvpDescription: true } });
+        if (current?.hypothesis?.trim() && current.mvpType && current.mvpDescription?.trim()) return;
+        const draft = coerceMvp(await callFillTool(client, MVP_SYSTEM_PROMPT, MVP_TOOL, context));
+        const writes = {
+          ...emptyOnly(["hypothesis", "mvpDescription"] as const, current, draft),
+          ...(!current?.mvpType && draft.mvpType ? { mvpType: draft.mvpType } : {}),
+        };
+        if (!Object.keys(writes).length) throw new Error("no mvp draft");
+        await prisma.projectPlan.upsert({ where: { projectSlug: slug }, create: { projectSlug: slug, ...writes, updatedById: aiUserId }, update: { ...writes, updatedById: aiUserId } });
       },
 
       tasks: async ({ client, context, aiUserId }) => {
@@ -244,14 +174,22 @@ export async function startUppstartFill(p: UppstartFillParams): Promise<void> {
         await addAiCards(slug, "PILOT", tasks, aiUserId);
       },
 
-      plan: async ({ client, context, aiUserId }) => {
-        const current = await prisma.projectPlan.findUnique({ where: { projectSlug: slug } });
-        if (current && PLAN_FIELDS.every((f) => current[f]?.trim())) return;
-        const writes = planFieldsToWrite(current, coercePlan(await callFillTool(client, PLAN_SYSTEM_PROMPT, PLAN_TOOL, context)));
-        if (!Object.keys(writes).length) throw new Error("no plan");
-        await prisma.projectPlan.upsert({ where: { projectSlug: slug }, create: { projectSlug: slug, ...writes, updatedById: aiUserId }, update: { ...writes, updatedById: aiUserId } });
-        if (writes.goal) await markStepDone(p.projectId, "PILOT", "pilot_scope_defined", p.userId);
-        if (writes.resources) await markStepDone(p.projectId, "PILOT", "rough_budget_estimated", p.userId);
+      plan: async ({ client, context, aiUserId, t }) => {
+        const [current, evaluation] = await Promise.all([
+          prisma.projectPlan.findUnique({ where: { projectSlug: slug } }),
+          prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true } }),
+        ]);
+        const draft = coercePilotPlan(await callFillTool(client, PILOT_PLAN_SYSTEM_PROMPT, PILOT_PLAN_TOOL, context));
+        const writes = emptyOnly(PILOT_PLAN_FIELDS, current, draft);
+        const criteria = !evaluation?.successCriteria?.trim() && draft.successCriteria.length ? successCriteriaText(draft.successCriteria, t) : null;
+        if (!Object.keys(writes).length && !criteria) throw new Error("no pilot plan");
+        if (Object.keys(writes).length) {
+          await prisma.projectPlan.upsert({ where: { projectSlug: slug }, create: { projectSlug: slug, ...writes, updatedById: aiUserId }, update: { ...writes, updatedById: aiUserId } });
+        }
+        // A proposal, marked as such in the text — the team sets the real levels.
+        if (criteria) {
+          await prisma.pilotEvaluation.upsert({ where: { projectSlug: slug }, create: { projectSlug: slug, successCriteria: criteria, updatedById: aiUserId }, update: { successCriteria: criteria, updatedById: aiUserId } });
+        }
       },
     },
   });

@@ -8,74 +8,32 @@ const SHARED_RULES = `Regler som alltid gäller:
 - Allt du skriver är ett utkast som teamet granskar och ändrar. Kort och konkret.
 - Projekten drivs av ideella deltagare med begränsad tid — håll det enkelt och genomförbart.`;
 
-const PHASE_CONTEXT = `Projektet har just gått från Idéfasen till Uppstart. I Uppstart bildar man ett kärnteam, testar lösningen i en Design Sprint (Kartlägga & förstå → Skissa lösningar → Beslut & planera → Bygga prototyp → Testa med användare), sätter upp de första uppgifterna och planerar och avgränsar piloten.`;
+const PHASE_CONTEXT = `Projektet har just gått från Idéfasen till Uppstart. I Uppstart testar man snabbt om någon vill ha lösningen: man formulerar vad man testar, bygger en minsta version (t.ex. gör det för hand för några få, en första träff, en enkel prototyp att visa eller en intresseanmälan), låter möjliga användare eller kunder prova den och planerar sedan piloten. Starkast bevis är någon som betalar eller lovar att betala. Ingen metod att lära sig först — det ska gå fort, gärna på 2–4 veckor.`;
 
-// ─── Kärnteam ───────────────────────────────────────────────────────────────
+// ─── Vad vi testar och den minsta versionen ─────────────────────────────────
 
-export const ROLES_SYSTEM_PROMPT = `${PHASE_CONTEXT}
+export const MVP_SYSTEM_PROMPT = `${PHASE_CONTEXT}
 
-Föreslå vilka roller kärnteamet behöver för Uppstart och piloten — roller, inte personer. 3–5 roller. Initiativtagaren finns redan; börja med den roll initiativtagaren naturligt har (t.ex. projektledare) och föreslå sedan det som saknas för just det här projektet (t.ex. någon som kan målgruppen, någon som kan bygga prototypen, någon som kan ekonomi eller kommunikation).
-
-Varje roll: en kort titel och en eller två meningar om ansvar och vilken kunskap som behövs.
-
-${SHARED_RULES}
-
-Svara genom verktyget "roller".`;
-
-export const ROLES_TOOL = {
-  name: "roller",
-  description: "Roller som kärnteamet behöver.",
-  input_schema: {
-    type: "object" as const,
-    properties: {
-      roles: {
-        type: "array",
-        maxItems: 5,
-        items: {
-          type: "object",
-          properties: { title: { type: "string" }, description: { type: "string" } },
-          required: ["title", "description"],
-        },
-      },
-    },
-    required: ["roles"],
-  },
-};
-
-// ─── Design Sprint ──────────────────────────────────────────────────────────
-
-export const SPRINT_SYSTEM_PROMPT = `${PHASE_CONTEXT}
-
-Förbered projektets första Design Sprint. Sprinten ska testa de lösningsantaganden som beslutsunderlaget pekar ut som viktigast (fokus härnäst), inte bekräfta problemet igen.
-
-Ta fram:
-- sprint_name: ett kort namn på sprinten.
-- long_term_goal: ett långsiktigt mål — hur ser det ut om ett år om det går bra? En mening.
-- sprint_questions: 2–4 frågor sprinten ska besvara ("Kommer familjerna att …?"). Det är de största riskerna formulerade som frågor.
-- target_user: vem ni ska testa prototypen med och hur ni hittar 5 sådana personer.
-- hmw: 3–6 "Hur skulle vi kunna …"-frågor som startar Kartlägga & förstå.
-- prototype_hint: den enklaste prototypen som kan besvara sprintfrågorna (gärna något som går att bygga på en dag, t.ex. klickbara skisser, ett formulär eller ett manuellt test).
-- test_questions: 4–6 frågor att ställa till testpersonerna i steg 5 — öppna frågor om deras beteende, inte "skulle du använda det här?".
+Föreslå vad teamet ska testa och den minsta versionen att testa det med. Utgå från det mest riskfyllda antagandet om lösningen (fält märkta ANTAR, och fokus från fasgrinden).
+- hypothesis: en mening — "Vi tror att … " — om vem som vill ha vad, och gärna vem som kan betala eller bära det.
+- mvp_type: den enklaste formen som kan ge svar: MANUAL (gör det för hand för några få), EVENT (en första träff), PROTOTYPE (en enkel prototyp att visa), SIGNUP (en intresseanmälan) eller OTHER.
+- mvp_description: 2–4 meningar om vad den minsta versionen är och hur den görs på en dag eller två, utan pengar eller med väldigt lite.
 
 ${SHARED_RULES}
 
-Svara genom verktyget "sprintplan".`;
+Svara genom verktyget "minsta_version".`;
 
-export const SPRINT_TOOL = {
-  name: "sprintplan",
-  description: "Förberedelse av projektets första Design Sprint.",
+export const MVP_TOOL = {
+  name: "minsta_version",
+  description: "Förslag på vad som testas och den minsta versionen.",
   input_schema: {
     type: "object" as const,
     properties: {
-      sprint_name: { type: "string" },
-      long_term_goal: { type: "string" },
-      sprint_questions: { type: "array", items: { type: "string" }, maxItems: 4 },
-      target_user: { type: "string" },
-      hmw: { type: "array", items: { type: "string" }, maxItems: 6 },
-      prototype_hint: { type: "string" },
-      test_questions: { type: "array", items: { type: "string" }, maxItems: 6 },
+      hypothesis: { type: "string" },
+      mvp_type: { type: "string", enum: ["MANUAL", "EVENT", "PROTOTYPE", "SIGNUP", "OTHER"] },
+      mvp_description: { type: "string" },
     },
-    required: ["sprint_name", "long_term_goal", "sprint_questions", "target_user", "hmw", "test_questions"],
+    required: ["hypothesis", "mvp_type", "mvp_description"],
   },
 };
 
@@ -83,7 +41,7 @@ export const SPRINT_TOOL = {
 
 export const TASKS_SYSTEM_PROMPT = `${PHASE_CONTEXT}
 
-Föreslå de första 4–7 uppgifterna för projektets Kanban-tavla i Uppstart. Konkreta saker en person kan ta och göra klart på några timmar till ett par dagar — t.ex. boka tid för sprinten, hitta testpersoner, ta reda på något som är oklart, kontakta en möjlig partner. Inte sprintens steg i sig (de har ett eget verktyg), och inga uppgifter som redan är gjorda.
+Föreslå de första 4–7 uppgifterna för projektets Kanban-tavla i Uppstart. Konkreta saker en person kan ta och göra klart på några timmar till ett par dagar — t.ex. bygga den minsta versionen, hitta 5–10 personer som kan prova den, be någon att betala eller binda sig, ta reda på något som är oklart. Inga uppgifter som redan är gjorda.
 
 Varje uppgift: en kort titel som börjar med ett verb, och en eller två meningar om vad som ska göras och varför.
 
@@ -140,31 +98,35 @@ export function tasksToolFor(steps: { key: string; label: string }[]) {
   };
 }
 
-// ─── Projektplan ────────────────────────────────────────────────────────────
+// ─── Plan för piloten ───────────────────────────────────────────────────────
 
-export const PLAN_SYSTEM_PROMPT = `${PHASE_CONTEXT}
+export const PILOT_PLAN_SYSTEM_PROMPT = `${PHASE_CONTEXT}
 
-Ta fram ett första utkast till projektplan för Uppstart och piloten. Fyra fält, vanlig text (radbrytningar och korta listor med "- " går bra). Håll det kort — högst 6–8 korta rader per fält; det är ett utkast teamet bygger vidare på, inte ett färdigt dokument:
-- goal: pilotens mål och avgränsning — vad piloten ska visa, var och med vilka den görs, ungefär hur länge och hur stor den är, och vad som medvetet lämnas utanför.
-- milestones: 3–5 milstolpar från nu till en genomförd pilot, i ordning.
-- resources: grov budget och resursbehov — vad som behövs (tid, kompetens, lokaler, verktyg, pengar). Ange bara belopp om underlaget ger stöd för dem; annars skriv vad som behöver uppskattas.
-- risks: 2–4 största riskerna och hur de kan hanteras.
+Ta fram ett första utkast till plan för piloten — det som kommer efter testerna, när lösningen körs på riktigt i liten skala. Vanlig text, kort (1–3 rader per fält):
+- pilot_where: var piloten görs.
+- pilot_who: för vem — vilka och ungefär hur många.
+- pilot_duration: hur länge.
+- pilot_team: vilka som gör vad (roller, inte namn som inte nämnts).
+- pilot_budget: ungefärlig budget och vad den går till. Ange bara belopp om underlaget ger stöd för dem; annars skriv vad som behöver uppskattas.
+- success_criteria: 2–3 mätbara framgångskriterier ("minst X … under Y veckor"). Hitta inte på nivåer som inte går att motivera — skriv hellre vad som ska mätas.
 
 ${SHARED_RULES}
 
-Svara genom verktyget "projektplan".`;
+Svara genom verktyget "pilotplan".`;
 
-export const PLAN_TOOL = {
-  name: "projektplan",
-  description: "Utkast till projektplan för Uppstart och piloten.",
+export const PILOT_PLAN_TOOL = {
+  name: "pilotplan",
+  description: "Utkast till plan för piloten.",
   input_schema: {
     type: "object" as const,
     properties: {
-      goal: { type: "string" },
-      milestones: { type: "string" },
-      resources: { type: "string" },
-      risks: { type: "string" },
+      pilot_where: { type: "string" },
+      pilot_who: { type: "string" },
+      pilot_duration: { type: "string" },
+      pilot_team: { type: "string" },
+      pilot_budget: { type: "string" },
+      success_criteria: { type: "array", items: { type: "string" }, maxItems: 3 },
     },
-    required: ["goal", "milestones", "resources", "risks"],
+    required: ["pilot_where", "pilot_who", "pilot_duration", "success_criteria"],
   },
 };

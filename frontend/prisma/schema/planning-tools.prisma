@@ -40,10 +40,56 @@ model ProjectPlan {
   milestones  String?  @db.Text
   resources   String?  @db.Text
   risks       String?  @db.Text
+  // Uppstart (#320): test whether anyone wants it. The four steps — what we
+  // test, the smallest version, the tests (MvpTest) and the pilot plan.
+  // goal/milestones/resources/risks above are the earlier project plan,
+  // kept and shown read-only where filled.
+  hypothesis     String?  @db.Text
+  mvpType        MvpType?
+  mvpDescription String?  @db.Text
+  learnings      String?  @db.Text
+  pilotWhere     String?  @db.Text
+  pilotWho       String?  @db.Text
+  pilotDuration  String?  @db.Text
+  pilotTeam      String?  @db.Text
+  pilotBudget    String?  @db.Text
   updatedById String?
   updatedBy   User?    @relation("ProjectPlanUpdatedBy", fields: [updatedById], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// The smallest version of the idea someone can try (#320).
+enum MvpType {
+  MANUAL    // gör det för hand för några få
+  EVENT     // en första träff
+  PROTOTYPE // en enkel prototyp att visa
+  SIGNUP    // en intresseanmälan
+  OTHER
+}
+
+// How strong a test's signal is, weakest first (#320). Paying is the
+// strongest evidence that someone wants it.
+enum MvpSignal {
+  LIKED    // tyckte det var bra
+  CONTINUE // vill fortsätta / anmälde sig
+  HELPING  // hjälper till / tog med någon
+  PAID     // betalade / lovade att betala
+}
+
+// One person or occasion trying the smallest version (#320).
+model MvpTest {
+  id          String    @id @default(cuid())
+  projectId   String
+  project     Project   @relation("MvpTests", fields: [projectId], references: [id], onDelete: Cascade)
+  who         String
+  happened    String?   @db.Text
+  signal      MvpSignal
+  createdById String
+  createdBy   User      @relation("MvpTestsCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@index([projectId])
 }
 
 // A read-only snapshot of the full canvas, written every time any block is

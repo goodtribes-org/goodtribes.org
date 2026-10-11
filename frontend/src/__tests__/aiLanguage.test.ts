@@ -4,7 +4,6 @@ jest.mock("../lib/aiParticipant", () => ({ getAiParticipantUser: jest.fn() }));
 
 import type AnthropicSdk from "@anthropic-ai/sdk";
 import { draftText, normalizeContentLocale, withLanguageClient, withOutputLanguage } from "../lib/aiLanguage";
-import { coerceSprintPlan, sprintPlanHtml } from "../lib/uppstartFill";
 import { cardWords, cardsForLanseringDecision, coerceGateBrief } from "../lib/phaseGate";
 
 describe("output language", () => {
@@ -33,15 +32,6 @@ describe("output language", () => {
 });
 
 describe("fixed draft text follows the project's language", () => {
-  it("writes English headings for an English project", () => {
-    const t = draftText("en");
-    const plan = coerceSprintPlan({ sprint_questions: ["Will families pick up food?"] }, t)!;
-    expect(plan.sprintName).toBe("Design Sprint 1");
-    const html = sprintPlanHtml(plan, t);
-    expect(html).toContain("Sprint questions");
-    expect(html).not.toContain("Sprintfrågor");
-  });
-
   it("uses English card prefixes", () => {
     const brief = coerceGateBrief({ unanswered: ["Who pays?"], criteria: [{ criterion: "Funding", verdict: "not_met", evidence: "" }] });
     expect(cardsForLanseringDecision("ADJUST", brief, cardWords("etablera", draftText("en")))[0].title).toBe("Find out: Who pays?");

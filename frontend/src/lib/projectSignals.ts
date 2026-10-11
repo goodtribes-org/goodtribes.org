@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { uppstartStepsDone } from "@/lib/mvp";
 import { decidedSince, lastRestartAt } from "@/lib/phaseRestart";
 import { isWrittenPhaseWiki } from "@/lib/phaseWikiTemplates";
 import { prisma } from "@/lib/prisma";
@@ -16,8 +17,7 @@ const filled = (row: Record<string, unknown> | null | undefined, fields: readonl
 // renders both the phase bar and the checklist widget from it.
 export const getProjectSignals = cache(async (projectId: string, slug: string): Promise<ProjectSignals> => {
   const [
-    project, activeMemberCount, interviewCount, marketScanCount, sprints,
-    testFeedbackCount, roles, evaluation, pilotGate, impactMetricCount, launch, pages, campaign, applications,
+    project, interviewCount, marketScanCount, uppstartPlan, mvpTestCount, evaluation, pilotGate, impactMetricCount, launch, pages, campaign, applications,
     activePartnerships, councilReview, scalingPlan, instances, reports, followup, inReview,
   ] = await Promise.all([
     prisma.project.findUnique({
@@ -26,7 +26,6 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
         summary: true,
         description: true,
         sdgGoals: true,
-        estimatedFundingNeedSek: true,
         leanCanvas: true,
         valueProposition: true,
         impactModel: true,
@@ -34,12 +33,10 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
         openForReplication: true,
       },
     }),
-    prisma.projectMember.count({ where: { projectId, role: { not: "FOLLOWER" } } }),
     prisma.interviewLogEntry.count({ where: { projectSlug: slug } }),
     prisma.marketScanEntry.count({ where: { projectSlug: slug } }),
-    prisma.sprint.findMany({ where: { projectSlug: slug }, select: { phases: { where: { status: "CLOSED" }, select: { phase: true } } } }),
-    prisma.sprintContribution.count({ where: { type: "FEEDBACK", sprintPhase: { phase: "VALIDATE", sprint: { projectSlug: slug } } } }),
-    prisma.projectRoleNeed.findMany({ where: { projectId }, select: { filledById: true } }),
+    prisma.projectPlan.findUnique({ where: { projectSlug: slug }, select: { hypothesis: true, mvpType: true, mvpDescription: true, pilotWhere: true, pilotWho: true, pilotDuration: true } }),
+    prisma.mvpTest.count({ where: { projectId } }),
     prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true, executionNotes: true, resultsSummary: true } }),
     // Since the latest restart (#313): a moved-back project decides again.
     lastRestartAt(projectId).then((restartAt) => prisma.phaseGateDecision.findFirst({ where: { projectId, fromPhase: "PRODUCTION", ...decidedSince(restartAt) }, select: { id: true } })),
@@ -68,18 +65,13 @@ export const getProjectSignals = cache(async (projectId: string, slug: string): 
     dreamConfirmed: project?.dreamConversation?.status === "confirmed",
     hasSummaryAndDescription: !!project?.summary?.trim() && !!project?.description?.trim(),
     sdgCount: project?.sdgGoals.length ?? 0,
-    activeMemberCount,
     leanCanvasFilled: filled(project?.leanCanvas as Record<string, unknown> | null, LEAN_CANVAS_BLOCKS.map((b) => b.field)),
     valuePropositionFilled: filled(project?.valueProposition as Record<string, unknown> | null, VALUE_PROPOSITION_FIELDS),
     impactModelFilled: filled(project?.impactModel as Record<string, unknown> | null, IMPACT_MODEL_FIELDS),
     impactModelFields: IMPACT_MODEL_FIELDS.length,
     interviewCount,
     marketScanCount,
-    sprintCount: sprints.length,
-    closedSprintSteps: [...new Set(sprints.flatMap((s) => s.phases.map((p) => p.phase)))],
-    fundingNeedSet: project?.estimatedFundingNeedSek != null,
-    testFeedbackCount,
-    allRolesFilled: roles.length > 0 && roles.every((r) => r.filledById),
+    uppstartDone: uppstartStepsDone(uppstartPlan, mvpTestCount, evaluation?.successCriteria),
     pilotSuccessCriteria: !!evaluation?.successCriteria?.trim(),
     pilotLogEntries: (evaluation?.executionNotes ?? "").split("\n").filter((l) => l.trim()).length,
     pilotResultsSummary: !!evaluation?.resultsSummary?.trim(),

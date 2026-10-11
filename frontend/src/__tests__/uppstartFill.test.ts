@@ -3,61 +3,56 @@ jest.mock("../lib/aiMode", () => ({ getAiClientFor: jest.fn() }));
 jest.mock("../lib/aiParticipant", () => ({ getAiParticipantUser: jest.fn() }));
 
 import {
-  coercePlan,
-  coerceRoles,
-  coerceSprintPlan,
+  coerceMvp,
+  coercePilotPlan,
   coerceTasks,
+  emptyOnly,
   isUppstartFillInProgress,
   parseUppstartStatus,
-  planFieldsToWrite,
-  sprintPlanHtml,
+  PILOT_PLAN_FIELDS,
 } from "../lib/uppstartFill";
 
 describe("parseUppstartStatus", () => {
   it("keeps only known sections and states", () => {
-    expect(parseUppstartStatus({ team: "done", sprint: "running", bogus: "done", plan: "weird" })).toEqual({ team: "done", sprint: "running" });
+    expect(parseUppstartStatus({ mvp: "done", tasks: "running", team: "done", plan: "weird" })).toEqual({ mvp: "done", tasks: "running" });
   });
 
   it("shows a section still waiting after 5 minutes as failed", () => {
     const updated = new Date("2026-09-24T10:00:00Z");
     const later = updated.getTime() + 6 * 60_000;
-    expect(parseUppstartStatus({ team: "running", tasks: "done" }, updated, later)).toEqual({ team: "failed", tasks: "done" });
-    expect(isUppstartFillInProgress(parseUppstartStatus({ team: "running" }, updated, later))).toBe(false);
+    expect(parseUppstartStatus({ mvp: "running", tasks: "done" }, updated, later)).toEqual({ mvp: "failed", tasks: "done" });
+    expect(isUppstartFillInProgress(parseUppstartStatus({ mvp: "running" }, updated, later))).toBe(false);
     expect(isUppstartFillInProgress({ plan: "pending" })).toBe(true);
   });
 });
 
-describe("roles and tasks", () => {
+describe("tasks", () => {
   it("drops untitled entries and caps the count", () => {
-    const roles = coerceRoles({ roles: [{ title: " Projektledare ", description: "Håller ihop" }, { title: "" }, ...Array(6).fill({ title: "X" })] });
-    expect(roles[0]).toEqual({ title: "Projektledare", description: "Håller ihop" });
-    expect(roles).toHaveLength(5);
     expect(coerceTasks(null)).toEqual([]);
-    expect(coerceTasks({ tasks: Array(10).fill({ title: "Boka sprinttid" }) })).toHaveLength(7);
+    expect(coerceTasks({ tasks: Array(10).fill({ title: "Hitta fem personer som kan prova" }) })).toHaveLength(7);
   });
 });
 
-describe("sprint plan", () => {
-  it("needs sprint questions, and falls back to a default name", () => {
-    expect(coerceSprintPlan({ sprint_name: "S", sprint_questions: [] })).toBeNull();
-    const p = coerceSprintPlan({ sprint_questions: ["Hämtar familjerna maten?"], hmw: ["HSVK göra det anonymt?"] });
-    expect(p?.sprintName).toBe("Design Sprint 1");
-    expect(p?.hmw).toEqual(["HSVK göra det anonymt?"]);
+describe("the smallest version (#320)", () => {
+  it("keeps a known type and trims the texts", () => {
+    expect(coerceMvp({ hypothesis: " Vi tror att … ", mvp_type: "EVENT", mvp_description: "En träff i föreningslokalen." })).toEqual({
+      hypothesis: "Vi tror att …",
+      mvpType: "EVENT",
+      mvpDescription: "En träff i föreningslokalen.",
+    });
   });
-
-  it("escapes model output in the wiki page", () => {
-    const p = coerceSprintPlan({ sprint_questions: ["<script>x</script>"], long_term_goal: "a & b" })!;
-    const html = sprintPlanHtml(p);
-    expect(html).not.toContain("<script>");
-    expect(html).toContain("&lt;script&gt;");
-    expect(html).toContain("a &amp; b");
+  it("drops a type it doesn't know", () => {
+    expect(coerceMvp({ mvp_type: "APP" }).mvpType).toBeNull();
   });
 });
 
-describe("planFieldsToWrite — never overwrite", () => {
-  const draft = coercePlan({ goal: "Pilot i två skolor", milestones: "M1", resources: "Tid", risks: "" });
+describe("pilot plan (#320) — never overwrite", () => {
+  const draft = coercePilotPlan({ pilot_where: "Hässelby", pilot_who: "10 äldre", pilot_duration: "8 veckor", pilot_team: "", success_criteria: ["Minst 6 par går varje vecka", "x", "y", "z"] });
+  it("caps the success criteria at three", () => {
+    expect(draft.successCriteria).toHaveLength(3);
+  });
   it("fills only empty fields, and skips empty draft fields", () => {
-    expect(planFieldsToWrite({ goal: "Teamets eget mål", milestones: "  ", resources: null, risks: null }, draft)).toEqual({ milestones: "M1", resources: "Tid" });
-    expect(planFieldsToWrite(null, draft)).toEqual({ goal: "Pilot i två skolor", milestones: "M1", resources: "Tid" });
+    expect(emptyOnly(PILOT_PLAN_FIELDS, { pilotWhere: "Teamets egen plats", pilotWho: "  ", pilotDuration: null, pilotTeam: null, pilotBudget: null }, draft)).toEqual({ pilotWho: "10 äldre", pilotDuration: "8 veckor" });
+    expect(emptyOnly(PILOT_PLAN_FIELDS, null, draft)).toEqual({ pilotWhere: "Hässelby", pilotWho: "10 äldre", pilotDuration: "8 veckor" });
   });
 });

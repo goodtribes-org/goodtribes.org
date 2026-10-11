@@ -22,13 +22,13 @@ describe("phaseWork", () => {
   });
 
   it("only accepts steps of the phase", () => {
-    expect(isStepOf("PILOT", "core_team_formed")).toBe(true);
-    expect(isStepOf("IDEA", "core_team_formed")).toBe(false);
+    expect(isStepOf("PILOT", "mvp_tested")).toBe(true);
+    expect(isStepOf("IDEA", "mvp_tested")).toBe(false);
     expect(isStepOf("PILOT", null)).toBe(false);
   });
 
   it("validates a picked phase/step", () => {
-    expect(validCardStep({ phase: "PILOT", stepKey: "core_team_formed" })).toEqual({ phase: "PILOT", stepKey: "core_team_formed" });
+    expect(validCardStep({ phase: "PILOT", stepKey: "mvp_tested" })).toEqual({ phase: "PILOT", stepKey: "mvp_tested" });
     expect(validCardStep({ phase: "PILOT", stepKey: "lean_canvas_created" })).toEqual({ phase: "PILOT", stepKey: null });
     expect(validCardStep({ phase: "SPRINT", stepKey: null })).toEqual({ phase: null, stepKey: null });
     expect(validCardStep({ phase: "BOGUS", stepKey: "x" })).toEqual({ phase: null, stepKey: null });
@@ -39,11 +39,11 @@ describe("phaseWork", () => {
 describe("AI tasks with steps", () => {
   it("keeps a step only when it is one of the phase's", () => {
     const tasks = coerceTasks(
-      { tasks: [{ title: "" }, { title: "Bilda kärnteam", step: "core_team_formed" }, { title: "Annat", step: "nope" }] },
-      ["core_team_formed"],
+      { tasks: [{ title: "" }, { title: "Bilda kärnteam", step: "mvp_tested" }, { title: "Annat", step: "nope" }] },
+      ["mvp_tested"],
     );
     expect(tasks).toEqual([
-      { title: "Bilda kärnteam", description: "", stepKey: "core_team_formed" },
+      { title: "Bilda kärnteam", description: "", stepKey: "mvp_tested" },
       { title: "Annat", description: "", stepKey: null },
     ]);
   });
