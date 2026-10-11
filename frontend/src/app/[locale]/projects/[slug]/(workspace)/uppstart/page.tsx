@@ -13,7 +13,15 @@ import { hasProjectRole, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { latestInsight } from "@/lib/ideaInsights";
 import { uppstartGateCriteria, type GateBrief } from "@/lib/phaseGate";
-import { MIN_MVP_TESTS, MVP_SIGNAL_ICON, MVP_SIGNALS, MVP_TYPES, UPPSTART_STEPS, uppstartStepsDone, type EvidenceStrength, type UppstartStep } from "@/lib/mvp";
+import { MIN_MVP_TESTS, MVP_SIGNAL_ICON, MVP_SIGNALS, MVP_TYPES, UPPSTART_PAGE_STEPS, UPPSTART_STEPS, uppstartStepsDone, type EvidenceStrength, type UppstartPageStep, type UppstartStep } from "@/lib/mvp";
+import { getAutoDoneKeys } from "@/lib/projectSignals";
+import { getCanvasAiContext } from "@/lib/canvasAi";
+import CanvasAiBar from "@/components/ai/CanvasAiBar";
+import { CanvasIterateProvider } from "@/components/ai/BlockIterateMenu";
+import ValuePropositionGrid from "../value-proposition/ValuePropositionGrid";
+import ImpactModelChain from "../impact-model/ImpactModelChain";
+import { VALUE_PROPOSITION_FIELDS } from "../value-proposition/fields";
+import { IMPACT_MODEL_FIELDS } from "../impact-model/fields";
 import { isUppstartFillInProgress, parseUppstartStatus, type UppstartFillStatus } from "@/lib/uppstartFill";
 import OverviewSection from "../ide/OverviewSection";
 import { DraftCta, FieldGrid, FocusBox, GateClosed } from "../_overview/parts";
@@ -30,7 +38,9 @@ import PhaseGateSection from "../ide/PhaseGateSection";
 import PhaseProgressStrip from "../../PhaseProgressStrip";
 
 // Which section of this page each Uppstart step lives in (#320).
-const STEP_ANCHOR: Record<UppstartStep, string> = {
+const STEP_ANCHOR: Record<UppstartPageStep, string> = {
+  value_proposition_created: "vardeerbjudande",
+  impact_model_created: "impactmodell",
   mvp_hypothesis: "hypotes",
   mvp_built: "minsta-version",
   mvp_tested: "tester",
@@ -63,26 +73,36 @@ export default async function UppstartOverviewPage({
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   // The phase page for every project (#309); only its AI parts need AI.
-  const project = await prisma.project.findUnique({ where: { slug }, select: { id: true, phase: true, title: true, contentLocale: true } });
+  const project = await prisma.project.findUnique({
+    where: { slug },
+    select: { id: true, phase: true, title: true, contentLocale: true, valueProposition: true, impactModel: true, leanCanvas: { select: { impact: true, problem: true } } },
+  });
   if (!project) notFound();
   // A restart (#313) reopens this phase's gate: only decisions since then count.
   const restartAt = await lastRestartAt(project.id);
 
-  const [t, tCheck, canEdit, aiConfigured, fillRow, brief, decision, done, tests, evaluation, cards, plan, tGate, fieldLabels, isFounder, gate, gateBrief, gateDecision] =
+  const [t, tCheck, tIdea, canEdit, aiConfigured, fillRow, brief, decision, done, autoDone, tests, evaluation, cards, plan, tGate, fieldLabels, isFounder, gate, gateBrief, gateDecision, valuePropositionAi, impactModelAi, leanCanvasAi] =
     await Promise.all([
       getTranslations({ locale, namespace: "UppstartOverview" }),
       getTranslations({ locale, namespace: "ProjectPhaseChecklist" }),
+      getTranslations({ locale, namespace: "IdeaOverview" }),
       hasProjectRole(project.id, session.user.id, PROJECT_LEAD_ROLES),
       isAiProjectStartAvailable(session.user.id),
       prisma.phaseFill.findUnique({ where: { projectId_phase: { projectId: project.id, phase: "PILOT" } } }),
       latestInsight<GateBrief>(project.id, "PHASE_GATE"),
       prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, fromPhase: { in: ["IDEA", "SPRINT"] }, outcome: "CONTINUE" }, orderBy: { createdAt: "desc" } }),
       prisma.initiativeChecklistItem.findMany({ where: { projectId: project.id, completedAt: { not: null } }, select: { itemKey: true } }),
+      // The value proposition and the impact model are done by their own data.
+      getAutoDoneKeys(project.id, slug),
       prisma.mvpTest.findMany({ where: { projectId: project.id }, orderBy: { createdAt: "asc" }, select: { id: true, who: true, happened: true, signal: true } }),
       prisma.pilotEvaluation.findUnique({ where: { projectSlug: slug }, select: { successCriteria: true } }),
-      // This phase's cards (#312), shown under the step they're work for.
+      // This phase's cards (#312), shown under the step they're work for —
+      // and older Idé cards for the two steps that moved here (#326).
       prisma.kanbanCard.findMany({
-        where: { projectSlug: slug, phase: "PILOT", stepKey: { not: null } },
+        where: {
+          projectSlug: slug,
+          OR: [{ phase: "PILOT", stepKey: { not: null } }, { phase: { in: ["IDEA", "SPRINT"] }, stepKey: { in: ["value_proposition_created", "impact_model_created"] } }],
+        },
         orderBy: [{ column: "asc" }, { order: "asc" }],
         select: { id: true, title: true, column: true, stepKey: true, createdByAi: true },
       }),
@@ -93,6 +113,9 @@ export default async function UppstartOverviewPage({
       uppstartGateCriteria(project.id, slug),
       latestInsight<GateBrief>(project.id, "UPPSTART_GATE"),
       prisma.phaseGateDecision.findFirst({ where: { projectId: project.id, ...decidedSince(restartAt), fromPhase: "PILOT" }, orderBy: { createdAt: "desc" } }),
+      getCanvasAiContext(project.id, "valueProposition"),
+      getCanvasAiContext(project.id, "impactModel"),
+      getCanvasAiContext(project.id, "leanCanvas"),
     ]);
   // AI only where the project uses it (#310): a project or phase set to
   // MANUAL sees no AI buttons and no claims that the AI drafted anything.
@@ -104,8 +127,8 @@ export default async function UppstartOverviewPage({
   const stepAi = (key: UppstartStep) => canEdit && aiConfigured && stepAiModes[UPPSTART_STEPS.indexOf(key)]?.mode !== "MANUAL";
 
   const fill: UppstartFillStatus = fillRow ? parseUppstartStatus(fillRow.status, fillRow.updatedAt) : {};
-  const doneKeys = new Set(done.map((d) => d.itemKey));
-  const shown = uppstartStepsDone(plan, tests.length, evaluation?.successCriteria);
+  const doneKeys = new Set([...done.map((d) => d.itemKey), ...autoDone]);
+  const shown: Record<string, boolean> = uppstartStepsDone(plan, tests.length, evaluation?.successCriteria);
   const stillInIdea = project.phase === "IDEA" || project.phase === "SPRINT";
   const writing = t("writing");
   const retry = (section: string) => (canEdit && aiAvailable ? <> <DraftButton slug={slug} section={section} label={t("retry")} /></> : null);
@@ -139,18 +162,22 @@ export default async function UppstartOverviewPage({
   // stepper (?step=<key>), PhaseSteps shows the step in focus. Everything a
   // step needs is open on it — the forms, the tests, its tasks — so nothing
   // has to be unfolded to see what to do.
-  const steps: PhaseStep[] = UPPSTART_STEPS.map((key) => {
+  const filledCount = (row: unknown, fields: readonly string[]) =>
+    fields.filter((f) => typeof (row as Record<string, unknown> | null)?.[f] === "string" && ((row as Record<string, string>)[f]).trim()).length;
+  const steps: PhaseStep[] = UPPSTART_PAGE_STEPS.map((key) => {
     const hasContent =
-      key === "mvp_hypothesis" ? !!plan?.hypothesis?.trim()
+      key === "value_proposition_created" ? filledCount(project.valueProposition, VALUE_PROPOSITION_FIELDS) > 0
+      : key === "impact_model_created" ? filledCount(project.impactModel, IMPACT_MODEL_FIELDS) > 0
+      : key === "mvp_hypothesis" ? !!plan?.hypothesis?.trim()
       : key === "mvp_built" ? !!plan?.mvpType || !!plan?.mvpDescription?.trim()
       : key === "mvp_tested" ? tests.length > 0
       : !!(plan?.pilotWhere || plan?.pilotWho || plan?.pilotDuration || evaluation?.successCriteria);
-    const status: PhaseStep["status"] = doneKeys.has(key) || shown[key] ? "done" : hasContent ? "started" : "empty";
+    const status: PhaseStep["status"] = doneKeys.has(key) || !!shown[key] ? "done" : hasContent ? "started" : "empty";
     return { key, anchor: STEP_ANCHOR[key], status, label: criterionLabel(key) };
   });
   const inUppstart = project.phase === "PILOT";
   if (inUppstart) steps.push({ key: "gate", anchor: "fasgrind", status: gateDecision ? "done" : "empty", label: t("gateHeading") });
-  const stepTasks = (key: UppstartStep) => {
+  const stepTasks = (key: UppstartPageStep) => {
     const mine = cards.filter((c) => c.stepKey === key);
     const open = mine.filter((c) => c.column !== "DONE");
     if (!mine.length) return null;
@@ -222,7 +249,8 @@ export default async function UppstartOverviewPage({
     <div data-phase-page className="flex flex-col gap-5 pt-3 pb-6">
       {/* Same layout rules as the Idé page: 64rem, lined up with the
           header's phase menu once PhaseSteps has measured it. */}
-      <style data-keep>{`[data-phase-page] > * { width: 100%; max-width: 64rem; margin-inline: auto; } [data-phase-page][data-aligned] > * { max-width: none; margin-inline: 0; margin-left: var(--align-left); width: var(--align-width); }`}</style>
+      {/* As on the Idé page: 64rem, except the big canvases ([data-wide]), which use the width there is. */}
+      <style data-keep>{`[data-phase-page] > * { width: 100%; max-width: 64rem; margin-inline: auto; } [data-phase-page] > [data-wide] { max-width: 110rem; } [data-phase-page][data-aligned] > * { max-width: none; margin-inline: 0; margin-left: var(--align-left); width: var(--align-width); } [data-phase-page][data-aligned] > [data-wide] { margin-left: var(--wide-left); width: var(--wide-width); }`}</style>
       <div data-keep className="contents">
         <PhaseProgressStrip projectId={project.id} slug={slug} viewing="PILOT" />
         {isUppstartFillInProgress(fill) && <FillPoller />}
@@ -251,6 +279,31 @@ export default async function UppstartOverviewPage({
           <h1 className="text-2xl font-bold text-dark-slate">{t("heading")}</h1>
           <p className="mt-1 text-sm text-dark-slate/60">{fillRow && aiAvailable ? `${t("intro")} ${t("introAi")}` : t("intro")}</p>
         </div>
+      </div>
+
+      <div data-step="value_proposition_created" data-wide className="flex flex-col gap-5">
+        <OverviewSection
+          bare
+          id="vardeerbjudande"
+          introKey="valueProposition"
+          title={criterionLabel("value_proposition_created")}
+          fill={fill.valueProposition}
+          writingLabel={writing}
+          failedNote={<>{tIdea("failedCanvas")}{retry("valueProposition")}</>}
+          after={
+            <>
+              {stepTasks("value_proposition_created")}
+              {valuePropositionAi.aiAvailable && (
+                <CanvasAiBar below projectSlug={slug} entity="valueProposition" stepKey={valuePropositionAi.stepKey} mode={valuePropositionAi.mode} canEdit={canEdit} />
+              )}
+            </>
+          }
+        >
+          {stepIntro(t("valuePropositionIntro"))}
+          <CanvasIterateProvider enabled={canEdit && valuePropositionAi.aiAvailable && valuePropositionAi.mode !== "MANUAL"}>
+            <ValuePropositionGrid projectSlug={slug} canvas={project.valueProposition} canEdit={canEdit} provenance={valuePropositionAi.provenance} suggestions={valuePropositionAi.suggestions} />
+          </CanvasIterateProvider>
+        </OverviewSection>
       </div>
 
       <div data-step="mvp_hypothesis" className="flex flex-col gap-5">
@@ -303,6 +356,39 @@ export default async function UppstartOverviewPage({
           {testScript}
           {stepTasks("mvp_tested")}
           {stepAi("mvp_tested") && <StepAiHelp slug={slug} step="mvp_tested" words={hypothesisWords} />}
+        </OverviewSection>
+      </div>
+
+      <div data-step="impact_model_created" data-wide className="flex flex-col gap-5">
+        <OverviewSection
+          bare
+          id="impactmodell"
+          introKey="impactModel"
+          title={criterionLabel("impact_model_created")}
+          fill={fill.impactModel}
+          writingLabel={writing}
+          failedNote={<>{tIdea("failedCanvas")}{retry("impactModel")}</>}
+          after={
+            <>
+              {stepTasks("impact_model_created")}
+              {impactModelAi.aiAvailable && (
+                <CanvasAiBar below projectSlug={slug} entity="impactModel" stepKey={impactModelAi.stepKey} mode={impactModelAi.mode} canEdit={canEdit} />
+              )}
+            </>
+          }
+        >
+          {stepIntro(t("impactModelIntro"))}
+          <CanvasIterateProvider enabled={canEdit && impactModelAi.aiAvailable && impactModelAi.mode !== "MANUAL"}>
+            <ImpactModelChain
+              projectSlug={slug}
+              model={project.impactModel}
+              canvasImpact={project.leanCanvas?.impact ?? null}
+              legacyProblem={project.leanCanvas?.problem?.trim() || null}
+              canEdit={canEdit}
+              ai={impactModelAi}
+              canvasAi={leanCanvasAi}
+            />
+          </CanvasIterateProvider>
         </OverviewSection>
       </div>
 

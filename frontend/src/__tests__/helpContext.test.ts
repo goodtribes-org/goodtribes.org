@@ -11,14 +11,14 @@ describe("helpContextFor", () => {
     // The phase page's section intros are closed on the page, so the help
     // panel lists them.
     expect(helpContextFor("/projects/x/ide").sectionIntros).toEqual([
-      "about", "leanCanvas", "valueProposition", "impactModel", "sdg", "interviews", "marketScan", "gate",
+      "about", "leanCanvas", "sdg", "interviews", "marketScan", "gate",
     ]);
   });
 
   it("a project page without its own text still knows the project", () => {
     expect(helpContextFor("/projects/x")).toEqual({ projectSlug: "x", pageHelp: null, sectionIntros: [] });
     expect(helpContextFor("/projects/x/uppstart")).toEqual({
-      projectSlug: "x", pageHelp: null, sectionIntros: ["mvpHypothesis", "mvpBuilt", "mvpTested", "pilotPlanned", "uppstartGate"],
+      projectSlug: "x", pageHelp: null, sectionIntros: ["valueProposition", "mvpHypothesis", "mvpBuilt", "mvpTested", "impactModel", "pilotPlanned", "uppstartGate"],
     });
   });
 

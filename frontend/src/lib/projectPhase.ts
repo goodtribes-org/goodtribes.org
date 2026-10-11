@@ -142,25 +142,28 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
   ProjectPhaseValue,
   { key: string; label: string; href?: string; parentKey?: string }[]
 > = {
-  // Order (one phase page, 2026-10-03): the canvas, value
-  // proposition and impact model right after the description, the global
-  // goals once you know the impact, then the work (interviews, scan).
+  // Order (one phase page, 2026-10-03; #326 moved the value proposition and
+  // the impact model to Uppstart): understand the problem and the idea — the
+  // description, the canvas, the global goals, then the work (interviews,
+  // scan).
   IDEA: [
     { key: "dream_defined", label: "Beskriv projektet" },
     { key: "lean_canvas_created", label: "Lean Canvas", href: "lean-canvas" },
-    { key: "value_proposition_created", label: "Värdeerbjudande", href: "value-proposition" },
-    { key: "impact_model_created", label: "Impactmodell", href: "impact-model" },
     { key: "ai_reviewed", label: "Välj SDG" },
     { key: "target_audience_interviews", label: "Målgruppsintervjuer", href: "interviews" },
     { key: "market_scan_partners", label: "Omvärldsbevakning", href: "market-scan" },
   ],
   SPRINT: [],
-  // Uppstart (#320): test whether anyone wants it, fast, with the smallest
-  // version. The four steps live on the Uppstart page (lib/mvp.ts).
+  // Uppstart (#320, #326): shape the solution and test whether anyone wants
+  // it — the value proposition, what we test, the smallest version, the
+  // tests, the impact model (the change you want to see, the ground for the
+  // success criteria) and the pilot plan. The steps live on the Uppstart page.
   PILOT: [
+    { key: "value_proposition_created", label: "Värdeerbjudande", href: "value-proposition" },
     { key: "mvp_hypothesis", label: "Vad testar vi?" },
     { key: "mvp_built", label: "Vår minsta version" },
     { key: "mvp_tested", label: "Låt dem prova" },
+    { key: "impact_model_created", label: "Impactmodell", href: "impact-model" },
     { key: "pilot_planned", label: "Beslut och plan för piloten" },
   ],
   // Lansering (#327): run the pilot, learn and decide (lib/pilot.ts). The

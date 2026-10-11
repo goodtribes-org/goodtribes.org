@@ -94,19 +94,21 @@ describe("phaseProgress", () => {
   it("computes done/total/pct per display phase", () => {
     const p = phaseProgress(new Set(["dream_defined", "ai_reviewed"]));
     expect(p.map((x) => x.phase)).toEqual(["IDEA", "PILOT", "PRODUCTION", "ESTABLISH", "SCALE", "IMPACT"]);
-    expect(p[0]).toMatchObject({ done: 2, total: 7, pct: 29, complete: false });
+    expect(p[0]).toMatchObject({ done: 2, total: 5, pct: 40, complete: false });
     expect(p[1]).toMatchObject({ done: 0, complete: false });
   });
 
   it("a phase is complete when every task is done", () => {
-    const idea = ["dream_defined", "lean_canvas_created", "value_proposition_created", "impact_model_created", "ai_reviewed", "target_audience_interviews", "market_scan_partners"];
+    // Idé has five steps since #326 moved the value proposition and the impact model to Uppstart.
+    const idea = ["dream_defined", "lean_canvas_created", "ai_reviewed", "target_audience_interviews", "market_scan_partners"];
     expect(phaseProgress(new Set(idea))[0]).toMatchObject({ pct: 100, complete: true });
   });
 
   it("next step is the first open task of the current phase", () => {
     expect(nextStep("IDEA", new Set())?.key).toBe("dream_defined");
     expect(nextStep("SPRINT", new Set(["dream_defined"]))?.key).toBe("lean_canvas_created");
-    expect(nextStep("IDEA", new Set(["dream_defined", "lean_canvas_created", "value_proposition_created", "impact_model_created", "ai_reviewed", "target_audience_interviews", "market_scan_partners"]))).toBeNull();
+    expect(nextStep("IDEA", new Set(["dream_defined", "lean_canvas_created", "ai_reviewed", "target_audience_interviews", "market_scan_partners"]))).toBeNull();
+    expect(nextStep("PILOT", new Set())?.key).toBe("value_proposition_created");
   });
 
   it("Etablera's next step is the first open of its four (#329)", () => {
@@ -114,13 +116,14 @@ describe("phaseProgress", () => {
   });
 
   it("the bars have one segment per main step", () => {
-    expect(phaseStepProgress(new Set()).map((p) => p.total)).toEqual([7, 4, 4, 4, 5, 5]);
+    expect(phaseStepProgress(new Set()).map((p) => p.total)).toEqual([5, 6, 4, 4, 5, 5]);
   });
 
   it("counts steps done and fills by fraction", () => {
     const p = phaseStepProgress(new Set(["mvp_hypothesis", "mvp_built"]))[1];
-    // Uppstart has four steps (#320): what we test, the smallest version, the tests, the pilot plan.
-    expect(p).toMatchObject({ done: 2, total: 4, pct: 50, complete: false });
+    // Uppstart has six steps (#320, #326): the value proposition, what we test, the smallest
+    // version, the tests, the impact model, the pilot plan.
+    expect(p).toMatchObject({ done: 2, total: 6, pct: 33, complete: false });
   });
 
   it("a phase is finished only when its steps and its kanban cards are done", () => {

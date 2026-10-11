@@ -10,6 +10,12 @@ import type { MvpSignal, MvpType } from "@prisma/client";
 export const UPPSTART_STEPS = ["mvp_hypothesis", "mvp_built", "mvp_tested", "pilot_planned"] as const;
 export type UppstartStep = (typeof UPPSTART_STEPS)[number];
 
+// The whole phase since #326, in order: the value proposition and the impact
+// model moved here from Idé. Those two are done by their canvases' own data
+// (phaseProgress's autoDoneKeys), the other four by uppstartStepsDone.
+export const UPPSTART_PAGE_STEPS = ["value_proposition_created", "mvp_hypothesis", "mvp_built", "mvp_tested", "impact_model_created", "pilot_planned"] as const;
+export type UppstartPageStep = (typeof UPPSTART_PAGE_STEPS)[number];
+
 export const MVP_TYPES: readonly MvpType[] = ["MANUAL", "EVENT", "PROTOTYPE", "SIGNUP", "OTHER"];
 // Weakest first.
 export const MVP_SIGNALS: readonly MvpSignal[] = ["LIKED", "CONTINUE", "HELPING", "PAID"];

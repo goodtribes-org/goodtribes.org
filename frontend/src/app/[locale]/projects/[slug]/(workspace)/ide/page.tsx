@@ -25,8 +25,6 @@ import { isFillInProgress, parseFillStatus, withStaleAsFailed } from "@/lib/idea
 import CanvasAiBar from "@/components/ai/CanvasAiBar";
 import { CanvasIterateProvider } from "@/components/ai/BlockIterateMenu";
 import LeanCanvasGrid from "../lean-canvas/LeanCanvasGrid";
-import ValuePropositionGrid from "../value-proposition/ValuePropositionGrid";
-import ImpactModelChain from "../impact-model/ImpactModelChain";
 import OverviewSection from "./OverviewSection";
 import AboutSection from "./AboutSection";
 import SdgSection, { SdgAiButton } from "./SdgSection";
@@ -209,8 +207,6 @@ export default async function IdeaOverviewPage({
   const steps: PhaseStep[] = ([
     { key: "dream_defined", anchor: "om", status: stepStatus("dream_defined", !!project.summary || !!project.description, hasGuess(projectProv)) },
     { key: "lean_canvas_created", anchor: "lean-canvas", status: stepStatus("lean_canvas_created", filledCount(canvasRow("leanCanvas")) > 0, hasGuess(leanCanvasAi.provenance)) },
-    { key: "value_proposition_created", anchor: "vardeerbjudande", status: stepStatus("value_proposition_created", filledCount(canvasRow("valueProposition")) > 0, hasGuess(valuePropositionAi.provenance)) },
-    { key: "impact_model_created", anchor: "impactmodell", status: stepStatus("impact_model_created", filledCount(canvasRow("impactModel")) > 0, hasGuess(impactModelAi.provenance)) },
     { key: "ai_reviewed", anchor: "mal", status: stepStatus("ai_reviewed", project.sdgGoals.length > 0, projectProv.sdgGoals?.author === "AI" && projectProv.sdgGoals?.status !== "VET") },
     { key: "target_audience_interviews", anchor: "intervjuer", status: stepStatus("target_audience_interviews", interviewCount > 0, false) },
     { key: "market_scan_partners", anchor: "omvarld", status: stepStatus("market_scan_partners", marketScan.length > 0, false) },
@@ -350,68 +346,6 @@ export default async function IdeaOverviewPage({
           />
         </CanvasIterateProvider>
       </OverviewSection>      </div>
-
-      <div data-step="value_proposition_created" data-wide className="flex flex-col gap-5">
-      <OverviewSection
-        bare
-        id="vardeerbjudande" introKey="valueProposition"
-        after={
-          <StepActions>
-            {valuePropositionAi.aiAvailable && (
-              <CanvasAiBar below projectSlug={slug} entity="valueProposition" stepKey={valuePropositionAi.stepKey} mode={valuePropositionAi.mode} canEdit={canEdit} />
-            )}
-            {stepDone("value_proposition_created")}
-          </StepActions>
-        }
-        title={t("valuePropositionHeading")}
-        fill={fill.valueProposition}
-        writingLabel={writing}
-        failedNote={<>{t("failedCanvas")}{retry("valueProposition")}</>}
-        folded={fold(canvasSummary("valueProposition"))}
-      >
-        <CanvasIterateProvider enabled={canEdit && valuePropositionAi.aiAvailable && valuePropositionAi.mode !== "MANUAL"}>
-          <ValuePropositionGrid
-            projectSlug={slug}
-            canvas={project.valueProposition}
-            canEdit={canEdit}
-            provenance={valuePropositionAi.provenance}
-            suggestions={valuePropositionAi.suggestions}
-          />
-        </CanvasIterateProvider>
-      </OverviewSection>
-      </div>
-
-      <div data-step="impact_model_created" data-wide className="flex flex-col gap-5">
-      <OverviewSection
-        bare
-        id="impactmodell" introKey="impactModel"
-        after={
-          <StepActions>
-            {impactModelAi.aiAvailable && (
-              <CanvasAiBar below projectSlug={slug} entity="impactModel" stepKey={impactModelAi.stepKey} mode={impactModelAi.mode} canEdit={canEdit} />
-            )}
-            {stepDone("impact_model_created")}
-          </StepActions>
-        }
-        title={t("impactModelHeading")}
-        fill={fill.impactModel}
-        writingLabel={writing}
-        failedNote={<>{t("failedCanvas")}{retry("impactModel")}</>}
-        folded={fold(canvasSummary("impactModel"))}
-      >
-        <CanvasIterateProvider enabled={canEdit && impactModelAi.aiAvailable && impactModelAi.mode !== "MANUAL"}>
-          <ImpactModelChain
-            projectSlug={slug}
-            model={project.impactModel}
-            canvasImpact={project.leanCanvas?.impact ?? null}
-            legacyProblem={project.leanCanvas?.problem?.trim() || null}
-            canEdit={canEdit}
-            ai={impactModelAi}
-            canvasAi={leanCanvasAi}
-          />
-        </CanvasIterateProvider>
-      </OverviewSection>
-      </div>
 
       <div data-step="ai_reviewed" className="flex flex-col gap-5">
       <OverviewSection id="mal" introKey="sdg" after={<>{canEdit && aiAvailable && sdgAiMode !== "MANUAL" && <SdgAiButton slug={slug} />}<StepActions>{stepDone("ai_reviewed")}</StepActions></>} title={t("sdgHeading")} fill={fill.about} writingLabel={writing} folded={fold(t("foldedSdg", { count: project.sdgGoals.length }))}>

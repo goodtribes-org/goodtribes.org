@@ -21,8 +21,6 @@ type StepCardSpec = { stepKey: string; title: { sv: string; en: string } };
 export const IDEA_STEP_CARDS: StepCardSpec[] = [
   { stepKey: "dream_defined", title: { sv: "Beskriv projektet", en: "Describe the project" } },
   { stepKey: "lean_canvas_created", title: { sv: "Fyll i Social Lean Canvas", en: "Fill in the Social Lean Canvas" } },
-  { stepKey: "value_proposition_created", title: { sv: "Fyll i värdeerbjudandet", en: "Fill in the value proposition" } },
-  { stepKey: "impact_model_created", title: { sv: "Bygg impactmodellen", en: "Build the impact model" } },
   { stepKey: "ai_reviewed", title: { sv: "Välj globala mål", en: "Choose global goals" } },
   { stepKey: "target_audience_interviews", title: { sv: "Boka 3–5 målgruppsintervjuer", en: "Book 3–5 target-audience interviews" } },
   { stepKey: "target_audience_interviews", title: { sv: "Genomför intervju 1–2", en: "Do interviews 1–2" } },
