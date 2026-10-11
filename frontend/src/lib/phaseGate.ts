@@ -1,6 +1,7 @@
 import type { PhaseGateOutcome, Prisma } from "@prisma/client";
 import { evidenceSummary, uppstartStepsDone, UPPSTART_STEPS, type Evidence } from "@/lib/mvp";
 import { ETABLERA_STEPS, etableraStepsDone } from "@/lib/establish";
+import { SKALA_STEPS, skalaStepsDone } from "@/lib/scaling";
 import { LANSERING_STEPS, lanseringStepsDone, logEntries, MIN_PILOT_LOG_ENTRIES, outcomeCounts, parseCriteria, resultsFor, type OutcomeCounts } from "@/lib/pilot";
 import { wrapUntrusted } from "@/lib/untrusted";
 import { prisma } from "@/lib/prisma";
@@ -572,40 +573,37 @@ export async function runEtableraGateBrief(projectId: string, slug: string, user
 
 // ─── Skala → Impact ─────────────────────────────────────────────────────────
 
-export const SKALA_GATE_CRITERIA = [
-  "scale_vs_fork_decided",
-  "scaling_goals_set",
-  "new_geographies_identified",
-  "expansion_capital_secured",
-  "local_teams_or_license",
-] as const;
+// Skala (#331): the five steps of lib/scaling.ts, each met by the data or
+// a tick — never a lock.
+export const SKALA_GATE_CRITERIA = SKALA_STEPS;
 
 export const SKALA_CARD_WORDS = cardWords("skala");
 
-// Checklist keys; met when ticked, or when the data shows it (replication
-// opened or an instance started, goals/geographies written in the scaling
-// plan, funding awarded, an approved instance).
 export async function skalaGateCriteria(projectId: string, slug: string): Promise<{ criteria: GateCriteria }> {
-  const [done, project, plan, instances, awarded] = await Promise.all([
+  const [done, project, plan, instances] = await Promise.all([
     prisma.initiativeChecklistItem.findMany({
       where: { projectId, completedAt: { not: null }, itemKey: { in: [...SKALA_GATE_CRITERIA] } },
       select: { itemKey: true },
     }),
     prisma.project.findUnique({ where: { id: projectId }, select: { openForReplication: true } }),
-    prisma.scalingPlan.findUnique({ where: { projectSlug: slug }, select: { goals: true, geographies: true } }),
+    prisma.scalingPlan.findUnique({ where: { projectSlug: slug }, select: { goals: true, geographies: true, growthPath: true, coreFixed: true, teamOrLicenseModel: true, capitalPlan: true } }),
     prisma.projectInstance.findMany({ where: { parentSlug: slug }, select: { status: true } }),
-    prisma.fundingApplication.count({ where: { projectId, status: "awarded" } }),
   ]);
   const doneKeys = new Set(done.map((d) => d.itemKey));
-  const has: Record<(typeof SKALA_GATE_CRITERIA)[number], boolean> = {
-    scale_vs_fork_decided: !!project?.openForReplication || instances.length > 0,
-    scaling_goals_set: !!plan?.goals?.trim(),
-    new_geographies_identified: !!plan?.geographies?.trim(),
-    expansion_capital_secured: awarded > 0,
-    local_teams_or_license: instances.some((i) => i.status === "approved"),
-  };
-  return { criteria: SKALA_GATE_CRITERIA.map((key) => ({ key, met: doneKeys.has(key) || has[key] })) };
+  const shown = skalaStepsDone({
+    plan,
+    replicationOpened: !!project?.openForReplication || instances.length > 0,
+    approvedInstance: instances.some((i) => i.status === "approved"),
+  });
+  return { criteria: SKALA_GATE_CRITERIA.map((key) => ({ key, met: doneKeys.has(key) || shown[key] })) };
 }
+
+const GROWTH_PATH_TEXT: Record<string, string> = {
+  SELF: "växer själva (samma team, fler platser)",
+  OTHERS: "andra startar egna lokala grupper",
+  HANDOVER: "någon annan tar över, t.ex. en kommun",
+  OPEN: "delar modellen fritt",
+};
 
 export async function runSkalaGateBrief(projectId: string, slug: string, userId: string): Promise<GateBrief> {
   const gate = await getAiClientFor({ feature: "critique", kind: "assist", userId, projectId, language: "project" });
@@ -613,7 +611,7 @@ export async function runSkalaGateBrief(projectId: string, slug: string, userId:
 
   const [project, plan, choice, instances, forks, applications, metrics, previous] = await Promise.all([
     prisma.project.findUnique({ where: { id: projectId }, select: { title: true, summary: true, openForReplication: true } }),
-    prisma.scalingPlan.findUnique({ where: { projectSlug: slug }, select: { goals: true, geographies: true, capitalPlan: true, teamOrLicenseModel: true } }),
+    prisma.scalingPlan.findUnique({ where: { projectSlug: slug }, select: { goals: true, geographies: true, capitalPlan: true, teamOrLicenseModel: true, growthPath: true, coreFixed: true, coreAdaptable: true } }),
     prisma.wikiPage.findUnique({ where: { projectSlug_slug: { projectSlug: slug, slug: "skalningsval" } }, select: { content: true } }),
     prisma.projectInstance.findMany({ where: { parentSlug: slug }, select: { region: true, country: true, status: true } }),
     prisma.project.count({ where: { forkedFromProjectId: projectId } }),
@@ -627,9 +625,9 @@ export async function runSkalaGateBrief(projectId: string, slug: string, userId:
   const content = [
     `Projekt: ${project.title} — ${project.summary ?? ""}`,
     plan
-      ? `Skalningsplan:\nMål: ${plan.goals ?? "—"}\nGeografier: ${plan.geographies ?? "—"}\nKapital: ${plan.capitalPlan ?? "—"}\nTeam/licens: ${plan.teamOrLicenseModel ?? "—"}`
-      : "Ingen skalningsplan.",
-    choice ? `Skalning eller fork (underlag): ${strip(choice.content).slice(0, 1000)}` : "",
+      ? `Teamets plan för att växa:\nVilka fler: ${plan.goals ?? "—"}\nVar / för vilka: ${plan.geographies ?? "—"}\nHur de växer: ${plan.growthPath ? GROWTH_PATH_TEXT[plan.growthPath] : "inte valt"}\nKärnan som måste vara lika: ${plan.coreFixed ?? "—"}\nFår anpassas lokalt: ${plan.coreAdaptable ?? "—"}\nFörsta nya platsen: ${plan.teamOrLicenseModel ?? "—"}\nPengar för att växa: ${plan.capitalPlan ?? "—"}`
+      : "Ingen plan för att växa.",
+    choice ? `AI:ns jämförelse av vägarna (underlag): ${strip(choice.content).slice(0, 1000)}` : "",
     `Öppet för replikering: ${project.openForReplication ? "ja" : "nej"}. Regionala instanser: ${instances.map((i) => `${i.region}${i.country ? `, ${i.country}` : ""} (${i.status})`).join("; ") || "inga"}. Forkar: ${forks}.`,
     applications.length ? `Finansiering: ${applications.map((a) => `${a.fundingSource.name}: ${a.status}${a.outcomeAmountSek ? ` (${a.outcomeAmountSek} kr)` : ""}`).join("; ")}` : "Inga finansieringsansökningar.",
     `Impact: ${metrics.map((m) => `${m.label} ${m.currentValue} ${m.unit}${m.targetValue ? ` (mål ${m.targetValue})` : ""}${m._count.updates ? "" : " — inte rapporterat"}`).join("; ") || "inga mätetal"}`,

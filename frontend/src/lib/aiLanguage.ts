@@ -73,7 +73,7 @@ const TEXT = {
     titleFundingPlan: "Finansieringsplan",
     titlePartnerships: "Partnerskap",
     titlePlaybook: "Så här gör vi",
-    titleScaleChoice: "Skalning eller fork",
+    titleScaleChoice: "Sätt att växa",
     titleImpactSummary: "Impactsammanfattning",
     // Interview guide
     hPurpose: "Syfte",
@@ -106,7 +106,7 @@ const TEXT = {
     hLessons: "Lärdomar från piloten",
     hWorks: "Så vet ni att det fungerar",
     // Skala
-    hThreeWays: "Tre sätt att skala",
+    hThreeWays: "Fyra sätt att växa",
     hRecommendation: "Rekommendation",
     hRequirements: "Det här behöver finnas på plats",
     // Impact
@@ -184,7 +184,7 @@ const TEXT = {
     hRoles: "Who does what",
     hLessons: "Lessons from the pilot",
     hWorks: "How you know it works",
-    hThreeWays: "Three ways to scale",
+    hThreeWays: "Four ways to grow",
     hRecommendation: "Recommendation",
     hRequirements: "What needs to be in place",
     hWhatWeDo: "What we do",

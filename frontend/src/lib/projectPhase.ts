@@ -183,12 +183,13 @@ export const INITIATIVE_CHECKLIST_ITEMS: Record<
     { key: "partnerships_formalized", label: "Samarbeten" },
     { key: "supporter_base_built", label: "Människor runt projektet" },
   ],
+  // Skala (#331): reach more people, in a way that holds (lib/scaling.ts).
   SCALE: [
-    { key: "scale_vs_fork_decided", label: "Bestämma Skalning vs. Fork (samma projekt växer vs. nytt oberoende initiativ)", href: "scale" },
-    { key: "scaling_goals_set", label: "Sätta upp mätbara skalningsmål", href: "scaling-plan" },
-    { key: "new_geographies_identified", label: "Identifiera nya geografier/målgrupper", href: "scaling-plan" },
-    { key: "expansion_capital_secured", label: "Säkra kapital för expansion", href: "scaling-plan" },
-    { key: "local_teams_or_license", label: "Bygga lokala team eller licensiera modellen", href: "scaling-plan" },
+    { key: "scaling_goals_set", label: "Vilka fler och var?" },
+    { key: "scale_vs_fork_decided", label: "Hur ni växer" },
+    { key: "core_defined", label: "Kärnan" },
+    { key: "local_teams_or_license", label: "Första nya platsen" },
+    { key: "expansion_capital_secured", label: "Pengar för att växa" },
   ],
   IMPACT: [
     { key: "sdg_impact_measured", label: "Mäta och rapportera faktisk SDG-påverkan", href: "impact" },

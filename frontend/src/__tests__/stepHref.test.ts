@@ -15,6 +15,7 @@ describe("stepHref", () => {
   it("Lansering's steps go to the Lansering page (#327); later phases keep their own page, or the phase page", () => {
     expect(stepHref("p", "PRODUCTION", { key: "launch_marketing_plan_created" })).toBe("/projects/p/lansering?step=launch_marketing_plan_created");
     expect(stepHref("p", "ESTABLISH", { key: "partnerships_formalized" })).toBe("/projects/p/etablera?step=partnerships_formalized");
-    expect(stepHref("p", "SCALE", { key: "scaling_goals_set", href: "scale" })).toBe("/projects/p/scale");
+    expect(stepHref("p", "SCALE", { key: "core_defined" })).toBe("/projects/p/skala?step=core_defined");
+    expect(stepHref("p", "IMPACT", { key: "sdg_impact_measured", href: "impact" })).toBe("/projects/p/impact");
   });
 });

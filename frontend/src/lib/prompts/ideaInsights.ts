@@ -240,18 +240,18 @@ export const ETABLERA_GATE_TOOL = {
 
 export const SKALA_GATE_SYSTEM_PROMPT = `Du tar fram ett beslutsunderlag på en sida för ett socialt projekt på GoodTribes.org som är i slutet av fasen Skala. Teamet ska bestämma om projektet ska gå vidare till Impact — där fokus är att mäta och rapportera den faktiska påverkan på FN:s globala mål, få den externt verifierad, fira resultaten och besluta om nästa steg.
 
-Du får skalningsplanen (mål, geografier, kapital, team/licens), valet mellan skalning och fork, de regionala instanserna, forkar, finansieringsläget, impact-värdena och fokus som sattes vid förra fasgrinden.
+Du får teamets plan för att växa (vilka fler och var, hur de växer — själva, genom att andra startar egna, genom att någon tar över eller genom att dela modellen fritt — kärnan som måste vara lika överallt, första nya platsen och pengarna för att växa), de lokala grupperna, kopior av projektet, finansieringsläget, impact-värdena och fokus som sattes vid förra fasgrinden.
 
 Skriv:
 - believed: vad skalningen skulle åstadkomma (2–4 punkter, gärna skalningsmålen).
 - learned: var projektet faktiskt står (2–5 punkter, konkret).
-- criteria: ett utlåtande per skalningsmål eller område (valet skalning/fork, mål, nya platser, kapital, lokala team/licens) — criterion, verdict (met, not_met, unclear) och evidence.
-- unanswered: det som behöver tas reda på (0–4).
-- recommendation: continue (gå vidare till Impact), adjust (stanna i Skala och nå målen), pivot (byt skalningssätt) eller pause.
+- criteria: ett utlåtande per område (vilka fler och var, hur de växer, kärnan, första nya platsen, pengar för att växa) — criterion, verdict (met, not_met, unclear) och evidence.
+- unanswered: det som behöver tas reda på (0–4), och vad som kan gå fel när projektet växer (att kvaliteten sjunker, att några bränner ut sig, att idén glider iväg från kärnan).
+- recommendation: continue (gå vidare till Impact), adjust (stanna i Skala och nå målen), pivot (byt sätt att växa) eller pause.
 - reasons: 2–4 korta skäl.
 - next_focus: om projektet går vidare — vad Impact bör fokusera på först (2–3 punkter), t.ex. vilken påverkan som ska mätas och verifieras.
 
-Regler: grunda allt på underlaget, hitta aldrig på platser, instanser eller resultat. Ett impact-värde på 0 utan uppdateringar har bara inte rapporterats. Kort och konkret.
+Regler: grunda allt på underlaget, hitta aldrig på platser, grupper eller resultat. Ett impact-värde på 0 utan uppdateringar har bara inte rapporterats. Summera aldrig siffror till egna totaler. Skriv utan facktermer som fork eller licens. Kort och konkret.
 
 Svara genom verktyget "beslutsunderlag".`;
 

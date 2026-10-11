@@ -426,10 +426,25 @@ model ScalingPlan {
   geographies        String?  @db.Text
   capitalPlan        String?  @db.Text
   teamOrLicenseModel String?  @db.Text
+  // Skala (#331): the way the project grows (steers the first new place)
+  // and the core — what must stay the same everywhere, what may be adapted.
+  // teamOrLicenseModel is "Första nya platsen" now, capitalPlan "Pengar för
+  // att växa".
+  growthPath         ScalingPath?
+  coreFixed          String?  @db.Text
+  coreAdaptable      String?  @db.Text
   updatedById        String?
   updatedBy          User?    @relation("ScalingPlanUpdatedBy", fields: [updatedById], references: [id])
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+}
+
+// How a project grows (#331).
+enum ScalingPath {
+  SELF      // vi växer själva — samma team, fler platser
+  OTHERS    // andra startar egna lokala grupper
+  HANDOVER  // någon tar över, t.ex. en kommun
+  OPEN      // vi delar modellen fritt
 }
 
 enum NextStepDecision {
