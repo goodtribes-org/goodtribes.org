@@ -4051,6 +4051,31 @@
       "title": "Så bygger ni er impactmodell",
       "body": "Gå från vänster till höger: problemet, deltagarna, aktiviteterna, och sedan resultaten på kort, medellång och lång sikt. Det här är er plan för förändring, inte ett resultat ni redan uppnått.",
       "tip": "Kortsiktiga resultat ska gå att se inom ett år. Det är dem ni mäter först."
+    },
+    "mvpHypothesis": {
+      "title": "Börja med vad ni vill veta",
+      "body": "Skriv ner vad ni tror i en mening, och vad som skulle visa att det stämmer. Då vet ni vad testet ska svara på, och när ni har fått svar.",
+      "tip": "Välj ett tecken som folk gör, inte vad de säger: att de bokar, kommer tillbaka eller betalar."
+    },
+    "mvpBuilt": {
+      "title": "Gör det enklaste som fungerar",
+      "body": "Den minsta versionen är inte en liten produkt utan ett test. Gör det för hand, ordna en träff eller beskriv erbjudandet och se vem som nappar. Det ska gå att göra nästa vecka.",
+      "tip": "Om det tar mer än ett par veckor att bygga är det för stort. Skala bort tills det känns nästan för enkelt."
+    },
+    "mvpTested": {
+      "title": "Låt riktiga människor prova",
+      "body": "Skriv upp varje person som provar och vad som hände. Signalen säger hur starkt beviset är: att någon betalar väger tyngst, att någon tyckte om det väger lättast.",
+      "tip": "Be om något litet, som en anmälan, en hjälpande hand eller en slant. Det är där ni ser om det är på riktigt."
+    },
+    "pilotPlanned": {
+      "title": "Planera piloten",
+      "body": "Piloten är samma sak i lite större skala under en bestämd tid. Bestäm var, med vilka, hur länge och vad som ska hända för att ni ska kalla det lyckat.",
+      "tip": "Två eller tre framgångskriterier räcker. Skriv dem så att någon utanför teamet kan se om de uppfylldes."
+    },
+    "uppstartGate": {
+      "title": "Räcker bevisen?",
+      "body": "Här ser ni vad testerna visade och bestämmer om ni går vidare till piloten, testar mer, ändrar idén eller pausar. Grinden är ett stöd, inte ett lås.",
+      "tip": "Svaga bevis är ingen dörr som stängs, men fundera på om ett test till skulle göra er säkrare."
     }
   },
   "ChangeImpactHint": {
@@ -4403,10 +4428,8 @@
     "heading": "Uppstart",
     "intro": "Testa snabbt om någon vill ha det: bygg den minsta versionen av idén, låt några riktiga människor prova och planera piloten utifrån vad som hände.",
     "introWriting": "AI:n förbereder Uppstart utifrån Idéfasens underlag. Delarna dyker upp här när de är klara.",
-    "stepByStep": "Steg för steg",
     "stillInIdea": "Projektet är fortfarande i Idéfasen.",
     "toGate": "Till fasgrinden →",
-    "progressLabel": "Uppstartens steg",
     "draftIntro": "Låt AI:n ta fram utkast utifrån Idéfasen: vad ni testar, ett förslag på en minsta version, de första uppgifterna och en plan för piloten. Inget ni redan har skrivs över.",
     "draftAll": "Låt AI:n ta fram utkast",
     "starting": "Startar …",
@@ -4420,10 +4443,7 @@
     "confirmDelete": "Ja, ta bort",
     "save": "Spara",
     "cancel": "Avbryt",
-    "tasksHeading": "Första uppgifterna",
     "openBoard": "Öppna tavlan",
-    "moreTasks": "+ {count} till på tavlan",
-    "tasksEmpty": "Inga uppgifter i fasen ännu.",
     "failedTasks": "AI:n kunde inte föreslå uppgifter.",
     "planGoal": "Mål och avgränsning",
     "planMilestones": "Milstolpar",
@@ -4483,7 +4503,9 @@
     "pilotBudgetLabel": "Vad det kostar",
     "pilotBudgetPlaceholder": "Ungefär vad piloten kostar och vad ni behöver låna eller få",
     "oldPlanHeading": "Tidigare projektplan",
-    "saving": "Sparar …"
+    "saving": "Sparar …",
+    "stepTasksHeading": "Uppgifter i steget",
+    "stepTasksDone": "Alla uppgifter i steget är klara."
   },
   "LanseringOverview": {
     "heading": "Lansering",

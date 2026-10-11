@@ -57,6 +57,7 @@ export type HelpContext = {
 // Which section intros belong to which project page.
 const PAGE_SECTION_INTROS: Record<string, string[]> = {
   ide: ["about", "leanCanvas", "valueProposition", "impactModel", "sdg", "interviews", "marketScan", "gate"],
+  uppstart: ["mvpHypothesis", "mvpBuilt", "mvpTested", "pilotPlanned", "uppstartGate"],
   "lean-canvas": ["leanCanvasPage"],
   "customer-model": ["customerModelPage"],
   "value-proposition": ["valuePropositionPage"],

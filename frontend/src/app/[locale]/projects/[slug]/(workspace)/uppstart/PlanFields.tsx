@@ -16,14 +16,14 @@ export type PlanField = {
 };
 
 // A few of the Uppstart plan's fields, shown as text and edited in place by
-// a lead. Starts in edit mode when nothing is written yet, so the first
-// thing a lead sees is somewhere to write.
+// a lead. Open for writing as long as any field is empty, so a lead never
+// has to click to see what's left to fill in.
 export default function PlanFields({ slug, fields, canEdit }: { slug: string; fields: PlanField[]; canEdit: boolean }) {
   const t = useTranslations("UppstartOverview");
   const router = useRouter();
-  const empty = fields.every((f) => !f.value?.trim());
+  const complete = fields.every((f) => !!f.value?.trim());
   const initial = () => Object.fromEntries(fields.map((f) => [f.key, f.value ?? ""])) as Record<string, string>;
-  const [editing, setEditing] = useState(canEdit && empty);
+  const [editing, setEditing] = useState(canEdit && !complete);
   const [values, setValues] = useState(initial);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -99,7 +99,7 @@ export default function PlanFields({ slug, fields, canEdit }: { slug: string; fi
         <button type="button" onClick={save} disabled={pending} className="rounded-lg bg-seagrass px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60">
           {pending ? t("saving") : t("save")}
         </button>
-        {!empty && (
+        {complete && (
           <button type="button" onClick={() => setEditing(false)} className="text-sm text-dark-slate/60 hover:text-dark-slate">
             {t("cancel")}
           </button>

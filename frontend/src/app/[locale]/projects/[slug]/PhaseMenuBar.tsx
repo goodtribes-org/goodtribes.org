@@ -7,7 +7,7 @@ import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { toggleChecklistItem } from "./(workspace)/edit/actions";
 import { DISPLAY_PHASES, toDisplayPhase, getChecklistForPhase, numberChecklist, overviewPathFor, PHASE_COLORS, hexToRgba, type ProjectPhaseValue } from "@/lib/projectPhase";
-import { isPhaseFinished, nextStep, phaseStepProgress, stepHref, type PhaseStep } from "@/lib/phaseProgress";
+import { isPhaseFinished, nextStep, phaseStepProgress, STEP_PAGES, stepHref, type PhaseStep } from "@/lib/phaseProgress";
 import type { PhaseCardCount } from "@/lib/phaseWork";
 import { activePhaseFor } from "@/lib/phaseForPath";
 import { Link, usePathname } from "@/i18n/navigation";
@@ -97,7 +97,8 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
   // step a link to it, the one being worked on framed. The page keeps
   // ?step= in the URL; without it, the first step that isn't done.
   const searchParams = useSearchParams();
-  const onIdeaPage = pathname === `/projects/${slug}/ide`;
+  // Same for Uppstart (#320): every phase with a page of steps (STEP_PAGES).
+  const onStepPage = (value: ProjectPhaseValue) => !!STEP_PAGES[value] && pathname === `/projects/${slug}/${STEP_PAGES[value]}`;
   const next = showNextStep ? nextStep(phase, doneKeys) : null;
   const phaseDone = (i: number) => isPhaseFinished(progress[i], cardCounts?.[progress[i].phase]);
   const stepTitle = (s: PhaseStep) =>
@@ -332,9 +333,9 @@ export default function PhaseMenuBar({ slug, phase, completedKeys, autoDoneKeys 
                   segments={isCurrent ? "always" : "wide"}
                   stepTitle={stepTitle}
                   cardsTitle={(c) => t("cardsLabel", { done: c.done, total: c.total })}
-                  hrefFor={p.value === "IDEA" ? (s) => `/projects/${slug}/ide?step=${s.key}` : undefined}
+                  hrefFor={STEP_PAGES[p.value] ? (s) => `/projects/${slug}/${STEP_PAGES[p.value]}?step=${s.key}` : undefined}
                   currentKey={
-                    p.value === "IDEA" && onIdeaPage
+                    onStepPage(p.value)
                       ? (searchParams.get("step") ?? pr.steps.find((s) => !s.done)?.key)
                       : undefined
                   }

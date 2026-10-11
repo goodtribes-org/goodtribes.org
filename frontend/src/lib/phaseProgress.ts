@@ -182,13 +182,19 @@ export function nextStep(phase: ProjectPhaseValue, doneKeys: ReadonlySet<string>
 }
 
 // Where "Nästa steg" (or any checklist step) is done. Every Idé step lives
-// on the one Idé phase page since 2026-10-03 (#206), so it goes there, never
+// on the one Idé phase page since 2026-10-03 (#206), and every Uppstart step
+// on the Uppstart page (#320), so it goes there, never
 // to the step's old standalone page (an Idé item's href, e.g. "lean-canvas",
 // is only for the legacy guide). Later phases: the step's own page, or the
 // phase page (#309; it used to be the legacy guide).
+// Phases whose page shows one step at a time (?step=<key>): Idé (#206) and
+// Uppstart (#320). Their steps link to the step on the phase page.
+export const STEP_PAGES: Partial<Record<ProjectPhaseValue, string>> = { IDEA: "ide", PILOT: "uppstart" };
+
 export function stepHref(slug: string, phase: ProjectPhaseValue, step: { key: string; href?: string }): string {
   const display = toDisplayPhase(phase);
-  if (display === "IDEA") return `/projects/${slug}/ide?step=${step.key}`;
+  const stepPage = STEP_PAGES[display];
+  if (stepPage) return `/projects/${slug}/${stepPage}?step=${step.key}`;
   if (step.href) return `/projects/${slug}/${step.href}`;
   return `/projects/${slug}/${overviewPathFor(display)}`;
 }
