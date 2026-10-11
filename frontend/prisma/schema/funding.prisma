@@ -228,6 +228,12 @@ enum FundingApplicationStatus {
   draft
   ai_drafted
   ready_for_review
+  // Utlysningar (#346): sent to GoodTribes' review, sent back, approved,
+  // or turned down by the review (not by the funder — that's "rejected").
+  in_review
+  changes_requested
+  approved
+  review_rejected
   submitted
   awarded
   rejected
@@ -254,6 +260,18 @@ model FundingApplication {
   outcomeNote             String?                  @db.Text
   decidedAt               DateTime?
   deadlineEscalationStage Int                      @default(0)
+  // Utlysningar (#346): the call applied to, the GoodTribes entity standing
+  // as applicant, the call's requirements the team has ticked off, and a
+  // word on co-funding. An application in a GoodTribes entity's name can't
+  // be marked submitted without an approved human review.
+  fundingCallId           String?
+  fundingCall             FundingCall?             @relation(fields: [fundingCallId], references: [id], onDelete: SetNull)
+  applicantEntityId       String?
+  applicantEntity         CommercialUmbrellaEntity? @relation(fields: [applicantEntityId], references: [id], onDelete: SetNull)
+  requirementsDone        String[]                 @default([])
+  cofundingNote           String?
+  reviewRequestedAt       DateTime?
+  reviews                 ApplicationReview[]
   createdById             String
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
@@ -348,6 +366,7 @@ model FundingCall {
 
   ideas               Idea[]                 @relation("FundingCallIdeas")
   projects            Project[]              @relation("FundingCallProjects")
+  applications        FundingApplication[]
   matches             FundingCallMatch[]
 
   @@unique([fundingSourceId, externalId])
@@ -372,4 +391,37 @@ model FundingCallMatch {
 
   @@unique([fundingCallId, projectId])
   @@index([projectId])
+}
+
+// Utlysningar (#346): the review an application in a GoodTribes entity's
+// name goes through before it is submitted, one row per step taken.
+// CHECK = the completeness check (requirements, amount, co-funding, time
+// left); IDENTITY = the reviewer has confirmed who the lead and key people
+// are (manually until BankID — open question in #342); HUMAN = the decision.
+model ApplicationReview {
+  id            String                  @id @default(cuid())
+  applicationId String
+  application   FundingApplication      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  level         ApplicationReviewLevel
+  result        ApplicationReviewResult
+  motivation    String?                 @db.Text
+  // The CHECK step's findings, one line each.
+  findings      String[]                @default([])
+  reviewerId    String?
+  reviewer      User?                   @relation("ApplicationReviews", fields: [reviewerId], references: [id], onDelete: SetNull)
+  createdAt     DateTime                @default(now())
+
+  @@index([applicationId])
+}
+
+enum ApplicationReviewLevel {
+  CHECK
+  IDENTITY
+  HUMAN
+}
+
+enum ApplicationReviewResult {
+  OK
+  CHANGES
+  REJECTED
 }

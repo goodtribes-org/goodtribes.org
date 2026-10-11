@@ -131,6 +131,8 @@ model User {
   scalingPlanEdits           ScalingPlan[]            @relation("ScalingPlanUpdatedBy")
   impactFollowupEdits        ImpactFollowup[]         @relation("ImpactFollowupUpdatedBy")
   impactConfirmationsCreated ImpactConfirmation[]     @relation("ImpactConfirmationsCreated")
+  reviewsEntities            CommercialUmbrellaEntity[] @relation("EntityReviewers")
+  applicationReviews         ApplicationReview[]      @relation("ApplicationReviews")
   valuePropositionEdits         ValueProposition[]        @relation("ValuePropositionUpdatedBy")
   valuePropositionVersionsSaved ValuePropositionVersion[] @relation("ValuePropositionVersionSavedBy")
   valuePropositionDrafts        ValuePropositionDraft[]   @relation("ValuePropositionDraftOwner")
