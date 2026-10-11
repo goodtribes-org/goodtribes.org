@@ -4554,7 +4554,21 @@
     "scriptQ3": "What did you think when you tried ours?",
     "scriptQ4": "What was missing, or what got in the way?",
     "scriptQ5": "Who else should we talk to?",
-    "scriptAskFixed": "End by asking for something: do you want to join next time, help out or pay for it?"
+    "scriptAskFixed": "End by asking for something: do you want to join next time, help out or pay for it?",
+    "sketchHeading": "Sketch",
+    "sketchIntro": "Draw how it will work, on the whiteboard here or on paper. It doesn't have to look good — it should be something to point at and talk about.",
+    "sketchBoardHeading": "Whiteboard",
+    "sketchBoardHint": "Everyone in the team can draw here. It saves itself.",
+    "sketchBoardReadOnly": "The team's sketch. Only members can draw.",
+    "sketchSaved": "Saved",
+    "sketchSynced": "Someone else drew at the same time — their changes are in now.",
+    "sketchPhotoHeading": "Photo of a sketch on paper",
+    "sketchPhotoHint": "Did you draw on paper or a real whiteboard? Take a photo and upload it.",
+    "sketchPhotoUpload": "Upload a photo",
+    "sketchPhotoReplace": "Replace photo",
+    "sketchPhotoAlt": "The team's sketch",
+    "sketchUploadFailed": "The photo couldn't be uploaded — try again.",
+    "sketchShowHeading": "The sketch to show"
   },
   "LanseringOverview": {
     "heading": "Launch",
