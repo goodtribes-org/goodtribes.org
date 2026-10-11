@@ -4554,7 +4554,21 @@
     "scriptQ3": "Vad tänkte du när du provade vårt?",
     "scriptQ4": "Vad saknades, eller vad var i vägen?",
     "scriptQ5": "Vem mer borde vi prata med?",
-    "scriptAskFixed": "Avsluta med att be om något: vill du vara med nästa gång, hjälpa till eller betala för det?"
+    "scriptAskFixed": "Avsluta med att be om något: vill du vara med nästa gång, hjälpa till eller betala för det?",
+    "sketchHeading": "Skissa",
+    "sketchIntro": "Rita hur det ska fungera, på whiteboarden här eller på papper. Det behöver inte vara snyggt — det ska gå att peka på och prata om.",
+    "sketchBoardHeading": "Whiteboard",
+    "sketchBoardHint": "Alla i teamet kan rita här. Det sparas av sig självt.",
+    "sketchBoardReadOnly": "Teamets skiss. Bara medlemmar kan rita.",
+    "sketchSaved": "Sparat",
+    "sketchSynced": "Någon annan ritade samtidigt — deras ändringar är med nu.",
+    "sketchPhotoHeading": "Foto av en skiss på papper",
+    "sketchPhotoHint": "Ritade ni på papper eller en riktig whiteboard? Ta ett foto och lägg upp det.",
+    "sketchPhotoUpload": "Lägg upp ett foto",
+    "sketchPhotoReplace": "Byt foto",
+    "sketchPhotoAlt": "Teamets skiss",
+    "sketchUploadFailed": "Fotot gick inte att lägga upp — försök igen.",
+    "sketchShowHeading": "Skissen att visa"
   },
   "LanseringOverview": {
     "heading": "Lansering",

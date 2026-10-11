@@ -53,6 +53,13 @@ model ProjectPlan {
   pilotDuration  String?  @db.Text
   pilotTeam      String?  @db.Text
   pilotBudget    String?  @db.Text
+  // The smallest version sketched (#323): an Excalidraw scene (elements
+  // only) that every member can draw on, autosaved with optimistic locking
+  // like WhiteboardDraft, and/or a photo of a paper sketch (File.key in the
+  // private bucket, served through /api/files to project members).
+  mvpSketch         Json?
+  mvpSketchVersion  Int      @default(1)
+  mvpSketchImageKey String?
   updatedById String?
   updatedBy   User?    @relation("ProjectPlanUpdatedBy", fields: [updatedById], references: [id])
   createdAt   DateTime @default(now())

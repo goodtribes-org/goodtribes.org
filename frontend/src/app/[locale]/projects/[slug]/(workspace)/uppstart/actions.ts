@@ -5,10 +5,10 @@ import { prisma } from "@/lib/prisma";
 import { cardPhaseAfterGate, countOpenPhaseTasks } from "@/lib/phaseWork";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { hasProjectRole, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { startUppstartFill, UPPSTART_SECTIONS, type UppstartSection } from "@/lib/uppstartFill";
-import type { MvpSignal, MvpType, PhaseGateOutcome } from "@prisma/client";
+import type { MvpSignal, MvpType, PhaseGateOutcome, Prisma } from "@prisma/client";
 import { MIN_MVP_TESTS, MVP_SIGNALS, MVP_TYPES } from "@/lib/mvp";
 import { DRAFT_STEPS, draftUppstartStep, summarizeMvpTests, type DraftStep, type TestSummary, type UppstartDraft } from "@/lib/uppstartDrafts";
 import { getCanvasFieldLabels } from "@/lib/canvasFieldLabels";
@@ -96,6 +96,57 @@ export async function deleteMvpTest(projectSlug: string, testId: string): Promis
   const ctx = await requireLead(projectSlug);
   if (!ctx) return { error: "Forbidden" };
   await prisma.mvpTest.deleteMany({ where: { id: testId, projectId: ctx.project.id } });
+  return done(projectSlug);
+}
+
+// ─── Skissen (#323) ─────────────────────────────────────────────────────────
+
+async function requireMember(projectSlug: string) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+  const project = await prisma.project.findUnique({ where: { slug: projectSlug }, select: { id: true, slug: true } });
+  if (!project || !(await isRealMember(project.id, session.user.id))) return null;
+  return { project, userId: session.user.id };
+}
+
+type SketchSaveResult =
+  | { ok: true; version: number }
+  | { ok: false; conflict: true; latest: { documentState: Prisma.JsonValue; version: number } }
+  | { ok: false; conflict: false; error: string };
+
+// The whiteboard autosave, same optimistic-locking protocol as
+// WhiteboardDraft and the sprint canvas: a stale version gets the latest
+// scene back to merge. Every member may draw, not just leads.
+export async function autosaveMvpSketch(projectSlug: string, documentState: Prisma.InputJsonValue, expectedVersion: number): Promise<SketchSaveResult> {
+  const ctx = await requireMember(projectSlug);
+  if (!ctx) return { ok: false, conflict: false, error: "Forbidden" };
+  await prisma.projectPlan.upsert({ where: { projectSlug }, create: { projectSlug }, update: {} });
+  const result = await prisma.projectPlan.updateMany({
+    where: { projectSlug, mvpSketchVersion: expectedVersion },
+    data: { mvpSketch: documentState, mvpSketchVersion: { increment: 1 } },
+  });
+  if (result.count === 0) {
+    const latest = await prisma.projectPlan.findUnique({ where: { projectSlug }, select: { mvpSketch: true, mvpSketchVersion: true } });
+    if (!latest) return { ok: false, conflict: false, error: "Not found" };
+    return { ok: false, conflict: true, latest: { documentState: latest.mvpSketch, version: latest.mvpSketchVersion } };
+  }
+  return { ok: true, version: expectedVersion + 1 };
+}
+
+// A photo of a paper sketch: a file already uploaded to the project through
+// /api/upload (private bucket), or null to remove it.
+export async function setMvpSketchImage(projectSlug: string, key: string | null): Promise<{ error?: string }> {
+  const ctx = await requireMember(projectSlug);
+  if (!ctx) return { error: "Forbidden" };
+  if (key) {
+    const file = await prisma.file.findUnique({ where: { key }, select: { projectId: true, mimeType: true } });
+    if (!file || file.projectId !== ctx.project.id || !file.mimeType.startsWith("image/")) return { error: "Bilden hittades inte" };
+  }
+  await prisma.projectPlan.upsert({
+    where: { projectSlug },
+    create: { projectSlug, mvpSketchImageKey: key, updatedById: ctx.userId },
+    update: { mvpSketchImageKey: key, updatedById: ctx.userId },
+  });
   return done(projectSlug);
 }
 

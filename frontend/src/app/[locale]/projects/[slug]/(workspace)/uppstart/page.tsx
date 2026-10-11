@@ -9,7 +9,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getPhaseWork, gateWork } from "@/lib/phaseWork";
 import { Link } from "@/i18n/navigation";
-import { hasProjectRole, PROJECT_LEAD_ROLES } from "@/lib/authz";
+import { hasProjectRole, isRealMember, PROJECT_LEAD_ROLES } from "@/lib/authz";
 import { isAiProjectStartAvailable } from "@/lib/aiProjectStart";
 import { latestInsight } from "@/lib/ideaInsights";
 import { uppstartGateCriteria, type GateBrief } from "@/lib/phaseGate";
@@ -22,6 +22,7 @@ import FillPoller from "../ide/FillPoller";
 import PlanFields from "./PlanFields";
 import HypothesisFields from "./HypothesisFields";
 import StepAiHelp, { TestSummaryHelp } from "./StepAiHelp";
+import MvpSketch, { MvpSketchView } from "./MvpSketch";
 import { draftText } from "@/lib/aiLanguage";
 import MvpTests from "./MvpTests";
 import DraftButton from "./DraftButton";
@@ -206,6 +207,9 @@ export default async function UppstartOverviewPage({
       <p className="mt-2 font-medium text-dark-slate">💰 {t("scriptAskFixed")}</p>
     </div>
   );
+  // The sketch (#323): the photo is a private project file, only for members.
+  const isMember = await isRealMember(project.id, session.user.id);
+  const sketchImageUrl = isMember && plan?.mvpSketchImageKey ? `/api/files/${plan.mvpSketchImageKey}` : null;
   const stepIntro = (text: string) => <p className="mb-4 text-center text-sm text-dark-slate/70">{text}</p>;
   const draftCta =
     !fillRow && canEdit && aiAvailable && !stillInIdea ? (
@@ -271,6 +275,18 @@ export default async function UppstartOverviewPage({
               { key: "mvpDescription", label: t("mvpDescriptionLabel"), value: plan?.mvpDescription ?? null, placeholder: t("mvpDescriptionPlaceholder"), rows: 3 },
             ]}
           />
+          <div className="mt-6 border-t border-muted-teal/20 pt-4">
+            <h3 className="mb-1 text-base font-semibold text-dark-slate">{t("sketchHeading")}</h3>
+            <p className="mb-3 text-sm text-dark-slate/70">{t("sketchIntro")}</p>
+            <MvpSketch
+              slug={slug}
+              projectId={project.id}
+              initialScene={plan?.mvpSketch ?? null}
+              initialVersion={plan?.mvpSketchVersion ?? 1}
+              imageUrl={sketchImageUrl}
+              isMember={isMember}
+            />
+          </div>
           {mvpTips}
           {stepTasks("mvp_built")}
           {stepAi("mvp_built") && <StepAiHelp slug={slug} step="mvp_built" words={hypothesisWords} />}
@@ -283,6 +299,7 @@ export default async function UppstartOverviewPage({
           <div className="mb-4">{evidenceBox}</div>
           <MvpTests slug={slug} tests={tests} canEdit={canEdit} />
           {stepAi("mvp_tested") && tests.length >= MIN_MVP_TESTS && <TestSummaryHelp slug={slug} />}
+          <MvpSketchView initialScene={plan?.mvpSketch ?? null} imageUrl={sketchImageUrl} />
           {testScript}
           {stepTasks("mvp_tested")}
           {stepAi("mvp_tested") && <StepAiHelp slug={slug} step="mvp_tested" words={hypothesisWords} />}
