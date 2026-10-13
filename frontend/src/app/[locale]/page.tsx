@@ -72,6 +72,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       </p>
       <LiveStrip locale={locale} items={events.slice(0, 8).map((a) => ({ project: a.projectName, action: a.action }))} />
 
+      <FoundingCard locale={locale} />
+
       {projects.length > 0 && (
         <section id="projekt" className={`${wrap} flex flex-col gap-6 pt-[48px]`}>
           <SectionHeader eyebrow={t("projects.eyebrow")} heading={t("projects.heading")} link={{ href: "/projects", label: t("projects.allLink") }} />
@@ -84,15 +86,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           </div>
         </section>
       )}
-
-      <Community
-        locale={locale}
-        memberCount={memberCount}
-        newestMembers={newMembers}
-        events={communityEvents}
-        viewerId={userId ?? null}
-        thanks={thanks}
-      />
 
       {(ideas.length > 0 || openCalls.length > 0 || openChallenges.length > 0) && (
         <section id="hitta" className={`${wrap} flex flex-col gap-6 pt-[48px]`}>
@@ -154,7 +147,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
       <PhaseJourney locale={locale} phases={phases} />
 
-      <FoundingCard locale={locale} />
+      <Community
+        locale={locale}
+        memberCount={memberCount}
+        newestMembers={newMembers}
+        events={communityEvents}
+        viewerId={userId ?? null}
+        thanks={thanks}
+      />
 
       <PlatformStats
         locale={locale}
