@@ -35,7 +35,8 @@ const PUBLIC_SURFACES = [
   "src/lib/thanks.ts",
   "src/app/sitemap.ts",
   "src/app/api/meili-sync/route.ts",
-  "src/app/[locale]/page.tsx",
+  // The start page loads its data here.
+  "src/components/ny-startsida/homeData.ts",
   "src/app/[locale]/ideas/[id]/page.tsx",
   "src/app/[locale]/members/[id]/page.tsx",
   "src/app/[locale]/org/[slug]/page.tsx",

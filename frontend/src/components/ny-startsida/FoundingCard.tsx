@@ -26,7 +26,7 @@ const CIRCLE_KEYS: Record<string, "units" | "purchaseValue" | "co2" | "volunteer
   "infos-volunteers": "volunteers",
 };
 
-export default async function FoundingCard({ locale }: { locale: Locale }) {
+export default async function FoundingCard({ locale, compact = false }: { locale: Locale; compact?: boolean }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.founding" });
   const data = await getFoundingStoryData(PROJECT_SLUG);
   // Seeded data, not a schema guarantee: no project, no section.
@@ -40,8 +40,8 @@ export default async function FoundingCard({ locale }: { locale: Locale }) {
 
   return (
     <section className={`${wrap} flex flex-col gap-6 pt-[48px]`}>
-      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} />
-      <div className={`${card} flex flex-col items-center gap-10 p-6 sm:p-10 lg:flex-row lg:gap-16 lg:p-16`}>
+      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} compact={compact} />
+      <div className={`${card} flex flex-col items-center gap-10 p-6 sm:p-10 lg:flex-row lg:gap-16 ${compact ? "lg:p-10" : "lg:p-16"}`}>
         <div className="flex flex-1 flex-col gap-[18px]">
           <h3 className={`${newHomeDisplayFont.className} m-0 text-2xl font-bold tracking-[-0.01em]`}>{t("storyHeading")}</h3>
           <p className="m-0 text-lg leading-[1.65]" style={{ color: MUTED }}>{t("body")}</p>
