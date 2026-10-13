@@ -137,15 +137,20 @@ export const PHASE_KEYS: Record<JourneyPhase["value"], string> = {
 };
 
 
-// The pictures from the former "Fem steg" module (StepsGrid), which this
-// section replaced: one journey instead of two that told the same story.
-// Impact's is hero-banner.png cropped (slide-number badge removed) to match.
+// One picture per phase, all 16:9 and in the same flat style. Idé, Uppstart
+// and Lansering are exported from the original GoodTribe presentation's
+// "drom", "fabriken" and "eldsjalar" frames, so she leads throughout: she
+// holds the dream, the others hang on, and she reaches the factory first.
+// (Idé's chain is turned to hang straight and set on a clean sky.)
+// Etablera is the original pyramid illustration cropped; Impact is the top of that
+// presentation's Earth (wind power, sun panels, trees, the whole story in
+// miniature); Skala was composed from the illustrations' parts.
 const PHASE_IMAGES: Record<JourneyPhase["value"], string> = {
-  IDEA: "do-you-have-a-dream.png",
-  PILOT: "what-is-goodtribes.png",
-  PRODUCTION: "want-a-change.png",
-  ESTABLISH: "Slide2.png",
-  SCALE: "want-to-be-a-winner.png",
+  IDEA: "phase-idea.jpg",
+  PILOT: "phase-startup.jpg",
+  PRODUCTION: "phase-launch.jpg",
+  ESTABLISH: "phase-establish.jpg",
+  SCALE: "phase-scale.jpg",
   IMPACT: "phase-impact.jpg",
 };
 
