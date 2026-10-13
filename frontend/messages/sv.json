@@ -5214,6 +5214,11 @@
       "eyebrow": "Utlysningar",
       "heading": "Pengar att söka just nu",
       "allLink": "Se alla utlysningar →"
+    },
+    "discover": {
+      "eyebrow": "Ta dig an",
+      "heading": "Hitta något att driva",
+      "tabsLabel": "Välj vad du vill se"
     }
   },
   "HeaderTools": {

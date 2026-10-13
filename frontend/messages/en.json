@@ -5214,6 +5214,11 @@
       "eyebrow": "Funding calls",
       "heading": "Funding you can apply for now",
       "allLink": "See all funding calls →"
+    },
+    "discover": {
+      "eyebrow": "Take something on",
+      "heading": "Find something to drive",
+      "tabsLabel": "Choose what to show"
     }
   },
   "HeaderTools": {

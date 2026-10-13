@@ -33,11 +33,14 @@ function prefixOf(template: string) {
 }
 
 export default async function Community({
-  locale, memberCount, newestMembers, events, viewerId, thanks,
+  locale, memberCount, newestMembers, events, viewerId, thanks, part,
 }: {
   locale: Locale; memberCount: number; newestMembers: Person[]; events: PulseItem[]; viewerId: string | null;
   // From getThanksState (lib/thanks.ts), keyed `${targetType}:${targetId}`.
   thanks: { counts: Map<string, number>; thanked: Set<string> };
+  // Just one of the two cards, without the section around it, for a page
+  // that places them itself.
+  part?: "people" | "activity";
 }) {
   const isLoggedIn = !!viewerId;
   const t = await getTranslations({ locale, namespace: "NewHomePage.community" });
@@ -54,6 +57,52 @@ export default async function Community({
   };
   const dateFormat = new Intl.DateTimeFormat(locale === "sv" ? "sv-SE" : "en-GB", { day: "numeric", month: "long" });
 
+  const peopleCard = (
+    <div className={`${card} flex flex-col gap-5 p-6 sm:p-8`}>
+      <p className={`${newHomeDisplayFont.className} m-0 text-xl font-bold`} style={{ color: INK }}>{t("wallTitle")}</p>
+      <div className="flex flex-wrap gap-2.5">
+        {newestMembers.map((u) => <Avatar key={u.id} name={u.name} image={u.image} size={44} />)}
+      </div>
+      <p className="m-0 text-[15px] leading-relaxed" style={{ color: MUTED }}>{t("wallBody")}</p>
+      {!isLoggedIn && (
+        <Link href={`/${locale}/login`} className="self-start rounded-full bg-[#E8531F] px-5 py-2.5 text-[15px] font-semibold text-white hover:bg-[#C2410C]">
+          {t("join")}
+        </Link>
+      )}
+    </div>
+  );
+  const activityCard = (
+    <div className={`${card} flex flex-col p-2 sm:p-3`}>
+      <div className="flex items-center justify-between gap-4 px-4 pt-4 pb-2">
+        <p className={`${newHomeDisplayFont.className} m-0 text-xl font-bold`} style={{ color: INK }}>{t("recentTitle")}</p>
+        <Link href="/feed" className="text-xs font-semibold hover:underline" style={{ color: LINK }}>{t("seeAllLink")}</Link>
+      </div>
+      <ul className="m-0 flex list-none flex-col p-0">
+        {events.map((a) => (
+          <li key={a.id} className="flex items-start gap-3 rounded-2xl px-4 py-3 hover:bg-[#F6F6F3]">
+            <Avatar name={a.avatarName} image={a.avatarImage} size={36} />
+            <div className="min-w-0 flex-1">
+              <p className="m-0 text-[15px] leading-snug" style={{ color: INK }}>
+                <strong>{a.avatarName ?? t("someone")}</strong> <span style={{ color: MUTED }}>{sentence(a)}</span>
+              </p>
+              <p className="m-0 mt-0.5 text-xs" style={{ color: SUBTLE }}>{dateFormat.format(a.date)}</p>
+            </div>
+            <ThankButton
+              targetType={a.targetType}
+              targetId={a.targetId}
+              initialCount={thanks.counts.get(`${a.targetType}:${a.targetId}`) ?? 0}
+              initialThanked={thanks.thanked.has(`${a.targetType}:${a.targetId}`)}
+              isLoggedIn={isLoggedIn}
+              isOwn={!!viewerId && a.actorId === viewerId}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+  if (part === "people") return peopleCard;
+  if (part === "activity") return activityCard;
+
   return (
     <section className={`${wrap} flex flex-col gap-6 pt-[48px]`}>
       <SectionHeader
@@ -62,45 +111,8 @@ export default async function Community({
         link={{ href: "/members", label: t("meetAll") }}
       />
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
-        <div className={`${card} flex flex-col gap-5 p-6 sm:p-8`}>
-          <p className={`${newHomeDisplayFont.className} m-0 text-xl font-bold`} style={{ color: INK }}>{t("wallTitle")}</p>
-          <div className="flex flex-wrap gap-2.5">
-            {newestMembers.map((u) => <Avatar key={u.id} name={u.name} image={u.image} size={44} />)}
-          </div>
-          <p className="m-0 text-[15px] leading-relaxed" style={{ color: MUTED }}>{t("wallBody")}</p>
-          {!isLoggedIn && (
-            <Link href={`/${locale}/login`} className="self-start rounded-full bg-[#E8531F] px-5 py-2.5 text-[15px] font-semibold text-white hover:bg-[#C2410C]">
-              {t("join")}
-            </Link>
-          )}
-        </div>
-        <div className={`${card} flex flex-col p-2 sm:p-3`}>
-          <div className="flex items-center justify-between gap-4 px-4 pt-4 pb-2">
-            <p className={`${newHomeDisplayFont.className} m-0 text-xl font-bold`} style={{ color: INK }}>{t("recentTitle")}</p>
-            <Link href="/feed" className="text-xs font-semibold hover:underline" style={{ color: LINK }}>{t("seeAllLink")}</Link>
-          </div>
-          <ul className="m-0 flex list-none flex-col p-0">
-            {events.map((a) => (
-              <li key={a.id} className="flex items-start gap-3 rounded-2xl px-4 py-3 hover:bg-[#F6F6F3]">
-                <Avatar name={a.avatarName} image={a.avatarImage} size={36} />
-                <div className="min-w-0 flex-1">
-                  <p className="m-0 text-[15px] leading-snug" style={{ color: INK }}>
-                    <strong>{a.avatarName ?? t("someone")}</strong> <span style={{ color: MUTED }}>{sentence(a)}</span>
-                  </p>
-                  <p className="m-0 mt-0.5 text-xs" style={{ color: SUBTLE }}>{dateFormat.format(a.date)}</p>
-                </div>
-                <ThankButton
-                  targetType={a.targetType}
-                  targetId={a.targetId}
-                  initialCount={thanks.counts.get(`${a.targetType}:${a.targetId}`) ?? 0}
-                  initialThanked={thanks.thanked.has(`${a.targetType}:${a.targetId}`)}
-                  isLoggedIn={isLoggedIn}
-                  isOwn={!!viewerId && a.actorId === viewerId}
-                />
-              </li>
-            ))}
-          </ul>
-        </div>
+        {peopleCard}
+        {activityCard}
       </div>
     </section>
   );

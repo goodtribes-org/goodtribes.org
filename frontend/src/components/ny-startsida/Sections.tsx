@@ -57,7 +57,20 @@ function SeeAll({ href, children }: { href: string; children: React.ReactNode })
 
 // Every module opens the same way: eyebrow and heading outside the card,
 // optionally a short intro or a "see all" link on the right.
-export function SectionHeader({ eyebrow, heading, intro, link }: { eyebrow: string; heading: string; intro?: string; link?: { href: string; label: string } }) {
+export function SectionHeader({ eyebrow, heading, intro, link, compact = false }: { eyebrow: string; heading: string; intro?: string; link?: { href: string; label: string }; compact?: boolean }) {
+  // Compact: a small heading that sits with its cards instead of breaking the
+  // page's flow — no eyebrow, the intro as a short line beside it.
+  if (compact) {
+    return (
+      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-0.5">
+          <h2 className={`${newHomeDisplayFont.className} m-0 text-[22px] font-extrabold leading-tight sm:text-[26px]`} style={{ color: INK, letterSpacing: "-0.02em" }}>{heading}</h2>
+          {intro && <p className="m-0 text-[15px]" style={{ color: SUBTLE }}>{intro}</p>}
+        </div>
+        {link && <Link href={link.href} className="shrink-0 text-[15px] font-semibold no-underline hover:text-[#9A3412]" style={{ color: LINK }}>{link.label}</Link>}
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-12">
       <div className="flex flex-col gap-3">
@@ -114,7 +127,7 @@ export type JourneyPhase = {
   count: number;
 };
 
-const PHASE_KEYS: Record<JourneyPhase["value"], string> = {
+export const PHASE_KEYS: Record<JourneyPhase["value"], string> = {
   IDEA: "idea",
   PILOT: "startup",
   PRODUCTION: "launch",
@@ -178,9 +191,25 @@ export async function PhaseJourney({ locale, phases }: { locale: Locale; phases:
 // ─── 6. Platform stats ────────────────────────────────────────────────────
 
 export async function PlatformStats({
-  locale, totalRaised, completedTasks, totalTokens, activeProjects,
+  locale, totalRaised, completedTasks, totalTokens, activeProjects, compact = false,
 }: {
-  locale: Locale; totalRaised: number; completedTasks: number; totalTokens: number; activeProjects: number;
+  locale: Locale; totalRaised: number; completedTasks: number; totalTokens: number; activeProjects: number; compact?: boolean;
+}) {
+  const t = await getTranslations({ locale, namespace: "NewHomePage.stats" });
+  return (
+    <section className={`${wrap} flex flex-col gap-5 pt-[48px]`}>
+      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} compact={compact} />
+      <StatTiles locale={locale} totalRaised={totalRaised} completedTasks={completedTasks} totalTokens={totalTokens} activeProjects={activeProjects} />
+    </section>
+  );
+}
+
+// The four coloured figures, on their own so a page can place them beside
+// something else (two columns instead of four).
+export async function StatTiles({
+  locale, totalRaised, completedTasks, totalTokens, activeProjects, columns = 4,
+}: {
+  locale: Locale; totalRaised: number; completedTasks: number; totalTokens: number; activeProjects: number; columns?: 2 | 4;
 }) {
   const t = await getTranslations({ locale, namespace: "NewHomePage.stats" });
   const n = (v: number) => v.toLocaleString(locale === "sv" ? "sv-SE" : "en-GB");
@@ -191,18 +220,15 @@ export async function PlatformStats({
     { value: n(activeProjects), label: t("projects"), bg: "#E4ECF5", fg: "#12486C" },
   ];
   return (
-    <section className={`${wrap} flex flex-col gap-5 pt-[48px]`}>
-      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} />
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {tiles.map((tile) => (
-          <div key={tile.label} className="flex flex-col gap-1 rounded-[20px] p-[26px]" style={{ background: tile.bg }}>
-            <p className={`${newHomeDisplayFont.className} m-0 font-extrabold leading-[1.05]`} style={{ color: tile.fg, fontSize: "clamp(1.6rem, 3vw, 40px)" }}>
-              {tile.value}
-            </p>
-            <p className="m-0 text-[15px] text-[#3F4642]">{tile.label}</p>
-          </div>
-        ))}
-      </div>
-    </section>
+    <div className={`grid grid-cols-2 content-start gap-4 ${columns === 4 ? "lg:grid-cols-4" : ""}`}>
+      {tiles.map((tile) => (
+        <div key={tile.label} className="flex flex-col gap-1 rounded-[20px] p-[26px]" style={{ background: tile.bg }}>
+          <p className={`${newHomeDisplayFont.className} m-0 font-extrabold leading-[1.05]`} style={{ color: tile.fg, fontSize: "clamp(1.6rem, 3vw, 40px)" }}>
+            {tile.value}
+          </p>
+          <p className="m-0 text-[15px] text-[#3F4642]">{tile.label}</p>
+        </div>
+      ))}
+    </div>
   );
 }
