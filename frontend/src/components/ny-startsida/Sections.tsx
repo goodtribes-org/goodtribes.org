@@ -74,13 +74,13 @@ export function SectionHeader({ eyebrow, heading, intro, link, compact = false }
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-12">
       <div className="flex flex-col gap-3 md:flex-1">
-        {/* The "see all" link sits on the eyebrow's row, so the module's
-            name and the way to everything in it read as one line. */}
+        <Eyebrow>{eyebrow}</Eyebrow>
+        {/* The "see all" link sits on the heading's row, so the module and
+            the way to everything in it read as one line. */}
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-          <Eyebrow>{eyebrow}</Eyebrow>
+          <H2 className="max-w-[720px]">{heading}</H2>
           {link && <SeeAll href={link.href}>{link.label}</SeeAll>}
         </div>
-        <H2 className="max-w-[720px]">{heading}</H2>
       </div>
       {intro && <p className="m-0 max-w-[480px] text-lg leading-[1.6]" style={{ color: MUTED }}>{intro}</p>}
     </div>

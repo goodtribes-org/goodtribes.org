@@ -18,7 +18,7 @@ export type DiscoverTab = {
 const LINK = "#C2410C";
 
 // The module's header is drawn here too, because its "see all" link follows
-// the active tab and sits on the eyebrow's row like every other module's.
+// the active tab and sits on the heading's row like every other module's.
 export default function DiscoverTabs({ tabs, tabsLabel, eyebrow, heading }: { tabs: DiscoverTab[]; tabsLabel: string; eyebrow: string; heading: React.ReactNode }) {
   const [activeKey, setActiveKey] = useState(tabs[0]?.key);
   const active = tabs.find((tab) => tab.key === activeKey) ?? tabs[0];
@@ -27,13 +27,13 @@ export default function DiscoverTabs({ tabs, tabsLabel, eyebrow, heading }: { ta
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
+        <p className="m-0 text-xs font-bold uppercase tracking-[.12em]" style={{ color: LINK }}>{eyebrow}</p>
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-          <p className="m-0 text-xs font-bold uppercase tracking-[.12em]" style={{ color: LINK }}>{eyebrow}</p>
+          {heading}
           <Link href={active.allLink.href} className="shrink-0 text-[17px] font-semibold no-underline hover:text-[#9A3412]" style={{ color: LINK }}>
             {active.allLink.label}
           </Link>
         </div>
-        {heading}
       </div>
       <div className="flex flex-col gap-5">
         <div role="tablist" aria-label={tabsLabel} className="flex flex-wrap gap-2">
