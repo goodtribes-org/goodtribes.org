@@ -30,7 +30,7 @@ export const SWIPE_ITEM = "w-[78%] shrink-0 snap-start sm:w-auto";
 
 export function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <p className="m-0 text-sm font-bold uppercase tracking-[.12em]" style={{ color: LINK }}>
+    <p className="m-0 text-xs font-bold uppercase tracking-[.12em]" style={{ color: LINK }}>
       {children}
     </p>
   );

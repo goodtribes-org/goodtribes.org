@@ -28,7 +28,7 @@ export default function DiscoverTabs({ tabs, tabsLabel, eyebrow, heading }: { ta
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-          <p className="m-0 text-sm font-bold uppercase tracking-[.12em]" style={{ color: LINK }}>{eyebrow}</p>
+          <p className="m-0 text-xs font-bold uppercase tracking-[.12em]" style={{ color: LINK }}>{eyebrow}</p>
           <Link href={active.allLink.href} className="shrink-0 text-[17px] font-semibold no-underline hover:text-[#9A3412]" style={{ color: LINK }}>
             {active.allLink.label}
           </Link>
