@@ -20,11 +20,10 @@ import {
 import { createProjectFromGuide, similarIdeasForGuide, stashGuide, suggestGuideFollowUp } from "./guide-actions";
 import { MAX_DRAFTS, type OwnDraft } from "@/lib/draftLimit";
 
-// Same key as the start page's dream box (DreamHero): what the visitor wrote
-// there is the answer to the first question.
-const HOME_DRAFT_KEY = "gt:new-home-dream";
 // The whole guide, kept across the login round trip: the questions need no
-// account, the login comes at "Skapa mitt projekt". Never in the URL.
+// account, the login comes at "Skapa mitt projekt". Never in the URL. The
+// start page's dream box (DreamHero, #358) asks the questions itself and
+// hands its answers over under the same key, marked fromHome.
 const GUIDE_KEY = "gt:dream-guide";
 const GUIDE_KEEP_MS = 24 * 60 * 60 * 1000;
 
@@ -86,7 +85,6 @@ export default function DreamGuide({
   const [draftLimit, setDraftLimit] = useState<OwnDraft[] | null>(ownDrafts && ownDrafts.length >= MAX_DRAFTS ? ownDrafts : null);
   const atDraftLimit = !!draftLimit && !share && !basedOnIdeaId;
   const [similar, setSimilar] = useState<{ id: string; title: string }[]>([]);
-  const [fromHome, setFromHome] = useState(false);
   const [backFromLogin, setBackFromLogin] = useState(false);
   const [thinking, setThinking] = useState(false);
   const [error, setError] = useState(false);
@@ -94,7 +92,7 @@ export default function DreamGuide({
 
   useEffect(() => {
     // Back from logging in: everything answered, straight to the summary.
-    const restore = (g: GuideInput) => {
+    const restore = (g: GuideInput & { fromHome?: boolean }) => {
       setAnswers(g.answers ?? {});
       setFollowUps(g.followUps ?? {});
       setUnknown(Array.isArray(g.unknown) ? g.unknown : []);
@@ -105,10 +103,11 @@ export default function DreamGuide({
       setBasedOnIdeaId(g.basedOnIdeaId);
       setChallengeSlug(g.challengeSlug ?? challenge?.slug);
       setCallSlug(g.callSlug ?? forCall?.slug);
-      setBackFromLogin(isLoggedIn);
+      // Straight from the start page's questions is not back from logging in.
+      setBackFromLogin(isLoggedIn && g.fromHome !== true);
       setStep(summaryStep);
     };
-    let local: (GuideInput & { at?: number }) | null = null;
+    let local: (GuideInput & { at?: number; fromHome?: boolean }) | null = null;
     try {
       const raw = localStorage.getItem(GUIDE_KEY);
       if (raw) {
@@ -127,17 +126,6 @@ export default function DreamGuide({
       });
       return;
     }
-    // From the start page: question 1 is answered, go on to question 2.
-    try {
-      const raw = localStorage.getItem(HOME_DRAFT_KEY);
-      if (!raw) return;
-      localStorage.removeItem(HOME_DRAFT_KEY);
-      const text = (JSON.parse(raw) as { text?: unknown }).text;
-      if (typeof text !== "string" || !text.trim()) return;
-      setAnswers((a) => ({ ...a, dream: text.trim().slice(0, MAX_ANSWER_LENGTH) }));
-      setFromHome(true);
-      setStep(1);
-    } catch {}
     // Once, on arrival.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -254,15 +242,6 @@ export default function DreamGuide({
               ) : (
                 <p className="mb-4 text-sm text-dark-slate/65">{t("intro")}</p>
               ))}
-            {fromHome && step === 1 && answers.dream && (
-              <div className="mb-4 rounded-xl bg-seagrass/5 p-3 text-sm text-dark-slate/75">
-                <span className="font-medium text-dark-slate">{t("fromHome")}</span>{" "}
-                <span className="italic">&ldquo;{answers.dream}&rdquo;</span>{" "}
-                <button type="button" onClick={() => go(0)} className="font-medium text-seagrass hover:underline">
-                  {t("change")}
-                </button>
-              </div>
-            )}
             <p className="text-xs font-semibold uppercase tracking-wide text-seagrass">{t(`questions.${area}.area`)}</p>
             <h1 className={`${newHomeDisplayFont.className} mt-1 text-2xl font-bold text-dark-slate sm:text-3xl`}>{t(`questions.${area}.title`)}</h1>
             <p className="mt-2 text-sm text-dark-slate/65">{t(`questions.${area}.help`)}</p>

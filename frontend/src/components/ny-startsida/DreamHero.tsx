@@ -5,11 +5,21 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { heroTaglineFont } from "@/lib/fonts";
 import { newHomeDisplayFont } from "./fonts";
+import {
+  AMBITIONS, GUIDE_AREAS, MAX_ANSWER_LENGTH, TEAM_MODES, WEEKLY_HOURS, isVagueAnswer,
+  type GuideArea, type GuideConditions, type WeeklyHoursKey,
+} from "@/lib/dreamGuide";
+import { suggestGuideFollowUp } from "@/app/[locale]/projects/new/guide-actions";
 
-// The dream box is the answer to Drömguiden's first question (#214): it is
-// handed over in localStorage under this key (the guide reads and removes
-// it) and the guide opens on question 2. It never goes in the URL.
-const DRAFT_KEY = "gt:new-home-dream";
+// The dream box asks Drömguiden's questions itself (#358), one at a time in
+// the same box: the five questions (the dream first), then the conditions as
+// buttons. Only after the last step does the start page hand the answers to
+// the guide — under the key it already keeps across the login round trip, so
+// it opens on its summary — and the person leaves the start page. Nothing
+// goes in the URL.
+const GUIDE_KEY = "gt:dream-guide";
+const CONDITIONS_STEP = GUIDE_AREAS.length;
+type FollowUp = { question: string; answer: string };
 
 // Small per-word tilt (deg) and baseline shift (em) so the tagline reads as
 // written by hand on paper rather than typeset in a straight line. Fixed
@@ -98,17 +108,81 @@ function FloatingCloud({ symbol }: { symbol: CloudSymbol }) {
 
 export default function DreamHero() {
   const t = useTranslations("NewHomePage.hero");
-  const [text, setText] = useState("");
+  const tg = useTranslations("DreamGuide");
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
-  function submit() {
-    const dream = text.trim();
-    if (!dream || pending) return;
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<Partial<Record<GuideArea, string>>>({});
+  const [followUps, setFollowUps] = useState<Partial<Record<GuideArea, FollowUp>>>({});
+  // On a vague answer the box asks one follow-up before moving on, the
+  // same rule as the guide (worded by the AI when it's on for the person).
+  const [asking, setAsking] = useState(false);
+  const [thinking, setThinking] = useState(false);
+  const [unknown, setUnknown] = useState<GuideArea[]>([]);
+  const [conditions, setConditions] = useState<GuideConditions>({});
+  const area: GuideArea | undefined = step < CONDITIONS_STEP ? GUIDE_AREAS[step] : undefined;
+  const followUp = area && asking ? followUps[area] : undefined;
+  const value = followUp ? followUp.answer : area ? (answers[area] ?? "") : "";
+  const total = GUIDE_AREAS.length + 1;
+
+  function go(s: number) {
+    setAsking(false);
+    setStep(s);
+  }
+
+  function setValue(v: string) {
+    if (!area) return;
+    if (followUp) return setFollowUps((f) => ({ ...f, [area]: { ...followUp, answer: v } }));
+    setAnswers((a) => ({ ...a, [area]: v }));
+    if (unknown.includes(area)) setUnknown((u) => u.filter((x) => x !== area));
+    // A rewritten answer may not need its unanswered follow-up any more.
+    if (followUps[area] && !followUps[area]!.answer) setFollowUps((f) => ({ ...f, [area]: undefined }));
+  }
+
+  function finish() {
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ text: dream, at: Date.now() }));
+      localStorage.setItem(
+        GUIDE_KEY,
+        JSON.stringify({ answers, followUps, unknown, conditions, name: "", withAi: true, fromHome: true, at: Date.now() }),
+      );
     } catch {}
     startTransition(() => router.push("/projects/new"));
+  }
+
+  async function submit() {
+    if (pending || thinking) return;
+    if (!area) return finish();
+    // The follow-up moves on answered or not, like "Nästa" in the guide.
+    if (followUp) return go(step + 1);
+    const answer = value.trim();
+    if (!answer) return;
+    if (!followUps[area] && isVagueAnswer(answer)) {
+      setThinking(true);
+      const suggestion = await suggestGuideFollowUp(area, answer, answers.dream).catch(() => null);
+      setThinking(false);
+      // The AI found the answer concrete enough: move on.
+      if (!suggestion || !("none" in suggestion)) {
+        const question = suggestion?.question ?? tg(`questions.${area}.followUp`);
+        setFollowUps((f) => ({ ...f, [area]: { question, answer: "" } }));
+        setAsking(true);
+        return;
+      }
+    }
+    go(step + 1);
+  }
+
+  function back() {
+    if (asking) return setAsking(false);
+    go(step - 1);
+  }
+
+  function skip() {
+    if (!area) return;
+    setAnswers((a) => ({ ...a, [area]: "" }));
+    setFollowUps((f) => ({ ...f, [area]: undefined }));
+    setUnknown((u) => (u.includes(area) ? u : [...u, area]));
+    go(step + 1);
   }
 
   return (
@@ -226,40 +300,90 @@ export default function DreamHero() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            submit();
+            void submit();
           }}
           className="relative z-[1] flex flex-col gap-2.5 rounded-[26px] border border-[#B8BBB4] bg-white text-left transition-colors focus-within:border-[var(--color-coral)]"
           style={{ padding: "18px 18px 14px 22px", boxShadow: "0 3px 10px rgba(27,31,29,.08), 0 1px 2px rgba(27,31,29,.05)" }}
         >
-          <label htmlFor="nh-dream" className="sr-only">
-            {t("label")}
-          </label>
-          <div className="relative h-[84px]">
-            <textarea
-              id="nh-dream"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  submit();
-                }
-              }}
-              maxLength={2000}
-              className="absolute inset-0 h-[84px] w-full resize-none border-0 bg-transparent py-1.5 text-[17px] leading-normal text-[#1B1F1D] outline-none focus:ring-0 sm:text-[19px]"
-            />
-            {!text && (
-              <div aria-hidden className="pointer-events-none absolute left-0 top-1.5 text-[17px] leading-normal text-[#8A918D] sm:text-[19px]">
-                {t("placeholder")}
-              </div>
-            )}
+          {/* The question and, on the far right, where you are (Niklas, 2026-10-16). */}
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <p id="nh-question" className={`${newHomeDisplayFont.className} m-0 text-[19px] font-bold leading-snug text-[#1B1F1D] sm:text-[22px]`}>
+              {followUp ? <><span aria-hidden>✨</span> {followUp.question}</> : area ? tg(`questions.${area}.title`) : tg("conditions.heading")}
+            </p>
+            <p className="m-0 shrink-0 text-[13px] font-bold text-[#C2410C]">
+              {tg("boxProgress", { area: area ? tg(`questions.${area}.area`) : tg("conditions.area"), step: step + 1, total })}
+            </p>
           </div>
+          {step === CONDITIONS_STEP ? (
+            <div className="flex flex-col gap-3 py-1">
+              <BoxChips
+                label={tg("conditions.time")}
+                options={(Object.keys(WEEKLY_HOURS) as WeeklyHoursKey[]).map((k) => [k, tg(`conditions.timeOptions.${k}`)])}
+                value={conditions.time}
+                onPick={(v) => setConditions((c) => ({ ...c, time: v }))}
+              />
+              <BoxChips
+                label={tg("conditions.team")}
+                options={TEAM_MODES.map((k) => [k, tg(`conditions.teamOptions.${k}`)])}
+                value={conditions.team}
+                onPick={(v) => setConditions((c) => ({ ...c, team: v }))}
+              />
+              <BoxChips
+                label={tg("conditions.ambition")}
+                options={AMBITIONS.map((k) => [k, tg(`conditions.ambitionOptions.${k}`)])}
+                value={conditions.ambition}
+                onPick={(v) => setConditions((c) => ({ ...c, ambition: v }))}
+              />
+            </div>
+          ) : (
+            <>
+              <div className="relative h-[84px]">
+                <textarea
+                  id="nh-dream"
+                  aria-labelledby="nh-question"
+                  key={`${step}-${asking}`}
+                  autoFocus={step > 0 || asking}
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      void submit();
+                    }
+                  }}
+                  maxLength={MAX_ANSWER_LENGTH}
+                  className="absolute inset-0 h-[84px] w-full resize-none border-0 bg-transparent py-1.5 text-[17px] leading-normal text-[#1B1F1D] outline-none focus:ring-0 sm:text-[19px]"
+                />
+                {!value && area && (
+                  <div aria-hidden className="pointer-events-none absolute left-0 right-0 top-1.5 text-[15px] leading-normal text-[#8A918D] sm:text-base">
+                    {followUp ? tg("boxFollowUpHint") : tg("examplePrefix", { example: tg(`questions.${area}.example`) })}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[13px] text-[#6B726E] sm:text-sm">{t("note")}</p>
+            {thinking ? (
+              <p className="text-[13px] text-[#6B726E] sm:text-sm">{tg("followUpThinking")}</p>
+            ) : step > 0 || asking ? (
+              <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] sm:text-sm">
+                <button type="button" onClick={back} className="cursor-pointer border-0 bg-transparent p-0 text-[#6B726E] hover:text-[#1B1F1D]">
+                  {tg("back")}
+                </button>
+                {area && step > 0 && !followUp && (
+                  <button type="button" onClick={skip} className="cursor-pointer border-0 bg-transparent p-0 text-[#6B726E] hover:text-[#1B1F1D]">
+                    {tg("unknown")}
+                  </button>
+                )}
+                {area && !followUp && <span className="hidden text-[#8A918D] md:inline">{tg(`questions.${area}.help`)}</span>}
+              </span>
+            ) : (
+              <p className="text-[13px] text-[#6B726E] sm:text-sm">{t("note")}</p>
+            )}
             <button
               type="submit"
-              disabled={!text.trim() || pending}
-              aria-label={t("submit")}
+              disabled={(!!area && !followUp && !value.trim()) || pending || thinking}
+              aria-label={area ? t("submit") : tg("conditions.toSummary")}
               className="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-full border-0 text-white transition-opacity disabled:cursor-default disabled:opacity-50"
               style={{ background: "var(--nh-accent)" }}
             >
@@ -269,5 +393,25 @@ export default function DreamHero() {
         </form>
       </div>
     </section>
+  );
+}
+
+// One row of condition buttons, sized for the dream box.
+function BoxChips<K extends string>({ label, options, value, onPick }: { label: string; options: [K, string][]; value?: K; onPick: (v: K) => void }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="w-28 shrink-0 text-sm font-semibold text-[#1B1F1D]">{label}</span>
+      {options.map(([k, text]) => (
+        <button
+          key={k}
+          type="button"
+          aria-pressed={value === k}
+          onClick={() => onPick(k)}
+          className={`cursor-pointer rounded-full border px-3.5 py-1.5 text-sm transition-colors ${value === k ? "border-[#E8531F] bg-[#E8531F] text-white" : "border-[#E4E4DF] bg-white text-[#4A514D] hover:border-[#E8531F]"}`}
+        >
+          {text}
+        </button>
+      ))}
+    </div>
   );
 }
