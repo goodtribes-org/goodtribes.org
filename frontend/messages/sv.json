@@ -5088,7 +5088,7 @@
       "overline": "Vi förverkligar goda drömmar",
       "heading": "Vad drömmer du om att",
       "headingHighlight": "förändra?",
-      "intro": "GoodTribes är platsen där människor tillsammans förverkligar idéer som gör världen bättre. Berätta om din dröm, så tar AI-guiden dig hela vägen från idé till verklig skillnad.",
+      "intro": "GoodTribes är platsen där människor tillsammans förverkligar drömmar som gör världen bättre. Berätta om din dröm, så tar AI-guiden dig hela vägen från idé till verklig skillnad.",
       "label": "Beskriv din dröm",
       "placeholder": "Skriv din dröm här",
       "note": "Du väljer själv när drömmen ska delas med andra",
@@ -5153,6 +5153,7 @@
       "storyHeading": "Det började med datorer som skulle skrotas",
       "body": "Fullt fungerande datorer byts ut efter tre, fyra år – samtidigt som förskolor, skolor och ideella organisationer saknar utrustning. Infos Datordonation löste båda problemen: datorerna raderades säkert, fick nya program och gick vidare till skolor i bland annat Tensta, Rinkeby och Skärholmen och till organisationer som Amnesty, Greenpeace och Rädda barnen. Ur det arbetet grundades Stiftelsen GoodTribes, så att fler goda idéer ska kunna bidra till en bättre värld.",
       "supportLabel": "Möjliggjort av",
+      "readMore": "Läs mer →",
       "circles": {
         "units": {
           "label": "Donerat",

@@ -40,7 +40,7 @@ export default async function FoundingCard({ locale, compact = false }: { locale
 
   return (
     <section className={`${wrap} flex flex-col gap-6 pt-[48px]`}>
-      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} compact={compact} />
+      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} compact={compact} link={{ href: "/about", label: t("readMore") }} />
       <div className={`${card} flex flex-col items-center gap-10 p-6 sm:p-10 lg:flex-row lg:gap-16 ${compact ? "lg:p-10" : "lg:p-16"}`}>
         <div className="flex flex-1 flex-col gap-[18px]">
           <h3 className={`${newHomeDisplayFont.className} m-0 text-2xl font-bold tracking-[-0.01em]`}>{t("storyHeading")}</h3>
