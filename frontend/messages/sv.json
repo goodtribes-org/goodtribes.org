@@ -5141,7 +5141,7 @@
     },
     "stats": {
       "eyebrow": "Resultat",
-      "heading": "Det här har vi gjort tillsammans",
+      "heading": "Vi har gjort",
       "raised": "har vi samlat in",
       "tasks": "uppgifter har vi klarat av",
       "tokens": "tokens har vi delat ut till varandra",
@@ -5216,7 +5216,7 @@
       "allLink": "Se alla utlysningar →"
     },
     "discover": {
-      "eyebrow": "Ta dig an",
+      "eyebrow": "Idéer / Utlysningar / Utmaningar",
       "heading": "Hitta något att driva",
       "tabsLabel": "Välj vad du vill se"
     }

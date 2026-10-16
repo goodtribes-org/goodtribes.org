@@ -5141,7 +5141,7 @@
     },
     "stats": {
       "eyebrow": "Results",
-      "heading": "What we've done together",
+      "heading": "What we've done",
       "raised": "raised together",
       "tasks": "tasks we've completed",
       "tokens": "tokens we've given each other",
@@ -5216,7 +5216,7 @@
       "allLink": "See all funding calls →"
     },
     "discover": {
-      "eyebrow": "Take something on",
+      "eyebrow": "Ideas / Funding calls / Challenges",
       "heading": "Find something to drive",
       "tabsLabel": "Choose what to show"
     }
