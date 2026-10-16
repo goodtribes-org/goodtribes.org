@@ -5103,7 +5103,7 @@
       "allLink": "Hela flödet →"
     },
     "phases": {
-      "eyebrow": "Faser",
+      "eyebrow": "Våra faser",
       "heading": "Från idé till impact",
       "now": "Just nu · {count} projekt",
       "descriptions": {
@@ -5118,7 +5118,7 @@
     },
     "projects": {
       "eyebrow": "Drömprojekt",
-      "heading": "Hjälp till i ett projekt",
+      "heading": "Inspiration",
       "allLink": "Se alla drömprojekt →"
     },
     "challenges": {
@@ -5927,7 +5927,7 @@
     "allPlaces": "Alla platser",
     "eyebrow": "Bli en del av något större",
     "homeEyebrow": "Uppgifter",
-    "homeHeading": "Vill du bidra",
+    "homeHeading": "Vill du hjälpa till",
     "heading": "Första uppgifter i drömmar som pågår",
     "intro": "Små, konkreta uppgifter som för en dröm ett steg närmare. Varje uppgift gör dig till medskapare, och Tribe Tokens ger dig en röst i projektets beslut.",
     "seeAll": "Se alla uppgifter →",
