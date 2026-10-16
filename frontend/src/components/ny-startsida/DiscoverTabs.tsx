@@ -11,11 +11,11 @@ import { Link } from "@/i18n/navigation";
 export type DiscoverTab = {
   key: string;
   label: string;
+  /** The tab's card colour; the eyebrow, link and selected tab follow it. */
+  accent: string;
   allLink: { href: string; label: string };
   content: React.ReactNode;
 };
-
-const LINK = "#C2410C";
 
 // The module's header is drawn here too, because its "see all" link follows
 // the active tab and sits on the heading's row like every other module's.
@@ -27,10 +27,10 @@ export default function DiscoverTabs({ tabs, tabsLabel, eyebrow, heading }: { ta
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
-        <p className="m-0 text-xs font-bold uppercase tracking-[.12em]" style={{ color: LINK }}>{eyebrow}</p>
+        <p className="m-0 text-xs font-bold uppercase tracking-[.12em]" style={{ color: active.accent }}>{eyebrow}</p>
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
           {heading}
-          <Link href={active.allLink.href} className="shrink-0 text-[17px] font-semibold no-underline hover:text-[#9A3412]" style={{ color: LINK }}>
+          <Link href={active.allLink.href} className="shrink-0 text-[17px] font-semibold no-underline hover:opacity-80" style={{ color: active.accent }}>
             {active.allLink.label}
           </Link>
         </div>
@@ -49,10 +49,9 @@ export default function DiscoverTabs({ tabs, tabsLabel, eyebrow, heading }: { ta
                 aria-controls={`discover-panel-${tab.key}`}
                 onClick={() => setActiveKey(tab.key)}
                 className={`rounded-full border px-4 py-2 text-[15px] font-semibold transition-colors ${
-                  selected
-                    ? "border-[#1B1F1D] bg-[#1B1F1D] text-white"
-                    : "border-[#E4E4DF] bg-white text-[#1B1F1D] hover:border-[#C2410C]"
+                  selected ? "text-white" : "bg-white text-[#1B1F1D]"
                 }`}
+                style={selected ? { background: tab.accent, borderColor: tab.accent } : { borderColor: `${tab.accent}55` }}
               >
                 {tab.label}
               </button>

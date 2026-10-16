@@ -19,7 +19,27 @@ export const LINK = "#C2410C";
 // Same outer width and side padding as the design: 1312 px of content on a
 // 1440 px screen.
 export const wrap = "mx-auto w-full max-w-[1440px] px-4 sm:px-8 lg:px-16";
-export const card = "rounded-[32px] border border-[#E4E4DF] bg-white";
+// A soft shadow under every box on the start page (Niklas, 2026-10-16).
+export const SHADOW = "shadow-[0_3px_10px_rgba(27,31,29,.08),0_1px_2px_rgba(27,31,29,.05)]";
+export const card = `rounded-[32px] border border-[#E4E4DF] bg-white ${SHADOW}`;
+
+// One GoodTribes colour per kind of card (Niklas, 2026-10-16): the cards'
+// border, the module's eyebrow and its "see all" link share it, the heading
+// stays black. Only the start page colours its cards; elsewhere they keep
+// their own border.
+export const ACCENTS = {
+  projects: "#097809", // seagrass
+  ideas: "#ff6600", // coral
+  fundingCalls: "#12486c", // navy
+  challenges: "#d10505", // watermelon
+  tasks: "#ff6600", // coral
+} as const;
+
+// Put on a SWIPE_ROW list (with accentStyle) to colour and shadow the card
+// inside each item, whatever card component it holds.
+export const ACCENT_CARDS =
+  "[&>*>*]:!border [&>*>*]:!border-[var(--accent)] [&>*>*]:!shadow-[0_3px_10px_rgba(27,31,29,.08),0_1px_2px_rgba(27,31,29,.05)]";
+export const accentStyle = (accent: string) => ({ ["--accent" as string]: accent });
 
 // A horizontal, snap-scrolling row on phones that becomes a normal grid from
 // `sm` up — for the start page's project cards and phases. Put SWIPE_ROW on
@@ -28,9 +48,9 @@ export const SWIPE_ROW =
   "-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0";
 export const SWIPE_ITEM = "w-[78%] shrink-0 snap-start sm:w-auto";
 
-export function Eyebrow({ children }: { children: React.ReactNode }) {
+export function Eyebrow({ children, color = LINK }: { children: React.ReactNode; color?: string }) {
   return (
-    <p className="m-0 text-xs font-bold uppercase tracking-[.12em]" style={{ color: LINK }}>
+    <p className="m-0 text-xs font-bold uppercase tracking-[.12em]" style={{ color }}>
       {children}
     </p>
   );
@@ -47,9 +67,9 @@ export function H2({ children, className = "", size = 42 }: { children: React.Re
   );
 }
 
-function SeeAll({ href, children }: { href: string; children: React.ReactNode }) {
+export function SeeAll({ href, children, color = LINK }: { href: string; children: React.ReactNode; color?: string }) {
   return (
-    <Link href={href} className="shrink-0 text-[17px] font-semibold no-underline hover:text-[#9A3412]" style={{ color: LINK }}>
+    <Link href={href} className="shrink-0 text-[17px] font-semibold no-underline hover:opacity-80" style={{ color }}>
       {children}
     </Link>
   );
@@ -57,7 +77,7 @@ function SeeAll({ href, children }: { href: string; children: React.ReactNode })
 
 // Every module opens the same way: eyebrow and heading outside the card,
 // optionally a short intro or a "see all" link on the right.
-export function SectionHeader({ eyebrow, heading, intro, link, compact = false }: { eyebrow: string; heading: string; intro?: string; link?: { href: string; label: string }; compact?: boolean }) {
+export function SectionHeader({ eyebrow, heading, intro, link, accent, compact = false }: { eyebrow: string; heading: string; intro?: string; link?: { href: string; label: string }; accent?: string; compact?: boolean }) {
   // Compact: a small heading that sits with its cards instead of breaking the
   // page's flow — no eyebrow, the intro as a short line beside it.
   if (compact) {
@@ -74,12 +94,12 @@ export function SectionHeader({ eyebrow, heading, intro, link, compact = false }
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-12">
       <div className="flex flex-col gap-3 md:flex-1">
-        <Eyebrow>{eyebrow}</Eyebrow>
+        <Eyebrow color={accent}>{eyebrow}</Eyebrow>
         {/* The "see all" link sits on the heading's row, so the module and
             the way to everything in it read as one line. */}
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
           <H2 className="max-w-[720px]">{heading}</H2>
-          {link && <SeeAll href={link.href}>{link.label}</SeeAll>}
+          {link && <SeeAll href={link.href} color={accent}>{link.label}</SeeAll>}
         </div>
       </div>
       {intro && <p className="m-0 max-w-[480px] text-lg leading-[1.6]" style={{ color: MUTED }}>{intro}</p>}
@@ -168,7 +188,7 @@ export async function PhaseJourney({ locale, phases }: { locale: Locale; phases:
       <ol className={`m-0 list-none p-0 ${SWIPE_ROW} sm:grid-cols-2 lg:grid-cols-6`}>
         {phases.map((p, i) => (
           <li key={p.value} className={`flex min-w-0 ${SWIPE_ITEM}`}>
-            <Link href={`/how-it-works#${PHASE_KEYS[p.value]}`} className="flex w-full flex-col overflow-hidden rounded-2xl border border-[#E4E4DF] bg-white transition-colors hover:border-[#C2410C]">
+            <Link href={`/how-it-works#${PHASE_KEYS[p.value]}`} className={`flex w-full flex-col overflow-hidden rounded-2xl border border-[#E4E4DF] bg-white transition-colors hover:border-[#C2410C] ${SHADOW}`}>
             <div className="relative aspect-video">
               <img src={`/img/${PHASE_IMAGES[p.value]}`} alt="" className="absolute inset-0 h-full w-full object-cover" />
             </div>
@@ -227,7 +247,7 @@ export async function StatTiles({
   return (
     <div className={`grid grid-cols-2 content-start gap-4 ${columns === 4 ? "lg:grid-cols-4" : ""}`}>
       {tiles.map((tile) => (
-        <div key={tile.label} className="flex flex-col gap-1 rounded-[20px] p-[26px]" style={{ background: tile.bg }}>
+        <div key={tile.label} className={`flex flex-col gap-1 rounded-[20px] p-[26px] ${SHADOW}`} style={{ background: tile.bg }}>
           <p className={`${newHomeDisplayFont.className} m-0 font-extrabold leading-[1.05]`} style={{ color: tile.fg, fontSize: "clamp(1.6rem, 3vw, 40px)" }}>
             {tile.value}
           </p>
