@@ -5649,6 +5649,7 @@
     "pageTitle": "Start a project",
     "overline": "Your dream",
     "progress": "{step} of {total}",
+    "boxProgress": "{area} – step {step} of {total}",
     "fromIdea": "You're running the idea “{title}” by {author}. The answers come from the idea — change and add to them so they're yours.",
     "fromIdeaShort": "You're running a shared idea. Change and add to the answers so they're yours.",
     "intro": "Five short questions about your idea, then a few quick choices. You can go back and change anything, and \"Don't know yet\" is always an okay answer.",
@@ -5664,7 +5665,7 @@
     "change": "Change",
     "followUpThinking": "Thinking of a follow-up question …",
     "followUpHint": "Answer if you like, or move on with Next.",
-    "fromHome": "Your dream from the start page is included:",
+    "boxFollowUpHint": "Answer if you like, or move on with the arrow.",
     "openQuestionCard": "Open question from the Dream guide. Find this out during the Idea phase.",
     "questions": {
       "dream": {

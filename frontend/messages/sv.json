@@ -5649,6 +5649,7 @@
     "pageTitle": "Starta ett projekt",
     "overline": "Din dröm",
     "progress": "{step} av {total}",
+    "boxProgress": "{area} – steg {step} av {total}",
     "fromIdea": "Du driver idén ”{title}” av {author}. Svaren är ifyllda från idén — ändra och fyll på så att de blir dina.",
     "fromIdeaShort": "Du driver en delad idé. Ändra och fyll på svaren så att de blir dina.",
     "intro": "Fem korta frågor om din idé och sedan några snabba val. Du kan gå tillbaka och ändra när som helst, och \"Vet inte än\" är alltid ett okej svar.",
@@ -5664,7 +5665,7 @@
     "change": "Ändra",
     "followUpThinking": "Funderar på en följdfråga …",
     "followUpHint": "Svara gärna, eller gå vidare med Nästa.",
-    "fromHome": "Din dröm från startsidan är med:",
+    "boxFollowUpHint": "Svara gärna, eller gå vidare med pilen.",
     "openQuestionCard": "Öppen fråga från Drömguiden. Ta reda på det här under Idéfasen.",
     "questions": {
       "dream": {
