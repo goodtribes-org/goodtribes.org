@@ -36,11 +36,11 @@ export function Eyebrow({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function H2({ children, className = "", size = 52 }: { children: React.ReactNode; className?: string; size?: number }) {
+export function H2({ children, className = "", size = 36 }: { children: React.ReactNode; className?: string; size?: number }) {
   return (
     <h2
       className={`${newHomeDisplayFont.className} m-0 font-extrabold ${className}`}
-      style={{ fontSize: `clamp(2rem, 4vw, ${size}px)`, lineHeight: 1.05, letterSpacing: "-0.03em", color: INK }}
+      style={{ fontSize: `clamp(1.75rem, 3vw, ${size}px)`, lineHeight: 1.05, letterSpacing: "-0.03em", color: INK }}
     >
       {children}
     </h2>
