@@ -16,7 +16,7 @@ import IdeaCard from "@/components/ny-startsida/IdeaCard";
 import DiscoverTabs from "@/components/ny-startsida/DiscoverTabs";
 import { getHomePageData } from "@/components/ny-startsida/homeData";
 import {
-  INK, LiveStrip, PhaseJourney, PlatformStats, SectionHeader, SWIPE_ITEM, SWIPE_ROW, wrap,
+  H2, INK, LiveStrip, PhaseJourney, PlatformStats, SectionHeader, SWIPE_ITEM, SWIPE_ROW, wrap,
 } from "@/components/ny-startsida/Sections";
 import { newHomeBodyFont } from "@/components/ny-startsida/fonts";
 
@@ -89,8 +89,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
       {(ideas.length > 0 || openCalls.length > 0 || openChallenges.length > 0) && (
         <section id="hitta" className={`${wrap} flex flex-col gap-6 pt-[48px]`}>
-          <SectionHeader eyebrow={t("discover.eyebrow")} heading={t("discover.heading")} />
           <DiscoverTabs
+            eyebrow={t("discover.eyebrow")}
+            heading={<H2 className="max-w-[720px]">{t("discover.heading")}</H2>}
             tabsLabel={t("discover.tabsLabel")}
             tabs={[
               ideas.length > 0 && {
@@ -143,7 +144,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </section>
       )}
 
-      <FirstTasksSection locale={locale} tasks={firstTasks.items} total={firstTasks.total} />
+      <FirstTasksSection locale={locale} tasks={firstTasks.items} />
 
       <PhaseJourney locale={locale} phases={phases} />
 

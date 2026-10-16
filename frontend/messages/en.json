@@ -5085,7 +5085,7 @@
   "NewHomePage": {
     "metaTitle": "GoodTribes – What do you dream of changing?",
     "hero": {
-      "overline": "We make good dreams <u>come true</u>.",
+      "overline": "We make good dreams come true",
       "heading": "What do you dream of",
       "headingHighlight": "changing?",
       "intro": "GoodTribes is where people come together to make ideas that improve the world happen. Tell us about your dream, and the AI guide takes you all the way from idea to real change.",
@@ -5103,7 +5103,7 @@
       "allLink": "Full feed →"
     },
     "phases": {
-      "eyebrow": "How it works",
+      "eyebrow": "Phases",
       "heading": "From idea to impact",
       "now": "Right now · {count, plural, one {# project} other {# projects}}",
       "descriptions": {
@@ -5117,7 +5117,7 @@
       "readMore": "Read more about how it works →"
     },
     "projects": {
-      "eyebrow": "Projects",
+      "eyebrow": "Dream projects",
       "heading": "Help out on a project",
       "allLink": "See all projects →"
     },
@@ -5140,7 +5140,7 @@
       "noDescription": "No description yet."
     },
     "stats": {
-      "eyebrow": "Together",
+      "eyebrow": "Results",
       "heading": "What we've done together",
       "raised": "raised together",
       "tasks": "tasks we've completed",
@@ -5149,7 +5149,7 @@
     },
     "founding": {
       "eyebrow": "Our story",
-      "heading": "Where it all began",
+      "heading": "How it all began",
       "storyHeading": "It started with computers that were going to be scrapped",
       "body": "Perfectly working computers are replaced after three or four years – while preschools, schools and non-profits lack equipment. Infos Datordonation solved both problems: the computers were securely wiped, got new software and went on to schools including Tensta, Rinkeby and Skärholmen and to organisations such as Amnesty, Greenpeace and Save the Children. That work led to the founding of the GoodTribes Foundation, so that more good ideas can help build a better world.",
       "supportLabel": "Made possible by",
@@ -5174,12 +5174,12 @@
       }
     },
     "community": {
-      "eyebrow": "We are GoodTribes",
+      "eyebrow": "Community",
       "title": "Be part of something bigger",
       "heading": "Happening now",
       "subheading": "Latest activity on the platform",
       "seeAllLink": "See all activity →",
-      "peopleHeading": "We are the changemakers",
+      "peopleHeading": "We are GoodTribes",
       "meetAll": "Meet everyone →",
       "wallTitle": "Newest in the community",
       "wallBody": "Developers, designers, teachers, retirees and students – everyone who puts in an hour here makes a dream a little more real.",
@@ -5925,10 +5925,12 @@
     "allPhases": "All phases",
     "allTimes": "Any time",
     "allPlaces": "Any place",
-    "eyebrow": "Become part of something",
+    "eyebrow": "Become part of something bigger",
+    "homeEyebrow": "Tasks",
+    "homeHeading": "Want to contribute",
     "heading": "First tasks in dreams under way",
     "intro": "Small, concrete tasks that bring a dream one step closer. Each task makes you a co-creator, and Tribe Tokens give you a voice in the project's decisions.",
-    "seeAll": "See all {count, plural, one {# first task} other {# first tasks}} →",
+    "seeAll": "See all tasks →",
     "pageTitle": "First tasks",
     "pageDescription": "Small, concrete tasks in projects that make the world better. Take one and become a co-creator.",
     "searchPlaceholder": "Search, e.g. elderly, bikes, design, Gottsunda …",

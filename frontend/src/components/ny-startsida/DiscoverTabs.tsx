@@ -19,14 +19,25 @@ export type DiscoverTab = {
 const LINK = "#C2410C";
 const MUTED = "#4A514D";
 
-export default function DiscoverTabs({ tabs, tabsLabel }: { tabs: DiscoverTab[]; tabsLabel: string }) {
+// The module's header is drawn here too, because its "see all" link follows
+// the active tab and sits on the eyebrow's row like every other module's.
+export default function DiscoverTabs({ tabs, tabsLabel, eyebrow, heading }: { tabs: DiscoverTab[]; tabsLabel: string; eyebrow: string; heading: React.ReactNode }) {
   const [activeKey, setActiveKey] = useState(tabs[0]?.key);
   const active = tabs.find((tab) => tab.key === activeKey) ?? tabs[0];
   if (!active) return null;
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+          <p className="m-0 text-sm font-bold uppercase tracking-[.12em]" style={{ color: LINK }}>{eyebrow}</p>
+          <Link href={active.allLink.href} className="shrink-0 text-[17px] font-semibold no-underline hover:text-[#9A3412]" style={{ color: LINK }}>
+            {active.allLink.label}
+          </Link>
+        </div>
+        {heading}
+      </div>
+      <div className="flex flex-col gap-5">
         <div role="tablist" aria-label={tabsLabel} className="flex flex-wrap gap-2">
           {tabs.map((tab) => {
             const selected = tab.key === active.key;
@@ -50,13 +61,10 @@ export default function DiscoverTabs({ tabs, tabsLabel }: { tabs: DiscoverTab[];
             );
           })}
         </div>
-        <Link href={active.allLink.href} className="shrink-0 text-[17px] font-semibold no-underline hover:text-[#9A3412]" style={{ color: LINK }}>
-          {active.allLink.label}
-        </Link>
-      </div>
-      <div role="tabpanel" id={`discover-panel-${active.key}`} aria-labelledby={`discover-tab-${active.key}`} className="flex flex-col gap-4">
-        <p className="m-0 text-lg" style={{ color: MUTED }}>{active.heading}</p>
-        {active.content}
+        <div role="tabpanel" id={`discover-panel-${active.key}`} aria-labelledby={`discover-tab-${active.key}`} className="flex flex-col gap-4">
+          <p className="m-0 text-lg" style={{ color: MUTED }}>{active.heading}</p>
+          {active.content}
+        </div>
       </div>
     </div>
   );

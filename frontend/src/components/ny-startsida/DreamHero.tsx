@@ -139,6 +139,13 @@ export default function DreamHero() {
         }
       `}</style>
 
+      {/* The name, handwritten above the tagline (Niklas, 2026-10-16). */}
+      <p
+        className={`${heroTaglineFont.className} nh-write relative m-0 -mb-2 text-[32px] leading-none sm:text-[40px]`}
+        style={{ color: TAGLINE_COLORS[0], fontWeight: 400, transform: "rotate(-3deg)" }}
+      >
+        GoodTribes
+      </p>
       <p
         className={`${heroTaglineFont.className} nh-write relative text-[32px] leading-none sm:text-[40px]`}
         style={{ color: "var(--color-navy)", fontWeight: 400, transform: "rotate(-2deg)" }}
