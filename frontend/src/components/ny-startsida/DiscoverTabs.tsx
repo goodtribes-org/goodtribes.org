@@ -11,13 +11,11 @@ import { Link } from "@/i18n/navigation";
 export type DiscoverTab = {
   key: string;
   label: string;
-  heading: string;
   allLink: { href: string; label: string };
   content: React.ReactNode;
 };
 
 const LINK = "#C2410C";
-const MUTED = "#4A514D";
 
 // The module's header is drawn here too, because its "see all" link follows
 // the active tab and sits on the eyebrow's row like every other module's.
@@ -62,7 +60,6 @@ export default function DiscoverTabs({ tabs, tabsLabel, eyebrow, heading }: { ta
           })}
         </div>
         <div role="tabpanel" id={`discover-panel-${active.key}`} aria-labelledby={`discover-tab-${active.key}`} className="flex flex-col gap-4">
-          <p className="m-0 text-lg" style={{ color: MUTED }}>{active.heading}</p>
           {active.content}
         </div>
       </div>

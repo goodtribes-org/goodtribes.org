@@ -97,7 +97,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               ideas.length > 0 && {
                 key: "ideer",
                 label: t("ideas.eyebrow"),
-                heading: t("ideas.heading"),
                 allLink: { href: "/ideas", label: t("ideas.allLink") },
                 content: (
                   <div className={`${SWIPE_ROW} sm:grid-cols-2 lg:grid-cols-5`}>
@@ -112,7 +111,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               openCalls.length > 0 && {
                 key: "utlysningar",
                 label: t("fundingCalls.eyebrow"),
-                heading: t("fundingCalls.heading"),
                 allLink: { href: "/utlysningar", label: t("fundingCalls.allLink") },
                 content: (
                   <div className={`${SWIPE_ROW} sm:grid-cols-2 lg:grid-cols-5`}>
@@ -127,7 +125,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               openChallenges.length > 0 && {
                 key: "utmaningar",
                 label: t("challenges.eyebrow"),
-                heading: t("challenges.heading"),
                 allLink: { href: "/challenges", label: t("challenges.allLink") },
                 content: (
                   <div className={`${SWIPE_ROW} sm:grid-cols-2 lg:grid-cols-3`}>
