@@ -5103,7 +5103,7 @@
       "allLink": "Full feed →"
     },
     "phases": {
-      "eyebrow": "Phases",
+      "eyebrow": "Our phases",
       "heading": "From idea to impact",
       "now": "Right now · {count, plural, one {# project} other {# projects}}",
       "descriptions": {
@@ -5118,7 +5118,7 @@
     },
     "projects": {
       "eyebrow": "Dream projects",
-      "heading": "Help out on a project",
+      "heading": "Inspiration",
       "allLink": "See all dream projects →"
     },
     "challenges": {
@@ -5927,7 +5927,7 @@
     "allPlaces": "Any place",
     "eyebrow": "Become part of something bigger",
     "homeEyebrow": "Tasks",
-    "homeHeading": "Want to contribute",
+    "homeHeading": "Want to help out",
     "heading": "First tasks in dreams under way",
     "intro": "Small, concrete tasks that bring a dream one step closer. Each task makes you a co-creator, and Tribe Tokens give you a voice in the project's decisions.",
     "seeAll": "See all tasks →",
