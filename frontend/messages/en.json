@@ -5088,7 +5088,7 @@
       "overline": "We make good dreams come true",
       "heading": "What do you dream of",
       "headingHighlight": "changing?",
-      "intro": "GoodTribes is where people come together to make ideas that improve the world happen. Tell us about your dream, and the AI guide takes you all the way from idea to real change.",
+      "intro": "GoodTribes is where people come together to make dreams that improve the world come true. Tell us about your dream, and the AI guide takes you all the way from idea to real change.",
       "label": "Describe your dream",
       "placeholder": "Write your dream here",
       "note": "You choose when to share your dream with others",
@@ -5153,6 +5153,7 @@
       "storyHeading": "It started with computers that were going to be scrapped",
       "body": "Perfectly working computers are replaced after three or four years – while preschools, schools and non-profits lack equipment. Infos Datordonation solved both problems: the computers were securely wiped, got new software and went on to schools including Tensta, Rinkeby and Skärholmen and to organisations such as Amnesty, Greenpeace and Save the Children. That work led to the founding of the GoodTribes Foundation, so that more good ideas can help build a better world.",
       "supportLabel": "Made possible by",
+      "readMore": "Read more →",
       "circles": {
         "units": {
           "label": "Donated",
