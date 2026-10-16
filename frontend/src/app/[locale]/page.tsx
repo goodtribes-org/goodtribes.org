@@ -16,7 +16,7 @@ import IdeaCard from "@/components/ny-startsida/IdeaCard";
 import DiscoverTabs from "@/components/ny-startsida/DiscoverTabs";
 import { getHomePageData } from "@/components/ny-startsida/homeData";
 import {
-  H2, INK, LiveStrip, PhaseJourney, PlatformStats, SectionHeader, SWIPE_ITEM, SWIPE_ROW, wrap,
+  ACCENT_CARDS, ACCENTS, accentStyle, H2, INK, LiveStrip, PhaseJourney, PlatformStats, SectionHeader, SWIPE_ITEM, SWIPE_ROW, wrap,
 } from "@/components/ny-startsida/Sections";
 import { newHomeBodyFont } from "@/components/ny-startsida/fonts";
 
@@ -72,8 +72,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
       {projects.length > 0 && (
         <section id="projekt" className={`${wrap} flex flex-col gap-6 pt-[48px]`}>
-          <SectionHeader eyebrow={t("projects.eyebrow")} heading={t("projects.heading")} link={{ href: "/projects", label: t("projects.allLink") }} />
-          <div className={`${SWIPE_ROW} sm:grid-cols-2 lg:grid-cols-5`}>
+          <SectionHeader eyebrow={t("projects.eyebrow")} heading={t("projects.heading")} link={{ href: "/projects", label: t("projects.allLink") }} accent={ACCENTS.projects} />
+          <div className={`${SWIPE_ROW} ${ACCENT_CARDS} sm:grid-cols-2 lg:grid-cols-5`} style={accentStyle(ACCENTS.projects)}>
             {projects.map((p) => (
               <div key={p.slug} className={`flex ${SWIPE_ITEM}`}>
                 <ProjectCard project={p} />
@@ -93,9 +93,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               ideas.length > 0 && {
                 key: "ideer",
                 label: t("ideas.eyebrow"),
+                accent: ACCENTS.ideas,
                 allLink: { href: "/ideas", label: t("ideas.allLink") },
                 content: (
-                  <div className={`${SWIPE_ROW} sm:grid-cols-2 lg:grid-cols-5`}>
+                  <div className={`${SWIPE_ROW} ${ACCENT_CARDS} sm:grid-cols-2 lg:grid-cols-5`} style={accentStyle(ACCENTS.ideas)}>
                     {ideas.map((idea) => (
                       <div key={idea.id} className={`flex ${SWIPE_ITEM}`}>
                         <IdeaCard idea={idea} labels={ideaLabels} />
@@ -107,9 +108,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               openCalls.length > 0 && {
                 key: "utlysningar",
                 label: t("fundingCalls.eyebrow"),
+                accent: ACCENTS.fundingCalls,
                 allLink: { href: "/utlysningar", label: t("fundingCalls.allLink") },
                 content: (
-                  <div className={`${SWIPE_ROW} sm:grid-cols-2 lg:grid-cols-5`}>
+                  <div className={`${SWIPE_ROW} ${ACCENT_CARDS} sm:grid-cols-2 lg:grid-cols-5`} style={accentStyle(ACCENTS.fundingCalls)}>
                     {openCalls.map((c) => (
                       <div key={c.slug} className={`flex ${SWIPE_ITEM}`}>
                         <FundingCallCard call={c} />
@@ -121,9 +123,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               openChallenges.length > 0 && {
                 key: "utmaningar",
                 label: t("challenges.eyebrow"),
+                accent: ACCENTS.challenges,
                 allLink: { href: "/challenges", label: t("challenges.allLink") },
                 content: (
-                  <div className={`${SWIPE_ROW} sm:grid-cols-2 lg:grid-cols-3`}>
+                  <div className={`${SWIPE_ROW} ${ACCENT_CARDS} sm:grid-cols-2 lg:grid-cols-3`} style={accentStyle(ACCENTS.challenges)}>
                     {openChallenges.map((c) => (
                       <div key={c.slug} className={`flex ${SWIPE_ITEM}`}>
                         <ChallengeCard challenge={c} locale={locale} />

@@ -229,7 +229,7 @@ export default function DreamHero() {
             submit();
           }}
           className="relative z-[1] flex flex-col gap-2.5 rounded-[26px] border border-[#B8BBB4] bg-white text-left transition-colors focus-within:border-[var(--color-coral)]"
-          style={{ padding: "18px 18px 14px 22px", boxShadow: "0 10px 30px rgba(27,31,29,0.12)" }}
+          style={{ padding: "18px 18px 14px 22px", boxShadow: "0 3px 10px rgba(27,31,29,.08), 0 1px 2px rgba(27,31,29,.05)" }}
         >
           <label htmlFor="nh-dream" className="sr-only">
             {t("label")}
