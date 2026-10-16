@@ -7,12 +7,12 @@ import { SWIPE_ITEM, SWIPE_ROW, SectionHeader, wrap } from "./Sections";
 // "Första uppgifter i drömmar som pågår" on the start page (#279), right
 // under the dream box: the other way in — help someone else's dream with one
 // small, concrete thing. Renders nothing while no project has opened one.
-export default async function FirstTasksSection({ locale, tasks, total }: { locale: Locale; tasks: FirstTaskListItem[]; total: number }) {
+export default async function FirstTasksSection({ locale, tasks }: { locale: Locale; tasks: FirstTaskListItem[] }) {
   if (tasks.length === 0) return null;
   const t = await getTranslations({ locale, namespace: "FirstTasksDiscover" });
   return (
     <section id="forsta-uppgifter" className={`${wrap} flex flex-col gap-6 pt-[48px]`}>
-      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} intro={t("intro")} />
+      <SectionHeader eyebrow={t("homeEyebrow")} heading={t("homeHeading")} link={{ href: "/micro-tasks", label: t("seeAll") }} />
       {/* Same row as the start page's projects: five across, swipeable on phones. */}
       <div className={`${SWIPE_ROW} sm:grid-cols-2 lg:grid-cols-5`}>
         {tasks.map((task) => (
@@ -21,7 +21,6 @@ export default async function FirstTasksSection({ locale, tasks, total }: { loca
           </div>
         ))}
       </div>
-      <a href="/micro-tasks" className="self-start text-base font-bold text-[#C2410C] hover:underline">{t("seeAll", { count: total })}</a>
     </section>
   );
 }

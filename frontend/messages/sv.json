@@ -5085,7 +5085,7 @@
   "NewHomePage": {
     "metaTitle": "GoodTribes – Vad drömmer du om att förändra?",
     "hero": {
-      "overline": "Vi gör goda drömmar <u>verkliga</u>.",
+      "overline": "Vi förverkligar goda drömmar",
       "heading": "Vad drömmer du om att",
       "headingHighlight": "förändra?",
       "intro": "GoodTribes är platsen där människor tillsammans förverkligar idéer som gör världen bättre. Berätta om din dröm, så tar AI-guiden dig hela vägen från idé till verklig skillnad.",
@@ -5103,7 +5103,7 @@
       "allLink": "Hela flödet →"
     },
     "phases": {
-      "eyebrow": "Så fungerar det",
+      "eyebrow": "Faser",
       "heading": "Från idé till impact",
       "now": "Just nu · {count} projekt",
       "descriptions": {
@@ -5117,7 +5117,7 @@
       "readMore": "Läs mer om hur det fungerar →"
     },
     "projects": {
-      "eyebrow": "Projekt",
+      "eyebrow": "Drömprojekt",
       "heading": "Hjälp till i ett projekt",
       "allLink": "Se alla projekt →"
     },
@@ -5140,7 +5140,7 @@
       "noDescription": "Ingen beskrivning ännu."
     },
     "stats": {
-      "eyebrow": "Tillsammans",
+      "eyebrow": "Resultat",
       "heading": "Det här har vi gjort tillsammans",
       "raised": "har vi samlat in",
       "tasks": "uppgifter har vi klarat av",
@@ -5149,7 +5149,7 @@
     },
     "founding": {
       "eyebrow": "Vår historia",
-      "heading": "Där allt började",
+      "heading": "Hur allt började",
       "storyHeading": "Det började med datorer som skulle skrotas",
       "body": "Fullt fungerande datorer byts ut efter tre, fyra år – samtidigt som förskolor, skolor och ideella organisationer saknar utrustning. Infos Datordonation löste båda problemen: datorerna raderades säkert, fick nya program och gick vidare till skolor i bland annat Tensta, Rinkeby och Skärholmen och till organisationer som Amnesty, Greenpeace och Rädda barnen. Ur det arbetet grundades Stiftelsen GoodTribes, så att fler goda idéer ska kunna bidra till en bättre värld.",
       "supportLabel": "Möjliggjort av",
@@ -5174,12 +5174,12 @@
       }
     },
     "community": {
-      "eyebrow": "Vi är GoodTribes",
+      "eyebrow": "Community",
       "title": "Var en del av något större",
       "heading": "Händer just nu",
       "subheading": "Senaste aktivitet på plattformen",
       "seeAllLink": "Se all aktivitet →",
-      "peopleHeading": "Vi är eldsjälarna",
+      "peopleHeading": "Vi är GoodTribes",
       "meetAll": "Möt alla →",
       "wallTitle": "Senast med i gemenskapen",
       "wallBody": "Utvecklare, formgivare, lärare, pensionärer och studenter – alla som lägger en timme här gör en dröm lite mer verklig.",
@@ -5925,10 +5925,12 @@
     "allPhases": "Alla faser",
     "allTimes": "All tid",
     "allPlaces": "Alla platser",
-    "eyebrow": "Bli en del av något",
+    "eyebrow": "Bli en del av något större",
+    "homeEyebrow": "Uppgifter",
+    "homeHeading": "Vill du bidra",
     "heading": "Första uppgifter i drömmar som pågår",
     "intro": "Små, konkreta uppgifter som för en dröm ett steg närmare. Varje uppgift gör dig till medskapare, och Tribe Tokens ger dig en röst i projektets beslut.",
-    "seeAll": "Se alla {count, plural, one {# första uppgift} other {# första uppgifter}} →",
+    "seeAll": "Se alla uppgifter →",
     "pageTitle": "Första uppgifter",
     "pageDescription": "Små, konkreta uppgifter i projekt som gör världen bättre. Ta en och bli medskapare.",
     "searchPlaceholder": "Sök, t.ex. äldre, cykel, design, Gottsunda …",

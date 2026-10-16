@@ -73,12 +73,16 @@ export function SectionHeader({ eyebrow, heading, intro, link, compact = false }
   }
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-12">
-      <div className="flex flex-col gap-3">
-        <Eyebrow>{eyebrow}</Eyebrow>
+      <div className="flex flex-col gap-3 md:flex-1">
+        {/* The "see all" link sits on the eyebrow's row, so the module's
+            name and the way to everything in it read as one line. */}
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+          <Eyebrow>{eyebrow}</Eyebrow>
+          {link && <SeeAll href={link.href}>{link.label}</SeeAll>}
+        </div>
         <H2 className="max-w-[720px]">{heading}</H2>
       </div>
       {intro && <p className="m-0 max-w-[480px] text-lg leading-[1.6]" style={{ color: MUTED }}>{intro}</p>}
-      {link && <SeeAll href={link.href}>{link.label}</SeeAll>}
     </div>
   );
 }
@@ -158,11 +162,7 @@ export async function PhaseJourney({ locale, phases }: { locale: Locale; phases:
   const t = await getTranslations({ locale, namespace: "NewHomePage.phases" });
   return (
     <section id="resan" className={`${wrap} flex flex-col gap-6 pt-[48px]`}>
-      <div className="flex flex-col gap-3">
-        <Eyebrow>{t("eyebrow")}</Eyebrow>
-        <H2 className="max-w-[720px]">{t("heading")}</H2>
-        <Link href="/how-it-works" className="text-[15px] font-semibold hover:underline" style={{ color: LINK }}>{t("readMore")}</Link>
-      </div>
+      <SectionHeader eyebrow={t("eyebrow")} heading={t("heading")} link={{ href: "/how-it-works", label: t("readMore") }} />
       {/* On a phone the phases are a row you swipe (one card and a peek of
           the next), so six stacked picture cards don't make the page endless. */}
       <ol className={`m-0 list-none p-0 ${SWIPE_ROW} sm:grid-cols-2 lg:grid-cols-6`}>
