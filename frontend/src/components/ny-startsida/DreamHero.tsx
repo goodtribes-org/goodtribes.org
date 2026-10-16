@@ -147,7 +147,7 @@ export default function DreamHero() {
         GoodTribes
       </p>
       <p
-        className={`${heroTaglineFont.className} nh-write relative text-[32px] leading-none sm:text-[40px]`}
+        className={`${heroTaglineFont.className} nh-write relative text-[24px] leading-none sm:text-[30px]`}
         style={{ color: "var(--color-navy)", fontWeight: 400, transform: "rotate(-2deg)" }}
       >
         {/* A colour per word (TAGLINE_COLORS) and no underline, so the
