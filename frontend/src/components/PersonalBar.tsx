@@ -9,6 +9,9 @@
 // Mitt GoodTribes only: they're not things you act on (thanks also notify).
 // "Hjälp" sits apart at the right end (on a phone, as the last tab): guides
 // and a way to ask us (HelpPanel).
+// Since #366 the bar is the phone's way in only: on a computer (md and up) the
+// header's ⌂ icon leads to the same things, so the bar hides and only Hjälp
+// stays, as a small button in the bottom-right corner.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
@@ -83,7 +86,7 @@ export default function PersonalBar() {
   return (
     <>
       {/* Room at the end of the page, so the bar never covers the footer */}
-      <div aria-hidden="true" className="h-14" />
+      <div aria-hidden="true" className="h-14 md:hidden" />
       <div ref={barRef} className="fixed inset-x-0 bottom-0 z-40" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
         {current && (
           <div role="dialog" aria-label={t(`${current.key}.label`)} className="mx-auto mb-2 w-[calc(100%-1rem)] max-w-lg overflow-hidden rounded-2xl border border-[#E4E4DF] bg-white shadow-2xl">
@@ -133,11 +136,24 @@ export default function PersonalBar() {
           </div>
         )}
         {open === "help" && (
-          <div className="mx-auto mb-2 w-[calc(100%-1rem)] max-w-sm sm:mr-4">
+          <div className="mx-auto mb-2 w-[calc(100%-1rem)] max-w-sm sm:mr-4 md:mb-16">
             <HelpPanel onClose={() => setOpen(null)} />
           </div>
         )}
-        <nav aria-label={t("aria")} className="relative border-t border-[#E2E2E0] bg-[#FBFBF9]/95 backdrop-blur">
+        {/* Computer: only Hjälp, in the corner */}
+        <button
+          type="button"
+          onClick={() => setOpen((o) => (o === "help" ? null : "help"))}
+          aria-expanded={open === "help"}
+          className="absolute bottom-4 right-4 hidden items-center gap-1.5 rounded-full border border-[#E2E2E0] bg-white px-3 py-2 text-sm text-dark-slate/70 shadow-sm hover:text-dark-slate md:flex"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.1 9a3 3 0 015.8 1c0 2-3 3-3 3M12 17h.01" />
+          </svg>
+          {t("help")}
+        </button>
+        <nav aria-label={t("aria")} className="relative border-t border-[#E2E2E0] bg-[#FBFBF9]/95 backdrop-blur md:hidden">
           <ul className="mx-auto flex max-w-3xl list-none justify-around gap-1 p-0 sm:justify-center sm:gap-2">
             {ITEMS.map((i) => (
               <li key={i.key}>

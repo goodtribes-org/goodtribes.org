@@ -11,12 +11,10 @@ import Image from "next/image";
 import SessionProvider from "@/components/SessionProvider";
 import AuthNav from "@/components/AuthNav";
 import SearchButton from "@/components/SearchButton";
-import HeaderShareButton from "@/components/HeaderShareButton";
-import ToolsMenu from "@/components/ToolsMenu";
 import PersonalBar from "@/components/PersonalBar";
 import EventBar from "@/components/EventBar";
-import NotificationBell from "@/components/NotificationBell";
-import MessagesLink from "@/components/MessagesLink";
+import HeaderMine from "@/components/HeaderMine";
+import ConversationsPanel from "@/components/ConversationsPanel";
 import PresenceHeartbeat from "@/components/PresenceHeartbeat";
 import UserEventsProvider from "@/components/UserEventsProvider";
 import SideMenu from "@/components/SideMenu";
@@ -177,16 +175,14 @@ export default async function LocaleLayout({
                   className="flex-1 min-w-0 self-stretch flex [justify-content:safe_center] overflow-x-auto"
                   style={{ scrollbarWidth: "none" }}
                 />
-                <LocaleSwitcher />
+                {/* Members: Search · 💬 conversations · ⌂ your page · your picture
+                    (#366). Language lives in the footer, sharing on what you share,
+                    the tools inside each project. Visitors keep SV/EN up here —
+                    their header has room, and it's how an English visitor finds it. */}
+                {!session?.user && <LocaleSwitcher />}
                 <SearchButton />
-                {session?.user && <MessagesLink />}
-                {session?.user && <NotificationBell />}
+                {session?.user && <HeaderMine />}
                 {session?.user && <PresenceHeartbeat />}
-                {/* Share + tools: from sm up only — on a phone the header is already full */}
-                <div className="hidden sm:contents">
-                  <HeaderShareButton />
-                  <ToolsMenu />
-                </div>
                 <AuthNav />
               </nav>
             </SiteHeader>
@@ -295,10 +291,14 @@ export default async function LocaleLayout({
                     <Link href="/suggestions" className="hover:text-seagrass transition-colors">{t("suggestions")}</Link>
                   </nav>
                 </div>
+                <div className="mt-10 flex justify-center">
+                  <LocaleSwitcher />
+                </div>
               </div>
             </SiteFooter>
-            {/* Personal bar along the bottom of every page: Att göra · Kalender · Följer · Aktivitet · Tack & kudos */}
+            {/* Personal bar along the bottom of every page on a phone: Att göra · Mina projekt · Kalender · Hjälp */}
             {session?.user && <PersonalBar />}
+            {session?.user && <ConversationsPanel />}
           </UserEventsProvider>
           </SessionProvider>
         </NextIntlClientProvider>

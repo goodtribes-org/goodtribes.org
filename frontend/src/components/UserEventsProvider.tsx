@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 // Owns ONE shared EventSource to /api/user/sse for the whole app — consumers
-// (NotificationBell, MessagesLink, MessagesSidebar) each attach their own
+// (HeaderMine, MessagesSidebar) each attach their own
 // addEventListener to the shared instance in their own effect, exactly like
 // RoomShell/KanbanBoard already do for their dedicated connections. This
 // component only manages the connection's lifecycle, not event state.

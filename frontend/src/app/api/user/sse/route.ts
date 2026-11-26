@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 const SAFETY_TIMEOUT = 45 * 60_000;
 
-// Live-only — no DB catch-up. NotificationBell/MessagesLink/MessagesSidebar
+// Live-only — no DB catch-up. HeaderMine/MessagesSidebar
 // each already do their own initial REST fetch on mount for the current
 // snapshot; this stream only needs to deliver new events from connection
 // time onward (see plan for the accepted race-window trade-off).

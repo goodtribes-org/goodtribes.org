@@ -5318,7 +5318,31 @@
     "followedIdeas": "Ideas you follow ({count})",
     "followedIdeasEmpty": "You don't follow any ideas.",
     "likedProjects": "Projects you've liked ({count})",
-    "likedProjectsEmpty": "Like a project with ♥ and it's saved here."
+    "likedProjectsEmpty": "Like a project with ♥ and it's saved here.",
+    "loading": "Loading…",
+    "sinceLastTitle": "Since you were last here",
+    "allNotifications": "All notifications →",
+    "sinceLastEmpty": "Nothing new since last time.",
+    "conversationsTitle": "Conversations",
+    "allConversations": "Open conversations →",
+    "conversationsEmpty": "You have no conversations yet."
+  },
+  "Conversations": {
+    "title": "Conversations",
+    "back": "Back to all conversations",
+    "loading": "Loading…",
+    "myPage": "My page →",
+    "myPageAria": "My page",
+    "close": "Close",
+    "empty": "No conversations yet. Write to someone in a project or in Messages.",
+    "noMessages": "No messages yet.",
+    "unread": "Unread",
+    "loadError": "The conversation couldn't be opened.",
+    "readOnly": "You can read here but not write.",
+    "openInMessages": "Open in Messages →",
+    "unreadCount": "{count, plural, one {# unread conversation} other {# unread conversations}}",
+    "newCount": "{count, plural, one {# new since last time} other {# new since last time}}",
+    "attachment": "📎 An attachment – open in Messages"
   },
   "PersonalBar": {
     "aria": "Your GoodTribes",

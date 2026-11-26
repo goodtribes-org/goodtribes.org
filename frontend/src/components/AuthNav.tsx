@@ -30,10 +30,7 @@ export default function AuthNav() {
 
     return (
       <div ref={ref} className="hidden md:flex items-center gap-3 relative shrink-0">
-        {/* A short welcome next to your picture — only where there's room */}
-        {session.user.name && (
-          <span className="hidden lg:inline text-sm text-dark-slate whitespace-nowrap">{t("greeting", { name: session.user.name.split(" ")[0] })}</span>
-        )}
+        {/* The picture is just the account (#366): your own page has its own ⌂ icon */}
         <button
           onClick={() => setOpen((v) => !v)}
           title={name}
