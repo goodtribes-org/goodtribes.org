@@ -1,13 +1,11 @@
 export interface AccountNavItem {
   href: string;
-  labelKey: "profile" | "myGoodTribes" | "findProject" | "settings";
+  labelKey: "profile" | "settings";
 }
 
 export const ACCOUNT_NAV_ITEMS: AccountNavItem[] = [
+  // Just the account (#366). Mitt GoodTribes and "Hitta ett projekt" moved to
+  // the header's own ⌂ icon, so nobody has to dig into this menu for them.
   { href: "/profile", labelKey: "profile" },
-  // Mitt GoodTribes replaced Arbetsrum and Dashboard (both redirect there);
-  // "Hitta ett projekt" is its matching tab.
-  { href: "/my-goodtribes", labelKey: "myGoodTribes" },
-  { href: "/my-goodtribes?tab=find", labelKey: "findProject" },
   { href: "/settings", labelKey: "settings" },
 ];

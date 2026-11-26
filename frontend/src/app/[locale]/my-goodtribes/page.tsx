@@ -17,9 +17,13 @@ import TasksTab from "./TasksTab";
 import CalendarTab from "./CalendarTab";
 import FollowingTab from "./FollowingTab";
 import FindTab from "./FindTab";
+import { SinceLastVisit, Conversations } from "./HomeFeeds";
 import type { Locale } from "next-intl";
 
-// Mitt GoodTribes — the member's own area, in the profile menu. It replaced
+// Mitt GoodTribes — the member's own page, behind the header's ⌂ icon (#366;
+// it used to sit in the profile menu). The overview gathers everything that
+// concerns you: projects, to-dos, what's new since last time (the old bell),
+// your conversations and your calendar. It replaced
 // Arbetsrum (/workplace, which now redirects here with the same tab) and adds
 // tasks, calendar and following. "Hitta ett projekt" (matching by skills
 // and goals) is the last tab — it was /dashboard, which now redirects here.
@@ -94,7 +98,17 @@ export default async function MyGoodTribesPage({
         </ul>
       </nav>
 
-      {activeTab === "overview" && <OverviewTab userId={userId} locale={locale} />}
+      {activeTab === "overview" && (
+        <>
+          <OverviewTab userId={userId} locale={locale} />
+          {/* What used to sit behind the bell and the speech bubble (#366) */}
+          <div className="grid gap-5 lg:grid-cols-3">
+            <SinceLastVisit />
+            <Conversations />
+            <CalendarTab userId={userId} locale={locale} take={6} />
+          </div>
+        </>
+      )}
       {activeTab === "tasks" && <TasksTab userId={userId} locale={locale} />}
       {activeTab === "calendar" && <CalendarTab userId={userId} locale={locale} />}
       {activeTab === "following" && <FollowingTab userId={userId} locale={locale} />}

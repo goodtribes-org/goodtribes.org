@@ -2,11 +2,11 @@ import { getTranslations } from "next-intl/server";
 import { getMyCalendar } from "@/lib/myGoodTribes";
 import { Panel, Empty, Row } from "./parts";
 
-export default async function CalendarTab({ userId, locale }: { userId: string; locale: string }) {
+export default async function CalendarTab({ userId, locale, take }: { userId: string; locale: string; take?: number }) {
   const t = await getTranslations({ locale, namespace: "MyGoodTribes" });
   const fmt = new Intl.DateTimeFormat(locale === "sv" ? "sv-SE" : "en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   const dayFmt = new Intl.DateTimeFormat(locale === "sv" ? "sv-SE" : "en-GB", { weekday: "short", day: "numeric", month: "short" });
-  const items = await getMyCalendar(userId);
+  const items = await getMyCalendar(userId, take);
 
   return (
     <Panel title={t("calendarTitle")}>

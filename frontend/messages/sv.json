@@ -5318,7 +5318,31 @@
     "followedIdeas": "Idéer du följer ({count})",
     "followedIdeasEmpty": "Du följer inga idéer.",
     "likedProjects": "Projekt du gillat ({count})",
-    "likedProjectsEmpty": "Gilla ett projekt med ♥ så sparas det här."
+    "likedProjectsEmpty": "Gilla ett projekt med ♥ så sparas det här.",
+    "loading": "Laddar…",
+    "sinceLastTitle": "Sedan du var här sist",
+    "allNotifications": "Alla notiser →",
+    "sinceLastEmpty": "Inget nytt sedan sist.",
+    "conversationsTitle": "Samtal",
+    "allConversations": "Öppna samtal →",
+    "conversationsEmpty": "Du har inga samtal än."
+  },
+  "Conversations": {
+    "title": "Samtal",
+    "back": "Tillbaka till alla samtal",
+    "loading": "Laddar…",
+    "myPage": "Min sida →",
+    "myPageAria": "Min sida",
+    "close": "Stäng",
+    "empty": "Du har inga samtal än. Skriv till någon i ett projekt eller i Meddelanden.",
+    "noMessages": "Inga meddelanden än.",
+    "unread": "Oläst",
+    "loadError": "Samtalet gick inte att öppna.",
+    "readOnly": "Du kan läsa här men inte skriva.",
+    "openInMessages": "Öppna i Meddelanden →",
+    "unreadCount": "{count, plural, one {# oläst samtal} other {# olästa samtal}}",
+    "newCount": "{count, plural, one {# nytt sedan sist} other {# nya sedan sist}}",
+    "attachment": "📎 En bifogad fil – öppna i Meddelanden"
   },
   "PersonalBar": {
     "aria": "Ditt GoodTribes",
