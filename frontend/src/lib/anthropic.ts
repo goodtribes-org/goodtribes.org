@@ -116,8 +116,12 @@ export function aiProjectMonthlyBudgetMicroUsd(): number {
 const spendKey = (projectId: string) => `ai:spend:project:${projectId}`;
 
 export async function getAiProjectSpend(projectId: string): Promise<number> {
+  return getSpend(spendKey(projectId));
+}
+
+async function getSpend(key: string): Promise<number> {
   try {
-    const v = await withTimeout(redisPub.get(spendKey(projectId)), RATE_LIMIT_TIMEOUT_MS);
+    const v = await withTimeout(redisPub.get(key), RATE_LIMIT_TIMEOUT_MS);
     return Number(v) || 0;
   } catch {
     return 0;
@@ -131,18 +135,43 @@ export async function checkAiProjectBudget(projectId: string): Promise<boolean> 
 // Same fixed 30-day window as the old call counter: the first charge in a
 // window sets the expiry.
 export async function recordAiProjectSpend(projectId: string, microUsd: number): Promise<void> {
+  return recordSpend(spendKey(projectId), microUsd);
+}
+
+async function recordSpend(key: string, microUsd: number): Promise<void> {
   if (microUsd <= 0) return;
   try {
     await withTimeout(
       (async () => {
-        const total = await redisPub.incrby(spendKey(projectId), microUsd);
-        if (total === microUsd) await redisPub.expire(spendKey(projectId), AI_PROJECT_BUDGET_WINDOW_SECONDS);
+        const total = await redisPub.incrby(key, microUsd);
+        if (total === microUsd) await redisPub.expire(key, AI_PROJECT_BUDGET_WINDOW_SECONDS);
       })(),
       RATE_LIMIT_TIMEOUT_MS,
     );
   } catch {
     // fail open — a lost charge only makes the budget slightly generous
   }
+}
+
+// Coachen (#367) coaches a person, not a project, so its calls can't be
+// charged to a project's budget. Each person gets their own monthly coach
+// budget instead, same cost weighting and 30-day window as a project's.
+// Default $1/month, tunable via AI_COACH_MONTHLY_BUDGET_USD — the amount is
+// Niklas's decision (flagged in the PR).
+const DEFAULT_COACH_BUDGET_USD = 1;
+const coachSpendKey = (userId: string) => `ai:spend:coach:${userId}`;
+
+export function aiCoachMonthlyBudgetMicroUsd(): number {
+  const n = Number(process.env.AI_COACH_MONTHLY_BUDGET_USD);
+  return Math.round((Number.isFinite(n) && n > 0 ? n : DEFAULT_COACH_BUDGET_USD) * 1_000_000);
+}
+
+export async function checkAiCoachBudget(userId: string): Promise<boolean> {
+  return (await getSpend(coachSpendKey(userId))) < aiCoachMonthlyBudgetMicroUsd();
+}
+
+export async function recordAiCoachSpend(userId: string, microUsd: number): Promise<void> {
+  return recordSpend(coachSpendKey(userId), microUsd);
 }
 
 // For the AI settings UI: share of the budget used, and when the window

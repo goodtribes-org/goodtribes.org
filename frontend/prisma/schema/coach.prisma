@@ -1,0 +1,48 @@
+// Coachen (#367) — a personal coach that coaches a person, not a project, and
+// sees all their projects. It lives first in the conversation panel. Behind
+// the `coach` feature flag; every reply goes through getAiClientFor with the
+// person's own monthly coach budget (lib/coach.ts).
+//
+// The coach is a choice: each person sets how hard it pushes, or turns it off.
+// It never acts for you — it suggests, drafts and follows up; you do.
+
+enum CoachLevel {
+  OFF
+  CALM
+  DIRECT
+  PUSHY
+}
+
+enum CoachRole {
+  COACH
+  USER
+}
+
+model CoachMessage {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation("CoachMessages", fields: [userId], references: [id], onDelete: Cascade)
+  role         CoachRole
+  body         String
+  // Quick replies the coach offers under its message (coach messages only).
+  quickReplies String[]  @default([])
+  // A ready-to-use draft (an sms, an email) the person can copy — the coach
+  // never sends it itself.
+  draft        String?
+  createdAt    DateTime  @default(now())
+
+  @@index([userId, createdAt])
+}
+
+// Something the person said they'd do, which the coach follows up on.
+model CoachPromise {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation("CoachPromises", fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  dueAt     DateTime?
+  doneAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, doneAt])
+}

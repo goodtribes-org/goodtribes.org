@@ -5342,7 +5342,35 @@
     "openInMessages": "Öppna i Meddelanden →",
     "unreadCount": "{count, plural, one {# oläst samtal} other {# olästa samtal}}",
     "newCount": "{count, plural, one {# nytt sedan sist} other {# nya sedan sist}}",
-    "attachment": "📎 En bifogad fil – öppna i Meddelanden"
+    "attachment": "📎 En bifogad fil – öppna i Meddelanden",
+    "coach": "Coachen",
+    "coachIntro": "Din coach – ser alla dina projekt",
+    "coachOff": "Coachen är avstängd.",
+    "coachTurnOn": "Slå på"
+  },
+  "Coach": {
+    "about": "Coachen · ser alla dina projekt · AI",
+    "levelLabel": "Hur hårt coachen pushar",
+    "level": {
+      "OFF": "Av",
+      "CALM": "Lugn",
+      "DIRECT": "Rak",
+      "PUSHY": "Pushig"
+    },
+    "empty": "Skriv vad du jobbar med, så hjälper coachen dig att ta nästa steg.",
+    "thinking": "Coachen tänker…",
+    "copy": "Kopiera",
+    "copied": "Kopierat ✓",
+    "human": "Jag vill prata med en människa",
+    "placeholder": "Svara coachen …",
+    "send": "Skicka",
+    "error": {
+      "unavailable": "Coachen är inte tillgänglig just nu.",
+      "off": "Coachen är avstängd.",
+      "rate_limited": "Du har pratat mycket med coachen den senaste timmen. Försök igen om en stund.",
+      "budget_exceeded": "Coachens budget för den här månaden är slut.",
+      "failed": "Coachen kunde inte svara. Försök igen."
+    }
   },
   "PersonalBar": {
     "aria": "Ditt GoodTribes",

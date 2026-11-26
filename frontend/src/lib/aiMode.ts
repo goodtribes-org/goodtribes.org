@@ -2,12 +2,14 @@ import type AnthropicSdk from "@anthropic-ai/sdk";
 import type { AiMode, ProjectPhase } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
+  checkAiCoachBudget,
   checkAiProjectBudget,
   checkAiProjectCallLimit,
   checkAiRateLimit,
   createAnthropicClient,
   isAiEnabled,
   isAiTemporarilyUnavailable,
+  recordAiCoachSpend,
   recordAiProjectSpend,
 } from "@/lib/anthropic";
 import { costMicroUsd } from "@/lib/aiCost";
@@ -31,7 +33,9 @@ export type AiFeature =
   | "critique"
   | "first-tasks"
   // Utlysningar (#343): a site admin's "Föreslå med AI" on an imported call.
-  | "funding-calls";
+  | "funding-calls"
+  // Coachen (#367): the personal coach, charged to the person's coach budget.
+  | "coach";
 
 // What kind of help the call gives, which decides which modes allow it:
 //   "agent"  — AI performs the work and writes a result (a card run, a
@@ -149,6 +153,9 @@ export type AiGateRequest = {
   projectId: string | null;
   stepKey?: string;
   phase?: ProjectPhase;
+  // Charge the person's own coach budget instead of a project's (#367).
+  // Requires userId; projectId should then be null.
+  coachBudgetUserId?: string;
   // Write in this language: "project" = the project's content language
   // (Project.contentLocale), or an explicit locale. Omitted = no language
   // rule (e.g. translation, where the prompt names the target language).
@@ -188,10 +195,13 @@ export async function getAiClientFor(req: AiGateRequest): Promise<AiGateResult> 
     ]);
     if (!withinBudget || !withinCallLimit) return { ok: false, reason: "budget_exceeded", mode };
   }
+  if (req.coachBudgetUserId && !(await checkAiCoachBudget(req.coachBudgetUserId))) {
+    return { ok: false, reason: "budget_exceeded", mode };
+  }
 
   const rawClient = await createAnthropicClient();
   if (!rawClient) return { ok: false, reason: "not_configured" };
-  const client = withSpendMetering(rawClient, req.projectId, req.feature);
+  const client = withSpendMetering(rawClient, req.projectId, req.feature, req.coachBudgetUserId);
   if (!req.language) return { ok: true, client, mode };
   const locale =
     req.language === "project"
@@ -211,7 +221,7 @@ export async function getAiClientFor(req: AiGateRequest): Promise<AiGateResult> 
 // .then), so nothing about the call changes for the caller. Only
 // non-streaming messages.create is used in this app; a streamed response
 // has no usage block and is simply not charged.
-export function withSpendMetering(client: AnthropicSdk, projectId: string | null, feature: AiFeature): AnthropicSdk {
+export function withSpendMetering(client: AnthropicSdk, projectId: string | null, feature: AiFeature, coachUserId?: string): AnthropicSdk {
   const create = client.messages.create.bind(client.messages) as (
     params: AnthropicSdk.MessageCreateParams,
     options?: AnthropicSdk.RequestOptions,
@@ -227,6 +237,7 @@ export function withSpendMetering(client: AnthropicSdk, projectId: string | null
             const cost = costMicroUsd(params.model, usage);
             logger.info("ai call", { feature, projectId, model: params.model, costMicroUsd: cost });
             if (projectId) void recordAiProjectSpend(projectId, cost);
+            if (coachUserId) void recordAiCoachSpend(coachUserId, cost);
           },
           () => {}, // the caller handles the error; a failed call isn't charged
         );

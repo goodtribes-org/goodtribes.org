@@ -5342,7 +5342,35 @@
     "openInMessages": "Open in Messages →",
     "unreadCount": "{count, plural, one {# unread conversation} other {# unread conversations}}",
     "newCount": "{count, plural, one {# new since last time} other {# new since last time}}",
-    "attachment": "📎 An attachment – open in Messages"
+    "attachment": "📎 An attachment – open in Messages",
+    "coach": "The coach",
+    "coachIntro": "Your coach – sees all your projects",
+    "coachOff": "The coach is turned off.",
+    "coachTurnOn": "Turn on"
+  },
+  "Coach": {
+    "about": "The coach · sees all your projects · AI",
+    "levelLabel": "How hard the coach pushes",
+    "level": {
+      "OFF": "Off",
+      "CALM": "Calm",
+      "DIRECT": "Direct",
+      "PUSHY": "Pushy"
+    },
+    "empty": "Tell the coach what you're working on, and it'll help you take the next step.",
+    "thinking": "The coach is thinking…",
+    "copy": "Copy",
+    "copied": "Copied ✓",
+    "human": "I want to talk to a person",
+    "placeholder": "Reply to the coach …",
+    "send": "Send",
+    "error": {
+      "unavailable": "The coach isn't available right now.",
+      "off": "The coach is turned off.",
+      "rate_limited": "You've talked a lot with the coach in the last hour. Try again in a while.",
+      "budget_exceeded": "The coach's budget for this month is used up.",
+      "failed": "The coach couldn't answer. Try again."
+    }
   },
   "PersonalBar": {
     "aria": "Your GoodTribes",

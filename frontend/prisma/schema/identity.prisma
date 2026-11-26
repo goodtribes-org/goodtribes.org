@@ -181,6 +181,10 @@ model User {
   dreamConversations DreamConversation[] @relation("DreamConversations")
   roleNeedsFilled               ProjectRoleNeed[]              @relation("RoleNeedFilledBy")
   createdChallenges             Challenge[]                    @relation("ChallengeCreator")
+  // Coachen (#367): how hard the coach pushes, or OFF; and its conversation.
+  coachLevel                    CoachLevel                     @default(CALM)
+  coachMessages                 CoachMessage[]                 @relation("CoachMessages")
+  coachPromises                 CoachPromise[]                 @relation("CoachPromises")
 }
 
 model Skill {
