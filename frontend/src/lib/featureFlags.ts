@@ -21,6 +21,12 @@ export const FEATURE_FLAGS = {
       "Knappen \"Föreslå med AI\" på /site-admin/funding-calls: AI läser utlysningens texter och föreslår sammanfattning, vem som får söka, belopp och krav, med ett citat som källa per fält. Utan flaggan fyller administratören i fälten själv.",
     requiresAi: true,
   },
+  coach: {
+    label: "Coachen",
+    description:
+      "En personlig coach först i samtalspanelen (💬). Den ser alla ens projekt, tar initiativ, minns löften och gör steget mindre. Var och en ställer in hur hårt den pushar eller stänger av den. Debiteras en egen AI-budget per person (AI_COACH_MONTHLY_BUDGET_USD, standard $1/månad).",
+    requiresAi: true,
+  },
 } as const satisfies Record<string, { label: string; description: string; requiresAi?: boolean }>;
 
 export type FeatureFlagKey = keyof typeof FEATURE_FLAGS;

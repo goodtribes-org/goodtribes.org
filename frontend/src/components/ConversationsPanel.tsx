@@ -6,6 +6,8 @@
 // latest messages and the regular composer. Opened by the 💬 button in the
 // header, or from anywhere with openConversations(roomId?).
 // The full chat (threads, reactions, files) stays at /messages.
+// With the `coach` flag on (#367) the coach comes first: the panel opens on it
+// and it may take the initiative; the people are one tap away.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
@@ -13,8 +15,12 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { renderBody } from "@/lib/renderBody";
 import { MessageComposer } from "@/app/[locale]/messages/[roomId]/MessageComposer";
 import type { ConversationItem } from "@/lib/conversations";
+import type { CoachState } from "@/lib/coach";
+import { loadCoach, openCoach, changeCoachLevel } from "@/app/coach-actions";
+import CoachThread, { CoachMark } from "./CoachThread";
 
 const OPEN_EVENT = "gt:conversations:open";
+const COACH = "coach";
 export const CONVERSATIONS_CHANGED_EVENT = "gt:conversations:changed";
 
 /** Open the panel, optionally straight on one conversation. */
@@ -57,6 +63,9 @@ export default function ConversationsPanel() {
   const [roomId, setRoomId] = useState<string | null>(null);
   const [room, setRoom] = useState<Room | null>(null);
   const [failed, setFailed] = useState(false);
+  const [coach, setCoach] = useState<CoachState | null>(null);
+  const [coachThinking, setCoachThinking] = useState(false);
+  const coachOn = !!coach?.available && coach.level !== "OFF";
   const endRef = useRef<HTMLDivElement>(null);
 
   const timeFmt = new Intl.DateTimeFormat(locale === "sv" ? "sv-SE" : "en-GB", { weekday: "short", hour: "2-digit", minute: "2-digit" });
@@ -88,11 +97,25 @@ export default function ConversationsPanel() {
       setRoomId(id);
       setRoom(null);
       loadList();
-      if (id) loadRoom(id);
+      if (id && id !== COACH) loadRoom(id);
+      // The coach first: with no conversation asked for, the panel opens on
+      // it, and it may open the conversation itself if it's been a while.
+      loadCoach()
+        .then((s) => {
+          setCoach(s);
+          if (!s?.available || s.level === "OFF" || (id && id !== COACH)) return;
+          setRoomId(COACH);
+          setCoachThinking(true);
+          openCoach(locale)
+            .then((res) => res.ok && setCoach(res.state))
+            .catch(() => {})
+            .finally(() => setCoachThinking(false));
+        })
+        .catch(() => {});
     }
     window.addEventListener(OPEN_EVENT, onOpen);
     return () => window.removeEventListener(OPEN_EVENT, onOpen);
-  }, [loadList, loadRoom]);
+  }, [loadList, loadRoom, locale]);
 
   useEffect(() => {
     if (!open) return;
@@ -113,8 +136,10 @@ export default function ConversationsPanel() {
   function pick(id: string) {
     setRoomId(id);
     setRoom(null);
-    loadRoom(id);
+    if (id !== COACH) loadRoom(id);
   }
+
+  const lastCoach = coach?.messages.filter((m) => m.role === "COACH").at(-1);
 
   return (
     <>
@@ -133,7 +158,7 @@ export default function ConversationsPanel() {
             </button>
           )}
           <p className="m-0 min-w-0 flex-1 truncate font-bold">
-            {roomId ? (room?.title ?? t("loading")) : t("title")}
+            {roomId === COACH ? t("coach") : roomId ? (room?.title ?? t("loading")) : t("title")}
             {roomId && room?.context && <span className="ml-2 text-xs font-normal text-dark-slate/60">{room.context}</span>}
           </p>
           <Link href="/my-goodtribes" onClick={() => setOpen(false)} className="shrink-0 text-xs font-semibold text-[#C2410C] hover:underline">
@@ -145,8 +170,16 @@ export default function ConversationsPanel() {
         </header>
 
         {/* Who you talk to, side by side — one tap between conversations */}
-        {list && list.length > 0 && (
+        {list && (list.length > 0 || coachOn) && (
           <nav className="flex gap-3 overflow-x-auto border-b border-[#E4E4DF] px-4 py-3" style={{ scrollbarWidth: "none" }} aria-label={t("title")}>
+            {coachOn && (
+              <button type="button" onClick={() => pick(COACH)} className="flex w-14 shrink-0 flex-col items-center gap-1 text-[11px]">
+                <span className="rounded-full" style={roomId === COACH ? { outline: "2px solid #253331", outlineOffset: 2 } : undefined}>
+                  <CoachMark size={40} />
+                </span>
+                <span className={`w-full truncate text-center ${roomId === COACH ? "font-bold text-dark-slate" : "text-dark-slate/60"}`}>{t("coach")}</span>
+              </button>
+            )}
             {list.map((c) => (
               <button key={c.roomId} type="button" onClick={() => pick(c.roomId)} className="flex w-14 shrink-0 flex-col items-center gap-1 text-[11px]">
                 <span className="relative rounded-full" style={c.roomId === roomId ? { outline: "2px solid #253331", outlineOffset: 2 } : undefined}>
@@ -163,10 +196,21 @@ export default function ConversationsPanel() {
           <div className="flex-1 overflow-y-auto p-2">
             {!list ? (
               <p className="m-0 p-3 text-sm text-dark-slate/60">{t("loading")}</p>
-            ) : list.length === 0 ? (
+            ) : list.length === 0 && !coachOn ? (
               <p className="m-0 p-3 text-sm text-dark-slate/60">{t("empty")}</p>
             ) : (
               <ul className="m-0 flex list-none flex-col p-0">
+                {coachOn && (
+                  <li>
+                    <button type="button" onClick={() => pick(COACH)} className="flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left hover:bg-[#F6F6F3]">
+                      <CoachMark />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold">{t("coach")}</span>
+                        <span className="block truncate text-xs text-dark-slate/60">{lastCoach?.body ?? t("coachIntro")}</span>
+                      </span>
+                    </button>
+                  </li>
+                )}
                 {list.map((c) => (
                   <li key={c.roomId}>
                     <button type="button" onClick={() => pick(c.roomId)} className={`flex w-full items-center gap-3 rounded-xl px-2 py-2.5 text-left hover:bg-[#F6F6F3] ${c.unread ? "bg-[#FDEEE7]/60" : ""}`}>
@@ -184,7 +228,31 @@ export default function ConversationsPanel() {
                 ))}
               </ul>
             )}
+            {/* Turned off: one tap to have it back */}
+            {coach?.available && coach.level === "OFF" && (
+              <p className="m-0 mt-2 border-t border-[#E4E4DF] px-3 pt-3 text-xs text-dark-slate/60">
+                {t("coachOff")}{" "}
+                <button
+                  type="button"
+                  onClick={() => changeCoachLevel("CALM").then((s) => s && setCoach(s)).catch(() => {})}
+                  className="font-semibold text-[#C2410C] hover:underline"
+                >
+                  {t("coachTurnOn")}
+                </button>
+              </p>
+            )}
           </div>
+        ) : roomId === COACH && coach ? (
+          <CoachThread
+            state={coach}
+            onState={(s) => {
+              setCoach(s);
+              // Turned off from the thread: back to the people.
+              if (s.level === "OFF") setRoomId(null);
+            }}
+            onHuman={() => { setRoomId(null); setRoom(null); }}
+            thinking={coachThinking}
+          />
         ) : (
           <>
             <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
